@@ -1,0 +1,74 @@
+2015-05-09 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Moved all the T&P class inside HTopMultilepAnalysis 
+ 	    * T&P Tree now included into HTML Tree.
+	    * Added el_calo_eta and el_crack branches
+	    * Tagging as HTopMultilepAnalysis-00-00-08
+2015-05-08 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Fixed truth matching for electrons. 
+ 	    * Now saving a branch if truth match has no prod vtx.
+	    * Added el_calo_eta and el_crack branches
+	    * Now minNBjets is set to 0 to allow Clermont Charge Flip studies, and crack veto is switched off from preselection
+	    * Tagging as HTopMultilepAnalysis-00-00-07
+2015-05-06 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Tested in ASG Base,2.1.31
+	    * MM and FF weights are now vectorial branches for event in tree (1st is nominal, then syst)
+	    * Added event flags for TT,TL,LT,LL
+2015-05-06 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Tested in ASG Base,2.1.31
+	    * Revamped EventSelector algo: 
+	      -) now the minObjCut is done here! 
+	      -) new (configurable) event cut: ( nBjets >= 1 && ( nLep >= 2 || ( nTau > 0 && nLep >= 1 ) )
+	      -) some event decorations done here
+	    * Introduced lepton CDV instead of map:
+	      -) using sorting function in HelperFunctions
+	    * Relevant changes to tree algos:
+	      -) all the vector branches are pt-sorted
+	      -) now also basic tau variables are dumped
+              -) dumping a lep_* vector
+2015-05-01 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Tested in ASG Base,2.1.31
+	    * General cleanup of code
+	    * Removed out of date BJetSelector.cxx algo
+	    * Fixed bug in TagAndProbeRFRateMeasurement.cxx : now lepton  "Tight" requirement is uniform btw/ T&P and main analysis
+	    * Added line to run on specific grid site(s) in steering macros
+	    * Tagging as HTopMultilepAnalysis-00-00-06
+2015-04-28 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Tested in ASG Base,2.1.31
+	    * Truth matching now done in a separate EL::Algo (TruthMatchAlgo.cxx). Now the check for charge flipped leptons is done properly.
+	    * Fixed bug in minObjCut in HTopMultilepAnalysis.cxx
+	    * Tagging as HTopMultilepAnalysis-00-00-05
+2015-04-22 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Tested in ASG Base,2.1.31
+	    * Tag and Probe analysis for lepton fake/real rate measurement is now into place: 
+	         * leptons are classified as tag and probe
+	         * truth matching has been implemented (for DC14, using "manual" truth matching studying the decay chain)
+	    * MM and FF weights are now correctly stored in TTree in HTopMultilepAnalysis (still calculated with Run1 rates from Francesco)
+	    * Ready to launch grid production on DAODs HIGG8D1 19.1.4.9 (for data) and HIGG8D1 19.1.4.7 (for MC) : test19
+	    * Tagging as HTopMultilepAnalysis-00-00-04
+2015-04-14 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Tested in ASG Base,2.1.30
+	    * Now memory leaks have been fixed by using new tags xAODRootAccess-00-01-04 and egammaMVACalib-01-00-43
+	    * Finished MM implementation in HTopMultilepAnalysis
+	    * Ready to launch grid production on DAOD TOPQ1 19.1.4.7 (for data) and HIGG8D1 19.1.4.7 (for MC) : test18
+	    * Tagging as HTopMultilepAnalysis-00-00-03
+2015-04-08 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Up-to-date with xAODAnaHelpers-00-00-04
+	    * Changed naming convention w.r.t. HTopMultilepAnalysis-00-00-02
+	    * Tested in ASG Base,2.1.29 , Base,2.1.30
+	    * Added module for lepton fake/real rate measurement for Matrix Method
+2015-03-26 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Current version has been successfully validated against HIGG8D1 derivation
+	    * Successfully runs also on TOPQ1 DAODs
+	    * Electron ID is now fixed for cut-based variables too
+	    * Can be used for testing Matrix Method on DC14 (using RunI framework)
+	    * Tested in ASG Base,2.1.27
+	    * Tagging as HTopMultilepAnalysis-00-00-02
+2015-03-14 Marco Milesi <Marco.Milesi@cern.ch>
+	    * This runs on mc14_8TeV xAODs and DxAODs for both local and grid drivers
+	    * Applied object and event selection of RunI HTopMultileptons analysis
+	    * Dumping variables in output tree for usage in Matrix Method
+	    * Using same name convention as in RunI
+	    * Tested in ASG Base,2.1.27
+	    * Tagging as HTopMultilepAnalysis-00-00-01
+
+	

@@ -1,0 +1,23 @@
+# ******** #
+#    MC    #
+# ******** #
+# ~~~~ ttH125 (signal) ~~~~ #
+mc14_8TeV.161305.Pythia8_AU2CTEQ6L1_ttH125_WWinclusive.merge.AOD.e1530_s1933_s1911_r5591_r5625/
+# ~~~~ ttbar (background) ~~~~ #
+mc14_8TeV.117050.PowhegPythia_P2011C_ttbar.merge.AOD.e1727_s1933_s1911_r5778_r5625/
+##mc14_8TeV.117050.PowhegPythia_P2011C_ttbar.merge.AOD.e1727_s1933_s1911_r5895_r5853/
+# ~~~~ ttW (background) ~~~~ #
+mc14_8TeV.119353.MadGraphPythia_AUET2BCTEQ6L1_ttbarW.merge.AOD.e1352_s1933_s1911_r5591_r5625/
+mc14_8TeV.174830.MadGraphPythia_AUET2BCTEQ6L1_ttbarWjExcl.merge.AOD.e1672_s1933_s1911_r5591_r5625/
+mc14_8TeV.174831.MadGraphPythia_AUET2BCTEQ6L1_ttbarWjjIncl.merge.AOD.e1672_s1933_s1911_r5591_r5625/
+# ~~~~ ttZ(background) ~~~~ #
+mc14_8TeV.119355.MadGraphPythia_AUET2BCTEQ6L1_ttbarZ.merge.AOD.e1352_s1933_s1911_r5591_r5625/
+mc14_8TeV.174833.MadGraphPythia_AUET2BCTEQ6L1_ttbarZjjIncl.merge.AOD.e1672_s1933_s1911_r5591_r5625/
+mc14_8TeV.174832.MadGraphPythia_AUET2BCTEQ6L1_ttbarZjExcl.merge.AOD.e1672_s1933_s1911_r5591_r5625/
+# ********** #
+#    data    #
+# ********** #
+# ~~~~ reprocessed DC14 data ~~~~ #
+data12_8TeV.periodB.physics_Muons.PhysCont.AOD.repro16_v05/
+data12_8TeV.periodB.physics_Egamma.PhysCont.AOD.repro16_v05/
+
