@@ -1,3 +1,5 @@
+2015-05-26 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Removed all the obsolete T&P files across the board
 2015-05-09 Marco Milesi <Marco.Milesi@cern.ch>
 	    * Moved all the T&P class inside HTopMultilepAnalysis 
  	    * T&P Tree now included into HTML Tree.

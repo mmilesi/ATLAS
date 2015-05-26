@@ -3,9 +3,6 @@
 #include <HTopMultilepAnalysis/HTopMultilepTreeAlgo.h>
 #include <HTopMultilepAnalysis/HTopMultilepEventSelector.h>
 #include <HTopMultilepAnalysis/TruthMatchAlgo.h>
-#include <HTopMultilepAnalysis/TagAndProbeRFRateMeasurement.h>
-#include <HTopMultilepAnalysis/TagAndProbeTree.h>
-#include <HTopMultilepAnalysis/TagAndProbeTreeAlgo.h>
 
 #ifdef __CINT__
 
@@ -22,7 +19,4 @@
 #pragma link C++ class HTopMultilepTreeAlgo+;
 #pragma link C++ class HTopMultilepEventSelector+;
 #pragma link C++ class TruthMatchAlgo+;
-#pragma link C++ class TagAndProbeRFRateMeasurement+;
-#pragma link C++ class TagAndProbeTree+;
-#pragma link C++ class TagAndProbeTreeAlgo+;
 #endif
