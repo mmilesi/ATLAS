@@ -197,53 +197,71 @@ int main ( int argc, char **argv ) {
     job.sampleHandler(sh);
 
     std::string localDataDir = "$ROOTCOREBIN/data/HTopMultilepAnalysis/";
-    
+
+    //
+    // 1. xAODAnaHelpers algorithms
+    //    
     // basic event selection : this is mandatory!
-    BasicEventSelection* baseEventSel 		  = new BasicEventSelection("baseEventSel",localDataDir+"Event/"+"baseEvent_HTopMultilep"+"_"+inDSType+".config");
-    JetCalibrator* jetCalib           		  = new JetCalibrator("jetCalib_AntiKt4TopoLC",localDataDir+"Jets/"+"jetCalib_AntiKt4TopoLCCalib.config");
-    JetSelector* jetSelect_selected   		  = new JetSelector("jetSelect_selected",localDataDir+"Jets/"+"jetSelect_HTopMultilep"+"_"+inDSType+".config");
-    BJetEfficiencyCorrector*  bjetEffCorr         = new BJetEfficiencyCorrector("bjetEfficiencyCorrector",localDataDir+"Jets/"+"bjetEffCorr.config");
-    MuonCalibrator* muonCalib	        	  = new MuonCalibrator("muonCalib",localDataDir+"Muons/"+"muonCalib.config");
-    MuonEfficiencyCorrector* muonEffCorr          = new MuonEfficiencyCorrector("muonEfficiencyCorrector",localDataDir+"Muons/"+"muonEffCorr.config");
-    MuonSelector* muonSelect_preselected 	  = new MuonSelector("muonSelect_preselected",localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config");
-    MuonSelector* muonSelect_selected    	  = new MuonSelector("muonSelect_selected",localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config");
-    ElectronCalibrator* electronCalib             = new ElectronCalibrator("electronCalib",localDataDir+"Electrons/"+"electronCalib.config" /*, "All" */ ); // 3rd,4th args are for syst!
-    ElectronEfficiencyCorrector*  electronEffCorr = new ElectronEfficiencyCorrector("electronEfficiencyCorrector", localDataDir+"Electrons/"+"electronEffCorr.config" /*, "All" */ ); // 3rd,4th args are for syst!
-    ElectronSelector* electronSelect_preselected  = new ElectronSelector("electronSelect_preselected",localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config");
-    ElectronSelector* electronSelect_selected     = new ElectronSelector("electronSelect_selected",localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config");
-    OverlapRemover*  overlapRemover               = new OverlapRemover("overlapRemover",localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config");
+    BasicEventSelection* baseEventSel             = new BasicEventSelection();
+    baseEventSel->setName("baseEventSel")->setConfig(localDataDir+"Event/"+"baseEvent_HTopMultilep"+"_"+inDSType+".config");
+    JetCalibrator* jetCalib                       = new JetCalibrator();
+    jetCalib->setName("jetCalib_AntiKt4EMTopo")->setConfig(localDataDir+"Jets/"+"jetCalib_AntiKt4TopoEMCalib"+"_"+inDSType+".config");
+    MuonCalibrator* muonCalib                     = new MuonCalibrator();
+    muonCalib->setName("muonCalib")->setConfig(localDataDir+"Muons/"+"muonCalib"+"_"+inDSType+".config");
+    ElectronCalibrator* electronCalib             = new ElectronCalibrator();
+    electronCalib->setName("electronCalib")->setConfig(localDataDir+"Electrons/"+"electronCalib"+"_"+inDSType+".config");
+    MuonEfficiencyCorrector*      muonEffCorr     = new MuonEfficiencyCorrector();
+    muonEffCorr->setName("muonEfficiencyCorrector")->setConfig(localDataDir+"Muons/"+"muonEffCorr"+"_"+inDSType+".config");
+    ElectronEfficiencyCorrector*  electronEffCorr = new ElectronEfficiencyCorrector();
+    electronEffCorr->setName("electronEfficiencyCorrector")->setConfig(localDataDir+"Electrons/"+"electronEffCorr"+"_"+inDSType+".config");
+    JetSelector* jetSelect_selection              = new JetSelector();
+    jetSelect_selection->setName("jetSelect_selection")->setConfig(localDataDir+"Jets/"+"jetSelect_HTopMultilep"+"_"+inDSType+".config");
+    MuonSelector* muonSelect_preselection         = new MuonSelector();
+    muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config");
+    ElectronSelector* electronSelect_preselection   = new ElectronSelector();
+    electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config");
+    BJetEfficiencyCorrector* bjetEffCorr_btag     = new BJetEfficiencyCorrector();
+    bjetEffCorr_btag->setName("bjetEffCor_btag")->setConfig(localDataDir+"Jets/"+"bjetEffCorr"+"_"+inDSType+".config");
+    MuonSelector* muonSelect_selection         = new MuonSelector();
+    muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config");
+    ElectronSelector* electronSelect_selection   = new ElectronSelector();
+    electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config");
+    OverlapRemover* overlapRemoval                = new OverlapRemover();
+    overlapRemoval->setName("OverlapRemovalTool")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config");
+
+    //
+    // 2. HTopMultilepAnalysis algorithms
+    // 
     HTopMultilepEventSelector* eventSelect        = new HTopMultilepEventSelector("eventSelect_skim",localDataDir+"Event/"+"eventSelect_HTopMultilep"+"_"+inDSType+".config");
     TruthMatchAlgo* truthMatching                 = new TruthMatchAlgo("truthMatching",localDataDir+"Analysis/"+"analysis_TruthMatchingLeptons"+"_"+inDSType+".config"); 
-     // Add our analysis to the job:
     HTopMultilepAnalysis* analysis 		  = new HTopMultilepAnalysis("analysis",localDataDir+"Analysis/"+"analysis_HTopMultilep"+"_"+inDSType+".config");
-    // Add tree algo
-    HTopMultilepTreeAlgo* out_tree 		  = new  HTopMultilepTreeAlgo("physics", localDataDir+"Tree/"+"tree_HTopMultilep"+"_"+inDSType+".config");
+    HTopMultilepTreeAlgo* out_tree 		  = new  HTopMultilepTreeAlgo();
+    out_tree->setName("physics")->setConfig(localDataDir+"Tree/"+"tree_HTopMultilep"+"_"+inDSType+".config");
+
     // dump plots - jets
     JetHistsAlgo* jetHistsAlgo_signal(nullptr);
     JetHistsAlgo* jetHistsAlgo_all(nullptr); 
     if ( make_histos ) {
-      jetHistsAlgo_signal = new JetHistsAlgo("jetHistsAlgo_signal",localDataDir+"Jets/"+"jetHistsAlgo_signal.config");
-      jetHistsAlgo_all    = new JetHistsAlgo("jetHistsAlgo_all",localDataDir+"Jets/"+"jetHistsAlgo_all.config");
+      JetHistsAlgo* jk_AntiKt4EM                   = new JetHistsAlgo();
+      jk_AntiKt4EM->setName("AntiKt4EM/")->setConfig(localDataDir+"Jets/"+"jetHistsAlgo_signal.config");
     }  
           
     size_t isDxAOD = inDSType.find("DxAOD");
 
     // Add all the algorithms to the EL::job - Here order matters!
     job.algsAdd( baseEventSel );
-    if ( isDxAOD == string::npos ){  // apply jet calibration only on full xAODs - missing variables in DxAODs needed by JetCalibrationTool...
-      job.algsAdd( jetCalib );
-    }
+    job.algsAdd( jetCalib );
     job.algsAdd( muonCalib ); 
-    //job.algsAdd( muonEffCorr );
+    job.algsAdd( muonSelect_preselection );
     job.algsAdd( electronCalib );
+    job.algsAdd( electronSelect_preselection );
+    job.algsAdd( jetSelect_selection );
+    job.algsAdd( bjetEffCorr_btag );
+    job.algsAdd( overlapRemoval );
+    job.algsAdd( muonSelect_selection );
+    job.algsAdd( muonEffCorr );
+    job.algsAdd( electronSelect_selection );
     job.algsAdd( electronEffCorr );
-    job.algsAdd( jetSelect_selected );
-    //job.algsAdd( bjetEffCorr );
-    job.algsAdd( muonSelect_preselected );
-    job.algsAdd( electronSelect_preselected );
-    job.algsAdd( overlapRemover );
-    job.algsAdd( muonSelect_selected );
-    job.algsAdd( electronSelect_selected );
     job.algsAdd( eventSelect );
     job.algsAdd( truthMatching );
     job.algsAdd( analysis );

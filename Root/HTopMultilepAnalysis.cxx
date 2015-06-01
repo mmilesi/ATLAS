@@ -59,12 +59,6 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis (std::string name, std::string conf
   m_totalEventsW(nullptr),
   /* ************* */
   m_jetPlots(nullptr),
-  m_electronIsolationSelectionTool(nullptr),
-  m_LHToolTight2012(nullptr),  
-  m_LHToolMedium2012(nullptr), 
-  m_LHToolVeryTight2012(nullptr),    
-  m_MediumPP2012(nullptr),
-  m_TightPP2012(nullptr),
   m_TauSelTool(nullptr)
 {
   // Here you put any code for the base initialization of variables,
@@ -95,28 +89,17 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
   m_inContainerName_Muons      = config->GetValue("InputContainerMuons",  "");
   /* Electrons */
   m_inContainerName_Electrons  = config->GetValue("InputContainerElectrons",  "");
+  /* Leptons */
+  m_inContainerName_Leptons    = config->GetValue("InputContainerLeptons",  "");
   /* Jets */
   m_inContainerName_Jets       = config->GetValue("InputContainerJets",  "");
+  /* Taus */
+  m_inContainerName_Taus       = config->GetValue("InputContainerTaus",  "");
 
-  // electron ID stuff
-  m_doLHPIDCut		       = config->GetValue("DoLHPIDCut"          , true  );      
-  m_doCutBasedPIDCut	       = config->GetValue("DoCutBasedPIDCut"    , false );
+  // electron ID stuff - choose which one to define "Tight" electrons
+  m_doLHPIDCut                 = config->GetValue("DoLHPIDCut"          , true  );      
+  m_doCutBasedPIDCut           = config->GetValue("DoCutBasedPIDCut"    , false );
 
-  // isolation stuff
-  m_doIsolation_Mu             = config->GetValue("DoIsolationCut_Mu"   , false );
-  m_useRelativeIso_Mu          = config->GetValue("UseRelativeIso_Mu"   , true  );
-  m_CaloBasedIsoType_Mu        = config->GetValue("CaloBasedIsoType_Mu" , "topoetcone20");
-  m_CaloBasedIsoCut_Mu         = config->GetValue("CaloBasedIsoCut_Mu"  , 0.05  );
-  m_TrackBasedIsoType_Mu       = config->GetValue("TrackBasedIsoType_Mu", "ptcone20");
-  m_TrackBasedIsoCut_Mu        = config->GetValue("TrackBasedIsoCut_Mu" , 0.05  );
-
-  m_doIsolation_El             = config->GetValue("DoIsolationCut_El"   , false );
-  m_useRelativeIso_El          = config->GetValue("UseRelativeIso_El"   , true  );
-  m_CaloBasedIsoType_El        = config->GetValue("CaloBasedIsoType_El" , "topoetcone20");
-  m_CaloBasedIsoCut_El         = config->GetValue("CaloBasedIsoCut_El"  , 0.05  );
-  m_TrackBasedIsoType_El       = config->GetValue("TrackBasedIsoType_El", "ptcone20");
-  m_TrackBasedIsoCut_El        = config->GetValue("TrackBasedIsoCut_El" , 0.05  );
- 
   config->Print();
   
   Info("configure()", "HTopMultilepAnalysis Interface succesfully configured! \n");
@@ -229,44 +212,6 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
     return EL::StatusCode::FAILURE;
   }
   
-  // initialise ElectronIsolationSelectionTool
-  m_electronIsolationSelectionTool = new CP::ElectronIsolationSelectionTool( "ElectronIsolationSelectionTool" );
-  m_electronIsolationSelectionTool->msg().setLevel( MSG::VERBOSE); // ERROR, VERBOSE, DEBUG, INFO
-  // https://twiki.cern.ch/twiki/bin/view/AtlasProtected/ElectronIsolationSelectionTool
-  HelperClasses::EnumParser<xAOD::Iso::IsolationType> isoParser;
-  m_electronIsolationSelectionTool->configureCutBasedIsolation( isoParser.parseEnum(m_CaloBasedIsoType_El),   static_cast<double>(m_CaloBasedIsoCut_El),  m_useRelativeIso_El );
-  m_electronIsolationSelectionTool->configureCutBasedIsolation( isoParser.parseEnum(m_TrackBasedIsoType_El),  static_cast<double>(m_TrackBasedIsoCut_El), m_useRelativeIso_El );
-  RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_electronIsolationSelectionTool->initialize(), "Failed to properly initialize ElectronIsolationSelectionTool." );
-
-  // needed by tools below
-  std::string confDir = "ElectronPhotonSelectorTools/offline/mc15_20150224/";
-
-  // initialise AsgElectronLikelihoodTool (likelihood-based PID)
-  m_LHToolTight2012     = new AsgElectronLikelihoodTool ("LHToolTight2012");
-  m_LHToolMedium2012    = new AsgElectronLikelihoodTool ("LHToolMedium2012"); 
-  m_LHToolVeryTight2012 = new AsgElectronLikelihoodTool ("LHToolVeryTight2012");
-  // initialize the primary vertex container for the tool to have access to the number of vertices used to adapt cuts based on the pileup
-  m_LHToolTight2012     ->setProperty("primaryVertexContainer","PrimaryVertices");
-  m_LHToolMedium2012    ->setProperty("primaryVertexContainer","PrimaryVertices");
-  m_LHToolVeryTight2012 ->setProperty("primaryVertexContainer","PrimaryVertices");
-  m_LHToolTight2012     ->setProperty("ConfigFile",confDir+"ElectronLikelihoodTightOfflineConfig2012.conf");
-  m_LHToolMedium2012    ->setProperty("ConfigFile",confDir+"ElectronLikelihoodMediumOfflineConfig2012.conf");
-  m_LHToolVeryTight2012 ->setProperty("ConfigFile",confDir+"ElectronLikelihoodVeryTightOfflineConfig2012.conf");
-  RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_LHToolTight2012->initialize(), "Failed to properly initialize AsgElectronLikelihoodTool w/ Tight WP." );
-  RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_LHToolMedium2012->initialize(), "Failed to properly initialize AsgElectronLikelihoodTool w/ Medium WP." );
-  RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_LHToolVeryTight2012->initialize(), "Failed to properly initialize AsgElectronLikelihoodTool w/ VeryTight WP." );
-
-  // initialise AsgElectronIsEMSelector (cut-based PID)
-  m_MediumPP2012 = new AsgElectronIsEMSelector("MediumPP2012");
-  m_TightPP2012  = new AsgElectronIsEMSelector("TightPP2012");
-  m_MediumPP2012->setProperty("ConfigFile", confDir + "ElectronIsEMMediumSelectorCutDefs2012.conf" );
-  m_TightPP2012->setProperty("ConfigFile", confDir + "ElectronIsEMTightSelectorCutDefs2012.conf" );
-  // bitmask to be set only for DC14 w/ 2012 configuration
-  m_MediumPP2012->setProperty("isEMMask", static_cast<unsigned int>(egammaPID::ElectronMediumPP) );
-  m_TightPP2012->setProperty("isEMMask", static_cast<unsigned int>(egammaPID::ElectronTightPP) );    
-  RETURN_CHECK( "ElectronSelector::initialize()", m_MediumPP2012->initialize(), "Failed to properly initialize AsgElectronIsEMSelector w/ Medium WP." );
-  RETURN_CHECK( "ElectronSelector::initialize()", m_TightPP2012->initialize(), "Failed to properly initialize AsgElectronIsEMSelector w/ Tight WP." );
-
   // initialise TauSelectionTool                                                                                                                        
   m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool" );
   m_TauSelTool->msg().setLevel( MSG::INFO );
@@ -329,14 +274,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   const xAOD::VertexContainer* vertices(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(vertices, "PrimaryVertices", m_event, m_store,  m_debug) , "");
 
-  // retrieve preselected objects
-  const xAOD::ElectronContainer* preselElectrons(nullptr);
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselElectrons, "ElectronCollection_PreSel", m_event, m_store, m_debug) , "");
-  const xAOD::MuonContainer*     preselMuons(nullptr);     
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselMuons, "Muons_PreSel", m_event, m_store, m_debug) , "");
-  const xAOD::JetContainer*      preselJets(nullptr); 
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselJets, "AntiKt4LCTopoJets_Sel", m_event, m_store, m_debug ) , "");
-
   // retrieve selected objects
   const xAOD::ElectronContainer* signalElectrons(nullptr); 
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalElectrons, m_inContainerName_Electrons, m_event, m_store,  m_debug) , "");
@@ -344,18 +281,17 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalMuons, m_inContainerName_Muons, m_event, m_store, m_debug ) , "");
   const xAOD::JetContainer*      signalJets(nullptr);   
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalJets, m_inContainerName_Jets, m_event, m_store,  m_debug) , "");
-
   const xAOD::TauJetContainer*   signalTauJets(nullptr);
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalTauJets, "Taus_Sel", m_event, m_store, m_debug) , "");
-  
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalTauJets,  m_inContainerName_Taus, m_event, m_store, m_debug) , "");
   ConstDataVector<xAOD::IParticleContainer>* leptonsCDV(nullptr);
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(leptonsCDV, "Leptons_Sel", m_event, m_store, m_debug) ,"");
-  // Make a sorted version of the container 
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(leptonsCDV, m_inContainerName_Leptons, m_event, m_store, m_debug) ,"");
+  // Make a sorted version of the lepton container 
   // (this can be on the stack! Will not be pushed to the store...)
   const xAOD::IParticleContainer leptonsSorted = HelperFunctions::sort_container_pt( leptonsCDV->asDataVector() );
 
   unsigned int nSignalLeptons   = leptonsCDV->size();
   unsigned int nSignalJets      = signalJets->size();
+  unsigned int nSignalTaus      = signalTauJets->size();
   static SG::AuxElement::Accessor< unsigned int > nBjetsMediumAcc("nBjetsMedium");
   unsigned int nBjetsMedium(-1);
   if ( nBjetsMediumAcc.isAvailable( *eventInfo ) ) {
@@ -366,6 +302,15 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   }
     
   if ( m_debug ) {
+
+    // retrieve preselected objects ( only for debugging purposes )
+    const xAOD::ElectronContainer* preselElectrons(nullptr);
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselElectrons, "Electrons_PreSelected", m_event, m_store, m_debug) , "");
+    const xAOD::MuonContainer*     preselMuons(nullptr);     
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselMuons, "Muons_PreSelected", m_event, m_store, m_debug) , "");
+    const xAOD::JetContainer*      preselJets(nullptr); 
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselJets, "AntiKt4EMTopoJets_Selected", m_event, m_store, m_debug ) , "");
+
     unsigned int nPreselElectrons = preselElectrons->size();
     unsigned int nPreselMuons     = preselMuons->size();
     unsigned int nPreselJets      = preselJets->size();
@@ -375,7 +320,9 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     Info("execute()"," Preselected vs Selected Signal Jets: \t %u \t %u "      , nPreselJets, nSignalJets );
     Info("execute()"," Preselected vs Selected Signal Muons: \t %u \t %u  "    , nPreselMuons, nSignalMuons ); 
     Info("execute()"," Preselected vs Selected Signal Electrons: \t %u \t %u " , nPreselElectrons, nSignalElectrons );     
-    Info("execute()"," Selected Signal Leptons: \t %u " , nSignalLeptons );     
+    Info("execute()"," Selected Signal Leptons: \t %u " , nSignalLeptons );   
+    Info("execute()"," Selected Signal Taus: \t %u " , nSignalTaus );   
+
   }
 
   ++m_eventCounter;
@@ -396,6 +343,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   mcEvtWeight = mcEvtWeightAcc( *eventInfo );
    
   // multiply SFs to event weight 
+  /*
   if ( isMC ) {
     // electron efficiency SF
     static SG::AuxElement::Accessor< float > elEffSFAcc("SF");
@@ -408,39 +356,17 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     // bTagging efficiency SF
     // trigger efficiency SF
   }
+  */
 
   if ( m_debug ) {
     Info("execute()", "event weight = %2f. ", mcEvtWeight );
   }
-  
-  // ******* //
-  //  flags  //
-  // ******* //
-
-  bool isDilepton(false), isTrilepton(false);
-  // check if is dilepton/trilepton category
-  if      ( nSignalLeptons == 2 )  { isDilepton  = true; }
-  else if ( nSignalLeptons == 3 )  { isTrilepton = true; }
-
-  // check if dilepton SS category
-  bool isDileptonSS(false),isDileptonSS_elel(false), isDileptonSS_mumu(false), isDileptonSS_elmu(false) ;
-  int prod_lep_charge(1), flav_comp(1);
-  for ( auto mu_itr : *(signalMuons) )	  {  prod_lep_charge *= mu_itr->charge(); flav_comp *= 13; }  
-  for ( auto el_itr : *(signalElectrons) ) {  prod_lep_charge *= el_itr->charge(); flav_comp *= 11; }   
-
-  // SS, SSelel, SSelmu, SSmumu  
-  if ( isDilepton &&  prod_lep_charge > 0 ) { 
-    isDileptonSS = true;
-    if      ( flav_comp%13 != 0 ) { isDileptonSS_elel = true; }
-    else if ( flav_comp%11 != 0 ) { isDileptonSS_mumu = true; }
-    else			  { isDileptonSS_elmu = true; }
-  } 
 
   // ****************************************************************************************************************************
 
   // fill cutflow histogram
   
-  if (m_useCutFlow) {
+  if ( m_useCutFlow ) {
     m_cutflowHist ->Fill( m_cutflow_bin, 1 );
     m_cutflowHistW->Fill( m_cutflow_bin, mcEvtWeight);
   }
@@ -452,21 +378,9 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   
   // declare static event decorators
   static SG::AuxElement::Decorator< float > 	   ystarDecor("ystar");
-  static SG::AuxElement::Decorator< char >         isDileptonDecor("isDilepton");
-  static SG::AuxElement::Decorator< char > 	   isTrileptonDecor("isTrilepton");  
-  static SG::AuxElement::Decorator< char >         isDileptonSSDecor("isDileptonSS");
-  static SG::AuxElement::Decorator< char >         isDileptonSS_elelDecor("isDileptonSS_elel");
-  static SG::AuxElement::Decorator< char >         isDileptonSS_mumuDecor("isDileptonSS_mumu");
-  static SG::AuxElement::Decorator< char >         isDileptonSS_elmuDecor("isDileptonSS_elmu");
 
   // now decorate event!
-  ystarDecor(*eventInfo)              = ( signalJets->size() > 1 ) ? ( signalJets->at(0)->rapidity() - signalJets->at(1)->rapidity() ) / 2.0 : 999.0;
-  isDileptonDecor(*eventInfo)	      = isDilepton;
-  isTrileptonDecor(*eventInfo)	      = isTrilepton;
-  isDileptonSSDecor(*eventInfo)	      = isDileptonSS;
-  isDileptonSS_elelDecor(*eventInfo)  = isDileptonSS_elel;
-  isDileptonSS_mumuDecor(*eventInfo)  = isDileptonSS_mumu;
-  isDileptonSS_elmuDecor(*eventInfo)  = isDileptonSS_elmu;
+  ystarDecor(*eventInfo) = ( signalJets->size() > 1 ) ? ( signalJets->at(0)->rapidity() - signalJets->at(1)->rapidity() ) / 2.0 : 999.0;
 
   // decorate taus
   static SG::AuxElement::Decorator< char > isTauBDTTightDecor("isTauBDTTight");  
@@ -475,70 +389,64 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     if ( m_TauSelTool->accept(*tau_itr) ) { isTauBDTTightDecor( *tau_itr ) = 1; }
   }
 
-  // decorate lepton objects w/ specific flags 
-  static SG::AuxElement::Decorator< char > isLepIsoDecor("isIsolated");  
+  // accessor to lepton isolation flag 
+  static SG::AuxElement::Accessor< char > isIsoAcc("isIsolated");
+  // accessor to likelihood PID for electrons
+  static SG::AuxElement::Accessor< char > LHTightAcc("LHTight");
+  static SG::AuxElement::Accessor< char > LHVeryTightAcc("LHVeryTight");
+   // accessor to cut-based PID for electrons
+  static SG::AuxElement::Accessor< char > EMTightAcc("Tight");
+
+  // decorator for "Tight" leptons  
   static SG::AuxElement::Decorator< char > isTightDecor("isTight"); // electrons: isolated + tight PID (tightPP or VeryTightLH, depending on user's choice)
   								    // muons: isolated + d0sig < 3.0
-   // Likelihood PID for electrons
-  static SG::AuxElement::Decorator< char > isLHMediumDecor("isLHMedium");
-  static SG::AuxElement::Decorator< char > isLHTightDecor("isLHTight");
-  static SG::AuxElement::Decorator< char > isLHVeryTightDecor("isLHVeryTight");
-   // Cut-based PID for electrons
-  static SG::AuxElement::Decorator< char > isCutBasedMediumPPDecor("isCutBasedMediumPP");
-  static SG::AuxElement::Decorator< char > isCutBasedTightPPDecor("isCutBasedTightPP");
 
   for ( auto el_itr : *(signalElectrons) ) {
-    
-    // default value for this decoration
-    isTightDecor( *el_itr ) =  0;
-    
-    isLHMediumDecor( *el_itr )     = ( m_LHToolMedium2012->accept( *el_itr ) );
-    isLHTightDecor( *el_itr )      = ( m_LHToolTight2012->accept( *el_itr ) );
-    isLHVeryTightDecor( *el_itr )  = ( m_LHToolVeryTight2012->accept( *el_itr ) );
-  
-    isCutBasedMediumPPDecor( *el_itr )     = ( m_MediumPP2012->accept( *el_itr ) );
-    isCutBasedTightPPDecor( *el_itr )      = ( m_TightPP2012->accept( *el_itr ) );
 
-    if ( m_doIsolation_El ) { 
-      bool pass_iso =  m_electronIsolationSelectionTool->accept( *el_itr );
-      if ( m_debug ) { Info("execute()","is electron passing isolation? %i", static_cast<int>(pass_iso) ); }
-      isLepIsoDecor( *el_itr )  = (  pass_iso );
-      
-      // definition of "Tight" electrons
-      if ( pass_iso ) {
-        if      ( m_doLHPIDCut       && isLHVeryTightDecor( *el_itr )     ) { isTightDecor( *el_itr ) = 1; }
-	else if ( m_doCutBasedPIDCut && isCutBasedTightPPDecor( *el_itr ) ) { isTightDecor( *el_itr ) = 1; }
-      }
+    // default
+    isTightDecor( *el_itr ) = 0; 
+
+    if ( !isIsoAcc.isAvailable( *el_itr ) ) {
+      Error("execute()", "isIsolated attribute is not available for this electron. Aborting ");
+      return EL::StatusCode::FAILURE;
+    } 
+    if ( !LHTightAcc.isAvailable( *el_itr ) ) {
+      Error("execute()", "LHTight attribute is not available for this electron. Aborting ");
+      return EL::StatusCode::FAILURE;
+    } 
+    if ( !LHVeryTightAcc.isAvailable( *el_itr ) ) {
+      Error("execute()", "LHVeryTightAcc attribute is not available for this electron. Aborting ");
+      return EL::StatusCode::FAILURE;
+    } 
+    if ( !EMTightAcc.isAvailable( *el_itr ) ) {
+      Error("execute()", "Tight attribute is not available for this electron. Aborting ");
+      return EL::StatusCode::FAILURE;
+    } 
+
+    // flag the "Tight" electrons
+    if (  isIsoAcc( *el_itr ) ) {
+        if      ( m_doLHPIDCut       && LHVeryTightAcc( *el_itr )  ) { isTightDecor( *el_itr ) = 1; }
+	else if ( m_doCutBasedPIDCut && EMTightAcc( *el_itr ) )      { isTightDecor( *el_itr ) = 1; }
     }
+ 
   }
   
-  if ( m_doIsolation_Mu ) {
-  
-    HelperClasses::EnumParser<xAOD::Iso::IsolationType> isoParser;
-    
-    for ( auto mu_itr : *(signalMuons) ) {
+  for ( auto mu_itr : *(signalMuons) ) {
 
-      // default value for this decoration
+      // default
       isTightDecor( *mu_itr ) =  0;
 
-      float ptcone_dr = -999., etcone_dr = -999.;
-      if ( mu_itr->isolation(ptcone_dr, isoParser.parseEnum(m_TrackBasedIsoType_Mu)) &&  mu_itr->isolation(etcone_dr,isoParser.parseEnum(m_CaloBasedIsoType_Mu)) ) {
-        bool isTrackIso = ( /*ptcone_dr / (mu_itr->pt()) > 0.0 &&*/ ptcone_dr / (mu_itr->pt()) <  m_TrackBasedIsoCut_Mu );
-        bool isCaloIso  = ( /*etcone_dr / (mu_itr->pt()) > 0.0 &&*/ etcone_dr / (mu_itr->pt()) <  m_CaloBasedIsoCut_Mu  );
+      if ( !isIsoAcc.isAvailable( *mu_itr ) ) {
+	Error("execute()", "isIsolated attribute is not available for this muon. Aborting ");
+	return EL::StatusCode::FAILURE;
+      } 
 
-        bool pass_iso = ( isTrackIso && isCaloIso );
-        if ( m_debug ) { Info("execute()","is muon passing isolation? %i", static_cast<int>(pass_iso) ); }
-
- 	isLepIsoDecor( *mu_itr )  = (  pass_iso );
-	
-	// definition of "Tight" muon
-        if ( pass_iso ) {
+      // flag the "Tight" muons
+      if ( isIsoAcc( *mu_itr) ) {
           const xAOD::TrackParticle* tp  = mu_itr->primaryTrackParticle();
           float d0_significance = fabs( tp->d0() ) / sqrt( tp->definingParametersCovMatrix()(0,0) );	  
           if  ( d0_significance < 3.0 ) { isTightDecor( *mu_itr ) = 1; }
-        }	
-      }
-    }
+      }	
   }
   
   //*****************************************************************************************************************************
@@ -604,13 +512,7 @@ EL::StatusCode HTopMultilepAnalysis :: finalize ()
 
   Info("finalize()", "Deleting tool instances... \n");
 
-  if ( m_electronIsolationSelectionTool ) { delete m_electronIsolationSelectionTool; m_electronIsolationSelectionTool = nullptr; }
-  if ( m_LHToolTight2012 )                { delete m_LHToolTight2012; m_LHToolTight2012 = nullptr; }  
-  if ( m_LHToolMedium2012 )               { delete m_LHToolMedium2012; m_LHToolMedium2012 = nullptr; }    
-  if ( m_LHToolVeryTight2012 )            { delete m_LHToolVeryTight2012; m_LHToolVeryTight2012 = nullptr; }    
-  if ( m_MediumPP2012 )                   { delete m_MediumPP2012; m_MediumPP2012 = nullptr; }    
-  if ( m_TightPP2012 )                    { delete m_TightPP2012; m_TightPP2012 = nullptr; }    
-  if ( m_TauSelTool )                     { delete m_TauSelTool; m_TauSelTool = nullptr; }    
+  if ( m_TauSelTool ) { delete m_TauSelTool; m_TauSelTool = nullptr; }    
    
   return EL::StatusCode::SUCCESS;
 }
@@ -922,7 +824,10 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   mll02Decor(*eventInfo)   = -1.0;   
   mll12Decor(*eventInfo)   = -1.0;   
   mlll012Decor(*eventInfo) = -1.0; 
-  if ( leptons.size() > 0 ) {
+
+  unsigned int nLeptons = leptons.size();
+
+  if ( nLeptons > 0 ) {
     for( auto lep_it : leptons ) {
       isOSlepDecor(*(lep_it)) = 0; // false
       isSS12Decor(*(lep_it))  = 0; // false
@@ -931,27 +836,9 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   
   // initialize TLorentzVectors (for invariant mass computation)
   xAOD::IParticle::FourMom_t lepA_4mom, lepB_4mom, lepC_4mom;
-
-  // retrieve some previously applied event object decorations 
-  static SG::AuxElement::Accessor< char > isDilepton("isDilepton");
-  if ( !isDilepton.isAvailable(*eventInfo) ) {
-    Error("addChannelDecorations()", "isDilepton event decoration is not available. Aborting ");
-    return EL::StatusCode::FAILURE;
-  
-  }
-  static SG::AuxElement::Accessor< char > isTrilepton("isTrilepton");
-  if ( !isTrilepton.isAvailable(*eventInfo) ) {
-    Error("addChannelDecorations()", "isTrilepton event decoration is not available. Aborting ");
-    return EL::StatusCode::FAILURE;
-  }  
  
-  if ( isDilepton(*eventInfo) )
+  if ( nLeptons == 2 )
   {
-     // start from lepton container
-     if ( !( leptons.size() == 2 ) ) {
-     	Error("addChannelDecorations()", "Dilepton event. lepton container should have size 2. Aborting ");
-     	return EL::StatusCode::FAILURE;
-     }
      // retrieve lepA 
      const xAOD::IParticle* lepA = *(leptons.begin());
      // retrieve lepB
@@ -987,13 +874,8 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      ao->channelvariables.mTLep1 = mt;
      */
   }
-  else if ( isTrilepton(*eventInfo) )
+  else if ( nLeptons == 3 )
   {
-     // start from lepton container
-     if ( !( leptons.size() == 3 ) ) {
-     	Error("addChannelDecorations()", "Trilepton event. lepton container should have size 3. Aborting ");
-     	return EL::StatusCode::FAILURE;
-     }
      // retrieve lepA 
      const xAOD::IParticle* lepA = *(leptons.begin());
      // retrieve lepB
@@ -1086,22 +968,14 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   //
   //NB: MM and FF Method are applied only to the 2lep and the 3lep case when there are 2 SS leptons
   
+  unsigned int nLeptons = leptons.size();
+
   std::string region;
   // features of the two leptons that are considered for the MM
   float lepA_pt(-1.), lepA_eta(-999.), lepB_pt(-1.), lepB_eta(-999.);
   int lepA_flavour(0), lepB_flavour(0);
   
   // retrieve some previously applied event object decorations 
-  static SG::AuxElement::Accessor< char > isDilepton("isDilepton");
-  if ( !isDilepton.isAvailable(*eventInfo) ) {
-    Info("fakeWeightCalculator()", "isDilepton is not available. Aborting ");
-    return EL::StatusCode::FAILURE;
-  }
-  static SG::AuxElement::Accessor< char > isTrilepton("isTrilepton");
-  if ( !isTrilepton.isAvailable(*eventInfo) ) {
-    Error("fakeWeightCalculator()", "isTrilepton is not available. Aborting ");
-    return EL::StatusCode::FAILURE;
-  }  
   static SG::AuxElement::Accessor< char > isSS01("isSS01");
   if ( !isSS01.isAvailable(*eventInfo) ) {
     Error("fakeWeightCalculator()", "isSS01 is not available. Aborting ");
@@ -1127,17 +1001,13 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   isLLDecor( *eventInfo ) = 0;
    
   // Assigning lepton kin and identifying the signal region (not taking jets into account)
-  if ( isDilepton(*eventInfo) && isSS01(*eventInfo) )
+  if ( nLeptons == 2 && isSS01(*eventInfo) )
   {
         // start from lepton container
 	//
 	// ordering criterion is simply based on pT
-	// by construction, the first element of the map is the leading lepton, the second (and last!) element is the subleading
+	// by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
 	
-	if ( !( leptons.size() > 0 ) ) {
-           Error("fakeWeightCalculator()", "lepton container should be non-empty. Aborting ");
-    	   return EL::StatusCode::FAILURE;
-	}
 	// retrieve lep0 : the leading lepton
 	const xAOD::IParticle* lep0 = *(leptons.begin());
 	// retrieve lep1: the subleading lepton
@@ -1169,17 +1039,12 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	}	
 
   }
-  else if ( isTrilepton(*eventInfo) && isSS12(*eventInfo) )
+  else if ( nLeptons == 3 && isSS12(*eventInfo) )
   {        
         // start from lepton container
 	//
 	// for trilepton, ordering criterion is:
 	// lep0: the OS lepton - lep1: the SS lepton with min{ deltaR(lep0) } - lep2: the other SS lepton 
-
-	if ( !( leptons.size() > 0 ) ) {
-           Error("fakeWeightCalculator()", "lepton container should be non-empty. Aborting ");
-    	   return EL::StatusCode::FAILURE;
-	}
         
 	// retrieve some previously applied lepton object decorations 
   	static SG::AuxElement::Accessor< char > isOSlep("isOSlep");

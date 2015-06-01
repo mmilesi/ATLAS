@@ -28,13 +28,7 @@ class HTopMultilepTree : public HelpTreeBase
     int           	m_is_mc;
     float         	m_ystar;
     unsigned int  	m_categoryFlag;
-    unsigned int  	m_nBjetsMedium;
-    int  	  	m_isDilepton;
-    int  	  	m_isTrilepton;
-    int  	  	m_isDileptonSS;
-    int  	  	m_isDileptonSS_elel;
-    int  	  	m_isDileptonSS_mumu;	
-    int  	  	m_isDileptonSS_elmu;  
+    unsigned int  	m_nBjetsMedium;  
     int  	  	m_isSS01;
     int  	  	m_isSS12;
     std::vector<double> m_MMWeight;  
@@ -56,8 +50,6 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_jet_clean;
     
     /* muon variables */
-    std::vector<int> m_muon_isCombined;
-    std::vector<int> m_muon_isIsolated;
     std::vector<int> m_muon_isTight;
     std::vector<int> m_muon_isTruthMatched; 
     std::vector<int> m_muon_isTruthMatchedIso; 
@@ -111,12 +103,6 @@ class HTopMultilepTree : public HelpTreeBase
     /* electron variables */
     std::vector<float> m_electron_calo_eta;   
     std::vector<int>   m_electron_crack;   
-    std::vector<int>   m_electron_LHMedium;   
-    std::vector<int>   m_electron_LHTight;
-    std::vector<int>   m_electron_LHVeryTight; 
-    std::vector<int>   m_electron_MediumPP;   
-    std::vector<int>   m_electron_TightPP;   
-    std::vector<int>   m_electron_isIsolated;
     std::vector<int>   m_electron_isTight;
     std::vector<int>   m_electron_isTruthMatched; 
     std::vector<int>   m_electron_isTruthMatchedIso; 
@@ -235,7 +221,7 @@ class HTopMultilepTree : public HelpTreeBase
     
   public:
     
-    HTopMultilepTree(xAOD::TEvent * event, TTree* tree, TFile* file, const float units, bool debug);
+    HTopMultilepTree(xAOD::TEvent * event, TTree* tree, TFile* file, const float units = 1e3, bool debug = false, bool DC14 = false );
     ~HTopMultilepTree();
 
     void AddEventUser(const std::string detailStrUser = "");

@@ -32,8 +32,7 @@ private:
 
 public:
   // this is a standard constructor
-  HTopMultilepTreeAlgo ();                                           //!
-  HTopMultilepTreeAlgo (std::string name, std::string configName);   //!
+  HTopMultilepTreeAlgo ();  //!
 
   // these are the functions inherited from Algorithm
   

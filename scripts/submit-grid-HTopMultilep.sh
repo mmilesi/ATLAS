@@ -3,4 +3,4 @@
 #  -) data: 19.1.4.9
 #  -) mc:   19.1.4.7
 # ----------------------
-test-HTopMultilep --outDir outputtest_grid_HTopMultilep-DxAOD-DC14-8TeV --grid 1 --gridUser mmilesi --inGridDSList HTopMultilepAnalysis/doc/list-grid-DxAOD-DC14-8TeV.txt --inDSType DxAOD-DC14-8TeV --outDSID HTopMultilep.test23_DxAOD
+test-HTopMultilep --outDir outputtest_grid_HTopMultilep-DxAOD-2015-13TeV --grid 1 --gridUser mmilesi --inGridDSList HTopMultilepAnalysis/doc/list-grid-DxAOD-2015-13TeV.txt --inDSType DxAOD-2015-13TeV --outDSID HTopMultilep.001_DxAOD

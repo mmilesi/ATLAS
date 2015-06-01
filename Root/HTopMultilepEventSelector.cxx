@@ -420,14 +420,14 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
 
   // count number of bjets
   unsigned int nBjetsMedium(0);
-  // mc14_8TeV do not have MV1! Not even the derivation!
-  // static SG::AuxElement::Accessor< char > passBTagMediumAcc("passSelBTagMedium");
-  // for( auto jet_itr : *(inJets) ) {
-  //   if ( passBTagMediumAcc.isAvailable(*jet_itr) ) {
-  //     if ( passBTagMediumAcc(*jet_itr) ) nBjetsMedium++;
-  //   }
-  // }  
+  static SG::AuxElement::Accessor< char > passBTagMediumAcc("passSelBTagMedium");
+  for( auto jet_itr : *(inJets) ) {
+    if ( passBTagMediumAcc.isAvailable(*jet_itr) ) {
+      if ( passBTagMediumAcc(*jet_itr) ) nBjetsMedium++;
+    }
+  }  
   // DC14 8TeV use SV1+IP3D!
+  /*
   for ( auto jet_itr : *(inJets) ) {
     
     if ( jet_itr->btagging() ) {
@@ -442,6 +442,7 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
       
     }
   }
+  */
   bool passnBJetsMin(false); 
   passnBJetsMin  = ( nBjetsMedium >= m_n_bjets_min );
     
@@ -474,11 +475,10 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
     return EL::StatusCode::SUCCESS;
   }   
   
-  
   // add ConstDataVector(s) to TStore
-  // NB: you cannot store a sorted container to TStore!!
-  RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( leptonsCDV, "Leptons_Sel" ), "Failed to store const data container");
-  RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( selectedTaus, "Taus_Sel" ), "Failed to store const data container");
+  // NB: don't store a sorted container to TStore and expect it will be still sorted at retrieval!!
+  RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( leptonsCDV, "Leptons_Selected" ), "Failed to store const data container");
+  RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( selectedTaus, "Taus_Selected" ), "Failed to store const data container");
   
   m_numEventPass++;
   m_weightNumEventPass += mcEvtWeight;

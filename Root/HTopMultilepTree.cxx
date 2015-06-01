@@ -1,6 +1,6 @@
 #include "HTopMultilepAnalysis/HTopMultilepTree.h"
 
-HTopMultilepTree :: HTopMultilepTree(xAOD::TEvent* event, TTree* tree, TFile* file, const float units, bool debug ) : 
+HTopMultilepTree :: HTopMultilepTree(xAOD::TEvent* event, TTree* tree, TFile* file, const float units, bool debug, bool DC14 ) : 
   HelpTreeBase(event, tree, file, units, debug )
 {
   Info("HTopMultilepTree", "Creating output TTree");
@@ -17,12 +17,6 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("ystar",             &m_ystar, "ystar/F");
   m_tree->Branch("categoryFlag",      &m_categoryFlag, "categoryFlag/i"); 
   m_tree->Branch("nMediumBjets",      &m_nBjetsMedium, "nMediumBjets/i");
-  m_tree->Branch("isDilepton",        &m_isDilepton,  "isDilepton/I"); 
-  m_tree->Branch("isTrilepton",       &m_isTrilepton, "isTrilepton/I"); 
-  m_tree->Branch("isDileptonSS",      &m_isDileptonSS, "isDileptonSS/I"); 
-  m_tree->Branch("isDileptonSS_elel", &m_isDileptonSS_elel, "isDileptonSS_elel/I");   
-  m_tree->Branch("isDileptonSS_mumu", &m_isDileptonSS_mumu, "isDileptonSS_mumu/I");   
-  m_tree->Branch("isDileptonSS_elmu", &m_isDileptonSS_elmu, "isDileptonSS_elmu/I");    
   m_tree->Branch("isSS01",            &m_isSS01, "isSS01/I"); 
   m_tree->Branch("isSS12",            &m_isSS12, "isSS12/I"); 
   m_tree->Branch("MMWeight",          &m_MMWeight);
@@ -50,9 +44,7 @@ void HTopMultilepTree::AddJetsUser(const std::string detailStrUser)
 void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
 {
   // muon variables  
-  m_tree->Branch("muon_isCombined",                &m_muon_isCombined);
   m_tree->Branch("muon_isIsolated",                &m_muon_isIsolated);  
-  m_tree->Branch("muon_isTight",                   &m_muon_isTight);
   m_tree->Branch("muon_isTruthMatchedMu",          &m_muon_isTruthMatched); 
   m_tree->Branch("muon_isTruthMatchedMuIso",       &m_muon_isTruthMatchedIso); 
   m_tree->Branch("muon_isTruthMatchedMuNonIso",	   &m_muon_isTruthMatchedNonIso); 
@@ -108,12 +100,6 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   // electron variables  
   m_tree->Branch("el_calo_eta",                  &m_electron_calo_eta);
   m_tree->Branch("el_crack",                     &m_electron_crack);
-  m_tree->Branch("el_LHMedium",                  &m_electron_LHMedium);   
-  m_tree->Branch("el_LHTight",                   &m_electron_LHTight);
-  m_tree->Branch("el_LHVeryTight",               &m_electron_LHVeryTight);
-  m_tree->Branch("el_mediumPP",                  &m_electron_MediumPP);   
-  m_tree->Branch("el_tightPP",                   &m_electron_TightPP);  
-  m_tree->Branch("el_isIsolated",                &m_electron_isIsolated); 
   m_tree->Branch("el_isTight",                   &m_electron_isTight); 
   m_tree->Branch("el_isTruthMatchedEl",          &m_electron_isTruthMatched); 
   m_tree->Branch("el_isTruthMatchedElIso",       &m_electron_isTruthMatchedIso); 
@@ -245,8 +231,6 @@ void HTopMultilepTree::ClearEventUser() {
   
 void HTopMultilepTree::ClearMuonsUser() {  
   // muon variables 
-  m_muon_isCombined.clear(); 
-  m_muon_isIsolated.clear();
   m_muon_isTight.clear();
   m_muon_isTruthMatched.clear(); 
   m_muon_isTruthMatchedIso.clear(); 
@@ -300,12 +284,6 @@ void HTopMultilepTree::ClearElectronsUser() {
   // electron variables
   m_electron_calo_eta.clear();
   m_electron_crack.clear();
-  m_electron_LHMedium.clear();   
-  m_electron_LHTight.clear();
-  m_electron_LHVeryTight.clear(); 
-  m_electron_MediumPP.clear();  
-  m_electron_TightPP.clear(); 
-  m_electron_isIsolated.clear(); 
   m_electron_isTight.clear(); 
   m_electron_isTruthMatched.clear(); 
   m_electron_isTruthMatchedIso.clear(); 
@@ -432,12 +410,6 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo ) {
   m_ystar              =  ( eventInfo->isAvailable< float >( "ystar" ) )               ?  eventInfo->auxdecor< float >( "ystar" )                 :   999.0;
   m_nBjetsMedium       =  ( eventInfo->isAvailable< unsigned int >( "nBjetsMedium" ) ) ?  eventInfo->auxdecor< unsigned int >( "nBjetsMedium" )   :   -1;
   m_categoryFlag       =  ( eventInfo->isAvailable< unsigned int >( "categoryFlag" ) ) ?  eventInfo->auxdecor< unsigned int >( "categoryFlag" )   :   -1;
-  m_isDilepton         =  ( eventInfo->isAvailable< char >( "isDilepton" ) )           ?  eventInfo->auxdecor< char >( "isDilepton" )             :   -1;
-  m_isTrilepton        =  ( eventInfo->isAvailable< char >( "isTrilepton" ) )          ?  eventInfo->auxdecor< char >( "isTrilepton" )            :   -1;
-  m_isDileptonSS       =  ( eventInfo->isAvailable< char >( "isDileptonSS" ) )         ?  eventInfo->auxdecor< char >( "isDileptonSS" )           :   -1;
-  m_isDileptonSS_elel  =  ( eventInfo->isAvailable< char >( "isDileptonSS_elel" ) )    ?  eventInfo->auxdecor< char >( "isDileptonSS_elel" )      :   -1;
-  m_isDileptonSS_elmu  =  ( eventInfo->isAvailable< char >( "isDileptonSS_elmu" ) )    ?  eventInfo->auxdecor< char >( "isDileptonSS_elmu" )      :   -1;
-  m_isDileptonSS_mumu  =  ( eventInfo->isAvailable< char >( "isDileptonSS_mumu" ) )    ?  eventInfo->auxdecor< char >( "isDileptonSS_mumu" )      :   -1;
   m_isSS01   	       =  ( eventInfo->isAvailable< char >( "isSS01" ) )               ?  eventInfo->auxdecor< char >( "isSS01" )                 :   -1;
   m_isSS12   	       =  ( eventInfo->isAvailable< char >( "isSS12" ) )    	       ?  eventInfo->auxdecor< char >( "isSS12" )                 :   -1;
   m_MMWeight 	       =  ( eventInfo->isAvailable< std::vector<double> >( "MMWeight" ) )   ?  eventInfo->auxdecor< std::vector<double> >( "MMWeight" ) :  std::vector<double>( 5, 1.0 );
@@ -468,10 +440,6 @@ void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet ) {
 
 void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) {
   
-  int type = ( muon->muonType() == xAOD::Muon::Combined );
-  m_muon_isCombined.push_back( type );
-
-  static SG::AuxElement::Accessor< char > isIsolatedAcc("isIsolated");
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
   static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched"); 
   static SG::AuxElement::Accessor< char > isTruthMatchedAcc("isTruthMatched");
@@ -490,8 +458,6 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) {
   static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
   static SG::AuxElement::Accessor< char > isTagAcc("isTag");
  
-  if (  isIsolatedAcc.isAvailable( *muon ) ) {  m_muon_isIsolated.push_back( isIsolatedAcc( *muon ) ); } 
-  else {  m_muon_isIsolated.push_back(-1); }
   if (  isTightAcc.isAvailable( *muon ) ) {  m_muon_isTight.push_back( isTightAcc( *muon ) ); } 
   else {  m_muon_isTight.push_back(-1); }
   if ( isTrigMatchedAcc.isAvailable( *muon ) ) { m_muon_isTrigMatched.push_back( isTrigMatchedAcc( *muon ) ); }
@@ -597,12 +563,6 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) {
 
 void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron ) {
  
-  static SG::AuxElement::Accessor< char > isLHMediumAcc("isLHMedium"); 
-  static SG::AuxElement::Accessor< char > isLHTightAcc("isLHTight"); 
-  static SG::AuxElement::Accessor< char > isLHVeryTightAcc("isLHVeryTight"); 
-  static SG::AuxElement::Accessor< char > isCutBasedMediumPPAcc("isCutBasedMediumPP"); 
-  static SG::AuxElement::Accessor< char > isCutBasedTightPPAcc("isCutBasedTightPP"); 
-  static SG::AuxElement::Accessor< char > isIsolatedAcc("isIsolated");
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
   static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched"); 
   static SG::AuxElement::Accessor< char > isTruthMatchedAcc("isTruthMatched");
@@ -634,18 +594,6 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron ) {
     m_electron_crack.push_back(-1); 
   }
 
-  if (  isLHMediumAcc.isAvailable( *electron ) ) {  m_electron_LHMedium.push_back( isLHMediumAcc( *electron ) ); } 
-  else {  m_electron_LHMedium.push_back(-1); }
-  if (  isLHTightAcc.isAvailable( *electron ) ) {  m_electron_LHTight.push_back( isLHTightAcc( *electron ) ); } 
-  else {  m_electron_LHTight.push_back(-1); }
-  if (  isLHVeryTightAcc.isAvailable( *electron ) ) {  m_electron_LHVeryTight.push_back( isLHVeryTightAcc( *electron ) ); } 
-  else {  m_electron_LHVeryTight.push_back(-1); }
-  if (  isCutBasedMediumPPAcc.isAvailable( *electron ) ) {  m_electron_MediumPP.push_back( isCutBasedMediumPPAcc( *electron ) ); } 
-  else {  m_electron_MediumPP.push_back(-1); }
-  if (  isCutBasedTightPPAcc.isAvailable( *electron ) ) {  m_electron_TightPP.push_back( isCutBasedTightPPAcc( *electron ) ); } 
-  else {  m_electron_TightPP.push_back(-1); }
-  if (  isIsolatedAcc.isAvailable( *electron ) ) {  m_electron_isIsolated.push_back( isIsolatedAcc( *electron ) ); } 
-  else {  m_electron_isIsolated.push_back(-1); }
   if (  isTightAcc.isAvailable( *electron ) ) {  m_electron_isTight.push_back( isTightAcc( *electron ) ); } 
   else {  m_electron_isTight.push_back(-1); }
   if ( isTrigMatchedAcc.isAvailable( *electron ) ) { m_electron_isTrigMatched.push_back( isTrigMatchedAcc( *electron ) ); }

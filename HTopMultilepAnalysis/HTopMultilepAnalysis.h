@@ -54,28 +54,16 @@ public:
   std::string m_inContainerName_Muons;    
   /* Electrons */
   std::string m_inContainerName_Electrons;
+  /* Leptons */
+  std::string m_inContainerName_Leptons;
   /* Jets */
   std::string m_inContainerName_Jets;     
-    
-  // electron ID stuff
+  /* Taus */
+  std::string m_inContainerName_Taus;
+
   bool m_doLHPIDCut;  
   bool m_doCutBasedPIDCut;  
-    
-  // isolation for Muons
-  bool         m_doIsolation_Mu;
-  bool         m_useRelativeIso_Mu;
-  std::string  m_CaloBasedIsoType_Mu;
-  float        m_CaloBasedIsoCut_Mu;
-  std::string  m_TrackBasedIsoType_Mu;
-  float        m_TrackBasedIsoCut_Mu;
-  // isolation for Electrons
-  bool         m_doIsolation_El;
-  bool         m_useRelativeIso_El;
-  std::string  m_CaloBasedIsoType_El;
-  float        m_CaloBasedIsoCut_El;
-  std::string  m_TrackBasedIsoType_El;
-  float        m_TrackBasedIsoCut_El;
-  
+
 private:
 
   JetHists* m_jetPlots; //!

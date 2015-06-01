@@ -22,15 +22,35 @@
 // this is needed to distribute the algorithm to the workers
 ClassImp(HTopMultilepTreeAlgo)
 
-HTopMultilepTreeAlgo :: HTopMultilepTreeAlgo() {}
-
-HTopMultilepTreeAlgo :: HTopMultilepTreeAlgo (const std::string name, const std::string configName) :
-  TreeAlgo (name, configName), // probably no need to do this ...   
-  m_name(name),
-  m_configName(configName),
+HTopMultilepTreeAlgo :: HTopMultilepTreeAlgo () :
   m_helpTree(nullptr)
-{}
+{
+  this->SetName("HTopMultilepTreeAlgo"); // needed if you want to retrieve this algo with wk()->getAlg(ALG_NAME) downstream
 
+  m_evtDetailStr            = "";
+  m_trigDetailStr           = "";
+  m_jetTrigDetailStr        = "";
+  m_muDetailStr             = "";
+  m_elDetailStr             = "";
+  m_jetDetailStr            = "";
+  m_fatJetDetailStr         = "";
+  m_tauDetailStr            = "";
+
+  m_debug                   = false;
+
+  m_outHistDir              = false;
+
+  m_muContainerName         = "";
+  m_elContainerName         = "";
+  m_jetContainerName        = "";
+  m_fatJetContainerName     = "";
+  m_tauContainerName        = "";
+  m_lepContainerName        = "";
+
+  // DC14 switch for little things that need to happen to run
+  // for those samples with the corresponding packages
+  m_DC14                    = false;
+}
 
 EL::StatusCode HTopMultilepTreeAlgo :: initialize ()
 {
@@ -56,16 +76,23 @@ EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
     return EL::StatusCode::FAILURE;
   }
 
-  // get the input from user which determines which branches are created (and more)!
-  this->configure(); 
+  // get the input from user which determines which branches are created!
+  if ( this->configure() != EL::StatusCode::SUCCESS ) {
+    Error("treeInitialize()", "%s failed to properly configure. Exiting.", m_name.c_str() );
+    return EL::StatusCode::FAILURE;
+  } else {
+    Info("treeInitialize()", "Succesfully configured! ");
+  }
   
   // get the file we created already
-  TFile *outTreeFile = wk()->getOutputFile ("tree");  
-  m_helpTree =  new HTopMultilepTree( m_event, outTree, outTreeFile, 1e0, m_debug ); // 1e0 = MeV, default 1e3 = GeV
+  TFile* treeFile = wk()->getOutputFile ("tree");
+  m_helpTree = new HTopMultilepTree( m_event, outTree, treeFile, 1e0, m_debug, m_DC14 ); // 1e0 = MeV, default 1e3 = GeV
   // tell the tree to go into the file
-  outTree->SetDirectory( outTreeFile );
-  // uncomment if want to add to same file as ouput histograms
-  wk()->addOutput( outTree ); 
+  outTree->SetDirectory( treeFile );
+  // choose if want to add tree to same directory as ouput histograms
+  if ( m_outHistDir ) {
+    wk()->addOutput( outTree );
+  }
 
   m_helpTree->AddEvent(m_evtDetailStr);
 
@@ -84,37 +111,41 @@ EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
 
 EL::StatusCode HTopMultilepTreeAlgo :: configure ()
 {
-  
-  m_configName = gSystem->ExpandPathName( m_configName.c_str() );
-  RETURN_CHECK_CONFIG("HTopMultilepTreeAlgo::configure()", m_configName);
+  if (!getConfig().empty()) {
 
-  // the file exists, use TEnv to read it off
-  TEnv* config = new TEnv(m_configName.c_str());
-  
-  // read debug flag from .config file
-  m_debug                   = config->GetValue("Debug" ,      false );
-  
-  m_evtDetailStr            = config->GetValue("EventDetailStr",       "");
-  m_muDetailStr             = config->GetValue("MuonDetailStr",        "");
-  m_elDetailStr             = config->GetValue("ElectronDetailStr",    "");
-  m_jetDetailStr            = config->GetValue("JetDetailStr",         "");
-  m_fatJetDetailStr         = config->GetValue("FatJetDetailStr",      "");
-  m_tauDetailStr            = config->GetValue("TauDetailStr",         "kinematic");
+    // the file exists, use TEnv to read it off
+    TEnv* config = new TEnv(getConfig(true).c_str());
+    m_evtDetailStr            = config->GetValue("EventDetailStr",       m_evtDetailStr.c_str());
+    m_trigDetailStr           = config->GetValue("TrigDetailStr",        m_trigDetailStr.c_str());
+    m_jetTrigDetailStr        = config->GetValue("JetTrigDetailStr",     m_jetTrigDetailStr.c_str());
+    m_muDetailStr             = config->GetValue("MuonDetailStr",        m_muDetailStr.c_str());
+    m_elDetailStr             = config->GetValue("ElectronDetailStr",    m_elDetailStr.c_str());
+    m_jetDetailStr            = config->GetValue("JetDetailStr",         m_jetDetailStr.c_str());
+    m_fatJetDetailStr         = config->GetValue("FatJetDetailStr",      m_fatJetDetailStr.c_str());
+    m_tauDetailStr            = config->GetValue("TauDetailStr",         m_tauDetailStr.c_str());
 
-  m_muContainerName         = config->GetValue("MuonContainerName",       "");
-  m_elContainerName         = config->GetValue("ElectronContainerName",   "");
-  m_jetContainerName        = config->GetValue("JetContainerName",        "");
-  m_fatJetContainerName     = config->GetValue("FatJetContainerName",     "");
-  m_tauContainerName        = config->GetValue("TauContainerName",        "");
-  m_lepContainerName        = config->GetValue("LepContainerName",        "");
+    m_debug                   = config->GetValue("Debug" ,           m_debug);
 
-  Info("configure()", "Loaded in configuration values");
+    m_outHistDir              = config->GetValue("SameHistsOutDir",  m_outHistDir);
 
-  // everything seems preliminarily ok, let's print config and say we were successful
-  config->Print();
-  
-  delete config; config = nullptr;
-  
+    m_muContainerName         = config->GetValue("MuonContainerName",       m_muContainerName.c_str());
+    m_elContainerName         = config->GetValue("ElectronContainerName",   m_elContainerName.c_str());
+    m_jetContainerName        = config->GetValue("JetContainerName",        m_jetContainerName.c_str());
+    m_fatJetContainerName     = config->GetValue("FatJetContainerName",     m_fatJetContainerName.c_str());
+    m_tauContainerName        = config->GetValue("TauContainerName",        m_tauContainerName.c_str());
+    m_lepContainerName        = config->GetValue("LepContainerName",        m_lepContainerName.c_str());
+
+    // DC14 switch for little things that need to happen to run
+    // for those samples with the corresponding packages
+    m_DC14                    = config->GetValue("DC14", m_DC14);
+
+    Info("configure()", "Loaded in configuration values");
+
+    // everything seems preliminarily ok, let's print config and say we were successful
+    config->Print();
+
+    delete config; config = nullptr;
+  }
   return EL::StatusCode::SUCCESS;
 }
 
@@ -131,6 +162,16 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
   const xAOD::Vertex* primaryVertex = HelperFunctions::getPrimaryVertex( vertices );
 
   m_helpTree->FillEvent( eventInfo, m_event );
+
+  // Fill trigger information
+  if ( !m_trigDetailStr.empty() )    {
+    m_helpTree->FillTrigger( eventInfo );
+  }
+
+  // Fill jet trigger information
+  if ( !m_jetTrigDetailStr.empty() ) {
+    m_helpTree->FillJetTrigger();
+  }
 
   // for the containers the were supplied, fill the appropiate vectors
   
