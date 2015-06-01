@@ -1,3 +1,14 @@
+/*********************************************
+ *
+ * The actual HTopMultilepAnalysis algorithm.
+ * Here the user categorises events, and does 
+ * the background estimation.
+ *
+ * M. Milesi (marco.milesi@cern.ch)
+ * 
+ *
+ *********************************************/
+
 // EL include(s):
 #include <EventLoop/Job.h>
 #include <EventLoop/Worker.h>
@@ -21,14 +32,9 @@
 #include "xAODAnaHelpers/JetHists.h"
 #include "xAODAnaHelpers/tools/ReturnCheck.h"
 #include "xAODAnaHelpers/tools/ReturnCheckConfig.h"
-
 #include "HTopMultilepAnalysis/HTopMultilepAnalysis.h"
 
 // external tools include(s):
-#include "ElectronIsolationSelection/ElectronIsolationSelectionTool.h"
-#include "ElectronPhotonSelectorTools/AsgElectronLikelihoodTool.h"
-#include "ElectronPhotonSelectorTools/AsgElectronIsEMSelector.h"
-#include "ElectronPhotonSelectorTools/egammaPIDdefs.h"
 #include "TauAnalysisTools/TauSelectionTool.h"
 #include "TauAnalysisTools/Enums.h"
 
@@ -44,13 +50,7 @@
 ClassImp(HTopMultilepAnalysis)
 
 
-HTopMultilepAnalysis :: HTopMultilepAnalysis ()
-{}
-
-HTopMultilepAnalysis :: HTopMultilepAnalysis (std::string name, std::string configName) :
-  Algorithm(),
-  m_name(name),
-  m_configName(configName),
+HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_cutflowHist(nullptr),
   m_cutflowHistW(nullptr),
   m_histEventCount(nullptr),
@@ -67,44 +67,53 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis (std::string name, std::string conf
   // called on both the submission and the worker node.  Most of your
   // initialization code will go into histInitialize() and
   // initialize().
+
+  m_useCutFlow                = true; 
+  
+  m_inContainerName_Muons     = "";     
+  m_inContainerName_Electrons = "";     
+  m_inContainerName_Leptons   = "";
+  m_inContainerName_Jets      = "";
+  m_inContainerName_Taus      = "";      
+
+  m_doLHPIDCut                = true;  
+  m_doCutBasedPIDCut          = false;    
 }
 
 EL::StatusCode  HTopMultilepAnalysis :: configure ()
 {
-  Info("configure()", "Configuing HTopMultilepAnalysis Interface. User configuration read from : %s \n", m_configName.c_str());
+ 
+  if ( !getConfig().empty() ) {
+
+    // read in user configuration from text file
+    TEnv *config = new TEnv(getConfig(true).c_str());
+    if ( !config ) {
+      Error("BasicEventSelection()", "Failed to initialize reading of config file. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+    Info("configure()", "Configuing HTopMultilepAnalysis Interface. User configuration read from : %s \n", getConfig().c_str());
+    
+    // read debug flag from .config file
+    m_debug	                 = config->GetValue("Debug" ,      m_debug);
+    m_useCutFlow                 = config->GetValue("UseCutFlow",  m_useCutFlow);
+    
+    // input container to be read from TEvent or TStore
+    m_inContainerName_Electrons	 = config->GetValue("InputContainerElectrons", m_inContainerName_Electrons.c_str());
+    m_inContainerName_Muons	 = config->GetValue("InputContainerMuons",     m_inContainerName_Muons.c_str());
+    m_inContainerName_Leptons    = config->GetValue("InputContainerLeptons",   m_inContainerName_Leptons.c_str());
+    m_inContainerName_Jets	 = config->GetValue("InputContainerJets",      m_inContainerName_Jets.c_str());
+    m_inContainerName_Taus	 = config->GetValue("InputContainerTaus",      m_inContainerName_Taus.c_str());
+ 
+    // electron ID stuff - choose which one to define "Tight" electrons
+    m_doLHPIDCut                 = config->GetValue("DoLHPIDCut"          ,  m_doLHPIDCut );      
+    m_doCutBasedPIDCut           = config->GetValue("DoCutBasedPIDCut"    ,  m_doCutBasedPIDCut );
+ 
+    config->Print();
   
-  m_configName = gSystem->ExpandPathName( m_configName.c_str() );
-
-  RETURN_CHECK_CONFIG( "HTopMultilepAnalysis::configure()", m_configName);
-
-  TEnv* config = new TEnv(m_configName.c_str());
-
-  // read flags from .config file
-
-  m_debug                      = config->GetValue("Debug" ,      false );
-  m_useCutFlow                 = config->GetValue("UseCutFlow",  true);
-
-  // input containers
-  /* Muons */
-  m_inContainerName_Muons      = config->GetValue("InputContainerMuons",  "");
-  /* Electrons */
-  m_inContainerName_Electrons  = config->GetValue("InputContainerElectrons",  "");
-  /* Leptons */
-  m_inContainerName_Leptons    = config->GetValue("InputContainerLeptons",  "");
-  /* Jets */
-  m_inContainerName_Jets       = config->GetValue("InputContainerJets",  "");
-  /* Taus */
-  m_inContainerName_Taus       = config->GetValue("InputContainerTaus",  "");
-
-  // electron ID stuff - choose which one to define "Tight" electrons
-  m_doLHPIDCut                 = config->GetValue("DoLHPIDCut"          , true  );      
-  m_doCutBasedPIDCut           = config->GetValue("DoCutBasedPIDCut"    , false );
-
-  config->Print();
+    Info("configure()", "HTopMultilepAnalysis Interface succesfully configured! \n");
   
-  Info("configure()", "HTopMultilepAnalysis Interface succesfully configured! \n");
-  
-  delete config; config = nullptr;
+    delete config; config = nullptr;
+  }
 
   return EL::StatusCode::SUCCESS;
 }
@@ -135,36 +144,6 @@ EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
   // trees.  This method gets called before any input files are
   // connected.
   Info("histInitialize()", "Calling histInitialize \n");
-  
-  if ( m_useCutFlow ) {
-    TFile *fileCF  = wk()->getOutputFile ("cutflow");  
-    m_cutflowHist  = (TH1D*)fileCF->Get("cutflow");
-    m_cutflowHistW = (TH1D*)fileCF->Get("cutflow_weighted");
-
-    // label the bins for the cutflow
-    m_cutflow_bin     = m_cutflowHist->GetXaxis()->FindBin(m_name.c_str());
-    
-    // do it again for the weighted cutflow hist
-    m_cutflowHistW->GetXaxis()->FindBin(m_name.c_str());
-  }
-
-  TFile *fileMD = wk()->getOutputFile ("metadata");  
-  m_histEventCount  = (TH1D*)fileMD->Get("MetaData_EventCount");
-  if ( !m_histEventCount ) { 
-    Error("histInitialize()", "Failed to retrieve MetaData histogram. Aborting");
-    return EL::StatusCode::FAILURE;
-  }
-
-  /* for Francesco */
-  m_totalEvents  = new TH1D("TotalEvents",  "TotalEvents",  2, 1, 3);    
-  m_totalEventsW = new TH1D("TotalEventsW", "TotalEventsW", 2, 1, 3);  
-  wk() -> addOutput(m_totalEvents);
-  wk() -> addOutput(m_totalEventsW);
-  /*  ************ */
-  
-  m_jetPlots = new JetHists( "highPtJets", "clean" ); // second argument: "kinematic", "clean", "energy", "resolution"
-  m_jetPlots -> initialize();
-  m_jetPlots -> record( wk() );
 
   return EL::StatusCode::SUCCESS;
 }
@@ -211,6 +190,33 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
     Error("initialize()", "Failed to properly configure. Exiting." );
     return EL::StatusCode::FAILURE;
   }
+
+  if ( m_useCutFlow ) {
+    TFile *fileCF  = wk()->getOutputFile ("cutflow");  
+    m_cutflowHist  = (TH1D*)fileCF->Get("cutflow");
+    m_cutflowHistW = (TH1D*)fileCF->Get("cutflow_weighted");
+    // label the bins for the cutflow
+    m_cutflow_bin     = m_cutflowHist->GetXaxis()->FindBin(m_name.c_str());
+    // do it again for the weighted cutflow hist
+    m_cutflowHistW->GetXaxis()->FindBin(m_name.c_str());
+  }
+
+  TFile *fileMD = wk()->getOutputFile ("metadata");  
+  m_histEventCount  = (TH1D*)fileMD->Get("MetaData_EventCount");
+  if ( !m_histEventCount ) { 
+    Error("histInitialize()", "Failed to retrieve MetaData histogram. Aborting");
+    return EL::StatusCode::FAILURE;
+  }
+
+  /* for Francesco */
+  m_totalEvents  = new TH1D("TotalEvents",  "TotalEvents",  2, 1, 3);    
+  m_totalEventsW = new TH1D("TotalEventsW", "TotalEventsW", 2, 1, 3);  
+  wk() -> addOutput(m_totalEvents);
+  wk() -> addOutput(m_totalEventsW);
+  
+  m_jetPlots = new JetHists( "highPtJets", "clean" ); // second argument: "kinematic", "clean", "energy", "resolution"
+  m_jetPlots -> initialize();
+  m_jetPlots -> record( wk() );
   
   // initialise TauSelectionTool                                                                                                                        
   m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool" );
@@ -235,14 +241,13 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   // code will go.
   if ( m_debug ) { Info("execute()", "Applying analysis selection \n"); }
   
-  /* ************************************************ */
   /* for Francesco */
   double n_init_evts(0.);   
   double n_init_evts_W(0.);
   // if MetaData is not empty, use it!
-  if ( m_histEventCount->GetBinContent(1) > 0 && m_histEventCount->GetBinContent(4) > 0 ) {
+  if ( m_histEventCount->GetBinContent(1) > 0 && m_histEventCount->GetBinContent(3) > 0 ) {
     n_init_evts   =  m_histEventCount->GetBinContent(1);   //nEvents initial
-    n_init_evts_W =  m_histEventCount->GetBinContent(4);  // sumOfWeights initial
+    n_init_evts_W =  m_histEventCount->GetBinContent(3);  // sumOfWeights initial
   } 
   // ...else, retrieve it from cutflow
   else 
@@ -257,9 +262,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   m_totalEvents->SetBinContent( 2, n_init_evts );  
   m_totalEventsW->SetBinContent( 1, n_init_evts_W );
   m_totalEventsW->SetBinContent( 2, n_init_evts_W );   
-  /* ************************************************ */
   
-  //*****************************************************************************************************************************
   //---------------------------
   //***** Event information
   //--------------------------- 
@@ -327,7 +330,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 
   ++m_eventCounter;
   
-  //*****************************************************************************************************************************
   //-------------------------------
   //***** Retrieve event weight
   //-------------------------------  
@@ -362,22 +364,22 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     Info("execute()", "event weight = %2f. ", mcEvtWeight );
   }
 
-  // ****************************************************************************************************************************
+  //-------------------------------
+  //***** Fill cutflow histogram
+  //-------------------------------  
 
-  // fill cutflow histogram
   
   if ( m_useCutFlow ) {
     m_cutflowHist ->Fill( m_cutflow_bin, 1 );
     m_cutflowHistW->Fill( m_cutflow_bin, mcEvtWeight);
   }
     
-  //*****************************************************************************************************************************
   //-------------------------------
   //***** decorate selected events
   //-------------------------------
   
   // declare static event decorators
-  static SG::AuxElement::Decorator< float > 	   ystarDecor("ystar");
+  static SG::AuxElement::Decorator< float >  ystarDecor("ystar");
 
   // now decorate event!
   ystarDecor(*eventInfo) = ( signalJets->size() > 1 ) ? ( signalJets->at(0)->rapidity() - signalJets->at(1)->rapidity() ) / 2.0 : 999.0;
@@ -449,7 +451,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
       }	
   }
   
-  //*****************************************************************************************************************************
   //-------------------------------- 
   //***** histogram filling
   //--------------------------------
@@ -457,14 +458,13 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   // fill plots for all preselected jets
   //m_jetPlots->FillHistograms( jets, mcEvtWeight );
 
-//  for( auto jet_itr : *(preselJets) ) {
-//    // fill plots for a select set of jets - those > 50 GeV
-//   if ( jet_itr->pt() > 50e3 ) {
-//      m_jetPlots->execute( jet_itr, mcEvtWeight );
-//    }
-//  }
+  //  for( auto jet_itr : *(preselJets) ) {
+  //    // fill plots for a select set of jets - those > 50 GeV
+  //   if ( jet_itr->pt() > 50e3 ) {
+  //      m_jetPlots->execute( jet_itr, mcEvtWeight );
+  //    }
+  //  }
  
-  //*****************************************************************************************************************************
   //------------------------------------------- 
   //***** set T&P variables in r/f rate meas CR
   //------------------------------------------- 
@@ -473,7 +473,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     this->applyTagAndProbeRFRateMeasurement( eventInfo, leptonsSorted );
   }
   
-  //*****************************************************************************************************************************
   //----------------------------------- 
   //***** Matrix Method event weighting
   //-----------------------------------

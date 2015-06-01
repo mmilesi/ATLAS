@@ -227,15 +227,16 @@ int main ( int argc, char **argv ) {
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
     electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config");
     OverlapRemover* overlapRemoval                = new OverlapRemover();
-    overlapRemoval->setName("OverlapRemovalTool")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config");
+    overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config");
 
     //
     // 2. HTopMultilepAnalysis algorithms
     // 
     HTopMultilepEventSelector* eventSelect        = new HTopMultilepEventSelector();
     eventSelect->setName("eventSelect_skim")->setConfig(localDataDir+"Event/"+"eventSelect_HTopMultilep"+"_"+inDSType+".config");
-    TruthMatchAlgo* truthMatching                 = new TruthMatchAlgo("truthMatching",localDataDir+"Analysis/"+"analysis_TruthMatchingLeptons"+"_"+inDSType+".config"); 
-    HTopMultilepAnalysis* analysis 		  = new HTopMultilepAnalysis("analysis",localDataDir+"Analysis/"+"analysis_HTopMultilep"+"_"+inDSType+".config");
+    TruthMatchAlgo* truthMatching                 = new TruthMatchAlgo("truthMatching",localDataDir+"Analysis/"+"analysis_TruthMatchingLeptons"+"_"+inDSType+".config");
+    HTopMultilepAnalysis* analysis 		  = new HTopMultilepAnalysis();
+    analysis->setName("multilep_analysis")->setConfig(localDataDir+"Analysis/"+"analysis_HTopMultilep"+"_"+inDSType+".config");
     HTopMultilepTreeAlgo* out_tree 		  = new  HTopMultilepTreeAlgo();
     out_tree->setName("physics")->setConfig(localDataDir+"Tree/"+"tree_HTopMultilep"+"_"+inDSType+".config");
 

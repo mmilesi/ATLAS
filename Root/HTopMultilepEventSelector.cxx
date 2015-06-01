@@ -1,4 +1,4 @@
-/******************************************
+/*********************************************
  *
  * Module that performs an event selection for 
  * HTopMultilepAnalysis.
@@ -6,7 +6,7 @@
  * M. Milesi (marco.milesi@cern.ch)
  * 
  *
- ******************************************/
+ *********************************************/
 
 // c++ include(s):
 #include <iostream>
