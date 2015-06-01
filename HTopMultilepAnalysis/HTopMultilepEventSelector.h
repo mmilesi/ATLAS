@@ -13,6 +13,9 @@
 #include "xAODBase/IParticleContainer.h"
 #include "xAODBase/IParticle.h"
 
+// algorithm wrapper
+#include "xAODAnaHelpers/Algorithm.h"
+
 // ROOT include(s):
 #include "TH1D.h"
 
@@ -20,51 +23,29 @@ namespace TauAnalysisTools{
   class TauSelectionTool;
 }
 
-class HTopMultilepEventSelector : public EL::Algorithm
+class HTopMultilepEventSelector : public xAH::Algorithm
 {
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.
 public:
 
-  xAOD::TEvent *m_event;    //!
-  xAOD::TStore *m_store;    //!
-  int m_numEvent;           //!
-  int m_numObject;          //!
-  int m_numEventPass;       //!
-  int m_weightNumEventPass; //!
-  int m_numObjectPass;      //!
-
-  std::string m_name;
-  std::string m_configName;
-
-  bool m_debug;                 //!
-
-  // cutflow
-  bool m_useCutFlow;            //!
-  TH1D* m_cutflowHist;          //!
-  TH1D* m_cutflowHistW;         //!
-  int   m_cutflow_bin;          //!
-
-private:
-
-  // tools
-  TauAnalysisTools::TauSelectionTool         *m_TauSelTool ; //!
-
   // configuration variables
-  std::string    m_inContainerName_el;      // input container name
-  std::string    m_inContainerName_mu;      // input container name
-  std::string    m_inContainerName_jets;    // input container name
-  std::string    m_inContainerName_tau;     // input container name
+  std::string    m_inContainerName_el;     
+  std::string    m_inContainerName_mu;     
+  std::string    m_inContainerName_jets;   
+  std::string    m_inContainerName_tau;    
+
+  bool         m_useCutFlow;    
   
   bool         m_doMinObjCut;
   bool         m_doMaxObjCut;
-  unsigned int m_n_leptons_min;
-  unsigned int m_n_leptons_max;
-  unsigned int m_n_leptons_with_tau_min;
-  unsigned int m_n_jets_min;
-  unsigned int m_n_jets_max; 
-  unsigned int m_n_bjets_min;
-  unsigned int m_n_taus_min;
+  int          m_n_leptons_min;
+  int          m_n_leptons_max;
+  int          m_n_leptons_with_tau_min;
+  int          m_n_jets_min;
+  int          m_n_jets_max; 
+  int          m_n_bjets_min;
+  int          m_n_taus_min;
   bool         m_JetBDTLoose;
   bool         m_JetBDTMedium;
   bool         m_JetBDTTight;
@@ -72,22 +53,36 @@ private:
   float        m_leading_lep_pT_min;		       
   float        m_subleading_lep_pT_min; 
   float	       m_taus_pT_min;	 
-  
-  std::string              m_passAuxDecorKeys;  //!
-  std::string              m_failAuxDecorKeys;  //!
-  std::vector<std::string> m_passKeys;  //!
-  std::vector<std::string> m_failKeys;  //!
+
+  std::string              m_passAuxDecorKeys; 
+  std::string              m_failAuxDecorKeys; 
+  std::vector<std::string> m_passKeys; 
+  std::vector<std::string> m_failKeys; 
+
+private:
+  int m_numEvent;           //!
+  int m_numObject;          //!
+  int m_numEventPass;       //!
+  int m_weightNumEventPass; //!
+  int m_numObjectPass;      //!
+
+  // cutflow
+  TH1D* m_cutflowHist;      //!
+  TH1D* m_cutflowHistW;     //!
+  int   m_cutflow_bin;      //!
+
+  // tools
+  TauAnalysisTools::TauSelectionTool         *m_TauSelTool ; //!
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
   // node (done by the //!)
 public:
   // Tree *myTree; //!
-  // TH1 *myHist; //!
+  // TH1 *myHist;  //!
 
   // this is a standard constructor
   HTopMultilepEventSelector ();
-  HTopMultilepEventSelector (std::string name, std::string configName);
 
   ~HTopMultilepEventSelector();
 

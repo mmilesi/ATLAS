@@ -53,13 +53,7 @@
 ClassImp(HTopMultilepEventSelector)
 
 
-HTopMultilepEventSelector :: HTopMultilepEventSelector () {
-}
-
-HTopMultilepEventSelector :: HTopMultilepEventSelector (std::string name, std::string configName) :
-  Algorithm(),
-  m_name(name),
-  m_configName(configName),
+HTopMultilepEventSelector :: HTopMultilepEventSelector () :
   m_cutflowHist(nullptr),
   m_cutflowHistW(nullptr),
   m_TauSelTool(nullptr)
@@ -72,76 +66,109 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector (std::string name, std::s
   // initialize().
 
   Info("HTopMultilepEventSelector()", "Calling constructor \n");
+
+  m_useCutFlow           = true; 
+  
+  m_inContainerName_el   = "";     
+  m_inContainerName_mu   = "";     
+  m_inContainerName_jets = "";   
+  m_inContainerName_tau  = "";    
+  
+  m_doMinObjCut = false;
+  m_doMaxObjCut = false;
+  m_n_leptons_min = 0;
+  m_n_leptons_max = 100000;
+  m_n_leptons_with_tau_min = 0;
+  m_n_jets_min = 0;
+  m_n_jets_max = 100000; 
+  m_n_bjets_min = 0;
+  m_n_taus_min = 0;
+  m_JetBDTLoose = true;
+  m_JetBDTMedium = false;
+  m_JetBDTTight = false;
+  m_leptons_eta_max = 2.6;	    
+  m_leading_lep_pT_min = 0.0;    
+  m_subleading_lep_pT_min = 0.0; 
+  m_taus_pT_min = 0.0;    
+  
+  m_passAuxDecorKeys = ""; 
+  m_failAuxDecorKeys = ""; 
+  
 }
 
 HTopMultilepEventSelector::~HTopMultilepEventSelector() {}
 
 EL::StatusCode  HTopMultilepEventSelector :: configure ()
 {
-  Info("configure()", "Configuing HTopMultilepEventSelector Interface. User configuration read from : %s \n", m_configName.c_str());
 
-  m_configName = gSystem->ExpandPathName( m_configName.c_str() );
-  RETURN_CHECK_CONFIG( "HTopMultilepEventSelector::configure()", m_configName);
+  if ( !getConfig().empty() ) {
 
-  TEnv* config = new TEnv(m_configName.c_str());
-
-  // read debug flag from .config file
-  m_debug         = config->GetValue("Debug" ,      false );
-  m_useCutFlow    = config->GetValue("UseCutFlow",  true);
-
-  // input container to be read from TEvent or TStore
-  m_inContainerName_el         = config->GetValue("InputContainerElectrons",  "");
-  m_inContainerName_mu         = config->GetValue("InputContainerMuons",  "");
-  m_inContainerName_jets       = config->GetValue("InputContainerJets",  "");
-  m_inContainerName_tau        = config->GetValue("InputContainerTaus",  "");
-
-  // configurable cuts
-  m_doMinObjCut                         = config->GetValue("DoMinObjCut", false);
-  m_doMaxObjCut                         = config->GetValue("DoMaxObjCut", false);  
-  m_n_leptons_min                       = config->GetValue("MinNLeptons",  0);
-  m_n_leptons_max			= config->GetValue("MaxNLeptons",  100000);
-  m_n_leptons_with_tau_min              = config->GetValue("MinNLeptonsWithTau", 0);
-  m_n_taus_min                          = config->GetValue("MinNTaus", 0);
-  m_n_jets_min                          = config->GetValue("MinNJets", 0); 
-  m_n_jets_max                          = config->GetValue("MaxNJets", 100000); 
-  m_n_bjets_min                         = config->GetValue("MinNBjets", 0); 
-  m_JetBDTLoose                         = config->GetValue("JetBDTLoose",  true);
-  m_JetBDTMedium                        = config->GetValue("JetBDTMedium", false);
-  m_JetBDTTight                         = config->GetValue("JetBDTTight",  false);
-  m_leading_lep_pT_min                  = config->GetValue("pTMinLeadingLepton",  0.0);
-  m_subleading_lep_pT_min               = config->GetValue("pTMinSubLeadingLepton",  0.0);
-  m_taus_pT_min                         = config->GetValue("pTMinTaus",  0.0);
-
-  // parse and split by comma
-  std::string token;
-
-  m_passAuxDecorKeys        = config->GetValue("PassDecorKeys", "");
-  std::istringstream ss(m_passAuxDecorKeys);
-  while ( std::getline(ss, token, ',') ) {
-    m_passKeys.push_back(token);
-  }
-
-  m_failAuxDecorKeys        = config->GetValue("FailDecorKeys", "");
-  ss.str(m_failAuxDecorKeys);
-  while ( std::getline(ss, token, ',') ) {
-    m_failKeys.push_back(token);
-  }
-
-  if ( m_inContainerName_el.empty() ) {
-    Error("configure()", "InputContainerElectrons is empty!");
+    // read in user configuration from text file
+    TEnv *config = new TEnv(getConfig(true).c_str());
+    if ( !config ) {
+      Error("BasicEventSelection()", "Failed to initialize reading of config file. Exiting." );
+      return EL::StatusCode::FAILURE;
+    }
+    Info("configure()", "Configuing HTopMultilepEventSelector Interface. User configuration read from : %s \n", getConfig().c_str());
+ 
+    // read debug flag from .config file
+    m_debug	                 = config->GetValue("Debug" ,      m_debug);
+    m_useCutFlow                 = config->GetValue("UseCutFlow",  m_useCutFlow);
+    
+    // input container to be read from TEvent or TStore
+    m_inContainerName_el	 = config->GetValue("InputContainerElectrons", m_inContainerName_el.c_str());
+    m_inContainerName_mu	 = config->GetValue("InputContainerMuons",     m_inContainerName_mu.c_str());
+    m_inContainerName_jets	 = config->GetValue("InputContainerJets",      m_inContainerName_jets.c_str());
+    m_inContainerName_tau	 = config->GetValue("InputContainerTaus",      m_inContainerName_tau.c_str());
+    
+    // configurable cuts
+    m_doMinObjCut		 = config->GetValue("DoMinObjCut", m_doMinObjCut);
+    m_doMaxObjCut		 = config->GetValue("DoMaxObjCut", m_doMaxObjCut);  
+    m_n_leptons_min		 = config->GetValue("MinNLeptons", m_n_leptons_min);
+    m_n_leptons_max		 = config->GetValue("MaxNLeptons", m_n_leptons_max);
+    m_n_leptons_with_tau_min	 = config->GetValue("MinNLeptonsWithTau", m_n_leptons_with_tau_min);
+    m_n_taus_min		 = config->GetValue("MinNTaus", m_n_taus_min);
+    m_n_jets_min		 = config->GetValue("MinNJets", m_n_jets_min); 
+    m_n_jets_max		 = config->GetValue("MaxNJets", m_n_jets_max); 
+    m_n_bjets_min		 = config->GetValue("MinNBjets", m_n_bjets_min); 
+    m_JetBDTLoose		 = config->GetValue("JetBDTLoose",  m_JetBDTLoose);
+    m_JetBDTMedium		 = config->GetValue("JetBDTMedium", m_JetBDTMedium);
+    m_JetBDTTight		 = config->GetValue("JetBDTTight",  m_JetBDTTight);
+    m_leading_lep_pT_min	 = config->GetValue("pTMinLeadingLepton",  m_leading_lep_pT_min);
+    m_subleading_lep_pT_min	 = config->GetValue("pTMinSubLeadingLepton",  m_subleading_lep_pT_min);
+    m_taus_pT_min		 = config->GetValue("pTMinTaus",  m_taus_pT_min);
+    
+    // parse and split by comma
+    std::string token;
+    
+    m_passAuxDecorKeys        = config->GetValue("PassDecorKeys", m_passAuxDecorKeys.c_str());
+    std::istringstream ss(m_passAuxDecorKeys);
+    while ( std::getline(ss, token, ',') ) {
+      m_passKeys.push_back(token);
+    }
+    
+    m_failAuxDecorKeys        = config->GetValue("FailDecorKeys", "");
+    ss.str(m_failAuxDecorKeys);
+    while ( std::getline(ss, token, ',') ) {
+      m_failKeys.push_back(token);
+    }
+    
+    if ( m_inContainerName_el.empty() ) {
+      Error("configure()", "InputContainerElectrons is empty!");
+      return EL::StatusCode::FAILURE;
+    }
+    if ( m_inContainerName_mu.empty() ) {
+      Error("configure()", "InputContainerMuons is empty!");
     return EL::StatusCode::FAILURE;
+    }
+    
+    config->Print();
+    
+    Info("configure()", "HTopMultilepEventSelector Interface succesfully configured! \n");
+    
+    delete config; config = nullptr;
   }
-  if ( m_inContainerName_mu.empty() ) {
-    Error("configure()", "InputContainerMuons is empty!");
-    return EL::StatusCode::FAILURE;
-  }
-
-  config->Print();
-
-  Info("configure()", "HTopMultilepEventSelector Interface succesfully configured! \n");
-
-  delete config; config = nullptr;
-
+  
   return EL::StatusCode::SUCCESS;
 }
 
@@ -174,13 +201,6 @@ EL::StatusCode HTopMultilepEventSelector :: histInitialize ()
   // connected.
 
   Info("histInitialize()", "Calling histInitialize \n");
-  if ( m_useCutFlow ) {
-    TFile *file = wk()->getOutputFile("cutflow");
-    m_cutflowHist  = (TH1D*)file->Get("cutflow");
-    m_cutflowHistW = (TH1D*)file->Get("cutflow_weighted");
-    m_cutflow_bin  = m_cutflowHist->GetXaxis()->FindBin(m_name.c_str());
-    m_cutflowHistW->GetXaxis()->FindBin(m_name.c_str());
-  }
 
   return EL::StatusCode::SUCCESS;
 }
@@ -228,6 +248,14 @@ EL::StatusCode HTopMultilepEventSelector :: initialize ()
 
   m_event = wk()->xaodEvent();
   m_store = wk()->xaodStore();
+
+  if ( m_useCutFlow ) {
+    TFile *file = wk()->getOutputFile("cutflow");
+    m_cutflowHist  = (TH1D*)file->Get("cutflow");
+    m_cutflowHistW = (TH1D*)file->Get("cutflow_weighted");
+    m_cutflow_bin  = m_cutflowHist->GetXaxis()->FindBin(m_name.c_str());
+    m_cutflowHistW->GetXaxis()->FindBin(m_name.c_str());
+  }
 
   Info("initialize()", "Number of events: %lld ", m_event->getEntries() );
 
@@ -384,9 +412,9 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
 
   bool passTwoLep(false), passLepTau(false), passnLepMax(false);
 
-  if ( nLeptons >= m_n_leptons_min		   &&
-       leading_lep_pt > m_leading_lep_pT_min       &&
-       subleading_lep_pt > m_subleading_lep_pT_min  
+  if ( nLeptons >= static_cast<unsigned int>(m_n_leptons_min)		      &&
+       leading_lep_pt > static_cast<unsigned int>(m_leading_lep_pT_min)       &&
+       subleading_lep_pt > static_cast<unsigned int>(m_subleading_lep_pT_min)  
        ) { 
     if ( m_debug ) {
       Info("execute()","\t leading lepton pT = %2f    ", leading_lep_pt / 1e3 );
@@ -395,9 +423,9 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
     passTwoLep = true;
   }
 
-  if ( nLeptons >= m_n_leptons_with_tau_min	   &&
-       nSelectedTaus >= m_n_taus_min		   &&
-       leading_lep_pt > m_leading_lep_pT_min     
+  if ( nLeptons >= static_cast<unsigned int>(m_n_leptons_with_tau_min)	   &&
+       nSelectedTaus >= static_cast<unsigned int>(m_n_taus_min)		   &&
+       leading_lep_pt > static_cast<unsigned int>(m_leading_lep_pT_min)     
        ) { 
     if ( m_debug ) {
       for ( auto tau_it : *selectedTaus ) {
@@ -408,26 +436,29 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
     passLepTau = true;
   }
    
-  if ( nLeptons <= m_n_leptons_max ) {
+  if ( nLeptons <= static_cast<unsigned int>(m_n_leptons_max) ) {
     passnLepMax = true;
   } 
    
   // count number of LF jets 
   unsigned int nJets = inJets->size();
   bool passnJetsMin(false), passnJetsMax(false); 
-  passnJetsMin  = ( nJets >= m_n_jets_min );
-  passnJetsMax  = ( nJets <= m_n_jets_max );
+  passnJetsMin  = ( nJets >= static_cast<unsigned int>(m_n_jets_min) );
+  passnJetsMax  = ( nJets <= static_cast<unsigned int>(m_n_jets_max) );
 
   // count number of bjets
+  
   unsigned int nBjetsMedium(0);
+  /*
   static SG::AuxElement::Accessor< char > passBTagMediumAcc("passSelBTagMedium");
   for( auto jet_itr : *(inJets) ) {
     if ( passBTagMediumAcc.isAvailable(*jet_itr) ) {
       if ( passBTagMediumAcc(*jet_itr) ) nBjetsMedium++;
     }
-  }  
+  } 
+  */ 
   // DC14 8TeV use SV1+IP3D!
-  /*
+  ///*
   for ( auto jet_itr : *(inJets) ) {
     
     if ( jet_itr->btagging() ) {
@@ -442,9 +473,9 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
       
     }
   }
-  */
+  //*/
   bool passnBJetsMin(false); 
-  passnBJetsMin  = ( nBjetsMedium >= m_n_bjets_min );
+  passnBJetsMin  = ( nBjetsMedium >= static_cast<unsigned int>(m_n_bjets_min) );
     
   
   if ( m_debug ) {

@@ -232,7 +232,8 @@ int main ( int argc, char **argv ) {
     //
     // 2. HTopMultilepAnalysis algorithms
     // 
-    HTopMultilepEventSelector* eventSelect        = new HTopMultilepEventSelector("eventSelect_skim",localDataDir+"Event/"+"eventSelect_HTopMultilep"+"_"+inDSType+".config");
+    HTopMultilepEventSelector* eventSelect        = new HTopMultilepEventSelector();
+    eventSelect->setName("eventSelect_skim")->setConfig(localDataDir+"Event/"+"eventSelect_HTopMultilep"+"_"+inDSType+".config");
     TruthMatchAlgo* truthMatching                 = new TruthMatchAlgo("truthMatching",localDataDir+"Analysis/"+"analysis_TruthMatchingLeptons"+"_"+inDSType+".config"); 
     HTopMultilepAnalysis* analysis 		  = new HTopMultilepAnalysis("analysis",localDataDir+"Analysis/"+"analysis_HTopMultilep"+"_"+inDSType+".config");
     HTopMultilepTreeAlgo* out_tree 		  = new  HTopMultilepTreeAlgo();
@@ -256,20 +257,20 @@ int main ( int argc, char **argv ) {
     job.algsAdd( electronCalib );
     job.algsAdd( electronSelect_preselection );
     job.algsAdd( jetSelect_selection );
-    job.algsAdd( bjetEffCorr_btag );
+    //job.algsAdd( bjetEffCorr_btag );
     job.algsAdd( overlapRemoval );
     job.algsAdd( muonSelect_selection );
     job.algsAdd( muonEffCorr );
     job.algsAdd( electronSelect_selection );
     job.algsAdd( electronEffCorr );
     job.algsAdd( eventSelect );
-    job.algsAdd( truthMatching );
-    job.algsAdd( analysis );
+    //job.algsAdd( truthMatching );
+    //job.algsAdd( analysis );
     if ( make_histos ) {
       job.algsAdd( jetHistsAlgo_all );
       job.algsAdd( jetHistsAlgo_signal );
     }
-    job.algsAdd( out_tree );
+    //job.algsAdd( out_tree );
     
     // ************************************************************
     // **** submit the job to the driver
