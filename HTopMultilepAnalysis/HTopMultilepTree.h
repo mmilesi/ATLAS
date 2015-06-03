@@ -61,6 +61,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int> m_muon_isChFlip; 
     std::vector<int> m_muon_isBrem;
     std::vector<int> m_muon_truthType;  
+    std::vector<int> m_muon_truthPdgId;  
     std::vector<int> m_muon_truthOrigin; 
     std::vector<int> m_muon_truthStatus;  
     std::vector<int> m_muon_isTrigMatched;
@@ -80,7 +81,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_muon_tag_isTruthMatchedUnknown;
     std::vector<int>   m_muon_tag_isChFlip; 
     std::vector<int>   m_muon_tag_isBrem;
-    std::vector<int>   m_muon_tag_truthType;  
+    std::vector<int>   m_muon_tag_truthType; 
+    std::vector<int>   m_muon_tag_truthPdgId; 
     std::vector<int>   m_muon_tag_truthOrigin; 
     std::vector<int>   m_muon_tag_truthStatus;  
     /* muon PROBE variables */
@@ -96,7 +98,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_muon_probe_isTruthMatchedUnknown;
     std::vector<int>   m_muon_probe_isChFlip; 
     std::vector<int>   m_muon_probe_isBrem;
-    std::vector<int>   m_muon_probe_truthType;  
+    std::vector<int>   m_muon_probe_truthType; 
+    std::vector<int>   m_muon_probe_truthPdgId; 
     std::vector<int>   m_muon_probe_truthOrigin; 
     std::vector<int>   m_muon_probe_truthStatus;  
     
@@ -114,6 +117,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_isChFlip; 
     std::vector<int>   m_electron_isBrem; 
     std::vector<int>   m_electron_truthType;
+    std::vector<int>   m_electron_truthPdgId;
     std::vector<int>   m_electron_truthOrigin; 
     std::vector<int>   m_electron_truthStatus;
     std::vector<int>   m_electron_isTrigMatched; 
@@ -133,7 +137,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_tag_isTruthMatchedUnknown;
     std::vector<int>   m_electron_tag_isChFlip; 
     std::vector<int>   m_electron_tag_isBrem;
-    std::vector<int>   m_electron_tag_truthType;  
+    std::vector<int>   m_electron_tag_truthType;
+    std::vector<int>   m_electron_tag_truthPdgId; 
     std::vector<int>   m_electron_tag_truthOrigin; 
     std::vector<int>   m_electron_tag_truthStatus;  
     /* electron PROBE variables */
@@ -149,7 +154,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_probe_isTruthMatchedUnknown;
     std::vector<int>   m_electron_probe_isChFlip; 
     std::vector<int>   m_electron_probe_isBrem;
-    std::vector<int>   m_electron_probe_truthType;  
+    std::vector<int>   m_electron_probe_truthType; 
+    std::vector<int>   m_electron_probe_truthPdgId; 
     std::vector<int>   m_electron_probe_truthOrigin; 
     std::vector<int>   m_electron_probe_truthStatus;         
        
@@ -172,7 +178,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_isTruthMatchedUnknown;
     std::vector<int>   m_lepton_isChFlip; 
     std::vector<int>   m_lepton_isBrem; 
-    std::vector<int>   m_lepton_truthType;      
+    std::vector<int>   m_lepton_truthType; 
+    std::vector<int>   m_lepton_truthPdgId;     
     std::vector<int>   m_lepton_truthOrigin; 
     std::vector<int>   m_lepton_truthStatus; 
     std::vector<int>   m_lepton_isTrigMatched; 
@@ -194,7 +201,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_tag_isTruthMatchedUnknown;
     std::vector<int>   m_lepton_tag_isChFlip; 
     std::vector<int>   m_lepton_tag_isBrem;
-    std::vector<int>   m_lepton_tag_truthType;  
+    std::vector<int>   m_lepton_tag_truthType;
+    std::vector<int>   m_lepton_tag_truthPdgId; 
     std::vector<int>   m_lepton_tag_truthOrigin; 
     std::vector<int>   m_lepton_tag_truthStatus;  
     /* lepton PROBE variables */
@@ -213,6 +221,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_probe_isChFlip; 
     std::vector<int>   m_lepton_probe_isBrem;
     std::vector<int>   m_lepton_probe_truthType;  
+    std::vector<int>   m_lepton_probe_truthPdgId;
     std::vector<int>   m_lepton_probe_truthOrigin; 
     std::vector<int>   m_lepton_probe_truthStatus;         
 
@@ -225,20 +234,23 @@ class HTopMultilepTree : public HelpTreeBase
     ~HTopMultilepTree();
 
     void AddEventUser(const std::string detailStrUser = "");
+    void AddTriggerUser(const std::string detailStrUser = "");
     void AddMuonsUser(const std::string detailStrUser = "");
     void AddElectronsUser(const std::string detailStrUser = "");
     void AddJetsUser(const std::string detailStrUser = "");
     void AddTausUser(const std::string detailStrUser = "");
     void AddLeptons();
     
-    void ClearEventUser();      
+    void ClearEventUser();
+    void ClearTriggerUser();
     void ClearMuonsUser();   
     void ClearElectronsUser();  
     void ClearJetsUser();
     void ClearTausUser();
     void ClearLeptons();
-         
+    
     void FillEventUser( const xAOD::EventInfo* eventInfo );
+    void FillTriggerUser( const xAOD::EventInfo* eventInfo );
     void FillMuonsUser( const xAOD::Muon* muon );
     void FillElectronsUser( const xAOD::Electron* electron );
     void FillJetsUser( const xAOD::Jet* jet );

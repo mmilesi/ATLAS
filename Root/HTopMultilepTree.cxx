@@ -34,6 +34,12 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("isProbeMuEvent",    &m_isProbeMuEvent,     "isProbeMuEvent/I");
 }
 
+void HTopMultilepTree::AddTriggerUser(const std::string detailStrUser)
+{
+  // trigger variables
+}
+
+
 void HTopMultilepTree::AddJetsUser(const std::string detailStrUser)
 {
   // jet variables
@@ -55,6 +61,7 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   m_tree->Branch("muon_isChFlip",	           &m_muon_isChFlip); 
   m_tree->Branch("muon_isBrem",	                   &m_muon_isBrem); 
   m_tree->Branch("muon_truthType",                 &m_muon_truthType);  
+  m_tree->Branch("muon_truthPdgId",                &m_muon_truthPdgId);  
   m_tree->Branch("muon_truthOrigin",               &m_muon_truthOrigin);
   m_tree->Branch("muon_truthStatus",               &m_muon_truthStatus);  
   m_tree->Branch("muon_isTrigMatched",             &m_muon_isTrigMatched); 
@@ -75,6 +82,7 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   m_tree->Branch("muon_tag_isChFlip",	                 &m_muon_tag_isChFlip  		        );  
   m_tree->Branch("muon_tag_isBrem",	                 &m_muon_tag_isBrem			);  
   m_tree->Branch("muon_tag_truthType",                   &m_muon_tag_truthType 		        );  
+  m_tree->Branch("muon_tag_truthPdgId",                  &m_muon_tag_truthPdgId 		);  
   m_tree->Branch("muon_tag_truthOrigin",                 &m_muon_tag_truthOrigin		);  
   m_tree->Branch("muon_tag_truthStatus",                 &m_muon_tag_truthStatus		);  
   // muon PROBE variables 								
@@ -91,6 +99,7 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   m_tree->Branch("muon_probe_isChFlip",	                 &m_muon_probe_isChFlip                 );
   m_tree->Branch("muon_probe_isBrem",	                 &m_muon_probe_isBrem                   );
   m_tree->Branch("muon_probe_truthType",                 &m_muon_probe_truthType                );
+  m_tree->Branch("muon_probe_truthPdgId",                &m_muon_probe_truthPdgId               );
   m_tree->Branch("muon_probe_truthOrigin",               &m_muon_probe_truthOrigin              );
   m_tree->Branch("muon_probe_truthStatus",               &m_muon_probe_truthStatus              );    
 }
@@ -110,7 +119,8 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   m_tree->Branch("el_isTruthMatchedUnknown",     &m_electron_isTruthMatchedUnknown); 
   m_tree->Branch("el_isChFlip",                  &m_electron_isChFlip); 
   m_tree->Branch("el_isBrem",                    &m_electron_isBrem); 
-  m_tree->Branch("el_truthType",	         &m_electron_truthType);  
+  m_tree->Branch("el_truthType",	         &m_electron_truthType); 
+  m_tree->Branch("el_truthPdgId",	         &m_electron_truthPdgId);    
   m_tree->Branch("el_truthOrigin",               &m_electron_truthOrigin);  
   m_tree->Branch("el_truthStatus",               &m_electron_truthStatus);  
   m_tree->Branch("el_isTrigMatched",             &m_electron_isTrigMatched);
@@ -130,6 +140,7 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   m_tree->Branch("el_tag_isTruthMatchedUnknown",       &m_electron_tag_isTruthMatchedUnknown	  );
   m_tree->Branch("el_tag_isChFlip",	               &m_electron_tag_isChFlip		          );
   m_tree->Branch("el_tag_isBrem",	               &m_electron_tag_isBrem  		          );
+  m_tree->Branch("el_tag_truthPdgId",                  &m_electron_tag_truthPdgId		  ); 
   m_tree->Branch("el_tag_truthType",                   &m_electron_tag_truthType		  );
   m_tree->Branch("el_tag_truthOrigin",                 &m_electron_tag_truthOrigin		  );
   m_tree->Branch("el_tag_truthStatus",                 &m_electron_tag_truthStatus		  );
@@ -147,6 +158,7 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   m_tree->Branch("el_probe_isChFlip",	               &m_electron_probe_isChFlip		  );
   m_tree->Branch("el_probe_isBrem",	               &m_electron_probe_isBrem		          );
   m_tree->Branch("el_probe_truthType",                 &m_electron_probe_truthType                );
+  m_tree->Branch("el_probe_truthPdgId",                &m_electron_probe_truthPdgId                );
   m_tree->Branch("el_probe_truthOrigin",               &m_electron_probe_truthOrigin              );
   m_tree->Branch("el_probe_truthStatus",               &m_electron_probe_truthStatus              );
 }
@@ -174,7 +186,8 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_isTruthMatchedUnknown",      &m_lepton_isTruthMatchedUnknown); 
   m_tree->Branch("lep_isChFlip",                   &m_lepton_isChFlip); 
   m_tree->Branch("lep_isBrem",                     &m_lepton_isBrem); 
-  m_tree->Branch("lep_truthType",                  &m_lepton_truthType);  
+  m_tree->Branch("lep_truthType",                  &m_lepton_truthType); 
+  m_tree->Branch("lep_truthPdgId",                 &m_lepton_truthPdgId);  
   m_tree->Branch("lep_truthOrigin",                &m_lepton_truthOrigin);
   m_tree->Branch("lep_truthStatus",                &m_lepton_truthStatus);  
   m_tree->Branch("lep_isTrigMatched",              &m_lepton_isTrigMatched);
@@ -197,6 +210,7 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_tag_isChFlip",	                &m_lepton_tag_isChFlip			);  
   m_tree->Branch("lep_tag_isBrem",	                &m_lepton_tag_isBrem			);  
   m_tree->Branch("lep_tag_truthType",                   &m_lepton_tag_truthType		        );  
+  m_tree->Branch("lep_tag_truthPdgId",                  &m_lepton_tag_truthPdgId		);  
   m_tree->Branch("lep_tag_truthOrigin",                 &m_lepton_tag_truthOrigin 		);  
   m_tree->Branch("lep_tag_truthStatus",                 &m_lepton_tag_truthStatus 		);  
   // lepton PROBE variables 								
@@ -215,6 +229,7 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_probe_isChFlip",	                &m_lepton_probe_isChFlip		);
   m_tree->Branch("lep_probe_isBrem",	                &m_lepton_probe_isBrem		        );
   m_tree->Branch("lep_probe_truthType",                 &m_lepton_probe_truthType               );
+  m_tree->Branch("lep_probe_truthPdgId",                &m_lepton_probe_truthPdgId              ); 
   m_tree->Branch("lep_probe_truthOrigin",               &m_lepton_probe_truthOrigin             );
   m_tree->Branch("lep_probe_truthStatus",               &m_lepton_probe_truthStatus             );
 }
@@ -227,6 +242,9 @@ void HTopMultilepTree::AddTausUser(const std::string detailStrUser)
 void HTopMultilepTree::ClearEventUser() {
   m_MMWeight.clear();
   m_FFWeight.clear();
+}
+
+void HTopMultilepTree::ClearTriggerUser() {
 }
   
 void HTopMultilepTree::ClearMuonsUser() {  
@@ -242,6 +260,7 @@ void HTopMultilepTree::ClearMuonsUser() {
   m_muon_isChFlip.clear(); 
   m_muon_isBrem.clear();
   m_muon_truthType.clear();  
+  m_muon_truthPdgId.clear();
   m_muon_truthOrigin.clear();
   m_muon_truthStatus.clear();  
   m_muon_isTrigMatched.clear();
@@ -260,7 +279,8 @@ void HTopMultilepTree::ClearMuonsUser() {
   m_muon_tag_isTruthMatchedUnknown.clear();
   m_muon_tag_isChFlip.clear(); 
   m_muon_tag_isBrem.clear();
-  m_muon_tag_truthType.clear();  
+  m_muon_tag_truthType.clear(); 
+  m_muon_tag_truthPdgId.clear();
   m_muon_tag_truthOrigin.clear(); 
   m_muon_tag_truthStatus.clear();  
   m_muon_probe_pt.clear();
@@ -275,7 +295,8 @@ void HTopMultilepTree::ClearMuonsUser() {
   m_muon_probe_isTruthMatchedUnknown.clear();
   m_muon_probe_isChFlip.clear(); 
   m_muon_probe_isBrem.clear();
-  m_muon_probe_truthType.clear();  
+  m_muon_probe_truthType.clear(); 
+  m_muon_probe_truthPdgId.clear();
   m_muon_probe_truthOrigin.clear(); 
   m_muon_probe_truthStatus.clear();  
 }  
@@ -294,7 +315,8 @@ void HTopMultilepTree::ClearElectronsUser() {
   m_electron_isTruthMatchedUnknown.clear();
   m_electron_isChFlip.clear(); 
   m_electron_isBrem.clear();
-  m_electron_truthType.clear();      
+  m_electron_truthType.clear();  
+  m_electron_truthPdgId.clear();     
   m_electron_truthOrigin.clear(); 
   m_electron_truthStatus.clear();      
   m_electron_isOS.clear();
@@ -313,6 +335,7 @@ void HTopMultilepTree::ClearElectronsUser() {
   m_electron_tag_isChFlip.clear(); 
   m_electron_tag_isBrem.clear();
   m_electron_tag_truthType.clear();  
+  m_electron_tag_truthPdgId.clear();
   m_electron_tag_truthOrigin.clear(); 
   m_electron_tag_truthStatus.clear();  
   m_electron_probe_pt.clear();
@@ -327,7 +350,8 @@ void HTopMultilepTree::ClearElectronsUser() {
   m_electron_probe_isTruthMatchedUnknown.clear();
   m_electron_probe_isChFlip.clear(); 
   m_electron_probe_isBrem.clear();
-  m_electron_probe_truthType.clear();  
+  m_electron_probe_truthType.clear(); 
+  m_electron_probe_truthPdgId.clear(); 
   m_electron_probe_truthOrigin.clear(); 
   m_electron_probe_truthStatus.clear();  
 }
@@ -358,7 +382,8 @@ void HTopMultilepTree::ClearLeptons() {
   m_lepton_isTruthMatchedUnknown.clear();
   m_lepton_isChFlip.clear(); 
   m_lepton_isBrem.clear();
-  m_lepton_truthType.clear();      
+  m_lepton_truthType.clear(); 
+  m_lepton_truthPdgId.clear();       
   m_lepton_truthOrigin.clear(); 
   m_lepton_truthStatus.clear();      
   m_lepton_isOS.clear();
@@ -378,7 +403,8 @@ void HTopMultilepTree::ClearLeptons() {
   m_lepton_tag_isTruthMatchedUnknown.clear();
   m_lepton_tag_isChFlip.clear(); 
   m_lepton_tag_isBrem.clear();
-  m_lepton_tag_truthType.clear();  
+  m_lepton_tag_truthType.clear();
+  m_lepton_tag_truthPdgId.clear();   
   m_lepton_tag_truthOrigin.clear(); 
   m_lepton_tag_truthStatus.clear();  
   m_lepton_probe_pt.clear();
@@ -395,7 +421,8 @@ void HTopMultilepTree::ClearLeptons() {
   m_lepton_probe_isTruthMatchedUnknown.clear();
   m_lepton_probe_isChFlip.clear(); 
   m_lepton_probe_isBrem.clear();
-  m_lepton_probe_truthType.clear();  
+  m_lepton_probe_truthType.clear();
+  m_lepton_probe_truthPdgId.clear();    
   m_lepton_probe_truthOrigin.clear(); 
   m_lepton_probe_truthStatus.clear();   
 }  
@@ -427,6 +454,11 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo ) {
   m_isProbeMuEvent     =  ( eventInfo->isAvailable< char >( "isProbeMuEvent" ) )       ?  eventInfo->auxdecor< char >( "isProbeMuEvent" )         :  -1;
 }
 
+void HTopMultilepTree::FillTriggerUser( const xAOD::EventInfo* eventInfo ) { 
+}
+
+
+
 void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet ) {
   
   static SG::AuxElement::Accessor< char > isCleanAcc("cleanJet");
@@ -451,9 +483,10 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) {
   static SG::AuxElement::Accessor< char > isTruthMatchedUnknownAcc("isTruthMatchedUnknown");  
   static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
   static SG::AuxElement::Accessor< char > isBremAcc("isBrem");
-  static SG::AuxElement::Accessor< int >  truthMatchTypeAcc("truthMatchType");    
-  static SG::AuxElement::Accessor< int >  truthMatchOriginAcc("truthMatchOrigin");
-  static SG::AuxElement::Accessor< int >  truthMatchStatusAcc("truthMatchStatus");    
+  static SG::AuxElement::ConstAccessor< int >  truthTypeAcc("truthType"); 
+  static SG::AuxElement::Accessor< int >  truthPdgIdAcc("truthPdgId");      
+  static SG::AuxElement::ConstAccessor< int >  truthOriginAcc("truthOrigin");
+  static SG::AuxElement::Accessor< int >  truthStatusAcc("truthStatus");    
   static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
   static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
   static SG::AuxElement::Accessor< char > isTagAcc("isTag");
@@ -480,11 +513,13 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) {
   else   { m_muon_isChFlip.push_back(-1); }  
   if ( isBremAcc.isAvailable( *muon ) ) { m_muon_isBrem.push_back( isBremAcc( *muon ) ); }
   else   { m_muon_isBrem.push_back(-1); }
-  if ( truthMatchTypeAcc.isAvailable( *muon ) ) { m_muon_truthType.push_back( truthMatchTypeAcc( *muon ) ); }
+   if ( truthPdgIdAcc.isAvailable( *muon ) ) { m_muon_truthPdgId.push_back( truthPdgIdAcc( *muon ) ); }
+  else   { m_muon_truthPdgId.push_back(0); } 
+  if ( truthTypeAcc.isAvailable( *muon ) ) { m_muon_truthType.push_back( truthTypeAcc( *muon ) ); }
   else   { m_muon_truthType.push_back(0); } 
-  if ( truthMatchOriginAcc.isAvailable( *muon ) ) { m_muon_truthOrigin.push_back( truthMatchOriginAcc( *muon ) ); }
+  if ( truthOriginAcc.isAvailable( *muon ) ) { m_muon_truthOrigin.push_back( truthOriginAcc( *muon ) ); }
   else   { m_muon_truthOrigin.push_back(0); } 
-  if ( truthMatchStatusAcc.isAvailable( *muon ) ) { m_muon_truthStatus.push_back( truthMatchStatusAcc( *muon ) ); }
+  if ( truthStatusAcc.isAvailable( *muon ) ) { m_muon_truthStatus.push_back( truthStatusAcc( *muon ) ); }
   else   { m_muon_truthStatus.push_back(0); } 
   if (  isOSlepAcc.isAvailable( *muon ) ) { m_muon_isOS.push_back( isOSlepAcc( *muon ) ); }
   else  { m_muon_isOS.push_back(-1); }
@@ -518,11 +553,13 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) {
       else { m_muon_tag_isChFlip.push_back( -1 ); }
       if ( isBremAcc.isAvailable( *muon ) )                  { m_muon_tag_isBrem.push_back(  isBremAcc( *muon ) ); }
       else { m_muon_tag_isBrem.push_back( -1 ); }
-      if ( truthMatchTypeAcc.isAvailable( *muon ) )          { m_muon_tag_truthType.push_back(  truthMatchTypeAcc( *muon ) ); }
+      if ( truthPdgIdAcc.isAvailable( *muon ) )          { m_muon_tag_truthPdgId.push_back(  truthPdgIdAcc( *muon ) ); }
+      else { m_muon_tag_truthPdgId.push_back( -1 ); }
+      if ( truthTypeAcc.isAvailable( *muon ) )          { m_muon_tag_truthType.push_back(  truthTypeAcc( *muon ) ); }
       else { m_muon_tag_truthType.push_back( -1 ); }
-      if ( truthMatchOriginAcc.isAvailable( *muon ) )        { m_muon_tag_truthOrigin.push_back(  truthMatchOriginAcc( *muon ) ); }
+      if ( truthOriginAcc.isAvailable( *muon ) )        { m_muon_tag_truthOrigin.push_back(  truthOriginAcc( *muon ) ); }
       else { m_muon_tag_truthOrigin.push_back( -1 ); }
-      if ( truthMatchStatusAcc.isAvailable( *muon ) )        { m_muon_tag_truthStatus.push_back(  truthMatchStatusAcc( *muon ) ); }
+      if ( truthStatusAcc.isAvailable( *muon ) )        { m_muon_tag_truthStatus.push_back(  truthStatusAcc( *muon ) ); }
       else { m_muon_tag_truthStatus.push_back( -1 ); }
     } else {
     // fill muon PROBE variables
@@ -548,11 +585,13 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) {
       else { m_muon_probe_isChFlip.push_back( -1 ); }
       if ( isBremAcc.isAvailable( *muon ) )                  { m_muon_probe_isBrem.push_back(  isBremAcc( *muon ) ); }
       else { m_muon_probe_isBrem.push_back( -1 ); }
-      if ( truthMatchTypeAcc.isAvailable( *muon ) )          { m_muon_probe_truthType.push_back(  truthMatchTypeAcc( *muon ) ); }
+      if ( truthPdgIdAcc.isAvailable( *muon ) )          { m_muon_probe_truthPdgId.push_back(  truthPdgIdAcc( *muon ) ); }
+      else { m_muon_probe_truthPdgId.push_back( -1 ); }
+      if ( truthTypeAcc.isAvailable( *muon ) )          { m_muon_probe_truthType.push_back(  truthTypeAcc( *muon ) ); }
       else { m_muon_probe_truthType.push_back( -1 ); }
-      if ( truthMatchOriginAcc.isAvailable( *muon ) )        { m_muon_probe_truthOrigin.push_back(  truthMatchOriginAcc( *muon ) ); }
+      if ( truthOriginAcc.isAvailable( *muon ) )        { m_muon_probe_truthOrigin.push_back(  truthOriginAcc( *muon ) ); }
       else { m_muon_probe_truthOrigin.push_back( -1 ); }
-      if ( truthMatchStatusAcc.isAvailable( *muon ) )        { m_muon_probe_truthStatus.push_back(  truthMatchStatusAcc( *muon ) ); }
+      if ( truthStatusAcc.isAvailable( *muon ) )        { m_muon_probe_truthStatus.push_back(  truthStatusAcc( *muon ) ); }
       else { m_muon_probe_truthStatus.push_back( -1 ); }
     }
     
@@ -574,9 +613,10 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron ) {
   static SG::AuxElement::Accessor< char > isTruthMatchedUnknownAcc("isTruthMatchedUnknown");  
   static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
   static SG::AuxElement::Accessor< char > isBremAcc("isBrem");  
-  static SG::AuxElement::Accessor< int >  truthMatchTypeAcc("truthMatchType");    
-  static SG::AuxElement::Accessor< int >  truthMatchOriginAcc("truthMatchOrigin");   
-  static SG::AuxElement::Accessor< int >  truthMatchStatusAcc("truthMatchStatus");    
+  static SG::AuxElement::ConstAccessor< int >  truthTypeAcc("truthType");    
+  static SG::AuxElement::Accessor< int >  truthPdgIdAcc("truthPdgId");    
+  static SG::AuxElement::ConstAccessor< int >  truthOriginAcc("truthOrigin");   
+  static SG::AuxElement::Accessor< int >  truthStatusAcc("truthStatus");    
   static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
   static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
   static SG::AuxElement::Accessor< char > isTagAcc("isTag");
@@ -616,11 +656,13 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron ) {
   else   { m_electron_isChFlip.push_back(-1); }  
   if ( isBremAcc.isAvailable( *electron ) ) { m_electron_isBrem.push_back( isBremAcc( *electron ) ); }
   else   { m_electron_isBrem.push_back(-1); }
-  if ( truthMatchTypeAcc.isAvailable( *electron ) ) { /*std::cout << "branch el_truthType: " << truthMatchTypeAcc( *electron ) << std::endl;*/ m_electron_truthType.push_back( truthMatchTypeAcc( *electron ) ); }
+  if ( truthPdgIdAcc.isAvailable( *electron ) ) { /*std::cout << "branch el_truthPdgId: " << truthPdgIdAcc( *electron ) << std::endl;*/ m_electron_truthPdgId.push_back( truthPdgIdAcc( *electron ) ); }
+  else   { m_electron_truthPdgId.push_back(0); } 
+  if ( truthTypeAcc.isAvailable( *electron ) ) { /*std::cout << "branch el_truthType: " << truthTypeAcc( *electron ) << std::endl */; m_electron_truthType.push_back( truthTypeAcc( *electron ) ); }
   else   { m_electron_truthType.push_back(0); } 
-  if ( truthMatchOriginAcc.isAvailable( *electron ) ) { m_electron_truthOrigin.push_back( truthMatchOriginAcc( *electron ) ); }
+  if ( truthOriginAcc.isAvailable( *electron ) ) { m_electron_truthOrigin.push_back( truthOriginAcc( *electron ) ); }
   else   { m_electron_truthOrigin.push_back(0); } 
-  if ( truthMatchStatusAcc.isAvailable( *electron ) ) { m_electron_truthStatus.push_back( truthMatchStatusAcc( *electron ) ); }
+  if ( truthStatusAcc.isAvailable( *electron ) ) { m_electron_truthStatus.push_back( truthStatusAcc( *electron ) ); }
   else   { m_electron_truthStatus.push_back(0); } 
   if (  isOSlepAcc.isAvailable( *electron ) ) { m_electron_isOS.push_back( isOSlepAcc( *electron ) ); }
   else  { m_electron_isOS.push_back(-1); }
@@ -654,11 +696,13 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron ) {
       else { m_electron_tag_isChFlip.push_back( -1 ); }
       if ( isBremAcc.isAvailable( *electron ) )                  { m_electron_tag_isBrem.push_back(  isBremAcc( *electron ) ); }
       else { m_electron_tag_isBrem.push_back( -1 ); }
-      if ( truthMatchTypeAcc.isAvailable( *electron ) )          { m_electron_tag_truthType.push_back(  truthMatchTypeAcc( *electron ) ); }
+      if ( truthPdgIdAcc.isAvailable( *electron ) )          { m_electron_tag_truthPdgId.push_back(  truthPdgIdAcc( *electron ) ); }
+      else { m_electron_tag_truthPdgId.push_back( -1 ); }
+      if ( truthTypeAcc.isAvailable( *electron ) )          { m_electron_tag_truthType.push_back(  truthTypeAcc( *electron ) ); }
       else { m_electron_tag_truthType.push_back( -1 ); }
-      if ( truthMatchOriginAcc.isAvailable( *electron ) )        { m_electron_tag_truthOrigin.push_back(  truthMatchOriginAcc( *electron ) ); }
+      if ( truthOriginAcc.isAvailable( *electron ) )        { m_electron_tag_truthOrigin.push_back(  truthOriginAcc( *electron ) ); }
       else { m_electron_tag_truthOrigin.push_back( -1 ); }
-      if ( truthMatchStatusAcc.isAvailable( *electron ) )        { m_electron_tag_truthStatus.push_back(  truthMatchStatusAcc( *electron ) ); }
+      if ( truthStatusAcc.isAvailable( *electron ) )        { m_electron_tag_truthStatus.push_back(  truthStatusAcc( *electron ) ); }
       else { m_electron_tag_truthStatus.push_back( -1 ); }
     } else {
     // fill electron PROBE variables
@@ -684,11 +728,13 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron ) {
       else { m_electron_probe_isChFlip.push_back( -1 ); }
       if ( isBremAcc.isAvailable( *electron ) )                  { m_electron_probe_isBrem.push_back(  isBremAcc( *electron ) ); }
       else { m_electron_probe_isBrem.push_back( -1 ); }
-      if ( truthMatchTypeAcc.isAvailable( *electron ) )          { m_electron_probe_truthType.push_back(  truthMatchTypeAcc( *electron ) ); }
+      if ( truthPdgIdAcc.isAvailable( *electron ) )          { m_electron_probe_truthPdgId.push_back(  truthPdgIdAcc( *electron ) ); }
+      else { m_electron_probe_truthPdgId.push_back( -1 ); }
+      if ( truthTypeAcc.isAvailable( *electron ) )          { m_electron_probe_truthType.push_back(  truthTypeAcc( *electron ) ); }
       else { m_electron_probe_truthType.push_back( -1 ); }
-      if ( truthMatchOriginAcc.isAvailable( *electron ) )        { m_electron_probe_truthOrigin.push_back(  truthMatchOriginAcc( *electron ) ); }
+      if ( truthOriginAcc.isAvailable( *electron ) )        { m_electron_probe_truthOrigin.push_back(  truthOriginAcc( *electron ) ); }
       else { m_electron_probe_truthOrigin.push_back( -1 ); }
-      if ( truthMatchStatusAcc.isAvailable( *electron ) )        { m_electron_probe_truthStatus.push_back(  truthMatchStatusAcc( *electron ) ); }
+      if ( truthStatusAcc.isAvailable( *electron ) )        { m_electron_probe_truthStatus.push_back(  truthStatusAcc( *electron ) ); }
       else { m_electron_probe_truthStatus.push_back( -1 ); }
     }
     
@@ -727,9 +773,10 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons ) {
   static SG::AuxElement::Accessor< char > isTruthMatchedUnknownAcc("isTruthMatchedUnknown");  
   static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
   static SG::AuxElement::Accessor< char > isBremAcc("isBrem");  
-  static SG::AuxElement::Accessor< int >  truthMatchTypeAcc("truthMatchType");    
-  static SG::AuxElement::Accessor< int >  truthMatchOriginAcc("truthMatchOrigin");   
-  static SG::AuxElement::Accessor< int >  truthMatchStatusAcc("truthMatchStatus");    
+  static SG::AuxElement::ConstAccessor< int >  truthTypeAcc("truthType");  
+  static SG::AuxElement::Accessor< int >  truthPdgIdAcc("truthPdgId");  
+  static SG::AuxElement::ConstAccessor< int >  truthOriginAcc("truthOrigin");   
+  static SG::AuxElement::Accessor< int >  truthStatusAcc("truthStatus");    
   static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
   static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
   static SG::AuxElement::Accessor< char > isTagAcc("isTag");  
@@ -780,11 +827,13 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons ) {
       else   { m_lepton_isChFlip.push_back(-1); }  
       if ( isBremAcc.isAvailable( *lep_itr ) ) { m_lepton_isBrem.push_back( isBremAcc( *lep_itr ) ); }
       else   { m_lepton_isBrem.push_back(-1); }
-      if ( truthMatchTypeAcc.isAvailable( *lep_itr ) ) { m_lepton_truthType.push_back( truthMatchTypeAcc( *lep_itr ) ); }
+      if ( truthPdgIdAcc.isAvailable( *lep_itr ) ) { m_lepton_truthPdgId.push_back( truthPdgIdAcc( *lep_itr ) ); }
+      else   { m_lepton_truthPdgId.push_back(0); } 
+      if ( truthTypeAcc.isAvailable( *lep_itr ) ) { m_lepton_truthType.push_back( truthTypeAcc( *lep_itr ) ); }
       else   { m_lepton_truthType.push_back(0); } 
-      if ( truthMatchOriginAcc.isAvailable( *lep_itr ) ) { m_lepton_truthOrigin.push_back( truthMatchOriginAcc( *lep_itr ) ); }
+      if ( truthOriginAcc.isAvailable( *lep_itr ) ) { m_lepton_truthOrigin.push_back( truthOriginAcc( *lep_itr ) ); }
       else   { m_lepton_truthOrigin.push_back(0); } 
-      if ( truthMatchStatusAcc.isAvailable( *lep_itr ) ) { m_lepton_truthStatus.push_back( truthMatchStatusAcc( *lep_itr ) ); }
+      if ( truthStatusAcc.isAvailable( *lep_itr ) ) { m_lepton_truthStatus.push_back( truthStatusAcc( *lep_itr ) ); }
       else   { m_lepton_truthStatus.push_back(0); } 
       if (  isOSlepAcc.isAvailable( *lep_itr ) ) { m_lepton_isOS.push_back( isOSlepAcc( *lep_itr ) ); }
       else  { m_lepton_isOS.push_back(-1); }
@@ -820,11 +869,13 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons ) {
     	  else { m_lepton_tag_isChFlip.push_back( -1 ); }
     	  if ( isBremAcc.isAvailable( *lep_itr ) )		    { m_lepton_tag_isBrem.push_back(  isBremAcc( *lep_itr ) ); }
     	  else { m_lepton_tag_isBrem.push_back( -1 ); }
-    	  if ( truthMatchTypeAcc.isAvailable( *lep_itr ) )	    { m_lepton_tag_truthType.push_back(  truthMatchTypeAcc( *lep_itr ) ); }
+   	  if ( truthPdgIdAcc.isAvailable( *lep_itr ) )	    { m_lepton_tag_truthPdgId.push_back(  truthPdgIdAcc( *lep_itr ) ); }
+    	  else { m_lepton_tag_truthPdgId.push_back( -1 ); }
+    	  if ( truthTypeAcc.isAvailable( *lep_itr ) )	    { m_lepton_tag_truthType.push_back(  truthTypeAcc( *lep_itr ) ); }
     	  else { m_lepton_tag_truthType.push_back( -1 ); }
-    	  if ( truthMatchOriginAcc.isAvailable( *lep_itr ) )	    { m_lepton_tag_truthOrigin.push_back(  truthMatchOriginAcc( *lep_itr ) ); }
+    	  if ( truthOriginAcc.isAvailable( *lep_itr ) )	    { m_lepton_tag_truthOrigin.push_back(  truthOriginAcc( *lep_itr ) ); }
     	  else { m_lepton_tag_truthOrigin.push_back( -1 ); }
-    	  if ( truthMatchStatusAcc.isAvailable( *lep_itr ) )	    { m_lepton_tag_truthStatus.push_back(  truthMatchStatusAcc( *lep_itr ) ); }
+    	  if ( truthStatusAcc.isAvailable( *lep_itr ) )	    { m_lepton_tag_truthStatus.push_back(  truthStatusAcc( *lep_itr ) ); }
     	  else { m_lepton_tag_truthStatus.push_back( -1 ); }
     	} else {
     	// fill lepton PROBE variables
@@ -852,11 +903,13 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons ) {
     	  else { m_lepton_probe_isChFlip.push_back( -1 ); }
     	  if ( isBremAcc.isAvailable( *lep_itr ) )		    { m_lepton_probe_isBrem.push_back(  isBremAcc( *lep_itr ) ); }
     	  else { m_lepton_probe_isBrem.push_back( -1 ); }
-    	  if ( truthMatchTypeAcc.isAvailable( *lep_itr ) )	    { m_lepton_probe_truthType.push_back(  truthMatchTypeAcc( *lep_itr ) ); }
+   	  if ( truthPdgIdAcc.isAvailable( *lep_itr ) )	    { m_lepton_probe_truthPdgId.push_back(  truthPdgIdAcc( *lep_itr ) ); }
+    	  else { m_lepton_probe_truthPdgId.push_back( -1 ); }
+    	  if ( truthTypeAcc.isAvailable( *lep_itr ) )	    { m_lepton_probe_truthType.push_back(  truthTypeAcc( *lep_itr ) ); }
     	  else { m_lepton_probe_truthType.push_back( -1 ); }
-    	  if ( truthMatchOriginAcc.isAvailable( *lep_itr ) )	    { m_lepton_probe_truthOrigin.push_back(  truthMatchOriginAcc( *lep_itr ) ); }
+    	  if ( truthOriginAcc.isAvailable( *lep_itr ) )	    { m_lepton_probe_truthOrigin.push_back(  truthOriginAcc( *lep_itr ) ); }
     	  else { m_lepton_probe_truthOrigin.push_back( -1 ); }
-    	  if ( truthMatchStatusAcc.isAvailable( *lep_itr ) )	    { m_lepton_probe_truthStatus.push_back(  truthMatchStatusAcc( *lep_itr ) ); }
+    	  if ( truthStatusAcc.isAvailable( *lep_itr ) )	    { m_lepton_probe_truthStatus.push_back(  truthStatusAcc( *lep_itr ) ); }
     	  else { m_lepton_probe_truthStatus.push_back( -1 ); }
     	}
     	

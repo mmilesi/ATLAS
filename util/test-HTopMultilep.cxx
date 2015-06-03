@@ -222,7 +222,7 @@ int main ( int argc, char **argv ) {
     electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config");
     BJetEfficiencyCorrector* bjetEffCorr_btag     = new BJetEfficiencyCorrector();
     bjetEffCorr_btag->setName("bjetEffCor_btag")->setConfig(localDataDir+"Jets/"+"bjetEffCorr"+"_"+inDSType+".config");
-    MuonSelector* muonSelect_selection         = new MuonSelector();
+    MuonSelector* muonSelect_selection            = new MuonSelector();
     muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
     electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config");
@@ -232,12 +232,13 @@ int main ( int argc, char **argv ) {
     //
     // 2. HTopMultilepAnalysis algorithms
     // 
-    HTopMultilepEventSelector* eventSelect        = new HTopMultilepEventSelector();
+    HTopMultilepEventSelector* eventSelect       = new HTopMultilepEventSelector();
     eventSelect->setName("eventSelect_skim")->setConfig(localDataDir+"Event/"+"eventSelect_HTopMultilep"+"_"+inDSType+".config");
-    TruthMatchAlgo* truthMatching                 = new TruthMatchAlgo("truthMatching",localDataDir+"Analysis/"+"analysis_TruthMatchingLeptons"+"_"+inDSType+".config");
-    HTopMultilepAnalysis* analysis 		  = new HTopMultilepAnalysis();
+    TruthMatchAlgo* truthMatching                = new TruthMatchAlgo();
+    truthMatching->setName("truthMatching")->setConfig(localDataDir+"Analysis/"+"analysis_TruthMatchingLeptons"+"_"+inDSType+".config");
+    HTopMultilepAnalysis* analysis 		 = new HTopMultilepAnalysis();
     analysis->setName("multilep_analysis")->setConfig(localDataDir+"Analysis/"+"analysis_HTopMultilep"+"_"+inDSType+".config");
-    HTopMultilepTreeAlgo* out_tree 		  = new  HTopMultilepTreeAlgo();
+    HTopMultilepTreeAlgo* out_tree 		 = new  HTopMultilepTreeAlgo();
     out_tree->setName("physics")->setConfig(localDataDir+"Tree/"+"tree_HTopMultilep"+"_"+inDSType+".config");
 
     // dump plots - jets
@@ -265,13 +266,13 @@ int main ( int argc, char **argv ) {
     job.algsAdd( electronSelect_selection );
     job.algsAdd( electronEffCorr );
     job.algsAdd( eventSelect );
-    //job.algsAdd( truthMatching );
-    //job.algsAdd( analysis );
+    job.algsAdd( truthMatching );
+    job.algsAdd( analysis );
     if ( make_histos ) {
       job.algsAdd( jetHistsAlgo_all );
       job.algsAdd( jetHistsAlgo_signal );
     }
-    //job.algsAdd( out_tree );
+    job.algsAdd( out_tree );
     
     // ************************************************************
     // **** submit the job to the driver

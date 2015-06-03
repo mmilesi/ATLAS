@@ -65,7 +65,7 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector () :
   // initialization code will go into histInitialize() and
   // initialize().
 
-  Info("HTopMultilepEventSelector()", "Calling constructor \n");
+  Info("HTopMultilepEventSelector()", "Calling constructor");
 
   m_useCutFlow           = true; 
   
@@ -106,7 +106,7 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
     // read in user configuration from text file
     TEnv *config = new TEnv(getConfig(true).c_str());
     if ( !config ) {
-      Error("BasicEventSelection()", "Failed to initialize reading of config file. Exiting." );
+      Error("HTopMultilepEventSelection()", "Failed to initialize reading of config file. Exiting." );
       return EL::StatusCode::FAILURE;
     }
     Info("configure()", "Configuing HTopMultilepEventSelector Interface. User configuration read from : %s \n", getConfig().c_str());

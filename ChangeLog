@@ -1,3 +1,7 @@
+2015-03-06 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Complete changes: this runs on mc15 full xAODs!
+ 	    * Update TruthMatchAlgo to exploit mc15 new truth info 
+            * (still not possible to run on 20.1.4.4 DAODs b/c of missing truth info)
 2015-01-06 Marco Milesi <Marco.Milesi@cern.ch>
 	    * Updated algos and configuration files to run on mc15
  	    * Steering macro now w/ empty constructors for xAH algos

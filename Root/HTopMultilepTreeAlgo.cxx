@@ -25,6 +25,9 @@ ClassImp(HTopMultilepTreeAlgo)
 HTopMultilepTreeAlgo :: HTopMultilepTreeAlgo () :
   m_helpTree(nullptr)
 {
+
+  Info("HTopMultilepTreeAlgo()", "Calling constructor");
+
   this->SetName("HTopMultilepTreeAlgo"); // needed if you want to retrieve this algo with wk()->getAlg(ALG_NAME) downstream
 
   m_evtDetailStr            = "";
@@ -66,8 +69,6 @@ EL::StatusCode HTopMultilepTreeAlgo :: initialize ()
 EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
 {
 
-  Info("treeInitialize()", "%s", m_name.c_str() );
-  // needed here and not in initalize since this is called first
   Info("treeInitialize()", "Attempting to configure using: %s", m_configName.c_str());
   
   TTree * outTree = new TTree(m_name.c_str(),m_name.c_str());
@@ -95,13 +96,14 @@ EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
   }
 
   m_helpTree->AddEvent(m_evtDetailStr);
-
-  if ( !m_muContainerName.empty() )     {   m_helpTree->AddMuons    (m_muDetailStr);      }
-  if ( !m_elContainerName.empty() )     {   m_helpTree->AddElectrons(m_elDetailStr);      }
-  if ( !m_jetContainerName.empty() )    {   m_helpTree->AddJets     (m_jetDetailStr);     }
-  if ( !m_fatJetContainerName.empty() ) {   m_helpTree->AddFatJets  (m_fatJetDetailStr);  }
-  if ( !m_tauContainerName.empty() )    {   m_helpTree->AddTaus     (m_tauDetailStr);     }
-  if ( !m_lepContainerName.empty() )    {   m_helpTree->AddLeptons  ();                   }
+  if ( !m_trigDetailStr.empty() )       {   m_helpTree->AddTrigger    (m_trigDetailStr);    }
+  if ( !m_jetTrigDetailStr.empty() )    {   m_helpTree->AddJetTrigger (m_jetTrigDetailStr); }
+  if ( !m_muContainerName.empty() )     {   m_helpTree->AddMuons      (m_muDetailStr);      }
+  if ( !m_elContainerName.empty() )     {   m_helpTree->AddElectrons  (m_elDetailStr);      }
+  if ( !m_jetContainerName.empty() )    {   m_helpTree->AddJets       (m_jetDetailStr);     }
+  if ( !m_fatJetContainerName.empty() ) {   m_helpTree->AddFatJets    (m_fatJetDetailStr);  }
+  if ( !m_tauContainerName.empty() )    {   m_helpTree->AddTaus       (m_tauDetailStr);     }
+  if ( !m_lepContainerName.empty() )    {   m_helpTree->AddLeptons    ();                   }
 
   Info("treeInitialize()", "Successfully initialized output tree");
   

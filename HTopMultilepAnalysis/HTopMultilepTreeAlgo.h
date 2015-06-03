@@ -18,17 +18,13 @@ class HTopMultilepTreeAlgo : public TreeAlgo
   // that way they can be set directly from CINT and python.
 public:
 
-  const std::string m_name;                  
-  std::string m_configName;            
-
-  xAOD::TEvent *m_event;               //!
-  xAOD::TStore *m_store;               //!
-
+  /*additional data members which are not already in xAH::TreeAlgo.h */
+  
   std::string m_lepContainerName;
 
 private:
 
-  HTopMultilepTree* m_helpTree;        //!
+  HTopMultilepTree* m_helpTree;  //!
 
 public:
   // this is a standard constructor
@@ -47,7 +43,7 @@ public:
   virtual EL::StatusCode configure ();                      //!
 
   // this is needed to distribute the algorithm to the workers
-  ClassDef(HTopMultilepTreeAlgo, 1);                                 //!
+  ClassDef(HTopMultilepTreeAlgo, 1);                        //!
 };
 
 #endif
