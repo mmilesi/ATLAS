@@ -2,11 +2,11 @@
 #    MC    #
 # ******** #
 # ---------------------------------------
-# DAOD HIGG8D1 - AtlasDerivation,20.1.4.4
+# DAOD HIGG8D1 - AtlasDerivation,20.1.5.1
 # ---------------------------------------
 # ~~~~ ttH125 (signal) ~~~~ #
 # ~~~~ ttbar (background) ~~~~ #
-mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r6630_r6264_p2352/
+mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r6630_r6264_p2363/
 # ~~~~ ttW (background) ~~~~ #
 # ~~~~ ttZ(background) ~~~~ #
 # ~~~~ WZ (background) ~~~ #
@@ -14,15 +14,16 @@ mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD
 # ~~~~ Wgamma+jets (background) ~~~ #
 # ~~~~ Zgamma+jets (background) ~~~ #
 # ~~~~ Z+jets (background) ~~~ #
+mc15_13TeV.361106.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Zee.merge.DAOD_HIGG8D1.e3601_s2576_s2132_r6630_r6264_p2363/
 # ~~~~ single t (background) ~~~ #
 # ~~~~ ttWW (background) ~~~~ #
 # ~~~~ bulk MC submission ~~~~ #
-#mc15_13TeV.*.merge.DAOD_HIGG8D1.*_p2352/
+#mc15_13TeV.*.merge.DAOD_HIGG8D1.*_p2363/
 # ********** #
 #    data    #
 # ********** #
 # ~~~~ 2015 data ~~~~ #
 # ---------------------------------------
-# DAOD HIGG8D1 - AtlasDerivation,X.Y.Z
+# DAOD HIGG8D1 - AtlasDerivation,20.1.5.1
 # ---------------------------------------
-
+data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/

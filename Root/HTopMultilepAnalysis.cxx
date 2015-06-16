@@ -145,7 +145,7 @@ EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
   // beginning on each worker node, e.g. create histograms and output
   // trees.  This method gets called before any input files are
   // connected.
-  Info("histInitialize()", "Calling histInitialize \n");
+  Info("histInitialize()", "Calling histInitialize");
 
   return EL::StatusCode::SUCCESS;
 }
@@ -241,7 +241,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   // events, e.g. read input variables, apply cuts, and fill
   // histograms and trees.  This is where most of your actual analysis
   // code will go.
-  if ( m_debug ) { Info("execute()", "Applying analysis selection \n"); }
+  if ( m_debug ) { Info("execute()", "Applying analysis selection"); }
   
   /* for Francesco */
   double n_init_evts(0.);   
@@ -511,7 +511,7 @@ EL::StatusCode HTopMultilepAnalysis :: finalize ()
   // merged.  This is different from histFinalize() in that it only
   // gets called on worker nodes that processed input events.
 
-  Info("finalize()", "Deleting tool instances... \n");
+  Info("finalize()", "Deleting tool instances...");
 
   if ( m_TauSelTool ) { delete m_TauSelTool; m_TauSelTool = nullptr; }    
    

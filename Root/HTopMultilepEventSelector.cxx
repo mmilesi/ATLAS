@@ -164,7 +164,7 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
     
     config->Print();
     
-    Info("configure()", "HTopMultilepEventSelector Interface succesfully configured! \n");
+    Info("configure()", "HTopMultilepEventSelector Interface succesfully configured!");
     
     delete config; config = nullptr;
   }
@@ -183,7 +183,7 @@ EL::StatusCode HTopMultilepEventSelector :: setupJob (EL::Job& job)
   // activated/deactivated when you add/remove the algorithm from your
   // job, which may or may not be of value to you.
 
-  Info("setupJob()", "Calling setupJob \n");
+  Info("setupJob()", "Calling setupJob");
 
   job.useXAOD ();
   xAOD::Init( "HTopMultilepEventSelector" ).ignore(); // call before opening first file
@@ -200,7 +200,7 @@ EL::StatusCode HTopMultilepEventSelector :: histInitialize ()
   // trees.  This method gets called before any input files are
   // connected.
 
-  Info("histInitialize()", "Calling histInitialize \n");
+  Info("histInitialize()", "Calling histInitialize");
 
   return EL::StatusCode::SUCCESS;
 }
@@ -212,7 +212,7 @@ EL::StatusCode HTopMultilepEventSelector :: fileExecute ()
   // Here you do everything that needs to be done exactly once for every
   // single file, e.g. collect a list of all lumi-blocks processed
 
-  Info("fileExecute()", "Calling fileExecute \n");
+  Info("fileExecute()", "Calling fileExecute");
 
 
   return EL::StatusCode::SUCCESS;
@@ -226,7 +226,7 @@ EL::StatusCode HTopMultilepEventSelector :: changeInput (bool /*firstFile*/)
   // e.g. resetting branch addresses on trees.  If you are using
   // D3PDReader or a similar service this method is not needed.
 
-  Info("changeInput()", "Calling changeInput \n");
+  Info("changeInput()", "Calling changeInput");
 
   return EL::StatusCode::SUCCESS;
 }
@@ -244,7 +244,7 @@ EL::StatusCode HTopMultilepEventSelector :: initialize ()
   // you create here won't be available in the output if you have no
   // input events.
 
-  Info("initialize()", "Initializing HTopMultilepEventSelector Interface... \n");
+  Info("initialize()", "Initializing HTopMultilepEventSelector Interface...");
 
   m_event = wk()->xaodEvent();
   m_store = wk()->xaodStore();
@@ -537,7 +537,7 @@ EL::StatusCode HTopMultilepEventSelector :: postExecute ()
   // processing.  This is typically very rare, particularly in user
   // code.  It is mainly used in implementing the NTupleSvc.
 
-  if ( m_debug ) { Info("postExecute()", "Calling postExecute \n"); }
+  if ( m_debug ) { Info("postExecute()", "Calling postExecute"); }
 
   return EL::StatusCode::SUCCESS;
 }
@@ -556,7 +556,7 @@ EL::StatusCode HTopMultilepEventSelector :: finalize ()
   // merged.  This is different from histFinalize() in that it only
   // gets called on worker nodes that processed input events.
 
-  Info("finalize()", "Deleting tool instances... \n");
+  Info("finalize()", "Deleting tool instances...");
 
   if ( m_TauSelTool ) { delete m_TauSelTool; m_TauSelTool = nullptr; }
 
@@ -576,7 +576,7 @@ EL::StatusCode HTopMultilepEventSelector :: histFinalize ()
   // that it gets called on all worker nodes regardless of whether
   // they processed input events.
 
-  Info("histFinalize()", "Calling histFinalize \n");
+  Info("histFinalize()", "Calling histFinalize");
   if ( m_useCutFlow ) {
     Info("histFinalize()", "Filling cutflow");
     m_cutflowHist ->SetBinContent( m_cutflow_bin, m_numEventPass        );

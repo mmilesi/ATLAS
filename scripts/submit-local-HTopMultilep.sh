@@ -1,20 +1,13 @@
 #######################################
-# full xAOD - mc14 13 TeV  
-# -----------------------
-#test-HTopMultilep --inDSType xAOD-mc14_13TeV --inDir $HOME/work/xAOD_DC1413TeV/ --inDSName mc14_13TeV.110401.PowhegPythia_P2012_ttbar_nonallhad.merge.AOD.e2928_s1982_s2008_r5787_r5853_tid01597983_00 --outDir out_xAOD_HTopMultilep_mc --maxEvents 10000
-#######################################
 # full xAOD - mc15 13TeV  
 # ----------------------
-test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir $HOME/work/mc15_testsamples/ --inDSName mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.AOD.e3698_s2608_s2183_r6630_r6264_tid05382618_00 --outDir out_xAOD_HTopMultilep_mc --maxEvents -1
+#test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/MC15/ --inDSName mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.AOD.e3698_s2608_s2183_r6630_r6264_tid05382618_00 --outDir out_xAOD_HTopMultilep_mc --maxEvents 1000
 #######################################
-# mc14 8TeV DAOD HIGG8D1 
-# ----------------------
-#test-HTopMultilep --inDSType DxAOD-DC14-8TeV --inDir $HOME/work/HIGG8D1_19.1.4.7/ --inDSName mc14_8TeV.117050.PowhegPythia_P2011C_ttbar.merge.DAOD_HIGG8D1.e1727_s1933_s1911_r5591_r5625_p1854_tid04985147_00 --outDir out_DxAOD_HTopMultilep_mc --maxEvents 10000
+# data15 13TeV DAOD - Week 1 
+# --------------------------
+test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.5.1/ --inDSName data15_13TeV.00267073.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361 --outDir out_xAOD_HTopMultilep_data --maxEvents -1
 #######################################
 # mc15 13TeV DAOD HIGG8D1 
 # ----------------------
-#test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir $HOME/work/HIGG8D1_20.1.4.4/ --inDSName  mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r6630_r6264_p2352_tid05526323_00 --outDir out_DxAOD_HTopMultilep_mc --maxEvents 10000
+#test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.5.1/ --inDSName mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r6630_r6264_p2363_tid05629971_00 --outDir out_DxAOD_HTopMultilep_mc --maxEvents 1000
 #######################################
-# data12 DAOD HIGG8D1
-# -------------------
-#test-HTopMultilep --inDSType DxAOD-DC14-8TeV --inDir $HOME/work/HIGG8D1_19.1.4.9/ --inDSName data12_8TeV.00204158.physics_Muons.merge.DAOD_HIGG8D1.r5724_p1751_p2309_p1871_tid05250348_00 --outDir out_DxAOD_HTopMultilep_data --maxEvents 100

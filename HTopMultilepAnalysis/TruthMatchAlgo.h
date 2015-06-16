@@ -83,6 +83,7 @@ private:
   SG::AuxElement::Accessor< TruthLink_t >* m_truthPLAcc; 	           //!
   SG::AuxElement::ConstAccessor< int >*    m_truthTypeAcc;		   //!  /* accessor to built-in xAOD attribute */
   SG::AuxElement::ConstAccessor< int >*    m_truthOriginAcc;		   //!  /* accessor to built-in xAOD attribute */
+  SG::AuxElement::Accessor< float >*       m_truthMatchProbabilityAcc;     //!  
   
 
   // variables that don't get filled at submission time should be

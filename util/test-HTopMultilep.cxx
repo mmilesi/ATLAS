@@ -266,7 +266,7 @@ int main ( int argc, char **argv ) {
     job.algsAdd( electronSelect_selection );
     job.algsAdd( electronEffCorr );
     job.algsAdd( eventSelect );
-    job.algsAdd( truthMatching );
+    //job.algsAdd( truthMatching );
     job.algsAdd( analysis );
     if ( make_histos ) {
       job.algsAdd( jetHistsAlgo_all );
