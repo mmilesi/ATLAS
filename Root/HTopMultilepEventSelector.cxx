@@ -1,4 +1,4 @@
-/*********************************************
+/**********************************************
  *
  * Module that performs an event selection for 
  * HTopMultilepAnalysis.
@@ -68,6 +68,7 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector () :
   Info("HTopMultilepEventSelector()", "Calling constructor");
 
   m_useCutFlow           = true; 
+  m_DC14                 = false;
   
   m_inContainerName_el   = "";     
   m_inContainerName_mu   = "";     
@@ -104,24 +105,29 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
   if ( !getConfig().empty() ) {
 
     // read in user configuration from text file
+    //
     TEnv *config = new TEnv(getConfig(true).c_str());
     if ( !config ) {
       Error("HTopMultilepEventSelection()", "Failed to initialize reading of config file. Exiting." );
       return EL::StatusCode::FAILURE;
     }
-    Info("configure()", "Configuing HTopMultilepEventSelector Interface. User configuration read from : %s \n", getConfig().c_str());
+    Info("configure()", "Configuing HTopMultilepEventSelector Interface. User configuration read from : %s", getConfig().c_str());
  
     // read debug flag from .config file
+    //
     m_debug	                 = config->GetValue("Debug" ,      m_debug);
     m_useCutFlow                 = config->GetValue("UseCutFlow",  m_useCutFlow);
+    m_DC14                       = config->GetValue("DC14", m_DC14 );
     
     // input container to be read from TEvent or TStore
+    //
     m_inContainerName_el	 = config->GetValue("InputContainerElectrons", m_inContainerName_el.c_str());
     m_inContainerName_mu	 = config->GetValue("InputContainerMuons",     m_inContainerName_mu.c_str());
     m_inContainerName_jets	 = config->GetValue("InputContainerJets",      m_inContainerName_jets.c_str());
     m_inContainerName_tau	 = config->GetValue("InputContainerTaus",      m_inContainerName_tau.c_str());
     
     // configurable cuts
+    //
     m_doMinObjCut		 = config->GetValue("DoMinObjCut", m_doMinObjCut);
     m_doMaxObjCut		 = config->GetValue("DoMaxObjCut", m_doMaxObjCut);  
     m_n_leptons_min		 = config->GetValue("MinNLeptons", m_n_leptons_min);
@@ -139,6 +145,7 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
     m_taus_pT_min		 = config->GetValue("pTMinTaus",  m_taus_pT_min);
     
     // parse and split by comma
+    //
     std::string token;
     
     m_passAuxDecorKeys        = config->GetValue("PassDecorKeys", m_passAuxDecorKeys.c_str());
@@ -271,18 +278,22 @@ EL::StatusCode HTopMultilepEventSelector :: initialize ()
   m_numObjectPass = 0;
 
   // initialise TauSelectionTool 
+  //
   m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool" );
   m_TauSelTool->msg().setLevel( MSG::INFO );
   
   // override some of the recommended properties (if needed)
-  
+  //
   // erase stuff inside brackets if you wish to loosen the number of cuts applied (default: keep all!)
+  //
   m_TauSelTool->setProperty( "SelectionCuts", int( TauAnalysisTools::CutPt | TauAnalysisTools::CutAbsEta | TauAnalysisTools::CutAbsCharge | TauAnalysisTools::CutNTrack | TauAnalysisTools::CutJetIDWP) );
   // define pt threshold, note that pt has to be given in GeV
+  //
   m_TauSelTool->setProperty("PtMin", 15.0 ); // TODO: why is not working w/ variable set from .config file??
   //m_TauSelTool->setProperty("PtMin", static_cast<float>( m_taus_pT_min ) ); 
 
   // requiring tau to pass a jet BDT working point
+  //
   TauAnalysisTools::e_JETID tauID = TauAnalysisTools::JETIDNONE; 
   if ( m_JetBDTLoose )       { tauID = TauAnalysisTools::JETIDBDTLOOSE;  }
   else if ( m_JetBDTMedium ) { tauID = TauAnalysisTools::JETIDBDTMEDIUM; }
@@ -309,9 +320,12 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   if ( m_debug ) { Info("execute()", "Applying HTopMultilepAnalysis Event Selection... \n"); }
 
   // retrieve event
+  //
   const xAOD::EventInfo* eventInfo(nullptr);
   RETURN_CHECK("HTopMultilepEventSelector::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_debug) , "");
-
+ 
+  // MC event weight 
+  //
   float mcEvtWeight(1.0); 
   static SG::AuxElement::Accessor< float > mcEvtWeightAcc("mcEventWeight");
   if ( !mcEvtWeightAcc.isAvailable(*eventInfo) ) {
@@ -326,6 +340,7 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   //bool isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
   
   // this will be the collection processed - no matter what!!
+  //
   const xAOD::ElectronContainer* inElectrons(nullptr);
   RETURN_CHECK("HTopMultilepEventSelector::execute()", HelperFunctions::retrieve(inElectrons, m_inContainerName_el, m_event, m_store, m_debug) , "");
 
@@ -342,10 +357,12 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
 
   
   // create a CDV for leptons ( electrons + muons )
+  //
   ConstDataVector<xAOD::IParticleContainer>* leptonsCDV(nullptr);
   leptonsCDV =  new ConstDataVector<xAOD::IParticleContainer>(SG::VIEW_ELEMENTS);
   
   // fill this CDV with electrons and muons
+  //
   for ( auto el_itr : *(inElectrons) ) {
     
     const xAOD::IParticle *lepton = el_itr;
@@ -362,6 +379,7 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   }
   // Make a sorted version of the container 
   // (this can be on the stack! Will not be the one that is pushed to the store...)
+  //
   const xAOD::IParticleContainer leptonsSorted = HelperFunctions::sort_container_pt( leptonsCDV->asDataVector() );
 
   unsigned int nLeptons = leptonsCDV->size();
@@ -385,6 +403,7 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   
 
   // create selected tau container 
+  //
   ConstDataVector<xAOD::TauJetContainer>* selectedTaus(nullptr); 
   selectedTaus =  new ConstDataVector<xAOD::TauJetContainer>(SG::VIEW_ELEMENTS);
     
@@ -441,39 +460,43 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   } 
    
   // count number of LF jets 
+  //
   unsigned int nJets = inJets->size();
   bool passnJetsMin(false), passnJetsMax(false); 
   passnJetsMin  = ( nJets >= static_cast<unsigned int>(m_n_jets_min) );
   passnJetsMax  = ( nJets <= static_cast<unsigned int>(m_n_jets_max) );
 
   // count number of bjets
-  
+  //
   unsigned int nBjetsMedium(0);
-  /*
-  static SG::AuxElement::Accessor< char > passBTagMediumAcc("passSelBTagMedium");
+  
+  static SG::AuxElement::Accessor< char > passBTagMediumAcc("BTagMedium");
   for( auto jet_itr : *(inJets) ) {
     if ( passBTagMediumAcc.isAvailable(*jet_itr) ) {
       if ( passBTagMediumAcc(*jet_itr) ) nBjetsMedium++;
     }
   } 
-  */ 
-  // DC14 8TeV use SV1+IP3D!
-  ///*
-  for ( auto jet_itr : *(inJets) ) {
-    
-    if ( jet_itr->btagging() ) {
+  // for DC14, use SV1+IP3D!
+  //
+  if ( m_DC14 ) {
+  
+    for ( auto jet_itr : *(inJets) ) {
       
-      float SV1plusIP3Dweight = jet_itr->btagging()->SV1plusIP3D_discriminant(); 
-      
-      if ( jet_itr->pt() < 20*1e3 ) {
-	if ( SV1plusIP3Dweight > 1.70 ) nBjetsMedium++;
-      } else {
-	if ( SV1plusIP3Dweight > 1.85 ) nBjetsMedium++;
+      if ( jet_itr->btagging() ) {
+    	
+    	float SV1plusIP3Dweight = jet_itr->btagging()->SV1plusIP3D_discriminant(); 
+    	
+    	if ( jet_itr->pt() < 20*1e3 ) {
+  	  if ( SV1plusIP3Dweight > 1.70 ) nBjetsMedium++;
+    	} else {
+  	  if ( SV1plusIP3Dweight > 1.85 ) nBjetsMedium++;
+    	}
+    	
       }
-      
     }
+    
   }
-  //*/
+
   bool passnBJetsMin(false); 
   passnBJetsMin  = ( nBjetsMedium >= static_cast<unsigned int>(m_n_bjets_min) );
     
@@ -495,6 +518,7 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   passMaxObj = ( passnJetsMax && passnLepMax );
   
   // decide whether to skip event or not
+  //
   if ( m_doMinObjCut && !passMinObj ) {
     if ( m_debug ) { Info("execute()","event did not pass minObjCut. Reject it"); }
     wk()->skipEvent();
@@ -508,6 +532,7 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   
   // add ConstDataVector(s) to TStore
   // NB: don't store a sorted container to TStore and expect it will be still sorted at retrieval!!
+  //
   RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( leptonsCDV, "Leptons_Selected" ), "Failed to store const data container");
   RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( selectedTaus, "Taus_Selected" ), "Failed to store const data container");
   
@@ -515,11 +540,13 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   m_weightNumEventPass += mcEvtWeight;
 
   // add some decorations to the event
+  //
   static SG::AuxElement::Decorator< unsigned int > nLeptonsDecor("nLeptons");
   static SG::AuxElement::Decorator< unsigned int > nBjetsMediumDecor("nBjetsMedium");
   static SG::AuxElement::Decorator< unsigned int > categoryFlagDecor("categoryFlag");
   
   // compact way to categorise event based on object counting (exploiting prime numbers)
+  //
   unsigned int categoryFlag(0); 
   categoryFlag = pow(2.0,static_cast<float>(nLeptons))*pow(3.0,static_cast<float>(nJets))*pow(5.0,static_cast<float>(nBjetsMedium));
   

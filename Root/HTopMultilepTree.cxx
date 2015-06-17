@@ -50,7 +50,6 @@ void HTopMultilepTree::AddJetsUser(const std::string detailStrUser)
 void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
 {
   // muon variables  
-  m_tree->Branch("muon_isIsolated",                &m_muon_isIsolated);  
   m_tree->Branch("muon_isTruthMatchedMu",          &m_muon_isTruthMatched); 
   m_tree->Branch("muon_isTruthMatchedMuIso",       &m_muon_isTruthMatchedIso); 
   m_tree->Branch("muon_isTruthMatchedMuNonIso",	   &m_muon_isTruthMatchedNonIso); 

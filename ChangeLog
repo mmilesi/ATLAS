@@ -1,3 +1,6 @@
+2015-17-06 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Muon truth matching now fully follows MuonCP recommendations
+            * In HTopMultilepEventSelector.cxx, BJet counting now is done by default on MV2c20 Medium jets ( added a DC14 switch if we still want to use old SV1+IP3D )
 2015-03-06 Marco Milesi <Marco.Milesi@cern.ch>
 	    * Complete changes: this runs on mc15 full xAODs!
  	    * Update TruthMatchAlgo to exploit mc15 new truth info 

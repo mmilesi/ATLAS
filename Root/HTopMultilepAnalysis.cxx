@@ -93,7 +93,7 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
       Error("BasicEventSelection()", "Failed to initialize reading of config file. Exiting." );
       return EL::StatusCode::FAILURE;
     }
-    Info("configure()", "Configuing HTopMultilepAnalysis Interface. User configuration read from : %s \n", getConfig().c_str());
+    Info("configure()", "Configuing HTopMultilepAnalysis Interface. User configuration read from : %s", getConfig().c_str());
     
     // read debug flag from .config file
     m_debug	                 = config->GetValue("Debug" ,      m_debug);
@@ -112,7 +112,7 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
  
     config->Print();
   
-    Info("configure()", "HTopMultilepAnalysis Interface succesfully configured! \n");
+    Info("configure()", "HTopMultilepAnalysis Interface succesfully configured!");
   
     delete config; config = nullptr;
   }

@@ -36,6 +36,8 @@ public:
   std::string    m_inContainerName_tau;    
 
   bool         m_useCutFlow;    
+
+  bool         m_DC14;
   
   bool         m_doMinObjCut;
   bool         m_doMaxObjCut;

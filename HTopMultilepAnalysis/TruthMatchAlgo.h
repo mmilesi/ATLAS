@@ -33,7 +33,7 @@ public:
   std::string    m_inContainerName_Muons; 
   std::string    m_inContainerName_Leptons; 
   
-  bool m_doMuonDeltaRMatching;
+  bool m_doMuonTruthPartMatching;
   bool m_doMuonTrackMatching;
 
   bool m_doDC14Matching;
@@ -111,15 +111,30 @@ public:
   virtual EL::StatusCode configure ();
 
   // added functions not from Algorithm
-  virtual EL::StatusCode applyTruthMatchingElectronMC15 ( const xAOD::IParticle* recoParticle );
-  virtual EL::StatusCode applyTruthMatchingMuonMC15 ( const xAOD::IParticle* recoParticle );
   
+  /*
+  /  For DC14 samples
+  */
   virtual EL::StatusCode applyTruthMatchingDC14 ( const xAOD::IParticle* recoParticle );
-
-  virtual EL::StatusCode doDeltaRMatching ( const xAOD::TruthParticleContainer* muonTruthPartContainer, const xAOD::IParticle* recoParticle, double minDR = 0.2 );
-  virtual EL::StatusCode doTrackProbMatching( const xAOD::IParticle* recoParticle );
-
   virtual EL::StatusCode checkChargeFlip ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth );  
+
+  /*
+  / For muons, there are two options to perform the truth matching:
+  /
+  /  1) use the truth-link and get the info from the TruthParticle in the "MuonTruthParticles" container. 
+  /     Since this is filled only with truth muons one can only get the type and origin information for 'isolated' and 'not-isolated' truth muons.
+  /
+  /  2) retrieve the truth and origin information from the ID TrackParticle linked from the xAOD::Muon. 
+  /     This includes all types as defined by MCTruthClassifier for muons (i.e. also when the ID track is a pion). 
+  /     Clearly this is available only within ID coverage (|eta|<2.5).
+  /
+  */
+  virtual EL::StatusCode applyTruthMatchingMuonMC15 ( const xAOD::IParticle* recoParticle );
+  virtual EL::StatusCode doMuonTruthPartMatching ( const xAOD::IParticle* recoParticle );
+  virtual EL::StatusCode doMuonTrackMatching ( const xAOD::IParticle* recoParticle );
+  
+  virtual EL::StatusCode applyTruthMatchingElectronMC15 ( const xAOD::IParticle* recoParticle );
+
   virtual EL::StatusCode checkChargeFlipMC15 ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth );  
 
   // this is needed to distribute the algorithm to the workers

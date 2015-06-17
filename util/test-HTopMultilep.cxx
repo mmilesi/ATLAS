@@ -259,14 +259,14 @@ int main ( int argc, char **argv ) {
     job.algsAdd( electronCalib );
     job.algsAdd( electronSelect_preselection );
     job.algsAdd( jetSelect_selection );
-    //job.algsAdd( bjetEffCorr_btag );
+    job.algsAdd( bjetEffCorr_btag );
     job.algsAdd( overlapRemoval );
     job.algsAdd( muonSelect_selection );
     job.algsAdd( muonEffCorr );
     job.algsAdd( electronSelect_selection );
     job.algsAdd( electronEffCorr );
     job.algsAdd( eventSelect );
-    //job.algsAdd( truthMatching );
+    job.algsAdd( truthMatching );
     job.algsAdd( analysis );
     if ( make_histos ) {
       job.algsAdd( jetHistsAlgo_all );
