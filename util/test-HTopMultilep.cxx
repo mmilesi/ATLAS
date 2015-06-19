@@ -31,6 +31,7 @@
 #include "xAODAnaHelpers/ElectronEfficiencyCorrector.h"
 #include "xAODAnaHelpers/ElectronSelector.h"
 #include "xAODAnaHelpers/OverlapRemover.h"
+#include "xAODAnaHelpers/METConstructor.h"
 
 // c++ include(s):
 #include <string>
@@ -228,6 +229,8 @@ int main ( int argc, char **argv ) {
     electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config");
     OverlapRemover* overlapRemoval                = new OverlapRemover();
     overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config");
+    METConstructor* met                           = new METConstructor();
+    met->setName("met")->setConfig(localDataDir+"MET/"+"MET_HTopMultilep"+"_"+inDSType+".config");
 
     //
     // 2. HTopMultilepAnalysis algorithms
@@ -265,8 +268,9 @@ int main ( int argc, char **argv ) {
     job.algsAdd( muonEffCorr );
     job.algsAdd( electronSelect_selection );
     job.algsAdd( electronEffCorr );
+    //job.algsAdd( met );
     job.algsAdd( eventSelect );
-    job.algsAdd( truthMatching );
+    //job.algsAdd( truthMatching );
     job.algsAdd( analysis );
     if ( make_histos ) {
       job.algsAdd( jetHistsAlgo_all );
@@ -340,7 +344,7 @@ int main ( int argc, char **argv ) {
           sh.get(sample_name)->setMetaDouble(EL::Job::optGridNFilesPerJob, 1.0);
         }
 	// driver.options()->setString(EL::Job::optGridExcludedSite, "ANALY_IN2P3-CC-T2,ANALY_IN2P3-CC"); // can list them just by separating grid site names w/ comma 
-	driver.options()->setString(EL::Job::optGridSite, "UKI-NORTHGRID-MAN-HEP_LOCALGROUPDISK"); // run on this specific grid site 
+	//driver.options()->setString(EL::Job::optGridSite, "UKI-NORTHGRID-MAN-HEP_LOCALGROUPDISK"); // run on this specific grid site 
 	
 	cout << "outDS: " << driver.options()->castString("nc_outputSampleName") << endl;
 	

@@ -161,7 +161,7 @@ EL::StatusCode HTopMultilepAnalysis :: fileExecute ()
 
 
 
-EL::StatusCode HTopMultilepAnalysis :: changeInput (bool firstFile)
+EL::StatusCode HTopMultilepAnalysis :: changeInput (bool /*firstFile*/)
 {
   // Here you do everything you need to do when we change input files,
   // e.g. resetting branch addresses on trees.  If you are using
@@ -273,7 +273,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   const xAOD::EventInfo* eventInfo(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_debug) , "");
 
-  bool isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
+  // bool isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
   
   // retrieve vertices  
   const xAOD::VertexContainer* vertices(nullptr);
@@ -397,12 +397,11 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   static SG::AuxElement::Accessor< char > isIsoAcc("isIsolated");
   // accessor to likelihood PID for electrons
   static SG::AuxElement::Accessor< char > LHTightAcc("LHTight");
-  static SG::AuxElement::Accessor< char > LHVeryTightAcc("LHVeryTight");
    // accessor to cut-based PID for electrons
   static SG::AuxElement::Accessor< char > EMTightAcc("Tight");
 
   // decorator for "Tight" leptons  
-  static SG::AuxElement::Decorator< char > isTightDecor("isTight"); // electrons: isolated + tight PID (tightPP or VeryTightLH, depending on user's choice)
+  static SG::AuxElement::Decorator< char > isTightDecor("isTight"); // electrons: isolated + tight PID (tightPP or TightLH, depending on user's choice)
   								    // muons: isolated + d0sig < 3.0
 
   for ( auto el_itr : *(signalElectrons) ) {
@@ -418,10 +417,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
       Error("execute()", "LHTight attribute is not available for this electron. Aborting ");
       return EL::StatusCode::FAILURE;
     } 
-    if ( !LHVeryTightAcc.isAvailable( *el_itr ) ) {
-      Error("execute()", "LHVeryTightAcc attribute is not available for this electron. Aborting ");
-      return EL::StatusCode::FAILURE;
-    } 
     if ( !EMTightAcc.isAvailable( *el_itr ) ) {
       Error("execute()", "Tight attribute is not available for this electron. Aborting ");
       return EL::StatusCode::FAILURE;
@@ -429,8 +424,8 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 
     // flag the "Tight" electrons
     if (  isIsoAcc( *el_itr ) ) {
-        if      ( m_doLHPIDCut       && LHVeryTightAcc( *el_itr )  ) { isTightDecor( *el_itr ) = 1; }
-	else if ( m_doCutBasedPIDCut && EMTightAcc( *el_itr ) )      { isTightDecor( *el_itr ) = 1; }
+        if      ( m_doLHPIDCut       && LHTightAcc( *el_itr )  ) { isTightDecor( *el_itr ) = 1; }
+	else if ( m_doCutBasedPIDCut && EMTightAcc( *el_itr ) )  { isTightDecor( *el_itr ) = 1; }
     }
  
   }
@@ -598,7 +593,6 @@ EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const 
     
   const xAOD::IParticle* leadingLepton           = *(leptons.begin());
   xAOD::Type::ObjectType leadingLeptonFlavour    = leadingLepton->type();
-  float                  leadingLeptonPt         = leadingLepton->pt();
   bool                   isLeadingTight(false);          
   if ( isTightAcc.isAvailable( *leadingLepton ) ) {
     isLeadingTight = isTightAcc( *leadingLepton );
@@ -609,7 +603,6 @@ EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const 
   
   const xAOD::IParticle* subLeadingLepton        = *(std::next(leptons.begin(),1));
   xAOD::Type::ObjectType subLeadingLeptonFlavour = subLeadingLepton->type();
-  float                  subLeadingLeptonPt      = subLeadingLepton->pt();
   bool                   isSubLeadingTight (false);
   if ( isTightAcc.isAvailable( *subLeadingLepton ) ) {
     isLeadingTight = isTightAcc( *subLeadingLepton );

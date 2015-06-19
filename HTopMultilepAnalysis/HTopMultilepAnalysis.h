@@ -55,11 +55,11 @@ private:
   
   int m_cutflow_bin;      //!
 
-  JetHists* m_jetPlots;   //!
-
   /* for Francesco */
   TH1D* m_totalEvents;    //!  
   TH1D* m_totalEventsW;   //!
+
+  JetHists* m_jetPlots;   //!
 
   // tools
   TauAnalysisTools::TauSelectionTool    *m_TauSelTool; //!

@@ -1,3 +1,6 @@
+2015-19-06 Marco Milesi <Marco.Milesi@cern.ch>
+	    * Apply all pre-recommendations for early Run2 
+            * Add MET rebuilder in algo list
 2015-17-06 Marco Milesi <Marco.Milesi@cern.ch>
 	    * Muon truth matching now fully follows MuonCP recommendations
             * In HTopMultilepEventSelector.cxx, BJet counting now is done by default on MV2c20 Medium jets ( added a DC14 switch if we still want to use old SV1+IP3D )

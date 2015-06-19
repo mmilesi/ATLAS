@@ -470,6 +470,9 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   //
   unsigned int nBjetsMedium(0);
   
+  // 2015 data,MC use MV2c20 as default
+  // Look into xAODAnaHelpers/Root/JetSelector.cxx
+  //
   static SG::AuxElement::Accessor< char > passBTagMediumAcc("BTagMedium");
   for( auto jet_itr : *(inJets) ) {
     if ( passBTagMediumAcc.isAvailable(*jet_itr) ) {
