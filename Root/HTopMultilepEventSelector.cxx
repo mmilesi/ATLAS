@@ -586,6 +586,12 @@ EL::StatusCode HTopMultilepEventSelector :: finalize ()
   // merged.  This is different from histFinalize() in that it only
   // gets called on worker nodes that processed input events.
 
+  if ( m_useCutFlow ) {
+    Info("histFinalize()", "Filling cutflow");
+    m_cutflowHist ->SetBinContent( m_cutflow_bin, m_numEventPass        );
+    m_cutflowHistW->SetBinContent( m_cutflow_bin, m_weightNumEventPass  );
+  }
+
   Info("finalize()", "Deleting tool instances...");
 
   if ( m_TauSelTool ) { delete m_TauSelTool; m_TauSelTool = nullptr; }
@@ -607,11 +613,7 @@ EL::StatusCode HTopMultilepEventSelector :: histFinalize ()
   // they processed input events.
 
   Info("histFinalize()", "Calling histFinalize");
-  if ( m_useCutFlow ) {
-    Info("histFinalize()", "Filling cutflow");
-    m_cutflowHist ->SetBinContent( m_cutflow_bin, m_numEventPass        );
-    m_cutflowHistW->SetBinContent( m_cutflow_bin, m_weightNumEventPass  );
-  }
+
   return EL::StatusCode::SUCCESS;
 }
 

@@ -527,7 +527,9 @@ EL::StatusCode HTopMultilepAnalysis :: histFinalize ()
   // outputs have been merged.  This is different from finalize() in
   // that it gets called on all worker nodes regardless of whether
   // they processed input events.
+  
   return EL::StatusCode::SUCCESS;
+
 }
   
 //***************************************************
