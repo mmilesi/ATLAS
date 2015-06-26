@@ -307,6 +307,14 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   }
     
   if ( m_debug ) {
+    
+    // retrieve initial objects ( only for debugging purposes )
+    const xAOD::ElectronContainer* inElectrons(nullptr);
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inElectrons, "Electrons", m_event, m_store, m_debug) , "");
+    const xAOD::MuonContainer*     inMuons(nullptr);     
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inMuons, "Muons", m_event, m_store, m_debug) , "");
+    const xAOD::JetContainer*      inJets(nullptr); 
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inJets, "AntiKt4EMTopoJets", m_event, m_store, m_debug ) , "");
 
     // retrieve preselected objects ( only for debugging purposes )
     const xAOD::ElectronContainer* preselElectrons(nullptr);
@@ -316,15 +324,21 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     const xAOD::JetContainer*      preselJets(nullptr); 
     RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselJets, "AntiKt4EMTopoJets_Selected", m_event, m_store, m_debug ) , "");
 
+    unsigned int nInElectrons     = inElectrons->size();
+    unsigned int nInMuons         = inMuons->size();
+    unsigned int nInJets          = inJets->size();
+    
     unsigned int nPreselElectrons = preselElectrons->size();
     unsigned int nPreselMuons     = preselMuons->size();
     unsigned int nPreselJets      = preselJets->size();
+    
     unsigned int nSignalElectrons = signalElectrons->size();
     unsigned int nSignalMuons     = signalMuons->size();
+    
     Info("execute()","Event %i ", static_cast<int>(m_eventCounter));
-    Info("execute()"," Preselected vs Selected Signal Jets: \t %u \t %u "      , nPreselJets, nSignalJets );
-    Info("execute()"," Preselected vs Selected Signal Muons: \t %u \t %u  "    , nPreselMuons, nSignalMuons ); 
-    Info("execute()"," Preselected vs Selected Signal Electrons: \t %u \t %u " , nPreselElectrons, nSignalElectrons );     
+    Info("execute()"," Initial vs Preselected vs Selected Signal Muons: \t %u \t %u \t %u  "    , nInMuons, nPreselMuons, nSignalMuons ); 
+    Info("execute()"," Initial vs Preselected vs Selected Signal Electrons: %u \t %u \t %u "    , nInElectrons, nPreselElectrons, nSignalElectrons );     
+    Info("execute()"," Initial vs Preselected vs Selected Signal Jets: \t %u \t %u \t %u "      , nInJets, nPreselJets, nSignalJets );
     Info("execute()"," Selected Signal Leptons: \t %u " , nSignalLeptons );   
     Info("execute()"," Selected Signal Taus: \t %u " , nSignalTaus );   
 

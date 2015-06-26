@@ -37,7 +37,8 @@ data15_13TeV.00267073.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
 data15_13TeV.00266904.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
 data15_13TeV.00266919.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
 data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
-data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
+#data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
+data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.r6818_p2358_p2361/
 # ~~~~ period B1 ~~~~ #
 data15_13TeV.00267599.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
 data15_13TeV.00267358.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/

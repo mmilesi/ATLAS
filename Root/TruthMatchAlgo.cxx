@@ -66,9 +66,6 @@ TruthMatchAlgo :: TruthMatchAlgo () :
   m_inContainerName_Electrons   = "";     
   m_inContainerName_Muons       = "";    
   m_inContainerName_Leptons     = "";    
-
-  m_doDC14Matching              = false;
-  m_doMC15Matching              = true;
   
   m_doMuonTruthPartMatching     = false;
   m_doMuonTrackMatching         = true;
@@ -96,9 +93,6 @@ EL::StatusCode  TruthMatchAlgo :: configure ()
     m_inContainerName_Electrons  = config->GetValue("InputContainerElectrons", m_inContainerName_Electrons.c_str());
     m_inContainerName_Muons      = config->GetValue("InputContainerMuons",     m_inContainerName_Muons.c_str());
     m_inContainerName_Leptons	 = config->GetValue("InputContainerLeptons",   m_inContainerName_Leptons.c_str());
-    
-    m_doDC14Matching		 = config->GetValue("DoDC14Matching",  m_doDC14Matching );
-    m_doMC15Matching		 = config->GetValue("DoMC15Matching",  m_doMC15Matching );
     
     m_doMuonTruthPartMatching	 = config->GetValue("DoMuonTruthPartMatching" , m_doMuonTruthPartMatching );
     m_doMuonTrackMatching	 = config->GetValue("DoMuonTrackMatching"  , m_doMuonTrackMatching );
@@ -188,6 +182,11 @@ EL::StatusCode TruthMatchAlgo :: initialize ()
   m_event = wk()->xaodEvent();
   m_store = wk()->xaodStore();
 
+  const xAOD::EventInfo* eventInfo(nullptr);
+  RETURN_CHECK("TruthMatchAlgo::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_debug) , "");
+
+  m_isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
+
   if ( m_useCutFlow ) {
     TFile *file = wk()->getOutputFile("cutflow");
     m_cutflowHist  = (TH1D*)file->Get("cutflow");
@@ -210,12 +209,6 @@ EL::StatusCode TruthMatchAlgo :: initialize ()
   m_numObjectPass       = 0;
     
   m_isTruthMatchedDecor = nullptr          ; m_isTruthMatchedDecor          = new SG::AuxElement::Decorator< char >("isTruthMatched");	        // has a lepton truth match
-  m_isTruthMatchedIsoDecor = nullptr	   ; m_isTruthMatchedIsoDecor       = new SG::AuxElement::Decorator< char >("isTruthMatchedIso");       // prompt leptons
-  m_isTruthMatchedNonIsoDecor = nullptr	   ; m_isTruthMatchedNonIsoDecor    = new SG::AuxElement::Decorator< char >("isTruthMatchedNonIso");    // non-prompt leptons (from HF hadrons, or decays of hadrons in jets)
-  m_isTruthMatchedSecondaryDecor = nullptr ; m_isTruthMatchedSecondaryDecor = new SG::AuxElement::Decorator< char >("isTruthMatchedSecondary"); // from secondary material interaction (e.g. conversion)
-  m_isTruthMatchedNoProdVtxDecor = nullptr ; m_isTruthMatchedNoProdVtxDecor = new SG::AuxElement::Decorator< char >("isTruthMatchedNoProdVtx"); // matched to a lepton w/o production vertex
-  m_isTruthMatchedUnknownDecor = nullptr   ; m_isTruthMatchedUnknownDecor   = new SG::AuxElement::Decorator< char >("isTruthMatchedUnknown");   // matched to an unknown truth particle
-  m_isTruthMatchedOtherDecor = nullptr	   ; m_isTruthMatchedOtherDecor     = new SG::AuxElement::Decorator< char >("isTruthMatchedOther");     // matched to a non-lepton truth particle
   m_truthPdgIdDecor = nullptr	           ; m_truthPdgIdDecor              = new SG::AuxElement::Decorator< int >("truthPdgId");		// pdgId of the match particle
   m_truthTypeDecor = nullptr	           ; m_truthTypeDecor               = new SG::AuxElement::Decorator< int >("truthType"); 	        // type of the parent particle (according to MCTruthClassifier) - this decorates only muons (info is originally available only for the track!)
   m_truthOriginDecor = nullptr	           ; m_truthOriginDecor             = new SG::AuxElement::Decorator< int >("truthOrigin"); 	        // origin of the parent particle - this decorates only muons (info is originally available only for the track!)
@@ -225,12 +218,6 @@ EL::StatusCode TruthMatchAlgo :: initialize ()
   
   m_mcEvtWeightAcc = nullptr		   ; m_mcEvtWeightAcc		    = new SG::AuxElement::Accessor< float >("mcEventWeight");
   m_isTruthMatchedAcc = nullptr		   ; m_isTruthMatchedAcc	    = new SG::AuxElement::Accessor< char >("isTruthMatched");		
-  m_isTruthMatchedIsoAcc = nullptr	   ; m_isTruthMatchedIsoAcc	    = new SG::AuxElement::Accessor< char >("isTruthMatchedIso");	
-  m_isTruthMatchedNonIsoAcc = nullptr	   ; m_isTruthMatchedNonIsoAcc      = new SG::AuxElement::Accessor< char >("isTruthMatchedNonIso");	  
-  m_isTruthMatchedSecondaryAcc = nullptr   ; m_isTruthMatchedSecondaryAcc   = new SG::AuxElement::Accessor< char >("isTruthMatchedSecondary");  
-  m_isTruthMatchedNoProdVtxAcc = nullptr   ; m_isTruthMatchedNoProdVtxAcc   = new SG::AuxElement::Accessor< char >("isTruthMatchedNoProdVtx"); 
-  m_isTruthMatchedUnknownAcc = nullptr	   ; m_isTruthMatchedUnknownAcc	    = new SG::AuxElement::Accessor< char >("isTruthMatchedUnknown"); 
-  m_isTruthMatchedOtherAcc = nullptr	   ; m_isTruthMatchedOtherAcc	    = new SG::AuxElement::Accessor< char >("isTruthMatchedOther"); 
   m_isChFlipAcc = nullptr 		   ; m_isChFlipAcc		    = new SG::AuxElement::Accessor< char >("isChFlip"); 			   
   m_isBremAcc = nullptr		           ; m_isBremAcc		    = new SG::AuxElement::Accessor< char >("isBrem");			    
   m_truthPLAcc = nullptr  		   ; m_truthPLAcc		    = new SG::AuxElement::Accessor< TruthLink_t >("truthParticleLink");
@@ -258,8 +245,6 @@ EL::StatusCode TruthMatchAlgo :: execute ()
   const xAOD::EventInfo* eventInfo(nullptr);
   RETURN_CHECK("TruthMatchAlgo::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_debug) , "");
 
-  bool isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
-
   // MC event weight 
   //
   float mcEvtWeight(1.0);
@@ -282,33 +267,25 @@ EL::StatusCode TruthMatchAlgo :: execute ()
   // Truth matching for leptons
   // -------------------------------------
   
-  if ( isMC ) { 
+  if ( m_isMC ) { 
     for ( auto lep_itr : *(leptonsCDV) ) {
 
       if ( lep_itr->type() == xAOD::Type::Electron ) {
 
 	if ( m_debug ) { Info("execute()"," truth matching reco electron, pT = %2f ", lep_itr->pt() / 1e3 ); }
 
-	if ( m_doMC15Matching && ( this->applyTruthMatchingElectronMC15( lep_itr ) != EL::StatusCode::SUCCESS ) ) {
+	if ( this->applyTruthMatchingElectronMC15( lep_itr ) != EL::StatusCode::SUCCESS ) {
 	  Error("execute()", "Problem with applyTruthMatchingElectronMC15()! Aborting" );
 	  return EL::StatusCode::FAILURE;
 	} 
-	else if ( m_doDC14Matching && ( this->applyTruthMatchingDC14( lep_itr ) != EL::StatusCode::SUCCESS ) ) { 
-	  Error("execute()", "Problem with applyTruthMatchingDC14()! Aborting" );
-	  return EL::StatusCode::FAILURE;
-	}
-      } 
-      else if ( lep_itr->type() == xAOD::Type::Muon ) {
+
+      } else if ( lep_itr->type() == xAOD::Type::Muon ) {
 
 	if ( m_debug ) { Info("execute()"," truth matching reco muon, pT = %2f ", lep_itr->pt() / 1e3 ); }
-	if ( m_doMC15Matching && ( this->applyTruthMatchingMuonMC15( lep_itr ) != EL::StatusCode::SUCCESS ) ) {
+	if ( this->applyTruthMatchingMuonMC15( lep_itr ) != EL::StatusCode::SUCCESS ) {
 	  Error("execute()", "Problem with applyTruthMatchingMuonMC15()! Aborting" );
 	  return EL::StatusCode::FAILURE;
 	} 
-	else if ( m_doDC14Matching && ( this->applyTruthMatchingDC14( lep_itr ) != EL::StatusCode::SUCCESS ) ) { 
-	  Error("execute()", "Problem with applyTruthMatchingDC14()! Aborting" );
-	  return EL::StatusCode::FAILURE;
-	}
 
       } 
 
@@ -348,11 +325,6 @@ EL::StatusCode TruthMatchAlgo :: finalize ()
   Info("finalize()", "Deleting pointers...");
 
   delete m_isTruthMatchedDecor; m_isTruthMatchedDecor = nullptr;
-  delete m_isTruthMatchedIsoDecor; m_isTruthMatchedIsoDecor = nullptr;	 
-  delete m_isTruthMatchedNonIsoDecor; m_isTruthMatchedNonIsoDecor = nullptr;
-  delete m_isTruthMatchedSecondaryDecor; m_isTruthMatchedSecondaryDecor = nullptr;
-  delete m_isTruthMatchedUnknownDecor; m_isTruthMatchedUnknownDecor = nullptr;	 
-  delete m_isTruthMatchedOtherDecor; m_isTruthMatchedOtherDecor = nullptr;
   delete m_truthTypeDecor; m_truthTypeDecor = nullptr;
   delete m_truthPdgIdDecor; m_truthPdgIdDecor = nullptr;	 
   delete m_truthOriginDecor; m_truthOriginDecor = nullptr;	 
@@ -362,11 +334,6 @@ EL::StatusCode TruthMatchAlgo :: finalize ()
   
   delete m_mcEvtWeightAcc; m_mcEvtWeightAcc = nullptr;		 
   delete m_isTruthMatchedAcc; m_isTruthMatchedAcc = nullptr; 
-  delete m_isTruthMatchedIsoAcc; m_isTruthMatchedIsoAcc = nullptr;
-  delete m_isTruthMatchedNonIsoAcc; m_isTruthMatchedNonIsoAcc = nullptr;	 
-  delete m_isTruthMatchedSecondaryAcc; m_isTruthMatchedSecondaryAcc = nullptr;
-  delete m_isTruthMatchedUnknownAcc; m_isTruthMatchedUnknownAcc = nullptr;	
-  delete m_isTruthMatchedOtherAcc; m_isTruthMatchedOtherAcc = nullptr;	
   delete m_truthTypeAcc; m_truthTypeAcc = nullptr;  
   delete m_truthOriginAcc; m_truthOriginAcc = nullptr;	    
   delete m_isChFlipAcc; m_isChFlipAcc = nullptr;	 
@@ -403,334 +370,6 @@ EL::StatusCode TruthMatchAlgo :: histFinalize ()
   return EL::StatusCode::SUCCESS;
 }
 
-EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingDC14 ( const xAOD::IParticle* recoPart )
-{
-    
-  const xAOD::TruthEventContainer* truthEventContainer(nullptr);
-  RETURN_CHECK("applyTruthMatchingDC14()", HelperFunctions::retrieve(truthEventContainer, "TruthEvent", m_event, m_store, m_debug) , "");
-
-  // decorate reconstructed particle with default values
-  //
-  (*m_isTruthMatchedDecor)( *recoPart )	         = 0;  
-  (*m_isTruthMatchedIsoDecor)( *recoPart )       = 0;  
-  (*m_isTruthMatchedNonIsoDecor)( *recoPart )    = 0;   
-  (*m_isTruthMatchedSecondaryDecor)( *recoPart ) = 0;  
-  (*m_isTruthMatchedNoProdVtxDecor)( *recoPart ) = 0;  
-  (*m_isTruthMatchedOtherDecor)( *recoPart )	 = 0;  
-  (*m_truthPdgIdDecor)( *recoPart )         = 0; 
-  (*m_truthOriginDecor)( *recoPart )	 = 0;  
-  (*m_truthStatusDecor)( *recoPart )	 = 0;  
-  
-  // this will be the best-matching truth particle (if ever found)
-  //
-  const xAOD::TruthParticle* matchTruth(nullptr);
-
-  xAOD::IParticle::FourMom_t recoPart4mom = recoPart->p4();	
-     
-  // loop over truth events
-  //
-  for ( auto evt_it : *(truthEventContainer) ) {
-    
-    double minDR(0.2);
-    bool checkOnlyElectrons(false); // this needed to make sure you pick the right electron match in case of brem electrons
-    
-    int nPart = evt_it->nTruthParticles();
-    
-    // loop over truth particles in this truth event
-    //
-    for ( int iTPart = 0 ; iTPart < nPart ; ++iTPart ) {
-    
-      const xAOD::TruthParticle* truthPart = evt_it->truthParticle(iTPart);
-      if ( !truthPart ) { continue; }
-      
-      // skip all the protons : they have null p4() (ROOT will complain when calculating pseudorapidity), and won't be ever interesting for us
-      //
-      if ( truthPart->pdgId() == 2212 ) { continue; }
-
-      // special treatment for electrons (see below)	
-      //
-      if ( checkOnlyElectrons && !truthPart->isElectron() ) { continue; }
-
-      //if ( iTPart < 10 ) {
-      //  Info( "applyTruthMatchingDC14()", "candidate truth match:  "); 
-      //  Info( "applyTruthMatchingDC14()", " \t type: %i - status %i ",         truthPart->pdgId(), truthPart->status() ); 
-      //  Info( "applyTruthMatchingDC14()", " \t pT: %f eta: %f phi: %f m: %f ", truthPart->pt()/1e3 , truthPart->eta(), truthPart->phi(), truthPart->m()/1e3 );
-      //  Info( "applyTruthMatchingDC14()", " \t cos(theta)*cos(theta): %f",     truthPart4mom.CosTheta()*truthPart4mom.CosTheta());   
-      //}
-       
-      // set pt, eta, phi, m of truth 4 momentum (NB: FourMom_t it's a typedef of TLorentzVector)
-      //
-      xAOD::IParticle::FourMom_t truthPart4mom = truthPart->p4();
-      
-      double thisDR = recoPart4mom.DeltaR( truthPart4mom );
-      if ( thisDR < minDR ) { 
- 
-    	matchTruth = truthPart;
-
-	// if the matching particle within thisDR is:
-	//
-	// 1.  a muon : no need to shrink the cone anymore! Keep first one as the match
-	//
-	if ( matchTruth->isMuon() ) { break; } 
-	// 2. an electron : in the next iterations, make sure you will only check matching against other electrons
-	//                  ( you can have multiple truth electrons from brem, they can be close together, and you 
-	//                    want to take the one with the smallest dR ) 
-	//
-	if ( matchTruth->isElectron() ) { 
-	  checkOnlyElectrons = true; 
-	} 
-     
-     	minDR = thisDR; 
-      } 	     
-      
-    } // close loop on truth particles
-
-  } // close loop on truth events
-
-  // if there is no matching truth lepton, just return
-  //
-  if ( !matchTruth  ) {
-     if ( m_debug ) { Info( "applyTruthMatchingDC14()", "No truth matching for this reco lepton"); }
-     return EL::StatusCode::SUCCESS;    
-  }
-
-  // now try to find truth origin and type of the match
-  //
-  if ( !( matchTruth->isElectron() || matchTruth->isMuon() ) ) {
-    
-    if ( m_debug ) { 
-      Info( "applyTruthMatchingDC14()", "This reco lepton is truth matched neither to an electron, nor to a muon particle"); 
-      Info( "applyTruthMatchingDC14()", "\t truth match type: %i - status %i ", matchTruth->pdgId(), matchTruth->status() ); 
-    }
-    (*m_isTruthMatchedOtherDecor)( *recoPart ) = 1;
-  
-  } else {
-      
-    // okay, this truth match is an electron/muon. Let's see where it comes from...
-    //
-    // ...but first, let's decorate!
-    (*m_isTruthMatchedDecor)( *recoPart ) = 1;  
-      
-    if ( m_debug ) { Info( "applyTruthMatchingDC14()", "\t match type: %i - status %i ", matchTruth->pdgId(), matchTruth->status() ); }
-    
-    // look at all its parents
-    //
-    if ( m_debug ) { 
-      for ( size_t iParent = 0; iParent < matchTruth->nParents() ; ++iParent ) {
-    	 if ( m_debug ) { Info( "applyTruthMatchingDC14()", "\t parent idx %lu - type: %i - parent status %i ", iParent, matchTruth->parent(0)->pdgId(), matchTruth->parent(0)->status() ); }
-      }
-    }
-    // from now on, we will assume each truth lepton has only one parent
-    //
-    // check if it has a production vertex
-    //
-    if ( matchTruth->hasProdVtx() ) {
-       
-      // check if it comes from a secondary (GEANT4) interaction in the material (e.g., a conversion)
-      //
-      if ( matchTruth->prodVtx()->barcode() < -200000 ) {
-    	 
-    	 if ( m_debug ) { Info( "applyTruthMatchingDC14()", "This reco lepton is truth matched to a lepton from a secondary interaction in the detector"); }
-    	 if ( m_debug ) { Info( "applyTruthMatchingDC14()", "\t parent type: %i - parent status %i ", matchTruth->parent(0)->pdgId(), matchTruth->parent(0)->status() ); }
-    	 (*m_isTruthMatchedSecondaryDecor)( *recoPart ) = 1;
-
-    	 if ( m_debug ) { Info( "applyTruthMatchingDC14()", "\t accessing isTruthMatchedSecondary %i ", (*m_isTruthMatchedSecondaryAcc)( *recoPart ) ) ; }
-      
-      } else {
-    
-    	// check the provenance
-	//
-    	// keep on going backwards in the decay chain until not found :
-	//
-    	// -)  a B/C (heavy flavour) hadron  ||
-    	// -)  a generic light hadron (such as a pion in a jet) ||
-    	// -)  the incoming parton ( status == 2 --> unstable for the generator ) or a photon from ISR/FSR  ( status == 1 --> on shell photons are stable for the generator ) : PrimaryInteraction (PI) 
-	//
-    	bool foundHFHAD(false), foundLFHAD(false), foundPI(false);
-	xAOD::TruthParticle* this_parent = const_cast<xAOD::TruthParticle*>(matchTruth->parent(0));
-	unsigned int iGeneration(0);
-	while ( !foundHFHAD && !foundLFHAD && !foundPI ) {
-
-	   if ( !this_parent ) {
-    	     if ( m_debug ) { Info( "applyTruthMatchingDC14()", "generation: %u - has no parent! Breaking", iGeneration); }
-	     break;
-	   }
-
-    	   if ( m_debug ) { Info( "applyTruthMatchingDC14()", "generation: %u - truth match parent type: %i - status %i ", iGeneration, this_parent->pdgId(), this_parent->status() ); }
-    	   if ( this_parent->isHeavyHadron() ) {
-    	     foundHFHAD = true;
-    	   }
-    	   else if ( this_parent->isLightHadron() ) {
-    	     foundLFHAD = true;
-    	   }
-    	   else if ( ( this_parent->isParton() && ( this_parent->status() == 2 || this_parent->status() == 3 ) ) || ( this_parent->isPhoton() && ( this_parent->status() == 1 ) ) ) {
-    	     foundPI = true;
-    	   }
-
-	   ++iGeneration;
-  	   
-    	   // okay, if at the 7-th generation back in the chain we stil haven't found the intial parton (or a HF/LF hadron), let's break the loop
-	   //
-    	   if ( iGeneration > 6 ) {
-	     if ( m_debug ) { Info( "applyTruthMatchingDC14()", "After %u generations back, we haven't reached the primary interaction vertex yet. We will flag this lepton as prompt.", iGeneration ); }
-    	     foundPI = true;
-	   }
-	   
-	   // re-assign the parent, going back of one generation in the decay chain
-	   //
-	   this_parent = const_cast<xAOD::TruthParticle*>(this_parent->parent(0));
-	   
-    	}
-
-    	if ( foundHFHAD ) {
-    	  if ( m_debug ) { Info( "applyTruthMatchingDC14()", "Truth lepton is non-prompt (HFHAD decay)"); }
-    	  (*m_isTruthMatchedNonIsoDecor)( *recoPart )  = 1;
-    	} else if ( foundLFHAD ) {
-    	  if ( m_debug ) { Info( "applyTruthMatchingDC14()", "Truth lepton is non-prompt (generic LFHAD decay)"); }
-    	  (*m_isTruthMatchedNonIsoDecor)( *recoPart )  = 1;
-    	} else if ( foundPI ) {
-    	  if ( m_debug ) { Info( "applyTruthMatchingDC14()", "Truth lepton is prompt"); }
-    	  (*m_isTruthMatchedIsoDecor)( *recoPart )     = 1;
-    	} else {
-	  // should never reach this point, but let's decorate still...
-	  //
-          (*m_isTruthMatchedOtherDecor)( *recoPart )   = 1;
-	}
-    		      
-      }
-      
-    } else {
-      if ( m_debug ) { Info( "applyTruthMatchingDC14()", "Truth lepton has no production vertex... decorating with NoProdVtx "); }
-      (*m_isTruthMatchedNoProdVtxDecor)( *recoPart ) = 1;
-    }
-    
-  } // end of case: truth match is a lepton
-  
-  // store the pdgId and status of the match
-  //
-  if ( matchTruth ) {
-     if ( m_debug ) { Info( "applyTruthMatchingDC14()", "decorating truthPdgId with value : %i - truthStatus with value: %i", matchTruth->pdgId(), matchTruth->status() ); }
-    (*m_truthPdgIdDecor)( *recoPart )  = matchTruth->pdgId();
-    (*m_truthStatusDecor)( *recoPart ) = matchTruth->status();
-    
-     // store the pdgId of the parent particle of the match
-     //
-     if ( matchTruth->parent(0) ) {
-       if ( m_debug ) { Info( "applyTruthMatchingDC14()", "decorating truthOrigin with value: %i", matchTruth->parent(0)->pdgId() ); }
-      (*m_truthOriginDecor)( *recoPart ) = matchTruth->parent(0)->pdgId();
-     }
-  }
-     
-  // check if lepton is charge flip. Do it only for leptons that are truth matched to leptons!  
-  //
-  if ( ! (*m_isTruthMatchedOtherAcc).isAvailable( *recoPart ) ) {
-     Error("checkChargeFlip()", "No accessor isTruthMatchedOther available for this reco lepton. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
-  }  
-  if ( ! (*m_isTruthMatchedOtherAcc)( *recoPart ) ) {
-    if ( this->checkChargeFlip( recoPart, matchTruth ) != EL::StatusCode::SUCCESS ) {
-      Error("applyTruthMatchingDC14()", "Problem with checkChargeFlip(). Aborting"); 
-      return EL::StatusCode::FAILURE;
-    }
-  }
-  
-  return EL::StatusCode::SUCCESS;
-}
-
-EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth )
-{
-  
-  // default decorations
-  //
-  (*m_isChFlipDecor)( *recoPart )  = 0;  
-  (*m_isBremDecor)( *recoPart )    = 0;  
-
-  float reco_charge(0.0);	
-  if ( recoPart->type() == xAOD::Type::Electron ) {
-    reco_charge = dynamic_cast<const xAOD::Electron*>(recoPart)->charge();
-  } else if ( recoPart->type() == xAOD::Type::Muon ) {
-    reco_charge = dynamic_cast<const xAOD::Muon*>(recoPart)->charge();
-  }
-  if ( !reco_charge ) {
-     Error("checkChargeFlip()", "Reco particle has zero charge. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;	    
-  }
-
-  xAOD::TruthParticle* primitiveTruth(nullptr);
-  unsigned int iGeneration(0);
-
-  if ( ! (*m_isTruthMatchedSecondaryAcc).isAvailable( *recoPart ) ) {
-     Error("checkChargeFlip()", "No accessor isTruthMatchedSecondary available for this reco electron. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
-  }
-
-  // case 1: 
-  //
-  // lepton (in most cases, an electron) is matched to a truth lepton which is part of a bremmmstrahlung shower. 
-  // In this case, we need to go back until we find the original lepton that radiated the photon.
-  // The charge of this primitive lepton is the one to look at! 
-  //
-  if ( (*m_isTruthMatchedSecondaryAcc)( *recoPart ) ) {
-
-    if ( m_debug ) { Info("checkChargeFlip()", "This reco lepton (charge: %f ) is matched to a secondary truth lepton (pdgId: %i , prodVtx barcode: %i). Let's go back until we find the primitive", reco_charge, matchTruth->pdgId(), matchTruth->prodVtx()->barcode() ); }
-
-    bool foundPrimitive(false), isBrem(false);
-    primitiveTruth = const_cast<xAOD::TruthParticle*>( matchTruth->parent(0) );
-    
-    while ( !foundPrimitive ) {
-     
-      if ( primitiveTruth->prodVtx()->barcode() < -200000 ) { 
-	if ( m_debug ) { Info("checkChargeFlip()", "Parent has pdgId: %i , prodVtx barcode: %i - Need to go backwards in the decay chain", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
-	primitiveTruth = const_cast<xAOD::TruthParticle*>( primitiveTruth->parent(0) );
-	// do this only once
-	if ( !isBrem ) { 
-	  isBrem = true;
-	  (*m_isBremDecor)( *recoPart ) = 1; 
-	}
-      } else { 
-	if ( m_debug ) { Info("checkChargeFlip()", "We found the primitive! pdgId: %i , prodVtx barcode: %i - Stop here", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
-	foundPrimitive = true; 
-      }
-
-      ++iGeneration;
-  	   
-      // okay, if at the 20-th generation back in the chain we stil haven't found the primitive lepton (i.e, the one that radiated the photon), let's break the loop
-      //
-      if ( iGeneration > 19 ) {
-	if ( m_debug ) { Info( "checkChargeFlip()", "After %u generations back, we haven't reached the primitive yet. Let's break the loop.", iGeneration ); }
-	break;
-      }
-
-    }
-  
-  }
-  // case 2:
-  //
-  // lepton is matched to a truth lepton which is not produced in a secondary interaction (i.e., charge flip is due to charge mis-reconstruction). 
-  //
-  else 
-  {
-    primitiveTruth = const_cast<xAOD::TruthParticle*>( matchTruth );
-  }
-
-  if ( primitiveTruth->isNeutral() ) {
-    if ( m_debug ) { 
-      Info("checkChargeFlip()", "primitive truth particle is neutral. PdgId : %i , Origin %i.  Returning", primitiveTruth->pdgId(), primitiveTruth->parent(0)->pdgId() ); 
-    }
-    return StatusCode::SUCCESS;
-  }
-
-  float truth_charge	= primitiveTruth->charge();
-  int truth_norm_charge = static_cast<int>( truth_charge / fabs(truth_charge) );   
-  int reco_norm_charge  = static_cast<int>( reco_charge  / fabs(reco_charge)  ); 
-  
-  if ( ( reco_norm_charge * truth_norm_charge ) < 0 ) { 
-    if ( m_debug ) { Info("checkChargeFlip()", "Reco norm charge: %i \n, Primitive truth charge: %f  norm charge: %i  pdgId: %i  prodVtxBarcode: %i \n It's charge flip!", reco_norm_charge, truth_charge, truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
-    (*m_isChFlipDecor)( *recoPart ) = 1; 
-  }
-
-  return StatusCode::SUCCESS;
-}
 
 EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth )
 {
@@ -756,8 +395,8 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* r
   xAOD::TruthParticle* primitiveTruth(nullptr);
   unsigned int iGeneration(0);
 
-  if ( ! (*m_isTruthMatchedSecondaryAcc).isAvailable( *recoPart ) ) {
-     Error("checkChargeFlip()", "No accessor isTruthMatchedSecondary available for this reco electron. This shouldn't happen. Aborting"); 
+  if ( ! (*m_truthTypeAcc).isAvailable( *recoPart ) ) {
+     Error("checkChargeFlip()", "No accessor to truthType available for this reco lepton. This shouldn't happen. Aborting"); 
      return StatusCode::FAILURE;		
   }
 
@@ -767,7 +406,9 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* r
   // In this case, we need to go back until we find the original lepton that radiated the photon.
   // The charge of this primitive lepton is the one to look at! 
   //
-  if ( (*m_isTruthMatchedSecondaryAcc)( *recoPart ) ) {
+  // look at 'Background'-type el/mu (see MCTruthClassifier.h)
+  //
+  if ( (*m_truthTypeAcc)( *recoPart ) == 4 || (*m_truthTypeAcc)( *recoPart ) == 8 ) {
 
     if ( m_debug ) { Info("checkChargeFlip()", "This reco lepton (charge: %f ) is matched to a secondary truth lepton. Let's go back until we find the primitive", reco_charge ); }
 
@@ -841,17 +482,12 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::I
 
   // truth particle types are defined in HTopMultilepAnalysis/MCTruthClassifierDefs.h:
   //
-  // explaination can be found in: https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/MCTruthClassifier
+  // further explaination can be found in: https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/MCTruthClassifier
   // 
 
   // decorate reconstructed particle with default values
   //
   (*m_isTruthMatchedDecor)( *recoPart )	         = 0;
-  (*m_isTruthMatchedIsoDecor)( *recoPart )       = 0;
-  (*m_isTruthMatchedNonIsoDecor)( *recoPart )    = 0;
-  (*m_isTruthMatchedSecondaryDecor)( *recoPart ) = 0;
-  (*m_isTruthMatchedUnknownDecor)( *recoPart )   = 0;
-  (*m_isTruthMatchedOtherDecor)( *recoPart )     = 0;
   (*m_truthPdgIdDecor)( *recoPart )              = 0;
   (*m_truthStatusDecor)( *recoPart )	         = -1;  
 
@@ -876,23 +512,13 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::I
      return StatusCode::FAILURE;
   } 
   
-  // decorate with this if the truth match is an electron
+  // decorate with true if the truth match is an electron
   //
+  bool isTMElectron(false);
   if ( matchTruthEl->isElectron() ) {
+      isTMElectron = true;
      (*m_isTruthMatchedDecor)( *recoPart ) = 1;
   }
-  
-  if( ! (*m_truthTypeAcc).isAvailable( *recoPart ) ) {
-     Error("applyTruthMatchingElectronMC15()", "No truth type info available for this electron muon. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
-  }
-  int truthType = (*m_truthTypeAcc)( *recoPart );
-
-  if	  ( truthType == static_cast<int>(MCTruthPartClassifier::ParticleType::IsoElectron) )    {  (*m_isTruthMatchedIsoDecor)( *recoPart )	   = 1; }
-  else if ( truthType == static_cast<int>(MCTruthPartClassifier::ParticleType::NonIsoElectron) ) {  (*m_isTruthMatchedNonIsoDecor)( *recoPart )    = 1; }
-  else if ( truthType == static_cast<int>(MCTruthPartClassifier::ParticleType::BkgElectron) )    {  (*m_isTruthMatchedSecondaryDecor)( *recoPart ) = 1; }
-  else if ( truthType == static_cast<int>(MCTruthPartClassifier::ParticleType::UnknownElectron) ){  (*m_isTruthMatchedUnknownDecor)( *recoPart )   = 1; }
-  else   											 {  (*m_isTruthMatchedOtherDecor)( *recoPart )     = 1; }
 
   // store the pdgId of the match
   //
@@ -915,11 +541,7 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::I
     
   // check if electron is charge flip  
   //
-  if ( ! (*m_isTruthMatchedOtherAcc).isAvailable( *recoPart ) ) {
-     Error("applyTruthMatchingElectronMC15()", "No accessor isTruthMatchedOther available for this reco electron. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
-  }  
-  if ( !(*m_isTruthMatchedOtherAcc)( *recoPart ) ) {
+  if ( isTMElectron ) {
     if ( this->checkChargeFlipMC15( recoPart, matchTruthEl ) != EL::StatusCode::SUCCESS ) {
       Error("applyTruthMatchingElectronMC15()", "Problem with checkChargeFlipMC15(). Aborting"); 
       return EL::StatusCode::FAILURE;
@@ -981,11 +603,6 @@ EL::StatusCode TruthMatchAlgo :: doMuonTrackMatching( const xAOD::IParticle* rec
    // decorate reconstructed particle with default values
    //
    (*m_isTruthMatchedDecor)( *recoPart )	  = 0;
-   (*m_isTruthMatchedIsoDecor)( *recoPart )       = 0;
-   (*m_isTruthMatchedNonIsoDecor)( *recoPart )    = 0;
-   (*m_isTruthMatchedSecondaryDecor)( *recoPart ) = 0;
-   (*m_isTruthMatchedUnknownDecor)( *recoPart )   = 0;
-   (*m_isTruthMatchedOtherDecor)( *recoPart )     = 0;
    (*m_truthTypeDecor)( *recoPart )               = 0; // need it b/c for muons we need to pass from the track/muon truth container
    (*m_truthPdgIdDecor)( *recoPart )              = 0; 
    (*m_truthOriginDecor)( *recoPart )             = 0; // need it b/c for muons we need to pass from the track/muon truth container
@@ -1028,14 +645,16 @@ EL::StatusCode TruthMatchAlgo :: doMuonTrackMatching( const xAOD::IParticle* rec
      trk_prob = (*m_truthMatchProbabilityAcc)( *trk ); 
    }
 
-   // decorate with this if the truth match is a muon (NB: since we are looking at the track, this might not always be the case!!), 
+   // decorate with true if the truth match is a muon (NB: since we are looking at the track, this might not always be the case!!), 
    // and the track mc probability (when available) is high enough
    // 
+   bool isTMMuon(false);
    if ( matchTruthMu->isMuon()  && ( trk_prob < 0.0 || trk_prob > 0.8 ) ) {
+      isTMMuon = true;
      (*m_isTruthMatchedDecor)( *recoPart )     = 1;
    } 
  
-   // store the type of the parent particle of the match: pass the track type info to the reco muon
+   // store the type of the match: pass the track type info to the reco muon
    //
    if ( ! (*m_truthTypeAcc).isAvailable( *trk ) ) {
      Error("doMuonTrackMatching()", "No truth type info available for this muon's ID track matching truth particle. This shouldn't happen. Aborting"); 
@@ -1072,20 +691,9 @@ EL::StatusCode TruthMatchAlgo :: doMuonTrackMatching( const xAOD::IParticle* rec
    int truthTrkMatchOrigin = (*m_truthOriginAcc)(*trk);
    (*m_truthOriginDecor)( *recoPart ) = truthTrkMatchOrigin;
    
-   // decorate with MCTruthClassifier info
-   //
-   if	   ( truthTrkMatchType == static_cast<int>(MCTruthPartClassifier::ParticleType::IsoMuon) )    {  (*m_isTruthMatchedIsoDecor)( *recoPart )	= 1; }
-   else if ( truthTrkMatchType == static_cast<int>(MCTruthPartClassifier::ParticleType::NonIsoMuon) ) {  (*m_isTruthMatchedNonIsoDecor)( *recoPart )    = 1; }
-   else if ( truthTrkMatchType == static_cast<int>(MCTruthPartClassifier::ParticleType::BkgMuon) )    {  (*m_isTruthMatchedSecondaryDecor)( *recoPart ) = 1; }
-   else  											      {  (*m_isTruthMatchedOtherDecor)( *recoPart )     = 1; }
-   
    // check if muon is charge flip
    //  
-   if ( ! (*m_isTruthMatchedOtherAcc).isAvailable( *recoPart ) ) {
-     Error("doMuonTrackMatching()", "No accessor isTruthMatchedOther available for this reco muon. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
-   }  
-   if ( ! (*m_isTruthMatchedOtherAcc)(*recoPart) ) {
+   if ( isTMMuon ) {
      if ( this->checkChargeFlipMC15( recoPart, matchTruthMu ) != EL::StatusCode::SUCCESS ) {
        Error("doMuonTrackMatching()", "Problem with checkChargeFlipMC15(). Aborting"); 
        return EL::StatusCode::FAILURE;
@@ -1102,16 +710,10 @@ EL::StatusCode TruthMatchAlgo :: doMuonTruthPartMatching ( const xAOD::IParticle
    // decorate reconstructed particle with default values
    //
    (*m_isTruthMatchedDecor)( *recoPart )	  = 0;
-   (*m_isTruthMatchedIsoDecor)( *recoPart )       = 0;
-   (*m_isTruthMatchedNonIsoDecor)( *recoPart )    = 0;
-   (*m_isTruthMatchedSecondaryDecor)( *recoPart ) = 0;
-   (*m_isTruthMatchedUnknownDecor)( *recoPart )   = 0;
-   (*m_isTruthMatchedOtherDecor)( *recoPart )     = 0;
    (*m_truthTypeDecor)( *recoPart )               = 0; // need it b/c for muons we need to pass from the track/muon truth container
    (*m_truthPdgIdDecor)( *recoPart )              = 0; 
    (*m_truthOriginDecor)( *recoPart )             = 0; // need it b/c for muons we need to pass from the track/muon truth container
    (*m_truthStatusDecor)( *recoPart )	          = -1;  
-
 
    // get the truth muon matching the reco muon
    //
@@ -1136,11 +738,13 @@ EL::StatusCode TruthMatchAlgo :: doMuonTruthPartMatching ( const xAOD::IParticle
    
    // decorate with this if the truth match is a muon ( should ALWAYS be the case, since the truth we are getting is in the "MuonTruthParticles" container.! )
    //
+   bool isTMMuon(false);
    if ( matchTruthMu->isMuon() ) {
+     isTMMuon = true;
      (*m_isTruthMatchedDecor)( *recoPart ) = 1;
    } 
 
-   // store the type of the parent particle of the match: pass the truth muon type info to the reco muon
+   // store the type of the match: pass the truth muon type info to the reco muon
    //
    if ( ! (*m_truthTypeAcc).isAvailable( *matchTruthMu ) ) {
      Error("doMuonTruthPartMatching()", "No truth type info available for this muon's matching truth particle. This shouldn't happen. Aborting"); 
@@ -1177,22 +781,10 @@ EL::StatusCode TruthMatchAlgo :: doMuonTruthPartMatching ( const xAOD::IParticle
    int truthMatchOrigin = (*m_truthOriginAcc)(*matchTruthMu);
    (*m_truthOriginDecor)( *recoPart ) = truthMatchOrigin;
    
-   // decorate with MCTruthClassifier info
-   //
-   // NB: keep in mind that only 'IsoMuon' and 'NonIsoMuon' will take meaningful values in this case (see header file)
-   //
-   if	   ( truthMatchType == static_cast<int>(MCTruthPartClassifier::ParticleType::IsoMuon) )    {  (*m_isTruthMatchedIsoDecor)( *recoPart )       = 1; }
-   else if ( truthMatchType == static_cast<int>(MCTruthPartClassifier::ParticleType::NonIsoMuon) ) {  (*m_isTruthMatchedNonIsoDecor)( *recoPart )    = 1; }
-   else if ( truthMatchType == static_cast<int>(MCTruthPartClassifier::ParticleType::BkgMuon) )    {  (*m_isTruthMatchedSecondaryDecor)( *recoPart ) = 1; }
-   else  											   {  (*m_isTruthMatchedOtherDecor)( *recoPart )     = 1; }
 
    // check if muon is charge flip  
    //
-   if ( ! (*m_isTruthMatchedOtherAcc).isAvailable( *recoPart ) ) {
-     Error("doMuonTruthPartMatching()", "No accessor isTruthMatchedOther available for this reco muon. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
-   }  
-   if ( ! (*m_isTruthMatchedOtherAcc)(*recoPart) ) {
+   if ( isTMMuon ) {
      if ( this->checkChargeFlipMC15( recoPart, matchTruthMu ) != EL::StatusCode::SUCCESS ) {
        Error("doMuonTruthPartMatching()", "Problem with checkChargeFlipMC15(). Aborting"); 
        return EL::StatusCode::FAILURE;
