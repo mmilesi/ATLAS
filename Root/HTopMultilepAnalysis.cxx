@@ -25,6 +25,7 @@
 #include "xAODTruth/TruthEventContainer.h"
 #include "xAODTruth/TruthParticle.h"
 #include "xAODTruth/TruthVertex.h"
+#include "xAODMissingET/MissingETContainer.h"
 
 // package include(s):
 #include "xAODAnaHelpers/HelperFunctions.h"
@@ -871,18 +872,24 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      // now decorate event!
      isSS01Decor(*eventInfo) = ( prod_lep_charge > 0 );
      
-     // FIXME : decorate w/ MET, mT	
-     /*
-     TLorentzVector met_4mom, lepton_4mom;
-     met_4mom.SetPtEtaPhiM(ao->eventselections.met_et, 0, ao->eventselections.met_phi,0);
-     double mt;// Transverse mass
-     lepton_4mom.SetPtEtaPhiM(ao->channelvariables.lepAPt, ao->channelvariables.lepAEta, ao->channelvariables.lepAPhi, ao->channelvariables.lepAM);
-     mt = sqrt( 2*lepton_4mom.Pt()*(met_4mom.Pt())*(1.-cos(lepton_4mom.DeltaPhi(met_4mom))) );
-     ao->channelvariables.mTLep0 = mt;
-     lepton_4mom.SetPtEtaPhiM(ao->channelvariables.Lep1Pt, ao->channelvariables.Lep1Eta, ao->channelvariables.Lep1Phi, ao->channelvariables.Lep1M);
-     mt = sqrt( 2*lepton_4mom.Pt()*(met_4mom.Pt())*(1.-cos(lepton_4mom.DeltaPhi(met_4mom))) );
-     ao->channelvariables.mTLep1 = mt;
-     */
+     // mT( lep, MET )	
+     //
+     const xAOD::MissingETContainer* inMETCont(nullptr);
+     RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inMETCont, "MET_Reference_AntiKt4EMTopo", m_event, m_store, m_debug) , "");
+
+     static SG::AuxElement::Decorator<float> mTLep0METDecor("mT_lep0MET");
+     static SG::AuxElement::Decorator<float> mTLep1METDecor("mT_lep1MET");
+
+     const xAOD::MissingET* final = *inMETCont->find("FinalClus"); // ("FinalClus" uses the calocluster-based soft terms, "FinalTrk" uses the track-based ones)
+     TLorentzVector MET;
+     MET.SetPtEtaPhiM( final->met(), 0, final->phi(), 0 );
+
+     float mT(-1.0);
+     mT = sqrt( 2.0 * lepA_4mom.Pt() * ( MET.Pt() ) * ( 1.0 - cos( lepA_4mom.DeltaPhi(MET) ) ) );
+     mTLep0METDecor( *eventInfo ) = mT;  
+     mT = sqrt( 2.0 * lepB_4mom.Pt() * ( MET.Pt() ) * ( 1.0 - cos( lepB_4mom.DeltaPhi(MET) ) ) );
+     mTLep1METDecor( *eventInfo ) = mT;
+
   }
   else if ( nLeptons == 3 )
   {

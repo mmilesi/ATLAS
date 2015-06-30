@@ -1,17 +1,19 @@
 #include "HTopMultilepAnalysis/HTopMultilepTree.h"
 
 HTopMultilepTree :: HTopMultilepTree(xAOD::TEvent* event, TTree* tree, TFile* file, const float units, bool debug, bool DC14 ) : 
-  HelpTreeBase(event, tree, file, units, debug )
+  HelpTreeBase(event, tree, file, units, debug, DC14 )
 {
   Info("HTopMultilepTree", "Creating output TTree");
 }
 
-HTopMultilepTree :: ~HTopMultilepTree() 
-{
-}
+HTopMultilepTree :: ~HTopMultilepTree() {}
 
 void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
 {
+
+  // to get rid of warning when detailString is not used
+  if ( m_debug ) { Info("AddEventUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
+
   // event variables
   m_tree->Branch("isMC",              &m_is_mc, "isMC/I");  
   m_tree->Branch("ystar",             &m_ystar, "ystar/F");
@@ -25,6 +27,8 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("mll02",             &m_mll02, "mll02/F");
   m_tree->Branch("mll12",             &m_mll12, "mll12/F");
   m_tree->Branch("mlll012",           &m_mlll012, "mlll012/F");
+  m_tree->Branch("mT_lep0MET",        &m_mT_lep0MET, "mT_lep0MET/F");
+  m_tree->Branch("mT_lep1MET",        &m_mT_lep1MET, "mT_lep1MET/F");
   m_tree->Branch("isTT",              &m_isTT, "isTT/I"); 
   m_tree->Branch("isTL",              &m_isTL, "isTL/I"); 
   m_tree->Branch("isLT",              &m_isLT, "isLT/I"); 
@@ -34,14 +38,23 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("isProbeMuEvent",    &m_isProbeMuEvent,     "isProbeMuEvent/I");
 }
 
+/*
 void HTopMultilepTree::AddTriggerUser(const std::string detailStrUser)
 {
+
+  // to get rid of warning when detailString is not used
+  if ( m_debug ) { Info("AddTriggerUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
+
   // trigger variables
 }
-
+*/
 
 void HTopMultilepTree::AddJetsUser(const std::string detailStrUser)
 {
+
+  // to get rid of warning when detailString is not used
+  if ( m_debug ) { Info("AddJetsUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
+
   // jet variables
   m_tree->Branch("jet_m",     &m_jet_m);    
   m_tree->Branch("jet_clean", &m_jet_clean);
@@ -49,6 +62,10 @@ void HTopMultilepTree::AddJetsUser(const std::string detailStrUser)
 
 void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
 {
+
+  // to get rid of warning when detailString is not used
+  if ( m_debug ) { Info("AddMuonsUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
+
   // muon variables  
   m_tree->Branch("muon_isTight",                       &m_muon_isTight); 
   m_tree->Branch("muon_isTruthMatchedToMuon",          &m_muon_isTruthMatched); 
@@ -86,7 +103,11 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
 }
 
 void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
-{   		     
+{  
+
+  // to get rid of warning when detailString is not used
+  if ( m_debug ) { Info("AddElectronsUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
+ 		     
   // electron variables  
   m_tree->Branch("el_calo_eta",                        &m_electron_calo_eta);
   m_tree->Branch("el_crack",                           &m_electron_crack);
@@ -187,19 +208,36 @@ void HTopMultilepTree::AddLeptons()
 }
 
 void HTopMultilepTree::AddTausUser(const std::string detailStrUser)
-{   		     
+{   	
+
+  // to get rid of warning when detailString is not used
+  if ( m_debug ) { Info("AddTausUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
+	     
   m_tree->Branch("tau_isBDTTight",	                &m_tau_isBDTTight );
 }
 
-void HTopMultilepTree::ClearEventUser() {
+/*
+void HTopMultilepTree::AddMETUser(const std::string detailStrUser)  
+{ 
+  
+  // to get rid of warning when detailString is not used
+  if ( m_debug ) { Info("AddMETUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
+
+}
+*/
+
+void HTopMultilepTree::ClearEventUser() 
+{
   m_MMWeight.clear();
   m_FFWeight.clear();
 }
 
-void HTopMultilepTree::ClearTriggerUser() {
-}
+/*
+void HTopMultilepTree::ClearTriggerUser() {}
+*/
   
-void HTopMultilepTree::ClearMuonsUser() {  
+void HTopMultilepTree::ClearMuonsUser() 
+{  
   // muon variables 
   m_muon_isTight.clear();
   m_muon_isTruthMatched.clear(); 
@@ -238,7 +276,8 @@ void HTopMultilepTree::ClearMuonsUser() {
   m_muon_probe_truthStatus.clear();  
 }  
 
-void HTopMultilepTree::ClearElectronsUser() {  
+void HTopMultilepTree::ClearElectronsUser() 
+{  
   // electron variables
   m_electron_calo_eta.clear();
   m_electron_crack.clear();
@@ -280,14 +319,16 @@ void HTopMultilepTree::ClearElectronsUser() {
 }
 
 
-void HTopMultilepTree::ClearJetsUser() {
+void HTopMultilepTree::ClearJetsUser() 
+{
   // jet variables 
   m_jet_m.clear();
   m_jet_clean.clear();
 }  
 
 
-void HTopMultilepTree::ClearLeptons() {
+void HTopMultilepTree::ClearLeptons() 
+{
   m_lepton_pt.clear();
   m_lepton_phi.clear();
   m_lepton_eta.clear();
@@ -337,11 +378,17 @@ void HTopMultilepTree::ClearLeptons() {
   m_lepton_probe_truthStatus.clear();   
 }  
 
-void HTopMultilepTree::ClearTausUser() {  
+void HTopMultilepTree::ClearTausUser() 
+{  
   m_tau_isBDTTight.clear();
 }
 
-void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo ) { 
+/*
+void HTopMultilepTree::ClearMETUser() {}
+*/
+
+void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo ) 
+{ 
   
   m_is_mc              =  ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
   m_ystar              =  ( eventInfo->isAvailable< float >( "ystar" ) )                    ?  eventInfo->auxdecor< float >( "ystar" )                 :   999.0;
@@ -355,6 +402,8 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo ) {
   m_mll02    	       =  ( eventInfo->isAvailable< float >( "mll02" ) )    	            ?  ( eventInfo->auxdecor< float >( "mll02" ) / m_units )   : -1.0;
   m_mll12    	       =  ( eventInfo->isAvailable< float >( "mll12" ) )    	            ?  ( eventInfo->auxdecor< float >( "mll12" ) / m_units )   : -1.0;
   m_mlll012  	       =  ( eventInfo->isAvailable< float >( "mlll012" ) )  	            ?  ( eventInfo->auxdecor< float >( "mlll012" ) / m_units ) : -1.0;
+  m_mT_lep0MET         =  ( eventInfo->isAvailable< float >( "mT_lep0MET" ) )    	    ?  ( eventInfo->auxdecor< float >( "mT_lep0MET" ) / m_units )   : -1.0;
+  m_mT_lep1MET         =  ( eventInfo->isAvailable< float >( "mT_lep1MET" ) )    	    ?  ( eventInfo->auxdecor< float >( "mT_lep1MET" ) / m_units )   : -1.0;
   m_isTT   	       =  ( eventInfo->isAvailable< char >( "isTT" ) )                      ?  eventInfo->auxdecor< char >( "isTT" )                   :   -1;
   m_isTL   	       =  ( eventInfo->isAvailable< char >( "isTL" ) )                      ?  eventInfo->auxdecor< char >( "isTL" )                   :   -1;
   m_isLT   	       =  ( eventInfo->isAvailable< char >( "isLT" ) )                      ?  eventInfo->auxdecor< char >( "isLT" )                   :   -1;
@@ -364,12 +413,12 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo ) {
   m_isProbeMuEvent     =  ( eventInfo->isAvailable< char >( "isProbeMuEvent" ) )            ?  eventInfo->auxdecor< char >( "isProbeMuEvent" )         :  -1;
 }
 
-void HTopMultilepTree::FillTriggerUser( const xAOD::EventInfo* eventInfo ) { 
-}
+/*
+void HTopMultilepTree::FillTriggerUser( const xAOD::EventInfo* eventInfo ) { }
+*/
 
-
-
-void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet ) {
+void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet ) 
+{
   
   static SG::AuxElement::Accessor< char > isCleanAcc("cleanJet");
   
@@ -380,7 +429,8 @@ void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet ) {
   
 }
 
-void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) {
+void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) 
+{
 
   // access this info only to fill tag/probe branches
   static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched"); 
@@ -483,7 +533,8 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) {
 
 }
 
-void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron ) {
+void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron ) 
+{
 
   // access this info only to fill tag/probe branches
   static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched"); 
@@ -599,11 +650,8 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron ) {
 
 }
 
-void HTopMultilepTree::FillFatJetsUser( const xAOD::Jet* fatJet )
+void HTopMultilepTree::FillTausUser( const xAOD::TauJet* tau )
 {
-}
-
-void HTopMultilepTree::FillTausUser( const xAOD::TauJet* tau ) {
   
   static SG::AuxElement::Accessor< char > isTauBDTTightAcc("isTauBDTTight");
   
@@ -612,7 +660,12 @@ void HTopMultilepTree::FillTausUser( const xAOD::TauJet* tau ) {
   
 }
 
-void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons ) {
+/*
+void HTopMultilepTree::FillMETUser( const xAOD::MissingETContainer* met ) {}
+*/
+
+void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons ) 
+{
 
   this->ClearLeptons();
 

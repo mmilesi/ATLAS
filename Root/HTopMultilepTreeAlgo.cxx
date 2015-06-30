@@ -38,6 +38,7 @@ HTopMultilepTreeAlgo :: HTopMultilepTreeAlgo () :
   m_jetDetailStr            = "";
   m_fatJetDetailStr         = "";
   m_tauDetailStr            = "";
+  m_METDetailStr            = "";  
 
   m_debug                   = false;
 
@@ -48,6 +49,7 @@ HTopMultilepTreeAlgo :: HTopMultilepTreeAlgo () :
   m_jetContainerName        = "";
   m_fatJetContainerName     = "";
   m_tauContainerName        = "";
+  m_METContainerName        = "";  
   m_lepContainerName        = "";
 
   // DC14 switch for little things that need to happen to run
@@ -103,6 +105,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
   if ( !m_jetContainerName.empty() )    {   m_helpTree->AddJets       (m_jetDetailStr);     }
   if ( !m_fatJetContainerName.empty() ) {   m_helpTree->AddFatJets    (m_fatJetDetailStr);  }
   if ( !m_tauContainerName.empty() )    {   m_helpTree->AddTaus       (m_tauDetailStr);     }
+  if ( !m_METContainerName.empty() )    {   m_helpTree->AddMET        (m_METDetailStr);     }  
   if ( !m_lepContainerName.empty() )    {   m_helpTree->AddLeptons    ();                   }
 
   Info("treeInitialize()", "Successfully initialized output tree");
@@ -125,6 +128,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: configure ()
     m_jetDetailStr            = config->GetValue("JetDetailStr",         m_jetDetailStr.c_str());
     m_fatJetDetailStr         = config->GetValue("FatJetDetailStr",      m_fatJetDetailStr.c_str());
     m_tauDetailStr            = config->GetValue("TauDetailStr",         m_tauDetailStr.c_str());
+    m_METDetailStr            = config->GetValue("METDetailStr",         m_METDetailStr.c_str());    
 
     m_debug                   = config->GetValue("Debug" ,           m_debug);
 
@@ -135,6 +139,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: configure ()
     m_jetContainerName        = config->GetValue("JetContainerName",        m_jetContainerName.c_str());
     m_fatJetContainerName     = config->GetValue("FatJetContainerName",     m_fatJetContainerName.c_str());
     m_tauContainerName        = config->GetValue("TauContainerName",        m_tauContainerName.c_str());
+    m_METContainerName        = config->GetValue("METContainerName",        m_METContainerName.c_str());
     m_lepContainerName        = config->GetValue("LepContainerName",        m_lepContainerName.c_str());
 
     // DC14 switch for little things that need to happen to run
@@ -182,6 +187,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
   const xAOD::JetContainer* inJets(nullptr);
   const xAOD::JetContainer* inFatJets(nullptr);
   const xAOD::TauJetContainer* inTaus(nullptr);
+  const xAOD::MissingETContainer* inMETCont(nullptr);
   ConstDataVector<xAOD::IParticleContainer>* leptonsCDV(nullptr);
 
   if ( !m_muContainerName.empty() ) {	
@@ -226,6 +232,12 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
     const xAOD::TauJetContainer inTausSorted = HelperFunctions::sort_container_pt( inTaus );
     m_helpTree->FillTaus( &inTausSorted );
     
+  }
+  if ( !m_METContainerName.empty() ) {
+
+    RETURN_CHECK("HTopMultilepTreeAlgo::execute()", HelperFunctions::retrieve(inMETCont, m_METContainerName, m_event, m_store, m_debug) , "");
+    m_helpTree->FillMET( inMETCont );
+
   }
   if ( !m_lepContainerName.empty() ) {	
     

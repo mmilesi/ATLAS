@@ -37,6 +37,8 @@ class HTopMultilepTree : public HelpTreeBase
     float  		m_mll02;   
     float  		m_mll12;   
     float  		m_mlll012;
+    float               m_mT_lep0MET;
+    float               m_mT_lep1MET;
     int  		m_isTT;
     int  		m_isTL;
     int  		m_isLT;
@@ -190,28 +192,31 @@ class HTopMultilepTree : public HelpTreeBase
     ~HTopMultilepTree();
 
     void AddEventUser(const std::string detailStrUser = "");
-    void AddTriggerUser(const std::string detailStrUser = "");
+    /*void AddTriggerUser(const std::string detailStrUser = "");*/
     void AddMuonsUser(const std::string detailStrUser = "");
     void AddElectronsUser(const std::string detailStrUser = "");
     void AddJetsUser(const std::string detailStrUser = "");
     void AddTausUser(const std::string detailStrUser = "");
+    /*void AddMETUser(const std::string detailStrUser = "");*/    
+    
     void AddLeptons();
     
     void ClearEventUser();
-    void ClearTriggerUser();
+    /*void ClearTriggerUser();*/
     void ClearMuonsUser();   
     void ClearElectronsUser();  
     void ClearJetsUser();
     void ClearTausUser();
+    /*void ClearMETUser();*/    
     void ClearLeptons();
     
-    void FillEventUser( const xAOD::EventInfo* eventInfo );
-    void FillTriggerUser( const xAOD::EventInfo* eventInfo );
-    void FillMuonsUser( const xAOD::Muon* muon );
-    void FillElectronsUser( const xAOD::Electron* electron );
-    void FillJetsUser( const xAOD::Jet* jet );
-    void FillFatJetsUser( const xAOD::Jet* fatJet );
-    void FillTausUser( const xAOD::TauJet* tau );
-    void FillLeptons( const xAOD::IParticleContainer* leptons ); 
+    void FillEventUser( const xAOD::EventInfo* );
+    /*void FillTriggerUser( const xAOD::EventInfo*  );*/
+    void FillMuonsUser( const xAOD::Muon* );
+    void FillElectronsUser( const xAOD::Electron*  );
+    void FillJetsUser( const xAOD::Jet* );
+    void FillTausUser( const xAOD::TauJet* );
+    /*void FillMETUser( const xAOD::MissingETContainer*  );*/
+    void FillLeptons( const xAOD::IParticleContainer*  ); 
 };
 #endif
