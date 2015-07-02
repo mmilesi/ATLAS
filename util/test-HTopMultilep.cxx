@@ -19,6 +19,7 @@
 #include "HTopMultilepAnalysis/HTopMultilepEventSelector.h"
 #include "HTopMultilepAnalysis/TruthMatchAlgo.h"
 #include "HTopMultilepAnalysis/HTopMultilepTreeAlgo.h"
+#include "xAODAnaHelpers/Algorithm.h"
 #include "xAODAnaHelpers/BasicEventSelection.h"
 #include "xAODAnaHelpers/JetCalibrator.h"
 #include "xAODAnaHelpers/JetSelector.h"
@@ -201,10 +202,15 @@ int main ( int argc, char **argv ) {
 
     //
     // 1. xAODAnaHelpers algorithms
-    //    
+    //  
+    
+    xAH::AlgorithmRegistry my_registry;
+      
     // basic event selection : this is mandatory!
     BasicEventSelection* baseEventSel             = new BasicEventSelection();
     baseEventSel->setName("baseEventSel")->setConfig(localDataDir+"Event/"+"baseEvent_HTopMultilep"+"_"+inDSType+".config");
+    //baseEventSel->setName("baseEventSel")->setConfig(localDataDir+"Event/"+"baseEvent_HTopMultilep"+"_"+inDSType+"_AC.config");
+    
     JetCalibrator* jetCalib                       = new JetCalibrator();
     jetCalib->setName("jetCalib_AntiKt4EMTopo")->setConfig(localDataDir+"Jets/"+"jetCalib_AntiKt4TopoEMCalib"+"_"+inDSType+".config");
     MuonCalibrator* muonCalib                     = new MuonCalibrator();
@@ -218,15 +224,17 @@ int main ( int argc, char **argv ) {
     JetSelector* jetSelect_selection              = new JetSelector();
     jetSelect_selection->setName("jetSelect_selection")->setConfig(localDataDir+"Jets/"+"jetSelect_HTopMultilep"+"_"+inDSType+".config");
     MuonSelector* muonSelect_preselection         = new MuonSelector();
-    muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config");
+    muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(my_registry, "MuonSelector");
+    //muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+"_AC.config")->registerClass("MuonSelector");    
     ElectronSelector* electronSelect_preselection   = new ElectronSelector();
-    electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config");
+    electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(my_registry, "ElectronSelector");
+    //electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+"_AC.config")->registerClass("ElectronSelector");
     BJetEfficiencyCorrector* bjetEffCorr_btag     = new BJetEfficiencyCorrector();
     bjetEffCorr_btag->setName("bjetEffCor_btag")->setConfig(localDataDir+"Jets/"+"bjetEffCorr"+"_"+inDSType+".config");
     MuonSelector* muonSelect_selection            = new MuonSelector();
-    muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config");
+    muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(my_registry, "MuonSelector");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
-    electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config");
+    electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(my_registry, "ElectronSelector");
     OverlapRemover* overlapRemoval                = new OverlapRemover();
     overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config");
     METConstructor* met                           = new METConstructor();
