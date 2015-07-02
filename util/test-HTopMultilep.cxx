@@ -204,41 +204,37 @@ int main ( int argc, char **argv ) {
     // 1. xAODAnaHelpers algorithms
     //  
     
-    xAH::AlgorithmRegistry my_registry;
+    xAH::AlgorithmRegistry registry;
       
     // basic event selection : this is mandatory!
     BasicEventSelection* baseEventSel             = new BasicEventSelection();
-    baseEventSel->setName("baseEventSel")->setConfig(localDataDir+"Event/"+"baseEvent_HTopMultilep"+"_"+inDSType+".config");
-    //baseEventSel->setName("baseEventSel")->setConfig(localDataDir+"Event/"+"baseEvent_HTopMultilep"+"_"+inDSType+"_AC.config");
-    
+    baseEventSel->setName("baseEventSel")->setConfig(localDataDir+"Event/"+"baseEvent_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "BasicEventSelection");
     JetCalibrator* jetCalib                       = new JetCalibrator();
-    jetCalib->setName("jetCalib_AntiKt4EMTopo")->setConfig(localDataDir+"Jets/"+"jetCalib_AntiKt4TopoEMCalib"+"_"+inDSType+".config");
+    jetCalib->setName("jetCalib_AntiKt4EMTopo")->setConfig(localDataDir+"Jets/"+"jetCalib_AntiKt4TopoEMCalib"+"_"+inDSType+".config")->registerClass(registry, "JetCalibrator");
     MuonCalibrator* muonCalib                     = new MuonCalibrator();
-    muonCalib->setName("muonCalib")->setConfig(localDataDir+"Muons/"+"muonCalib"+"_"+inDSType+".config");
+    muonCalib->setName("muonCalib")->setConfig(localDataDir+"Muons/"+"muonCalib"+"_"+inDSType+".config")->registerClass(registry, "MuonCalibrator");
     ElectronCalibrator* electronCalib             = new ElectronCalibrator();
-    electronCalib->setName("electronCalib")->setConfig(localDataDir+"Electrons/"+"electronCalib"+"_"+inDSType+".config");
+    electronCalib->setName("electronCalib")->setConfig(localDataDir+"Electrons/"+"electronCalib"+"_"+inDSType+".config")->registerClass(registry, "ElectronCalibrator");
     MuonEfficiencyCorrector*      muonEffCorr     = new MuonEfficiencyCorrector();
-    muonEffCorr->setName("muonEfficiencyCorrector")->setConfig(localDataDir+"Muons/"+"muonEffCorr"+"_"+inDSType+".config");
+    muonEffCorr->setName("muonEfficiencyCorrector")->setConfig(localDataDir+"Muons/"+"muonEffCorr"+"_"+inDSType+".config")->registerClass(registry, "MuonEfficiencyCorrector");
     ElectronEfficiencyCorrector*  electronEffCorr = new ElectronEfficiencyCorrector();
-    electronEffCorr->setName("electronEfficiencyCorrector")->setConfig(localDataDir+"Electrons/"+"electronEffCorr"+"_"+inDSType+".config");
+    electronEffCorr->setName("electronEfficiencyCorrector")->setConfig(localDataDir+"Electrons/"+"electronEffCorr"+"_"+inDSType+".config")->registerClass(registry, "ElectronEfficiencyCorrector");
     JetSelector* jetSelect_selection              = new JetSelector();
-    jetSelect_selection->setName("jetSelect_selection")->setConfig(localDataDir+"Jets/"+"jetSelect_HTopMultilep"+"_"+inDSType+".config");
+    jetSelect_selection->setName("jetSelect_selection")->setConfig(localDataDir+"Jets/"+"jetSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "JetSelector");
     MuonSelector* muonSelect_preselection         = new MuonSelector();
-    muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(my_registry, "MuonSelector");
-    //muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+"_AC.config")->registerClass("MuonSelector");    
+    muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_preselection   = new ElectronSelector();
-    electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(my_registry, "ElectronSelector");
-    //electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+"_AC.config")->registerClass("ElectronSelector");
+    electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
     BJetEfficiencyCorrector* bjetEffCorr_btag     = new BJetEfficiencyCorrector();
-    bjetEffCorr_btag->setName("bjetEffCor_btag")->setConfig(localDataDir+"Jets/"+"bjetEffCorr"+"_"+inDSType+".config");
+    bjetEffCorr_btag->setName("bjetEffCor_btag")->setConfig(localDataDir+"Jets/"+"bjetEffCorr"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
     MuonSelector* muonSelect_selection            = new MuonSelector();
-    muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(my_registry, "MuonSelector");
+    muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
-    electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(my_registry, "ElectronSelector");
+    electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
     OverlapRemover* overlapRemoval                = new OverlapRemover();
-    overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config");
+    overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
     METConstructor* met                           = new METConstructor();
-    met->setName("met")->setConfig(localDataDir+"MET/"+"MET_HTopMultilep"+"_"+inDSType+".config");
+    met->setName("met")->setConfig(localDataDir+"MET/"+"MET_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "METConstructor");
 
     //
     // 2. HTopMultilepAnalysis algorithms
@@ -257,7 +253,7 @@ int main ( int argc, char **argv ) {
     JetHistsAlgo* jetHistsAlgo_all(nullptr); 
     if ( make_histos ) {
       JetHistsAlgo* jk_AntiKt4EM                   = new JetHistsAlgo();
-      jk_AntiKt4EM->setName("AntiKt4EM/")->setConfig(localDataDir+"Jets/"+"jetHistsAlgo_signal.config");
+      jk_AntiKt4EM->setName("AntiKt4EM/")->setConfig(localDataDir+"Jets/"+"jetHistsAlgo_signal.config")->registerClass(registry, "JetHistsAlgo");
     }  
           
     //size_t isDxAOD = inDSType.find("DxAOD");
