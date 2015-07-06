@@ -274,7 +274,7 @@ int main ( int argc, char **argv ) {
     job.algsAdd( electronEffCorr );
     //job.algsAdd( met );
     job.algsAdd( eventSelect );
-    //job.algsAdd( truthMatching );
+    job.algsAdd( truthMatching );
     job.algsAdd( analysis );
     if ( make_histos ) {
       job.algsAdd( jetHistsAlgo_all );
