@@ -437,7 +437,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
       return EL::StatusCode::FAILURE;
     } 
 
-    // flag the "Tight" electrons
+    // flag the "Tight" electrons: use isolation && PID
     if (  isIsoAcc( *el_itr ) ) {
         if      ( m_doLHPIDCut       && LHTightAcc( *el_itr )  ) { isTightDecor( *el_itr ) = 1; }
 	else if ( m_doCutBasedPIDCut && EMTightAcc( *el_itr ) )  { isTightDecor( *el_itr ) = 1; }
@@ -455,11 +455,13 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 	return EL::StatusCode::FAILURE;
       } 
 
-      // flag the "Tight" muons
+      // flag the "Tight" muons: use isolation && d0sig 
       if ( isIsoAcc( *mu_itr) ) {
-          const xAOD::TrackParticle* tp  = mu_itr->primaryTrackParticle();
-          float d0_significance = fabs( tp->d0() ) / sqrt( tp->definingParametersCovMatrix()(0,0) );	  
-          if  ( d0_significance < 3.0 ) { isTightDecor( *mu_itr ) = 1; }
+	  
+          static SG::AuxElement::Accessor<float> d0SigAcc ("d0sig");
+          float d0_significance =  ( d0SigAcc.isAvailable( *mu_itr ) ) ? fabs( d0SigAcc( *mu_itr ) ) : -9999.0;
+	  
+          if  ( fabs(d0_significance) < 3.0 ) { isTightDecor( *mu_itr ) = 1; }
       }	
   }
   
