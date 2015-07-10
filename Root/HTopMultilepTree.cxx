@@ -1,7 +1,7 @@
 #include "HTopMultilepAnalysis/HTopMultilepTree.h"
 
-HTopMultilepTree :: HTopMultilepTree(xAOD::TEvent* event, TTree* tree, TFile* file, const float units, bool debug, bool DC14 ) : 
-  HelpTreeBase(event, tree, file, units, debug, DC14 )
+HTopMultilepTree :: HTopMultilepTree( TTree* tree, TFile* file, xAOD::TEvent* event, xAOD::TStore* store, const float units, bool debug, bool DC14 ) : 
+  HelpTreeBase(tree, file, event, store, units, debug, DC14 )
 {
   Info("HTopMultilepTree", "Creating output TTree");
 }

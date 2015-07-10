@@ -188,7 +188,7 @@ class HTopMultilepTree : public HelpTreeBase
     
   public:
     
-    HTopMultilepTree(xAOD::TEvent * event, TTree* tree, TFile* file, const float units = 1e3, bool debug = false, bool DC14 = false );
+    HTopMultilepTree( TTree* tree, TFile* file, xAOD::TEvent* event, xAOD::TStore* store, const float units = 1e3, bool debug = false, bool DC14 = false );
     ~HTopMultilepTree();
 
     void AddEventUser(const std::string detailStrUser = "");

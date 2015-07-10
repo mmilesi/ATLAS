@@ -169,7 +169,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
   // get the hard-scatter primaryVertex
   const xAOD::Vertex* primaryVertex = HelperFunctions::getPrimaryVertex( vertices );
 
-  m_helpTree->FillEvent( eventInfo, m_event );
+  m_helpTree->FillEvent( eventInfo );
 
   // Fill trigger information
   if ( !m_trigDetailStr.empty() )    {
