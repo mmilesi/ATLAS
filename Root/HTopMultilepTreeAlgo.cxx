@@ -89,7 +89,8 @@ EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
   
   // get the file we created already
   TFile* treeFile = wk()->getOutputFile ("tree");
-  m_helpTree = new HTopMultilepTree( m_event, outTree, treeFile, 1e0, m_debug, m_DC14 ); // 1e0 = MeV, default 1e3 = GeV
+  m_helpTree = new HTopMultilepTree( outTree, treeFile, m_event, m_store, 1e0, m_debug, m_DC14 ); // 1e0 = MeV, default 1e3 = GeV
+
   // tell the tree to go into the file
   outTree->SetDirectory( treeFile );
   // choose if want to add tree to same directory as ouput histograms
@@ -168,7 +169,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
   // get the hard-scatter primaryVertex
   const xAOD::Vertex* primaryVertex = HelperFunctions::getPrimaryVertex( vertices );
 
-  m_helpTree->FillEvent( eventInfo, m_event );
+  m_helpTree->FillEvent( eventInfo );
 
   // Fill trigger information
   if ( !m_trigDetailStr.empty() )    {
