@@ -49,7 +49,6 @@ class HTopMultilepTree : public HelpTreeBase
      
     /* jet variables */
     std::vector<float> m_jet_m;    
-    std::vector<int>   m_jet_clean;
     
     /* muon variables */
     std::vector<int> m_muon_isTight;

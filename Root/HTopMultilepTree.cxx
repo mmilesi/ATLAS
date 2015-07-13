@@ -57,7 +57,6 @@ void HTopMultilepTree::AddJetsUser(const std::string detailStrUser)
 
   // jet variables
   m_tree->Branch("jet_m",     &m_jet_m);    
-  m_tree->Branch("jet_clean", &m_jet_clean);
 }
 
 void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
@@ -323,7 +322,6 @@ void HTopMultilepTree::ClearJetsUser()
 {
   // jet variables 
   m_jet_m.clear();
-  m_jet_clean.clear();
 }  
 
 
@@ -419,14 +417,7 @@ void HTopMultilepTree::FillTriggerUser( const xAOD::EventInfo* eventInfo ) { }
 
 void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet ) 
 {
-  
-  static SG::AuxElement::Accessor< char > isCleanAcc("cleanJet");
-  
-  if ( isCleanAcc.isAvailable( *jet ) ) { m_jet_clean.push_back( isCleanAcc( *jet ) ); } 
-  else { m_jet_clean.push_back(-1); }
-  
   m_jet_m.push_back( jet->m() ); 
-  
 }
 
 void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon ) 
