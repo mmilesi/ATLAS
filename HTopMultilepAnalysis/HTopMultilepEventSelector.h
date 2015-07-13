@@ -48,13 +48,9 @@ public:
   int          m_n_jets_max; 
   int          m_n_bjets_min;
   int          m_n_taus_min;
-  bool         m_JetBDTLoose;
-  bool         m_JetBDTMedium;
-  bool         m_JetBDTTight;
   float        m_leptons_eta_max;	 
   float        m_leading_lep_pT_min;		       
   float        m_subleading_lep_pT_min; 
-  float	       m_taus_pT_min;	 
 
   std::string              m_passAuxDecorKeys; 
   std::string              m_failAuxDecorKeys; 

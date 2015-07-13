@@ -221,13 +221,15 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   m_jetPlots -> initialize();
   m_jetPlots -> record( wk() );
   
-  // initialise TauSelectionTool                                                                                                                        
-  m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool" );
-  m_TauSelTool->msg().setLevel( MSG::INFO );
-  m_TauSelTool->setProperty( "SelectionCuts", int(TauAnalysisTools::CutJetIDWP) );
-  // requiring tau to pass a jet BDT working point                  
-  TauAnalysisTools::e_JETID tauID = TauAnalysisTools::JETIDBDTTIGHT;
-  m_TauSelTool->setProperty( "JetIDWP", static_cast<int>( tauID ) ); // need to cast enum to int!                                                        
+  // initialise TauSelectionTool  
+  //
+  if ( asg::ToolStore::contains<TauAnalysisTools::TauSelectionTool>("TauSelectionTool") ) {
+    m_TauSelTool = asg::ToolStore::get<TauAnalysisTools::TauSelectionTool>("TauSelectionTool");
+  } else {
+    m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool" );
+  }  
+  m_TauSelTool->setProperty("ConfigPath", "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15_final_sel.conf");
+                                                     
   RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool." );
 
   Info("initialize()", "HTopMultilepAnalysis Interface succesfully initialized!" );
@@ -525,7 +527,7 @@ EL::StatusCode HTopMultilepAnalysis :: finalize ()
 
   Info("finalize()", "Deleting tool instances...");
 
-  if ( m_TauSelTool ) { delete m_TauSelTool; m_TauSelTool = nullptr; }    
+  if ( m_TauSelTool ) { m_TauSelTool = nullptr; delete m_TauSelTool; }    
    
   return EL::StatusCode::SUCCESS;
 }

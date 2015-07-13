@@ -84,13 +84,10 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector () :
   m_n_jets_max = 100000; 
   m_n_bjets_min = 0;
   m_n_taus_min = 0;
-  m_JetBDTLoose = true;
-  m_JetBDTMedium = false;
-  m_JetBDTTight = false;
+
   m_leptons_eta_max = 2.6;	    
   m_leading_lep_pT_min = 0.0;    
   m_subleading_lep_pT_min = 0.0; 
-  m_taus_pT_min = 0.0;    
   
   m_passAuxDecorKeys = ""; 
   m_failAuxDecorKeys = ""; 
@@ -137,12 +134,8 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
     m_n_jets_min		 = config->GetValue("MinNJets", m_n_jets_min); 
     m_n_jets_max		 = config->GetValue("MaxNJets", m_n_jets_max); 
     m_n_bjets_min		 = config->GetValue("MinNBjets", m_n_bjets_min); 
-    m_JetBDTLoose		 = config->GetValue("JetBDTLoose",  m_JetBDTLoose);
-    m_JetBDTMedium		 = config->GetValue("JetBDTMedium", m_JetBDTMedium);
-    m_JetBDTTight		 = config->GetValue("JetBDTTight",  m_JetBDTTight);
     m_leading_lep_pT_min	 = config->GetValue("pTMinLeadingLepton",  m_leading_lep_pT_min);
     m_subleading_lep_pT_min	 = config->GetValue("pTMinSubLeadingLepton",  m_subleading_lep_pT_min);
-    m_taus_pT_min		 = config->GetValue("pTMinTaus",  m_taus_pT_min);
     
     // parse and split by comma
     //
@@ -280,26 +273,8 @@ EL::StatusCode HTopMultilepEventSelector :: initialize ()
   // initialise TauSelectionTool 
   //
   m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool" );
+  m_TauSelTool->setProperty("ConfigPath", "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15.conf");
   m_TauSelTool->msg().setLevel( MSG::INFO );
-  
-  // override some of the recommended properties (if needed)
-  //
-  // erase stuff inside brackets if you wish to loosen the number of cuts applied (default: keep all!)
-  //
-  m_TauSelTool->setProperty( "SelectionCuts", int( TauAnalysisTools::CutPt | TauAnalysisTools::CutAbsEta | TauAnalysisTools::CutAbsCharge | TauAnalysisTools::CutNTrack | TauAnalysisTools::CutJetIDWP) );
-  // define pt threshold, note that pt has to be given in GeV
-  //
-  m_TauSelTool->setProperty("PtMin", 15.0 ); // TODO: why is not working w/ variable set from .config file??
-  //m_TauSelTool->setProperty("PtMin", static_cast<float>( m_taus_pT_min ) ); 
-
-  // requiring tau to pass a jet BDT working point
-  //
-  TauAnalysisTools::e_JETID tauID = TauAnalysisTools::JETIDNONE; 
-  if ( m_JetBDTLoose )       { tauID = TauAnalysisTools::JETIDBDTLOOSE;  }
-  else if ( m_JetBDTMedium ) { tauID = TauAnalysisTools::JETIDBDTMEDIUM; }
-  else if ( m_JetBDTTight )  { tauID = TauAnalysisTools::JETIDBDTTIGHT;  }
-  else { Warning("initialize()","Not specifying a WP for TauID. Will apply default (see tool implementation)"); }
-  m_TauSelTool->setProperty( "JetIDWP", static_cast<int>( tauID ) ); // need to cast enum to int!
  
   RETURN_CHECK( "HTopMultilepEventSelector::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool." );
 
@@ -594,7 +569,7 @@ EL::StatusCode HTopMultilepEventSelector :: finalize ()
 
   Info("finalize()", "Deleting tool instances...");
 
-  if ( m_TauSelTool ) { delete m_TauSelTool; m_TauSelTool = nullptr; }
+  if ( m_TauSelTool ) { m_TauSelTool = nullptr; delete m_TauSelTool; }
 
   return EL::StatusCode::SUCCESS;
 }
