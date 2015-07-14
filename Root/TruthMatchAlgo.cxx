@@ -393,7 +393,6 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* r
   }
 
   xAOD::TruthParticle* primitiveTruth(nullptr);
-  unsigned int iGeneration(0);
 
   if ( ! (*m_truthTypeAcc).isAvailable( *recoPart ) ) {
      Error("checkChargeFlip()", "No accessor to truthType available for this reco lepton. This shouldn't happen. Aborting"); 
@@ -422,6 +421,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* r
 	if ( m_debug ) { Info("checkChargeFlip()", "Parent has pdgId: %i , prodVtx barcode: %i - Need to go backwards in the decay chain", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
 	
 	primitiveTruth = const_cast<xAOD::TruthParticle*>( primitiveTruth->parent(0) );
+	
 	// do this only once
 	//
 	if ( !isBrem ) { 
@@ -436,21 +436,12 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* r
 	
       }
 
-      ++iGeneration;
-  	   
-      // okay, if at the 20-th generation back in the chain we stil haven't found the primitive lepton (i.e, the one that radiated the photon), let's break the loop
-      //
-      if ( iGeneration > 19 ) {
-	if ( m_debug ) { Info( "checkChargeFlip()", "After %u generations back, we haven't reached the primitive yet. Let's break the loop.", iGeneration ); }
-	break;
-      }
-
     }
   
   }
   // case 2:
   //
-  // lepton is matched to a truth lepton which is not produced in a secondary interaction (i.e., charge flip is due to charge mis-reconstruction). 
+  // lepton is matched to a truth lepton which is not produced in a secondary interaction. 
   //
   else 
   {
