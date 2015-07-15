@@ -6,21 +6,29 @@
 # ---------------------------------------
 # ~~~~ ttH125 (signal) ~~~~ #
 # ~~~~ ttbar (background) ~~~~ #
-#mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.*p2363/
 # ~~~~ ttW (background) ~~~~ #
 # ~~~~ ttZ(background) ~~~~ #
 # ~~~~ WZ (background) ~~~ #
-#
 # ~~~~ ZZ (background) ~~~ #
 # ~~~~ Wgamma+jets (background) ~~~ #
 # ~~~~ Zgamma+jets (background) ~~~ #
 # ~~~~ Z+jets (background) ~~~ #
-#mc15_13TeV.*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Zee.merge.DAOD_HIGG8D1.*p2363/
-#mc15_13TeV.*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Zmumu.merge.DAOD_HIGG8D1.*p2363/
 # ~~~~ single t (background) ~~~ #
 # ~~~~ ttWW (background) ~~~~ #
 # ~~~~ bulk MC submission ~~~~ #
-mc15_13TeV.*.merge.DAOD_HIGG8D1.*_p2363/
+#mc15_13TeV.*.merge.DAOD_HIGG8D1.*_p2363/
+# ---------------------------------------
+# Full xAODs MC15
+# ---------------------------------------
+#
+# --------------------
+# Week 1 configuration
+# --------------------
+# ~~~~ Z+jets (background) ~~~ #
+mc15_13TeV.36110*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Z*.merge.AOD.e3601_s2576_s2132_r6633_r6264/
+# ~~~~ ttbar (background) ~~~~ #
+mc15_13TeV.410000.*.merge.AOD.e3601_s2576_s2132_r6633_r6264/
+#
 # ********** #
 #    data    #
 # ********** #
@@ -29,23 +37,33 @@ mc15_13TeV.*.merge.DAOD_HIGG8D1.*_p2363/
 # DAOD HIGG8D1 - AtlasDerivation,20.1.5.1
 # ---------------------------------------
 # ~~~~ period A1,A2,A3,A4 ~~~~ #
-data15_13TeV.00267148.physics_Main.merge.DAOD_HIGG8D1.f594_m1441_p2361/
-data15_13TeV.00267162.physics_Main.merge.DAOD_HIGG8D1.f594_m1441_p2361/
-data15_13TeV.00267167.physics_Main.merge.DAOD_HIGG8D1.f594_m1441_p2361/
-data15_13TeV.00267152.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
-data15_13TeV.00267073.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
-data15_13TeV.00266904.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
-data15_13TeV.00266919.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
-data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
-data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
+#data15_13TeV.00267148.physics_Main.merge.DAOD_HIGG8D1.f594_m1441_p2361/
+#data15_13TeV.00267162.physics_Main.merge.DAOD_HIGG8D1.f594_m1441_p2361/
+#data15_13TeV.00267167.physics_Main.merge.DAOD_HIGG8D1.f594_m1441_p2361/
+#data15_13TeV.00267152.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
+#data15_13TeV.00267073.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
+#data15_13TeV.00266904.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
+#data15_13TeV.00266919.physics_Main.merge.DAOD_HIGG8D1.f594_m1435_p2361/
+#data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
+#data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
 # ~~~~ period B1 ~~~~ #
-data15_13TeV.00267599.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
-data15_13TeV.00267358.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
-data15_13TeV.00267385.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
-data15_13TeV.00267360.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
-data15_13TeV.00267367.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
-data15_13TeV.00267359.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
-
+#data15_13TeV.00267599.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
+#data15_13TeV.00267358.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
+#data15_13TeV.00267385.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
+#data15_13TeV.00267360.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
+#data15_13TeV.00267367.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
+#data15_13TeV.00267359.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
+# 
+# *********************************************************
+#
+# Bulk reprocessing of 'physics_Main' (runs 267638, 267639)
+#
+# **********************************************************
+# ---------------------------------------
+# DAOD HIGG8D1 - AtlasDerivation,20.1.5.4
+# ---------------------------------------
+data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.r6848_p2358_p2375/
+data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.r6848_p2358_p2375/
 
 
 
