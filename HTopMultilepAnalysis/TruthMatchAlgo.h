@@ -110,13 +110,13 @@ public:
   /     Clearly this is available only within ID coverage (|eta|<2.5).
   /
   */
-  virtual EL::StatusCode applyTruthMatchingMuonMC15 ( const xAOD::IParticle* recoParticle );
+  virtual EL::StatusCode applyTruthMatchingMuon ( const xAOD::IParticle* recoParticle );
   virtual EL::StatusCode doMuonTruthPartMatching ( const xAOD::IParticle* recoParticle );
   virtual EL::StatusCode doMuonTrackMatching ( const xAOD::IParticle* recoParticle );
   
-  virtual EL::StatusCode applyTruthMatchingElectronMC15 ( const xAOD::IParticle* recoParticle );
+  virtual EL::StatusCode applyTruthMatchingElectron ( const xAOD::IParticle* recoParticle );
 
-  virtual EL::StatusCode checkChargeFlipMC15 ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth );  
+  virtual EL::StatusCode checkChargeFlip ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth );  
 
   // this is needed to distribute the algorithm to the workers
   ClassDef(TruthMatchAlgo, 1);

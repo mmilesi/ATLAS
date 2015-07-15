@@ -274,16 +274,16 @@ EL::StatusCode TruthMatchAlgo :: execute ()
 
 	if ( m_debug ) { Info("execute()"," truth matching reco electron, pT = %2f ", lep_itr->pt() / 1e3 ); }
 
-	if ( this->applyTruthMatchingElectronMC15( lep_itr ) != EL::StatusCode::SUCCESS ) {
-	  Error("execute()", "Problem with applyTruthMatchingElectronMC15()! Aborting" );
+	if ( this->applyTruthMatchingElectron( lep_itr ) != EL::StatusCode::SUCCESS ) {
+	  Error("execute()", "Problem with applyTruthMatchingElectron()! Aborting" );
 	  return EL::StatusCode::FAILURE;
 	} 
 
       } else if ( lep_itr->type() == xAOD::Type::Muon ) {
 
 	if ( m_debug ) { Info("execute()"," truth matching reco muon, pT = %2f ", lep_itr->pt() / 1e3 ); }
-	if ( this->applyTruthMatchingMuonMC15( lep_itr ) != EL::StatusCode::SUCCESS ) {
-	  Error("execute()", "Problem with applyTruthMatchingMuonMC15()! Aborting" );
+	if ( this->applyTruthMatchingMuon( lep_itr ) != EL::StatusCode::SUCCESS ) {
+	  Error("execute()", "Problem with applyTruthMatchingMuon()! Aborting" );
 	  return EL::StatusCode::FAILURE;
 	} 
 
@@ -371,13 +371,21 @@ EL::StatusCode TruthMatchAlgo :: histFinalize ()
 }
 
 
-EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth )
+EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth )
 {
-  
+
   // default decorations
   //
   (*m_isChFlipDecor)( *recoPart )  = 0;  
   (*m_isBremDecor)( *recoPart )    = 0;  
+
+  // A safety check: immediately return if input truth particle
+  // is NOT an electron/muon
+  //
+  if ( !( matchTruth->isElectron() || matchTruth->isMuon() ) ) { 
+    Warning("checkChargeFlip()", "Input truth particle is NOT an electron/muon (pdgId: %i). Will not check whether it's charge flip. Returning", matchTruth->pdgId()); 
+    return StatusCode::SUCCESS;     
+  }
 
   float reco_charge(0.0);	
   if ( recoPart->type() == xAOD::Type::Electron ) {
@@ -391,7 +399,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* r
      Error("checkChargeFlip()", "Reco particle has zero charge. This shouldn't happen. Aborting"); 
      return StatusCode::FAILURE;	    
   }
-
+  
   xAOD::TruthParticle* primitiveTruth(nullptr);
 
   if ( ! (*m_truthTypeAcc).isAvailable( *recoPart ) ) {
@@ -401,7 +409,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* r
 
   // case 1: 
   //
-  // lepton (in most cases, an electron) is matched to a truth lepton which is part of a bremmmstrahlung shower. 
+  // Lepton (in most cases, an electron) is matched to a truth lepton which is part of a bremmmstrahlung shower. 
   // In this case, we need to go back until we find the original lepton that radiated the photon.
   // The charge of this primitive lepton is the one to look at! 
   //
@@ -411,63 +419,105 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlipMC15 ( const xAOD::IParticle* r
 
     if ( m_debug ) { Info("checkChargeFlip()", "This reco lepton (charge: %f ) is matched to a secondary truth lepton. Let's go back until we find the primitive", reco_charge ); }
 
-    bool foundPrimitive(false), isBrem(false);
+    bool foundPrimitive(false);
+    
+    // use this just to break the while loop in ill-fated cases
+    // 
+    unsigned int iGeneration(0);
+
+    // check that the match has a parent
+    //
+    if ( !matchTruth->nParents() ) {
+      Warning("checkChargeFlip()", "This reco lepton's match has no parents. Will not check whether it's charge flip. Returning"); 
+      return StatusCode::SUCCESS;    
+    } 
+    
     primitiveTruth = const_cast<xAOD::TruthParticle*>( matchTruth->parent(0) );
     
-    while ( !foundPrimitive ) {
+    while ( !( foundPrimitive || iGeneration > 20 ) ) {
      
+      // check if prod vtx is compatible to a secondary interaction. If that's the case, go back in the chain!
+      //
       if ( primitiveTruth->prodVtx()->barcode() < -200000 ) { 
 	
-	if ( m_debug ) { Info("checkChargeFlip()", "Parent has pdgId: %i , prodVtx barcode: %i - Need to go backwards in the decay chain", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
+	if ( m_debug ) { Info("checkChargeFlip()", "\t Parent has pdgId: %i , prodVtx barcode: %i - Need to go backwards in the decay chain", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
+    
+        if ( !primitiveTruth->nParents() ) {
+          Warning("checkChargeFlip()", "\t This truth ancestor has no parents. Will not check whether reco lepton it's charge flip. Returning"); 
+          return StatusCode::SUCCESS;    
+        } 	
 	
 	primitiveTruth = const_cast<xAOD::TruthParticle*>( primitiveTruth->parent(0) );
 	
-	// do this only once
+      } else { 
+
+	if ( m_debug ) { Info("checkChargeFlip()", "\t We found the primitive! pdgId: %i , prodVtx barcode: %i ", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
+      
+        // Ok, we found the primitive! If it's an electron or a muon, flag it as 'bremmstrahlung',
+	// and check whetehr it's charge flip.
+	// Otherwise, just return to skip the charge flip check
 	//
-	if ( !isBrem ) { 
-	  isBrem = true;
-	  (*m_isBremDecor)( *recoPart ) = 1; 
+        if ( primitiveTruth->isElectron() || primitiveTruth->isMuon() ) { 
+	  
+	  (*m_isBremDecor)( *recoPart ) = 1;
+      
+	  foundPrimitive = true; 
+	  
+	  if ( m_debug ) { Info("checkChargeFlip()", "\t The primitive is an electron/muon! Now check whether it's charge flip" ); }
+	  
+	} else {
+	
+	  if ( m_debug ) { Info("checkChargeFlip()", "\t The primitive is NOT an electron/muon! Will not check whether reco lepton it's charge flip. Returning \n ************************************" ); }
+	  return StatusCode::SUCCESS;
+	  
 	}
 	
-      } else { 
-      
-	if ( m_debug ) { Info("checkChargeFlip()", "We found the primitive! pdgId: %i , prodVtx barcode: %i - Stop here", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
-	foundPrimitive = true; 
-	
       }
-
+      
+      ++iGeneration;
     }
   
   }
   // case 2:
   //
-  // lepton is matched to a truth lepton which is not produced in a secondary interaction. 
+  // Lepton is matched to a truth lepton which is not produced in a secondary interaction. 
+  // Will check the charge directly on the truth match. 
   //
   else 
   {
     primitiveTruth = const_cast<xAOD::TruthParticle*>( matchTruth );
   }
 
+  // Now check the charge!
+  //
   float truth_charge	= primitiveTruth->charge();
-  int truth_norm_charge = static_cast<int>( truth_charge / fabs(truth_charge) );   
-  int reco_norm_charge  = static_cast<int>( reco_charge  / fabs(reco_charge)  ); 
-  
+  int truth_norm_charge = ( truth_charge ) ? static_cast<int>( truth_charge / fabs(truth_charge) ) : 0;   
+  int reco_norm_charge  = ( reco_charge )  ? static_cast<int>( reco_charge  / fabs(reco_charge)  ) : 0; 
+    
   if ( ( reco_norm_charge * truth_norm_charge ) < 0 ) { 
-    if ( m_debug ) { Info("checkChargeFlip()", "Reco norm charge: %i \n, Primitive truth charge: %f  norm charge: %i  pdgId: %i  prodVtxBarcode: %i \n It's charge flip!", reco_norm_charge, truth_charge, truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
+    if ( m_debug ) { 
+      Info("checkChargeFlip()", "\n Primitive TRUTH norm charge: %i  pdgId: %i  prodVtxBarcode: %i \n RECO norm charge: %i  \n --> It's a charge flip!", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), reco_norm_charge ); 
+      Info("checkChargeFlip()", "************************************" ); 
+    }
     (*m_isChFlipDecor)( *recoPart ) = 1; 
+  } else {
+    if ( m_debug ) {     
+      Info("checkChargeFlip()", "\n Primitive TRUTH norm charge: %i  pdgId: %i  prodVtxBarcode: %i \n RECO norm charge: %i  \n --> It's NOT a charge flip!", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), reco_norm_charge ); 
+      Info("checkChargeFlip()", "************************************" ); 
+    }
   }
 
   return StatusCode::SUCCESS;
 }
 
 
-EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::IParticle* recoPart )
+EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectron ( const xAOD::IParticle* recoPart )
 {
   
   // return immediately if input particle is not an electron 
   //
   if ( !( recoPart->type() == xAOD::Type::Electron ) ) {
-      Warning("applyTruthMatchingElectronMC15()", "Not passing an electron! Won't try anything"); 
+      Warning("applyTruthMatchingElectron()", "Not passing an electron! Won't try anything"); 
       return StatusCode::SUCCESS; 	  	  
   }
 
@@ -487,11 +537,11 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::I
   // For electrons, the link to truth matching particle (and some useful info) is already saved in ElectronCollection
   //
   if ( ! (*m_truthPLAcc).isAvailable( *recoPart ) ) {
-     Error("applyTruthMatchingElectronMC15()", "No link available to truth match for this reco electron. This shouldn't happen. Aborting"); 
+     Error("applyTruthMatchingElectron()", "No link available to truth match for this reco electron. This shouldn't happen. Aborting"); 
      return StatusCode::FAILURE;		
   }
   if ( ! (*m_truthPLAcc)( *recoPart ).isValid() ) {
-     Error("applyTruthMatchingElectronMC15()", "Link to truth match for this reco electron is invalid. This shouldn't happen. Aborting"); 
+     Error("applyTruthMatchingElectron()", "Link to truth match for this reco electron is invalid. This shouldn't happen. Aborting"); 
      return StatusCode::FAILURE;		
   }
   const xAOD::TruthParticle* matchTruthEl = *( (*m_truthPLAcc)(*recoPart) );
@@ -499,7 +549,7 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::I
   // if there's no matching truth electron, abort.
   //
   if ( !matchTruthEl ) {
-     Error( "applyTruthMatchingElectronMC15()", "This reco electron is not matched to a generic truth particle. This shouldn't happen. Aborting");
+     Error( "applyTruthMatchingElectron()", "This reco electron is not matched to a generic truth particle. This shouldn't happen. Aborting");
      return StatusCode::FAILURE;
   } 
   
@@ -516,7 +566,7 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::I
   static SG::AuxElement::Accessor< int > pdgIdAcc("pdgId");
   if ( pdgIdAcc.isAvailable( *matchTruthEl ) ) {
   
-    if ( m_debug ) { Info( "applyTruthMatchingElectronMC15()", "decorating truthPdgId with value: %i", matchTruthEl->pdgId() ); }
+    if ( m_debug ) { Info( "applyTruthMatchingElectron()", "decorating truthPdgId with value: %i", matchTruthEl->pdgId() ); }
     (*m_truthPdgIdDecor)( *recoPart ) = matchTruthEl->pdgId();
     
   }
@@ -525,7 +575,7 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::I
   static SG::AuxElement::Accessor< int > statusAcc("status");
   if ( statusAcc.isAvailable( *matchTruthEl ) ) {
   
-    if ( m_debug ) { Info( "applyTruthMatchingElectronMC15()", "decorating truthStatus with value: %i", matchTruthEl->status() ); }
+    if ( m_debug ) { Info( "applyTruthMatchingElectron()", "decorating truthStatus with value: %i", matchTruthEl->status() ); }
     (*m_truthStatusDecor)( *recoPart ) = matchTruthEl->status();
   
   }
@@ -533,8 +583,8 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::I
   // check if electron is charge flip  
   //
   if ( isTMElectron ) {
-    if ( this->checkChargeFlipMC15( recoPart, matchTruthEl ) != EL::StatusCode::SUCCESS ) {
-      Error("applyTruthMatchingElectronMC15()", "Problem with checkChargeFlipMC15(). Aborting"); 
+    if ( this->checkChargeFlip( recoPart, matchTruthEl ) != EL::StatusCode::SUCCESS ) {
+      Error("applyTruthMatchingElectron()", "Problem with checkChargeFlip(). Aborting"); 
       return EL::StatusCode::FAILURE;
     }
   }
@@ -542,13 +592,13 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectronMC15 ( const xAOD::I
 }
 
 
-EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingMuonMC15 ( const xAOD::IParticle* recoPart )
+EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingMuon ( const xAOD::IParticle* recoPart )
 {
   
   // return immediately if input particle is not a muon 
   //
   if ( !( recoPart->type() == xAOD::Type::Muon ) ) {     
-    Warning("applyTruthMatchingMuonMC15()", "Not passing a muon! Won't try anything"); 
+    Warning("applyTruthMatchingMuon()", "Not passing a muon! Won't try anything"); 
     return EL::StatusCode::SUCCESS;
   }
 
@@ -558,21 +608,21 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingMuonMC15 ( const xAOD::IPart
   // See the header file for more info.
   //
   const xAOD::TruthParticleContainer* muonTruthPartContainer(nullptr);
-  RETURN_CHECK("TruthMatchAlgo::applyTruthMatchingMuonMC15()", HelperFunctions::retrieve(muonTruthPartContainer, "MuonTruthParticles", m_event, m_store, m_debug) , "");
+  RETURN_CHECK("TruthMatchAlgo::applyTruthMatchingMuon()", HelperFunctions::retrieve(muonTruthPartContainer, "MuonTruthParticles", m_event, m_store, m_debug) , "");
   
   if ( m_doMuonTrackMatching  ) {
      
      if ( fabs( recoPart->eta() ) < 2.5 ) {
       
        if ( this->doMuonTrackMatching( recoPart ) != EL::StatusCode::SUCCESS ) {
-         Error("applyTruthMatchingMuonMC15()", "Problem with doMuonTrackMatching() for this muon ( | eta | < 2.5 ). Aborting");
+         Error("applyTruthMatchingMuon()", "Problem with doMuonTrackMatching() for this muon ( | eta | < 2.5 ). Aborting");
          return EL::StatusCode::FAILURE;
        }
        
      } else {
      
        if ( this->doMuonTruthPartMatching( recoPart ) != EL::StatusCode::SUCCESS ) {
-         Error("applyTruthMatchingMuonMC15()", "Problem with doMuonTruthPartMatching() for this forward muon ( | eta| > 2.5 ). Aborting");
+         Error("applyTruthMatchingMuon()", "Problem with doMuonTruthPartMatching() for this forward muon ( | eta| > 2.5 ). Aborting");
          return EL::StatusCode::FAILURE;
        }
        
@@ -580,7 +630,7 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingMuonMC15 ( const xAOD::IPart
      
   } else if ( m_doMuonTruthPartMatching && ( this->doMuonTruthPartMatching( recoPart ) != EL::StatusCode::SUCCESS ) ) {
      
-     Error("applyTruthMatchingMuonMC15()", "Problem with doMuonTruthPartMatching(). Aborting");
+     Error("applyTruthMatchingMuon()", "Problem with doMuonTruthPartMatching(). Aborting");
      return EL::StatusCode::FAILURE;
   
   }
@@ -685,8 +735,8 @@ EL::StatusCode TruthMatchAlgo :: doMuonTrackMatching( const xAOD::IParticle* rec
    // check if muon is charge flip
    //  
    if ( isTMMuon ) {
-     if ( this->checkChargeFlipMC15( recoPart, matchTruthMu ) != EL::StatusCode::SUCCESS ) {
-       Error("doMuonTrackMatching()", "Problem with checkChargeFlipMC15(). Aborting"); 
+     if ( this->checkChargeFlip( recoPart, matchTruthMu ) != EL::StatusCode::SUCCESS ) {
+       Error("doMuonTrackMatching()", "Problem with checkChargeFlip(). Aborting"); 
        return EL::StatusCode::FAILURE;
      }
    }  
@@ -776,8 +826,8 @@ EL::StatusCode TruthMatchAlgo :: doMuonTruthPartMatching ( const xAOD::IParticle
    // check if muon is charge flip  
    //
    if ( isTMMuon ) {
-     if ( this->checkChargeFlipMC15( recoPart, matchTruthMu ) != EL::StatusCode::SUCCESS ) {
-       Error("doMuonTruthPartMatching()", "Problem with checkChargeFlipMC15(). Aborting"); 
+     if ( this->checkChargeFlip( recoPart, matchTruthMu ) != EL::StatusCode::SUCCESS ) {
+       Error("doMuonTruthPartMatching()", "Problem with checkChargeFlip(). Aborting"); 
        return EL::StatusCode::FAILURE;
      }
    }    
