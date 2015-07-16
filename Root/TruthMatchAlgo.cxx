@@ -441,7 +441,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
   
   if ( (*m_truthTypeAcc)( *recoPart ) == 4 || (*m_truthTypeAcc)( *recoPart ) == 8 ) {
 
-    if ( true ) { Info("checkChargeFlip()", "This reco lepton (charge: %f ) is matched to a secondary truth lepton. Let's go back until we find the primitive", reco_charge ); }
+    if ( m_debug ) { Info("checkChargeFlip()", "This reco lepton (charge: %f ) is matched to a secondary truth lepton. Let's go back until we find the primitive", reco_charge ); }
 
     bool foundPrimitive(false);
     
@@ -464,7 +464,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
       //
       if ( primitiveTruth->prodVtx()->barcode() < -200000 ) { 
 	
-	if ( true ) { Info("checkChargeFlip()", "\t Parent has pdgId: %i , prodVtx barcode: %i - Need to go backwards in the decay chain", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
+	if ( m_debug ) { Info("checkChargeFlip()", "\t Parent has pdgId: %i , prodVtx barcode: %i - Need to go backwards in the decay chain", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
     
         if ( !primitiveTruth->nParents() ) {
           Warning("checkChargeFlip()", "\t This truth ancestor has no parents. Will not check whether reco lepton it's charge flip. Returning"); 
@@ -475,7 +475,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
 	
       } else { 
 
-	if ( true ) { Info("checkChargeFlip()", "\t We found the primitive! pdgId: %i , prodVtx barcode: %i ", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
+	if ( m_debug ) { Info("checkChargeFlip()", "\t We found the primitive! pdgId: %i , prodVtx barcode: %i ", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
       
         // Ok, we found the primitive! If it's an electron or a muon, flag it as 'bremmstrahlung', 
 	// get its type and origin (with MCTruthClassifier) and status, and finally check whether it's charge flip.
@@ -489,7 +489,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
 	  
 	} else {
 	
-	  if ( true ) { Info("checkChargeFlip()", "\t The primitive is NOT an electron/muon! Will not check whether reco lepton it's charge flip. Returning \n ************************************" ); }
+	  if ( m_debug ) { Info("checkChargeFlip()", "\t The primitive is NOT an electron/muon! Will not check whether reco lepton it's charge flip. Returning \n ************************************" ); }
 	  return StatusCode::SUCCESS;
 	  
 	}
@@ -533,7 +533,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
   // -) the primitve origin of the lepton is not ISR/FSR...  
   // 
   if ( ( reco_norm_charge * truth_norm_charge ) < 0 && ( ancestor_info.second != 39 && ancestor_info.second != 40 ) ) { 
-    if ( true ) { 
+    if ( m_debug ) { 
       Info("checkChargeFlip()", "\n\n Primitive TRUTH: \n\n norm charge: %i \n pdgId: %i \n prodVtxBarcode: %i \n status: %i \n isBrem: %i \n type: %d \n origin: %d \n -----------\n RECO: \n norm charge: %i \n\n --> It's a charge flip! \n\n ************************************", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), primitiveTruth->status(), isBrem, ancestor_info.first, ancestor_info.second, reco_norm_charge ); 
     }
     (*m_isChFlipDecor)( *recoPart ) = 1; 

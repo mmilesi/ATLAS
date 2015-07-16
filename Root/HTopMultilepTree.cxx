@@ -67,6 +67,9 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
 
   // muon variables  
   m_tree->Branch("muon_isTight",                       &m_muon_isTight); 
+  m_tree->Branch("muon_isTag",                         &m_muon_isTag); 
+  m_tree->Branch("muon_isOS",                          &m_muon_isOS);
+  m_tree->Branch("muon_isClosestSS",                   &m_muon_isClosestSS);
   m_tree->Branch("muon_isTruthMatchedToMuon",          &m_muon_isTruthMatched); 
   m_tree->Branch("muon_isChFlip",	               &m_muon_isChFlip); 
   m_tree->Branch("muon_isBrem",	                       &m_muon_isBrem); 
@@ -74,13 +77,16 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   m_tree->Branch("muon_truthPdgId",                    &m_muon_truthPdgId);  
   m_tree->Branch("muon_truthOrigin",                   &m_muon_truthOrigin);
   m_tree->Branch("muon_truthStatus",                   &m_muon_truthStatus);  
-  m_tree->Branch("muon_isOS",                          &m_muon_isOS);
-  m_tree->Branch("muon_isClosestSS",                   &m_muon_isClosestSS);
-  m_tree->Branch("muon_isTag",                         &m_muon_isTag); 
+  m_tree->Branch("muon_ancestorTruthType",             &m_muon_ancestorTruthType);  
+  m_tree->Branch("muon_ancestorTruthPdgId",            &m_muon_ancestorTruthPdgId);  
+  m_tree->Branch("muon_ancestorTruthOrigin",           &m_muon_ancestorTruthOrigin);
+  m_tree->Branch("muon_ancestorTruthStatus",           &m_muon_ancestorTruthStatus);    
   // muon TAG variables 
   m_tree->Branch("muon_tag_pt",	                       &m_muon_tag_pt);
   m_tree->Branch("muon_tag_eta",	               &m_muon_tag_eta);
-  m_tree->Branch("muon_tag_isTight",	               &m_muon_tag_isTight); 
+  m_tree->Branch("muon_tag_isTrigMatched",	       &m_muon_tag_isTrigMatched);
+  m_tree->Branch("muon_tag_isIsolated",	               &m_muon_tag_isIsolated);
+  m_tree->Branch("muon_tag_isTight",	               &m_muon_tag_isTight);  
   m_tree->Branch("muon_tag_isTruthMatchedToMuon",      &m_muon_tag_isTruthMatched); 
   m_tree->Branch("muon_tag_isChFlip",	               &m_muon_tag_isChFlip);  
   m_tree->Branch("muon_tag_isBrem",	               &m_muon_tag_isBrem);  
@@ -88,17 +94,27 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   m_tree->Branch("muon_tag_truthPdgId",                &m_muon_tag_truthPdgId);  
   m_tree->Branch("muon_tag_truthOrigin",               &m_muon_tag_truthOrigin);  
   m_tree->Branch("muon_tag_truthStatus",               &m_muon_tag_truthStatus);  
+  m_tree->Branch("muon_tag_ancestorTruthType",         &m_muon_tag_ancestorTruthType);  
+  m_tree->Branch("muon_tag_ancestorTruthPdgId",        &m_muon_tag_ancestorTruthPdgId);  
+  m_tree->Branch("muon_tag_ancestorTruthOrigin",       &m_muon_tag_ancestorTruthOrigin);
+  m_tree->Branch("muon_tag_ancestorTruthStatus",       &m_muon_tag_ancestorTruthStatus);     
   // muon PROBE variables 			     				      
   m_tree->Branch("muon_probe_pt",	               &m_muon_probe_pt);
   m_tree->Branch("muon_probe_eta",	               &m_muon_probe_eta);
-  m_tree->Branch("muon_probe_isTight",	               &m_muon_probe_isTight);
-  m_tree->Branch("muon_probe_isTruthMatchedToMuon",    &m_muon_probe_isTruthMatched);
-  m_tree->Branch("muon_probe_isChFlip",	               &m_muon_probe_isChFlip);
-  m_tree->Branch("muon_probe_isBrem",	               &m_muon_probe_isBrem);
-  m_tree->Branch("muon_probe_truthType",               &m_muon_probe_truthType);
-  m_tree->Branch("muon_probe_truthPdgId",              &m_muon_probe_truthPdgId);
-  m_tree->Branch("muon_probe_truthOrigin",             &m_muon_probe_truthOrigin);
+  m_tree->Branch("muon_probe_isTrigMatched",	       &m_muon_probe_isTrigMatched);
+  m_tree->Branch("muon_probe_isIsolated",	       &m_muon_probe_isIsolated);
+  m_tree->Branch("muon_probe_isTight",	               &m_muon_probe_isTight);  
+  m_tree->Branch("muon_probe_isTruthMatchedToMuon",    &m_muon_probe_isTruthMatched); 
+  m_tree->Branch("muon_probe_isChFlip",	               &m_muon_probe_isChFlip);  
+  m_tree->Branch("muon_probe_isBrem",	               &m_muon_probe_isBrem);  
+  m_tree->Branch("muon_probe_truthType",               &m_muon_probe_truthType);  
+  m_tree->Branch("muon_probe_truthPdgId",              &m_muon_probe_truthPdgId);  
+  m_tree->Branch("muon_probe_truthOrigin",             &m_muon_probe_truthOrigin);  
   m_tree->Branch("muon_probe_truthStatus",             &m_muon_probe_truthStatus);  
+  m_tree->Branch("muon_probe_ancestorTruthType",       &m_muon_probe_ancestorTruthType);  
+  m_tree->Branch("muon_probe_ancestorTruthPdgId",      &m_muon_probe_ancestorTruthPdgId);  
+  m_tree->Branch("muon_probe_ancestorTruthOrigin",     &m_muon_probe_ancestorTruthOrigin);
+  m_tree->Branch("muon_probe_ancestorTruthStatus",     &m_muon_probe_ancestorTruthStatus);     
 }
 
 void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
@@ -110,7 +126,10 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   // electron variables  
   m_tree->Branch("el_calo_eta",                        &m_electron_calo_eta);
   m_tree->Branch("el_crack",                           &m_electron_crack);
-  m_tree->Branch("el_isTight",                         &m_electron_isTight); 
+  m_tree->Branch("el_isTight",                         &m_electron_isTight);
+  m_tree->Branch("el_isTag",                           &m_electron_isTag); 
+  m_tree->Branch("el_isOS",	                       &m_electron_isOS);
+  m_tree->Branch("el_isClosestSS",                     &m_electron_isClosestSS);
   m_tree->Branch("el_isTruthMatchedToElectron",        &m_electron_isTruthMatched); 
   m_tree->Branch("el_isChFlip",                        &m_electron_isChFlip); 
   m_tree->Branch("el_isBrem",                          &m_electron_isBrem); 
@@ -118,9 +137,10 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   m_tree->Branch("el_truthPdgId",	               &m_electron_truthPdgId);    
   m_tree->Branch("el_truthOrigin",                     &m_electron_truthOrigin);  
   m_tree->Branch("el_truthStatus",                     &m_electron_truthStatus);  
-  m_tree->Branch("el_isOS",	                       &m_electron_isOS);
-  m_tree->Branch("el_isClosestSS",                     &m_electron_isClosestSS);
-  m_tree->Branch("el_isTag",                           &m_electron_isTag); 
+  m_tree->Branch("el_ancestorTruthType",	       &m_electron_ancestorTruthType);  
+  m_tree->Branch("el_ancestorTruthPdgId",	       &m_electron_ancestorTruthPdgId);  
+  m_tree->Branch("el_ancestorTruthOrigin",	       &m_electron_ancestorTruthOrigin);
+  m_tree->Branch("el_ancestorTruthStatus",	       &m_electron_ancestorTruthStatus);    
   // electron TAG variables 
   m_tree->Branch("el_tag_pt",	                       &m_electron_tag_pt);
   m_tree->Branch("el_tag_eta",	                       &m_electron_tag_eta);
@@ -134,6 +154,10 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   m_tree->Branch("el_tag_truthType",                   &m_electron_tag_truthType);
   m_tree->Branch("el_tag_truthOrigin",                 &m_electron_tag_truthOrigin);
   m_tree->Branch("el_tag_truthStatus",                 &m_electron_tag_truthStatus);
+  m_tree->Branch("el_tag_ancestorTruthType",	       &m_electron_tag_ancestorTruthType);  
+  m_tree->Branch("el_tag_ancestorTruthPdgId",	       &m_electron_tag_ancestorTruthPdgId);  
+  m_tree->Branch("el_tag_ancestorTruthOrigin",         &m_electron_tag_ancestorTruthOrigin);
+  m_tree->Branch("el_tag_ancestorTruthStatus",         &m_electron_tag_ancestorTruthStatus);	
   // electron PROBE variables 								
   m_tree->Branch("el_probe_pt",	                       &m_electron_probe_pt);
   m_tree->Branch("el_probe_eta",	               &m_electron_probe_eta);
@@ -143,10 +167,14 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   m_tree->Branch("el_probe_isTruthMatchedToElectron",  &m_electron_probe_isTruthMatched);
   m_tree->Branch("el_probe_isChFlip",	               &m_electron_probe_isChFlip);
   m_tree->Branch("el_probe_isBrem",	               &m_electron_probe_isBrem);
+  m_tree->Branch("el_probe_truthPdgId",                &m_electron_probe_truthPdgId); 
   m_tree->Branch("el_probe_truthType",                 &m_electron_probe_truthType);
-  m_tree->Branch("el_probe_truthPdgId",                &m_electron_probe_truthPdgId);
   m_tree->Branch("el_probe_truthOrigin",               &m_electron_probe_truthOrigin);
   m_tree->Branch("el_probe_truthStatus",               &m_electron_probe_truthStatus);
+  m_tree->Branch("el_probe_ancestorTruthType",	       &m_electron_probe_ancestorTruthType);  
+  m_tree->Branch("el_probe_ancestorTruthPdgId",	       &m_electron_probe_ancestorTruthPdgId);  
+  m_tree->Branch("el_probe_ancestorTruthOrigin",       &m_electron_probe_ancestorTruthOrigin);
+  m_tree->Branch("el_probe_ancestorTruthStatus",       &m_electron_probe_ancestorTruthStatus);	
 }
 
 
@@ -164,16 +192,20 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_isTrigMatched",                  &m_lepton_isTrigMatched);
   m_tree->Branch("lep_isIsolated",  		       &m_lepton_isIsolated); 
   m_tree->Branch("lep_isTight",                        &m_lepton_isTight); 
+  m_tree->Branch("lep_isTag",                          &m_lepton_isTag); 
+  m_tree->Branch("lep_isOS",	                       &m_lepton_isOS);
+  m_tree->Branch("lep_isClosestSS",                    &m_lepton_isClosestSS);
   m_tree->Branch("lep_isTruthMatchedToLepton",         &m_lepton_isTruthMatched); 
   m_tree->Branch("lep_isChFlip",                       &m_lepton_isChFlip); 
   m_tree->Branch("lep_isBrem",                         &m_lepton_isBrem); 
   m_tree->Branch("lep_truthType",                      &m_lepton_truthType); 
   m_tree->Branch("lep_truthPdgId",                     &m_lepton_truthPdgId);  
   m_tree->Branch("lep_truthOrigin",                    &m_lepton_truthOrigin);
-  m_tree->Branch("lep_truthStatus",                    &m_lepton_truthStatus);  
-  m_tree->Branch("lep_isOS",	                       &m_lepton_isOS);
-  m_tree->Branch("lep_isClosestSS",                    &m_lepton_isClosestSS);
-  m_tree->Branch("lep_isTag",                          &m_lepton_isTag); 
+  m_tree->Branch("lep_truthStatus",                    &m_lepton_truthStatus);   
+  m_tree->Branch("lep_ancestorTruthType",              &m_lepton_ancestorTruthType);  
+  m_tree->Branch("lep_ancestorTruthPdgId",             &m_lepton_ancestorTruthPdgId);  
+  m_tree->Branch("lep_ancestorTruthOrigin",            &m_lepton_ancestorTruthOrigin);
+  m_tree->Branch("lep_ancestorTruthStatus",            &m_lepton_ancestorTruthStatus);    
   // lepton TAG variables 
   m_tree->Branch("lep_tag_pt",	                       &m_lepton_tag_pt);
   m_tree->Branch("lep_tag_eta",	                       &m_lepton_tag_eta);
@@ -188,22 +220,30 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_tag_truthType",                  &m_lepton_tag_truthType);  
   m_tree->Branch("lep_tag_truthPdgId",                 &m_lepton_tag_truthPdgId);  
   m_tree->Branch("lep_tag_truthOrigin",                &m_lepton_tag_truthOrigin);  
-  m_tree->Branch("lep_tag_truthStatus",                &m_lepton_tag_truthStatus);  
+  m_tree->Branch("lep_tag_truthStatus",                &m_lepton_tag_truthStatus);
+  m_tree->Branch("lep_tag_ancestorTruthType",	       &m_lepton_tag_ancestorTruthType);  
+  m_tree->Branch("lep_tag_ancestorTruthPdgId",         &m_lepton_tag_ancestorTruthPdgId);  
+  m_tree->Branch("lep_tag_ancestorTruthOrigin",        &m_lepton_tag_ancestorTruthOrigin);
+  m_tree->Branch("lep_tag_ancestorTruthStatus",        &m_lepton_tag_ancestorTruthStatus);    
   // lepton PROBE variables 			        			       
   m_tree->Branch("lep_probe_pt",	               &m_lepton_probe_pt);
   m_tree->Branch("lep_probe_eta",	               &m_lepton_probe_eta);
   m_tree->Branch("lep_probe_flavour",	               &m_lepton_probe_flavour);
-  m_tree->Branch("lep_probe_charge",	               &m_lepton_probe_charge);
+  m_tree->Branch("lep_probe_charge",	               &m_lepton_probe_charge); 
   m_tree->Branch("lep_probe_isTrigMatched",            &m_lepton_probe_isTrigMatched);
   m_tree->Branch("lep_probe_isIsolated",  	       &m_lepton_probe_isIsolated); 
-  m_tree->Branch("lep_probe_isTight",	               &m_lepton_probe_isTight);
-  m_tree->Branch("lep_probe_isTruthMatchedToLepton",   &m_lepton_probe_isTruthMatched);
-  m_tree->Branch("lep_probe_isChFlip",	               &m_lepton_probe_isChFlip);
-  m_tree->Branch("lep_probe_isBrem",	               &m_lepton_probe_isBrem);
-  m_tree->Branch("lep_probe_truthType",                &m_lepton_probe_truthType);
-  m_tree->Branch("lep_probe_truthPdgId",               &m_lepton_probe_truthPdgId); 
-  m_tree->Branch("lep_probe_truthOrigin",              &m_lepton_probe_truthOrigin);
+  m_tree->Branch("lep_probe_isTight",	               &m_lepton_probe_isTight); 
+  m_tree->Branch("lep_probe_isTruthMatchedToLepton",   &m_lepton_probe_isTruthMatched); 
+  m_tree->Branch("lep_probe_isChFlip",	               &m_lepton_probe_isChFlip);  
+  m_tree->Branch("lep_probe_isBrem",	               &m_lepton_probe_isBrem);  
+  m_tree->Branch("lep_probe_truthType",                &m_lepton_probe_truthType);  
+  m_tree->Branch("lep_probe_truthPdgId",               &m_lepton_probe_truthPdgId);  
+  m_tree->Branch("lep_probe_truthOrigin",              &m_lepton_probe_truthOrigin);  
   m_tree->Branch("lep_probe_truthStatus",              &m_lepton_probe_truthStatus);
+  m_tree->Branch("lep_probe_ancestorTruthType",	       &m_lepton_probe_ancestorTruthType);  
+  m_tree->Branch("lep_probe_ancestorTruthPdgId",       &m_lepton_probe_ancestorTruthPdgId);  
+  m_tree->Branch("lep_probe_ancestorTruthOrigin",      &m_lepton_probe_ancestorTruthOrigin);
+  m_tree->Branch("lep_probe_ancestorTruthStatus",      &m_lepton_probe_ancestorTruthStatus);	
 }
 
 void HTopMultilepTree::AddTausUser(const std::string detailStrUser)
@@ -239,16 +279,20 @@ void HTopMultilepTree::ClearMuonsUser()
 {  
   // muon variables 
   m_muon_isTight.clear();
+  m_muon_isOS.clear();
+  m_muon_isClosestSS.clear();
+  m_muon_isTag.clear();   
   m_muon_isTruthMatched.clear(); 
   m_muon_isChFlip.clear(); 
   m_muon_isBrem.clear();
   m_muon_truthType.clear();  
   m_muon_truthPdgId.clear();
   m_muon_truthOrigin.clear();
-  m_muon_truthStatus.clear();  
-  m_muon_isOS.clear();
-  m_muon_isClosestSS.clear();
-  m_muon_isTag.clear(); 
+  m_muon_truthStatus.clear();
+  m_muon_ancestorTruthType.clear();  
+  m_muon_ancestorTruthPdgId.clear(); 
+  m_muon_ancestorTruthOrigin.clear();
+  m_muon_ancestorTruthStatus.clear();
   m_muon_tag_pt.clear();
   m_muon_tag_eta.clear();
   m_muon_tag_isTrigMatched.clear();  
@@ -261,6 +305,10 @@ void HTopMultilepTree::ClearMuonsUser()
   m_muon_tag_truthPdgId.clear();
   m_muon_tag_truthOrigin.clear(); 
   m_muon_tag_truthStatus.clear();  
+  m_muon_tag_ancestorTruthType.clear();  
+  m_muon_tag_ancestorTruthPdgId.clear(); 
+  m_muon_tag_ancestorTruthOrigin.clear();
+  m_muon_tag_ancestorTruthStatus.clear();    
   m_muon_probe_pt.clear();
   m_muon_probe_eta.clear();
   m_muon_probe_isTrigMatched.clear();  
@@ -273,6 +321,10 @@ void HTopMultilepTree::ClearMuonsUser()
   m_muon_probe_truthPdgId.clear();
   m_muon_probe_truthOrigin.clear(); 
   m_muon_probe_truthStatus.clear();  
+  m_muon_probe_ancestorTruthType.clear();  
+  m_muon_probe_ancestorTruthPdgId.clear(); 
+  m_muon_probe_ancestorTruthOrigin.clear();
+  m_muon_probe_ancestorTruthStatus.clear();   
 }  
 
 void HTopMultilepTree::ClearElectronsUser() 
@@ -281,6 +333,9 @@ void HTopMultilepTree::ClearElectronsUser()
   m_electron_calo_eta.clear();
   m_electron_crack.clear();
   m_electron_isTight.clear(); 
+  m_electron_isOS.clear();
+  m_electron_isClosestSS.clear();
+  m_electron_isTag.clear();   
   m_electron_isTruthMatched.clear(); 
   m_electron_isChFlip.clear(); 
   m_electron_isBrem.clear();
@@ -288,9 +343,10 @@ void HTopMultilepTree::ClearElectronsUser()
   m_electron_truthPdgId.clear();     
   m_electron_truthOrigin.clear(); 
   m_electron_truthStatus.clear();      
-  m_electron_isOS.clear();
-  m_electron_isClosestSS.clear();
-  m_electron_isTag.clear(); 
+  m_electron_ancestorTruthType.clear();  
+  m_electron_ancestorTruthPdgId.clear(); 
+  m_electron_ancestorTruthOrigin.clear();
+  m_electron_ancestorTruthStatus.clear();
   m_electron_tag_pt.clear();
   m_electron_tag_eta.clear();
   m_electron_tag_isTrigMatched.clear();  
@@ -302,7 +358,11 @@ void HTopMultilepTree::ClearElectronsUser()
   m_electron_tag_truthType.clear();  
   m_electron_tag_truthPdgId.clear();
   m_electron_tag_truthOrigin.clear(); 
-  m_electron_tag_truthStatus.clear();  
+  m_electron_tag_truthStatus.clear();
+  m_electron_tag_ancestorTruthType.clear();  
+  m_electron_tag_ancestorTruthPdgId.clear(); 
+  m_electron_tag_ancestorTruthOrigin.clear();
+  m_electron_tag_ancestorTruthStatus.clear();	 
   m_electron_probe_pt.clear();
   m_electron_probe_eta.clear();
   m_electron_probe_isTrigMatched.clear();  
@@ -314,7 +374,11 @@ void HTopMultilepTree::ClearElectronsUser()
   m_electron_probe_truthType.clear(); 
   m_electron_probe_truthPdgId.clear(); 
   m_electron_probe_truthOrigin.clear(); 
-  m_electron_probe_truthStatus.clear();  
+  m_electron_probe_truthStatus.clear(); 
+  m_electron_probe_ancestorTruthType.clear();  
+  m_electron_probe_ancestorTruthPdgId.clear(); 
+  m_electron_probe_ancestorTruthOrigin.clear();
+  m_electron_probe_ancestorTruthStatus.clear();	   
 }
 
 
@@ -336,6 +400,9 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_isTrigMatched.clear(); 
   m_lepton_isIsolated.clear();
   m_lepton_isTight.clear(); 
+  m_lepton_isOS.clear();
+  m_lepton_isClosestSS.clear();
+  m_lepton_isTag.clear();   
   m_lepton_isTruthMatched.clear(); 
   m_lepton_isChFlip.clear(); 
   m_lepton_isBrem.clear();
@@ -343,9 +410,10 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_truthPdgId.clear();       
   m_lepton_truthOrigin.clear(); 
   m_lepton_truthStatus.clear();      
-  m_lepton_isOS.clear();
-  m_lepton_isClosestSS.clear();
-  m_lepton_isTag.clear(); 
+  m_lepton_ancestorTruthType.clear();  
+  m_lepton_ancestorTruthPdgId.clear(); 
+  m_lepton_ancestorTruthOrigin.clear();
+  m_lepton_ancestorTruthStatus.clear();
   m_lepton_tag_pt.clear();
   m_lepton_tag_eta.clear();
   m_lepton_tag_flavour.clear();
@@ -359,7 +427,11 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_tag_truthType.clear();
   m_lepton_tag_truthPdgId.clear();   
   m_lepton_tag_truthOrigin.clear(); 
-  m_lepton_tag_truthStatus.clear();  
+  m_lepton_tag_truthStatus.clear(); 
+  m_lepton_tag_ancestorTruthType.clear();  
+  m_lepton_tag_ancestorTruthPdgId.clear(); 
+  m_lepton_tag_ancestorTruthOrigin.clear();
+  m_lepton_tag_ancestorTruthStatus.clear();   
   m_lepton_probe_pt.clear();
   m_lepton_probe_eta.clear();
   m_lepton_probe_flavour.clear();
@@ -374,6 +446,10 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_probe_truthPdgId.clear();    
   m_lepton_probe_truthOrigin.clear(); 
   m_lepton_probe_truthStatus.clear();   
+  m_lepton_probe_ancestorTruthType.clear();  
+  m_lepton_probe_ancestorTruthPdgId.clear(); 
+  m_lepton_probe_ancestorTruthOrigin.clear();
+  m_lepton_probe_ancestorTruthStatus.clear();  
 }  
 
 void HTopMultilepTree::ClearTausUser() 
@@ -424,23 +500,33 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
 {
 
   // access this info only to fill tag/probe branches
-  static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched"); 
+  static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched");
   static SG::AuxElement::Accessor< char > isIsolatedAcc("isIsolated");
   
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
+  static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
+  static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
+  static SG::AuxElement::Accessor< char > isTagAcc("isTag");
+    
   static SG::AuxElement::Accessor< char > isTruthMatchedAcc("isTruthMatched");
   static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
   static SG::AuxElement::Accessor< char > isBremAcc("isBrem");
   static SG::AuxElement::ConstAccessor< int >  truthTypeAcc("truthType"); 
   static SG::AuxElement::Accessor< int >  truthPdgIdAcc("truthPdgId");      
   static SG::AuxElement::ConstAccessor< int >  truthOriginAcc("truthOrigin");
-  static SG::AuxElement::Accessor< int >  truthStatusAcc("truthStatus");    
-  static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
-  static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
-  static SG::AuxElement::Accessor< char > isTagAcc("isTag");
+  static SG::AuxElement::Accessor< int >  truthStatusAcc("truthStatus");
+  static SG::AuxElement::Accessor< int >  ancestorTruthTypeAcc("ancestorTruthType"); 
+  static SG::AuxElement::Accessor< int >  ancestorTruthPdgIdAcc("ancestorTruthPdgId"); 
+  static SG::AuxElement::Accessor< int >  ancestorTruthOriginAcc("ancestorTruthOrigin");
+  static SG::AuxElement::Accessor< int >  ancestorTruthStatusAcc("ancestorTruthStatus");
  
   if (  isTightAcc.isAvailable( *muon ) )         {  m_muon_isTight.push_back( isTightAcc( *muon ) ); } 
   else {  m_muon_isTight.push_back(-1); }
+  if (  isOSlepAcc.isAvailable( *muon ) )         { m_muon_isOS.push_back( isOSlepAcc( *muon ) ); }
+  else  { m_muon_isOS.push_back(-1); }
+  if (  isClosestSSlepAcc.isAvailable( *muon ) )  { m_muon_isClosestSS.push_back( isClosestSSlepAcc( *muon ) ); }
+  else  { m_muon_isClosestSS.push_back(-1); }
+
   if ( isTruthMatchedAcc.isAvailable( *muon ) )   { m_muon_isTruthMatched.push_back( isTruthMatchedAcc( *muon ) ); }
   else   { m_muon_isTruthMatched.push_back(-1); }
   if ( isChFlipAcc.isAvailable( *muon ) )         { m_muon_isChFlip.push_back( isChFlipAcc( *muon ) ); }
@@ -455,10 +541,14 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
   else   { m_muon_truthOrigin.push_back(0); } 
   if ( truthStatusAcc.isAvailable( *muon ) )      { m_muon_truthStatus.push_back( truthStatusAcc( *muon ) ); }
   else   { m_muon_truthStatus.push_back(0); } 
-  if (  isOSlepAcc.isAvailable( *muon ) )         { m_muon_isOS.push_back( isOSlepAcc( *muon ) ); }
-  else  { m_muon_isOS.push_back(-1); }
-  if (  isClosestSSlepAcc.isAvailable( *muon ) )  { m_muon_isClosestSS.push_back( isClosestSSlepAcc( *muon ) ); }
-  else  { m_muon_isClosestSS.push_back(-1); }
+  if ( ancestorTruthTypeAcc.isAvailable( *muon ) )      { m_muon_ancestorTruthType.push_back( ancestorTruthTypeAcc( *muon ) ); }
+  else   { m_muon_ancestorTruthType.push_back(0); } 
+  if ( ancestorTruthPdgIdAcc.isAvailable( *muon ) )     { m_muon_ancestorTruthPdgId.push_back( ancestorTruthPdgIdAcc( *muon ) ); }
+  else   { m_muon_ancestorTruthPdgId.push_back(0); } 
+  if ( ancestorTruthOriginAcc.isAvailable( *muon ) )    { m_muon_ancestorTruthOrigin.push_back( ancestorTruthOriginAcc( *muon ) ); }
+  else   { m_muon_ancestorTruthOrigin.push_back(0); } 
+  if ( ancestorTruthStatusAcc.isAvailable( *muon ) )    { m_muon_ancestorTruthStatus.push_back( ancestorTruthStatusAcc( *muon ) ); }
+  else   { m_muon_ancestorTruthStatus.push_back(0); } 
   
   if ( isTagAcc.isAvailable( *muon ) ) { 
     
@@ -490,6 +580,14 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
       else { m_muon_tag_truthOrigin.push_back( -1 ); }
       if ( truthStatusAcc.isAvailable( *muon ) )             { m_muon_tag_truthStatus.push_back(  truthStatusAcc( *muon ) ); }
       else { m_muon_tag_truthStatus.push_back( -1 ); }
+      if ( ancestorTruthTypeAcc.isAvailable( *muon ) )       { m_muon_tag_ancestorTruthType.push_back( ancestorTruthTypeAcc( *muon ) ); }
+      else   { m_muon_tag_ancestorTruthType.push_back(0); } 
+      if ( ancestorTruthPdgIdAcc.isAvailable( *muon ) )      { m_muon_tag_ancestorTruthPdgId.push_back( ancestorTruthPdgIdAcc( *muon ) ); }
+      else   { m_muon_tag_ancestorTruthPdgId.push_back(0); } 
+      if ( ancestorTruthOriginAcc.isAvailable( *muon ) )     { m_muon_tag_ancestorTruthOrigin.push_back( ancestorTruthOriginAcc( *muon ) ); }
+      else   { m_muon_tag_ancestorTruthOrigin.push_back(0); } 
+      if ( ancestorTruthStatusAcc.isAvailable( *muon ) )     { m_muon_tag_ancestorTruthStatus.push_back( ancestorTruthStatusAcc( *muon ) ); }
+      else   { m_muon_tag_ancestorTruthStatus.push_back(0); } 
     
     } else {
     // fill muon PROBE variables
@@ -517,6 +615,15 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
       else { m_muon_probe_truthOrigin.push_back( -1 ); }
       if ( truthStatusAcc.isAvailable( *muon ) )             { m_muon_probe_truthStatus.push_back(  truthStatusAcc( *muon ) ); }
       else { m_muon_probe_truthStatus.push_back( -1 ); }
+      if ( ancestorTruthTypeAcc.isAvailable( *muon ) )       { m_muon_probe_ancestorTruthType.push_back( ancestorTruthTypeAcc( *muon ) ); }
+      else   { m_muon_probe_ancestorTruthType.push_back(0); } 
+      if ( ancestorTruthPdgIdAcc.isAvailable( *muon ) )      { m_muon_probe_ancestorTruthPdgId.push_back( ancestorTruthPdgIdAcc( *muon ) ); }
+      else   { m_muon_probe_ancestorTruthPdgId.push_back(0); } 
+      if ( ancestorTruthOriginAcc.isAvailable( *muon ) )     { m_muon_probe_ancestorTruthOrigin.push_back( ancestorTruthOriginAcc( *muon ) ); }
+      else   { m_muon_probe_ancestorTruthOrigin.push_back(0); } 
+      if ( ancestorTruthStatusAcc.isAvailable( *muon ) )     { m_muon_probe_ancestorTruthStatus.push_back( ancestorTruthStatusAcc( *muon ) ); }
+      else   { m_muon_probe_ancestorTruthStatus.push_back(0); } 
+
     }
     
   }
@@ -528,20 +635,25 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
 {
 
   // access this info only to fill tag/probe branches
-  static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched"); 
+  static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched");
   static SG::AuxElement::Accessor< char > isIsolatedAcc("isIsolated");
- 
+  
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
-  static SG::AuxElement::Accessor< char > isTruthMatchedAcc("isTruthMatched");
-  static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
-  static SG::AuxElement::Accessor< char > isBremAcc("isBrem");  
-  static SG::AuxElement::ConstAccessor< int >  truthTypeAcc("truthType");    
-  static SG::AuxElement::Accessor< int >  truthPdgIdAcc("truthPdgId");    
-  static SG::AuxElement::ConstAccessor< int >  truthOriginAcc("truthOrigin");   
-  static SG::AuxElement::Accessor< int >  truthStatusAcc("truthStatus");    
   static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
   static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
   static SG::AuxElement::Accessor< char > isTagAcc("isTag");
+    
+  static SG::AuxElement::Accessor< char > isTruthMatchedAcc("isTruthMatched");
+  static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
+  static SG::AuxElement::Accessor< char > isBremAcc("isBrem");
+  static SG::AuxElement::ConstAccessor< int >  truthTypeAcc("truthType"); 
+  static SG::AuxElement::Accessor< int >  truthPdgIdAcc("truthPdgId");      
+  static SG::AuxElement::ConstAccessor< int >  truthOriginAcc("truthOrigin");
+  static SG::AuxElement::Accessor< int >  truthStatusAcc("truthStatus");
+  static SG::AuxElement::Accessor< int >  ancestorTruthTypeAcc("ancestorTruthType"); 
+  static SG::AuxElement::Accessor< int >  ancestorTruthPdgIdAcc("ancestorTruthPdgId"); 
+  static SG::AuxElement::Accessor< int >  ancestorTruthOriginAcc("ancestorTruthOrigin");
+  static SG::AuxElement::Accessor< int >  ancestorTruthStatusAcc("ancestorTruthStatus");
 
   if ( electron->caloCluster() ) {  m_electron_calo_eta.push_back( electron->caloCluster()->eta() ); } 
   else {  m_electron_calo_eta.push_back(-999.); }
@@ -558,6 +670,11 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
 
   if (  isTightAcc.isAvailable( *electron ) )          {  m_electron_isTight.push_back( isTightAcc( *electron ) ); } 
   else {  m_electron_isTight.push_back(-1); }
+  if (  isOSlepAcc.isAvailable( *electron ) )          { m_electron_isOS.push_back( isOSlepAcc( *electron ) ); }
+  else  { m_electron_isOS.push_back(-1); }
+  if (  isClosestSSlepAcc.isAvailable( *electron ) )   { m_electron_isClosestSS.push_back( isClosestSSlepAcc( *electron ) ); }
+  else  { m_electron_isClosestSS.push_back(-1); }
+
   if ( isTruthMatchedAcc.isAvailable( *electron ) )    { m_electron_isTruthMatched.push_back( isTruthMatchedAcc( *electron ) ); }
   else   { m_electron_isTruthMatched.push_back(-1); }
   if ( isChFlipAcc.isAvailable( *electron ) )          { m_electron_isChFlip.push_back( isChFlipAcc( *electron ) ); }
@@ -572,10 +689,14 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
   else   { m_electron_truthOrigin.push_back(0); } 
   if ( truthStatusAcc.isAvailable( *electron ) )       { m_electron_truthStatus.push_back( truthStatusAcc( *electron ) ); }
   else   { m_electron_truthStatus.push_back(0); } 
-  if (  isOSlepAcc.isAvailable( *electron ) )          { m_electron_isOS.push_back( isOSlepAcc( *electron ) ); }
-  else  { m_electron_isOS.push_back(-1); }
-  if (  isClosestSSlepAcc.isAvailable( *electron ) )   { m_electron_isClosestSS.push_back( isClosestSSlepAcc( *electron ) ); }
-  else  { m_electron_isClosestSS.push_back(-1); }
+  if ( ancestorTruthTypeAcc.isAvailable( *electron ) )      { m_electron_ancestorTruthType.push_back( ancestorTruthTypeAcc( *electron ) ); }
+  else   { m_electron_ancestorTruthType.push_back(0); } 
+  if ( ancestorTruthPdgIdAcc.isAvailable( *electron ) )     { m_electron_ancestorTruthPdgId.push_back( ancestorTruthPdgIdAcc( *electron ) ); }
+  else   { m_electron_ancestorTruthPdgId.push_back(0); } 
+  if ( ancestorTruthOriginAcc.isAvailable( *electron ) )    { m_electron_ancestorTruthOrigin.push_back( ancestorTruthOriginAcc( *electron ) ); }
+  else   { m_electron_ancestorTruthOrigin.push_back(0); } 
+  if ( ancestorTruthStatusAcc.isAvailable( *electron ) )    { m_electron_ancestorTruthStatus.push_back( ancestorTruthStatusAcc( *electron ) ); }
+  else   { m_electron_ancestorTruthStatus.push_back(0); } 
   
   if ( isTagAcc.isAvailable( *electron ) ) { 
     
@@ -607,6 +728,14 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
       else { m_electron_tag_truthOrigin.push_back( -1 ); }
       if ( truthStatusAcc.isAvailable( *electron ) )             { m_electron_tag_truthStatus.push_back(  truthStatusAcc( *electron ) ); }
       else { m_electron_tag_truthStatus.push_back( -1 ); }
+      if ( ancestorTruthTypeAcc.isAvailable( *electron ) )       { m_electron_tag_ancestorTruthType.push_back( ancestorTruthTypeAcc( *electron ) ); }
+      else   { m_electron_tag_ancestorTruthType.push_back(0); } 
+      if ( ancestorTruthPdgIdAcc.isAvailable( *electron ) )      { m_electron_tag_ancestorTruthPdgId.push_back( ancestorTruthPdgIdAcc( *electron ) ); }
+      else   { m_electron_tag_ancestorTruthPdgId.push_back(0); } 
+      if ( ancestorTruthOriginAcc.isAvailable( *electron ) )     { m_electron_tag_ancestorTruthOrigin.push_back( ancestorTruthOriginAcc( *electron ) ); }
+      else   { m_electron_tag_ancestorTruthOrigin.push_back(0); } 
+      if ( ancestorTruthStatusAcc.isAvailable( *electron ) )     { m_electron_tag_ancestorTruthStatus.push_back( ancestorTruthStatusAcc( *electron ) ); }
+      else   { m_electron_tag_ancestorTruthStatus.push_back(0); } 
     
     } else {
     // fill electron PROBE variables
@@ -634,6 +763,15 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
       else { m_electron_probe_truthOrigin.push_back( -1 ); }
       if ( truthStatusAcc.isAvailable( *electron ) )             { m_electron_probe_truthStatus.push_back(  truthStatusAcc( *electron ) ); }
       else { m_electron_probe_truthStatus.push_back( -1 ); }
+      if ( ancestorTruthTypeAcc.isAvailable( *electron ) )       { m_electron_probe_ancestorTruthType.push_back( ancestorTruthTypeAcc( *electron ) ); }
+      else   { m_electron_probe_ancestorTruthType.push_back(0); } 
+      if ( ancestorTruthPdgIdAcc.isAvailable( *electron ) )      { m_electron_probe_ancestorTruthPdgId.push_back( ancestorTruthPdgIdAcc( *electron ) ); }
+      else   { m_electron_probe_ancestorTruthPdgId.push_back(0); } 
+      if ( ancestorTruthOriginAcc.isAvailable( *electron ) )     { m_electron_probe_ancestorTruthOrigin.push_back( ancestorTruthOriginAcc( *electron ) ); }
+      else   { m_electron_probe_ancestorTruthOrigin.push_back(0); } 
+      if ( ancestorTruthStatusAcc.isAvailable( *electron ) )     { m_electron_probe_ancestorTruthStatus.push_back( ancestorTruthStatusAcc( *electron ) ); }
+      else   { m_electron_probe_ancestorTruthStatus.push_back(0); } 
+
     }
     
   }
@@ -665,16 +803,21 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
   static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched");
   static SG::AuxElement::Accessor< char > isIsolatedAcc("isIsolated");
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
+  static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
+  static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
+  static SG::AuxElement::Accessor< char > isTagAcc("isTag"); 
+    
   static SG::AuxElement::Accessor< char > isTruthMatchedAcc("isTruthMatched");
   static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
   static SG::AuxElement::Accessor< char > isBremAcc("isBrem");  
   static SG::AuxElement::ConstAccessor< int >  truthTypeAcc("truthType");  
   static SG::AuxElement::Accessor< int >  truthPdgIdAcc("truthPdgId");  
   static SG::AuxElement::ConstAccessor< int >  truthOriginAcc("truthOrigin");   
-  static SG::AuxElement::Accessor< int >  truthStatusAcc("truthStatus");    
-  static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
-  static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
-  static SG::AuxElement::Accessor< char > isTagAcc("isTag");  
+  static SG::AuxElement::Accessor< int >  truthStatusAcc("truthStatus"); 
+  static SG::AuxElement::Accessor< int >  ancestorTruthTypeAcc("ancestorTruthType"); 
+  static SG::AuxElement::Accessor< int >  ancestorTruthPdgIdAcc("ancestorTruthPdgId"); 
+  static SG::AuxElement::Accessor< int >  ancestorTruthOriginAcc("ancestorTruthOrigin");
+  static SG::AuxElement::Accessor< int >  ancestorTruthStatusAcc("ancestorTruthStatus");  
   
   for ( auto lep_itr : *(leptons) ) {
 
@@ -706,6 +849,11 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
       else {  m_lepton_isIsolated.push_back(-1); }
       if (  isTightAcc.isAvailable( *lep_itr ) )        {  m_lepton_isTight.push_back( isTightAcc( *lep_itr ) ); } 
       else {  m_lepton_isTight.push_back(-1); }
+      if (  isOSlepAcc.isAvailable( *lep_itr ) )        { m_lepton_isOS.push_back( isOSlepAcc( *lep_itr ) ); }
+      else  { m_lepton_isOS.push_back(-1); }
+      if (  isClosestSSlepAcc.isAvailable( *lep_itr ) ) { m_lepton_isClosestSS.push_back( isClosestSSlepAcc( *lep_itr ) ); }
+      else  { m_lepton_isClosestSS.push_back(-1); }
+      
       if ( isTruthMatchedAcc.isAvailable( *lep_itr ) )  { m_lepton_isTruthMatched.push_back( isTruthMatchedAcc( *lep_itr ) ); }
       else   { m_lepton_isTruthMatched.push_back(-1); }
       if ( isChFlipAcc.isAvailable( *lep_itr ) )        { m_lepton_isChFlip.push_back( isChFlipAcc( *lep_itr ) ); }
@@ -720,10 +868,14 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
       else   { m_lepton_truthOrigin.push_back(0); } 
       if ( truthStatusAcc.isAvailable( *lep_itr ) )     { m_lepton_truthStatus.push_back( truthStatusAcc( *lep_itr ) ); }
       else   { m_lepton_truthStatus.push_back(0); } 
-      if (  isOSlepAcc.isAvailable( *lep_itr ) )        { m_lepton_isOS.push_back( isOSlepAcc( *lep_itr ) ); }
-      else  { m_lepton_isOS.push_back(-1); }
-      if (  isClosestSSlepAcc.isAvailable( *lep_itr ) ) { m_lepton_isClosestSS.push_back( isClosestSSlepAcc( *lep_itr ) ); }
-      else  { m_lepton_isClosestSS.push_back(-1); }
+      if ( ancestorTruthTypeAcc.isAvailable( *lep_itr ) )	 { m_lepton_ancestorTruthType.push_back( ancestorTruthTypeAcc( *lep_itr ) ); }
+      else   { m_lepton_ancestorTruthType.push_back(0); } 
+      if ( ancestorTruthPdgIdAcc.isAvailable( *lep_itr ) )	 { m_lepton_ancestorTruthPdgId.push_back( ancestorTruthPdgIdAcc( *lep_itr ) ); }
+      else   { m_lepton_ancestorTruthPdgId.push_back(0); } 
+      if ( ancestorTruthOriginAcc.isAvailable( *lep_itr ) )	 { m_lepton_ancestorTruthOrigin.push_back( ancestorTruthOriginAcc( *lep_itr ) ); }
+      else   { m_lepton_ancestorTruthOrigin.push_back(0); } 
+      if ( ancestorTruthStatusAcc.isAvailable( *lep_itr ) )	 { m_lepton_ancestorTruthStatus.push_back( ancestorTruthStatusAcc( *lep_itr ) ); }
+      else   { m_lepton_ancestorTruthStatus.push_back(0); } 
       
       if ( isTagAcc.isAvailable( *lep_itr ) ) { 
     	
@@ -757,7 +909,15 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
     	  else { m_lepton_tag_truthOrigin.push_back( -1 ); }
     	  if ( truthStatusAcc.isAvailable( *lep_itr ) )	            { m_lepton_tag_truthStatus.push_back(  truthStatusAcc( *lep_itr ) ); }
     	  else { m_lepton_tag_truthStatus.push_back( -1 ); }
-    	
+          if ( ancestorTruthTypeAcc.isAvailable( *lep_itr ) )       { m_lepton_tag_ancestorTruthType.push_back( ancestorTruthTypeAcc( *lep_itr ) ); }
+          else   { m_lepton_tag_ancestorTruthType.push_back(0); } 
+          if ( ancestorTruthPdgIdAcc.isAvailable( *lep_itr ) )      { m_lepton_tag_ancestorTruthPdgId.push_back( ancestorTruthPdgIdAcc( *lep_itr ) ); }
+          else   { m_lepton_tag_ancestorTruthPdgId.push_back(0); } 
+          if ( ancestorTruthOriginAcc.isAvailable( *lep_itr ) )     { m_lepton_tag_ancestorTruthOrigin.push_back( ancestorTruthOriginAcc( *lep_itr ) ); }
+          else   { m_lepton_tag_ancestorTruthOrigin.push_back(0); } 
+          if ( ancestorTruthStatusAcc.isAvailable( *lep_itr ) )     { m_lepton_tag_ancestorTruthStatus.push_back( ancestorTruthStatusAcc( *lep_itr ) ); }
+          else   { m_lepton_tag_ancestorTruthStatus.push_back(0); } 
+          	
 	} else {
     	// fill lepton PROBE variables
     	  
@@ -786,6 +946,15 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
     	  else { m_lepton_probe_truthOrigin.push_back( -1 ); }
     	  if ( truthStatusAcc.isAvailable( *lep_itr ) )	            { m_lepton_probe_truthStatus.push_back(  truthStatusAcc( *lep_itr ) ); }
     	  else { m_lepton_probe_truthStatus.push_back( -1 ); }
+          if ( ancestorTruthTypeAcc.isAvailable( *lep_itr ) )       { m_lepton_probe_ancestorTruthType.push_back( ancestorTruthTypeAcc( *lep_itr ) ); }
+          else   { m_lepton_probe_ancestorTruthType.push_back(0); } 
+          if ( ancestorTruthPdgIdAcc.isAvailable( *lep_itr ) )      { m_lepton_probe_ancestorTruthPdgId.push_back( ancestorTruthPdgIdAcc( *lep_itr ) ); }
+          else   { m_lepton_probe_ancestorTruthPdgId.push_back(0); } 
+          if ( ancestorTruthOriginAcc.isAvailable( *lep_itr ) )     { m_lepton_probe_ancestorTruthOrigin.push_back( ancestorTruthOriginAcc( *lep_itr ) ); }
+          else   { m_lepton_probe_ancestorTruthOrigin.push_back(0); } 
+          if ( ancestorTruthStatusAcc.isAvailable( *lep_itr ) )     { m_lepton_probe_ancestorTruthStatus.push_back( ancestorTruthStatusAcc( *lep_itr ) ); }
+          else   { m_lepton_probe_ancestorTruthStatus.push_back(0); } 
+
     	}
     	
       }

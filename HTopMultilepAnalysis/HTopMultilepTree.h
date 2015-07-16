@@ -52,16 +52,22 @@ class HTopMultilepTree : public HelpTreeBase
     
     /* muon variables */
     std::vector<int> m_muon_isTight;
+    std::vector<int> m_muon_isOS;
+    std::vector<int> m_muon_isClosestSS;
+    std::vector<int> m_muon_isTag;     
+    
     std::vector<int> m_muon_isTruthMatched; 
     std::vector<int> m_muon_isChFlip; 
     std::vector<int> m_muon_isBrem;
     std::vector<int> m_muon_truthType;  
     std::vector<int> m_muon_truthPdgId;  
     std::vector<int> m_muon_truthOrigin; 
-    std::vector<int> m_muon_truthStatus;  
-    std::vector<int> m_muon_isOS;
-    std::vector<int> m_muon_isClosestSS;
-    std::vector<int> m_muon_isTag; 
+    std::vector<int> m_muon_truthStatus; 
+    std::vector<int> m_muon_ancestorTruthType;  
+    std::vector<int> m_muon_ancestorTruthPdgId;  
+    std::vector<int> m_muon_ancestorTruthOrigin; 
+    std::vector<int> m_muon_ancestorTruthStatus;      
+
     /* muon TAG variables */
     std::vector<float> m_muon_tag_pt;
     std::vector<float> m_muon_tag_eta;
@@ -74,7 +80,11 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_muon_tag_truthType; 
     std::vector<int>   m_muon_tag_truthPdgId; 
     std::vector<int>   m_muon_tag_truthOrigin; 
-    std::vector<int>   m_muon_tag_truthStatus;  
+    std::vector<int>   m_muon_tag_truthStatus; 
+    std::vector<int>   m_muon_tag_ancestorTruthType;  
+    std::vector<int>   m_muon_tag_ancestorTruthPdgId;  
+    std::vector<int>   m_muon_tag_ancestorTruthOrigin; 
+    std::vector<int>   m_muon_tag_ancestorTruthStatus;        
     /* muon PROBE variables */
     std::vector<float> m_muon_probe_pt;
     std::vector<float> m_muon_probe_eta;
@@ -88,11 +98,18 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_muon_probe_truthPdgId; 
     std::vector<int>   m_muon_probe_truthOrigin; 
     std::vector<int>   m_muon_probe_truthStatus;  
+    std::vector<int>   m_muon_probe_ancestorTruthType;  
+    std::vector<int>   m_muon_probe_ancestorTruthPdgId;  
+    std::vector<int>   m_muon_probe_ancestorTruthOrigin; 
+    std::vector<int>   m_muon_probe_ancestorTruthStatus;      
     
     /* electron variables */
     std::vector<float> m_electron_calo_eta;   
     std::vector<int>   m_electron_crack;   
     std::vector<int>   m_electron_isTight;
+    std::vector<int>   m_electron_isOS;
+    std::vector<int>   m_electron_isClosestSS;
+    std::vector<int>   m_electron_isTag;     
     std::vector<int>   m_electron_isTruthMatched; 
     std::vector<int>   m_electron_isChFlip; 
     std::vector<int>   m_electron_isBrem; 
@@ -100,9 +117,10 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_truthPdgId;
     std::vector<int>   m_electron_truthOrigin; 
     std::vector<int>   m_electron_truthStatus;
-    std::vector<int>   m_electron_isOS;
-    std::vector<int>   m_electron_isClosestSS;
-    std::vector<int>   m_electron_isTag; 
+    std::vector<int>   m_electron_ancestorTruthType;  
+    std::vector<int>   m_electron_ancestorTruthPdgId;  
+    std::vector<int>   m_electron_ancestorTruthOrigin; 
+    std::vector<int>   m_electron_ancestorTruthStatus;	 
     /* electron TAG variables */
     std::vector<float> m_electron_tag_pt;
     std::vector<float> m_electron_tag_eta;
@@ -115,7 +133,11 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_tag_truthType;
     std::vector<int>   m_electron_tag_truthPdgId; 
     std::vector<int>   m_electron_tag_truthOrigin; 
-    std::vector<int>   m_electron_tag_truthStatus;  
+    std::vector<int>   m_electron_tag_truthStatus; 
+    std::vector<int>   m_electron_tag_ancestorTruthType;  
+    std::vector<int>   m_electron_tag_ancestorTruthPdgId;  
+    std::vector<int>   m_electron_tag_ancestorTruthOrigin; 
+    std::vector<int>   m_electron_tag_ancestorTruthStatus;      
     /* electron PROBE variables */
     std::vector<float> m_electron_probe_pt;
     std::vector<float> m_electron_probe_eta;
@@ -128,7 +150,11 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_probe_truthType; 
     std::vector<int>   m_electron_probe_truthPdgId; 
     std::vector<int>   m_electron_probe_truthOrigin; 
-    std::vector<int>   m_electron_probe_truthStatus;         
+    std::vector<int>   m_electron_probe_truthStatus;  
+    std::vector<int>   m_electron_probe_ancestorTruthType;  
+    std::vector<int>   m_electron_probe_ancestorTruthPdgId;  
+    std::vector<int>   m_electron_probe_ancestorTruthOrigin; 
+    std::vector<int>   m_electron_probe_ancestorTruthStatus;            
        
     /* lepton variables */
     int                m_nlep;
@@ -141,16 +167,21 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_isTrigMatched; 
     std::vector<int>   m_lepton_isIsolated;
     std::vector<int>   m_lepton_isTight; 
+    std::vector<int>   m_lepton_isOS;
+    std::vector<int>   m_lepton_isClosestSS;
+    std::vector<int>   m_lepton_isTag;     
     std::vector<int>   m_lepton_isTruthMatched; 
     std::vector<int>   m_lepton_isChFlip; 
     std::vector<int>   m_lepton_isBrem; 
     std::vector<int>   m_lepton_truthType; 
     std::vector<int>   m_lepton_truthPdgId;     
     std::vector<int>   m_lepton_truthOrigin; 
-    std::vector<int>   m_lepton_truthStatus; 
-    std::vector<int>   m_lepton_isOS;
-    std::vector<int>   m_lepton_isClosestSS;
-    std::vector<int>   m_lepton_isTag; 
+    std::vector<int>   m_lepton_truthStatus;
+    std::vector<int>   m_lepton_ancestorTruthType;  
+    std::vector<int>   m_lepton_ancestorTruthPdgId;  
+    std::vector<int>   m_lepton_ancestorTruthOrigin; 
+    std::vector<int>   m_lepton_ancestorTruthStatus;	
+
     /* lepton TAG variables */
     std::vector<float> m_lepton_tag_pt;
     std::vector<float> m_lepton_tag_eta;
@@ -166,6 +197,10 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_tag_truthPdgId; 
     std::vector<int>   m_lepton_tag_truthOrigin; 
     std::vector<int>   m_lepton_tag_truthStatus;  
+    std::vector<int>   m_lepton_tag_ancestorTruthType;  
+    std::vector<int>   m_lepton_tag_ancestorTruthPdgId;  
+    std::vector<int>   m_lepton_tag_ancestorTruthOrigin; 
+    std::vector<int>   m_lepton_tag_ancestorTruthStatus;    
     /* lepton PROBE variables */
     std::vector<float> m_lepton_probe_pt;
     std::vector<float> m_lepton_probe_eta;
@@ -180,7 +215,11 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_probe_truthType;  
     std::vector<int>   m_lepton_probe_truthPdgId;
     std::vector<int>   m_lepton_probe_truthOrigin; 
-    std::vector<int>   m_lepton_probe_truthStatus;         
+    std::vector<int>   m_lepton_probe_truthStatus;     
+    std::vector<int>   m_lepton_probe_ancestorTruthType;  
+    std::vector<int>   m_lepton_probe_ancestorTruthPdgId;  
+    std::vector<int>   m_lepton_probe_ancestorTruthOrigin; 
+    std::vector<int>   m_lepton_probe_ancestorTruthStatus;            
 
     /* tau variables */
     std::vector<int>   m_tau_isBDTTight;    
