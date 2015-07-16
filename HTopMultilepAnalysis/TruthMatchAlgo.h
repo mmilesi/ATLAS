@@ -17,6 +17,10 @@
 #include "xAODBase/IParticleContainer.h"
 #include "xAODBase/IParticle.h"
 
+// external tools include(s):
+#include "MCTruthClassifier/MCTruthClassifier.h"
+#include "MCTruthClassifier/MCTruthClassifierDefs.h"
+
 // algorithm wrapper
 #include "xAODAnaHelpers/Algorithm.h"
 
@@ -58,9 +62,13 @@ private:
   SG::AuxElement::Decorator< int >*  	   m_truthPdgIdDecor;		   //! /* pdgId of the match particle */
   SG::AuxElement::Decorator< int >*  	   m_truthOriginDecor;  	   //! /* origin of the parent particle - need it for muons since we have to retrieve this from the truth track */
   SG::AuxElement::Decorator< int >*  	   m_truthStatusDecor;  	   //! /* status of the match particle */
-  SG::AuxElement::Decorator< char >* 	   m_isChFlipDecor;		   //! /* reco has opposite charge wrt to primitive truth match */
-  SG::AuxElement::Decorator< char >* 	   m_isBremDecor;		   //! /* reco is matched to a brem lepton */
-  
+  SG::AuxElement::Decorator< char >* 	   m_isChFlipDecor;		   //! /* reco has opposite charge wrt to primitive truth ancestor */
+  SG::AuxElement::Decorator< char >* 	   m_isBremDecor;		   //! /* reco is matched to a brem lepton (i.e, ancestor emitted a photon by brem) */
+  SG::AuxElement::Decorator< int >*  	   m_ancestorTruthTypeDecor;	   //! /* type of the primitive ancestor (according to MCTruthClassifier) - need it for brem leptons*/
+  SG::AuxElement::Decorator< int >*  	   m_ancestorTruthPdgIdDecor;	   //! /* pdgId of the primitive ancestor (according to MCTruthClassifier) - need it for brem leptons*/
+  SG::AuxElement::Decorator< int >*  	   m_ancestorTruthOriginDecor;     //! /* origin of the primitive ancestor (according to MCTruthClassifier) - need it for brem leptons*/
+  SG::AuxElement::Decorator< int >*  	   m_ancestorTruthStatusDecor;     //! /* status of the primitive ancestor (according to MCTruthClassifier) - need it for brem leptons*/
+
   /* Initialise accessors */
   SG::AuxElement::Accessor< float >*       m_mcEvtWeightAcc;		   //!
   SG::AuxElement::Accessor< char >*        m_isTruthMatchedAcc; 	   //!
@@ -71,7 +79,11 @@ private:
   SG::AuxElement::ConstAccessor< int >*    m_truthTypeAcc;		   //!  /* accessor to built-in xAOD attribute */
   SG::AuxElement::ConstAccessor< int >*    m_truthOriginAcc;		   //!  /* accessor to built-in xAOD attribute */
   SG::AuxElement::Accessor< float >*       m_truthMatchProbabilityAcc;     //!  
+  SG::AuxElement::Accessor< int >*         m_ancestorTruthTypeAcc;         //! 
+  SG::AuxElement::Accessor< int >*         m_ancestorTruthOriginAcc;       //! 
   
+  // MC Truth Classifier
+  MCTruthClassifier *m_MCTClassifier; //!
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
