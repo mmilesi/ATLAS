@@ -36,14 +36,11 @@
 #include <xAODAnaHelpers/tools/ReturnCheck.h>
 #include <xAODAnaHelpers/tools/ReturnCheckConfig.h>
 
-// external tools include(s):
-
 // ROOT include(s):
 #include "TEnv.h"
 #include "TFile.h"
 #include "TSystem.h"
 
-// external tools include(s):
 
 // this is needed to distribute the algorithm to the workers
 ClassImp(TruthMatchAlgo)
@@ -567,7 +564,7 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectron ( const xAOD::IPart
 
   // decorate reconstructed particle with default values
   //
-  (*m_isTruthMatchedDecor)( *recoPart )	         = 0;
+  (*m_isTruthMatchedDecor)( *recoPart )	         = -1;
   (*m_truthPdgIdDecor)( *recoPart )              = 0;
   (*m_truthStatusDecor)( *recoPart )	         = -1;  
 
@@ -576,20 +573,20 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectron ( const xAOD::IPart
   // For electrons, the link to truth matching particle (and some useful info) is already saved in ElectronCollection
   //
   if ( ! (*m_truthPLAcc).isAvailable( *recoPart ) ) {
-     Error("applyTruthMatchingElectron()", "No link available to truth match for this reco electron. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
+     Warning("applyTruthMatchingElectron()", "No link available to truth match for this reco electron. This shouldn't happen. Returning"); 
+     return StatusCode::SUCCESS;		
   }
   if ( ! (*m_truthPLAcc)( *recoPart ).isValid() ) {
-     Error("applyTruthMatchingElectron()", "Link to truth match for this reco electron is invalid. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
+     Warning("applyTruthMatchingElectron()", "Link to truth match for this reco electron is invalid. This shouldn't happen. Returning"); 
+     return StatusCode::SUCCESS;		
   }
   const xAOD::TruthParticle* matchTruthEl = *( (*m_truthPLAcc)(*recoPart) );
 
-  // if there's no matching truth electron, abort.
+  // if there's no matching truth electron, return.
   //
   if ( !matchTruthEl ) {
-     Error( "applyTruthMatchingElectron()", "This reco electron is not matched to a generic truth particle. This shouldn't happen. Aborting");
-     return StatusCode::FAILURE;
+     Warning( "applyTruthMatchingElectron()", "This reco electron is not matched to a generic truth particle. This shouldn't happen. Returning");
+     return StatusCode::SUCCESS;
   } 
   
   // decorate with true if the truth match is an electron
@@ -598,6 +595,8 @@ EL::StatusCode TruthMatchAlgo ::  applyTruthMatchingElectron ( const xAOD::IPart
   if ( matchTruthEl->isElectron() ) {
       isTMElectron = true;
      (*m_isTruthMatchedDecor)( *recoPart ) = 1;
+  } else {
+     (*m_isTruthMatchedDecor)( *recoPart ) = 0;
   }
 
   // store the pdgId of the match
@@ -694,27 +693,27 @@ EL::StatusCode TruthMatchAlgo :: doMuonTrackMatching( const xAOD::IParticle* rec
    ElementLink< xAOD::TrackParticleContainer > trkLink = dynamic_cast<const xAOD::Muon*>(recoPart)->inDetTrackParticleLink();
    
    if ( !trkLink.isValid() ) {
-     Error("doMuonTrackMatching()", "Link to ID track particle for this reco muon is invalid. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;   
+     Warning("doMuonTrackMatching()", "Link to ID track particle for this reco muon is invalid. This shouldn't happen. Returning"); 
+     return StatusCode::SUCCESS;   
    }
    trk = *trkLink;
 
    // get the truth particle matching the ID track
    //
    if ( ! (*m_truthPLAcc).isAvailable( *trk ) ) {
-      Error("doMuonTrackMatching()", "No link available to truth match for this reco muon's ID track. This shouldn't happen. Aborting"); 
-      return StatusCode::FAILURE;		 
+      Warning("doMuonTrackMatching()", "No link available to truth match for this reco muon's ID track. This shouldn't happen. Returning"); 
+      return StatusCode::SUCCESS;		 
    }
    if ( ! (*m_truthPLAcc)( *trk ).isValid() ) {
-      Error("doMuonTrackMatching()", "Link to truth match for this reco muon's ID track is invalid. This shouldn't happen. Aborting"); 
-      return StatusCode::FAILURE;
+      Warning("doMuonTrackMatching()", "Link to truth match for this reco muon's ID track is invalid. This shouldn't happen. Returning"); 
+      return StatusCode::SUCCESS;
    }
    const xAOD::TruthParticle* matchTruthMu = *( (*m_truthPLAcc)(*trk) );
 
-   // if there is no matching truth particle for the ID track, abort 
+   // if there is no matching truth particle for the ID track, return 
    //
    if ( !matchTruthMu ) {
-      if ( m_debug ) { Info("doMuonTrackMatching()", "No truth match for this reco muon's ID track. This shouldn't happen. Aborting"); }
+      Warning("doMuonTrackMatching()", "No truth match for this reco muon's ID track. This shouldn't happen. Returning"); 
       return StatusCode::SUCCESS;    
    } 
 
@@ -737,8 +736,8 @@ EL::StatusCode TruthMatchAlgo :: doMuonTrackMatching( const xAOD::IParticle* rec
    // store the type of the match: pass the track type info to the reco muon
    //
    if ( ! (*m_truthTypeAcc).isAvailable( *trk ) ) {
-     Error("doMuonTrackMatching()", "No truth type info available for this muon's ID track matching truth particle. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
+     Warning("doMuonTrackMatching()", "No truth type info available for this muon's ID track matching truth particle. This shouldn't happen. Returning"); 
+     return StatusCode::SUCCESS;		
    }	    
    int truthTrkMatchType = (*m_truthTypeAcc)(*trk);
    (*m_truthTypeDecor)( *recoPart ) = truthTrkMatchType;
@@ -765,8 +764,8 @@ EL::StatusCode TruthMatchAlgo :: doMuonTrackMatching( const xAOD::IParticle* rec
    // store the pdgId of the parent particle of the match: pass the track origin info to the reco muon
    //
    if ( ! (*m_truthOriginAcc).isAvailable( *trk ) ) {
-     Error("doMuonTrackMatching()", "No truth origin info available for this muon's ID track matching truth particle. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
+     Warning("doMuonTrackMatching()", "No truth origin info available for this muon's ID track matching truth particle. This shouldn't happen. Returning"); 
+     return StatusCode::SUCCESS;		
    }	    
    int truthTrkMatchOrigin = (*m_truthOriginAcc)(*trk);
    (*m_truthOriginDecor)( *recoPart ) = truthTrkMatchOrigin;
@@ -800,23 +799,24 @@ EL::StatusCode TruthMatchAlgo :: doMuonTruthPartMatching ( const xAOD::IParticle
    const xAOD::TruthParticle* matchTruthMu(nullptr);
 
    if ( ! (*m_truthPLAcc).isAvailable( *recoPart ) ) {
-      Error("doMuonTruthPartMatching()", "No link available to truth match for this reco muon. This shouldn't happen. Aborting"); 
-      return StatusCode::FAILURE;		 
+      Warning("doMuonTruthPartMatching()", "No link available to truth match for this reco muon. This shouldn't happen. Returning"); 
+      return StatusCode::SUCCESS;		 
    }
    if ( ! (*m_truthPLAcc)( *recoPart ).isValid() ) {
-      Error("doMuonTruthPartMatching()", "Link to truth match for this reco muon is invalid. This shouldn't happen. Aborting"); 
-      return StatusCode::FAILURE;
+      Warning("doMuonTruthPartMatching()", "Link to truth match for this reco muon is invalid. This shouldn't happen. Returning"); 
+      return StatusCode::SUCCESS;
    }
    matchTruthMu = *( (*m_truthPLAcc)(*recoPart) );
 
-   // if there is no matching truth muon, abort
+   // if there is no matching truth muon, return
    //
    if ( !matchTruthMu ) {
-      Error("doMuonTruthPartMatching()", "No truth matching for this reco muon. This shouldn't happen. Aborting"); 
-      return StatusCode::FAILURE;    
+      Warning("doMuonTruthPartMatching()", "No truth matching for this reco muon. This shouldn't happen. Returning"); 
+      return StatusCode::SUCCESS;    
    }
    
-   // decorate with this if the truth match is a muon ( should ALWAYS be the case, since the truth we are getting is in the "MuonTruthParticles" container.! )
+   // decorate with this if the truth match is a muon 
+   // ( should ALWAYS be the case, since the truth we are getting is in the "MuonTruthParticles" container.! )
    //
    bool isTMMuon(false);
    if ( matchTruthMu->isMuon() ) {
@@ -827,8 +827,8 @@ EL::StatusCode TruthMatchAlgo :: doMuonTruthPartMatching ( const xAOD::IParticle
    // store the type of the match: pass the truth muon type info to the reco muon
    //
    if ( ! (*m_truthTypeAcc).isAvailable( *matchTruthMu ) ) {
-     Error("doMuonTruthPartMatching()", "No truth type info available for this muon's matching truth particle. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
+     Warning("doMuonTruthPartMatching()", "No truth type info available for this muon's matching truth particle. This shouldn't happen. Returning"); 
+     return StatusCode::SUCCESS;		
    }	    
    int truthMatchType = (*m_truthTypeAcc)(*matchTruthMu);
    (*m_truthTypeDecor)( *recoPart ) = truthMatchType;
@@ -855,8 +855,8 @@ EL::StatusCode TruthMatchAlgo :: doMuonTruthPartMatching ( const xAOD::IParticle
    // store the pdgId of the parent particle of the match: pass the truth muon origin info to the reco muon
    //
    if ( ! (*m_truthOriginAcc).isAvailable( *matchTruthMu ) ) {
-     Error("doMuonTruthPartMatching()", "No truth origin info available for this muon's matching truth particle. This shouldn't happen. Aborting"); 
-     return StatusCode::FAILURE;		
+     Warning("doMuonTruthPartMatching()", "No truth origin info available for this muon's matching truth particle. This shouldn't happen. Returning"); 
+     return StatusCode::SUCCESS;		
    }	    
    int truthMatchOrigin = (*m_truthOriginAcc)(*matchTruthMu);
    (*m_truthOriginDecor)( *recoPart ) = truthMatchOrigin;
