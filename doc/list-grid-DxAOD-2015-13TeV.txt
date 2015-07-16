@@ -16,18 +16,62 @@
 # ~~~~ single t (background) ~~~ #
 # ~~~~ ttWW (background) ~~~~ #
 # ~~~~ bulk MC submission ~~~~ #
-#mc15_13TeV.*.merge.DAOD_HIGG8D1.*_p2363/
 # ---------------------------------------
 # Full xAODs MC15
 # ---------------------------------------
 #
+#
 # --------------------
 # Week 1 configuration
 # --------------------
+#
+#
 # ~~~~ Z+jets (background) ~~~ #
-mc15_13TeV.36110*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Z*.merge.AOD.e3601_s2576_s2132_r6633_r6264/
+#mc15_13TeV.36110*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Z*.merge.AOD.e3601_s2576_s2132_r6633_r6264/
 # ~~~~ ttbar (background) ~~~~ #
-mc15_13TeV.410000.*.merge.AOD.e3601_s2576_s2132_r6633_r6264/
+#mc15_13TeV.410000.*.merge.AOD.e3601_s2576_s2132_r6633_r6264/
+#
+#
+# --------------------
+# 50 ns configuration
+# --------------------
+#
+#
+# ~~~~ ttH125 (signal) ~~~~ #
+# ~~~~ ttbar (background) ~~~~ #
+mc15_13TeV.410000.*.merge.AOD.e3698_s2608_s2183_r6633_r6264/
+# ~~~~ single t (background) ~~~ #
+mc15_13TeV.410011.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
+mc15_13TeV.410012.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
+# ~~~~ ttW (background) ~~~~ #
+# ~~~~ ttZ(background) ~~~~ #
+# ~~~~ ttWW (background) ~~~~ #
+# ~~~~ WW (background) ~~~ #
+mc15_13TeV.361068.*.merge.AOD.e3836_s2608_s2183_r6793_r6264/
+mc15_13TeV.361069.*.merge.AOD.e3836_s2608_s2183_r6793_r6264/
+mc15_13TeV.361070.*.merge.AOD.e3836_s2608_s2183_r6793_r6264/
+mc15_13TeV.361081.*.merge.AOD.e3926_s2608_s2183_r6767_r6264/
+mc15_13TeV.361082.*.merge.AOD.e3926_s2608_s2183_r6767_r6264/
+mc15_13TeV.361600.*.merge.AOD.e4054_s2608_s2183_r6630_r6264/
+mc15_13TeV.361606.*.merge.AOD.e4054_s2608_s2183_r6630_r6264/
+# ~~~~ WZ (background) ~~~ #
+mc15_13TeV.361071.*.merge.AOD.e3836_s2608_s2183_r6793_r6264/
+mc15_13TeV.361083.*.merge.AOD.e3926_s2608_s2183_r6767_r6264/
+mc15_13TeV.361084.*.merge.AOD.e3926_s2608_s2183_r6767_r6264/
+mc15_13TeV.361085.*.merge.AOD.e3836_s2608_s2183_r6630_r6264/
+mc15_13TeV.361601.*.merge.AOD.e4054_s2608_s2183_r6630_r6264/
+mc15_13TeV.361607.*.merge.AOD.e4054_s2608_s2183_r6630_r6264/
+mc15_13TeV.361609.*.merge.AOD.e4054_s2608_s2183_r6630_r6264/
+# ~~~~ ZZ (background) ~~~ #
+mc15_13TeV.361086.*.merge.AOD.e3926_s2608_s2183_r6767_r6264/
+mc15_13TeV.361087.*.merge.AOD.e3926_s2608_s2183_r6767_r6264/
+mc15_13TeV.361072.*.merge.AOD.e3836_s2608_s2183_r6793_r6264/
+mc15_13TeV.361604.*.merge.AOD.e4054_s2608_s2183_r6630_r6264/
+mc15_13TeV.361610.*.merge.AOD.e4054_s2608_s2183_r6630_r6264/
+# ~~~~ Wgamma+jets (background) ~~~ #
+# ~~~~ Zgamma+jets (background) ~~~ #
+# ~~~~ Z+jets (background) ~~~ #
+mc15_13TeV.36110*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Z*.merge.AOD.e3601_s2576_s2132_r6630_r6264/
 #
 # ********** #
 #    data    #
@@ -62,17 +106,28 @@ mc15_13TeV.410000.*.merge.AOD.e3601_s2576_s2132_r6633_r6264/
 # ---------------------------------------
 # DAOD HIGG8D1 - AtlasDerivation,20.1.5.4
 # ---------------------------------------
-data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.r6848_p2358_p2375/
-data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.r6848_p2358_p2375/
-
-
-
-
-
-
-
-
-
-
-
-
+#data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.r6848_p2358_p2375/
+#data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.r6848_p2358_p2375/
+# ******************************
+#
+# 50 ns configuration, toroid on
+#
+# ******************************
+# ~~~~ period A3 ~~~~ #
+data15_13TeV.00267167.physics_Main.merge.DAOD_HIGG8D1.f594_m1441_p2361/
+# ~~~~ period A4 ~~~~ #
+data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
+data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
+# ~~~~ period C2 ~~~~ #
+data15_13TeV.00270806.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00270816.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00270949.physics_Main.merge.DAOD_HIGG8D1.f612_m1463_p2375/
+data15_13TeV.00270953.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00271048.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+# ~~~~ period C3 ~~~~ #
+#data15_13TeV.00271298.physics_Main.merge.AOD.f611_m1463/
+#data15_13TeV.00271388.physics_Main.merge.AOD.f611_m1463/
+#data15_13TeV.00271421.physics_Main.merge.AOD.f611_m1463/
+# ~~~~ period C4 ~~~~ #
+#data15_13TeV.00271516.physics_Main.merge.AOD.f611_m1463/
+# ~~~~ period C5 ~~~~ #
