@@ -215,6 +215,11 @@ EL::StatusCode TruthMatchAlgo :: initialize ()
   m_truthStatusDecor = nullptr	           ; m_truthStatusDecor             = new SG::AuxElement::Decorator< int >("truthStatus"); 	        // status of the match particle
   m_isChFlipDecor = nullptr		   ; m_isChFlipDecor                = new SG::AuxElement::Decorator< char >("isChFlip");		// reco has opposite charge wrt to primitive truth match
   m_isBremDecor = nullptr 		   ; m_isBremDecor                  = new SG::AuxElement::Decorator< char >("isBrem");  		// reco is matched to a brem lepton
+  m_ancestorTruthTypeDecor = nullptr       ; m_ancestorTruthTypeDecor       = new SG::AuxElement::Decorator< int >("ancestorTruthType");	// type of the primitive ancestor (according to MCTruthClassifier) - need it for brem leptons
+  m_ancestorTruthPdgIdDecor = nullptr      ; m_ancestorTruthPdgIdDecor      = new SG::AuxElement::Decorator< int >("ancestorTruthPdgId");	// pdgId of the primitive ancestor (according to MCTruthClassifier) - need it for brem leptons
+  m_ancestorTruthOriginDecor = nullptr     ; m_ancestorTruthOriginDecor     = new SG::AuxElement::Decorator< int >("ancestorTruthOrigin");	// origin of the primitive ancestor (according to MCTruthClassifier) - need it for brem leptons
+  m_ancestorTruthStatusDecor = nullptr     ; m_ancestorTruthStatusDecor     = new SG::AuxElement::Decorator< int >("ancestorTruthStatus");	// status of the primitive ancestor (according to MCTruthClassifier) - need it for brem leptons
+  
   
   m_mcEvtWeightAcc = nullptr		   ; m_mcEvtWeightAcc		    = new SG::AuxElement::Accessor< float >("mcEventWeight");
   m_isTruthMatchedAcc = nullptr		   ; m_isTruthMatchedAcc	    = new SG::AuxElement::Accessor< char >("isTruthMatched");		
@@ -224,6 +229,13 @@ EL::StatusCode TruthMatchAlgo :: initialize ()
   m_truthTypeAcc = nullptr		   ; m_truthTypeAcc		    = new SG::AuxElement::ConstAccessor< int >("truthType");
   m_truthOriginAcc = nullptr		   ; m_truthOriginAcc		    = new SG::AuxElement::ConstAccessor< int >("truthOrigin");
   m_truthMatchProbabilityAcc = nullptr     ; m_truthMatchProbabilityAcc     = new SG::AuxElement::Accessor<float>("truthMatchProbability");
+  m_ancestorTruthTypeAcc = nullptr         ; m_ancestorTruthTypeAcc         = new SG::AuxElement::Accessor< int >("ancestorTruthType");	 
+  m_ancestorTruthOriginAcc = nullptr       ; m_ancestorTruthOriginAcc       = new SG::AuxElement::Accessor< int >("ancestorTruthOrigin");
+  
+  // initialise MCTruthClassifier
+  //
+  m_MCTClassifier = new MCTruthClassifier("MCTruthClassifier");
+  RETURN_CHECK( "TruthMatchAlgo::initialize()", m_MCTClassifier->initialize(), "Failed to properly initialize MCTruthClassifier" );
   
   Info("initialize()", "TruthMatchAlgo Interface succesfully initialized!" );
 
@@ -324,24 +336,30 @@ EL::StatusCode TruthMatchAlgo :: finalize ()
 
   Info("finalize()", "Deleting pointers...");
 
-  delete m_isTruthMatchedDecor; m_isTruthMatchedDecor = nullptr;
-  delete m_truthTypeDecor; m_truthTypeDecor = nullptr;
-  delete m_truthPdgIdDecor; m_truthPdgIdDecor = nullptr;	 
-  delete m_truthOriginDecor; m_truthOriginDecor = nullptr;	 
-  delete m_truthStatusDecor; m_truthStatusDecor = nullptr;	 
-  delete m_isChFlipDecor; m_isChFlipDecor = nullptr;		 
-  delete m_isBremDecor; m_isBremDecor = nullptr;	 
-  
-  delete m_mcEvtWeightAcc; m_mcEvtWeightAcc = nullptr;		 
-  delete m_isTruthMatchedAcc; m_isTruthMatchedAcc = nullptr; 
-  delete m_truthTypeAcc; m_truthTypeAcc = nullptr;  
-  delete m_truthOriginAcc; m_truthOriginAcc = nullptr;	    
-  delete m_isChFlipAcc; m_isChFlipAcc = nullptr;	 
-  delete m_isBremAcc; m_isBremAcc = nullptr;	 
-  delete m_truthPLAcc; m_truthPLAcc = nullptr;   
-  delete m_truthTypeAcc; m_truthTypeAcc = nullptr;  
-  delete m_truthOriginAcc; m_truthOriginAcc = nullptr;	    
+  delete m_isTruthMatchedDecor;      m_isTruthMatchedDecor = nullptr;
+  delete m_truthTypeDecor;           m_truthTypeDecor = nullptr;
+  delete m_truthPdgIdDecor;          m_truthPdgIdDecor = nullptr;	
+  delete m_truthOriginDecor;         m_truthOriginDecor = nullptr;	
+  delete m_truthStatusDecor;         m_truthStatusDecor = nullptr;	
+  delete m_isChFlipDecor;            m_isChFlipDecor = nullptr; 		
+  delete m_isBremDecor;              m_isBremDecor = nullptr;	
+  delete m_ancestorTruthTypeDecor;   m_ancestorTruthTypeDecor	= nullptr;  
+  delete m_ancestorTruthPdgIdDecor;  m_ancestorTruthPdgIdDecor  = nullptr; 
+  delete m_ancestorTruthOriginDecor; m_ancestorTruthOriginDecor = nullptr;
+  delete m_ancestorTruthStatusDecor; m_ancestorTruthStatusDecor = nullptr;
+   
+  delete m_mcEvtWeightAcc;           m_mcEvtWeightAcc = nullptr;		 
+  delete m_isTruthMatchedAcc;        m_isTruthMatchedAcc = nullptr; 
+  delete m_truthTypeAcc;             m_truthTypeAcc = nullptr;  
+  delete m_truthOriginAcc;           m_truthOriginAcc = nullptr;	    
+  delete m_isChFlipAcc;              m_isChFlipAcc = nullptr;	 
+  delete m_isBremAcc;                m_isBremAcc = nullptr;	 
+  delete m_truthPLAcc;               m_truthPLAcc = nullptr;   
+  delete m_truthTypeAcc;             m_truthTypeAcc = nullptr;  
+  delete m_truthOriginAcc;           m_truthOriginAcc = nullptr;	    
   delete m_truthMatchProbabilityAcc; m_truthMatchProbabilityAcc = nullptr;
+  delete m_ancestorTruthTypeAcc;     m_ancestorTruthTypeAcc = nullptr;  
+  delete m_ancestorTruthOriginAcc;   m_ancestorTruthOriginAcc = nullptr;
   
   return EL::StatusCode::SUCCESS;
 }
@@ -376,8 +394,13 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
 
   // default decorations
   //
-  (*m_isChFlipDecor)( *recoPart )  = 0;  
-  (*m_isBremDecor)( *recoPart )    = 0;  
+  (*m_isChFlipDecor)( *recoPart )             = 0;  
+  (*m_isBremDecor)( *recoPart )               = 0;  
+  (*m_ancestorTruthTypeDecor)( *recoPart )    = 0;
+  (*m_ancestorTruthPdgIdDecor)( *recoPart )   = 0;
+  (*m_ancestorTruthOriginDecor)( *recoPart )  = 0;
+  (*m_ancestorTruthStatusDecor)( *recoPart )  = -1;
+
 
   // A safety check: immediately return if input truth particle
   // is NOT an electron/muon
@@ -415,9 +438,14 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
   //
   // look at 'Background'-type el/mu (see MCTruthClassifier.h)
   //
+  
+  // used later for debugging
+  //
+  bool isBrem(false);
+  
   if ( (*m_truthTypeAcc)( *recoPart ) == 4 || (*m_truthTypeAcc)( *recoPart ) == 8 ) {
 
-    if ( m_debug ) { Info("checkChargeFlip()", "This reco lepton (charge: %f ) is matched to a secondary truth lepton. Let's go back until we find the primitive", reco_charge ); }
+    if ( true ) { Info("checkChargeFlip()", "This reco lepton (charge: %f ) is matched to a secondary truth lepton. Let's go back until we find the primitive", reco_charge ); }
 
     bool foundPrimitive(false);
     
@@ -440,7 +468,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
       //
       if ( primitiveTruth->prodVtx()->barcode() < -200000 ) { 
 	
-	if ( m_debug ) { Info("checkChargeFlip()", "\t Parent has pdgId: %i , prodVtx barcode: %i - Need to go backwards in the decay chain", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
+	if ( true ) { Info("checkChargeFlip()", "\t Parent has pdgId: %i , prodVtx barcode: %i - Need to go backwards in the decay chain", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
     
         if ( !primitiveTruth->nParents() ) {
           Warning("checkChargeFlip()", "\t This truth ancestor has no parents. Will not check whether reco lepton it's charge flip. Returning"); 
@@ -451,23 +479,21 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
 	
       } else { 
 
-	if ( m_debug ) { Info("checkChargeFlip()", "\t We found the primitive! pdgId: %i , prodVtx barcode: %i ", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
+	if ( true ) { Info("checkChargeFlip()", "\t We found the primitive! pdgId: %i , prodVtx barcode: %i ", primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode() ); }
       
-        // Ok, we found the primitive! If it's an electron or a muon, flag it as 'bremmstrahlung',
-	// and check whetehr it's charge flip.
+        // Ok, we found the primitive! If it's an electron or a muon, flag it as 'bremmstrahlung', 
+	// get its type and origin (with MCTruthClassifier) and status, and finally check whether it's charge flip.
 	// Otherwise, just return to skip the charge flip check
 	//
         if ( primitiveTruth->isElectron() || primitiveTruth->isMuon() ) { 
 	  
-	  (*m_isBremDecor)( *recoPart ) = 1;
+	  (*m_isBremDecor)( *recoPart ) = 1; isBrem = true;
       
 	  foundPrimitive = true; 
 	  
-	  if ( m_debug ) { Info("checkChargeFlip()", "\t The primitive is an electron/muon! Now check whether it's charge flip" ); }
-	  
 	} else {
 	
-	  if ( m_debug ) { Info("checkChargeFlip()", "\t The primitive is NOT an electron/muon! Will not check whether reco lepton it's charge flip. Returning \n ************************************" ); }
+	  if ( true ) { Info("checkChargeFlip()", "\t The primitive is NOT an electron/muon! Will not check whether reco lepton it's charge flip. Returning \n ************************************" ); }
 	  return StatusCode::SUCCESS;
 	  
 	}
@@ -488,22 +514,36 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
     primitiveTruth = const_cast<xAOD::TruthParticle*>( matchTruth );
   }
 
+  // Use the MCTruthClassifier to get the type and origin of the primitive truth ancestor, 
+  // and save it as a decoration 
+  // 
+  std::pair<MCTruthPartClassifier::ParticleType,MCTruthPartClassifier::ParticleOrigin>  ancestor_info = m_MCTClassifier->particleTruthClassifier( primitiveTruth );	  
+
+  (*m_ancestorTruthTypeDecor)( *recoPart )   = ancestor_info.first;
+  (*m_ancestorTruthPdgIdDecor)( *recoPart )  = primitiveTruth->pdgId();
+  (*m_ancestorTruthOriginDecor)( *recoPart ) = ancestor_info.second;
+  (*m_ancestorTruthStatusDecor)( *recoPart ) = primitiveTruth->status();
+
   // Now check the charge!
   //
   float truth_charge	= primitiveTruth->charge();
   int truth_norm_charge = ( truth_charge ) ? static_cast<int>( truth_charge / fabs(truth_charge) ) : 0;   
   int reco_norm_charge  = ( reco_charge )  ? static_cast<int>( reco_charge  / fabs(reco_charge)  ) : 0; 
     
-  if ( ( reco_norm_charge * truth_norm_charge ) < 0 ) { 
-    if ( m_debug ) { 
-      Info("checkChargeFlip()", "\n Primitive TRUTH norm charge: %i  pdgId: %i  prodVtxBarcode: %i \n RECO norm charge: %i  \n --> It's a charge flip!", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), reco_norm_charge ); 
-      Info("checkChargeFlip()", "************************************" ); 
+  // flag a lepton as 'isChFlip' only if:
+  //
+  // -) the charge has actually flipped in reco ;-)
+  //   AND
+  // -) the primitve origin of the lepton is not ISR/FSR...  
+  // 
+  if ( ( reco_norm_charge * truth_norm_charge ) < 0 && ( ancestor_info.second != 39 && ancestor_info.second != 40 ) ) { 
+    if ( true ) { 
+      Info("checkChargeFlip()", "\n\n Primitive TRUTH: \n\n norm charge: %i \n pdgId: %i \n prodVtxBarcode: %i \n status: %i \n isBrem: %i \n type: %d \n origin: %d \n -----------\n RECO: \n norm charge: %i \n\n --> It's a charge flip! \n\n ************************************", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), primitiveTruth->status(), isBrem, ancestor_info.first, ancestor_info.second, reco_norm_charge ); 
     }
     (*m_isChFlipDecor)( *recoPart ) = 1; 
   } else {
     if ( m_debug ) {     
-      Info("checkChargeFlip()", "\n Primitive TRUTH norm charge: %i  pdgId: %i  prodVtxBarcode: %i \n RECO norm charge: %i  \n --> It's NOT a charge flip!", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), reco_norm_charge ); 
-      Info("checkChargeFlip()", "************************************" ); 
+      Info("checkChargeFlip()", "\n\n Primitive TRUTH: \n\n norm charge: %i \n pdgId: %i \n prodVtxBarcode: %i \n status: %i \n isBrem: %i \n type: %d \n origin: %d \n -----------\n RECO: \n norm charge: %i \n\n --> It's NOT a charge flip! \n\n ************************************", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), primitiveTruth->status(), isBrem, ancestor_info.first, ancestor_info.second, reco_norm_charge ); 
     }
   }
 
