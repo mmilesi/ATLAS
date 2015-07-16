@@ -125,9 +125,9 @@ data15_13TeV.00270949.physics_Main.merge.DAOD_HIGG8D1.f612_m1463_p2375/
 data15_13TeV.00270953.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
 data15_13TeV.00271048.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
 # ~~~~ period C3 ~~~~ #
-#data15_13TeV.00271298.physics_Main.merge.AOD.f611_m1463/
-#data15_13TeV.00271388.physics_Main.merge.AOD.f611_m1463/
-#data15_13TeV.00271421.physics_Main.merge.AOD.f611_m1463/
+data15_13TeV.00271298.physics_Main.merge.AOD.f611_m1463/
+data15_13TeV.00271388.physics_Main.merge.AOD.f611_m1463/
+data15_13TeV.00271421.physics_Main.merge.AOD.f611_m1463/
 # ~~~~ period C4 ~~~~ #
 #data15_13TeV.00271516.physics_Main.merge.AOD.f611_m1463/
 # ~~~~ period C5 ~~~~ #
