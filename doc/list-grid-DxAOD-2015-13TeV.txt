@@ -43,10 +43,10 @@
 # ~~~~ single t (background) ~~~ #
 #mc15_13TeV.410011.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
 #mc15_13TeV.410012.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
-mc15_13TeV.410013.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
-mc15_13TeV.410014.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
-mc15_13TeV.410015.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
-mc15_13TeV.410016.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
+mc15_13TeV.410013.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
+mc15_13TeV.410014.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
+mc15_13TeV.410015.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
+mc15_13TeV.410016.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
 # ~~~~ ttW (background) ~~~~ #
 # ~~~~ ttZ(background) ~~~~ #
 # ~~~~ ttWW (background) ~~~~ #
@@ -75,7 +75,7 @@ mc15_13TeV.410016.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
 # ~~~~ Wgamma+jets (background) ~~~ #
 # ~~~~ Zgamma+jets (background) ~~~ #
 # ~~~~ Z+jets (background) ~~~ #
-mc15_13TeV.36110*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Z*.merge.AOD.e3601_s2576_s2132_r6630_r6264/
+#mc15_13TeV.36110*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Z*.merge.AOD.e3601_s2576_s2132_r6630_r6264/
 #
 # ********** #
 #    data    #
@@ -110,8 +110,6 @@ mc15_13TeV.36110*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Z*.merge.AOD.e3601_s2576_s213
 # ---------------------------------------
 # DAOD HIGG8D1 - AtlasDerivation,20.1.5.4
 # ---------------------------------------
-#data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.r6848_p2358_p2375/
-#data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.r6848_p2358_p2375/
 # ******************************
 #
 # 50 ns configuration, toroid on
@@ -121,17 +119,18 @@ mc15_13TeV.36110*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Z*.merge.AOD.e3601_s2576_s213
 data15_13TeV.00267167.physics_Main.merge.DAOD_HIGG8D1.f594_m1441_p2361/
 # ~~~~ period A4 ~~~~ #
 data15_13TeV.00267638.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
-#data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
+data15_13TeV.00267639.physics_Main.merge.DAOD_HIGG8D1.f598_m1441_p2361/
 # ~~~~ period C2 ~~~~ #
-#data15_13TeV.00270806.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
-#data15_13TeV.00270816.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
-#data15_13TeV.00270949.physics_Main.merge.DAOD_HIGG8D1.f612_m1463_p2375/
-#data15_13TeV.00270953.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
-#data15_13TeV.00271048.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00270806.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00270816.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00270949.physics_Main.merge.DAOD_HIGG8D1.f612_m1463_p2375/
+data15_13TeV.00270953.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00271048.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
 # ~~~~ period C3 ~~~~ #
-#data15_13TeV.00271298.physics_Main.merge.AOD.f611_m1463/
-#data15_13TeV.00271388.physics_Main.merge.AOD.f611_m1463/
-#data15_13TeV.00271421.physics_Main.merge.AOD.f611_m1463/
+data15_13TeV.00271421.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00271388.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00271298.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
 # ~~~~ period C4 ~~~~ #
-#data15_13TeV.00271516.physics_Main.merge.AOD.f611_m1463/
+data15_13TeV.00271595.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
+data15_13TeV.00271516.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375/
 # ~~~~ period C5 ~~~~ #
