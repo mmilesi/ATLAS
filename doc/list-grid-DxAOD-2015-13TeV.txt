@@ -43,10 +43,10 @@
 # ~~~~ single t (background) ~~~ #
 #mc15_13TeV.410011.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
 #mc15_13TeV.410012.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
-mc15_13TeV.410013.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
-mc15_13TeV.410014.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
-mc15_13TeV.410015.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
-mc15_13TeV.410016.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
+#mc15_13TeV.410013.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
+#mc15_13TeV.410014.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
+#mc15_13TeV.410015.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
+#mc15_13TeV.410016.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
 # ~~~~ ttW (background) ~~~~ #
 # ~~~~ ttZ(background) ~~~~ #
 # ~~~~ ttWW (background) ~~~~ #
@@ -76,6 +76,7 @@ mc15_13TeV.410016.*.merge.AOD.e3753_s2608_s2183_r6630_r6264/
 # ~~~~ Zgamma+jets (background) ~~~ #
 # ~~~~ Z+jets (background) ~~~ #
 #mc15_13TeV.36110*.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Z*.merge.AOD.e3601_s2576_s2132_r6630_r6264/
+mc15_13TeV.361106.PowhegPythia8EvtGen_AZNLOCTEQ6L1_Zee.merge.AOD.e3601_s2576_s2132_r6630_r6264/
 #
 # ********** #
 #    data    #
