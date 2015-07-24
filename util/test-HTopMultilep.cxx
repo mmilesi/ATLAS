@@ -31,7 +31,7 @@
 #include "xAODAnaHelpers/ElectronCalibrator.h"
 #include "xAODAnaHelpers/ElectronEfficiencyCorrector.h"
 #include "xAODAnaHelpers/ElectronSelector.h"
-//#include "xAODAnaHelpers/OverlapRemover.h"
+#include "xAODAnaHelpers/OverlapRemover.h"
 #include "HTopMultilepAnalysis/OverlapRemover_HTopRun1.h"
 #include "xAODAnaHelpers/METConstructor.h"
 
@@ -232,10 +232,10 @@ int main ( int argc, char **argv ) {
     muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
     electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
-    /*
+    ///*
     OverlapRemover* overlapRemoval                = new OverlapRemover();
     overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
-    */
+    //*/
     ///*
     OverlapRemover_HTopRun1* overlapRemoval_HTopRun1  = new OverlapRemover_HTopRun1();
     overlapRemoval_HTopRun1->setName("overlap_removal_HTopRun1")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
@@ -263,8 +263,6 @@ int main ( int argc, char **argv ) {
       jk_AntiKt4EM->setName("AntiKt4EM/")->setConfig(localDataDir+"Jets/"+"jetHistsAlgo_signal.config")->registerClass(registry, "JetHistsAlgo");
     }  
           
-    //size_t isDxAOD = inDSType.find("DxAOD");
-
     // Add all the algorithms to the EL::job - Here order matters!
     job.algsAdd( baseEventSel );
     job.algsAdd( jetCalib );
@@ -274,7 +272,8 @@ int main ( int argc, char **argv ) {
     job.algsAdd( electronSelect_preselection );
     job.algsAdd( jetSelect_selection );
     job.algsAdd( bjetEffCorr_btag );
-    job.algsAdd( overlapRemoval_HTopRun1 );
+    job.algsAdd( overlapRemoval );
+    //job.algsAdd( overlapRemoval_HTopRun1 );
     job.algsAdd( muonSelect_selection );
     job.algsAdd( muonEffCorr );
     job.algsAdd( electronSelect_selection );
