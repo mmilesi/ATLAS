@@ -47,7 +47,9 @@ public:
 
 private:
 
-  int m_eventCounter;     //!
+  bool m_isDerivation;    //!
+
+  int  m_eventCounter;    //!
 
   TH1D* m_cutflowHist;    //!
   TH1D* m_cutflowHistW;   //!
