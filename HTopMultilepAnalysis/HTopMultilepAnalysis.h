@@ -45,6 +45,8 @@ public:
   bool m_doLHPIDCut;  
   bool m_doCutBasedPIDCut;  
 
+  bool m_useMetaData;
+
 private:
 
   int m_eventCounter;     //!
