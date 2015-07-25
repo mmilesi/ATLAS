@@ -155,7 +155,6 @@ EL::StatusCode HTopMultilepAnalysis :: fileExecute ()
 {
   // Here you do everything that needs to be done exactly once for every
   // single file, e.g. collect a list of all lumi-blocks processed
-  return EL::StatusCode::SUCCESS;
 
   // get the MetaData tree once a new file is opened, with
   TTree *MetaData = dynamic_cast<TTree*>(wk()->inputFile()->Get("MetaData"));
@@ -166,7 +165,9 @@ EL::StatusCode HTopMultilepAnalysis :: fileExecute ()
   MetaData->LoadTree(0);
 
   //check if file is from a DxAOD
-  bool m_isDerivation = !MetaData->GetBranch("StreamAOD");
+  m_isDerivation = !MetaData->GetBranch("StreamAOD");
+
+  return EL::StatusCode::SUCCESS;
 
 }
 
@@ -226,31 +227,6 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   wk() -> addOutput(m_totalEvents);
   wk() -> addOutput(m_totalEventsW);
   
-  // fill histograms needed by Run1 merging script to normalise MC
-  //
-  double n_init_evts(0.0);   
-  double n_init_evts_W(0.0);
-
-  // if MetaData is not empty, and file is a DAOD, use it (to take DAOD skimming into account!)
-  //
-  if ( m_isDerivation && m_histEventCount->GetBinContent(1) > 0 && m_histEventCount->GetBinContent(3) > 0 ) {
-    n_init_evts   =  m_histEventCount->GetBinContent(1);  // nEvents initial
-    n_init_evts_W =  m_histEventCount->GetBinContent(3);  // sumOfWeights initial
-  } 
-  // ...else, retrieve event count from cutflow
-  else 
-  {
-    int init_evts_bin    =  m_cutflowHist->GetXaxis()->FindBin("all");
-    n_init_evts          =  m_cutflowHist->GetBinContent( init_evts_bin );
-    int init_evts_bin_W  =  m_cutflowHistW->GetXaxis()->FindBin("all");
-    n_init_evts_W        =  m_cutflowHistW->GetBinContent( init_evts_bin_W );  
-  }
-  // set the value into both bins of histogram
-  m_totalEvents->SetBinContent( 1, n_init_evts );
-  m_totalEvents->SetBinContent( 2, n_init_evts );  
-  m_totalEventsW->SetBinContent( 1, n_init_evts_W );
-  m_totalEventsW->SetBinContent( 2, n_init_evts_W );   
-
 
   m_jetPlots = new JetHists( "highPtJets", "clean" ); // second argument: "kinematic", "clean", "energy", "resolution"
   m_jetPlots -> initialize();
@@ -559,6 +535,35 @@ EL::StatusCode HTopMultilepAnalysis :: histFinalize ()
   // outputs have been merged.  This is different from finalize() in
   // that it gets called on all worker nodes regardless of whether
   // they processed input events.
+
+  // fill histograms needed by Run1 merging script to normalise MC
+  //
+  double n_init_evts(0.0);   
+  double n_init_evts_W(0.0);
+
+  // if MetaData is not empty, and file is a DAOD, use it (to take DAOD skimming into account!)
+  //
+  if ( m_isDerivation && m_histEventCount->GetBinContent(1) > 0 && m_histEventCount->GetBinContent(3) > 0 ) {
+    n_init_evts   =  m_histEventCount->GetBinContent(1);  // nEvents initial
+    n_init_evts_W =  m_histEventCount->GetBinContent(3);  // sumOfWeights initial
+  } 
+  // ...else, retrieve event count from cutflow
+  else 
+  {
+    if ( m_cutflowHist ) {
+      int init_evts_bin    =  m_cutflowHist->GetXaxis()->FindBin("all");
+      n_init_evts          =  m_cutflowHist->GetBinContent( init_evts_bin );
+    }
+    if ( m_cutflowHistW ) {
+      int init_evts_bin_W  =  m_cutflowHistW->GetXaxis()->FindBin("all");
+      n_init_evts_W        =  m_cutflowHistW->GetBinContent( init_evts_bin_W );  
+    }
+  }
+  // set the value into both bins of histogram
+  m_totalEvents->SetBinContent( 1, n_init_evts );
+  m_totalEvents->SetBinContent( 2, n_init_evts );  
+  m_totalEventsW->SetBinContent( 1, n_init_evts_W );
+  m_totalEventsW->SetBinContent( 2, n_init_evts_W );   
   
   return EL::StatusCode::SUCCESS;
 

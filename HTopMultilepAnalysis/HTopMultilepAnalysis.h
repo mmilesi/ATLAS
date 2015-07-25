@@ -45,11 +45,11 @@ public:
   bool m_doLHPIDCut;  
   bool m_doCutBasedPIDCut;  
 
-  bool m_useMetaData;
-
 private:
 
-  int m_eventCounter;     //!
+  bool m_isDerivation;    //!
+
+  int  m_eventCounter;    //!
 
   TH1D* m_cutflowHist;    //!
   TH1D* m_cutflowHistW;   //!
