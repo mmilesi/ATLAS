@@ -22,9 +22,6 @@
 #include "xAODJet/JetContainer.h"
 #include "xAODTau/TauJet.h"
 #include "xAODTau/TauJetContainer.h"
-#include "xAODTruth/TruthEventContainer.h"
-#include "xAODTruth/TruthParticle.h"
-#include "xAODTruth/TruthVertex.h"
 #include "xAODMissingET/MissingETContainer.h"
 
 // package include(s):
@@ -77,8 +74,8 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_inContainerName_Jets      = "";
   m_inContainerName_Taus      = "";      
 
-  m_doLHPIDCut                = true;  
-  m_doCutBasedPIDCut          = false;    
+  m_useLHPIDCut                = true;  
+  m_useCutBasedPIDCut          = false;    
 }
 
 EL::StatusCode  HTopMultilepAnalysis :: configure ()
@@ -87,7 +84,9 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
   if ( !getConfig().empty() ) {
 
     // read in user configuration from text file
+    //
     TEnv *config = new TEnv(getConfig(true).c_str());
+   
     if ( !config ) {
       Error("BasicEventSelection()", "Failed to initialize reading of config file. Exiting." );
       return EL::StatusCode::FAILURE;
@@ -106,8 +105,8 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
     m_inContainerName_Taus	 = config->GetValue("InputContainerTaus",      m_inContainerName_Taus.c_str());
  
     // electron ID stuff - choose which one to define "Tight" electrons
-    m_doLHPIDCut                 = config->GetValue("DoLHPIDCut"          ,  m_doLHPIDCut );      
-    m_doCutBasedPIDCut           = config->GetValue("DoCutBasedPIDCut"    ,  m_doCutBasedPIDCut );
+    m_useLHPIDCut                 = config->GetValue("UseLHPIDCut"          ,  m_useLHPIDCut );      
+    m_useCutBasedPIDCut           = config->GetValue("UseCutBasedPIDCut"    ,  m_useCutBasedPIDCut );
  
     config->Print();
   
@@ -156,15 +155,16 @@ EL::StatusCode HTopMultilepAnalysis :: fileExecute ()
   // Here you do everything that needs to be done exactly once for every
   // single file, e.g. collect a list of all lumi-blocks processed
 
-  // get the MetaData tree once a new file is opened, with
-  TTree *MetaData = dynamic_cast<TTree*>(wk()->inputFile()->Get("MetaData"));
+  // Get the MetaData tree once a new file is opened, 
+  // and check if file is from a DxAOD
+  //
+  TTree *MetaData = dynamic_cast<TTree*>( wk()->inputFile()->Get("MetaData") );
   if ( !MetaData ) {
     Error("fileExecute()", "MetaData not found! Exiting.");
     return EL::StatusCode::FAILURE;
   }
   MetaData->LoadTree(0);
 
-  //check if file is from a DxAOD
   m_isDerivation = !MetaData->GetBranch("StreamAOD");
 
   return EL::StatusCode::SUCCESS;
@@ -200,6 +200,13 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   // count number of events
   m_eventCounter = 0;
 
+  // check if file is MC
+  //
+  const xAOD::EventInfo* eventInfo(nullptr);
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_debug) , "");
+
+  m_isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
+  
   if ( this->configure() == EL::StatusCode::FAILURE ) {
     Error("initialize()", "Failed to properly configure. Exiting." );
     return EL::StatusCode::FAILURE;
@@ -255,6 +262,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   // events, e.g. read input variables, apply cuts, and fill
   // histograms and trees.  This is where most of your actual analysis
   // code will go.
+  
   if ( m_debug ) { Info("execute()", "Applying analysis selection"); }
 
   ++m_eventCounter;
@@ -266,8 +274,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   // retrieve event info
   const xAOD::EventInfo* eventInfo(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_debug) , "");
-
-  // bool isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
   
   // retrieve vertices  
   const xAOD::VertexContainer* vertices(nullptr);
@@ -429,10 +435,9 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     } 
 
     // flag the "Tight" electrons: use isolation && PID
-    if (  isIsoAcc( *el_itr ) ) {
-        if      ( m_doLHPIDCut       && LHTightAcc( *el_itr )  ) { isTightDecor( *el_itr ) = 1; }
-	else if ( m_doCutBasedPIDCut && EMTightAcc( *el_itr ) )  { isTightDecor( *el_itr ) = 1; }
-    }
+    //
+    if      ( isIsoAcc( *el_itr ) && ( m_useLHPIDCut	   && LHTightAcc( *el_itr ) ) ) { isTightDecor( *el_itr ) = 1; }
+    else if ( isIsoAcc( *el_itr ) && ( m_useCutBasedPIDCut && EMTightAcc( *el_itr ) ) ) { isTightDecor( *el_itr ) = 1; }
  
   }
   
@@ -447,13 +452,12 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
       } 
 
       // flag the "Tight" muons: use isolation && d0sig 
-      if ( isIsoAcc( *mu_itr) ) {
-	  
-          static SG::AuxElement::Accessor<float> d0SigAcc ("d0sig");
-          float d0_significance =  ( d0SigAcc.isAvailable( *mu_itr ) ) ? fabs( d0SigAcc( *mu_itr ) ) : -9999.0;
-	  
-          if  ( fabs(d0_significance) < 3.0 ) { isTightDecor( *mu_itr ) = 1; }
-      }	
+      //
+      static SG::AuxElement::Accessor<float> d0SigAcc ("d0sig");
+      float d0_significance =  ( d0SigAcc.isAvailable( *mu_itr ) ) ? fabs( d0SigAcc( *mu_itr ) ) : -9999.0;
+
+      if  ( isIsoAcc( *mu_itr ) && fabs( d0_significance ) < 3.0 ) { isTightDecor( *mu_itr ) = 1; }
+
   }
   
   //-------------------------------- 
@@ -630,7 +634,7 @@ EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const 
   // Now, take the leading and subleading lepton 
   // -------------------------------------------
     
-  const xAOD::IParticle* leadingLepton           = *(leptons.begin());
+  const xAOD::IParticle* leadingLepton           = leptons.at(0);
   xAOD::Type::ObjectType leadingLeptonFlavour    = leadingLepton->type();
   bool                   isLeadingTight(false);          
   if ( isTightAcc.isAvailable( *leadingLepton ) ) {
@@ -640,7 +644,7 @@ EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const 
   }
   bool 			 isLeadingTrigMatched(false);  
   
-  const xAOD::IParticle* subLeadingLepton        = *(std::next(leptons.begin(),1));
+  const xAOD::IParticle* subLeadingLepton        = leptons.at(1);
   xAOD::Type::ObjectType subLeadingLeptonFlavour = subLeadingLepton->type();
   bool                   isSubLeadingTight (false);
   if ( isTightAcc.isAvailable( *subLeadingLepton ) ) {
@@ -868,30 +872,39 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   }
   
   // initialize TLorentzVectors (for invariant mass computation)
-  xAOD::IParticle::FourMom_t lepA_4mom, lepB_4mom, lepC_4mom;
+  //
+  xAOD::IParticle::FourMom_t lepA_4mom, lepB_4mom, lepC_4mom, pair, pairAB, pairAC, pairBC, triplet;
  
   if ( nLeptons == 2 )
   {
      // retrieve lepA 
-     const xAOD::IParticle* lepA = *(leptons.begin());
+     //
+     const xAOD::IParticle* lepA = leptons.at(0);
      // retrieve lepB
-     const xAOD::IParticle* lepB = *(std::next( leptons.begin(), 1 ));     
+     //
+     const xAOD::IParticle* lepB = leptons.at(1);     
      
      // compute invariant mass of the pair
-     lepA_4mom.SetPtEtaPhiM( lepA->pt(), lepA->eta(), lepA->phi(), lepA->m() );
-     lepB_4mom.SetPtEtaPhiM( lepB->pt(), lepB->eta(), lepB->phi(), lepB->m() );
-     xAOD::IParticle::FourMom_t pair = lepA_4mom + lepB_4mom;
-     mll01Decor(*eventInfo) = pair.M();
+     //
+     lepA_4mom = lepA->p4();
+     lepB_4mom = lepB->p4();
+     pair = lepA_4mom + lepB_4mom;
+     
+     mll01Decor( *eventInfo ) = pair.M();
      
      // check if the two leptons are SS, and decorate event
+     //
      int prod_lep_charge(1);
+     
      // need to cast to derived xAOD type as xAOD::IParticle does not have charge info...
+     //
      xAOD::Type::ObjectType lepAFlavour = lepA->type();
      xAOD::Type::ObjectType lepBFlavour = lepB->type();
-     prod_lep_charge *=  ( lepAFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepA))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepA))->charge() ) ;
-     prod_lep_charge *=  ( lepBFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepB))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepB))->charge() ) ;
+     prod_lep_charge *= ( lepAFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepA))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepA))->charge() ) ;
+     prod_lep_charge *= ( lepBFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepB))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepB))->charge() ) ;
      
      // now decorate event!
+     //
      isSS01Decor(*eventInfo) = ( prod_lep_charge > 0 );
      
      // mT( lep, MET )	
@@ -916,36 +929,41 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   else if ( nLeptons == 3 )
   {
      // retrieve lepA 
-     const xAOD::IParticle* lepA = *(leptons.begin());
+     const xAOD::IParticle* lepA = leptons.at(0);
      // retrieve lepB
-     const xAOD::IParticle* lepB = *(std::next( leptons.begin(), 1 ));     
+     const xAOD::IParticle* lepB = leptons.at(1);     
      // retrieve lepC
-     const xAOD::IParticle* lepC = *(std::next( leptons.begin(), 2 ));   
+     const xAOD::IParticle* lepC = leptons.at(2);   
      
      // compute invariant mass of all the possible pairs, and of the triplet as well
-     lepA_4mom.SetPtEtaPhiM( lepA->pt(), lepA->eta(), lepA->phi(), lepA->m() );
-     lepB_4mom.SetPtEtaPhiM( lepB->pt(), lepB->eta(), lepB->phi(), lepB->m() );
-     lepC_4mom.SetPtEtaPhiM( lepC->pt(), lepC->eta(), lepC->phi(), lepC->m() );     
-     xAOD::IParticle::FourMom_t pairAB    = lepA_4mom + lepB_4mom;
+     //
+     lepA_4mom = lepA->p4();
+     lepB_4mom = lepB->p4();
+     lepC_4mom = lepC->p4();	 
+     
+     pairAB    = lepA_4mom + lepB_4mom;
      mll01Decor(*eventInfo)   = pairAB.M();
-     xAOD::IParticle::FourMom_t pairAC    = lepA_4mom + lepC_4mom;
+     pairAC    = lepA_4mom + lepC_4mom;
      mll02Decor(*eventInfo)   = pairAC.M();  
-     xAOD::IParticle::FourMom_t pairBC    = lepB_4mom + lepC_4mom;
+     pairBC    = lepB_4mom + lepC_4mom;
      mll12Decor(*eventInfo)   = pairBC.M();       
-     xAOD::IParticle::FourMom_t triplet   = lepA_4mom + lepB_4mom + lepC_4mom;
+     triplet   = lepA_4mom + lepB_4mom + lepC_4mom;
      mlll012Decor(*eventInfo) = triplet.M(); 
             
      // retrieve charge
+     //
      int lepAcharge(0), lepBcharge(0), lepCcharge(0);
      // need to dynamic_cast to derived xAOD type as xAOD::IParticle does not have charge info...
+     //
      xAOD::Type::ObjectType lepAFlavour = lepA->type();
      xAOD::Type::ObjectType lepBFlavour = lepB->type();
      xAOD::Type::ObjectType lepCFlavour = lepC->type();
-     lepAcharge =  ( lepAFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepA))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepA))->charge() ) ;
-     lepBcharge =  ( lepBFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepB))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepB))->charge() ) ;
-     lepCcharge =  ( lepCFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepC))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepC))->charge() ) ;
+     lepAcharge = ( lepAFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepA))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepA))->charge() ) ;
+     lepBcharge = ( lepBFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepB))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepB))->charge() ) ;
+     lepCcharge = ( lepCFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepC))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepC))->charge() ) ;
      
      // look only at events where there is an OS pair
+     //
      if ( fabs( lepAcharge/fabs(lepAcharge) + lepBcharge/fabs(lepBcharge) + lepCcharge/fabs(lepCcharge)  ) != 3 )
      {
         // now decorate event!
@@ -978,16 +996,6 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
 	}
      }
   } 
-  
-  // FIXME: add Z/JPsi mass window 
-  /*   
-  const float Zmass(91187.6);     // in MeV
-  const float JPsimass(3096.916); // in MeV
-  
-  mJPsiCand_ee, mJPsiCand_mm
-  mZCand_ee, mZCand_mm, mZCand_ee_SS
-  
-  */
    
   return EL::StatusCode::SUCCESS;
 }
@@ -1010,11 +1018,14 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   unsigned int nLeptons = leptons.size();
 
   std::string region;
+  
   // features of the two leptons that are considered for the MM
+  //
   float lepA_pt(-1.), lepA_eta(-999.), lepB_pt(-1.), lepB_eta(-999.);
   int lepA_flavour(0), lepB_flavour(0);
   
   // retrieve some previously applied event object decorations 
+  //
   static SG::AuxElement::Accessor< char > isSS01("isSS01");
   if ( !isSS01.isAvailable(*eventInfo) ) {
     Error("fakeWeightCalculator()", "isSS01 is not available. Aborting ");
@@ -1027,9 +1038,11 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   }      
    
   // accessor to tight leptons 
+  //
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
    
   // event decorators to identify the TT,TL,LT,LL regions (looking at the two SS leptons: first is the leading, second is subleading) 
+  //
   static SG::AuxElement::Decorator< char > isTTDecor("isTT");
   static SG::AuxElement::Decorator< char > isTLDecor("isTL");
   static SG::AuxElement::Decorator< char > isLTDecor("isLT");
@@ -1040,6 +1053,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   isLLDecor( *eventInfo ) = 0;
    
   // Assigning lepton kin and identifying the signal region (not taking jets into account)
+  //
   if ( nLeptons == 2 && isSS01(*eventInfo) )
   {
         // start from lepton container
@@ -1048,11 +1062,14 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	// by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
 	
 	// retrieve lep0 : the leading lepton
-	const xAOD::IParticle* lep0 = *(leptons.begin());
+	//
+	const xAOD::IParticle* lep0 = leptons.at(0);
 	// retrieve lep1: the subleading lepton
-	const xAOD::IParticle* lep1 = *(std::next( leptons.begin(), 1));
+	//
+	const xAOD::IParticle* lep1 = leptons.at(1);
 	
 	// set the region
+	//
 	if      (  isTightAcc( *lep0 )    &&  isTightAcc( *lep1 )    ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
 	else if (  isTightAcc( *lep0 )    &&  !(isTightAcc( *lep1 )) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
 	else if (  !(isTightAcc( *lep0 )) &&  isTightAcc( *lep1 )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
@@ -1061,6 +1078,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   	if ( m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
 
         // set the properties of the two relevant leptons for future convenience
+	//
 	lepA_pt  = lep0->pt();
 	lepA_eta = lep0->eta();
 	if ( lep0->type() == xAOD::Type::Electron ) {
@@ -1130,12 +1148,14 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	} // close loop over lepton container
 	
 	// just a safety check
+	//
 	if ( !( lep0 && lep1 && lep2 ) ) {
-	  Error("fakeWeightCalculator()", "Trilepton region, but no lep1 and lep2 pointers! Aborting");
+	  Error("fakeWeightCalculator()", "Trilepton region, but no lep0 or lep1 or lep2 pointer! Aborting");
 	  return EL::StatusCode::FAILURE;
 	}
 	
 	// set the region
+	//
 	if      (  isTightAcc( *lep1 )    &&   isTightAcc( *lep2 )   ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
 	else if (  isTightAcc( *lep1 )    &&  !(isTightAcc( *lep2 )) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
 	else if (  !(isTightAcc( *lep1 )) &&  isTightAcc( *lep2 )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
@@ -1176,6 +1196,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   // NB: NO NEED TO CALCULATE FF RATE BECAUSE FF ARE NOW OBTAINED FROM THE MM FOR r1=r2=1
   
   // real and fake rates w/ syst variations
+  //
   std::vector<double> r1, r2, f1, f2;
   double r1up,r1dn, r2up, r2dn, f1up, f1dn, f2up, f2dn;
   
@@ -1240,9 +1261,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   //  it will then shift also MC and this is wrong. 
   //  Not a problem for FF method
   
-  bool isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
-  
-  if ( !isMC )
+  if ( !m_isMC )
   {
   	  // r cannot be 0 and has always to be more than f
   	  // WARNING! 
@@ -1263,6 +1282,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	  }
 	  
 	  // decorate with nominal MM weight
+	  //
 	  MMWeightDecor( *eventInfo ).at(0) = mm_weight;
 	  
           if ( m_debug ) {
@@ -1307,7 +1327,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 		 }
 	  }
   	 
-  } // close check on isMC
+  } // close check on m_isMC
     
   // *****************************************
   // The Fake Factor Method: weight the events! 
@@ -1326,6 +1346,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	  }
 	  
 	  // decorate event w/ (nominal) null weight
+	  //
 	  FFWeightDecor( *eventInfo ).at(0) = ff_weight;	      
   }
   else

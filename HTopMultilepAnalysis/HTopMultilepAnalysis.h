@@ -42,11 +42,12 @@ public:
 
   bool m_useCutFlow;   
 
-  bool m_doLHPIDCut;  
-  bool m_doCutBasedPIDCut;  
+  bool m_useLHPIDCut;  
+  bool m_useCutBasedPIDCut;  
 
 private:
 
+  bool m_isMC;            //!
   bool m_isDerivation;    //!
 
   int  m_eventCounter;    //!

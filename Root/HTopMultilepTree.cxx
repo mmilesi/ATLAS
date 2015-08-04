@@ -21,18 +21,18 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("nMediumBjets",      &m_nBjetsMedium, "nMediumBjets/i");
   m_tree->Branch("isSS01",            &m_isSS01, "isSS01/I"); 
   m_tree->Branch("isSS12",            &m_isSS12, "isSS12/I"); 
-  m_tree->Branch("MMWeight",          &m_MMWeight);
-  m_tree->Branch("FFWeight",          &m_FFWeight);
+  m_tree->Branch("weight_MM",         &m_MMWeight);
+  m_tree->Branch("weight_FF",         &m_FFWeight);
   m_tree->Branch("mll01",             &m_mll01, "mll01/F");
   m_tree->Branch("mll02",             &m_mll02, "mll02/F");
   m_tree->Branch("mll12",             &m_mll12, "mll12/F");
   m_tree->Branch("mlll012",           &m_mlll012, "mlll012/F");
   m_tree->Branch("mT_lep0MET",        &m_mT_lep0MET, "mT_lep0MET/F");
   m_tree->Branch("mT_lep1MET",        &m_mT_lep1MET, "mT_lep1MET/F");
-  m_tree->Branch("isTT",              &m_isTT, "isTT/I"); 
-  m_tree->Branch("isTL",              &m_isTL, "isTL/I"); 
-  m_tree->Branch("isLT",              &m_isLT, "isLT/I"); 
-  m_tree->Branch("isLL",              &m_isLL, "isLL/I");   
+  m_tree->Branch("isTT",	      &m_isTT, "isTT/I");  // NB: use this for 2lepSS events or 3lep ONLY 
+  m_tree->Branch("isTL",	      &m_isTL, "isTL/I");  // NB: use this for 2lepSS events or 3lep ONLY 
+  m_tree->Branch("isLT",	      &m_isLT, "isLT/I");  // NB: use this for 2lepSS events or 3lep ONLY 
+  m_tree->Branch("isLL",	      &m_isLL, "isLL/I");  // NB: use this for 2lepSS events or 3lep ONLY 
   m_tree->Branch("isNonTightEvent",   &m_isNonTightEvent,    "isNonTightEvent/I");
   m_tree->Branch("isProbeElEvent",    &m_isProbeElEvent,     "isProbeElEvent/I");
   m_tree->Branch("isProbeMuEvent",    &m_isProbeMuEvent,     "isProbeMuEvent/I");
