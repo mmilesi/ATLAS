@@ -28,7 +28,7 @@
 #
 # ~~~~ ttH125 (signal) ~~~~ #
 # ~~~~ ttbar (background) ~~~~ #
-mc15_13TeV.410000.*.merge.AOD.e3698_s2608_s2183_r6633_r6264/
+mc15_13TeV.410000.*.merge.AOD.e3698_s2608_s2183_r6630_r6264/
 # ~~~~ single t (background) ~~~ #
 mc15_13TeV.410011.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
 mc15_13TeV.410012.*.merge.AOD.e3824_s2608_s2183_r6630_r6264/
