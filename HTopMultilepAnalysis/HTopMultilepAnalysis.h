@@ -42,8 +42,8 @@ public:
 
   bool m_useCutFlow;   
 
-  bool m_doLHPIDCut;  
-  bool m_doCutBasedPIDCut;  
+  bool m_useLH_ElPID;  
+  bool m_useCutBased_ElPID;  
 
 private:
 

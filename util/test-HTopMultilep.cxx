@@ -226,8 +226,16 @@ int main ( int argc, char **argv ) {
     muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_preselection   = new ElectronSelector();
     electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
-    BJetEfficiencyCorrector* bjetEffCorr_btag     = new BJetEfficiencyCorrector();
-    bjetEffCorr_btag->setName("bjetEffCor_btag")->setConfig(localDataDir+"Jets/"+"bjetEffCorr"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
+    
+    BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix60     = new BJetEfficiencyCorrector();
+    bjetEffCorr_BTag_MV2c20_Fix60->setName("bjetEffCor_BTag_MV2c20_Fix60")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix60"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
+    
+    BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix70     = new BJetEfficiencyCorrector();
+    bjetEffCorr_BTag_MV2c20_Fix70->setName("bjetEffCor_BTag_MV2c20_Fix70")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix70"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
+    
+    BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix80     = new BJetEfficiencyCorrector();
+    bjetEffCorr_BTag_MV2c20_Fix80->setName("bjetEffCor_BTag_MV2c20_Fix80")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix80"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
+    
     MuonSelector* muonSelect_selection            = new MuonSelector();
     muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
@@ -271,7 +279,9 @@ int main ( int argc, char **argv ) {
     job.algsAdd( electronCalib );
     job.algsAdd( electronSelect_preselection );
     job.algsAdd( jetSelect_selection );
-    job.algsAdd( bjetEffCorr_btag );
+    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix60 );
+    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix70 );
+    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix80 );
     job.algsAdd( overlapRemoval );
     //job.algsAdd( overlapRemoval_HTopRun1 );
     job.algsAdd( muonSelect_selection );
@@ -280,7 +290,7 @@ int main ( int argc, char **argv ) {
     job.algsAdd( electronEffCorr );
     //job.algsAdd( met );
     job.algsAdd( eventSelect );
-    //job.algsAdd( truthMatching );
+    job.algsAdd( truthMatching );
     job.algsAdd( analysis );
     if ( make_histos ) {
       job.algsAdd( jetHistsAlgo_all );

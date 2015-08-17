@@ -4,7 +4,7 @@
 #
 # ttbar non all had - 410000
 #
-#test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/MC15/ --inDSName mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.AOD.e3698_s2608_s2183_r6630_r6264 --outDir out_xAOD_HTopMultilep_mc --maxEvents -1
+test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/MC15/ --inDSName mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.AOD.e3698_s2608_s2183_r6630_r6264 --outDir out_xAOD_HTopMultilep_mc --maxEvents -1
 #
 # Z-->mumu PowhegPythia inclusive - 361107
 #
@@ -28,7 +28,7 @@
 # --------------
 # 20.1.5.4
 # --------------
-test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.5.4/ --inDSName data15_13TeV.00271421.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375 --outDir out_DxAOD_HTopMultilep_data --maxEvents 1000
+#test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.5.4/ --inDSName data15_13TeV.00271421.physics_Main.merge.DAOD_HIGG8D1.f611_m1463_p2375 --outDir out_DxAOD_HTopMultilep_data --maxEvents 1000
 #######################################
 # mc15 13TeV DAOD HIGG8D1 
 # ----------------------

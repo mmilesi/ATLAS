@@ -443,46 +443,30 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
 
   // count number of bjets
   //
-  unsigned int nBjetsMedium(0);
-  
-  // 2015 data,MC use MV2c20 as default
-  // Look into xAODAnaHelpers/Root/JetSelector.cxx
+  unsigned int nBjets_MV2c20_Fix70(0);
   //
-  static SG::AuxElement::Accessor< char > passBTagMediumAcc("BTagMedium");
+  // 2015 data,MC use MV2c20 as default
+  // Look into xAODAnaHelpers/Root/BJetEfficiencyCorrector.cxx for more info
+  //
+  static SG::AuxElement::ConstAccessor< int > isFix70("BTag_FixedCutBEff_70");
   for( auto jet_itr : *(inJets) ) {
-    if ( passBTagMediumAcc.isAvailable(*jet_itr) ) {
-      if ( passBTagMediumAcc(*jet_itr) ) nBjetsMedium++;
+    if ( isFix70.isAvailable(*jet_itr) ) {
+      if ( isFix70(*jet_itr) ) ++nBjets_MV2c20_Fix70;
     }
   } 
-  // for DC14, use SV1+IP3D!
-  //
-  if ( m_DC14 ) {
-  
-    for ( auto jet_itr : *(inJets) ) {
-      
-      if ( jet_itr->btagging() ) {
-    	
-    	float SV1plusIP3Dweight = jet_itr->btagging()->SV1plusIP3D_discriminant(); 
-    	
-    	if ( jet_itr->pt() < 20*1e3 ) {
-  	  if ( SV1plusIP3Dweight > 1.70 ) nBjetsMedium++;
-    	} else {
-  	  if ( SV1plusIP3Dweight > 1.85 ) nBjetsMedium++;
-    	}
-    	
-      }
-    }
-    
-  }
 
   bool passnBJetsMin(false); 
-  passnBJetsMin  = ( nBjetsMedium >= static_cast<unsigned int>(m_n_bjets_min) );
+  passnBJetsMin  = ( nBjets_MV2c20_Fix70 >= static_cast<unsigned int>(m_n_bjets_min) );
     
+  
+  if ( (passTwoLep || passLepTau) && nBjets_MV2c20_Fix70 > 1 ) {
+    Info("execute()","nBjets BTag_FixedCutBEff_70 in event = %i ", nBjets_MV2c20_Fix70 );  
+  
+  }
   
   if ( m_debug ) {
     Info("execute()","***********************************");     
     Info("execute()","event passes TwoLep? %i    ", static_cast<int>( passTwoLep ) );
-    Info("execute()","event passes LepTau? %i    ", static_cast<int>( passLepTau ) );  
     Info("execute()","event passes LepTau? %i    ", static_cast<int>( passLepTau ) );  
     Info("execute()","event passes nLepMax? %i   ", static_cast<int>( passnLepMax ) );  
     Info("execute()","event passes nJetsMin? %i  ", static_cast<int>( passnJetsMin ) );  
@@ -520,17 +504,17 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   // add some decorations to the event
   //
   static SG::AuxElement::Decorator< unsigned int > nLeptonsDecor("nLeptons");
-  static SG::AuxElement::Decorator< unsigned int > nBjetsMediumDecor("nBjetsMedium");
+  static SG::AuxElement::Decorator< unsigned int > nBjets_MV2c20_Fix70_Decor("nBjets_MV2c20_Fix70");
   static SG::AuxElement::Decorator< unsigned int > categoryFlagDecor("categoryFlag");
   
   // compact way to categorise event based on object counting (exploiting prime numbers)
   //
   unsigned int categoryFlag(0); 
-  categoryFlag = pow(2.0,static_cast<float>(nLeptons))*pow(3.0,static_cast<float>(nJets))*pow(5.0,static_cast<float>(nBjetsMedium));
+  categoryFlag = pow(2.0,static_cast<float>(nLeptons))*pow(3.0,static_cast<float>(nJets))*pow(5.0,static_cast<float>(nBjets_MV2c20_Fix70));
   
-  nLeptonsDecor( *eventInfo )     = nLeptons;
-  nBjetsMediumDecor( *eventInfo ) = nBjetsMedium;
-  categoryFlagDecor( *eventInfo ) = categoryFlag;
+  nLeptonsDecor( *eventInfo )             = nLeptons;
+  nBjets_MV2c20_Fix70_Decor( *eventInfo ) = nBjets_MV2c20_Fix70;
+  categoryFlagDecor( *eventInfo )         = categoryFlag;
 
    
   return EL::StatusCode::SUCCESS;

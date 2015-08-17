@@ -77,8 +77,8 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_inContainerName_Jets      = "";
   m_inContainerName_Taus      = "";      
 
-  m_doLHPIDCut                = true;  
-  m_doCutBasedPIDCut          = false;    
+  m_useLH_ElPID                = true;  
+  m_useCutBased_ElPID          = false;    
 }
 
 EL::StatusCode  HTopMultilepAnalysis :: configure ()
@@ -106,8 +106,8 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
     m_inContainerName_Taus	 = config->GetValue("InputContainerTaus",      m_inContainerName_Taus.c_str());
  
     // electron ID stuff - choose which one to define "Tight" electrons
-    m_doLHPIDCut                 = config->GetValue("DoLHPIDCut"          ,  m_doLHPIDCut );      
-    m_doCutBasedPIDCut           = config->GetValue("DoCutBasedPIDCut"    ,  m_doCutBasedPIDCut );
+    m_useLH_ElPID                 = config->GetValue("UseLH_ElPID"          ,  m_useLH_ElPID );      
+    m_useCutBased_ElPID           = config->GetValue("UseCutBased_ElPID"    ,  m_useCutBased_ElPID );
  
     config->Print();
   
@@ -291,12 +291,12 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   unsigned int nSignalLeptons   = leptonsCDV->size();
   unsigned int nSignalJets      = signalJets->size();
   unsigned int nSignalTaus      = signalTauJets->size();
-  static SG::AuxElement::Accessor< unsigned int > nBjetsMediumAcc("nBjetsMedium");
-  unsigned int nBjetsMedium(-1);
-  if ( nBjetsMediumAcc.isAvailable( *eventInfo ) ) {
-     nBjetsMedium = nBjetsMediumAcc( *eventInfo );
+  static SG::AuxElement::Accessor< unsigned int > nBjets_MV2c20_Fix70_Acc("nBjets_MV2c20_Fix70");
+  unsigned int nBjets_MV2c20_Fix70(0);
+  if ( nBjets_MV2c20_Fix70_Acc.isAvailable( *eventInfo ) ) {
+    nBjets_MV2c20_Fix70 = nBjets_MV2c20_Fix70_Acc( *eventInfo );
   } else {
-    Error("execute()"," nBjetsMedium is not available. Aborting" ); 
+    Error("execute()"," 'nBjets_MV2c20_Fix70' is not available as decoration. Aborting" ); 
     return EL::StatusCode::FAILURE;
   }
     
@@ -399,16 +399,19 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     if ( m_TauSelTool->accept(*tau_itr) ) { isTauBDTTightDecor( *tau_itr ) = 1; }
   }
 
-  // accessor to lepton isolation flag 
-  static SG::AuxElement::Accessor< char > isIsoAcc("isIsolated");
+  // accessor to lepton isolation flag - use Tight WP
+  //
+  static SG::AuxElement::Accessor< char > isIsoAcc("isIsolated_Tight");
   // accessor to likelihood PID for electrons
+  //
   static SG::AuxElement::Accessor< char > LHTightAcc("LHTight");
-   // accessor to cut-based PID for electrons
+  // accessor to cut-based PID for electrons
+  //
   static SG::AuxElement::Accessor< char > EMTightAcc("Tight");
 
   // decorator for "Tight" leptons  
-  static SG::AuxElement::Decorator< char > isTightDecor("isTight"); // electrons: isolated + tight PID (tightPP or TightLH, depending on user's choice)
-  								    // muons: isolated + d0sig < 3.0
+  static SG::AuxElement::Decorator< char > isTightDecor("isTight"); // electrons: isolated (Tight) + Tight PID (tightPP or TightLH, depending on user's choice)
+  								    // muons: isolated (Tight) + d0sig < 3.0
 
   for ( auto el_itr : *(signalElectrons) ) {
 
@@ -430,8 +433,8 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 
     // flag the "Tight" electrons: use isolation && PID
     if (  isIsoAcc( *el_itr ) ) {
-        if      ( m_doLHPIDCut       && LHTightAcc( *el_itr )  ) { isTightDecor( *el_itr ) = 1; }
-	else if ( m_doCutBasedPIDCut && EMTightAcc( *el_itr ) )  { isTightDecor( *el_itr ) = 1; }
+        if      ( m_useLH_ElPID       && LHTightAcc( *el_itr )  ) { isTightDecor( *el_itr ) = 1; }
+	else if ( m_useCutBased_ElPID && EMTightAcc( *el_itr ) )  { isTightDecor( *el_itr ) = 1; }
     }
  
   }
@@ -474,7 +477,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   //***** set T&P variables in r/f rate meas CR
   //------------------------------------------- 
   
-  if ( nSignalLeptons == 2 && ( nSignalJets >= 1 && nSignalJets <= 3 ) &&  nBjetsMedium >= 1 ) {
+  if ( nSignalLeptons == 2 && ( nSignalJets >= 1 && nSignalJets <= 3 ) &&  nBjets_MV2c20_Fix70 >= 1 ) {
     this->applyTagAndProbeRFRateMeasurement( eventInfo, leptonsSorted );
   }
   
