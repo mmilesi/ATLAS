@@ -458,12 +458,6 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   bool passnBJetsMin(false); 
   passnBJetsMin  = ( nBjets_MV2c20_Fix70 >= static_cast<unsigned int>(m_n_bjets_min) );
     
-  
-  if ( (passTwoLep || passLepTau) && nBjets_MV2c20_Fix70 > 1 ) {
-    Info("execute()","nBjets BTag_FixedCutBEff_70 in event = %i ", nBjets_MV2c20_Fix70 );  
-  
-  }
-  
   if ( m_debug ) {
     Info("execute()","***********************************");     
     Info("execute()","event passes TwoLep? %i    ", static_cast<int>( passTwoLep ) );
