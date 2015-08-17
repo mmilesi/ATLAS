@@ -145,6 +145,18 @@ EL::StatusCode TruthMatchAlgo :: fileExecute ()
 
   Info("fileExecute()", "Calling fileExecute");
 
+  // Get the MetaData tree once a new file is opened, 
+  // and check if file is from a DxAOD
+  //
+  TTree *MetaData = dynamic_cast<TTree*>( wk()->inputFile()->Get("MetaData") );
+  if ( !MetaData ) {
+    Error("fileExecute()", "MetaData not found! Exiting.");
+    return EL::StatusCode::FAILURE;
+  }
+  MetaData->LoadTree(0);
+
+  m_isDerivation = !MetaData->GetBranch("StreamAOD");
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -513,12 +525,15 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
   // Use the MCTruthClassifier to get the type and origin of the primitive truth ancestor, 
   // and save it as a decoration 
   // 
-  std::pair<MCTruthPartClassifier::ParticleType,MCTruthPartClassifier::ParticleOrigin>  ancestor_info = m_MCTClassifier->particleTruthClassifier( primitiveTruth );	  
+  std::pair<MCTruthPartClassifier::ParticleType,MCTruthPartClassifier::ParticleOrigin>  ancestor_info;
+  if ( !m_isDerivation ) {
+    ancestor_info = m_MCTClassifier->particleTruthClassifier( primitiveTruth );	  
 
-  (*m_ancestorTruthTypeDecor)( *recoPart )   = ancestor_info.first;
-  (*m_ancestorTruthPdgIdDecor)( *recoPart )  = primitiveTruth->pdgId();
-  (*m_ancestorTruthOriginDecor)( *recoPart ) = ancestor_info.second;
-  (*m_ancestorTruthStatusDecor)( *recoPart ) = primitiveTruth->status();
+    (*m_ancestorTruthTypeDecor)( *recoPart )   = ancestor_info.first;
+    (*m_ancestorTruthPdgIdDecor)( *recoPart )  = primitiveTruth->pdgId();
+    (*m_ancestorTruthOriginDecor)( *recoPart ) = ancestor_info.second;
+    (*m_ancestorTruthStatusDecor)( *recoPart ) = primitiveTruth->status();
+  }
 
   // Now check the charge!
   //
@@ -532,13 +547,13 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
   //   AND
   // -) the primitve origin of the lepton is not ISR/FSR...  
   // 
-  if ( ( reco_norm_charge * truth_norm_charge ) < 0 && ( ancestor_info.second != 39 && ancestor_info.second != 40 ) ) { 
-    if ( m_debug ) { 
+  if ( ( reco_norm_charge * truth_norm_charge ) < 0 && ( !m_isDerivation && ancestor_info.second != 39 && ancestor_info.second != 40 ) ) { 
+    if ( m_debug && !m_isDerivation ) { 
       Info("checkChargeFlip()", "\n\n Primitive TRUTH: \n\n norm charge: %i \n pdgId: %i \n prodVtxBarcode: %i \n status: %i \n isBrem: %i \n type: %d \n origin: %d \n -----------\n RECO: \n norm charge: %i \n\n --> It's a charge flip! \n\n ************************************", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), primitiveTruth->status(), isBrem, ancestor_info.first, ancestor_info.second, reco_norm_charge ); 
     }
     (*m_isChFlipDecor)( *recoPart ) = 1; 
   } else {
-    if ( m_debug ) {     
+    if ( m_debug && !m_isDerivation ) {     
       Info("checkChargeFlip()", "\n\n Primitive TRUTH: \n\n norm charge: %i \n pdgId: %i \n prodVtxBarcode: %i \n status: %i \n isBrem: %i \n type: %d \n origin: %d \n -----------\n RECO: \n norm charge: %i \n\n --> It's NOT a charge flip! \n\n ************************************", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), primitiveTruth->status(), isBrem, ancestor_info.first, ancestor_info.second, reco_norm_charge ); 
     }
   }

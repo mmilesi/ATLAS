@@ -49,6 +49,7 @@ private:
   int m_numObjectPass;      //!
 
   bool m_isMC;              //!
+  bool m_isDerivation;      //!
 
   // cutflow
   bool  m_useCutFlow;       //!            
