@@ -45,6 +45,9 @@ public:
   bool m_useLH_ElPID;  
   bool m_useCutBased_ElPID;  
 
+  bool m_useMCForTagAndProbe; // To define tag and probe leptons for RF rate mesurement using MC truth
+                              // NB: use it only for pure MC estimate (e.g. ttbar MM closure test)
+
 private:
 
   bool m_isDerivation;    //!
@@ -88,7 +91,8 @@ public:
   // these are the functions not inherited from Algorithm
   virtual EL::StatusCode configure ();
 
-  virtual EL::StatusCode applyTagAndProbeRFRateMeasurement( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
+  virtual EL::StatusCode defineTagAndProbeRFRateVars( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
+  virtual EL::StatusCode defineTagAndProbeRFRateVars_MC( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
   
   virtual EL::StatusCode addChannelDecorations( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
   virtual EL::StatusCode fakeWeightCalculator ( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
