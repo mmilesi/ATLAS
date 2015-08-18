@@ -78,7 +78,9 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_inContainerName_Taus      = "";      
 
   m_useLH_ElPID                = true;  
-  m_useCutBased_ElPID          = false;    
+  m_useCutBased_ElPID          = false;
+    
+  m_useMCForTagAndProbe        = false;
 }
 
 EL::StatusCode  HTopMultilepAnalysis :: configure ()
@@ -108,7 +110,9 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
     // electron ID stuff - choose which one to define "Tight" electrons
     m_useLH_ElPID                 = config->GetValue("UseLH_ElPID"          ,  m_useLH_ElPID );      
     m_useCutBased_ElPID           = config->GetValue("UseCutBased_ElPID"    ,  m_useCutBased_ElPID );
- 
+
+    m_useMCForTagAndProbe         = config->GetValue("UseMCForTagAndProbe"    ,  m_useMCForTagAndProbe );
+
     config->Print();
   
     Info("configure()", "HTopMultilepAnalysis Interface succesfully configured!");
@@ -478,7 +482,9 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   //------------------------------------------- 
   
   if ( nSignalLeptons == 2 && ( nSignalJets >= 1 && nSignalJets <= 3 ) &&  nBjets_MV2c20_Fix70 >= 1 ) {
-    this->applyTagAndProbeRFRateMeasurement( eventInfo, leptonsSorted );
+
+    if ( m_useMCForTagAndProbe ) { this->defineTagAndProbeRFRateVars_MC( eventInfo, leptonsSorted ); }
+    else { this->defineTagAndProbeRFRateVars( eventInfo, leptonsSorted ); }
   }
   
   //----------------------------------- 
@@ -577,7 +583,7 @@ EL::StatusCode HTopMultilepAnalysis :: histFinalize ()
 // Set Tag&Probe variables in r/f rate measurement CR 
 //
 //
-EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons )
+EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons )
 {
   
   // ----------------------------------------
@@ -639,7 +645,7 @@ EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const 
   if ( isTightAcc.isAvailable( *leadingLepton ) ) {
     isLeadingTight = isTightAcc( *leadingLepton );
   } else {
-    Warning("applyTagAndProbeRFRateMeasurement()","SG::AuxElement::Accessor('isTight') is not available for the leading lepton. Should not happen. Assigning 'isTight' = false" );
+    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTight') is not available for the leading lepton. Should not happen. Assigning 'isTight' = false" );
   }
   bool 			 isLeadingTrigMatched(false);  
   
@@ -649,12 +655,12 @@ EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const 
   if ( isTightAcc.isAvailable( *subLeadingLepton ) ) {
     isLeadingTight = isTightAcc( *subLeadingLepton );
   } else {
-    Warning("applyTagAndProbeRFRateMeasurement()","SG::AuxElement::Accessor('isTight') is not available for the subleading lepton. Should not happen. Assigning 'isTight' = false" );
+    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTight') is not available for the subleading lepton. Should not happen. Assigning 'isTight' = false" );
   }
   bool 			 isSubLeadingTrigMatched(false);  
     
-  if ( m_debug ) { Info("applyTagAndProbeRFRateMeasurement()","Leading lepton: isTight: %i \t isTrigMatched: %i \t isTag: %i    ", isLeadingTight, isLeadingTrigMatched,  isTagAcc( *leadingLepton ) ); }
-  if ( m_debug ) { Info("applyTagAndProbeRFRateMeasurement()","Subleading lepton: isTight: %i \t isTrigMatched: %i \t isTag: %i ", isSubLeadingTight, isSubLeadingTrigMatched, isTagAcc( *subLeadingLepton ) ); }
+  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Leading lepton: isTight: %i \t isTrigMatched: %i \t isTag: %i    ", isLeadingTight, isLeadingTrigMatched,  isTagAcc( *leadingLepton ) ); }
+  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Subleading lepton: isTight: %i \t isTrigMatched: %i \t isTag: %i ", isSubLeadingTight, isSubLeadingTrigMatched, isTagAcc( *subLeadingLepton ) ); }
   
   // --------------------------------------------
   // Now decide who's the tag and who's the probe
@@ -832,6 +838,137 @@ EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const 
 
 }
 
+// ******************************************
+// Use this function only when doing
+// MM estimate on pure MC (i.e, closure test)
+//
+EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons )
+{
+  
+  // ----------------------------------------
+  // Categorise event based on lepton flavour
+  // ----------------------------------------
+  
+  int prod_lep_charge(1);
+  unsigned int count_el(0), count_mu(0);
+  for ( auto lep_it : leptons ) {
+      // get the lepton flavour
+      xAOD::Type::ObjectType leptonFlavour = lep_it->type();
+      if ( leptonFlavour == xAOD::Type::Electron ) { 
+        ++count_el; 
+        prod_lep_charge *= dynamic_cast<const xAOD::Electron*>( lep_it )->charge();
+      } else if ( leptonFlavour == xAOD::Type::Muon ) { 
+        ++count_mu; 
+        prod_lep_charge *= dynamic_cast<const xAOD::Muon*>( lep_it )->charge();
+      }
+  }
+  bool isSS = (  prod_lep_charge > 0  );  
+
+  // --------------------------------
+  // Declare accessors and decorators
+  // --------------------------------
+  
+  // decorate lepton w/ is tag/probe
+  static SG::AuxElement::Decorator< char > isTagDecor("isTag");
+  // declare event decorations for checking the probe type in event
+  static SG::AuxElement::Decorator< char > isProbeElEventDecor( "isProbeElEvent" ); 
+  static SG::AuxElement::Decorator< char > isProbeMuEventDecor( "isProbeMuEvent" ); 
+    
+  // decorate with default values
+  for ( auto lep_itr : leptons ) { isTagDecor( *lep_itr ) = 0; }
+  isProbeElEventDecor( *eventInfo )  = 0;
+  isProbeMuEventDecor( *eventInfo )  = 0;
+    
+  // -------------------------------------------
+  // Now, take the leading and subleading lepton 
+  // -------------------------------------------
+    
+  const xAOD::IParticle* leadingLepton           = leptons.at(0);
+  const xAOD::IParticle* subLeadingLepton        = leptons.at(1);
+
+  // --------------------------------------------
+  // Now decide who's the tag and who's the probe
+  // --------------------------------------------
+  
+  static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
+  static SG::AuxElement::ConstAccessor< int > truthTypeAcc("truthType"); 
+  static SG::AuxElement::ConstAccessor< int > truthOriginAcc("truthOrigin");
+   
+  bool found_a_prompt(false);
+  if ( isSS ) {
+  
+    for ( auto lep_itr : leptons ) {
+       
+      // The tag will be the first prompt lepton in the event which is not charge flip, provided it's found.
+      // The other will be the probe
+      // See below the treatment for the case where all leptons in SS event are non prompt...
+      //
+      if ( truthTypeAcc.isAvailable( *lep_itr ) ) {
+      
+        if ( !found_a_prompt && ( truthTypeAcc( *lep_itr ) == 2 || truthTypeAcc( *lep_itr ) == 6 ) && isChFlipAcc( *lep_itr ) != 1 ) {
+          isTagDecor( *lep_itr ) = 1;
+	  found_a_prompt = true;
+        }
+      
+      } else {
+        Warning("defineTagAndProbeRFRateVars_MC()","SG::AuxElement::Accessor('truthType') is not available for this lepton. Should not happen. Tag will be the leading, probe the subleading" );
+        break;
+      }
+    
+    }
+   
+    if ( !found_a_prompt ) {
+      // the probe will be the subleading lepton, no matter what
+      //
+      if ( m_debug ) { Info("defineTagAndProbeRFRateVars_MC()","There are no prompt leptons in this SS event. Tag will b\
+e the leading, probe the subleading" ); }
+      isTagDecor( *leadingLepton ) = 1;
+    }
+     
+  } else {
+    
+    // generate a uniformly distributed random number in [0,1]			  
+    //
+    TRandom3 rndm(0);
+    float unif = rndm.Uniform();
+    
+    // assign randomly who's tag and who's probe 
+    //	
+    if ( unif >= 0.5 ) {
+      isTagDecor( *leadingLepton )    = 1;
+    } else {
+      isTagDecor( *subLeadingLepton ) = 1;
+    } 
+  
+  }
+  
+  // Accessor to tag leptons
+  // 
+  static SG::AuxElement::Accessor< char > isTagAcc("isTag"); 
+  
+  // Now loop over the leptons, and check whether the probe is an electron or a muon
+  //
+  for ( auto lep_itr : leptons ) {
+  
+    if ( !isTagAcc( *lep_itr ) ) { 
+      isProbeElEventDecor( *eventInfo ) = ( lep_itr->type() == xAOD::Type::Electron );
+      isProbeMuEventDecor( *eventInfo ) = ( lep_itr->type() == xAOD::Type::Muon );
+    }
+  
+  }
+
+  if ( m_debug && isSS ) {
+    Info("defineTagAndProbeRFRateVars_MC()"," ********** SS Event - Checking 'isTag' lepton decoration ********** "); 
+    for ( auto lep_itr : leptons ) {
+      Info("defineTagAndProbeRFRateVars_MC()","\t lepton \n \t isTag?: %i \n \t truthType(): %i \n \t truthOrigin(): %i \n ", isTagAcc( *lep_itr ), truthTypeAcc( *lep_itr ), truthOriginAcc( *lep_itr ) ); 
+    }
+    Info("defineTagAndProbeRFRateVars_MC()"," ********** "); 
+  }
+   
+  return EL::StatusCode::SUCCESS;
+
+}
+
 //*****************************************************************************
 //
 // Channel variables
@@ -876,9 +1013,9 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   if ( nLeptons == 2 )
   {
      // retrieve lepA 
-     const xAOD::IParticle* lepA = *(leptons.begin());
+    const xAOD::IParticle* lepA = leptons.at(0);
      // retrieve lepB
-     const xAOD::IParticle* lepB = *(std::next( leptons.begin(), 1 ));     
+    const xAOD::IParticle* lepB = leptons.at(1);     
      
      // compute invariant mass of the pair
      lepA_4mom.SetPtEtaPhiM( lepA->pt(), lepA->eta(), lepA->phi(), lepA->m() );
@@ -919,11 +1056,11 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   else if ( nLeptons == 3 )
   {
      // retrieve lepA 
-     const xAOD::IParticle* lepA = *(leptons.begin());
+     const xAOD::IParticle* lepA = leptons.at(0);
      // retrieve lepB
-     const xAOD::IParticle* lepB = *(std::next( leptons.begin(), 1 ));     
+     const xAOD::IParticle* lepB = leptons.at(1);     
      // retrieve lepC
-     const xAOD::IParticle* lepC = *(std::next( leptons.begin(), 2 ));   
+     const xAOD::IParticle* lepC = leptons.at(2);   
      
      // compute invariant mass of all the possible pairs, and of the triplet as well
      lepA_4mom.SetPtEtaPhiM( lepA->pt(), lepA->eta(), lepA->phi(), lepA->m() );
@@ -1051,9 +1188,9 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	// by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
 	
 	// retrieve lep0 : the leading lepton
-	const xAOD::IParticle* lep0 = *(leptons.begin());
+        const xAOD::IParticle* lep0 = leptons.at(0);
 	// retrieve lep1: the subleading lepton
-	const xAOD::IParticle* lep1 = *(std::next( leptons.begin(), 1));
+	const xAOD::IParticle* lep1 = leptons.at(1);
 	
 	// set the region
 	if      (  isTightAcc( *lep0 )    &&  isTightAcc( *lep1 )    ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
