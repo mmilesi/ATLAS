@@ -71,6 +71,7 @@ class HTopMultilepTree : public HelpTreeBase
     /* muon TAG variables */
     std::vector<float> m_muon_tag_pt;
     std::vector<float> m_muon_tag_eta;
+    std::vector<float> m_muon_tag_trkd0sig;
     std::vector<int>   m_muon_tag_isIsolated_LooseTrackOnly;
     std::vector<int>   m_muon_tag_isIsolated_Loose;
     std::vector<int>   m_muon_tag_isIsolated_Tight;
@@ -94,6 +95,7 @@ class HTopMultilepTree : public HelpTreeBase
     /* muon PROBE variables */
     std::vector<float> m_muon_probe_pt;
     std::vector<float> m_muon_probe_eta;
+    std::vector<float> m_muon_probe_trkd0sig;
     std::vector<int>   m_muon_probe_isIsolated_LooseTrackOnly;
     std::vector<int>   m_muon_probe_isIsolated_Loose;
     std::vector<int>   m_muon_probe_isIsolated_Tight;
@@ -136,6 +138,13 @@ class HTopMultilepTree : public HelpTreeBase
     /* electron TAG variables */
     std::vector<float> m_electron_tag_pt;
     std::vector<float> m_electron_tag_eta;
+    std::vector<int>   m_electron_tag_LHVeryLoose;
+    std::vector<int>   m_electron_tag_LHLoose;
+    std::vector<int>   m_electron_tag_LHMedium;
+    std::vector<int>   m_electron_tag_LHTight;
+    std::vector<int>   m_electron_tag_IsEMLoose;
+    std::vector<int>   m_electron_tag_IsEMMedium;
+    std::vector<int>   m_electron_tag_IsEMTight;
     std::vector<int>   m_electron_tag_isIsolated_LooseTrackOnly;
     std::vector<int>   m_electron_tag_isIsolated_Loose;
     std::vector<int>   m_electron_tag_isIsolated_Tight;
@@ -159,6 +168,13 @@ class HTopMultilepTree : public HelpTreeBase
     /* electron PROBE variables */
     std::vector<float> m_electron_probe_pt;
     std::vector<float> m_electron_probe_eta;
+    std::vector<int>   m_electron_probe_LHVeryLoose;
+    std::vector<int>   m_electron_probe_LHLoose;
+    std::vector<int>   m_electron_probe_LHMedium;
+    std::vector<int>   m_electron_probe_LHTight;
+    std::vector<int>   m_electron_probe_IsEMLoose;
+    std::vector<int>   m_electron_probe_IsEMMedium;
+    std::vector<int>   m_electron_probe_IsEMTight;
     std::vector<int>   m_electron_probe_isIsolated_LooseTrackOnly;
     std::vector<int>   m_electron_probe_isIsolated_Loose;
     std::vector<int>   m_electron_probe_isIsolated_Tight;

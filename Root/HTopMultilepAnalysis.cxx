@@ -633,7 +633,7 @@ EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const 
   // Now, take the leading and subleading lepton 
   // -------------------------------------------
     
-  const xAOD::IParticle* leadingLepton           = *(leptons.begin());
+  const xAOD::IParticle* leadingLepton           = leptons.at(0);
   xAOD::Type::ObjectType leadingLeptonFlavour    = leadingLepton->type();
   bool                   isLeadingTight(false);          
   if ( isTightAcc.isAvailable( *leadingLepton ) ) {
@@ -643,7 +643,7 @@ EL::StatusCode HTopMultilepAnalysis :: applyTagAndProbeRFRateMeasurement( const 
   }
   bool 			 isLeadingTrigMatched(false);  
   
-  const xAOD::IParticle* subLeadingLepton        = *(std::next(leptons.begin(),1));
+  const xAOD::IParticle* subLeadingLepton        = leptons.at(1);
   xAOD::Type::ObjectType subLeadingLeptonFlavour = subLeadingLepton->type();
   bool                   isSubLeadingTight (false);
   if ( isTightAcc.isAvailable( *subLeadingLepton ) ) {

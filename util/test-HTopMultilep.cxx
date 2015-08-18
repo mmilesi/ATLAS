@@ -282,8 +282,8 @@ int main ( int argc, char **argv ) {
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix60 );
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix70 );
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix80 );
-    job.algsAdd( overlapRemoval );
-    //job.algsAdd( overlapRemoval_HTopRun1 );
+    //job.algsAdd( overlapRemoval );
+    job.algsAdd( overlapRemoval_HTopRun1 );
     job.algsAdd( muonSelect_selection );
     job.algsAdd( muonEffCorr );
     job.algsAdd( electronSelect_selection );
