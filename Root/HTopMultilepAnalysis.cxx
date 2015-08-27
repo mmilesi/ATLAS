@@ -42,10 +42,23 @@
 // ROOT include(s):
 #include "TFile.h"
 #include "TTree.h"
+#include "TH1D.h"
 #include "TEnv.h"
 #include "TSystem.h"
 #include "TLorentzVector.h"
 #include "TRandom3.h"
+
+// c++ include(s)
+#include <stdexcept>
+
+// a template function to get ROOT objects from a TFile
+//
+template<typename T>
+T* get_object( TFile& file, const std::string& name ) {
+  T* obj = dynamic_cast<T*>( file.Get(name.c_str()) );
+  if ( !obj ) { throw std::runtime_error("object " + name + " not found"); }
+  return obj;
+}
 
 // this is needed to distribute the algorithm to the workers
 ClassImp(HTopMultilepAnalysis)
@@ -77,10 +90,10 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_inContainerName_Jets      = "";
   m_inContainerName_Taus      = "";      
 
-  m_useLH_ElPID                = true;  
-  m_useCutBased_ElPID          = false;
+  m_useLH_ElPID               = true;  
+  m_useCutBased_ElPID         = false;
     
-  m_useMCForTagAndProbe        = false;
+  m_useMCForTagAndProbe       = false;
 }
 
 EL::StatusCode  HTopMultilepAnalysis :: configure ()
@@ -209,6 +222,12 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
     return EL::StatusCode::FAILURE;
   }
 
+  // check if sample is MC
+  //
+  const xAOD::EventInfo* eventInfo(nullptr);
+  RETURN_CHECK("HTopMultilepAnalysis::initialize()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_debug) , "");
+  m_isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
+
   if ( m_useCutFlow ) {
     TFile *fileCF  = wk()->getOutputFile ("cutflow");  
     m_cutflowHist  = (TH1D*)fileCF->Get("cutflow");
@@ -222,7 +241,7 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   TFile *fileMD = wk()->getOutputFile ("metadata");  
   m_histEventCount  = (TH1D*)fileMD->Get("MetaData_EventCount");
   if ( !m_histEventCount ) { 
-    Error("histInitialize()", "Failed to retrieve MetaData histogram. Aborting");
+    Error("initialize()", "Failed to retrieve MetaData histogram. Aborting");
     return EL::StatusCode::FAILURE;
   }
 
@@ -247,6 +266,199 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
                                                      
   RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool." );
 
+  // ***********************************************************
+  // For MM/FF: read r/f rates from input ROOT histograms
+  //
+
+  std::string path = "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/";
+  path = ( !m_useMCForTagAndProbe ) ? ( path +"ObservedRates.root" ) : ( path+"ExpectedRates.root" );
+
+  TFile *file = TFile::Open(path.c_str());
+  if ( !file->IsOpen() ) {
+    Error("histInitialize()", "Failed to open ROOT file with r/f rates from path: %s . Aborting", path.c_str() );
+    return EL::StatusCode::FAILURE;
+  }    
+  
+  if ( m_debug ) { Info("initialize()", " Successfully opened ROOT file with r/f rates from path: %s ", path.c_str() ); }
+  
+  // 1) ELECTRONS
+  //
+  
+  std::string histname_el_eta_rr   = "El_ProbeEta_Real_Rate_";
+  std::string histname_el_eta_fr   = "El_ProbeEta_Fake_Rate_";
+  std::string histname_el_pt_rr    = "El_ProbePt_Real_Rate_";
+  std::string histname_el_pt_fr    = "El_ProbePt_Fake_Rate_"; 
+  std::string histname_el_eta_r_T  = "El_ProbeEta_Real_T_";  
+  std::string histname_el_eta_r_L  = "El_ProbeEta_Real_L_"; 
+  std::string histname_el_pt_r_T   = "El_ProbePt_Real_T_";  
+  std::string histname_el_pt_r_L   = "El_ProbePt_Real_L_";   
+  std::string histname_el_eta_f_T  = "El_ProbeEta_Fake_T_";  
+  std::string histname_el_eta_f_L  = "El_ProbeEta_Fake_L_";
+  std::string histname_el_pt_f_T   = "El_ProbePt_Fake_T_";  
+  std::string histname_el_pt_f_L   = "El_ProbePt_Fake_L_";  	
+  
+  if ( !m_useMCForTagAndProbe ) { 
+    histname_el_eta_rr   += "observed";
+    histname_el_eta_fr   += "observed";
+    histname_el_pt_rr    += "observed";
+    histname_el_pt_fr    += "observed";
+    histname_el_eta_r_T  += "observed";
+    histname_el_eta_r_L  += "observed";
+    histname_el_pt_r_T   += "observed";
+    histname_el_pt_r_L   += "observed";    
+    histname_el_eta_f_T  += "observed";
+    histname_el_eta_f_L  += "observed";
+    histname_el_pt_f_T   += "observed";
+    histname_el_pt_f_L   += "observed";
+  } else { 
+    histname_el_eta_rr   += "expected";
+    histname_el_eta_fr   += "expected"; 
+    histname_el_pt_rr    += "expected";
+    histname_el_pt_fr    += "expected";
+    histname_el_eta_r_T  += "expected";
+    histname_el_eta_r_L  += "expected";
+    histname_el_pt_r_T   += "expected";
+    histname_el_pt_r_L   += "expected";    
+    histname_el_eta_f_T  += "expected";
+    histname_el_eta_f_L  += "expected";
+    histname_el_pt_f_T   += "expected";
+    histname_el_pt_f_L   += "expected";    
+  }  
+  
+  // get eta real/fake rate hist
+  //
+  TH1D *hist_el_eta_rr   = get_object<TH1D>( *file, histname_el_eta_rr );
+  TH1D *hist_el_eta_fr   = get_object<TH1D>( *file, histname_el_eta_fr ); 
+  TH1D *hist_el_pt_rr    = get_object<TH1D>( *file, histname_el_pt_rr ); 
+  TH1D *hist_el_pt_fr    = get_object<TH1D>( *file, histname_el_pt_fr ); 
+  TH1D *hist_el_eta_r_T  = get_object<TH1D>( *file, histname_el_eta_r_T ); 
+  TH1D *hist_el_eta_r_L  = get_object<TH1D>( *file, histname_el_eta_r_L ); 
+  TH1D *hist_el_pt_r_T   = get_object<TH1D>( *file, histname_el_pt_r_T ); 
+  TH1D *hist_el_pt_r_L   = get_object<TH1D>( *file, histname_el_pt_r_L ); 
+  TH1D *hist_el_eta_f_T  = get_object<TH1D>( *file, histname_el_eta_f_T ); 
+  TH1D *hist_el_eta_f_L  = get_object<TH1D>( *file, histname_el_eta_f_L ); 
+  TH1D *hist_el_pt_f_T   = get_object<TH1D>( *file, histname_el_pt_f_T ); 
+  TH1D *hist_el_pt_f_L   = get_object<TH1D>( *file, histname_el_pt_f_L ); 
+  
+  // fill a map for later usage
+  //
+  m_el_hist_map["eta_rr"] = hist_el_eta_rr;
+  m_el_hist_map["eta_fr"] = hist_el_eta_fr;
+  m_el_hist_map["pt_rr"]  = hist_el_pt_rr;
+  m_el_hist_map["pt_fr"]  = hist_el_pt_fr;  
+  m_el_hist_map["eta_T"]  = hist_el_eta_r_T; 
+  m_el_hist_map["eta_L"]  = hist_el_eta_r_L;
+  m_el_hist_map["pt_T"]   = hist_el_pt_r_T;  
+  m_el_hist_map["pt_L"]   = hist_el_pt_r_L;  
+  m_el_hist_map["eta_T"]  = hist_el_eta_f_T; 
+  m_el_hist_map["eta_L"]  = hist_el_eta_f_L;
+  m_el_hist_map["pt_T"]   = hist_el_pt_f_T;  
+  m_el_hist_map["pt_L"]   = hist_el_pt_f_L;  
+  
+  // eta hist has same binning for r/f
+  //
+  m_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX(); 
+  
+  // pt hist has two different binning for r/f
+  //
+  m_n_el_bins_pt_rr =  hist_el_pt_rr->GetNbinsX(); 
+  m_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX();  
+  
+  // normalistaion factor is the same for eta and pt r/f histograms: use eta
+  //
+  m_el_rr_tot = ( hist_el_eta_r_T->Integral() ) / ( hist_el_eta_r_L->Integral() );  
+  m_el_fr_tot = ( hist_el_eta_f_T->Integral() ) / ( hist_el_eta_f_L->Integral() );    
+  
+  // 2) MUONS
+  //
+  
+  std::string histname_mu_eta_rr   = "Mu_ProbeEta_Real_Rate_";
+  std::string histname_mu_eta_fr   = "Mu_ProbeEta_Fake_Rate_";
+  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Rate_";
+  std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Rate_"; 
+  std::string histname_mu_eta_r_T  = "Mu_ProbeEta_Real_T_";  
+  std::string histname_mu_eta_r_L  = "Mu_ProbeEta_Real_L_"; 
+  std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_";  
+  std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_L_";   
+  std::string histname_mu_eta_f_T  = "Mu_ProbeEta_Fake_T_";  
+  std::string histname_mu_eta_f_L  = "Mu_ProbeEta_Fake_L_";
+  std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_";  
+  std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_L_";  	
+  
+  if ( !m_useMCForTagAndProbe ) { 
+    histname_mu_eta_rr   += "observed";
+    histname_mu_eta_fr   += "observed";
+    histname_mu_pt_rr    += "observed";
+    histname_mu_pt_fr    += "observed";
+    histname_mu_eta_r_T  += "observed";
+    histname_mu_eta_r_L  += "observed";
+    histname_mu_pt_r_T   += "observed";
+    histname_mu_pt_r_L   += "observed";    
+    histname_mu_eta_f_T  += "observed";
+    histname_mu_eta_f_L  += "observed";
+    histname_mu_pt_f_T   += "observed";
+    histname_mu_pt_f_L   += "observed";
+  } else { 
+    histname_mu_eta_rr   += "expected";
+    histname_mu_eta_fr   += "expected"; 
+    histname_mu_pt_rr    += "expected";
+    histname_mu_pt_fr    += "expected";
+    histname_mu_eta_r_T  += "expected";
+    histname_mu_eta_r_L  += "expected";
+    histname_mu_pt_r_T   += "expected";
+    histname_mu_pt_r_L   += "expected";    
+    histname_mu_eta_f_T  += "expected";
+    histname_mu_eta_f_L  += "expected";
+    histname_mu_pt_f_T   += "expected";
+    histname_mu_pt_f_L   += "expected";    
+  }  
+  
+  // get eta real/fake rate hist
+  //
+  TH1D *hist_mu_eta_rr	 = get_object<TH1D>( *file, histname_mu_eta_rr );
+  TH1D *hist_mu_eta_fr	 = get_object<TH1D>( *file, histname_mu_eta_fr ); 
+  TH1D *hist_mu_pt_rr	 = get_object<TH1D>( *file, histname_mu_pt_rr ); 
+  TH1D *hist_mu_pt_fr	 = get_object<TH1D>( *file, histname_mu_pt_fr ); 
+  TH1D *hist_mu_eta_r_T  = get_object<TH1D>( *file, histname_mu_eta_r_T ); 
+  TH1D *hist_mu_eta_r_L  = get_object<TH1D>( *file, histname_mu_eta_r_L ); 
+  TH1D *hist_mu_pt_r_T	 = get_object<TH1D>( *file, histname_mu_pt_r_T ); 
+  TH1D *hist_mu_pt_r_L	 = get_object<TH1D>( *file, histname_mu_pt_r_L ); 
+  TH1D *hist_mu_eta_f_T  = get_object<TH1D>( *file, histname_mu_eta_f_T ); 
+  TH1D *hist_mu_eta_f_L  = get_object<TH1D>( *file, histname_mu_eta_f_L ); 
+  TH1D *hist_mu_pt_f_T	 = get_object<TH1D>( *file, histname_mu_pt_f_T ); 
+  TH1D *hist_mu_pt_f_L	 = get_object<TH1D>( *file, histname_mu_pt_f_L ); 
+  
+  // fill a map for later usage
+  //
+  m_mu_hist_map["eta_rr"] = hist_mu_eta_rr;
+  m_mu_hist_map["eta_fr"] = hist_mu_eta_fr;
+  m_mu_hist_map["pt_rr"]  = hist_mu_pt_rr;
+  m_mu_hist_map["pt_fr"]  = hist_mu_pt_fr;  
+  m_mu_hist_map["eta_T"]  = hist_mu_eta_r_T; 
+  m_mu_hist_map["eta_L"]  = hist_mu_eta_r_L;
+  m_mu_hist_map["pt_T"]   = hist_mu_pt_r_T;  
+  m_mu_hist_map["pt_L"]   = hist_mu_pt_r_L;  
+  m_mu_hist_map["eta_T"]  = hist_mu_eta_f_T; 
+  m_mu_hist_map["eta_L"]  = hist_mu_eta_f_L;
+  m_mu_hist_map["pt_T"]   = hist_mu_pt_f_T;  
+  m_mu_hist_map["pt_L"]   = hist_mu_pt_f_L;  	
+  
+  // eta hist has same binning for r/f
+  //
+  m_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX(); 
+  
+  // pt hist has two different binning for r/f
+  //
+  m_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX(); 
+  m_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX();  
+  
+  // normalistaion factor is the same for eta and pt r/f histograms: use eta
+  //
+  m_mu_rr_tot = ( hist_mu_eta_r_T->Integral() ) / ( hist_mu_eta_r_L->Integral() );  
+  m_mu_fr_tot = ( hist_mu_eta_f_T->Integral() ) / ( hist_mu_eta_f_L->Integral() );    
+
+  // ***********************************************************
+
   Info("initialize()", "HTopMultilepAnalysis Interface succesfully initialized!" );
   
   return EL::StatusCode::SUCCESS;
@@ -259,6 +471,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   // events, e.g. read input variables, apply cuts, and fill
   // histograms and trees.  This is where most of your actual analysis
   // code will go.
+ 
   if ( m_debug ) { Info("execute()", "Applying analysis selection"); }
 
   ++m_eventCounter;
@@ -269,27 +482,26 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   
   // retrieve event info
   const xAOD::EventInfo* eventInfo(nullptr);
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_debug) , "");
-
-  // bool isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_verbose), "");
   
   // retrieve vertices  
   const xAOD::VertexContainer* vertices(nullptr);
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(vertices, "PrimaryVertices", m_event, m_store,  m_debug) , "");
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(vertices, "PrimaryVertices", m_event, m_store,  m_verbose), "");
 
   // retrieve selected objects
   const xAOD::ElectronContainer* signalElectrons(nullptr); 
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalElectrons, m_inContainerName_Electrons, m_event, m_store,  m_debug) , "");
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalElectrons, m_inContainerName_Electrons, m_event, m_store,  m_verbose), "");
   const xAOD::MuonContainer*     signalMuons(nullptr);    
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalMuons, m_inContainerName_Muons, m_event, m_store, m_debug ) , "");
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalMuons, m_inContainerName_Muons, m_event, m_store, m_verbose), "");
   const xAOD::JetContainer*      signalJets(nullptr);   
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalJets, m_inContainerName_Jets, m_event, m_store,  m_debug) , "");
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalJets, m_inContainerName_Jets, m_event, m_store,  m_verbose), "");
   const xAOD::TauJetContainer*   signalTauJets(nullptr);
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalTauJets,  m_inContainerName_Taus, m_event, m_store, m_debug) , "");
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalTauJets,  m_inContainerName_Taus, m_event, m_store, m_verbose), "");
   ConstDataVector<xAOD::IParticleContainer>* leptonsCDV(nullptr);
-  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(leptonsCDV, m_inContainerName_Leptons, m_event, m_store, m_debug) ,"");
+  RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(leptonsCDV, m_inContainerName_Leptons, m_event, m_store, m_verbose),"");
   // Make a sorted version of the lepton container 
   // (this can be on the stack! Will not be pushed to the store...)
+  //
   const xAOD::IParticleContainer leptonsSorted = HelperFunctions::sort_container_pt( leptonsCDV->asDataVector() );
 
   unsigned int nSignalLeptons   = leptonsCDV->size();
@@ -308,19 +520,19 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     
     // retrieve initial objects ( only for debugging purposes )
     const xAOD::ElectronContainer* inElectrons(nullptr);
-    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inElectrons, "Electrons", m_event, m_store, m_debug) , "");
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inElectrons, "Electrons", m_event, m_store, m_verbose), "");
     const xAOD::MuonContainer*     inMuons(nullptr);     
-    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inMuons, "Muons", m_event, m_store, m_debug) , "");
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inMuons, "Muons", m_event, m_store, m_verbose), "");
     const xAOD::JetContainer*      inJets(nullptr); 
-    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inJets, "AntiKt4EMTopoJets", m_event, m_store, m_debug ) , "");
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inJets, "AntiKt4EMTopoJets", m_event, m_store, m_verbose), "");
 
     // retrieve preselected objects ( only for debugging purposes )
     const xAOD::ElectronContainer* preselElectrons(nullptr);
-    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselElectrons, "Electrons_PreSelected", m_event, m_store, m_debug) , "");
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselElectrons, "Electrons_PreSelected", m_event, m_store, m_verbose), "");
     const xAOD::MuonContainer*     preselMuons(nullptr);     
-    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselMuons, "Muons_PreSelected", m_event, m_store, m_debug) , "");
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselMuons, "Muons_PreSelected", m_event, m_store, m_verbose), "");
     const xAOD::JetContainer*      preselJets(nullptr); 
-    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselJets, "AntiKt4EMTopoJets_Selected", m_event, m_store, m_debug ) , "");
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselJets, "AntiKt4EMTopoJets_Selected", m_event, m_store, m_verbose), "");
 
     unsigned int nInElectrons     = inElectrons->size();
     unsigned int nInMuons         = inMuons->size();
@@ -380,7 +592,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   //***** Fill cutflow histogram
   //-------------------------------  
 
-  
   if ( m_useCutFlow ) {
     m_cutflowHist ->Fill( m_cutflow_bin, 1 );
     m_cutflowHistW->Fill( m_cutflow_bin, mcEvtWeight);
@@ -405,7 +616,9 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 
   // accessor to lepton isolation flag - use Tight WP
   //
-  static SG::AuxElement::Accessor< char > isIsoAcc("isIsolated_Tight");
+  //static SG::AuxElement::Accessor< char > isIsoAcc("isIsolated_Tight");
+  static SG::AuxElement::Accessor< char > isIsoAcc("isIsolated_UserDefinedCut"); // Run 1 isolation
+  
   // accessor to likelihood PID for electrons
   //
   static SG::AuxElement::Accessor< char > LHTightAcc("LHTight");
@@ -414,8 +627,8 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   static SG::AuxElement::Accessor< char > EMTightAcc("Tight");
 
   // decorator for "Tight" leptons  
-  static SG::AuxElement::Decorator< char > isTightDecor("isTight"); // electrons: isolated (Tight) + Tight PID (tightPP or TightLH, depending on user's choice)
-  								    // muons: isolated (Tight) + d0sig < 3.0
+  static SG::AuxElement::Decorator< char > isTightDecor("isTight"); // electrons: isolation + PID (tightPP or TightLH, depending on user's choice)
+  								    // muons: isolation + |d0sig|
 
   for ( auto el_itr : *(signalElectrons) ) {
 
@@ -454,10 +667,11 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
       } 
 
       // flag the "Tight" muons: use isolation && d0sig 
+      //
       if ( isIsoAcc( *mu_itr) ) {
 	  
           static SG::AuxElement::Accessor<float> d0SigAcc ("d0sig");
-          float d0_significance =  ( d0SigAcc.isAvailable( *mu_itr ) ) ? fabs( d0SigAcc( *mu_itr ) ) : -9999.0;
+          float d0_significance =  ( d0SigAcc.isAvailable( *mu_itr ) ) ? d0SigAcc( *mu_itr ) : -9999.0;
 	  
           if  ( fabs(d0_significance) < 3.0 ) { isTightDecor( *mu_itr ) = 1; }
       }	
@@ -526,6 +740,17 @@ EL::StatusCode HTopMultilepAnalysis :: finalize ()
   Info("finalize()", "Deleting tool instances...");
 
   if ( m_TauSelTool ) { m_TauSelTool = nullptr; delete m_TauSelTool; }    
+   
+  /* 
+  // delete TH1D histograms
+  // 
+  for ( auto itr : (m_el_hist_map) ) {
+    itr.second = nullptr; delete itr.second; 
+  }  
+  for ( auto itr : (m_mu_hist_map) ) {
+    itr.second = nullptr; delete itr.second; 
+  }
+  */
    
   return EL::StatusCode::SUCCESS;
 }
@@ -1013,9 +1238,9 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   if ( nLeptons == 2 )
   {
      // retrieve lepA 
-    const xAOD::IParticle* lepA = leptons.at(0);
+     const xAOD::IParticle* lepA = leptons.at(0);
      // retrieve lepB
-    const xAOD::IParticle* lepB = leptons.at(1);     
+     const xAOD::IParticle* lepB = leptons.at(1);     
      
      // compute invariant mass of the pair
      lepA_4mom.SetPtEtaPhiM( lepA->pt(), lepA->eta(), lepA->phi(), lepA->m() );
@@ -1037,7 +1262,7 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      // mT( lep, MET )	
      //
      const xAOD::MissingETContainer* inMETCont(nullptr);
-     RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inMETCont, "MET_Reference_AntiKt4EMTopo", m_event, m_store, m_debug) , "");
+     RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inMETCont, "MET_Reference_AntiKt4EMTopo", m_event, m_store, m_verbose), "");
 
      static SG::AuxElement::Decorator<float> mTLep0METDecor("mT_lep0MET");
      static SG::AuxElement::Decorator<float> mTLep1METDecor("mT_lep1MET");
@@ -1150,11 +1375,14 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   unsigned int nLeptons = leptons.size();
 
   std::string region;
+  
   // features of the two leptons that are considered for the MM
+  //
   float lepA_pt(-1.), lepA_eta(-999.), lepB_pt(-1.), lepB_eta(-999.);
   int lepA_flavour(0), lepB_flavour(0);
   
-  // retrieve some previously applied event object decorations 
+  // retrieve some previously applied event object decorations
+  // 
   static SG::AuxElement::Accessor< char > isSS01("isSS01");
   if ( !isSS01.isAvailable(*eventInfo) ) {
     Error("fakeWeightCalculator()", "isSS01 is not available. Aborting ");
@@ -1167,9 +1395,11 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   }      
    
   // accessor to tight leptons 
+  //
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
    
   // event decorators to identify the TT,TL,LT,LL regions (looking at the two SS leptons: first is the leading, second is subleading) 
+  //
   static SG::AuxElement::Decorator< char > isTTDecor("isTT");
   static SG::AuxElement::Decorator< char > isTLDecor("isTL");
   static SG::AuxElement::Decorator< char > isLTDecor("isLT");
@@ -1180,19 +1410,22 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   isLLDecor( *eventInfo ) = 0;
    
   // Assigning lepton kin and identifying the signal region (not taking jets into account)
-  if ( nLeptons == 2 && isSS01(*eventInfo) )
-  {
+  //
+  if ( nLeptons == 2 && isSS01(*eventInfo) ) {
         // start from lepton container
 	//
 	// ordering criterion is simply based on pT
 	// by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
 	
 	// retrieve lep0 : the leading lepton
-        const xAOD::IParticle* lep0 = leptons.at(0);
+	//
+	const xAOD::IParticle* lep0 = leptons.at(0);
 	// retrieve lep1: the subleading lepton
+        //
 	const xAOD::IParticle* lep1 = leptons.at(1);
 	
 	// set the region
+	//
 	if      (  isTightAcc( *lep0 )    &&  isTightAcc( *lep1 )    ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
 	else if (  isTightAcc( *lep0 )    &&  !(isTightAcc( *lep1 )) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
 	else if (  !(isTightAcc( *lep0 )) &&  isTightAcc( *lep1 )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
@@ -1201,36 +1434,31 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   	if ( m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
 
         // set the properties of the two relevant leptons for future convenience
+	//
 	lepA_pt  = lep0->pt();
 	lepA_eta = lep0->eta();
-	if ( lep0->type() == xAOD::Type::Electron ) {
-	  lepA_flavour = 11;
-	} else if ( lep0->type() == xAOD::Type::Muon ) {
-	  lepA_flavour = 13;
-	}
+	if ( lep0->type() == xAOD::Type::Electron )  { lepA_flavour = 11; } 
+	else if ( lep0->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
 	
 	lepB_pt  = lep1->pt();
 	lepB_eta = lep1->eta();
-	if ( lep1->type() == xAOD::Type::Electron ) {
-	  lepB_flavour = 11;
-	} else if ( lep1->type() == xAOD::Type::Muon ) {
-	  lepB_flavour = 13;
-	}	
+	if ( lep1->type() == xAOD::Type::Electron )  { lepB_flavour = 11; } 
+	else if ( lep1->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }	
 
-  }
-  else if ( nLeptons == 3 && isSS12(*eventInfo) )
-  {        
+  } else if ( nLeptons == 3 && isSS12(*eventInfo) ) {        
         // start from lepton container
 	//
 	// for trilepton, ordering criterion is:
 	// lep0: the OS lepton - lep1: the SS lepton with min{ deltaR(lep0) } - lep2: the other SS lepton 
         
-	// retrieve some previously applied lepton object decorations 
+	// retrieve some previously applied lepton object decorations
+	// 
   	static SG::AuxElement::Accessor< char > isOSlep("isOSlep");
   	static SG::AuxElement::Accessor< char > isClosestSSlep("isClosestSSlep");
 	
 	// need to declare these non-const pointers, and then do a const_cast.
 	// this is bad practice in general, but then I do not need these pointers except for defining regions, so that's okay atm
+	//
 	xAOD::IParticle* lep0(nullptr);
 	xAOD::IParticle* lep1(nullptr);
 	xAOD::IParticle* lep2(nullptr);
@@ -1247,6 +1475,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	  if ( isOSlep(*this_lep) ) {
 	    
 	    // retrieve lep0 : the OS lepton
+	    //
 	    lep0 = this_lep;
 	    continue;
 	    
@@ -1258,11 +1487,13 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
  	    } 	
 	    
 	    // retrieve lep1 : the SS lepton with min{ deltaR(lep0) }
+	    //
 	    if ( isClosestSSlep(*this_lep) ) { 
 	      lep1 = this_lep; 
 	      continue; 
 	    }
 	    // retrieve lep2 : the other SS lepton 
+	    //
 	    lep2 = this_lep;
 	  
 	  }	
@@ -1270,12 +1501,14 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	} // close loop over lepton container
 	
 	// just a safety check
+	//
 	if ( !( lep0 && lep1 && lep2 ) ) {
 	  Error("fakeWeightCalculator()", "Trilepton region, but no lep1 and lep2 pointers! Aborting");
 	  return EL::StatusCode::FAILURE;
 	}
 	
 	// set the region
+	//
 	if      (  isTightAcc( *lep1 )    &&   isTightAcc( *lep2 )   ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
 	else if (  isTightAcc( *lep1 )    &&  !(isTightAcc( *lep2 )) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
 	else if (  !(isTightAcc( *lep1 )) &&  isTightAcc( *lep2 )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
@@ -1284,31 +1517,22 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	if ( m_debug ) { Info("fakeWeightCalculator()", "Trilepton 2SS+1OS category. Region (defined by the 2SS leptons) is %s ", region.c_str() ); }
 	
 	// set the properties of the two SS leptons for future convenience
+	//
 	lepA_pt  = lep1->pt();
 	lepA_eta = lep1->eta();
-	if ( lep1->type() == xAOD::Type::Electron ) {
-	  lepA_flavour = 11;
-	} else if ( lep1->type() == xAOD::Type::Muon ) {
-	  lepA_flavour = 13;
-	}
+	if ( lep1->type() == xAOD::Type::Electron )  { lepA_flavour = 11; } 
+	else if ( lep1->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
 	
 	lepB_pt  = lep2->pt();
 	lepB_eta = lep2->eta();
-	if ( lep2->type() == xAOD::Type::Electron ) {
-	  lepB_flavour = 11;
-	} else if ( lep2->type() == xAOD::Type::Muon ) {
-	  lepB_flavour = 13;
-	}	
-  }
-  else
-  {
+	if ( lep2->type() == xAOD::Type::Electron )  { lepB_flavour = 11; } 
+	else if ( lep2->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }	
+  
+  } else  {
     return EL::StatusCode::SUCCESS; //no weights in the other categories
   }
 
-
-  if ( m_debug ) {
-    Info("fakeWeightCalculator()", "Start calculating MM and FF weights... ");
-  }
+  if ( m_debug ) { Info("fakeWeightCalculator()", "Start calculating MM and FF weights... "); }
 
   // *******************************************
   // Now calculating MM real rate and fake rate. 
@@ -1316,32 +1540,31 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   // NB: NO NEED TO CALCULATE FF RATE BECAUSE FF ARE NOW OBTAINED FROM THE MM FOR r1=r2=1
   
   // real and fake rates w/ syst variations
+  //
   std::vector<double> r1, r2, f1, f2;
   double r1up,r1dn, r2up, r2dn, f1up, f1dn, f2up, f2dn;
   
-  if ( lepA_flavour == 11 )
-  {
-  	  r1 = calc_el_weights(lepA_pt, lepA_eta, true, false);  // first bool --> isDataDerived; second bool --> isFakeLep 
-  	  f1 = calc_el_weights(lepA_pt, lepA_eta, true, true);
+  bool isFakeLep(true);
+  
+  if ( lepA_flavour == 11 ) {
+     r1 = calc_weights( m_el_hist_map, lepA_pt, lepA_eta, !isFakeLep, m_n_el_bins_eta, m_n_el_bins_pt_fr, m_n_el_bins_pt_rr, m_el_fr_tot, m_el_rr_tot );  
+     f1 = calc_weights( m_el_hist_map, lepA_pt, lepA_eta, isFakeLep,  m_n_el_bins_eta, m_n_el_bins_pt_fr, m_n_el_bins_pt_rr, m_el_fr_tot, m_el_rr_tot );
+  } else if ( lepA_flavour == 13 ) {
+     r1 = calc_weights( m_mu_hist_map, lepA_pt, lepA_eta, !isFakeLep, m_n_mu_bins_eta, m_n_mu_bins_pt_fr, m_n_mu_bins_pt_rr, m_mu_fr_tot, m_mu_rr_tot );
+     f1 = calc_weights( m_mu_hist_map, lepA_pt, lepA_eta, isFakeLep,  m_n_mu_bins_eta, m_n_mu_bins_pt_fr, m_n_mu_bins_pt_rr, m_mu_fr_tot, m_mu_rr_tot );
   }
-  else if ( lepA_flavour == 13 )
-  {
-  	  r1 = calc_mu_weights(lepA_pt, lepA_eta, true, false);
-  	  f1 = calc_mu_weights(lepA_pt, lepA_eta, true, true);
-  }
-  if ( lepB_flavour == 11 )
-  {
-  	  r2 = calc_el_weights(lepB_pt, lepB_eta, true, false);
-  	  f2 = calc_el_weights(lepB_pt, lepB_eta, true, true);
-  }
-  else if ( lepB_flavour == 13 )
-  {
-  	  r2 = calc_mu_weights(lepB_pt, lepB_eta, true, false);
-  	  f2 = calc_mu_weights(lepB_pt, lepB_eta, true, true);
+  
+  if ( lepB_flavour == 11 ) {
+     r2 = calc_weights( m_el_hist_map, lepB_pt, lepB_eta, !isFakeLep, m_n_el_bins_eta, m_n_el_bins_pt_fr, m_n_el_bins_pt_rr, m_el_fr_tot, m_el_rr_tot );
+     f2 = calc_weights( m_el_hist_map, lepB_pt, lepB_eta, isFakeLep,  m_n_el_bins_eta, m_n_el_bins_pt_fr, m_n_el_bins_pt_rr, m_el_fr_tot, m_el_rr_tot );
+  } else if ( lepB_flavour == 13 ) {
+     r2 = calc_weights( m_mu_hist_map, lepB_pt, lepB_eta, !isFakeLep, m_n_mu_bins_eta, m_n_mu_bins_pt_fr, m_n_mu_bins_pt_rr, m_mu_fr_tot, m_mu_rr_tot );
+     f2 = calc_weights( m_mu_hist_map, lepB_pt, lepB_eta, isFakeLep,  m_n_mu_bins_eta, m_n_mu_bins_pt_fr, m_n_mu_bins_pt_rr, m_mu_fr_tot, m_mu_rr_tot );
   }
     
-  if ( m_debug ) {
-    Info("fakeWeightCalculator()", "Nominal real and fake rates: \n r1 = %f , r2 = %f , f1 = %f , f2 = %f ", r1.at(0), r2.at(0), f1.at(0), f2.at(0) );
+  if ( m_debug ) { 
+    Info("fakeWeightCalculator()", "\n Lepton 1 \n flavour: %i \n pT = %.2f \n eta = %.2f \n ****** \n Nominal real and fake rates: \n r1 = %f , f1 = %f ", lepA_flavour, lepA_pt, lepA_eta,  r1.at(0), f1.at(0) ); 
+    Info("fakeWeightCalculator()", "\n Lepton 2 \n flavour: %i \n pT = %.2f \n eta = %.2f \n ****** \n Nominal real and fake rates: \n r2 = %f , f2 = %f ", lepB_flavour, lepB_pt, lepB_eta,  r2.at(0), f2.at(0) );   
   }
 
   // **********************************************************************************
@@ -1379,75 +1602,77 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   //  when it will be required to calculate the systematic sys_MMrweight_,
   //  it will then shift also MC and this is wrong. 
   //  Not a problem for FF method
+    
+  if ( !m_isMC || m_useMCForTagAndProbe ) {
+  	  
+    // r cannot be 0 and has always to be more than f
+    // WARNING! 
+    // WE SHOULD BE ALSO SURE THAT REAL EFFICIENCY IS ALWAYS < 1 FOR ANY PART OF THE PHASE SPACE. 
+    // YOU COULD HAVE SOME R(PT)*R(ETA)>1 AND THIS CANNOT HAPPEN
+
+    double mm_weight(0.0);
+
+    if ( (r1.at(0) == 0) || (r2.at(0) == 0) || (r1.at(0) <= f1.at(0)) || (r2.at(0) <= f2.at(0)) ) {
+    	// event will be decorated w/ null weight - will basically cancel out this event at plotting
+    	//
+    	if ( m_debug ) {
+	  Warning("fakeWeightCalculator()", "Warning! The Matrix Method cannot be applied in event %llu for run %i because : \n r1 = %f , r2 = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), r1.at(0), r2.at(0),  f1.at(0), f2.at(0), lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+	  Warning("fakeWeightCalculator()", "applying MM weight = 0 ...");
+    	}
+    } else {   
+    	//decorate event w/ calculated MM weight  
+    	//
+    	mm_weight      = calc_final_event_weight( region, f1.at(0), f2.at(0), r1.at(0), r2.at(0) );
+    }
+
+    // decorate with nominal MM weight
+    MMWeightDecor( *eventInfo ).at(0) = mm_weight;
+
+    if ( m_debug ) { Info("fakeWeightCalculator()", "MM final weight = %f ", mm_weight ); }
+
+    if ( mm_weight != 0.0 ) {
+    
+      // decorate event w/ MM weight with systematics
+      //
+      r1up = ( r1.at(1) > 1.0 ) ? 1.0 :  r1.at(1) ;
+      r2up = ( r2.at(1) > 1.0 ) ? 1.0 :  r2.at(1) ;
+      r1dn = r1.at(2);
+      r2dn = r2.at(2);
+
+      f1up = f1.at(1);
+      f2up = f2.at(1);
+      f1dn = ( f1.at(2) < 0.0 ) ? 0.0 :  f1.at(2) ;
+      f2dn = ( f2.at(2) < 0.0 ) ? 0.0 :  f2.at(2) ;
+
+      // rup syst
+      //
+      MMWeightDecor( *eventInfo ).at(1) = ( calc_final_event_weight( region, f1.at(0), f2.at(0), r1up, r2up ) / mm_weight );
+      // fdn syst
+      //
+      MMWeightDecor( *eventInfo ).at(4) = ( calc_final_event_weight( region, f1dn, f2dn, r1.at(0), r2.at(0) ) / mm_weight );
+
+      if ( (r1dn > f1.at(0)) && (r2dn > f2.at(0)) ) {
+        // rdn syst
+        //
+        MMWeightDecor( *eventInfo ).at(2) = ( calc_final_event_weight(region, f1.at(0), f2.at(0), r1dn, r2dn) / mm_weight );
+      } else {
+        if ( m_debug ) {
+	   Warning("fakeWeightCalculator()", "Warning! Systematic MMWeight_rdn cannot be calculated in event %llu for run %i because : \n r1dn = %f , r2dn = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), r1dn, r2dn,  f1.at(0), f2.at(0), lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+        }
+      }
+
+      if ( (r1.at(0) > f1up) && (r2.at(0) > f2up) ) {
+        // fup syst
+        //
+        MMWeightDecor( *eventInfo ).at(3) = ( calc_final_event_weight(region, f1up, f2up, r1.at(0),  r2.at(0)) / mm_weight );
+      } else {
+        if ( m_debug ) {
+	   Warning("fakeWeightCalculator()", "Warning! Systematic MMWeight_fup cannot be calculated in event %llu for run %i because : \n r1 = %f , r2 = %f , f1up = %f , f2up = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), r1.at(0), r2.at(0),  f1up, f2up, lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+        }
+      }
+    }
   
-  bool isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
-  
-  if ( !isMC )
-  {
-  	  // r cannot be 0 and has always to be more than f
-  	  // WARNING! 
-	  // WE SHOULD BE ALSO SURE THAT REAL EFFICIENCY IS ALWAYS < 1 FOR ANY PART OF THE PHASE SPACE. 
-	  // YOU COULD HAVE SOME R(PT)*R(ETA)>1 AND THIS CANNOT HAPPEN
-	  
-	  double mm_weight(0.0);
-	  
-  	  if ( (r1.at(0) == 0) || (r2.at(0) == 0) || (r1.at(0) <= f1.at(0)) || (r2.at(0) <= f2.at(0)) ) {
-	      // event will be decorated w/ null weight - will basically cancel out this event at plotting
-	      if ( m_debug ) {
-		Warning("fakeWeightCalculator()", "Warning! The Matrix Method cannot be applied in event %llu for run %i because : \n r1 = %f , r2 = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), r1.at(0), r2.at(0),  f1.at(0), f2.at(0), lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
-		Warning("fakeWeightCalculator()", "applying MM weight = 0 ...");
-	      }
-	  } else {   
-  	      //decorate event w/ calculated MM weight  
-	      mm_weight      = calc_fake_weight( region, f1.at(0), f2.at(0), r1.at(0), r2.at(0) );
-	  }
-	  
-	  // decorate with nominal MM weight
-	  MMWeightDecor( *eventInfo ).at(0) = mm_weight;
-	  
-          if ( m_debug ) {
-            Info("fakeWeightCalculator()", "MM final weight = %f ", mm_weight );
-          }
-	  
-  	  if ( mm_weight != 0.0 )
-  	  {
-	        // decorate event w/ MM weight with systematics
-	  
-		 r1up = ( r1.at(1) > 1.0 ) ? 1.0 :  r1.at(1) ;
-		 r2up = ( r2.at(1) > 1.0 ) ? 1.0 :  r2.at(1) ;
-  	     	 r1dn = r1.at(2);
-  	     	 r2dn = r2.at(2);
-
-  	     	 f1up = f1.at(1);
-  	     	 f2up = f2.at(1);
-  	     	 f1dn = ( f1.at(2) < 0.0 ) ? 0.0 :  f1.at(2) ;
-  	     	 f2dn = ( f2.at(2) < 0.0 ) ? 0.0 :  f2.at(2) ;
-
-		 // rup syst
-  	     	 MMWeightDecor( *eventInfo ).at(1) = ( calc_fake_weight( region, f1.at(0), f2.at(0), r1up, r2up ) / mm_weight );
-		 // fdn syst
-		 MMWeightDecor( *eventInfo ).at(4) = ( calc_fake_weight( region, f1dn, f2dn, r1.at(0), r2.at(0) ) / mm_weight );
-
-  	     	 if ( (r1dn > f1.at(0)) && (r2dn > f2.at(0)) ) {
-		     // rdn syst
-		     MMWeightDecor( *eventInfo ).at(2) = ( calc_fake_weight(region, f1.at(0), f2.at(0), r1dn, r2dn) / mm_weight );
-		 } else {
-		     if ( m_debug ) {
-		        Warning("fakeWeightCalculator()", "Warning! Systematic MMWeight_rdn cannot be calculated in event %llu for run %i because : \n r1dn = %f , r2dn = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), r1dn, r2dn,  f1.at(0), f2.at(0), lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
-		     }
-		 }
-		 
-  	     	 if ( (r1.at(0) > f1up) && (r2.at(0) > f2up) ) {
-		     // fup syst
-		     MMWeightDecor( *eventInfo ).at(3) = ( calc_fake_weight(region, f1up, f2up, r1.at(0),  r2.at(0)) / mm_weight );
-		 } else {
-		     if ( m_debug ) {
-			Warning("fakeWeightCalculator()", "Warning! Systematic MMWeight_fup cannot be calculated in event %llu for run %i because : \n r1 = %f , r2 = %f , f1up = %f , f2up = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), r1.at(0), r2.at(0),  f1up, f2up, lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
-  	     	     }
-		 }
-	  }
-  	 
-  } // close check on isMC
+  } // close check on m_isMC
     
   // *****************************************
   // The Fake Factor Method: weight the events! 
@@ -1458,330 +1683,210 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   
   double ff_weight(0.0);
   
-  if ( (f1.at(0) == 1.0) || (f2.at(0) == 1.0) )
-  {
-  	  if (m_debug) {
-	    Warning("fakeWeightCalculator()", "Warning! The Fake Factor Method cannot be applied in event %llu for run %i because : \n f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), f1.at(0), f2.at(0), lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
-	    Warning("fakeWeightCalculator()", "applying FF weight = 0 ...");
-	  }
-	  
-	  // decorate event w/ (nominal) null weight
-	  FFWeightDecor( *eventInfo ).at(0) = ff_weight;	      
-  }
-  else
-  {	  
-  	  //decorate event w/ calculated nominal FF weight  
-	  ff_weight            =  calc_fake_weight( region, f1.at(0), f2.at(0) );
-  	  FFWeightDecor( *eventInfo ).at(0) = ff_weight;
-  	  
-  	  if ( ff_weight != 0.0 )
-  	  {
-	        // decorate event w/ FF weight with systematics
-  		
-		f1up = f1.at(1);
-  		f2up = f2.at(1);
-		f1dn = ( f1.at(2) < 0.0 ) ? 0.0 : f1.at(2) ;
-  	  	f2dn = ( f2.at(2) < 0.0 ) ? 0.0 : f2.at(2);
-		
-		// dn syst
-  		FFWeightDecor( *eventInfo ).at(2) = ( calc_fake_weight( region, f1dn, f2dn ) / ff_weight );
-  		  
-  		if ( (f1up < 1) && (f2up < 1)) {
-  		    // up syst
-		    FFWeightDecor( *eventInfo ).at(1) = ( calc_fake_weight( region, f1up, f2up ) / ff_weight );
-  		} else {
-		    Warning("fakeWeightCalculator()", "Warning! Systematic FFWeight_up cannot be calculated in event %llu for run %i because : \n f1up = %f , f2up = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), f1up, f2up, lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
-		}
-	  }
+  if ( (f1.at(0) == 1.0) || (f2.at(0) == 1.0) ) {
+  
+    if (true) {
+      Warning("fakeWeightCalculator()", "Warning! The Fake Factor Method cannot be applied in event %llu for run %i because : \n f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), f1.at(0), f2.at(0), lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+      Warning("fakeWeightCalculator()", "applying FF weight = 0 ...");
+    }
+
+    // decorate event w/ (nominal) null weight
+    //
+    FFWeightDecor( *eventInfo ).at(0) = ff_weight;		
+  
+  } else {	  
+    
+    //decorate event w/ calculated nominal FF weight  
+    //
+    ff_weight		 =  calc_final_event_weight( region, f1.at(0), f2.at(0) );
+    FFWeightDecor( *eventInfo ).at(0) = ff_weight;
+  
+    if ( ff_weight != 0.0 ) {
+      
+      // decorate event w/ FF weight with systematics
+      //
+      f1up = f1.at(1);
+      f2up = f2.at(1);
+      f1dn = ( f1.at(2) < 0.0 ) ? 0.0 : f1.at(2) ;
+      f2dn = ( f2.at(2) < 0.0 ) ? 0.0 : f2.at(2);
+
+      // dn syst
+      //
+      FFWeightDecor( *eventInfo ).at(2) = ( calc_final_event_weight( region, f1dn, f2dn ) / ff_weight );
+        
+      if ( (f1up < 1) && (f2up < 1)) {
+        // up syst
+        //
+        FFWeightDecor( *eventInfo ).at(1) = ( calc_final_event_weight( region, f1up, f2up ) / ff_weight );
+      } else {
+        Warning("fakeWeightCalculator()", "Warning! Systematic FFWeight_up cannot be calculated in event %llu for run %i because : \n f1up = %f , f2up = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), f1up, f2up, lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+      }
+    
+    }
   }
 
-  if ( m_debug ) {
-    Info("fakeWeightCalculator()", "FF final weight = %f ", ff_weight );
-  }
+  if ( m_debug ) { Info("fakeWeightCalculator()", "FF final weight = %f ", ff_weight ); }
 
   return EL::StatusCode::SUCCESS;
 
 }
 
-double  HTopMultilepAnalysis :: scaleFactorToRate( double val )
+double  HTopMultilepAnalysis :: scaleRateToFactor( double rate )
 {
-  if ( val < 0 ) val = 0.0;
-  return (val /(val+1) );
+  if ( rate < 0 ) { rate = 0.0; }
+  
+  double factor = ( rate /(rate+1.0) );
+  
+  return factor;
 }
 
-std::vector<double>  HTopMultilepAnalysis :: calc_el_weights( float pt, float eta, bool isDataDerived, bool isFakeLep )
+std::vector<double>  HTopMultilepAnalysis :: calc_weights( std::map< std::string, TH1D* > &histograms, 
+							   float pt, 
+							   float eta, 
+							   bool isFakeLep, 
+							   int n_bins_eta,
+							   int n_bins_pt_fr,
+							   int n_bins_pt_rr,
+							   float fr_tot,
+							   float rr_tot
+							 )
 {
   
-  // as a first thing, convert pT in GeV!
+  // Read the real/fake rates from input histograms
+  //
+  // Will eventually convert these to real/fake FACTORS
+  
+  // As a first thing, convert pT in GeV!
+  //
   pt = pt/1e3;
-  
-  int n_bins_pt_r(14);
-  int n_bins_pt_f(6);
-  int n_bins_eta(8);
-  float bins_pt_r[] = { 10,15,20,25,30,35,40,45,50,55,60,70,80,90,2000 };
-  float bins_pt_f[] = { 10,15,20,25,35,50,2000 };
-  float bins_eta[]  = {  0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 5 };
-
-  // FIXME: for now, manually plug in Francesco's Run1 rates
-
-  // THESE REAL/FAKE RATES ARE TAKEN FROM THE EMU, EE CHANNELS COMBINED TOGETHER
-  const float el_ff_tot       = 0.077;
-  const float el_ff_pt[]      = { 0.128, 0.096, 0.058, 0.0005, 0.0005, 0.0005 }; //the 0.0005 value are set by hand because the 3 digit rounding of the factor gives 0 which means that the vaule is smaller than 0.0005. So the upper value 0.0005 is used
-  const float el_ff_pt_err[]  = { 0.012, 0.018, 0.026, 0.029, 0.057, 0.116 };
-  const float el_ff_eta[]     = { 0.072, 0.066, 0.081, 0.065, 0.0, 0.118, 0.174, 0.103 };
-  const float el_ff_eta_err[] = { 0.015, 0.02, 0.019, 0.022, 0.044, 0.031, 0.054, 0.058 };
-
-  const float el_rf_tot       = 4.146;
-  const float el_rf_pt[]      = { 1.095, 1.808, 2.634, 3.152, 4.086, 4.511, 4.991, 5.744, 6.822, 8.374, 8.781, 9.455, 13.333, 16.324 };
-  const float el_rf_pt_err[]  = { 0.027, 0.043, 0.064, 0.074, 0.103, 0.121, 0.146, 0.186, 0.257, 0.371, 0.328, 0.448, 0.916, 0.797 };
-  const float el_rf_eta[]     = { 4.232, 4.656, 4.02, 3.326, 2.218, 3.993, 5.329, 4.343 };
-  const float el_rf_eta_err[] = { 0.058, 0.089, 0.079, 0.072, 0.232, 0.086, 0.201, 0.201 };
-  
-  // real rates derived from MC only
-  const float el_rfmc_tot       = 5.154;
-  const float el_rfmc_pt[]      = { 1.897, 2.462, 3.137, 3.926, 4.765, 5.453, 6.047, 6.67, 7.965, 8.498, 10.205, 11.451, 14.468, 18.656 };
-  const float el_rfmc_pt_err[]  = { 0.041, 0.043, 0.054, 0.066, 0.084, 0.122, 0.137, 0.164, 0.201, 0.245, 0.247, 0.34, 0.592, 0.427 };
-  const float el_rfmc_eta[]     = { 5.617, 6.056, 4.953, 4.027, 2.999, 4.334, 6.239, 5.406 };
-  const float el_rfmc_eta_err[] = { 0.058, 0.09, 0.074, 0.06, 0.209, 0.065, 0.2, 0.218 };
-  
-  /*
-  //THESE FAKE FACTORS ARE TAKEN FROM THE EMU ONLY!!!
-    const double el_ff_tot = 0.083;
-  //THESE FAKE FACTORS ARE TAKEN FROM THE EE ONLY!!!
-    const double el_ff_tot = 0.073;
-  */
-
+ 	
   std::vector<double> weights(3,0.0); //initialized with zeroes
   
   weights.at(0) = 1.0;
-  double error;
-  
-  for(int e = 0; e < n_bins_eta; e++)
-  {
-     if ( ( fabs(eta) >= bins_eta[e] ) && ( fabs(eta) < bins_eta[e+1] ) )
-     {
-     	if (isFakeLep)
-     	{
-     	   for(int p = 0; p < n_bins_pt_f; p++)
-	   {
-     	     if ( ( pt >= bins_pt_f[p] ) && ( pt<bins_pt_f[p+1] ) )
-     	     {
-     	       // these now calculating are still ScaleFactors
-     	       weights.at(0) = ( el_ff_pt[p] * el_ff_eta[e] / el_ff_tot );
-     	       error         = sqrt( (el_ff_pt[p]*el_ff_eta_err[e])*(el_ff_pt[p]*el_ff_eta_err[e]) + (el_ff_pt_err[p]*el_ff_eta[e])*(el_ff_pt_err[p]*el_ff_eta[e]) );
-     	       // up syst
-     	       weights.at(1) = ( el_ff_pt[p] * el_ff_eta[e] + error ) / el_ff_tot;
-     	       // down syst
-     	       if (el_ff_pt[p]*el_ff_eta[e] - error > 0) {
-     	   	  weights.at(2) = ( el_ff_pt[p] * el_ff_eta[e] - error ) / el_ff_tot;
-     	       } else {
-     	   	  weights.at(2) = 0.0;
-	       }	     
-     	     }
-	   } // close loop on pT bins: fake lepton   
-     	}
-     	else
-     	{
-     	   for(int p = 0; p < n_bins_pt_r; p++)
-	   {
-     	     if ( ( pt >= bins_pt_r[p] ) && ( pt < bins_pt_r[p+1] ) )
-     	     {
-     	   	 if (isDataDerived)
-     	   	 {
-     	   	    //these now calculating are still ScaleFactors
-     	   	    weights.at(0) = ( el_rf_pt[p] * el_rf_eta[e] / el_rf_tot );
-     	   	    error	  = sqrt( (el_rf_pt[p]*el_rf_eta_err[e])*(el_rf_pt[p]*el_rf_eta_err[e]) + (el_rf_pt_err[p]*el_rf_eta[e])*(el_rf_pt_err[p]*el_rf_eta[e]) );
-     	   	    // up syst
-     	   	    weights.at(1) = ( el_rf_pt[p] * el_rf_eta[e] + error ) / el_rf_tot;
-     	   	    //down
-     	   	    if (el_rf_pt[p]*el_rf_eta[e] - error > 0) {
-     	   	       weights.at(2) = ( el_rf_pt[p] * el_rf_eta[e] - error ) / el_rf_tot;
-     	   	    } else {
-     	   	       weights.at(2) = 0.0;						    
-     	   	    }
-		 }
-     	   	 else
-     	   	 {
-     	   	    //these now calculating are still ScaleFactors
-     	   	    weights.at(0) = ( el_rfmc_pt[p] * el_rfmc_eta[e] / el_rfmc_tot );
-     	   	    error         = sqrt( (el_rfmc_pt[p]*el_rfmc_eta_err[e])*(el_rfmc_pt[p]*el_rfmc_eta_err[e]) + (el_rfmc_pt_err[p]*el_rfmc_eta[e])*(el_rfmc_pt_err[p]*el_rfmc_eta[e]) );
-     	   	    // up syst
-     	   	    weights.at(1) = ( el_rfmc_pt[p] * el_rfmc_eta[e] + error ) / el_rfmc_tot;
-     	   	    // down syst
-     	   	    if (el_rfmc_pt[p]*el_rfmc_eta[e] - error > 0) {
-     	   	       weights.at(2) = ( el_rfmc_pt[p] * el_rfmc_eta[e] - error ) / el_rfmc_tot;
-     	   	    } else {
-     	   	       weights.at(2) = 0.0;
-     	   	    }
-		 }
-     	     } 
-	   } // close loop on pT bins: real lepton				   
-     	}
-     }
-  } // close loop on eta bins
-  	  
-  //Now converting to the rates for the MM
-  if ( m_debug ) {
-    Info("calc_el_weights()", " Electron SF = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) );
-  }
-  weights.at(0)=scaleFactorToRate(weights.at(0));
-  weights.at(1)=scaleFactorToRate(weights.at(1));
-  weights.at(2)=scaleFactorToRate(weights.at(2));
-  
-  if ( m_debug ) {
-    Info("calc_el_weights()", " Electron MM weight = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) );
-  }
-  
-  return weights;
-}  
-
-std::vector<double>  HTopMultilepAnalysis :: calc_mu_weights( float pt, float eta, bool isDataDerived, bool isFakeLep )
-{  
-  
-  // as a first thing, convert pT in GeV!
-  pt = pt/1e3;
-
-  int n_bins_pt_r(14);
-  int n_bins_pt_f(6);
-  int n_bins_eta(8);
-  float bins_pt_r[] = { 10,15,20,25,30,35,40,45,50,55,60,70,80,90,2000 };
-  float bins_pt_f[] = { 10,15,20,25,35,50,2000 };
-  float bins_eta[]  = {  0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 5 };
-
-  // FIXME: for now, manually plug in Francesco's Run1 rates
-
-  // THESE REAL/FAKE RATES ARE TAKEN FROM THE EMU, MUMU CHANNELS COMBINED TOGETHER
-  const float mu_ff_tot       = 0.095;
-  const float mu_ff_pt[]      = { 0.108, 0.067, 0.028, 0.06, 0.006, 0.0005 }; //the 0.0005 value are set by hand because the 3 digit rounding of the factor gives 0 which means that the vaule is smaller than 0.0005. So the upper value 0.0005 is used
-  const float mu_ff_pt_err[]  = { 0.008, 0.01, 0.01, 0.018, 0.03, 0.109 }; 
-  const float mu_ff_eta[]     = { 0.069, 0.063, 0.056, 0.073, 0.067, 0.067, 0.155, 0.167 };
-  const float mu_ff_eta_err[] = { 0.01, 0.012, 0.013, 0.017, 0.02, 0.011, 0.028, 0.031 };
-  
-  const float mu_rf_tot       = 7.837;
-  const float mu_rf_pt[]      = { 1.448, 2.697, 4.356, 6.815, 8.906, 12.391, 15.068, 18.331, 23.531, 27.884, 30.334, 32.93, 34.282, 43.026 };
-  const float mu_rf_pt_err[]  = { 0.031, 0.061, 0.103, 0.181, 0.264, 0.429, 0.591, 0.848, 1.331, 1.859, 1.732, 2.458, 3.316, 3.117 };
-  const float mu_rf_eta[]     = { 7.19, 7.424, 8.202, 8.334, 8.121, 8.298, 8.438, 9.143 };
-  const float mu_rf_eta_err[] = { 0.116, 0.155, 0.188, 0.225, 0.297, 0.192, 0.322, 0.41 };
-  
-  //real from MC only
-  const float mu_rfmc_tot       = 10.34;
-  const float mu_rfmc_pt[]      = { 2.936, 4.259, 5.719, 8.204, 10.501, 13.668, 17.139, 21.019, 23.871, 27.838, 31.526, 33.667, 37.315, 46.951 };
-  const float mu_rfmc_pt_err[]  = { 0.059, 0.074, 0.102, 0.164, 0.26, 0.375, 0.519, 0.626, 0.735, 0.887, 0.907, 1.971, 1.547, 1.32 };
-  const float mu_rfmc_eta[]     = { 9.201, 9.217, 11.054, 10.85, 11.636, 11.473, 11.565, 14.412 };
-  const float mu_rfmc_eta_err[] = { 0.112, 0.139, 0.184, 0.231, 0.352, 0.23, 0.484, 0.558 };
-  			   
-  /*
-  //THESE FAKE FACTORS ARE TAKEN FROM THE EMU ONLY!!!
-  const double mu_ff_tot = 0.08;
-  //THESE FAKE FACTORS ARE TAKEN FROM THE MUMU ONLY!!!
-  const double mu_ff_tot = 0.107;
-  */
+  double error(0.0);
  
-  std::vector<double> weights(3,0.0); //initialized with zeroes
-  
-  weights.at(0) = 1.0;
-  double error;
-  
-  for(int e = 0; e < n_bins_eta; e++)
-  {
-     if ( ( fabs(eta) >= bins_eta[e] ) && ( fabs(eta) < bins_eta[e+1] ) )
-     {
-     	if (isFakeLep)
-     	{
-     	   for(int p = 0; p < n_bins_pt_f; p++)
-	   {
-     	     if ( ( pt >= bins_pt_f[p] ) && ( pt<bins_pt_f[p+1] ) )
-     	     {
-     	       // these now calculating are still ScaleFactors
-     	       weights.at(0) = ( mu_ff_pt[p] * mu_ff_eta[e] / mu_ff_tot );
-     	       error         = sqrt( (mu_ff_pt[p]*mu_ff_eta_err[e])*(mu_ff_pt[p]*mu_ff_eta_err[e]) + (mu_ff_pt_err[p]*mu_ff_eta[e])*(mu_ff_pt_err[p]*mu_ff_eta[e]) );
-     	       // up syst
-     	       weights.at(1) = ( mu_ff_pt[p] * mu_ff_eta[e] + error ) / mu_ff_tot;
-     	       // down syst
-     	       if (mu_ff_pt[p]*mu_ff_eta[e] - error > 0) {
-     	   	  weights.at(2) = ( mu_ff_pt[p] * mu_ff_eta[e] - error ) / mu_ff_tot;
-     	       } else {
-     	   	  weights.at(2) = 0.0;
-	       }	     
-     	     }
-	   } // close loop on pT bins: fake lepton   
-     	}
-     	else
-     	{
-     	   for(int p = 0; p < n_bins_pt_r; p++)
-	   {
-     	     if ( ( pt >= bins_pt_r[p] ) && ( pt < bins_pt_r[p+1] ) )
-     	     {
-     	   	 if (isDataDerived)
-     	   	 {
-     	   	    //these now calculating are still ScaleFactors
-     	   	    weights.at(0) = ( mu_rf_pt[p] * mu_rf_eta[e] / mu_rf_tot );
-     	   	    error	  = sqrt( (mu_rf_pt[p]*mu_rf_eta_err[e])*(mu_rf_pt[p]*mu_rf_eta_err[e]) + (mu_rf_pt_err[p]*mu_rf_eta[e])*(mu_rf_pt_err[p]*mu_rf_eta[e]) );
-     	   	    // up syst
-     	   	    weights.at(1) = ( mu_rf_pt[p] * mu_rf_eta[e] + error ) / mu_rf_tot;
-     	   	    //down
-     	   	    if (mu_rf_pt[p]*mu_rf_eta[e] - error > 0) {
-     	   	       weights.at(2) = ( mu_rf_pt[p] * mu_rf_eta[e] - error ) / mu_rf_tot;
-     	   	    } else {
-     	   	       weights.at(2) = 0.0;						    
-     	   	    }
-		 }
-     	   	 else
-     	   	 {
-     	   	    //these now calculating are still ScaleFactors
-     	   	    weights.at(0) = ( mu_rfmc_pt[p] * mu_rfmc_eta[e] / mu_rfmc_tot );
-     	   	    error         = sqrt( (mu_rfmc_pt[p]*mu_rfmc_eta_err[e])*(mu_rfmc_pt[p]*mu_rfmc_eta_err[e]) + (mu_rfmc_pt_err[p]*mu_rfmc_eta[e])*(mu_rfmc_pt_err[p]*mu_rfmc_eta[e]) );
-     	   	    // up syst
-     	   	    weights.at(1) = ( mu_rfmc_pt[p] * mu_rfmc_eta[e] + error ) / mu_rfmc_tot;
-     	   	    // down syst
-     	   	    if (mu_rfmc_pt[p]*mu_rfmc_eta[e] - error > 0) {
-     	   	       weights.at(2) = ( mu_rfmc_pt[p] * mu_rfmc_eta[e] - error ) / mu_rfmc_tot;
-     	   	    } else {
-     	   	       weights.at(2) = 0.0;
-     	   	    }
-		 }
-     	     } 
-	   } // close loop on pT bins: real lepton				   
-     	}
-     }
+  // loop over number of eta bins
+  // do not consider underflow, i.e. 0th bin
+  //
+  for ( int e = 1; e <= n_bins_eta; e++ ) {     
+     
+    // check whether the eta under question is in *this* eta range  
+    // 
+    if ( ( fabs(eta) >= (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e) ) && ( fabs(eta) < (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) ) ) {
+
+      // case 1) : lepton is fake: choose correct pt histogram
+      //
+      if ( isFakeLep ) {
+	   
+	// loop over number of pt bins
+        // do not consider underflow, i.e. 0th bin
+        //   
+        for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
+	
+     	  if ( ( pt >= (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
+     	    
+	    // combine eta and pt rates
+	    //
+	    double fr_pt  = (histograms.find("pt_fr")->second)->GetBinContent(p); 
+	    double fr_eta = (histograms.find("eta_fr")->second)->GetBinContent(e); 
+	    
+	    double fr_pt_err  = (histograms.find("pt_fr")->second)->GetBinError(p); 
+	    double fr_eta_err = (histograms.find("eta_fr")->second)->GetBinError(e);	 
+            
+	    // nominal
+	    //	    
+     	    weights.at(0) = ( fr_pt * fr_eta ) / fr_tot;
+     	    error	  = sqrt( (fr_pt_err*fr_eta_err)*(fr_pt*fr_eta_err) + (fr_pt_err*fr_eta)*(fr_pt_err*fr_eta) );
+     	    
+	    // up syst
+	    //
+     	    weights.at(1) = ( (fr_pt * fr_eta) + error ) / fr_tot;
+	    
+     	    // down syst
+     	    //
+	    if ( (fr_pt * fr_eta) - error > 0 ) { weights.at(2) = ( (fr_pt * fr_eta) - error ) / fr_tot;} 
+	    else                                { weights.at(2) = 0.0; }
+	    		  
+     	  }
+	  
+	} // close loop on pT bins: fake lepton 
+	  
+      // lepton is real: choose correct pt histogram
+      //
+      }	else {
+	
+	// loop over number of pt bins
+        // do not consider underflow, i.e. 0th bin
+        //      
+        for ( int p = 1; p <= n_bins_pt_rr; p++ ) {
+
+     	  if ( ( pt >= (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
+     	    
+
+	    // combine eta and pt rates
+	    //     	 
+	    double rr_pt  = (histograms.find("pt_rr")->second)->GetBinContent(p); 
+	    double rr_eta = (histograms.find("eta_rr")->second)->GetBinContent(e); 
+	    
+	    double rr_pt_err  = (histograms.find("pt_rr")->second)->GetBinError(p); 
+	    double rr_eta_err = (histograms.find("eta_rr")->second)->GetBinError(e);		 
+	    
+	    // nominal
+	    //   
+	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
+     	    error	  = sqrt( (rr_pt*rr_eta_err)*(rr_pt*rr_eta_err) + (rr_pt_err*rr_eta)*(rr_pt_err*rr_eta) );
+	    
+     	    // up syst
+	    //
+     	    weights.at(1) = ( (rr_pt * rr_eta) + error ) / rr_tot;
+     	    
+	    // down syst
+	    //
+     	    if ( (rr_pt * rr_eta) - error > 0 ) { weights.at(2) = ( (rr_pt * rr_eta) - error ) / rr_tot; } 
+	    else                                { weights.at(2) = 0.0; }
+
+     	  } 
+        } // close loop on pT bins: real lepton				   
+      
+      } // close check isFakeLep
+      
+    } // close check on eta bin
+    
   } // close loop on eta bins
-  	  
-  //Now converting to the rates for the MM
-  if ( m_debug ) {
-    Info("calc_mu_weights()", " Muon SF = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) );
-  }
-  weights.at(0)=scaleFactorToRate(weights.at(0));
-  weights.at(1)=scaleFactorToRate(weights.at(1));
-  weights.at(2)=scaleFactorToRate(weights.at(2));
   
-  if ( m_debug ) {
-    Info("calc_mu_weights()", " Muon MM weight = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) );
-  }
+  // Now converting rates to the factors for the MM/FF
+  //
+  if ( m_debug ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  
+  weights.at(0) = scaleRateToFactor(weights.at(0));
+  weights.at(1) = scaleRateToFactor(weights.at(1));
+  weights.at(2) = scaleRateToFactor(weights.at(2));
+  
+  if ( m_debug ) { Info("calc_weights()", "MM/FF factor = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
   
   return weights;
-
 }  
 
 
-double HTopMultilepAnalysis :: calc_fake_weight( std::string region, double f1, double f2, double r1, double r2 )
+// This function saves the final MM/FF event weight, depending on the event type (TT,TL...) 
+//
+// The Fake Factor Method weight is obtained under the hypothesis
+// r1=1 and r2=1 
+// So for the FF Method, you will need to pass just region, f1 and f2 (NB: make sure they are different from 0 and from 1!)
+// For the MM, you will need to pass also r1 and r2
+//
+double HTopMultilepAnalysis :: calc_final_event_weight( std::string region, double f1, double f2, double r1, double r2 )
 {
-   //The Fake Factor Method weight is obtained under the hypothesis
-   // r1=1 and r2=1 
-   // So for the FF Method, you will need to pass just region, f1 and f2 (NB: make sure they are different from 0 and from 1!)
-   // For the MM, you will need to pass also r1 and r2
-   // region is defined as one between "TT", "TL", "LT", "LL"
 
    double weight = 1.0; 
    double alpha  = 1.0 / ( (r1-f1) * (r2-f2) );
    
-   if      (region=="TT") { weight = 1 - ( r1 * r2 * (1-f1) * (1-f2) * alpha ); }
-   else if (region=="TL") { weight = r1 * r2 * f2 * (1-f1) * alpha; }
-   else if (region=="LT") { weight = r1 * r2 * f1 * (1-f2) * alpha; }
-   else if (region=="LL") { weight = -1 * r1 * r2 * f1 * f2 * alpha; }
+   if      ( region=="TT" ) { weight = 1 - ( r1 * r2 * (1-f1) * (1-f2) * alpha ); }
+   else if ( region=="TL" ) { weight = r1 * r2 * f2 * (1-f1) * alpha;  }
+   else if ( region=="LT" ) { weight = r1 * r2 * f1 * (1-f2) * alpha;  }
+   else if ( region=="LL" ) { weight = -1 * r1 * r2 * f1 * f2 * alpha; }
   
-   if ( m_debug ) {
-     Info("calc_fake_weight()", "In region %s : \n weight = %.15f , alpha = %.15f ", region.c_str(), weight, alpha);
-   }
+   if ( m_debug ) { Info("calc_final_event_weight()", "In region %s : \n weight = %.15f , alpha = %.15f ", region.c_str(), weight, alpha); }
 
    return weight;
 }

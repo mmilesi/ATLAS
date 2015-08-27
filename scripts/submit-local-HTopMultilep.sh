@@ -4,7 +4,7 @@
 #
 # ttbar non all had - 410000
 #
-test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/MC15/ --inDSName mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.AOD.e3698_s2608_s2183_r6630_r6264 --outDir out_xAOD_HTopMultilep_mc --maxEvents -1
+test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/MC15/ --inDSName mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.AOD.e3698_s2608_s2183_r6630_r6264 --outDir out_xAOD_HTopMultilep_mc --maxEvents 1000
 #
 # Z-->mumu PowhegPythia inclusive - 361107
 #

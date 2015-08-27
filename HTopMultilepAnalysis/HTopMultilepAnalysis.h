@@ -50,6 +50,7 @@ public:
 
 private:
 
+  bool m_isMC;            //!
   bool m_isDerivation;    //!
 
   int  m_eventCounter;    //!
@@ -69,6 +70,22 @@ private:
   // tools
   TauAnalysisTools::TauSelectionTool    *m_TauSelTool; //!
 
+  /* MM/FF method stuff */
+  
+  std::map< std::string, TH1D* > m_el_hist_map; //!
+  std::map< std::string, TH1D* > m_mu_hist_map; //!
+  
+  int m_n_el_bins_eta;        //!
+  int m_n_el_bins_pt_fr;      //!
+  int m_n_el_bins_pt_rr;      //!
+  int m_n_mu_bins_eta;        //!
+  int m_n_mu_bins_pt_fr;      //!
+  int m_n_mu_bins_pt_rr;      //!  
+  float m_el_rr_tot;	      //!
+  float m_el_fr_tot;	      //! 
+  float m_mu_rr_tot;	      //!
+  float m_mu_fr_tot;	      //!    
+  
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
   // node (done by the //!)
@@ -96,10 +113,18 @@ public:
   
   virtual EL::StatusCode addChannelDecorations( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
   virtual EL::StatusCode fakeWeightCalculator ( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
-  std::vector<double> calc_el_weights( float pt, float eta, bool isDataDerived=true, bool isFakeLep=true );  /* NB: internally converts MeV into GeV --> pass pT in MeV!!! */
-  std::vector<double> calc_mu_weights( float pt, float eta, bool isDataDerived=true, bool isFakeLep=true );  /* NB: internally converts MeV into GeV --> pass pT in MeV!!! */
-  double calc_fake_weight( std::string region, double f1, double f2, double r1 = 1.0, double r2 = 1.0 );
-  double scaleFactorToRate( double val );
+  std::vector<double>  calc_weights( std::map< std::string, TH1D* > &histograms, 
+				     float pt,    /* NB: internally converts MeV into GeV --> pass pT in MeV!!! */                        
+				     float eta, 
+				     bool isFakeLep, 
+				     int n_bins_eta,
+				     int n_bins_pt_fr,
+				     int n_bins_pt_rr,
+				     float fr_tot,
+				     float rr_tot
+			            );  
+  double calc_final_event_weight( std::string region, double f1, double f2, double r1 = 1.0, double r2 = 1.0 );
+  double scaleRateToFactor( double rate );
 
   // this is needed to distribute the algorithm to the workers
   ClassDef(HTopMultilepAnalysis, 1);
