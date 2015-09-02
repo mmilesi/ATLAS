@@ -1796,7 +1796,11 @@ std::vector<double>  HTopMultilepAnalysis :: calc_weights( std::map< std::string
 	    // nominal
 	    //	    
      	    weights.at(0) = ( fr_pt * fr_eta ) / fr_tot;
-     	    error	  = sqrt( (fr_pt_err*fr_eta_err)*(fr_pt*fr_eta_err) + (fr_pt_err*fr_eta)*(fr_pt_err*fr_eta) );
+	    
+	    // (assuming  fr_pt,fr_eta are independent) this is the error on the product
+	    // ( the constant factor at denominator will be put back later in the def of weight...
+	    //
+	    error	  = sqrt( (fr_eta*fr_pt_err)*(fr_eta*fr_pt_err) + (fr_pt*fr_eta_err)*(fr_pt*fr_eta_err) );
      	    
 	    // up syst
 	    //
@@ -1834,7 +1838,11 @@ std::vector<double>  HTopMultilepAnalysis :: calc_weights( std::map< std::string
 	    // nominal
 	    //   
 	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
-     	    error	  = sqrt( (rr_pt*rr_eta_err)*(rr_pt*rr_eta_err) + (rr_pt_err*rr_eta)*(rr_pt_err*rr_eta) );
+
+	    // (assuming  rr_pt,rr_eta are independent) this is the error on the product
+	    // ( the constant factor at denominator will be put back in the def of weight...
+	    //
+	    error	  = sqrt( (rr_eta*rr_pt_err)*(rr_eta*rr_pt_err) + (rr_pt*rr_eta_err)*(rr_pt*rr_eta_err) );
 	    
      	    // up syst
 	    //
