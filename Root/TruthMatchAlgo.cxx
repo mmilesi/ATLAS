@@ -547,7 +547,7 @@ EL::StatusCode TruthMatchAlgo ::  checkChargeFlip ( const xAOD::IParticle* recoP
   //   AND
   // -) the primitve origin of the lepton is not ISR/FSR...  
   // 
-  if ( ( reco_norm_charge * truth_norm_charge ) < 0 && ( !m_isDerivation && ancestor_info.second != 39 && ancestor_info.second != 40 ) ) { 
+  if ( ( reco_norm_charge * truth_norm_charge ) < 0 && ( m_isDerivation || ( !m_isDerivation && ancestor_info.second != 39 && ancestor_info.second != 40 ) ) ) { 
     if ( m_debug && !m_isDerivation ) { 
       Info("checkChargeFlip()", "\n\n Primitive TRUTH: \n\n norm charge: %i \n pdgId: %i \n prodVtxBarcode: %i \n status: %i \n isBrem: %i \n type: %d \n origin: %d \n -----------\n RECO: \n norm charge: %i \n\n --> It's a charge flip! \n\n ************************************", truth_norm_charge, primitiveTruth->pdgId(), primitiveTruth->prodVtx()->barcode(), primitiveTruth->status(), isBrem, ancestor_info.first, ancestor_info.second, reco_norm_charge ); 
     }
