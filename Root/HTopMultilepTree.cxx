@@ -65,7 +65,7 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   if ( m_debug ) { Info("AddMuonsUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
 
   // muon variables  
-  m_tree->Branch("muon_isTight",                       &m_muon_isTight); 
+  m_tree->Branch("muon_isTightSelected",               &m_muon_isTight); 
   m_tree->Branch("muon_isTag",                         &m_muon_isTag); 
   m_tree->Branch("muon_isOS",                          &m_muon_isOS);
   m_tree->Branch("muon_isClosestSS",                   &m_muon_isClosestSS);
@@ -92,7 +92,7 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   m_tree->Branch("muon_tag_isIsolated_GradientLoose",  &m_muon_tag_isIsolated_GradientLoose);
   m_tree->Branch("muon_tag_isIsolated_UserDefinedFixEfficiency", &m_muon_tag_isIsolated_UserDefinedFixEfficiency);
   m_tree->Branch("muon_tag_isIsolated_UserDefinedCut",		 &m_muon_tag_isIsolated_UserDefinedCut);
-  m_tree->Branch("muon_tag_isTight",	               &m_muon_tag_isTight);  
+  m_tree->Branch("muon_tag_isTightSelected",	       &m_muon_tag_isTight);  
   m_tree->Branch("muon_tag_isTruthMatchedToMuon",      &m_muon_tag_isTruthMatched); 
   m_tree->Branch("muon_tag_isChFlip",	               &m_muon_tag_isChFlip);  
   m_tree->Branch("muon_tag_isBrem",	               &m_muon_tag_isBrem);  
@@ -116,7 +116,7 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   m_tree->Branch("muon_probe_isIsolated_GradientLoose",  &m_muon_probe_isIsolated_GradientLoose);
   m_tree->Branch("muon_probe_isIsolated_UserDefinedFixEfficiency", &m_muon_probe_isIsolated_UserDefinedFixEfficiency);
   m_tree->Branch("muon_probe_isIsolated_UserDefinedCut",	   &m_muon_probe_isIsolated_UserDefinedCut);  
-  m_tree->Branch("muon_probe_isTight",	               &m_muon_probe_isTight);  
+  m_tree->Branch("muon_probe_isTightSelected",         &m_muon_probe_isTight);  
   m_tree->Branch("muon_probe_isTruthMatchedToMuon",    &m_muon_probe_isTruthMatched); 
   m_tree->Branch("muon_probe_isChFlip",	               &m_muon_probe_isChFlip);  
   m_tree->Branch("muon_probe_isBrem",	               &m_muon_probe_isBrem);  
@@ -139,7 +139,7 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   // electron variables  
   m_tree->Branch("el_calo_eta",                        &m_electron_calo_eta);
   m_tree->Branch("el_crack",                           &m_electron_crack);
-  m_tree->Branch("el_isTight",                         &m_electron_isTight);
+  m_tree->Branch("el_isTightSelected",                 &m_electron_isTight);
   m_tree->Branch("el_isTag",                           &m_electron_isTag); 
   m_tree->Branch("el_isOS",	                       &m_electron_isOS);
   m_tree->Branch("el_isClosestSS",                     &m_electron_isClosestSS);
@@ -172,7 +172,7 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   m_tree->Branch("el_tag_isIsolated_GradientLoose",    &m_electron_tag_isIsolated_GradientLoose);
   m_tree->Branch("el_tag_isIsolated_UserDefinedFixEfficiency",   &m_electron_tag_isIsolated_UserDefinedFixEfficiency);
   m_tree->Branch("el_tag_isIsolated_UserDefinedCut",		 &m_electron_tag_isIsolated_UserDefinedCut);  
-  m_tree->Branch("el_tag_isTight",	               &m_electron_tag_isTight);
+  m_tree->Branch("el_tag_isTightSelected",             &m_electron_tag_isTight);
   m_tree->Branch("el_tag_isTruthMatchedToElectron",    &m_electron_tag_isTruthMatched);
   m_tree->Branch("el_tag_isChFlip",	               &m_electron_tag_isChFlip);
   m_tree->Branch("el_tag_isBrem",	               &m_electron_tag_isBrem);
@@ -202,7 +202,7 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   m_tree->Branch("el_probe_isIsolated_GradientLoose",  &m_electron_probe_isIsolated_GradientLoose);
   m_tree->Branch("el_probe_isIsolated_UserDefinedFixEfficiency", &m_electron_probe_isIsolated_UserDefinedFixEfficiency);
   m_tree->Branch("el_probe_isIsolated_UserDefinedCut",		 &m_electron_probe_isIsolated_UserDefinedCut);  
-  m_tree->Branch("el_probe_isTight",	               &m_electron_probe_isTight);
+  m_tree->Branch("el_probe_isTightSelected",	       &m_electron_probe_isTight);
   m_tree->Branch("el_probe_isTruthMatchedToElectron",  &m_electron_probe_isTruthMatched);
   m_tree->Branch("el_probe_isChFlip",	               &m_electron_probe_isChFlip);
   m_tree->Branch("el_probe_isBrem",	               &m_electron_probe_isBrem);
@@ -236,7 +236,7 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_isIsolated_GradientLoose",       &m_lepton_isIsolated_GradientLoose);
   m_tree->Branch("lep_isIsolated_UserDefinedFixEfficiency",  &m_lepton_isIsolated_UserDefinedFixEfficiency);
   m_tree->Branch("lep_isIsolated_UserDefinedCut",	     &m_lepton_isIsolated_UserDefinedCut);  
-  m_tree->Branch("lep_isTight",                        &m_lepton_isTight); 
+  m_tree->Branch("lep_isTightSelected",                &m_lepton_isTight); 
   m_tree->Branch("lep_isTag",                          &m_lepton_isTag); 
   m_tree->Branch("lep_isOS",	                       &m_lepton_isOS);
   m_tree->Branch("lep_isClosestSS",                    &m_lepton_isClosestSS);
@@ -264,7 +264,7 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_tag_isIsolated_GradientLoose",   &m_lepton_tag_isIsolated_GradientLoose);
   m_tree->Branch("lep_tag_isIsolated_UserDefinedFixEfficiency",  &m_lepton_tag_isIsolated_UserDefinedFixEfficiency);
   m_tree->Branch("lep_tag_isIsolated_UserDefinedCut",		 &m_lepton_tag_isIsolated_UserDefinedCut);  
-  m_tree->Branch("lep_tag_isTight",	               &m_lepton_tag_isTight); 
+  m_tree->Branch("lep_tag_isTightSelected",            &m_lepton_tag_isTight); 
   m_tree->Branch("lep_tag_isTruthMatchedToLepton",     &m_lepton_tag_isTruthMatched); 
   m_tree->Branch("lep_tag_isChFlip",	               &m_lepton_tag_isChFlip);  
   m_tree->Branch("lep_tag_isBrem",	               &m_lepton_tag_isBrem);  
@@ -289,7 +289,7 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_probe_isIsolated_GradientLoose", &m_lepton_probe_isIsolated_GradientLoose);
   m_tree->Branch("lep_probe_isIsolated_UserDefinedFixEfficiency", &m_lepton_probe_isIsolated_UserDefinedFixEfficiency);
   m_tree->Branch("lep_probe_isIsolated_UserDefinedCut",		  &m_lepton_probe_isIsolated_UserDefinedCut);  
-  m_tree->Branch("lep_probe_isTight",	               &m_lepton_probe_isTight); 
+  m_tree->Branch("lep_probe_isTightSelected",          &m_lepton_probe_isTight); 
   m_tree->Branch("lep_probe_isTruthMatchedToLepton",   &m_lepton_probe_isTruthMatched); 
   m_tree->Branch("lep_probe_isChFlip",	               &m_lepton_probe_isChFlip);  
   m_tree->Branch("lep_probe_isBrem",	               &m_lepton_probe_isBrem);  
