@@ -1262,7 +1262,7 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      // mT( lep, MET )	
      //
      const xAOD::MissingETContainer* inMETCont(nullptr);
-     RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inMETCont, "MET_Reference_AntiKt4EMTopo", m_event, m_store, m_verbose), "");
+     RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inMETCont, "RefFinal_HTopMultilep", m_event, m_store, m_verbose), "");
 
      static SG::AuxElement::Decorator<float> mTLep0METDecor("mT_lep0MET");
      static SG::AuxElement::Decorator<float> mTLep1METDecor("mT_lep1MET");

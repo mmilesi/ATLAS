@@ -288,7 +288,7 @@ int main ( int argc, char **argv ) {
     job.algsAdd( muonEffCorr );
     job.algsAdd( electronSelect_selection );
     job.algsAdd( electronEffCorr );
-    //job.algsAdd( met );
+    job.algsAdd( met );
     job.algsAdd( eventSelect );
     job.algsAdd( truthMatching );
     job.algsAdd( analysis );
