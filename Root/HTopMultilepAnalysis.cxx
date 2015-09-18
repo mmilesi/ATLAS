@@ -342,18 +342,18 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   
   // fill a map for later usage
   //
-  m_el_hist_map["eta_rr"] = hist_el_eta_rr;
-  m_el_hist_map["eta_fr"] = hist_el_eta_fr;
-  m_el_hist_map["pt_rr"]  = hist_el_pt_rr;
-  m_el_hist_map["pt_fr"]  = hist_el_pt_fr;  
-  m_el_hist_map["eta_T"]  = hist_el_eta_r_T; 
-  m_el_hist_map["eta_L"]  = hist_el_eta_r_L;
-  m_el_hist_map["pt_T"]   = hist_el_pt_r_T;  
-  m_el_hist_map["pt_L"]   = hist_el_pt_r_L;  
-  m_el_hist_map["eta_T"]  = hist_el_eta_f_T; 
-  m_el_hist_map["eta_L"]  = hist_el_eta_f_L;
-  m_el_hist_map["pt_T"]   = hist_el_pt_f_T;  
-  m_el_hist_map["pt_L"]   = hist_el_pt_f_L;  
+  m_el_hist_map["eta_rr"]   = hist_el_eta_rr;
+  m_el_hist_map["eta_fr"]   = hist_el_eta_fr;
+  m_el_hist_map["pt_rr"]    = hist_el_pt_rr;
+  m_el_hist_map["pt_fr"]    = hist_el_pt_fr;  
+  m_el_hist_map["eta_r_T"]  = hist_el_eta_r_T; 
+  m_el_hist_map["eta_r_L"]  = hist_el_eta_r_L;
+  m_el_hist_map["pt_r_T"]   = hist_el_pt_r_T;  
+  m_el_hist_map["pt_r_L"]   = hist_el_pt_r_L;  
+  m_el_hist_map["eta_f_T"]  = hist_el_eta_f_T; 
+  m_el_hist_map["eta_f_L"]  = hist_el_eta_f_L;
+  m_el_hist_map["pt_f_T"]   = hist_el_pt_f_T;  
+  m_el_hist_map["pt_f_L"]   = hist_el_pt_f_L;  
   
   // eta hist has same binning for r/f
   //
@@ -430,18 +430,18 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   
   // fill a map for later usage
   //
-  m_mu_hist_map["eta_rr"] = hist_mu_eta_rr;
-  m_mu_hist_map["eta_fr"] = hist_mu_eta_fr;
-  m_mu_hist_map["pt_rr"]  = hist_mu_pt_rr;
-  m_mu_hist_map["pt_fr"]  = hist_mu_pt_fr;  
-  m_mu_hist_map["eta_T"]  = hist_mu_eta_r_T; 
-  m_mu_hist_map["eta_L"]  = hist_mu_eta_r_L;
-  m_mu_hist_map["pt_T"]   = hist_mu_pt_r_T;  
-  m_mu_hist_map["pt_L"]   = hist_mu_pt_r_L;  
-  m_mu_hist_map["eta_T"]  = hist_mu_eta_f_T; 
-  m_mu_hist_map["eta_L"]  = hist_mu_eta_f_L;
-  m_mu_hist_map["pt_T"]   = hist_mu_pt_f_T;  
-  m_mu_hist_map["pt_L"]   = hist_mu_pt_f_L;  	
+  m_mu_hist_map["eta_rr"]   = hist_mu_eta_rr;
+  m_mu_hist_map["eta_fr"]   = hist_mu_eta_fr;
+  m_mu_hist_map["pt_rr"]    = hist_mu_pt_rr;
+  m_mu_hist_map["pt_fr"]    = hist_mu_pt_fr;  
+  m_mu_hist_map["eta_r_T"]  = hist_mu_eta_r_T; 
+  m_mu_hist_map["eta_r_L"]  = hist_mu_eta_r_L;
+  m_mu_hist_map["pt_r_T"]   = hist_mu_pt_r_T;  
+  m_mu_hist_map["pt_r_L"]   = hist_mu_pt_r_L;  
+  m_mu_hist_map["eta_f_T"]  = hist_mu_eta_f_T; 
+  m_mu_hist_map["eta_f_L"]  = hist_mu_eta_f_L;
+  m_mu_hist_map["pt_f_T"]   = hist_mu_pt_f_T;  
+  m_mu_hist_map["pt_f_L"]   = hist_mu_pt_f_L;  	
   
   // eta hist has same binning for r/f
   //
