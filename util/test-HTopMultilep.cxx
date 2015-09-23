@@ -220,6 +220,8 @@ int main ( int argc, char **argv ) {
     muonEffCorr->setName("muonEfficiencyCorrector")->setConfig(localDataDir+"Muons/"+"muonEffCorr"+"_"+inDSType+".config")->registerClass(registry, "MuonEfficiencyCorrector");
     ElectronEfficiencyCorrector*  electronEffCorr = new ElectronEfficiencyCorrector();
     electronEffCorr->setName("electronEfficiencyCorrector")->setConfig(localDataDir+"Electrons/"+"electronEffCorr"+"_"+inDSType+".config")->registerClass(registry, "ElectronEfficiencyCorrector");
+    ElectronEfficiencyCorrector*  electronEffCorr_LHTight = new ElectronEfficiencyCorrector();
+    electronEffCorr_LHTight->setName("electronEfficiencyCorrector_LHTight")->setConfig(localDataDir+"Electrons/"+"electronEffCorr_LHTight"+"_"+inDSType+".config")->registerClass(registry, "ElectronEfficiencyCorrector");
     JetSelector* jetSelect_selection              = new JetSelector();
     jetSelect_selection->setName("jetSelect_selection")->setConfig(localDataDir+"Jets/"+"jetSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "JetSelector");
     MuonSelector* muonSelect_preselection         = new MuonSelector();
@@ -240,14 +242,12 @@ int main ( int argc, char **argv ) {
     muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
     electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
-    ///*
+
     OverlapRemover* overlapRemoval                = new OverlapRemover();
     overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
-    //*/
-    ///*
     OverlapRemover_HTopRun1* overlapRemoval_HTopRun1  = new OverlapRemover_HTopRun1();
     overlapRemoval_HTopRun1->setName("overlap_removal_HTopRun1")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
-    //*/
+
     METConstructor* met                           = new METConstructor();
     met->setName("met")->setConfig(localDataDir+"MET/"+"MET_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "METConstructor");
 
@@ -282,12 +282,13 @@ int main ( int argc, char **argv ) {
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix60 );
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix70 );
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix80 );
-    job.algsAdd( overlapRemoval );
-    //job.algsAdd( overlapRemoval_HTopRun1 );
+    //job.algsAdd( overlapRemoval );
+    job.algsAdd( overlapRemoval_HTopRun1 );
     job.algsAdd( muonSelect_selection );
     job.algsAdd( muonEffCorr );
     job.algsAdd( electronSelect_selection );
     job.algsAdd( electronEffCorr );
+    job.algsAdd( electronEffCorr_LHTight );
     job.algsAdd( met );
     job.algsAdd( eventSelect );
     job.algsAdd( truthMatching );
@@ -341,7 +342,7 @@ int main ( int argc, char **argv ) {
 	  if ( decision == "yes" || decision == "y" || decision ==  "Y" )  { check = true; }
 	  else                                                             { cout << "Please choose the ID tag again" << endl; continue; }
 	}
-	
+
 	// *************************** //
 	// Grid job submission options //
 	// *************************** //	

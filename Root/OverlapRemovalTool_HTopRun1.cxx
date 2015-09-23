@@ -124,12 +124,12 @@ StatusCode OverlapRemovalTool_HTopRun1::removeEleEleOverlap(const xAOD::Electron
     if ( isSurvivingObject(electronA) ) {
       for ( const auto electronB : electrons ) {
         if ( isSurvivingObject(electronB) ) { 
-	  if ( deltaR(electronA, electronB) < m_electronElectronDR_Run1 ) {
+	  if ( (electronB != electronA) && deltaR(electronA, electronB) < m_electronElectronDR_Run1 ) {
 	    if ( electronA->pt() < electronB->pt() ) {
-	      ATH_MSG_DEBUG("  Found overlap electron A (pT = " << electronA->pt()*invGeV << ") w/ electron B (pT = " << electronB->pt()*invGeV << ")");
+	      ATH_MSG_DEBUG("  Found overlap electron A (pT = " << electronA->pt()*invGeV << ") w/ electron B (pT = " << electronB->pt()*invGeV << ") - deltaR = " << deltaR(electronA,electronB) << " - removing A..." );
 	      setObjectFail(electronA);
 	    } else {
-	      ATH_MSG_DEBUG("  Found overlap electron B (pT = " << electronB->pt()*invGeV << ") w/ electron A (pT = " << electronA->pt()*invGeV << ")");
+	      ATH_MSG_DEBUG("  Found overlap electron B (pT = " << electronB->pt()*invGeV << ") w/ electron A (pT = " << electronA->pt()*invGeV << ") - deltaR = " << deltaR(electronA,electronB) << " - removing B..." );
 	      setObjectFail(electronB);
 	    }
 	  }

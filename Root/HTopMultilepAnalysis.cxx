@@ -697,7 +697,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   
   if ( nSignalLeptons == 2 && ( nSignalJets >= 1 && nSignalJets <= 3 ) &&  nBjets_MV2c20_Fix70 >= 1 ) {
 
-    if ( m_useMCForTagAndProbe ) { this->defineTagAndProbeRFRateVars_MC( eventInfo, leptonsSorted ); }
+    if ( m_useMCForTagAndProbe && m_isMC ) { this->defineTagAndProbeRFRateVars_MC( eventInfo, leptonsSorted ); }
     else { this->defineTagAndProbeRFRateVars( eventInfo, leptonsSorted ); }
   }
   
@@ -1136,7 +1136,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
         }
       
       } else {
-        Warning("defineTagAndProbeRFRateVars_MC()","SG::AuxElement::Accessor('truthType') is not available for this lepton. Should not happen. Tag will be the leading, probe the subleading" );
+        Warning("defineTagAndProbeRFRateVars_MC()","SG::AuxElement::Accessor('truthType') is not available for this lepton. Should not happen. Tag will be the leading, probe the subleading" ); 
         break;
       }
     
