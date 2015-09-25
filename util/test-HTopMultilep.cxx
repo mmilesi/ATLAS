@@ -228,26 +228,20 @@ int main ( int argc, char **argv ) {
     muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_preselection   = new ElectronSelector();
     electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
-    
     BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix60     = new BJetEfficiencyCorrector();
     bjetEffCorr_BTag_MV2c20_Fix60->setName("bjetEffCor_BTag_MV2c20_Fix60")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix60"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
-    
     BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix70     = new BJetEfficiencyCorrector();
     bjetEffCorr_BTag_MV2c20_Fix70->setName("bjetEffCor_BTag_MV2c20_Fix70")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix70"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
-    
     BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix80     = new BJetEfficiencyCorrector();
     bjetEffCorr_BTag_MV2c20_Fix80->setName("bjetEffCor_BTag_MV2c20_Fix80")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix80"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
-    
     MuonSelector* muonSelect_selection            = new MuonSelector();
     muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
     electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
-
     OverlapRemover* overlapRemoval                = new OverlapRemover();
     overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
     OverlapRemover_HTopRun1* overlapRemoval_HTopRun1  = new OverlapRemover_HTopRun1();
     overlapRemoval_HTopRun1->setName("overlap_removal_HTopRun1")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
-
     METConstructor* met                           = new METConstructor();
     met->setName("met")->setConfig(localDataDir+"MET/"+"MET_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "METConstructor");
 
@@ -330,7 +324,7 @@ int main ( int argc, char **argv ) {
     else if ( grid ) {
         
 	EL::PrunDriver driver;
-
+	///*
 	// force user to check output dataset ID string - recommended is 'HTopMultilep.some_number'
 	cout << "Are you sure to apply the following ID tag to the grid output dataset name?\t" << outDSID << "\n" 
 	     << "recommended name is HTopMultilep.test#SOME_NUMBER# "          << "\n"
@@ -342,7 +336,7 @@ int main ( int argc, char **argv ) {
 	  if ( decision == "yes" || decision == "y" || decision ==  "Y" )  { check = true; }
 	  else                                                             { cout << "Please choose the ID tag again" << endl; continue; }
 	}
-
+	//*/
 	// *************************** //
 	// Grid job submission options //
 	// *************************** //	
