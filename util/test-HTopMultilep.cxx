@@ -232,8 +232,10 @@ int main ( int argc, char **argv ) {
     bjetEffCorr_BTag_MV2c20_Fix60->setName("bjetEffCor_BTag_MV2c20_Fix60")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix60"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
     BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix70     = new BJetEfficiencyCorrector();
     bjetEffCorr_BTag_MV2c20_Fix70->setName("bjetEffCor_BTag_MV2c20_Fix70")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix70"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
-    BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix80     = new BJetEfficiencyCorrector();
-    bjetEffCorr_BTag_MV2c20_Fix80->setName("bjetEffCor_BTag_MV2c20_Fix80")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix80"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
+    BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix77     = new BJetEfficiencyCorrector();
+    bjetEffCorr_BTag_MV2c20_Fix77->setName("bjetEffCor_BTag_MV2c20_Fix77")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix77"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
+    BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix85     = new BJetEfficiencyCorrector();
+    bjetEffCorr_BTag_MV2c20_Fix85->setName("bjetEffCor_BTag_MV2c20_Fix85")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix85"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
     MuonSelector* muonSelect_selection            = new MuonSelector();
     muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
@@ -268,16 +270,17 @@ int main ( int argc, char **argv ) {
     // Add all the algorithms to the EL::job - Here order matters!
     job.algsAdd( baseEventSel );
     job.algsAdd( jetCalib );
+    job.algsAdd( jetSelect_selection );
     job.algsAdd( muonCalib ); 
     job.algsAdd( muonSelect_preselection );
     job.algsAdd( electronCalib );
     job.algsAdd( electronSelect_preselection );
-    job.algsAdd( jetSelect_selection );
-    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix60 );
-    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix70 );
-    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix80 );
     //job.algsAdd( overlapRemoval );
     job.algsAdd( overlapRemoval_HTopRun1 );
+    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix60 );
+    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix70 );
+    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix77 );
+    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix85 );
     job.algsAdd( muonSelect_selection );
     job.algsAdd( muonEffCorr );
     job.algsAdd( electronSelect_selection );
