@@ -59,6 +59,7 @@ test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultilep
 #
 #test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.6.3/ --inDSName mc15_13TeV.361068.Sherpa_CT10_llvv.merge.DAOD_HIGG8D1.e3836_s2608_s2183_r6869_r6282_p2413 --outDir out_DxAOD_HTopMultilep_MC --maxEvents 1000
 #
+#test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/testing/ --inDSName ttbar_2 --outDir test_trigmatching --maxEvents -1
 #######################################
 # --------------------------
 # data15 13TeV DAOD 
