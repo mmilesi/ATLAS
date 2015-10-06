@@ -15,7 +15,7 @@ OverlapRemovalTool_HTopRun1::OverlapRemovalTool_HTopRun1(const std::string& name
   // dR cones for defining overlap
   //
   declareProperty("ElectronMuonDRCone_Run1",     m_electronMuonDR_Run1	   = 0.1);
-  declareProperty("ElectronElectronDRCone_Run1", m_electronElectronDR_Run1 = 0.3);
+  declareProperty("ElectronElectronDRCone_Run1", m_electronElectronDR_Run1 = 0.1);
   declareProperty("JetElectronDRCone_Run1",      m_jetElectronDR_Run1      = 0.3);
   declareProperty("MuonJetDRCone_Run1",          m_muonJetDR_Run1          = 0.04);
   declareProperty("JetTauDRCone_Run1",           m_jetTauDR_Run1           = 0.3);
@@ -109,11 +109,31 @@ StatusCode OverlapRemovalTool_HTopRun1::removeEleMuonOverlap(const xAOD::Electro
 StatusCode OverlapRemovalTool_HTopRun1::removeEleEleOverlap(const xAOD::ElectronContainer& electrons)
 {
  
+  /*
   for ( const auto electron : electrons ) {
     if ( isSurvivingObject(electron) ) {
-      if ( objectOverlaps(electron, electrons, m_electronMuonDR_Run1 ) ) {
+      if ( objectOverlaps(electron, electrons, m_electronElectronDR_Run1 ) ) {
         ATH_MSG_DEBUG("  Found overlap electron w/ electron: " << electron->pt()*invGeV);
         setObjectFail(electron);
+      }
+    }
+  }
+  */
+
+  for ( const auto electronA : electrons ) {
+    if ( isSurvivingObject(electronA) ) {
+      for ( const auto electronB : electrons ) {
+        if ( isSurvivingObject(electronB) ) { 
+	  if ( (electronB != electronA) && deltaR(electronA, electronB) < m_electronElectronDR_Run1 ) {
+	    if ( electronA->pt() < electronB->pt() ) {
+	      ATH_MSG_DEBUG("  Found overlap electron A (pT = " << electronA->pt()*invGeV << ") w/ electron B (pT = " << electronB->pt()*invGeV << ") - deltaR = " << deltaR(electronA,electronB) << " - removing A..." );
+	      setObjectFail(electronA);
+	    } else {
+	      ATH_MSG_DEBUG("  Found overlap electron B (pT = " << electronB->pt()*invGeV << ") w/ electron A (pT = " << electronA->pt()*invGeV << ") - deltaR = " << deltaR(electronA,electronB) << " - removing B..." );
+	      setObjectFail(electronB);
+	    }
+	  }
+	}
       }
     }
   }

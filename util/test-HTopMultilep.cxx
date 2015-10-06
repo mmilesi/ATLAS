@@ -220,34 +220,30 @@ int main ( int argc, char **argv ) {
     muonEffCorr->setName("muonEfficiencyCorrector")->setConfig(localDataDir+"Muons/"+"muonEffCorr"+"_"+inDSType+".config")->registerClass(registry, "MuonEfficiencyCorrector");
     ElectronEfficiencyCorrector*  electronEffCorr = new ElectronEfficiencyCorrector();
     electronEffCorr->setName("electronEfficiencyCorrector")->setConfig(localDataDir+"Electrons/"+"electronEffCorr"+"_"+inDSType+".config")->registerClass(registry, "ElectronEfficiencyCorrector");
+    ElectronEfficiencyCorrector*  electronEffCorr_LHTight = new ElectronEfficiencyCorrector();
+    electronEffCorr_LHTight->setName("electronEfficiencyCorrector_LHTight")->setConfig(localDataDir+"Electrons/"+"electronEffCorr_LHTight"+"_"+inDSType+".config")->registerClass(registry, "ElectronEfficiencyCorrector");
     JetSelector* jetSelect_selection              = new JetSelector();
     jetSelect_selection->setName("jetSelect_selection")->setConfig(localDataDir+"Jets/"+"jetSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "JetSelector");
-    MuonSelector* muonSelect_preselection         = new MuonSelector();
-    muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
-    ElectronSelector* electronSelect_preselection   = new ElectronSelector();
-    electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
-    
+    //MuonSelector* muonSelect_preselection         = new MuonSelector();
+    //muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
+    //ElectronSelector* electronSelect_preselection   = new ElectronSelector();
+    //electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
     BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix60     = new BJetEfficiencyCorrector();
     bjetEffCorr_BTag_MV2c20_Fix60->setName("bjetEffCor_BTag_MV2c20_Fix60")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix60"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
-    
     BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix70     = new BJetEfficiencyCorrector();
     bjetEffCorr_BTag_MV2c20_Fix70->setName("bjetEffCor_BTag_MV2c20_Fix70")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix70"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
-    
-    BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix80     = new BJetEfficiencyCorrector();
-    bjetEffCorr_BTag_MV2c20_Fix80->setName("bjetEffCor_BTag_MV2c20_Fix80")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix80"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
-    
+    BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix77     = new BJetEfficiencyCorrector();
+    bjetEffCorr_BTag_MV2c20_Fix77->setName("bjetEffCor_BTag_MV2c20_Fix77")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix77"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
+    BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix85     = new BJetEfficiencyCorrector();
+    bjetEffCorr_BTag_MV2c20_Fix85->setName("bjetEffCor_BTag_MV2c20_Fix85")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix85"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
     MuonSelector* muonSelect_selection            = new MuonSelector();
     muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
     electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
-    ///*
     OverlapRemover* overlapRemoval                = new OverlapRemover();
     overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
-    //*/
-    ///*
     OverlapRemover_HTopRun1* overlapRemoval_HTopRun1  = new OverlapRemover_HTopRun1();
     overlapRemoval_HTopRun1->setName("overlap_removal_HTopRun1")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
-    //*/
     METConstructor* met                           = new METConstructor();
     met->setName("met")->setConfig(localDataDir+"MET/"+"MET_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "METConstructor");
 
@@ -275,20 +271,22 @@ int main ( int argc, char **argv ) {
     job.algsAdd( baseEventSel );
     job.algsAdd( jetCalib );
     job.algsAdd( muonCalib ); 
-    job.algsAdd( muonSelect_preselection );
+    //job.algsAdd( muonSelect_preselection );
     job.algsAdd( electronCalib );
-    job.algsAdd( electronSelect_preselection );
+    //job.algsAdd( electronSelect_preselection );
     job.algsAdd( jetSelect_selection );
+    job.algsAdd( muonSelect_selection );
+    job.algsAdd( electronSelect_selection );
+    job.algsAdd( met );
+    //job.algsAdd( overlapRemoval );
+    job.algsAdd( overlapRemoval_HTopRun1 );
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix60 );
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix70 );
-    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix80 );
-    job.algsAdd( overlapRemoval );
-    //job.algsAdd( overlapRemoval_HTopRun1 );
-    job.algsAdd( muonSelect_selection );
-    job.algsAdd( muonEffCorr );
-    job.algsAdd( electronSelect_selection );
+    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix77 );
+    job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix85 );
     job.algsAdd( electronEffCorr );
-    //job.algsAdd( met );
+    job.algsAdd( electronEffCorr_LHTight );
+    job.algsAdd( muonEffCorr );
     job.algsAdd( eventSelect );
     job.algsAdd( truthMatching );
     job.algsAdd( analysis );
@@ -329,7 +327,7 @@ int main ( int argc, char **argv ) {
     else if ( grid ) {
         
 	EL::PrunDriver driver;
-
+	///*
 	// force user to check output dataset ID string - recommended is 'HTopMultilep.some_number'
 	cout << "Are you sure to apply the following ID tag to the grid output dataset name?\t" << outDSID << "\n" 
 	     << "recommended name is HTopMultilep.test#SOME_NUMBER# "          << "\n"
@@ -341,7 +339,7 @@ int main ( int argc, char **argv ) {
 	  if ( decision == "yes" || decision == "y" || decision ==  "Y" )  { check = true; }
 	  else                                                             { cout << "Please choose the ID tag again" << endl; continue; }
 	}
-	
+	//*/
 	// *************************** //
 	// Grid job submission options //
 	// *************************** //	
@@ -365,6 +363,7 @@ int main ( int argc, char **argv ) {
         }
 	// driver.options()->setString(EL::Job::optGridExcludedSite, "ANALY_IN2P3-CC-T2,ANALY_IN2P3-CC"); // can list them just by separating grid site names w/ comma 
 	//driver.options()->setString(EL::Job::optGridSite, "UKI-NORTHGRID-MAN-HEP_LOCALGROUPDISK"); // run on this specific grid site 
+	driver.options()->setString(EL::Job::optGridDestSE, "AUSTRALIA-ATLAS_LOCALGROUPDISK");       // dump output on this specific grid site 
 	
 	cout << "outDS: " << driver.options()->castString("nc_outputSampleName") << endl;
 	
@@ -437,24 +436,24 @@ void usage()
 {
     cout<<"USAGE: run [-option value]\n\n"
         <<"options \t [default]:\n\n"
-        <<"-outDir \t (required!)\n"
-        <<"-grid \t [0] (set it to 1 to run on grid)\n"
-        <<"-gridUser \t (required to run on grid)\n"	
-        <<"-lxbatch \t [0] (set it to 1 to run on lxplus batch system)\n"	
-        <<"-inDir \t (required for local run)\n"
-        <<"-inDSName \t (only for local run)\n"
-        <<"-inDSType \t (can be 'xAOD', 'DxAOD-19.1.4.7' etc.)\n"	
-        <<"-inGridDSList \t (.txt file conatining list of datasets)\n"	
-        <<"-outDSID \t (only for grid run)\n"
-        <<"-inFileName \t (only for local run)\n"
-        <<"-inGridDSName \t (only for grid run - wildcards accepted!)\n"
-        <<"-inclusive \t [0]\n"
-        <<"-smearing \t [0]\n"
-        <<"-weight \t [0]\n"
-        <<"-makeHistos \t [0] (set it to 1 if you want to dump histograms)\n"	
-        <<"-debug \t [0]\n"
-	<<"-maxEvents \t [ALL] \t (set number of events to run on - available only for local run)\n"
-	<<"-skipTillEvent \t [NONE] \t (available only for local run)\n"	
+        <<"--outDir \t (required!)\n"
+        <<"--grid \t [0] (set it to 1 to run on grid)\n"
+        <<"--gridUser \t (required to run on grid)\n"	
+        <<"--lxbatch \t [0] (set it to 1 to run on lxplus batch system)\n"	
+        <<"--inDir \t (required for local run)\n"
+        <<"--inDSName \t (only for local run)\n"
+        <<"--inDSType \t (can be 'xAOD', 'DxAOD-19.1.4.7' etc.)\n"	
+        <<"--inGridDSList \t (.txt file conatining list of datasets)\n"	
+        <<"--outDSID \t (only for grid run)\n"
+        <<"--inFileName \t (only for local run)\n"
+        <<"--inGridDSName \t (only for grid run - wildcards accepted!)\n"
+        <<"--inclusive \t [0]\n"
+        <<"--smearing \t [0]\n"
+        <<"--weight \t [0]\n"
+        <<"--makeHistos \t [0] (set it to 1 if you want to dump histograms)\n"	
+        <<"--debug \t [0]\n"
+	<<"--maxEvents \t [ALL] \t (set number of events to run on - available only for local run)\n"
+	<<"--skipTillEvent \t [NONE] \t (available only for local run)\n"	
         <<endl;
 
     return;
