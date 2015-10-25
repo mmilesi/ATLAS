@@ -42,7 +42,11 @@ class HTopMultilepTree : public HelpTreeBase
     int  		m_isTT;
     int  		m_isTL;
     int  		m_isLT;
-    int  		m_isLL; 
+    int  		m_isLL;
+    int  		m_isTelLmu;
+    int  		m_isLelTmu;
+    int  		m_isTmuLel;
+    int  		m_isLmuTel; 
     int                 m_isNonTightEvent;
     int                 m_isProbeElEvent;
     int                 m_isProbeMuEvent;

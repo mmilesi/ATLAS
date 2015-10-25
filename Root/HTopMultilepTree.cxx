@@ -32,6 +32,10 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("isTL",              &m_isTL, "isTL/I"); 
   m_tree->Branch("isLT",              &m_isLT, "isLT/I"); 
   m_tree->Branch("isLL",              &m_isLL, "isLL/I");   
+  m_tree->Branch("isTelLmu",          &m_isTelLmu, "isTelLmu/I"); 
+  m_tree->Branch("isLelTmu",          &m_isLelTmu, "isLelTmu/I"); 
+  m_tree->Branch("isTmuLel",          &m_isTmuLel, "isTmuLel/I"); 
+  m_tree->Branch("isLmuTel",          &m_isLmuTel, "isLmuTel/I"); 
   m_tree->Branch("isNonTightEvent",   &m_isNonTightEvent,    "isNonTightEvent/I");
   m_tree->Branch("isProbeElEvent",    &m_isProbeElEvent,     "isProbeElEvent/I");
   m_tree->Branch("isProbeMuEvent",    &m_isProbeMuEvent,     "isProbeMuEvent/I");
@@ -596,6 +600,10 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
   m_isTL   	         =  ( eventInfo->isAvailable< char >( "isTL" ) )		        ?  eventInfo->auxdecor< char >( "isTL" )		   	 :   -1;
   m_isLT   	         =  ( eventInfo->isAvailable< char >( "isLT" ) )		        ?  eventInfo->auxdecor< char >( "isLT" )		   	 :   -1;
   m_isLL   	         =  ( eventInfo->isAvailable< char >( "isLL" ) )		        ?  eventInfo->auxdecor< char >( "isLL" )		   	 :   -1;
+  m_isTelLmu		 =  ( eventInfo->isAvailable< char >( "isTelLmu" ) )			?  eventInfo->auxdecor< char >( "isTelLmu" )			 :   -1;
+  m_isLelTmu		 =  ( eventInfo->isAvailable< char >( "isLelTmu" ) )			?  eventInfo->auxdecor< char >( "isLelTmu" )			 :   -1;
+  m_isTmuLel		 =  ( eventInfo->isAvailable< char >( "isTmuLel" ) )			?  eventInfo->auxdecor< char >( "isTmuLel" )			 :   -1;
+  m_isLmuTel		 =  ( eventInfo->isAvailable< char >( "isLmuTel" ) )			?  eventInfo->auxdecor< char >( "isLmuTel" )			 :   -1;
   m_isNonTightEvent      =  ( eventInfo->isAvailable< char >( "isNonTightEvent" ) )	        ?  eventInfo->auxdecor< char >( "isNonTightEvent" )	   	 :  -1;
   m_isProbeElEvent       =  ( eventInfo->isAvailable< char >( "isProbeElEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeElEvent" )	   	 :  -1;
   m_isProbeMuEvent       =  ( eventInfo->isAvailable< char >( "isProbeMuEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeMuEvent" )	   	 :  -1;

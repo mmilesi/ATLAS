@@ -1472,13 +1472,6 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   
   unsigned int nLeptons = leptons.size();
 
-  std::string region;
-  
-  // features of the two leptons that are considered for the MM
-  //
-  float lepA_pt(-1.), lepA_eta(-999.), lepB_pt(-1.), lepB_eta(-999.);
-  int lepA_flavour(0), lepB_flavour(0);
-  
   // retrieve some previously applied event object decorations
   // 
   static SG::AuxElement::Accessor< char > isSS01("isSS01");
@@ -1496,7 +1489,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   //
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
    
-  // event decorators to identify the TT,TL,LT,LL regions (looking at the two SS leptons: first is the leading, second is subleading) 
+  // event decorators to identify the TT,TL,LT,LL regions (ordering depends on the category)
   //
   static SG::AuxElement::Decorator< char > isTTDecor("isTT");
   static SG::AuxElement::Decorator< char > isTLDecor("isTL");
@@ -1506,66 +1499,78 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   isTLDecor( *eventInfo ) = 0;
   isLTDecor( *eventInfo ) = 0;
   isLLDecor( *eventInfo ) = 0;
-   
-  // Assigning lepton kin and identifying the signal region (not taking jets into account)
+  
+  // These will be the two leptons used for the fake estimate and to define the "tightness" of the region, both in 2 lep SS and in 3 lep category
   //
+  xAOD::IParticle* lepA(nullptr);
+  xAOD::IParticle* lepB(nullptr);
+  
+  // The "real" lepton for 3 lep category
+  //
+  xAOD::IParticle* lep0(nullptr);
+  
+  // Features of the two leptons that are considered for the fake estimate
+  //
+  float lepA_pt(-1.0), lepA_eta(-999.0), lepB_pt(-1.0), lepB_eta(-999.0);
+  int lepA_flavour(0), lepB_flavour(0);
+
+  std::string region;
+   
   if ( nLeptons == 2 && isSS01(*eventInfo) ) {
-        // start from lepton container
+        
+	// start from lepton container
 	//
 	// ordering criterion is simply based on pT
 	// by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
 	
-	// retrieve lep0 : the leading lepton
+	// retrieve lepA : the leading lepton
 	//
-	const xAOD::IParticle* lep0 = leptons.at(0);
-	// retrieve lep1: the subleading lepton
+	lepA = const_cast<xAOD::IParticle*>(leptons.at(0));
+	// retrieve lepB: the subleading lepton
         //
-	const xAOD::IParticle* lep1 = leptons.at(1);
+	lepB = const_cast<xAOD::IParticle*>(leptons.at(1));
 	
-	// set the region
+	// set the region string
 	//
-	if      (  isTightAcc( *lep0 )    &&  isTightAcc( *lep1 )    ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
-	else if (  isTightAcc( *lep0 )    &&  !(isTightAcc( *lep1 )) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
-	else if (  !(isTightAcc( *lep0 )) &&  isTightAcc( *lep1 )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
-	else if (  !(isTightAcc( *lep0 )) &&  !(isTightAcc( *lep1 )) ) { region = "LL"; isLLDecor( *eventInfo ) = 1; }
+	if      (  isTightAcc( *lepA )    &&  isTightAcc( *lepB )    ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
+	else if (  isTightAcc( *lepA )    &&  !(isTightAcc( *lepB )) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
+	else if (  !(isTightAcc( *lepA )) &&  isTightAcc( *lepB )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
+	else if (  !(isTightAcc( *lepA )) &&  !(isTightAcc( *lepB )) ) { region = "LL"; isLLDecor( *eventInfo ) = 1; }
 
   	if ( m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
 
         // set the properties of the two relevant leptons for future convenience
 	//
-	lepA_pt  = lep0->pt();
-	lepA_eta = lep0->eta();
-	if ( lep0->type() == xAOD::Type::Electron )  { lepA_flavour = 11; } 
-	else if ( lep0->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
+	lepA_pt  = lepA->pt();
+	lepA_eta = lepA->eta();
+	if ( lepA->type() == xAOD::Type::Electron )  { lepA_flavour = 11; } 
+	else if ( lepA->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
 	
-	lepB_pt  = lep1->pt();
-	lepB_eta = lep1->eta();
-	if ( lep1->type() == xAOD::Type::Electron )  { lepB_flavour = 11; } 
-	else if ( lep1->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }	
-
+	lepB_pt  = lepB->pt();
+	lepB_eta = lepB->eta();
+	if ( lepB->type() == xAOD::Type::Electron )  { lepB_flavour = 11; } 
+	else if ( lepB->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }	
+	
   } else if ( nLeptons == 3 && isSS12(*eventInfo) ) {        
-        // start from lepton container
+        
+	// start from lepton container
 	//
 	// for trilepton, ordering criterion is:
-	// lep0: the OS lepton - lep1: the SS lepton with min{ deltaR(lep0) } - lep2: the other SS lepton 
-        
+	// lep0: the OS lepton (assume this is real!) 
+	// lepA: the SS lepton with min{ deltaR(lep0) } 
+	// lepB: the other SS lepton 
+        // --> lepA and lepB define the "tightness" of the region
+	
 	// retrieve some previously applied lepton object decorations
 	// 
   	static SG::AuxElement::Accessor< char > isOSlep("isOSlep");
   	static SG::AuxElement::Accessor< char > isClosestSSlep("isClosestSSlep");
 	
-	// need to declare these non-const pointers, and then do a const_cast.
-	// this is bad practice in general, but then I do not need these pointers except for defining regions, so that's okay atm
-	//
-	xAOD::IParticle* lep0(nullptr);
-	xAOD::IParticle* lep1(nullptr);
-	xAOD::IParticle* lep2(nullptr);
-	
 	for (auto lep_it :leptons ) {
 	  
-	  xAOD::IParticle* this_lep = const_cast< xAOD::IParticle* >(lep_it);
-  	  
-	  if ( !isOSlep.isAvailable(*this_lep) ) {
+	  xAOD::IParticle* this_lep = const_cast<xAOD::IParticle*>(lep_it);
+	  
+	  if ( !isOSlep.isAvailable(*lep_it) ) {
 	    Error("fakeWeightCalculator()", "isOSlep lepton decoration is not available. Aborting ");
     	    return EL::StatusCode::FAILURE;
  	  } 	
@@ -1584,15 +1589,15 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
     	      return EL::StatusCode::FAILURE;
  	    } 	
 	    
-	    // retrieve lep1 : the SS lepton with min{ deltaR(lep0) }
+	    // retrieve lepA : the SS lepton with min{ deltaR(lep0) }
 	    //
 	    if ( isClosestSSlep(*this_lep) ) { 
-	      lep1 = this_lep; 
+	      lepA = this_lep; 
 	      continue; 
 	    }
-	    // retrieve lep2 : the other SS lepton 
+	    // retrieve lepB : the other SS lepton 
 	    //
-	    lep2 = this_lep;
+	    lepB = this_lep;
 	  
 	  }	
 		
@@ -1600,34 +1605,59 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	
 	// just a safety check
 	//
-	if ( !( lep0 && lep1 && lep2 ) ) {
-	  Error("fakeWeightCalculator()", "Trilepton region, but no lep1 and lep2 pointers! Aborting");
+	if ( !( lep0 && lepA && lepB ) ) {
+	  Error("fakeWeightCalculator()", "Trilepton region, but no (lep0 and lepA and lepB) pointers! Aborting");
 	  return EL::StatusCode::FAILURE;
 	}
 	
 	// set the region
 	//
-	if      (  isTightAcc( *lep1 )    &&   isTightAcc( *lep2 )   ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
-	else if (  isTightAcc( *lep1 )    &&  !(isTightAcc( *lep2 )) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
-	else if (  !(isTightAcc( *lep1 )) &&  isTightAcc( *lep2 )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
-	else if (  !(isTightAcc( *lep1 )) &&  !(isTightAcc( *lep2 )) ) { region = "LL"; isLLDecor( *eventInfo ) = 1; }
+	if      (  isTightAcc( *lepA )    &&   isTightAcc( *lepB )   ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
+	else if (  isTightAcc( *lepA )    &&  !(isTightAcc( *lepB )) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
+	else if (  !(isTightAcc( *lepA )) &&  isTightAcc( *lepB )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
+	else if (  !(isTightAcc( *lepA )) &&  !(isTightAcc( *lepB )) ) { region = "LL"; isLLDecor( *eventInfo ) = 1; }
   	
 	if ( m_debug ) { Info("fakeWeightCalculator()", "Trilepton 2SS+1OS category. Region (defined by the 2SS leptons) is %s ", region.c_str() ); }
 	
 	// set the properties of the two SS leptons for future convenience
 	//
-	lepA_pt  = lep1->pt();
-	lepA_eta = lep1->eta();
-	if ( lep1->type() == xAOD::Type::Electron )  { lepA_flavour = 11; } 
-	else if ( lep1->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
+	lepA_pt  = lepA->pt();
+	lepA_eta = lepA->eta();
+	if ( lepA->type() == xAOD::Type::Electron )  { lepA_flavour = 11; } 
+	else if ( lepA->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
 	
-	lepB_pt  = lep2->pt();
-	lepB_eta = lep2->eta();
-	if ( lep2->type() == xAOD::Type::Electron )  { lepB_flavour = 11; } 
-	else if ( lep2->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }	
+	lepB_pt  = lepB->pt();
+	lepB_eta = lepB->eta();
+	if ( lepB->type() == xAOD::Type::Electron )  { lepB_flavour = 11; } 
+	else if ( lepB->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }	
   
   } else  {
     return EL::StatusCode::SUCCESS; //no weights in the other categories
+  }
+
+  // Save a special flag for TL,LT OF events (used for "theta factior" ABCD method)
+  //
+  static SG::AuxElement::Decorator< char > isTelLmuDecor("isTelLmu");
+  static SG::AuxElement::Decorator< char > isTmuLelDecor("isTmuLel");
+  static SG::AuxElement::Decorator< char > isLelTmuDecor("isLelTmu");
+  static SG::AuxElement::Decorator< char > isLmuTelDecor("isLmuTel");
+  isTelLmuDecor( *eventInfo ) = 0;
+  isTmuLelDecor( *eventInfo ) = 0;
+  isLelTmuDecor( *eventInfo ) = 0;
+  isLmuTelDecor( *eventInfo ) = 0;  
+  bool OF = ( ( lepA_flavour == 11 && lepB_flavour == 13 ) || ( lepA_flavour == 13 && lepB_flavour == 11 ) );
+  if ( OF ) {
+    if ( region == "TL" ) {
+      // the tight is an electron, the loose is a muon
+      if (  lepA_flavour == 11 )     { isTelLmuDecor( *eventInfo ) = 1; }
+      // the tight is a muon, the loose is an electron
+      else if ( lepA_flavour == 13 ) { isTmuLelDecor( *eventInfo ) = 1; }
+    } else if ( region == "LT" ) {
+      // the loose is an electron, the tight is a muon
+      if (  lepA_flavour == 11 )     { isLelTmuDecor( *eventInfo ) = 1; }
+      // the loose is a muon, the tight is an electron
+      else if ( lepA_flavour == 13 ) { isLmuTelDecor( *eventInfo ) = 1; }
+    }
   }
 
   if ( m_debug ) { Info("fakeWeightCalculator()", "Start calculating MM and FF weights... "); }
