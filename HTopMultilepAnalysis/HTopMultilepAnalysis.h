@@ -123,6 +123,7 @@ public:
   
   virtual EL::StatusCode addChannelDecorations( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
   virtual EL::StatusCode fakeWeightCalculator ( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
+  
   std::vector<double>  calc_weights( std::map< std::string, TH1D* > &histograms, 
 				     float pt,    /* NB: internally converts MeV into GeV --> pass pT in MeV!!! */                        
 				     float eta, 
