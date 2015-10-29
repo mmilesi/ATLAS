@@ -85,6 +85,8 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector () :
   m_n_bjets_min = 0;
   m_n_taus_min = 0;
 
+  m_BTag_WP = "FixedCutBEff_77";
+
   m_leptons_eta_max = 2.6;	    
   m_leading_lep_pT_min = 0.0;    
   m_subleading_lep_pT_min = 0.0; 
@@ -136,23 +138,11 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
     m_n_bjets_min		 = config->GetValue("MinNBjets", m_n_bjets_min); 
     m_leading_lep_pT_min	 = config->GetValue("pTMinLeadingLepton",  m_leading_lep_pT_min);
     m_subleading_lep_pT_min	 = config->GetValue("pTMinSubLeadingLepton",  m_subleading_lep_pT_min);
-    
-    // parse and split by comma
+
+    // BTag WP to count nbjets
     //
-    std::string token;
-    
-    m_passAuxDecorKeys        = config->GetValue("PassDecorKeys", m_passAuxDecorKeys.c_str());
-    std::istringstream ss(m_passAuxDecorKeys);
-    while ( std::getline(ss, token, ',') ) {
-      m_passKeys.push_back(token);
-    }
-    
-    m_failAuxDecorKeys        = config->GetValue("FailDecorKeys", "");
-    ss.str(m_failAuxDecorKeys);
-    while ( std::getline(ss, token, ',') ) {
-      m_failKeys.push_back(token);
-    }
-    
+    m_BTag_WP                     = config->GetValue("BTagWP", m_BTag_WP.c_str());
+     
     if ( m_inContainerName_el.empty() ) {
       Error("configure()", "InputContainerElectrons is empty!");
       return EL::StatusCode::FAILURE;
@@ -443,20 +433,20 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
 
   // count number of bjets
   //
-  unsigned int nBjets_MV2c20_Fix70(0);
+  unsigned int nBjets(0);
   //
   // 2015 data,MC use MV2c20 as default
   // Look into xAODAnaHelpers/Root/BJetEfficiencyCorrector.cxx for more info
   //
-  static SG::AuxElement::ConstAccessor< int > isFix70("BTag_FixedCutBEff_70");
+  static SG::AuxElement::ConstAccessor< int > isBTag("BTag_"+m_BTag_WP);
   for( auto jet_itr : *(inJets) ) {
-    if ( isFix70.isAvailable(*jet_itr) ) {
-      if ( isFix70(*jet_itr) ) ++nBjets_MV2c20_Fix70;
+    if ( isBTag.isAvailable(*jet_itr) ) {
+      if ( isBTag(*jet_itr) == 1 ) ++nBjets;
     }
   } 
 
   bool passnBJetsMin(false); 
-  passnBJetsMin  = ( nBjets_MV2c20_Fix70 >= static_cast<unsigned int>(m_n_bjets_min) );
+  passnBJetsMin  = ( nBjets >= static_cast<unsigned int>(m_n_bjets_min) );
     
   if ( m_debug ) {
     Info("execute()","***********************************");     
@@ -498,16 +488,16 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   // add some decorations to the event
   //
   static SG::AuxElement::Decorator< unsigned int > nLeptonsDecor("nLeptons");
-  static SG::AuxElement::Decorator< unsigned int > nBjets_MV2c20_Fix70_Decor("nBjets_MV2c20_Fix70");
+  static SG::AuxElement::Decorator< unsigned int > nBjets_Decor("nBjets_"+m_BTag_WP);
   static SG::AuxElement::Decorator< unsigned int > categoryFlagDecor("categoryFlag");
   
   // compact way to categorise event based on object counting (exploiting prime numbers)
   //
   unsigned int categoryFlag(0); 
-  categoryFlag = pow(2.0,static_cast<float>(nLeptons))*pow(3.0,static_cast<float>(nJets))*pow(5.0,static_cast<float>(nBjets_MV2c20_Fix70));
+  categoryFlag = pow(2.0,static_cast<float>(nLeptons))*pow(3.0,static_cast<float>(nJets))*pow(5.0,static_cast<float>(nBjets));
   
   nLeptonsDecor( *eventInfo )             = nLeptons;
-  nBjets_MV2c20_Fix70_Decor( *eventInfo ) = nBjets_MV2c20_Fix70;
+  nBjets_Decor( *eventInfo )              = nBjets;
   categoryFlagDecor( *eventInfo )         = categoryFlag;
 
    
