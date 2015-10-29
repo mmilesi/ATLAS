@@ -40,10 +40,20 @@ public:
   /* Taus */
   std::string m_inContainerName_Taus;
 
-  bool m_useCutFlow;   
+  std::string m_inContainerName_PreSelectedElectrons;
+  std::string m_inContainerName_PreSelectedMuons;
+  std::string m_inContainerName_PreSelectedJets;
 
-  bool m_useLH_ElPID;  
-  bool m_useCutBased_ElPID;  
+  bool m_useCutFlow;   
+  
+  /* to define "Tight" leptons */
+  std::string m_TightElectronPID_WP;
+  std::string m_TightElectronIso_WP;
+  float       m_TightMuonD0sig_cut;
+  std::string m_TightMuonIso_WP;
+  
+  /* BTag WP to define nbjets*/
+  std::string m_BTag_WP;
 
   bool m_useMCForTagAndProbe; // To define tag and probe leptons for RF rate mesurement using MC truth
                               // NB: use it only for pure MC estimate (e.g. ttbar MM closure test)

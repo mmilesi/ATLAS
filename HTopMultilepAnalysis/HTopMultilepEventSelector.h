@@ -52,6 +52,8 @@ public:
   float        m_leading_lep_pT_min;		       
   float        m_subleading_lep_pT_min; 
 
+  std::string  m_BTag_WP;
+
   std::string              m_passAuxDecorKeys; 
   std::string              m_failAuxDecorKeys; 
   std::vector<std::string> m_passKeys; 

@@ -90,9 +90,19 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_inContainerName_Jets      = "";
   m_inContainerName_Taus      = "";      
 
-  m_useLH_ElPID               = true;  
-  m_useCutBased_ElPID         = false;
-    
+  m_inContainerName_PreSelectedElectrons = "Electrons";
+  m_inContainerName_PreSelectedMuons     = "Muons";
+  m_inContainerName_PreSelectedJets      = "AntiKt4EMTopoJets";
+
+  // to define "Tight" leptons
+  m_TightElectronPID_WP       = "LHTight";
+  m_TightElectronIso_WP       = "isIsolated_Gradient";
+  m_TightMuonD0sig_cut        = -1.0;	      
+  m_TightMuonIso_WP           = "isIsolated_Gradient";      
+  
+  // BTag WP to define nbjets
+  m_BTag_WP                   = "MV2c20_Fix77";
+  
   m_useMCForTagAndProbe       = false;
 }
 
@@ -120,11 +130,20 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
     m_inContainerName_Jets	 = config->GetValue("InputContainerJets",      m_inContainerName_Jets.c_str());
     m_inContainerName_Taus	 = config->GetValue("InputContainerTaus",      m_inContainerName_Taus.c_str());
  
-    // electron ID stuff - choose which one to define "Tight" electrons
-    m_useLH_ElPID                 = config->GetValue("UseLH_ElPID"          ,  m_useLH_ElPID );      
-    m_useCutBased_ElPID           = config->GetValue("UseCutBased_ElPID"    ,  m_useCutBased_ElPID );
+    m_inContainerName_PreSelectedElectrons = config->GetValue("InputContainerPreSelectedElectrons", m_inContainerName_PreSelectedElectrons.c_str());
+    m_inContainerName_PreSelectedMuons     = config->GetValue("InputContainerPreSelectedMuons",     m_inContainerName_PreSelectedMuons.c_str());
+    m_inContainerName_PreSelectedJets	   = config->GetValue("InputContainerPreSelectedJets",      m_inContainerName_PreSelectedJets.c_str());
+    
+    // to define "Tight" leptons
+    m_TightElectronPID_WP         = config->GetValue("TightElectronPID_WP"  ,  m_TightElectronPID_WP.c_str());
+    m_TightElectronIso_WP         = config->GetValue("TightElectronIso_WP"  ,  m_TightElectronIso_WP.c_str());
+    m_TightMuonD0sig_cut          = config->GetValue("TightMuonD0sig_cut"   ,  m_TightMuonD0sig_cut );
+    m_TightMuonIso_WP             = config->GetValue("TightMuonIso_WP"      ,  m_TightMuonIso_WP.c_str()); 
 
-    m_useMCForTagAndProbe         = config->GetValue("UseMCForTagAndProbe"    ,  m_useMCForTagAndProbe );
+    // BTag WP to define nbjets
+    m_BTag_WP                     = config->GetValue("BTagWP"               ,  m_BTag_WP.c_str());
+
+    m_useMCForTagAndProbe         = config->GetValue("UseMCForTagAndProbe"  ,  m_useMCForTagAndProbe );
 
     config->Print();
   
@@ -507,18 +526,20 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   unsigned int nSignalLeptons   = leptonsCDV->size();
   unsigned int nSignalJets      = signalJets->size();
   unsigned int nSignalTaus      = signalTauJets->size();
-  static SG::AuxElement::Accessor< unsigned int > nBjets_MV2c20_Fix70_Acc("nBjets_MV2c20_Fix70");
-  unsigned int nBjets_MV2c20_Fix70(0);
-  if ( nBjets_MV2c20_Fix70_Acc.isAvailable( *eventInfo ) ) {
-    nBjets_MV2c20_Fix70 = nBjets_MV2c20_Fix70_Acc( *eventInfo );
+  static SG::AuxElement::Accessor< unsigned int > nBjets_Acc("nBjets_"+m_BTag_WP);
+  unsigned int nBjets(0);
+  if ( nBjets_Acc.isAvailable( *eventInfo ) ) {
+    nBjets = nBjets_Acc( *eventInfo );
   } else {
-    Error("execute()"," 'nBjets_MV2c20_Fix70' is not available as decoration. Aborting" ); 
+    Error("execute()"," 'nBjets_%s' is not available as decoration. Aborting", m_BTag_WP.c_str() ); 
     return EL::StatusCode::FAILURE;
   }
     
   if ( m_debug ) {
     
     // retrieve initial objects ( only for debugging purposes )
+    // NB: the name of the initial containers is hard-coded as it is not expected to change at all!
+    //
     const xAOD::ElectronContainer* inElectrons(nullptr);
     RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inElectrons, "Electrons", m_event, m_store, m_verbose), "");
     const xAOD::MuonContainer*     inMuons(nullptr);     
@@ -527,12 +548,13 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inJets, "AntiKt4EMTopoJets", m_event, m_store, m_verbose), "");
 
     // retrieve preselected objects ( only for debugging purposes )
+    //
     const xAOD::ElectronContainer* preselElectrons(nullptr);
-    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselElectrons, "Electrons_PreSelected", m_event, m_store, m_verbose), "");
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselElectrons, m_inContainerName_PreSelectedElectrons, m_event, m_store, m_verbose), "");
     const xAOD::MuonContainer*     preselMuons(nullptr);     
-    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselMuons, "Muons_PreSelected", m_event, m_store, m_verbose), "");
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselMuons, m_inContainerName_PreSelectedMuons, m_event, m_store, m_verbose), "");
     const xAOD::JetContainer*      preselJets(nullptr); 
-    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselJets, "AntiKt4EMTopoJets_Selected", m_event, m_store, m_verbose), "");
+    RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(preselJets, m_inContainerName_PreSelectedJets, m_event, m_store, m_verbose), "");
 
     unsigned int nInElectrons     = inElectrons->size();
     unsigned int nInMuons         = inMuons->size();
@@ -560,6 +582,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   
   // retrieve event weight from eventInfo (NB: will be always 1 for Data - see xAODAnaHelpers/root/BasicEventSelection.cxx)
   // for MC, it includes also PU weight. Need to multiply it by object SF weights later on! 
+  //
   float mcEvtWeight(1.0); 
   static SG::AuxElement::Accessor< float > mcEvtWeightAcc("mcEventWeight");
   if ( !mcEvtWeightAcc.isAvailable(*eventInfo) ) {
@@ -613,68 +636,143 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     isTauBDTTightDecor( *tau_itr ) = 0;
     if ( m_TauSelTool->accept(*tau_itr) ) { isTauBDTTightDecor( *tau_itr ) = 1; }
   }
-
-  // accessor to lepton isolation flag - use Tight WP
-  //
-  //static SG::AuxElement::Accessor< char > isIsoAcc("isIsolated_Tight");
-  static SG::AuxElement::Accessor< char > isIsoAcc("isIsolated_UserDefinedCut"); // Run 1 isolation
   
-  // accessor to likelihood PID for electrons
-  //
-  static SG::AuxElement::Accessor< char > LHTightAcc("LHTight");
-  // accessor to cut-based PID for electrons
-  //
-  static SG::AuxElement::Accessor< char > EMTightAcc("Tight");
+  //------------------------------
+  // definition of "Tight" leptons
+  //------------------------------
+ 
+  static SG::AuxElement::Decorator< char > isTightDecor("isTight"); 
 
-  // decorator for "Tight" leptons  
-  static SG::AuxElement::Decorator< char > isTightDecor("isTight"); // electrons: isolation + PID (tightPP or TightLH, depending on user's choice)
-  								    // muons: isolation + |d0sig|
+  // -----------------------
+  //        electrons
+  // -----------------------
+
+  // first: isolation
+  // second: Electron ID
+  //
+  std::pair<std::string,std::string> tightness_def_el = std::make_pair(m_TightElectronIso_WP,m_TightElectronPID_WP);
+
+  static SG::AuxElement::Accessor< char > TightElectronIsoAcc(m_TightElectronIso_WP); 
+  static SG::AuxElement::Accessor< char > TightElectronIDAcc(m_TightElectronPID_WP);
 
   for ( auto el_itr : *(signalElectrons) ) {
 
-    // default
+    // set default decoration
+    //
     isTightDecor( *el_itr ) = 0; 
 
-    if ( !isIsoAcc.isAvailable( *el_itr ) ) {
-      Error("execute()", "isIsolated attribute is not available for this electron. Aborting ");
-      return EL::StatusCode::FAILURE;
+    // if using isolation...
+    //
+    if ( !tightness_def_el.first.empty() ) {  
+    
+      if ( !TightElectronIsoAcc.isAvailable( *el_itr ) ) {
+        Error("execute()", "'%s' attribute is not available for this electron. Aborting ", m_TightElectronIso_WP.c_str() );
+        return EL::StatusCode::FAILURE;
+      } 
+    
+      // if using *also* Electron ID...
+      //
+      if ( !tightness_def_el.second.empty() ) { 
+      
+        if ( !TightElectronIDAcc.isAvailable( *el_itr ) ) {
+          Error("execute()", "'%s' attribute is not available for this electron. Aborting ", m_TightElectronPID_WP.c_str() );
+          return EL::StatusCode::FAILURE;
+        }      
+         
+        if ( ( TightElectronIsoAcc( *el_itr ) == 1 ) && ( TightElectronIDAcc( *el_itr ) == 1 ) ) { isTightDecor( *el_itr ) = 1; }
+	
+      } else {
+      
+        if ( TightElectronIsoAcc( *el_itr ) == 1 ) { isTightDecor( *el_itr ) = 1; }
+	
+      }
+    
     } 
-    if ( !LHTightAcc.isAvailable( *el_itr ) ) {
-      Error("execute()", "LHTight attribute is not available for this electron. Aborting ");
-      return EL::StatusCode::FAILURE;
+    // if not using isolation, but using Electron ID...
+    //
+    else if ( !tightness_def_el.second.empty() ) { 
+    
+      if ( !TightElectronIDAcc.isAvailable( *el_itr ) ) {
+        Error("execute()", "'%s' attribute is not available for this electron. Aborting ", m_TightElectronPID_WP.c_str() );
+        return EL::StatusCode::FAILURE;
+      } 
+      
+      if ( TightElectronIDAcc( *el_itr ) == 1 ) { isTightDecor( *el_itr ) = 1; }
+    
     } 
-    if ( !EMTightAcc.isAvailable( *el_itr ) ) {
-      Error("execute()", "Tight attribute is not available for this electron. Aborting ");
+    // if using neither isolation, nor Electron ID..
+    //
+    else {
+      Error("execute()", "Need at least isolation or ElectronID requirement to define 'Tight' electrons. Aborting" );
       return EL::StatusCode::FAILURE;
-    } 
-
-    // flag the "Tight" electrons: use isolation && PID
-    if (  isIsoAcc( *el_itr ) ) {
-        if      ( m_useLH_ElPID       && LHTightAcc( *el_itr )  ) { isTightDecor( *el_itr ) = 1; }
-	else if ( m_useCutBased_ElPID && EMTightAcc( *el_itr ) )  { isTightDecor( *el_itr ) = 1; }
     }
  
   }
   
+  // -----------------------
+  //          muons
+  // -----------------------  
+
+  // first: isolation
+  // second: d0sig 
+  //
+  std::pair<std::string,float> tightness_def_mu = std::make_pair(m_TightMuonIso_WP,m_TightMuonD0sig_cut);
+
+  static SG::AuxElement::Accessor< char > TightMuonIsoAcc(m_TightMuonIso_WP); 
+  static SG::AuxElement::Accessor<float> d0SigAcc ("d0sig");  
+  
   for ( auto mu_itr : *(signalMuons) ) {
 
-      // default
-      isTightDecor( *mu_itr ) =  0;
+    // set default decoration
+    //
+    isTightDecor( *mu_itr ) =  0;
 
-      if ( !isIsoAcc.isAvailable( *mu_itr ) ) {
-	Error("execute()", "isIsolated attribute is not available for this muon. Aborting ");
-	return EL::StatusCode::FAILURE;
+    // if using isolation...
+    //
+    if ( !tightness_def_mu.first.empty() ) {  
+
+      if ( !TightMuonIsoAcc.isAvailable( *mu_itr ) ) {
+        Error("execute()", "'%s' attribute is not available for this muon. Aborting ", m_TightMuonIso_WP.c_str() );
+        return EL::StatusCode::FAILURE;
       } 
-
-      // flag the "Tight" muons: use isolation && d0sig 
+    
+      // if using *also* d0sig...
       //
-      if ( isIsoAcc( *mu_itr) ) {
-	  
-          static SG::AuxElement::Accessor<float> d0SigAcc ("d0sig");
-          float d0_significance =  ( d0SigAcc.isAvailable( *mu_itr ) ) ? d0SigAcc( *mu_itr ) : -9999.0;
-	  
-          if  ( fabs(d0_significance) < 3.0 ) { isTightDecor( *mu_itr ) = 1; }
-      }	
+      if ( tightness_def_mu.second > 0.0 ) { 
+      
+  	if ( !d0SigAcc.isAvailable( *mu_itr ) ) {
+  	  Error("execute()", "'d0sig' attribute is not available for this muon. Aborting " );
+  	  return EL::StatusCode::FAILURE;
+  	}   
+         
+        if ( ( TightMuonIsoAcc( *mu_itr ) == 1 ) && ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) ) { isTightDecor( *mu_itr ) = 1; }
+      
+      } else {
+        
+	if ( TightMuonIsoAcc( *mu_itr ) == 1 ) { isTightDecor( *mu_itr ) = 1; }
+      
+      }
+    
+    } 
+    // if not using isolation, but using d0sig...
+    //
+    else if ( tightness_def_mu.second > 0.0 ) { 
+    
+      if ( !d0SigAcc.isAvailable( *mu_itr ) ) {
+        Error("execute()", "'d0sig' attribute is not available for this muon. Aborting " );
+        return EL::StatusCode::FAILURE;
+      }   
+      
+      if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) { isTightDecor( *mu_itr ) = 1; }
+    
+    } 
+    // if using neither isolation, nor d0sig..
+    //
+    else {
+      Error("execute()", "Need at least isolation or d0sig requirement to define 'Tight' muons. Aborting" );
+      return EL::StatusCode::FAILURE;
+    }
+
   }
   
   //-------------------------------- 
@@ -695,7 +793,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   //***** set T&P variables in r/f rate meas CR
   //------------------------------------------- 
   
-  if ( nSignalLeptons == 2 && ( nSignalJets >= 1 && nSignalJets <= 3 ) &&  nBjets_MV2c20_Fix70 >= 1 ) {
+  if ( nSignalLeptons == 2 && ( nSignalJets >= 1 && nSignalJets <= 3 ) &&  nBjets >= 1 ) {
 
     if ( m_useMCForTagAndProbe && m_isMC ) { this->defineTagAndProbeRFRateVars_MC( eventInfo, leptonsSorted ); }
     else { this->defineTagAndProbeRFRateVars( eventInfo, leptonsSorted ); }
