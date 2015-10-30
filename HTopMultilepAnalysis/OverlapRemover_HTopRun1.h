@@ -1,5 +1,5 @@
-#ifndef HTopMULTILEPANALYSIS_OVERLAPREMOVER_HTopRUN1_H
-#define HTopMULTILEPANALYSIS_OVERLAPREMOVER_HTopRUN1_H
+#ifndef HTOPMULTILEPANALYSIS_OVERLAPREMOVER_HTOPRUN1_HTOPRUN1_H
+#define HTOPMULTILEPANALYSIS_OVERLAPREMOVER_HTOPRUN1_HTOPRUN1_H
 
 // EDM include(s):
 #include "xAODBase/IParticleHelpers.h"
@@ -35,9 +35,9 @@ public:
 
   /* Electrons */
   std::string  m_inContainerName_Electrons;
-  std::string  m_outContainerName_Electrons;    // output container name
-  std::string  m_inputAlgoElectrons;            // name of vector<string> of syst retrieved from TStore
-  std::string  m_outputAlgoElectrons;           // name of vector<string> of syst pushed in TStore
+  std::string  m_outContainerName_Electrons;        // output container name
+  std::string  m_inputAlgoElectrons;                // name of vector<string> of syst retrieved from TStore
+  std::string  m_outputAlgoElectrons;               // name of vector<string> of syst pushed in TStore
   /* Muons */
   std::string m_inContainerName_Muons;
   std::string  m_outContainerName_Muons;        // output container name
@@ -45,37 +45,39 @@ public:
   std::string  m_outputAlgoMuons;               // name of vector<string> of syst pushed in TStore
   /* Jets */
   std::string m_inContainerName_Jets;
-  std::string  m_outContainerName_Jets;         // output container name
-  std::string  m_inputAlgoJets;                 // name of vector<string> of syst retrieved from TStore
-  std::string  m_outputAlgoJets;                // name of vector<string> of syst pushed in TStore
+  std::string  m_outContainerName_Jets;        // output container name
+  std::string  m_inputAlgoJets;                // name of vector<string> of syst retrieved from TStore
+  std::string  m_outputAlgoJets;               // name of vector<string> of syst pushed in TStore
   /* Photons */
   std::string m_inContainerName_Photons;
-  std::string  m_outContainerName_Photons;      // output container name
+  std::string  m_outContainerName_Photons;        // output container name
+  std::string  m_inputAlgoPhotons;                // name of vector<string> of syst retrieved from TStore
+  std::string  m_outputAlgoPhotons;               // name of vector<string> of syst pushed in TStore
   /* Taus */
   std::string m_inContainerName_Taus;
-  std::string  m_outContainerName_Taus;         // output container name
+  std::string  m_outContainerName_Taus;        // output container name
 
 
 private:
-  int m_numEvent;           //!
-  int m_numObject;          //!
-  int m_numEventPass;       //!
+  int m_numEvent;         //!
+  int m_numObject;        //!
+  int m_numEventPass;     //!
   int m_weightNumEventPass; //!
-  int m_numObjectPass;      //!
+  int m_numObjectPass;    //!
 
   bool m_usePhotons;
   bool m_useTaus;
 
   /* Electrons */
-  std::string  m_outAuxContainerName_Electrons;   // output auxiliary container name
+  std::string  m_outAuxContainerName_Electrons;     // output auxiliary container name
   /* Muons */
-  std::string  m_outAuxContainerName_Muons;       // output auxiliary container name
+  std::string  m_outAuxContainerName_Muons;     // output auxiliary container name
   /* Jets */
-  std::string  m_outAuxContainerName_Jets;        // output auxiliary container name
+  std::string  m_outAuxContainerName_Jets;     // output auxiliary container name
   /* Photons */
   std::string  m_outAuxContainerName_Photons;     // output auxiliary container name
   /* Taus */
-  std::string  m_outAuxContainerName_Taus;        // output auxiliary container name
+  std::string  m_outAuxContainerName_Taus;     // output auxiliary container name
 
 
   // tools
@@ -95,10 +97,12 @@ private:
   TH1D* m_el_cutflowHist_1;    //!
   TH1D* m_mu_cutflowHist_1;    //!
   TH1D* m_jet_cutflowHist_1;   //!
+  TH1D* m_ph_cutflowHist_1;    //!
 
   int m_el_cutflow_OR_cut;     //!
   int m_mu_cutflow_OR_cut;     //!
   int m_jet_cutflow_OR_cut;    //!
+  int m_ph_cutflow_OR_cut;     //!
   
 
   // variables that don't get filled at submission time should be

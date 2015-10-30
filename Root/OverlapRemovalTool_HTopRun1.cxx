@@ -55,7 +55,7 @@ removeOverlaps(const xAOD::ElectronContainer* electrons,
     ATH_MSG_ERROR("Encountered NULL pointer in required object");
     return StatusCode::FAILURE;
   }
-  if ( taus && !( looseElectrons && looseMuons )){
+  if ( taus && !( looseElectrons && looseMuons ) ) {
     ATH_MSG_ERROR("Taus provided but loose leptons are NULL!");
     return StatusCode::FAILURE;
   }
@@ -103,22 +103,11 @@ StatusCode OverlapRemovalTool_HTopRun1::removeEleMuonOverlap(const xAOD::Electro
 }							     
 
 //-----------------------------------------------------------------------------
-// Remove electrons overlapping w/ electrons
+// Remove electrons overlapping w/ electrons : keep the leading pT electron
 //-----------------------------------------------------------------------------
 
 StatusCode OverlapRemovalTool_HTopRun1::removeEleEleOverlap(const xAOD::ElectronContainer& electrons)
 {
- 
-  /*
-  for ( const auto electron : electrons ) {
-    if ( isSurvivingObject(electron) ) {
-      if ( objectOverlaps(electron, electrons, m_electronElectronDR_Run1 ) ) {
-        ATH_MSG_DEBUG("  Found overlap electron w/ electron: " << electron->pt()*invGeV);
-        setObjectFail(electron);
-      }
-    }
-  }
-  */
 
   for ( const auto electronA : electrons ) {
     if ( isSurvivingObject(electronA) ) {
