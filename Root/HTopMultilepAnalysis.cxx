@@ -948,9 +948,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
   // accessor to tight leptons 
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
   // accessor to trigger-matched leptons 
-  static SG::AuxElement::Accessor< char > isTrigMatchedAcc("isTrigMatched");
-  // accessor to tag leptons 
-  static SG::AuxElement::Accessor< char > isTagAcc("isTag");
+  static SG::AuxElement::Accessor< char > isTrigMatchedLepAcc("isTrigMatchedLep");
     
   // decorate with default values
   for ( auto lep_it : leptons ) { isTagDecor( *lep_it ) = 0; }
@@ -971,6 +969,11 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
     Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTight') is not available for the leading lepton. Should not happen. Assigning 'isTight' = false" );
   }
   bool 			 isLeadingTrigMatched(false);  
+  if ( isTrigMatchedLepAcc.isAvailable( *leadingLepton ) ) {
+    isLeadingTrigMatched = isTrigMatchedLepAcc( *leadingLepton );
+  } else {
+    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTrigMatchedLep') is not available for the leading lepton. Should not happen. Assigning 'isLeadingTrigMatched' = false" );
+  }
   
   const xAOD::IParticle* subLeadingLepton        = leptons.at(1);
   xAOD::Type::ObjectType subLeadingLeptonFlavour = subLeadingLepton->type();
@@ -981,9 +984,14 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
     Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTight') is not available for the subleading lepton. Should not happen. Assigning 'isTight' = false" );
   }
   bool 			 isSubLeadingTrigMatched(false);  
+  if ( isTrigMatchedLepAcc.isAvailable( *subLeadingLepton ) ) {
+    isSubLeadingTrigMatched = isTrigMatchedLepAcc( *subLeadingLepton );
+  } else {
+    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTrigMatchedLep') is not available for the subleading lepton. Should not happen. Assigning 'isSubLeadingTrigMatched' = false" );
+  }
     
-  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Leading lepton: isTight: %i \t isTrigMatched: %i \t isTag: %i    ", isLeadingTight, isLeadingTrigMatched,  isTagAcc( *leadingLepton ) ); }
-  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Subleading lepton: isTight: %i \t isTrigMatched: %i \t isTag: %i ", isSubLeadingTight, isSubLeadingTrigMatched, isTagAcc( *subLeadingLepton ) ); }
+  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Leading lepton: isTight: %i \t isTrigMatched: %i ", isLeadingTight, isLeadingTrigMatched ); }
+  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Subleading lepton: isTight: %i \t isTrigMatched: %i ", isSubLeadingTight, isSubLeadingTrigMatched ); }
   
   // --------------------------------------------
   // Now decide who's the tag and who's the probe
@@ -1001,8 +1009,8 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
     // 1. leading & subleading lepton are both tight & trigger-matched 
     //    OR
     // 2. leading lepton is tight & trigger-matched, but subleading is not  
-    if ( ( isLeadingTight && isSubLeadingTight /* && isLeadingTrigMatched && isSubLeadingTrigMatched */ ) || 
-         ( isLeadingTight /* && isLeadingTrigMatched */ ) 
+    if ( ( isLeadingTight && isSubLeadingTight && isLeadingTrigMatched && isSubLeadingTrigMatched ) || 
+         ( isLeadingTight && isLeadingTrigMatched ) 
        ) {
       
       if ( isSS ) {
@@ -1040,7 +1048,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
       
     }
     // 3. subleading lepton is tight & trigger-matched, but leading is not 
-    else if ( isSubLeadingTight /* && isSubLeadingTrigMatched  */ ) {
+    else if ( isSubLeadingTight  && isSubLeadingTrigMatched ) {
       
       if ( isSS ) {
 	
@@ -1095,7 +1103,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
     
     // 1. leading & subleading lepton are both tight & trigger-matched 
     //   need to distinguish assignment btwn/ SS and OS  
-    if ( isLeadingTight && isSubLeadingTight /* && isLeadingTrigMatched && isSubLeadingTrigMatched  */ ) {
+    if ( isLeadingTight && isSubLeadingTight && isLeadingTrigMatched && isSubLeadingTrigMatched ) {
         
 	// In the fake case (i.e. SS leptons), if both leptons are matched, I must chose which lepton is the tag and which one is the probe 
         // because I want the probe to be the fake and the real the tag. 
@@ -1112,7 +1120,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
 
     }
     // 2. leading lepton is tight & trigger-matched, but subleading is not 
-    else if ( isLeadingTight /* && isLeadingTrigMatched */ ) {
+    else if ( isLeadingTight && isLeadingTrigMatched ) {
         
 	// the probe will be the subleading, which is also !tight
 	isTagDecor( *leadingLepton )    = 1;
@@ -1149,6 +1157,8 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
     
   } // end check isElMu
 
+  // accessor to tag leptons 
+  static SG::AuxElement::Accessor< char > isTagAcc("isTag");
   
   if ( m_debug ) {
     Info("execute()","Checking *isTag* lepton decoration"); 

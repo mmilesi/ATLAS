@@ -83,7 +83,6 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_muon_tag_isIsolated_GradientLoose;
     std::vector<int>   m_muon_tag_isIsolated_UserDefinedFixEfficiency;
     std::vector<int>   m_muon_tag_isIsolated_UserDefinedCut;	 
-    std::vector<int>   m_muon_tag_isTrigMatched; 
     std::vector<int>   m_muon_tag_isTight; 
     std::vector<int>   m_muon_tag_isTruthMatched; 
     std::vector<int>   m_muon_tag_isChFlip; 
@@ -107,7 +106,6 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_muon_probe_isIsolated_GradientLoose;
     std::vector<int>   m_muon_probe_isIsolated_UserDefinedFixEfficiency;
     std::vector<int>   m_muon_probe_isIsolated_UserDefinedCut;	
-    std::vector<int>   m_muon_probe_isTrigMatched; 
     std::vector<int>   m_muon_probe_isTight; 
     std::vector<int>   m_muon_probe_isTruthMatched; 
     std::vector<int>   m_muon_probe_isChFlip; 
@@ -156,7 +154,6 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_tag_isIsolated_GradientLoose;
     std::vector<int>   m_electron_tag_isIsolated_UserDefinedFixEfficiency;
     std::vector<int>   m_electron_tag_isIsolated_UserDefinedCut;	    
-    std::vector<int>   m_electron_tag_isTrigMatched;     
     std::vector<int>   m_electron_tag_isTight; 
     std::vector<int>   m_electron_tag_isTruthMatched; 
     std::vector<int>   m_electron_tag_isChFlip; 
@@ -186,7 +183,6 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_probe_isIsolated_GradientLoose;
     std::vector<int>   m_electron_probe_isIsolated_UserDefinedFixEfficiency;
     std::vector<int>   m_electron_probe_isIsolated_UserDefinedCut;    
-    std::vector<int>   m_electron_probe_isTrigMatched;     
     std::vector<int>   m_electron_probe_isTight; 
     std::vector<int>   m_electron_probe_isTruthMatched; 
     std::vector<int>   m_electron_probe_isChFlip; 
