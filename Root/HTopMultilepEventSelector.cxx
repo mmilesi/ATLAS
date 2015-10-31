@@ -68,7 +68,6 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector () :
   Info("HTopMultilepEventSelector()", "Calling constructor");
 
   m_useCutFlow           = true; 
-  m_DC14                 = false;
   
   m_inContainerName_el   = "";     
   m_inContainerName_mu   = "";     
@@ -116,7 +115,6 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
     //
     m_debug	                 = config->GetValue("Debug" ,      m_debug);
     m_useCutFlow                 = config->GetValue("UseCutFlow",  m_useCutFlow);
-    m_DC14                       = config->GetValue("DC14", m_DC14 );
     
     // input container to be read from TEvent or TStore
     //
@@ -325,12 +323,35 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   //
   ConstDataVector<xAOD::IParticleContainer>* leptonsCDV(nullptr);
   leptonsCDV =  new ConstDataVector<xAOD::IParticleContainer>(SG::VIEW_ELEMENTS);
+
+  static SG::AuxElement::Accessor< std::map<std::string,char> > isTrigMatchedMapElAcc("isTrigMatchedMapEl");
+  static SG::AuxElement::Accessor< std::map<std::string,char> > isTrigMatchedMapMuAcc("isTrigMatchedMapMu");
+
+  static SG::AuxElement::Decorator< char > isTrigMatchedLepDecor("isTrigMatchedLep");
   
   // fill this CDV with electrons and muons
   //
   for ( auto el_itr : *(inElectrons) ) {
     
     const xAOD::IParticle *lepton = el_itr;
+
+    // default
+    //
+    isTrigMatchedLepDecor( *lepton ) = 0;
+
+    if ( isTrigMatchedMapElAcc.isAvailable( *el_itr ) ) {
+
+      // if this electron is trigger matched to at least one chain, flag the lepton as trigger-matched
+      //
+      for ( auto const &it : (isTrigMatchedMapElAcc( *el_itr )) ) {
+	if ( it.second == 1 ) {
+	  isTrigMatchedLepDecor( *lepton ) = 1;
+	  break;
+	}
+      }
+
+    }
+
     leptonsCDV->push_back( lepton );
     if ( m_debug ) { Info("execute()","pushing electron to leptonsCDV - pT = %2f ", el_itr->pt() / 1e3 ); }
   
@@ -338,6 +359,24 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   for ( auto mu_itr : *(inMuons) ) {
       
     const xAOD::IParticle *lepton = mu_itr;
+
+    // default
+    //
+    isTrigMatchedLepDecor( *lepton ) = 0;
+
+    if ( isTrigMatchedMapMuAcc.isAvailable( *mu_itr ) ) {
+
+      // if this muon is trigger matched to at least one chain, flag the lepton as trigger-matched
+      //
+      for ( auto const &it : (isTrigMatchedMapMuAcc( *mu_itr )) ) {
+	if ( it.second == 1 ) {
+	  isTrigMatchedLepDecor( *lepton ) = 1;
+	  break;
+	}
+      }
+
+    }
+
     leptonsCDV->push_back( lepton );
     if ( m_debug ) { Info("execute()","pushing muon to leptonsCDV - pT = %2f ", mu_itr->pt() / 1e3 ); }
       
