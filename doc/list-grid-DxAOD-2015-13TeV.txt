@@ -29,6 +29,7 @@
 # ~~~~ ttH125 (signal) ~~~~ #
 # ~~~~ ttbar (background) ~~~~ #
 #mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r6765_r6282_p2413/
+mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r6765_r6282_p2434/
 # ~~~~ ttW (background) ~~~~ #
 # ~~~~ ttZ(background) ~~~~ #
 # ~~~~ WZ (background) ~~~ #
@@ -39,7 +40,8 @@
 # ~~~~ single t (background) ~~~ #
 # ~~~~ ttWW (background) ~~~~ #
 # ~~~~ bulk MC submission ~~~~ #
-mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2413/
+#mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2413/
+#mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2434/
 # ---------------------------------------
 # Full xAODs MC15
 # ---------------------------------------
@@ -152,6 +154,6 @@ mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2413/
 # 25 ns configuration, toroid on
 #
 # ******************************
-data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2411/
-data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2419/
-
+#data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2411/
+#data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2419/
+data15_13TeV.00280853.physics_Main.merge.DAOD_HIGG8D1.f629_m1504_p2432_tid06682115_00/
