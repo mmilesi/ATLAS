@@ -74,6 +74,8 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector () :
   m_inContainerName_jets = "";   
   m_inContainerName_tau  = "";    
   
+  m_outContainerName_lep = "Leptons_Selected";
+  
   m_doMinObjCut = false;
   m_doMaxObjCut = false;
   m_n_leptons_min = 0;
@@ -122,7 +124,8 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
     m_inContainerName_mu	 = config->GetValue("InputContainerMuons",     m_inContainerName_mu.c_str());
     m_inContainerName_jets	 = config->GetValue("InputContainerJets",      m_inContainerName_jets.c_str());
     m_inContainerName_tau	 = config->GetValue("InputContainerTaus",      m_inContainerName_tau.c_str());
-    
+    m_outContainerName_lep       = config->GetValue("OutputContainerLeptons",  m_outContainerName_lep.c_str());   
+     
     // configurable cuts
     //
     m_doMinObjCut		 = config->GetValue("DoMinObjCut", m_doMinObjCut);
@@ -518,7 +521,7 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   // add ConstDataVector(s) to TStore
   // NB: don't store a sorted container to TStore and expect it will be still sorted at retrieval!!
   //
-  RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( leptonsCDV, "Leptons_Selected" ), "Failed to store const data container");
+  RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( leptonsCDV, m_outContainerName_lep ), "Failed to store const data container");
   RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( selectedTaus, "Taus_Selected" ), "Failed to store const data container");
   
   m_numEventPass++;
