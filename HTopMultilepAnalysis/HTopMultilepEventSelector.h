@@ -30,10 +30,11 @@ class HTopMultilepEventSelector : public xAH::Algorithm
 public:
 
   // configuration variables
-  std::string    m_inContainerName_el;     
-  std::string    m_inContainerName_mu;     
-  std::string    m_inContainerName_jets;   
-  std::string    m_inContainerName_tau;    
+  std::string  m_inContainerName_el;	 
+  std::string  m_inContainerName_mu;	 
+  std::string  m_inContainerName_jets;   
+  std::string  m_inContainerName_tau;	 
+  std::string  m_outContainerName_lep;
 
   bool         m_useCutFlow;    
 

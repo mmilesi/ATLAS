@@ -242,8 +242,8 @@ int main ( int argc, char **argv ) {
     electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
     // ASG O.R.
     //
-    OverlapRemover* overlapRemoval                = new OverlapRemover();
-    overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
+    //OverlapRemover* overlapRemoval                = new OverlapRemover();
+    //overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
     // HTop O.R.
     //
     OverlapRemover_HTopRun1* overlapRemoval_HTopRun1  = new OverlapRemover_HTopRun1();
@@ -282,11 +282,11 @@ int main ( int argc, char **argv ) {
     job.algsAdd( met );
     job.algsAdd( overlapRemoval_HTopRun1 ); // HTop O.R.
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix77 );
-    job.algsAdd( muonEffCorr );
-    job.algsAdd( electronEffCorr );
-    job.algsAdd( electronEffCorr_LHTight );
+    //job.algsAdd( muonEffCorr );
+    //job.algsAdd( electronEffCorr );
+    //job.algsAdd( electronEffCorr_LHTight );
     job.algsAdd( eventSelect );
-    job.algsAdd( truthMatching );
+    //job.algsAdd( truthMatching );
     job.algsAdd( analysis );
     if ( make_histos ) {
       job.algsAdd( jetHistsAlgo_all );
