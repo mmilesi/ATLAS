@@ -160,25 +160,25 @@ StatusCode OverlapRemovalTool_HTopRun1::removeEleEleOverlap(const xAOD::Electron
 //-----------------------------------------------------------------------------
 
 StatusCode OverlapRemovalTool_HTopRun1::removeJetEleOverlap(const xAOD::JetContainer& jets,
-    				                            const xAOD::ElectronContainer& electrons)
+							  const xAOD::ElectronContainer& electrons)
 {
   
   for ( const auto jet : jets ) {
     if ( isSurvivingObject(jet) /*&& !isBJet(jet)*/ ) { // maybe we should remove the jet only if the jet is NOT btagged...
       for ( const auto electron : electrons ) {
-    	if ( isSurvivingObject(electron) ) {
-    	  if ( deltaR(jet, electron) < m_jetElectronDR_Run1 ) {
-            ATH_MSG_DEBUG("  Found overlap jet w/ electron (jet pT = " << jet->pt()*invGeV << ") - deltaR = " << deltaR(jet,electron) << " - removing jet...");
-    	    setObjectFail(jet);
-    	  }
-    	}
+        if ( isSurvivingObject(electron) ) {
+      	  if ( deltaR(jet, electron) < m_jetElectronDR_Run1 ) {
+      	    ATH_MSG_DEBUG("  Found overlap jet w/ electron (jet pT = " << jet->pt()*invGeV << ") - deltaR = " << deltaR(jet,electron) << " - removing jet...");
+      	    setObjectFail(jet);
+      	  }
+        }
       }      
     }
   }
   
   return StatusCode::SUCCESS;
 }
-				   
+					   
 //-----------------------------------------------------------------------------
 // Remove muons overlapping w/ jets
 //-----------------------------------------------------------------------------
