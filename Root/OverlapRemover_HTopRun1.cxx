@@ -333,6 +333,12 @@ EL::StatusCode OverlapRemover_HTopRun1 :: execute ()
 
   if ( m_debug ) { Info("execute()", "Applying Overlap Removal... "); }
 
+  if ( m_debug ) {
+    const xAOD::EventInfo* eventInfo(nullptr);
+    RETURN_CHECK("OverlapRemover_HTopRun1::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_verbose) ,"");
+    Info("execute()","\n\n eventNumber = %u \n", static_cast<uint32_t>(eventInfo->eventNumber()) ); 
+  }
+  
   m_numEvent++;
 
   // get the collections from TEvent or TStore
@@ -543,7 +549,7 @@ EL::StatusCode OverlapRemover_HTopRun1 :: fillObjectCutflow (const char* type, c
       if ( objLinkAcc.isAvailable( *obj_itr ) && objLinkAcc( *obj_itr ).isValid() ) {
         const xAOD::IParticle* overlapObj = *objLinkAcc( *obj_itr );
         std::stringstream ss_or; ss_or << overlapObj->type();
-        Info("fillObjectCutflow()", "	Overlap: type %s pt %6.2f", (ss_or.str()).c_str(), overlapObj->pt()/1e3);
+        Info("fillObjectCutflow()", " Overlap: type %s pt %6.2f", (ss_or.str()).c_str(), overlapObj->pt()/1e3);
       }    
     }
  
@@ -647,7 +653,11 @@ EL::StatusCode OverlapRemover_HTopRun1 :: executeOR(  const xAOD::ElectronContai
       if ( m_usePhotons ){ RETURN_CHECK( "OverlapRemover_HTopRun1::execute()", HelperFunctions::makeSubsetCont(inPhotons, selectedPhotons, ORdecor.c_str(), ToolName::OVERLAPREMOVER), ""); }
       if ( m_useTaus )   { RETURN_CHECK( "OverlapRemover_HTopRun1::execute()", HelperFunctions::makeSubsetCont(inTaus, selectedTaus, ORdecor.c_str(), ToolName::OVERLAPREMOVER), ""); }
 
-      if ( m_debug ) { Info("execute()",  "selectedElectrons : %lu, selectedMuons : %lu, selectedJets : %lu, selectedPhotons : %lu", selectedElectrons->size(), selectedMuons->size(), selectedJets->size(), selectedPhotons->size()); }
+      if ( m_debug ) { 
+        Info("execute()",  "selectedElectrons : %lu, selectedMuons : %lu, selectedJets : %lu", selectedElectrons->size(), selectedMuons->size(), selectedJets->size() ); 
+        if ( m_usePhotons ) { Info("execute()",  "selectedPhotons : %lu", selectedPhotons->size() ); }
+        if ( m_useTaus )    { Info("execute()",  "selectedTaus : %lu", selectedTaus->size() ); }
+      }
 
       // add ConstDataVector to TStore
       //
