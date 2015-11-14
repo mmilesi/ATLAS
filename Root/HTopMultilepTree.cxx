@@ -506,6 +506,7 @@ void HTopMultilepTree::ClearJetsUser()
 
 void HTopMultilepTree::ClearLeptons() 
 {
+  m_nlep = 0;
   m_lepton_pt.clear();
   m_lepton_phi.clear();
   m_lepton_eta.clear();
@@ -1000,7 +1001,7 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
 
   this->ClearLeptons();
 
-  m_nlep= 0;
+  m_nlep = 0;
   
   static SG::AuxElement::Accessor< char > isTrigMatchedLepAcc("isTrigMatchedLep");
   static SG::AuxElement::Accessor<char> isIsoLooseTrackOnlyAcc ("isIsolated_LooseTrackOnly");

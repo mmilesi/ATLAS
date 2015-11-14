@@ -42,6 +42,7 @@
 # ~~~~ bulk MC submission ~~~~ #
 #mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2413/
 mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2434/
+#mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2438/
 # ---------------------------------------
 # Full xAODs MC15
 # ---------------------------------------
@@ -157,3 +158,4 @@ mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2434/
 #data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2411/
 #data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2419/
 data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2432/
+#data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2436/
