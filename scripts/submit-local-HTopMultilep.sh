@@ -67,7 +67,7 @@
 # 20.1.8.2 - 25 ns
 # ----------------
 #
-test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.8.2/ --inDSName mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2434 --outDir out_DxAOD_HTopMultilep_MC --maxEvents 10000
+test-HTopMultilep --inDSType DxAOD-2015-13TeV --inDir /data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.8.2/ --inDSName mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2434 --outDir out_DxAOD_HTopMultilep_MC --maxEvents 1000
 #
 #######################################
 # --------------------------

@@ -508,10 +508,10 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   // decide whether to skip event or not
   //
   if ( m_doMinObjCut && !passMinObj ) {
-    if ( m_debug ) { Info("execute()","event did not pass minObjCut. Reject it"); }
+    if ( m_debug ) { Info("execute()","event did not pass minObjCut. nLeptons = %u , nBjets = %u. Reject it", nLeptons, nBjets); }
     wk()->skipEvent();
     return EL::StatusCode::SUCCESS;
-  } 
+  }
   if ( m_doMaxObjCut && !passMaxObj ) {
     if ( m_debug ) { Info("execute()","event did not pass maxObjCut. Reject it"); }
     wk()->skipEvent();
