@@ -99,6 +99,9 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_TightElectronIso_WP       = "isIsolated_Gradient";
   m_TightMuonD0sig_cut        = -1.0;	      
   m_TightMuonIso_WP           = "isIsolated_Gradient";      
+
+  // to define "Tight" taus
+  m_ConfigPathTightTaus       = "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15_final_sel.conf"; 
   
   // BTag WP to define nbjets
   m_BTag_WP                   = "MV2c20_Fix77";
@@ -139,6 +142,9 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
     m_TightElectronIso_WP         = config->GetValue("TightElectronIso_WP"  ,  m_TightElectronIso_WP.c_str());
     m_TightMuonD0sig_cut          = config->GetValue("TightMuonD0sig_cut"   ,  m_TightMuonD0sig_cut );
     m_TightMuonIso_WP             = config->GetValue("TightMuonIso_WP"      ,  m_TightMuonIso_WP.c_str()); 
+  
+    // to define "Tight" taus
+    m_ConfigPathTightTaus         = config->GetValue("ConfigPathTightTaus"  ,  m_ConfigPathTightTaus.c_str());
 
     // BTag WP to define nbjets
     m_BTag_WP                     = config->GetValue("BTagWP"               ,  m_BTag_WP.c_str());
@@ -268,7 +274,6 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   m_totalEventsW = new TH1D("TotalEventsW", "TotalEventsW", 2, 1, 3);  
   wk() -> addOutput(m_totalEvents);
   wk() -> addOutput(m_totalEventsW);
-  
 
   m_jetPlots = new JetHists( "highPtJets", "clean" ); // second argument: "kinematic", "clean", "energy", "resolution"
   m_jetPlots -> initialize();
@@ -276,14 +281,11 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   
   // initialise TauSelectionTool  
   //
-  if ( asg::ToolStore::contains<TauAnalysisTools::TauSelectionTool>("TauSelectionTool") ) {
-    m_TauSelTool = asg::ToolStore::get<TauAnalysisTools::TauSelectionTool>("TauSelectionTool");
-  } else {
-    m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool" );
-  }  
-  m_TauSelTool->setProperty("ConfigPath", "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15_final_sel.conf");
-                                                     
-  RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool." );
+  m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool_HTop" );
+  m_TauSelTool->msg().setLevel( MSG::DEBUG); // VERBOSE, INFO, DEBUG
+  
+  RETURN_CHECK("TauSelector::initialize()", m_TauSelTool->setProperty("ConfigPath",m_ConfigPathTightTaus.c_str()), "Failed to set ConfigPath property");
+  RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool_HTop" );
 
   // ***********************************************************
   // For MM/FF: read r/f rates from input ROOT histograms
@@ -631,6 +633,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   ystarDecor(*eventInfo) = ( signalJets->size() > 1 ) ? ( signalJets->at(0)->rapidity() - signalJets->at(1)->rapidity() ) / 2.0 : 999.0;
 
   // decorate taus
+  
   static SG::AuxElement::Decorator< char > isTauBDTTightDecor("isTauBDTTight");  
   for ( auto tau_itr : *signalTauJets ) { 
     isTauBDTTightDecor( *tau_itr ) = 0;
