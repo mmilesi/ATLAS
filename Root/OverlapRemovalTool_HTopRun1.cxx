@@ -115,8 +115,8 @@ StatusCode OverlapRemovalTool_HTopRun1::removeEleMuonOverlap(const xAOD::Electro
     if ( isSurvivingObject(electron) ) {
       for ( const auto muon : muons ) {
         if ( isSurvivingObject(muon) ) {
-          if ( deltaR(electron, muon) < m_electronMuonDR_Run1 ) {
-            ATH_MSG_DEBUG("  Found overlap electron w/ muon (electron pT = " << electron->pt()*invGeV << ") - deltaR = " << deltaR(electron,muon) << " - removing electron..." );
+          if ( deltaRHTop(electron, muon) < m_electronMuonDR_Run1 ) {
+            ATH_MSG_DEBUG("  Found overlap electron w/ muon (electron pT = " << electron->pt()*invGeV << ") - deltaRHTop = " << deltaRHTop(electron,muon) << " - removing electron..." );
             setObjectFail(electron);
           }
 	}
@@ -138,12 +138,12 @@ StatusCode OverlapRemovalTool_HTopRun1::removeEleEleOverlap(const xAOD::Electron
     if ( isSurvivingObject(electronA) ) {
       for ( const auto electronB : electrons ) {
         if ( isSurvivingObject(electronB) ) { 
-	  if ( (electronB != electronA) && deltaR(electronA, electronB) < m_electronElectronDR_Run1 ) {
-	    if ( electronA->pt() < electronB->pt() ) {
-	      ATH_MSG_DEBUG("  Found overlap electron A (pT = " << electronA->pt()*invGeV << ") w/ electron B (pT = " << electronB->pt()*invGeV << ") - deltaR = " << deltaR(electronA,electronB) << " - removing A..." );
+	  if ( (electronB != electronA) && deltaRHTop(electronA, electronB) < m_electronElectronDR_Run1 ) {
+	    if ( electronA->pt() <= electronB->pt() ) {
+	      ATH_MSG_DEBUG("  Found overlap electron A (pT = " << electronA->pt()*invGeV << ") w/ electron B (pT = " << electronB->pt()*invGeV << ") - deltaRHTop = " << deltaRHTop(electronA,electronB) << " - removing A..." );
 	      setObjectFail(electronA);
 	    } else {
-	      ATH_MSG_DEBUG("  Found overlap electron B (pT = " << electronB->pt()*invGeV << ") w/ electron A (pT = " << electronA->pt()*invGeV << ") - deltaR = " << deltaR(electronA,electronB) << " - removing B..." );
+	      ATH_MSG_DEBUG("  Found overlap electron B (pT = " << electronB->pt()*invGeV << ") w/ electron A (pT = " << electronA->pt()*invGeV << ") - deltaRHTop = " << deltaRHTop(electronA,electronB) << " - removing B..." );
 	      setObjectFail(electronB);
 	    }
 	  }
@@ -167,8 +167,8 @@ StatusCode OverlapRemovalTool_HTopRun1::removeJetEleOverlap(const xAOD::JetConta
     if ( isSurvivingObject(jet) /*&& !isBJet(jet)*/ ) { // maybe we should remove the jet only if the jet is NOT btagged...
       for ( const auto electron : electrons ) {
         if ( isSurvivingObject(electron) ) {
-      	  if ( deltaR(jet, electron) < m_jetElectronDR_Run1 ) {
-      	    ATH_MSG_DEBUG("  Found overlap jet w/ electron (jet pT = " << jet->pt()*invGeV << ") - deltaR = " << deltaR(jet,electron) << " - removing jet...");
+      	  if ( deltaRHTop(jet, electron) < m_jetElectronDR_Run1 ) {
+      	    ATH_MSG_DEBUG("  Found overlap jet w/ electron (jet pT = " << jet->pt()*invGeV << ") - deltaRHTop = " << deltaRHTop(jet,electron) << " - removing jet...");
       	    setObjectFail(jet);
       	  }
         }
@@ -192,8 +192,8 @@ StatusCode OverlapRemovalTool_HTopRun1::removeMuonJetOverlap(const xAOD::MuonCon
     if ( isSurvivingObject(muon) ) {
       for ( const auto jet : jets ) {  
         if ( isSurvivingObject(jet) /*&& isBJet(jet)*/ ) { // maybe we should remove the muon only if the jet is btagged...
-          if ( deltaR(jet, muon) < ( m_muonJetDR_Run1 + 10.0 * ( invGeV / muon->pt() ) ) ) {
-            ATH_MSG_DEBUG("  Found overlap muon w/ jet (muon pT = " << muon->pt()*invGeV << ") - deltaR = " << deltaR(jet,muon) << " - removing muon...");
+          if ( deltaRHTop(jet, muon) < ( m_muonJetDR_Run1 + 10e3 / muon->pt() ) ) {
+            ATH_MSG_DEBUG("  Found overlap muon w/ jet (muon pT = " << muon->pt()*invGeV << ") - deltaRHTop = " << deltaRHTop(jet,muon) << " - removing muon...");
             setObjectFail(muon);
           }
         }
@@ -216,8 +216,8 @@ StatusCode OverlapRemovalTool_HTopRun1::removeTauEleOverlap(const xAOD::TauJetCo
     if ( isSurvivingObject(tau) ) { 
       for ( const auto electron : electrons ) {
     	if ( isSurvivingObject(electron) ) {
-    	  if ( deltaR(tau, electron) < m_tauElectronDR_Run1 ) {
-            ATH_MSG_DEBUG("  Found overlap tau w/ electron (tau pT = " << tau->pt()*invGeV << ") - deltaR = " << deltaR(tau,electron) << " - removing tau...");
+    	  if ( deltaRHTop(tau, electron) < m_tauElectronDR_Run1 ) {
+            ATH_MSG_DEBUG("  Found overlap tau w/ electron (tau pT = " << tau->pt()*invGeV << ") - deltaRHTop = " << deltaRHTop(tau,electron) << " - removing tau...");
     	    setObjectFail(tau);
     	  }
     	}
@@ -240,8 +240,8 @@ StatusCode OverlapRemovalTool_HTopRun1::removeTauMuonOverlap(const xAOD::TauJetC
     if ( isSurvivingObject(tau) ) { 
       for ( const auto muon : muons ) {
     	if ( isSurvivingObject(muon) ) {
-    	  if ( deltaR(tau, muon) < m_tauMuonDR_Run1 ) {
-            ATH_MSG_DEBUG("  Found overlap tau w/ muon (tau pT = " << tau->pt()*invGeV << ") - deltaR = " << deltaR(tau,muon) << " - removing tau...");
+    	  if ( deltaRHTop(tau, muon) < m_tauMuonDR_Run1 ) {
+            ATH_MSG_DEBUG("  Found overlap tau w/ muon (tau pT = " << tau->pt()*invGeV << ") - deltaRHTop = " << deltaRHTop(tau,muon) << " - removing tau...");
     	    setObjectFail(tau);
     	  }
     	}
@@ -263,8 +263,8 @@ StatusCode OverlapRemovalTool_HTopRun1::removeJetTauOverlap(const xAOD::JetConta
     if ( isSurvivingObject(jet) ) { 
       for ( const auto tau : taus ) {
     	if ( isSurvivingObject(tau) ) {
-    	  if ( deltaR(jet, tau) < m_jetTauDR_Run1 ) {
-            ATH_MSG_DEBUG("  Found overlap jet w/ tau (jet pT = " << jet->pt()*invGeV << ") - deltaR = " << deltaR(jet,tau) << " - removing jet...");
+    	  if ( deltaRHTop(jet, tau) < m_jetTauDR_Run1 ) {
+            ATH_MSG_DEBUG("  Found overlap jet w/ tau (jet pT = " << jet->pt()*invGeV << ") - deltaRHTop = " << deltaRHTop(jet,tau) << " - removing jet...");
     	    setObjectFail(jet);
     	  }
     	}

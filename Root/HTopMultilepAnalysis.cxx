@@ -282,7 +282,7 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   // initialise TauSelectionTool  
   //
   m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool_HTop" );
-  m_TauSelTool->msg().setLevel( MSG::DEBUG); // VERBOSE, INFO, DEBUG
+  m_TauSelTool->msg().setLevel( MSG::INFO ); // VERBOSE, INFO, DEBUG
   
   RETURN_CHECK("TauSelector::initialize()", m_TauSelTool->setProperty("ConfigPath",m_ConfigPathTightTaus.c_str()), "Failed to set ConfigPath property");
   RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool_HTop" );
@@ -1195,7 +1195,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
 	
     }
     // 3. subleading lepton is tight & trigger-matched, but leading is not 
-    else if ( isSubLeadingTight /* && isSubLeadingTrigMatched  */ ) {
+    else if ( isSubLeadingTight  && isSubLeadingTrigMatched  ) {
         
 	// the probe will be the leading, which is also !tight
         isTagDecor( *subLeadingLepton ) = 1;
