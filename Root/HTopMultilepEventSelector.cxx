@@ -39,8 +39,6 @@
 #include <xAODAnaHelpers/tools/ReturnCheckConfig.h>
 
 // external tools include(s):
-#include "TauAnalysisTools/TauSelectionTool.h"
-#include "TauAnalysisTools/Enums.h"
 
 // ROOT include(s):
 #include "TEnv.h"
@@ -55,8 +53,7 @@ ClassImp(HTopMultilepEventSelector)
 
 HTopMultilepEventSelector :: HTopMultilepEventSelector () :
   m_cutflowHist(nullptr),
-  m_cutflowHistW(nullptr),
-  m_TauSelTool(nullptr)
+  m_cutflowHistW(nullptr)
 {
   // Here you put any code for the base initialization of variables,
   // e.g. initialize all pointers to 0.  Note that you should only put
@@ -73,6 +70,8 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector () :
   m_inContainerName_mu   = "";     
   m_inContainerName_jets = "";   
   m_inContainerName_tau  = "";    
+  
+  m_outContainerName_lep = "Leptons_Selected";
   
   m_doMinObjCut = false;
   m_doMaxObjCut = false;
@@ -122,7 +121,8 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
     m_inContainerName_mu	 = config->GetValue("InputContainerMuons",     m_inContainerName_mu.c_str());
     m_inContainerName_jets	 = config->GetValue("InputContainerJets",      m_inContainerName_jets.c_str());
     m_inContainerName_tau	 = config->GetValue("InputContainerTaus",      m_inContainerName_tau.c_str());
-    
+    m_outContainerName_lep       = config->GetValue("OutputContainerLeptons",  m_outContainerName_lep.c_str());   
+     
     // configurable cuts
     //
     m_doMinObjCut		 = config->GetValue("DoMinObjCut", m_doMinObjCut);
@@ -257,14 +257,6 @@ EL::StatusCode HTopMultilepEventSelector :: initialize ()
   m_numEventPass  = 0;
   m_weightNumEventPass  = 0;
   m_numObjectPass = 0;
-
-  // initialise TauSelectionTool 
-  //
-  m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool" );
-  m_TauSelTool->setProperty("ConfigPath", "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15.conf");
-  m_TauSelTool->msg().setLevel( MSG::INFO );
- 
-  RETURN_CHECK( "HTopMultilepEventSelector::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool." );
 
   Info("initialize()", "HTopMultilepEventSelector Interface succesfully initialized!" );
 
@@ -405,30 +397,8 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
     }
   }
   
-
-  // create selected tau container 
-  //
-  ConstDataVector<xAOD::TauJetContainer>* selectedTaus(nullptr); 
-  selectedTaus =  new ConstDataVector<xAOD::TauJetContainer>(SG::VIEW_ELEMENTS);
+  unsigned int nTaus = inTauJets->size();
     
-  for ( auto tau_itr : *inTauJets ) { 
-      
-    if ( m_debug ) { Info("execute()","input tau pT = %2f ", tau_itr->pt() / 1e3 ); }
-
-    if ( !m_TauSelTool->accept(*tau_itr) ) { continue; }
-    
-    selectedTaus->push_back( tau_itr );
-  }
-    
-  unsigned int nSelectedTaus = selectedTaus->size();
-    
-  if ( m_debug ) { 
-    Info("execute()"," inTaus = %lu -  selectedTaus = %u ", inTauJets->size(), nSelectedTaus ); 
-    for ( auto tau_itr : *selectedTaus ) {
-      Info("execute()","\t selected tau pT = %2f ", tau_itr->pt() / 1e3 ); 
-    }
-  }
-
   // ***************************** //
   // now make the event selection
   // ***************************** //
@@ -447,12 +417,12 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   }
 
   if ( nLeptons >= static_cast<unsigned int>(m_n_leptons_with_tau_min)	   &&
-       nSelectedTaus >= static_cast<unsigned int>(m_n_taus_min)		   &&
+       nTaus >= static_cast<unsigned int>(m_n_taus_min)		           &&
        leading_lep_pt > static_cast<unsigned int>(m_leading_lep_pT_min)     
        ) { 
     if ( m_debug ) {
-      for ( auto tau_it : *selectedTaus ) {
-	Info("execute()", "selected tau pT: %2f ", tau_it->pt() );
+      for ( auto tau_it : *inTauJets ) {
+	Info("execute()", "\t\t tau pT: %2f ", tau_it->pt() );
       }
       Info("execute()","\t leading lepton pT = %2f ", leading_lep_pt / 1e3 );
     }   
@@ -505,10 +475,10 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   // decide whether to skip event or not
   //
   if ( m_doMinObjCut && !passMinObj ) {
-    if ( m_debug ) { Info("execute()","event did not pass minObjCut. Reject it"); }
+    if ( m_debug ) { Info("execute()","event did not pass minObjCut. nLeptons = %u , nBjets = %u , nTaus = %u. Reject it", nLeptons, nBjets, nTaus); }
     wk()->skipEvent();
     return EL::StatusCode::SUCCESS;
-  } 
+  }
   if ( m_doMaxObjCut && !passMaxObj ) {
     if ( m_debug ) { Info("execute()","event did not pass maxObjCut. Reject it"); }
     wk()->skipEvent();
@@ -518,8 +488,7 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   // add ConstDataVector(s) to TStore
   // NB: don't store a sorted container to TStore and expect it will be still sorted at retrieval!!
   //
-  RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( leptonsCDV, "Leptons_Selected" ), "Failed to store const data container");
-  RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( selectedTaus, "Taus_Selected" ), "Failed to store const data container");
+  RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( leptonsCDV, m_outContainerName_lep ), "Failed to store const data container");
   
   m_numEventPass++;
   m_weightNumEventPass += mcEvtWeight;
@@ -573,10 +542,6 @@ EL::StatusCode HTopMultilepEventSelector :: finalize ()
     m_cutflowHist ->SetBinContent( m_cutflow_bin, m_numEventPass        );
     m_cutflowHistW->SetBinContent( m_cutflow_bin, m_weightNumEventPass  );
   }
-
-  Info("finalize()", "Deleting tool instances...");
-
-  if ( m_TauSelTool ) { m_TauSelTool = nullptr; delete m_TauSelTool; }
 
   return EL::StatusCode::SUCCESS;
 }

@@ -19,10 +19,6 @@
 // ROOT include(s):
 #include "TH1D.h"
 
-namespace TauAnalysisTools{
-  class TauSelectionTool;
-}
-
 class HTopMultilepEventSelector : public xAH::Algorithm
 {
   // put your configuration variables here as public variables.
@@ -30,10 +26,11 @@ class HTopMultilepEventSelector : public xAH::Algorithm
 public:
 
   // configuration variables
-  std::string    m_inContainerName_el;     
-  std::string    m_inContainerName_mu;     
-  std::string    m_inContainerName_jets;   
-  std::string    m_inContainerName_tau;    
+  std::string  m_inContainerName_el;	 
+  std::string  m_inContainerName_mu;	 
+  std::string  m_inContainerName_jets;   
+  std::string  m_inContainerName_tau;	 
+  std::string  m_outContainerName_lep;
 
   bool         m_useCutFlow;    
 
@@ -71,8 +68,6 @@ private:
   TH1D* m_cutflowHistW;     //!
   int   m_cutflow_bin;      //!
 
-  // tools
-  TauAnalysisTools::TauSelectionTool         *m_TauSelTool ; //!
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker

@@ -43,10 +43,17 @@ class HTopMultilepTree : public HelpTreeBase
     int  		m_isTL;
     int  		m_isLT;
     int  		m_isLL;
+    int  		m_isTM;
+    int  		m_isMT;
+    int  		m_isMM;
     int  		m_isTelLmu;
     int  		m_isLelTmu;
     int  		m_isTmuLel;
     int  		m_isLmuTel; 
+    int  		m_isTelMmu;
+    int  		m_isMelTmu;
+    int  		m_isTmuMel;
+    int  		m_isMmuTel; 
     int                 m_isNonTightEvent;
     int                 m_isProbeElEvent;
     int                 m_isProbeMuEvent;
@@ -56,6 +63,7 @@ class HTopMultilepTree : public HelpTreeBase
     
     /* muon variables */
     std::vector<int> m_muon_isTight;
+    std::vector<int> m_muon_isMedium;
     std::vector<int> m_muon_isOS;
     std::vector<int> m_muon_isClosestSS;
     std::vector<int> m_muon_isTag;     
@@ -84,6 +92,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_muon_tag_isIsolated_UserDefinedFixEfficiency;
     std::vector<int>   m_muon_tag_isIsolated_UserDefinedCut;	 
     std::vector<int>   m_muon_tag_isTight; 
+    std::vector<int>   m_muon_tag_isMedium; 
     std::vector<int>   m_muon_tag_isTruthMatched; 
     std::vector<int>   m_muon_tag_isChFlip; 
     std::vector<int>   m_muon_tag_isBrem;
@@ -107,6 +116,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_muon_probe_isIsolated_UserDefinedFixEfficiency;
     std::vector<int>   m_muon_probe_isIsolated_UserDefinedCut;	
     std::vector<int>   m_muon_probe_isTight; 
+    std::vector<int>   m_muon_probe_isMedium; 
     std::vector<int>   m_muon_probe_isTruthMatched; 
     std::vector<int>   m_muon_probe_isChFlip; 
     std::vector<int>   m_muon_probe_isBrem;
@@ -123,6 +133,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_electron_calo_eta;   
     std::vector<int>   m_electron_crack;   
     std::vector<int>   m_electron_isTight;
+    std::vector<int>   m_electron_isMedium;
     std::vector<int>   m_electron_isOS;
     std::vector<int>   m_electron_isClosestSS;
     std::vector<int>   m_electron_isTag;     
@@ -155,6 +166,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_tag_isIsolated_UserDefinedFixEfficiency;
     std::vector<int>   m_electron_tag_isIsolated_UserDefinedCut;	    
     std::vector<int>   m_electron_tag_isTight; 
+    std::vector<int>   m_electron_tag_isMedium; 
     std::vector<int>   m_electron_tag_isTruthMatched; 
     std::vector<int>   m_electron_tag_isChFlip; 
     std::vector<int>   m_electron_tag_isBrem;
@@ -184,6 +196,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_probe_isIsolated_UserDefinedFixEfficiency;
     std::vector<int>   m_electron_probe_isIsolated_UserDefinedCut;    
     std::vector<int>   m_electron_probe_isTight; 
+    std::vector<int>   m_electron_probe_isMedium; 
     std::vector<int>   m_electron_probe_isTruthMatched; 
     std::vector<int>   m_electron_probe_isChFlip; 
     std::vector<int>   m_electron_probe_isBrem;
@@ -213,6 +226,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_isIsolated_UserDefinedFixEfficiency;
     std::vector<int>   m_lepton_isIsolated_UserDefinedCut;    
     std::vector<int>   m_lepton_isTight; 
+    std::vector<int>   m_lepton_isMedium; 
     std::vector<int>   m_lepton_isOS;
     std::vector<int>   m_lepton_isClosestSS;
     std::vector<int>   m_lepton_isTag;     
@@ -242,6 +256,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_tag_isIsolated_UserDefinedCut;      
     std::vector<int>   m_lepton_tag_isTrigMatched;     
     std::vector<int>   m_lepton_tag_isTight; 
+    std::vector<int>   m_lepton_tag_isMedium; 
     std::vector<int>   m_lepton_tag_isTruthMatched; 
     std::vector<int>   m_lepton_tag_isChFlip; 
     std::vector<int>   m_lepton_tag_isBrem;
@@ -267,6 +282,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_probe_isIsolated_UserDefinedCut;      
     std::vector<int>   m_lepton_probe_isTrigMatched;       
     std::vector<int>   m_lepton_probe_isTight; 
+    std::vector<int>   m_lepton_probe_isMedium; 
     std::vector<int>   m_lepton_probe_isTruthMatched; 
     std::vector<int>   m_lepton_probe_isChFlip; 
     std::vector<int>   m_lepton_probe_isBrem;

@@ -13,14 +13,12 @@
 // ROOT include(s):
 #include "TH1D.h"
 
-#include "xAODAnaHelpers/JetHists.h"
+// external tools include(s):
+#include "TauAnalysisTools/TauSelectionTool.h"
 
 // algorithm wrapper
 #include "xAODAnaHelpers/Algorithm.h"
-
-namespace TauAnalysisTools{
-  class TauSelectionTool;
-}
+#include "xAODAnaHelpers/JetHists.h"
 
 class HTopMultilepAnalysis : public xAH::Algorithm
 {
@@ -51,6 +49,9 @@ public:
   std::string m_TightElectronIso_WP;
   float       m_TightMuonD0sig_cut;
   std::string m_TightMuonIso_WP;
+  
+  /* to define "Tight" taus */
+  std::string m_ConfigPathTightTaus;
   
   /* BTag WP to define nbjets*/
   std::string m_BTag_WP;

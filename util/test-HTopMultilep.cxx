@@ -31,6 +31,7 @@
 #include "xAODAnaHelpers/ElectronCalibrator.h"
 #include "xAODAnaHelpers/ElectronEfficiencyCorrector.h"
 #include "xAODAnaHelpers/ElectronSelector.h"
+#include "xAODAnaHelpers/TauSelector.h"
 #include "xAODAnaHelpers/OverlapRemover.h"
 #include "HTopMultilepAnalysis/OverlapRemover_HTopRun1.h"
 #include "xAODAnaHelpers/METConstructor.h"
@@ -224,10 +225,10 @@ int main ( int argc, char **argv ) {
     electronEffCorr_LHTight->setName("electronEfficiencyCorrector_LHTight")->setConfig(localDataDir+"Electrons/"+"electronEffCorr_LHTight"+"_"+inDSType+".config")->registerClass(registry, "ElectronEfficiencyCorrector");
     JetSelector* jetSelect_selection              = new JetSelector();
     jetSelect_selection->setName("jetSelect_selection")->setConfig(localDataDir+"Jets/"+"jetSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "JetSelector");
-    MuonSelector* muonSelect_preselection         = new MuonSelector();
-    muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
-    ElectronSelector* electronSelect_preselection   = new ElectronSelector();
-    electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
+    //MuonSelector* muonSelect_preselection         = new MuonSelector();
+    //muonSelect_preselection->setName("muonSelect_preselection")->setConfig(localDataDir+"Muons/"+"muonPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
+    //ElectronSelector* electronSelect_preselection   = new ElectronSelector();
+    //electronSelect_preselection->setName("electronSelect_preselection")->setConfig(localDataDir+"Electrons/"+"electronPreSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
     //BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix60     = new BJetEfficiencyCorrector();
     //bjetEffCorr_BTag_MV2c20_Fix60->setName("bjetEffCor_BTag_MV2c20_Fix60")->setConfig(localDataDir+"Jets/"+"bjetEffCorr_BTag_MV2c20_Fix60"+"_"+inDSType+".config")->registerClass(registry, "BJetEfficiencyCorrector");
     //BJetEfficiencyCorrector* bjetEffCorr_BTag_MV2c20_Fix70     = new BJetEfficiencyCorrector();
@@ -240,10 +241,12 @@ int main ( int argc, char **argv ) {
     muonSelect_selection->setName("muonSelect_selection")->setConfig(localDataDir+"Muons/"+"muonSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "MuonSelector");
     ElectronSelector* electronSelect_selection   = new ElectronSelector();
     electronSelect_selection->setName("electronSelect_selection")->setConfig(localDataDir+"Electrons/"+"electronSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "ElectronSelector");
+    TauSelector* tauSelect_selection   = new TauSelector();
+    tauSelect_selection->setName("tauSelect_selection")->setConfig(localDataDir+"Taus/"+"tauSelect_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "TauSelector");
     // ASG O.R.
     //
-    OverlapRemover* overlapRemoval                = new OverlapRemover();
-    overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
+    //OverlapRemover* overlapRemoval                = new OverlapRemover();
+    //overlapRemoval->setName("overlap_removal")->setConfig(localDataDir+"OverlapRemoval/"+"overlapRemoval_HTopMultilep"+"_"+inDSType+".config")->registerClass(registry, "OverlapRemover");
     // HTop O.R.
     //
     OverlapRemover_HTopRun1* overlapRemoval_HTopRun1  = new OverlapRemover_HTopRun1();
@@ -279,6 +282,7 @@ int main ( int argc, char **argv ) {
     job.algsAdd( jetSelect_selection );
     job.algsAdd( muonSelect_selection );
     job.algsAdd( electronSelect_selection );
+    job.algsAdd( tauSelect_selection );
     job.algsAdd( met );
     job.algsAdd( overlapRemoval_HTopRun1 ); // HTop O.R.
     job.algsAdd( bjetEffCorr_BTag_MV2c20_Fix77 );
