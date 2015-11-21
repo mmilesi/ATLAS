@@ -310,7 +310,21 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
     
   if ( m_debug ) { Info("execute()"," inElectrons N = %lu , inMuons N = %lu , inJets N = %lu, inTaus N = %lu ", inElectrons->size(), inMuons->size(), inJets->size(), inTauJets->size() ); }
 
-  
+  /*
+  if ( true ) {
+    std::cout << eventInfo->eventNumber() << "," << inElectrons->size() << "," << inMuons->size() << "," << inJets->size() << std::endl;
+    std::cout << "pT(e): ";
+    for ( auto el_itr : *(inElectrons) ) { std::cout << el_itr->pt()/1e3 << " "; }
+    std::cout << std::endl;
+    std::cout << "pT(m): ";
+    for ( auto mu_itr : *(inMuons) ) { std::cout << mu_itr->pt()/1e3 << " "; }
+    std::cout << std::endl;
+    std::cout << "pT(j): ";
+    for ( auto jet_itr : *(inJets) ) { std::cout << jet_itr->pt()/1e3 << " "; }
+    std::cout << std::endl;
+  }
+  */
+
   // create a CDV for leptons ( electrons + muons )
   //
   ConstDataVector<xAOD::IParticleContainer>* leptonsCDV(nullptr);
