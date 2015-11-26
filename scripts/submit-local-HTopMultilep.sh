@@ -23,7 +23,7 @@ infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.8.2/mc15_13Te
 configpath=HTopMultilepAnalysis/scripts/jobOptions_HTopMultilep.py
 current_time="$(date +'%d-%m-%Y-%T')"
 outdir=output_local_DxAOD-2015-13TeV_${current_time}
-nevents=1000
+nevents=0
 
 echo ""
 echo "Input file path :"

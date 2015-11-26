@@ -1,5 +1,5 @@
 lsetup dq2
-voms-proxy-int -voms atlas
+voms-proxy-init -voms atlas
 localSetupPandaClient currentJedi --noAthenaCheck
 
 
