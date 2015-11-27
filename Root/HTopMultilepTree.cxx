@@ -59,11 +59,11 @@ void HTopMultilepTree::AddTriggerUser(const std::string detailStrUser)
 }
 */
 
-void HTopMultilepTree::AddJetsUser(const std::string detailStrUser)
+void HTopMultilepTree::AddJetsUser(const std::string detailStrUser, const std::string jetName )
 {
 
   // to get rid of warning when detailString is not used
-  if ( m_debug ) { Info("AddJetsUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
+  if ( m_debug ) { Info("AddJetsUser()", "Adding branches w/ detail: %s - Jet name: %s", detailStrUser.c_str(), jetName.c_str()); }
 
   // jet variables
   m_tree->Branch("jet_m",     &m_jet_m);
@@ -496,9 +496,10 @@ void HTopMultilepTree::ClearElectronsUser()
   m_electron_probe_ancestorTruthStatus.clear();
 }
 
-
-void HTopMultilepTree::ClearJetsUser()
+void HTopMultilepTree::ClearJetsUser( const std::string jetName )
 {
+  if ( m_debug ) { Info("ClearJetsUser()", "Clearing jet branches - Jet name: %s", jetName.c_str()); }
+
   // jet variables
   m_jet_m.clear();
 }
@@ -638,8 +639,10 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
 void HTopMultilepTree::FillTriggerUser( const xAOD::EventInfo* eventInfo ) { }
 */
 
-void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet )
+void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet, const std::string jetName )
 {
+  if ( m_debug ) { Info("FillJetsUser()", "Filling jets - Jet name: %s", jetName.c_str()); }
+
   m_jet_m.push_back( jet->m() );
 }
 

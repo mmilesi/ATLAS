@@ -307,7 +307,7 @@ class HTopMultilepTree : public HelpTreeBase
     /*void AddTriggerUser(const std::string detailStrUser = "");*/
     void AddMuonsUser(const std::string detailStrUser = "");
     void AddElectronsUser(const std::string detailStrUser = "");
-    void AddJetsUser(const std::string detailStrUser = "");
+    void AddJetsUser(const std::string detailStrUser = "", const std::string = "jet" );
     void AddTausUser(const std::string detailStrUser = "");
     /*void AddMETUser(const std::string detailStrUser = "");*/    
     
@@ -317,7 +317,7 @@ class HTopMultilepTree : public HelpTreeBase
     /*void ClearTriggerUser();*/
     void ClearMuonsUser();   
     void ClearElectronsUser();  
-    void ClearJetsUser();
+    void ClearJetsUser( const std::string = "jet" );
     void ClearTausUser();
     /*void ClearMETUser();*/    
     void ClearLeptons();
@@ -326,7 +326,7 @@ class HTopMultilepTree : public HelpTreeBase
     /*void FillTriggerUser( const xAOD::EventInfo*  );*/
     void FillMuonsUser( const xAOD::Muon* );
     void FillElectronsUser( const xAOD::Electron*  );
-    void FillJetsUser( const xAOD::Jet* );
+    void FillJetsUser( const xAOD::Jet*, const std::string = "jet" );
     void FillTausUser( const xAOD::TauJet* );
     /*void FillMETUser( const xAOD::MissingETContainer*  );*/
     void FillLeptons( const xAOD::IParticleContainer*  ); 
