@@ -1,7 +1,7 @@
-#!/bin/bash 
+#!/bin/bash
 
 # -----------------------------
-# full xAOD - mc15 13TeV - 25ns  
+# full xAOD - mc15 13TeV - 25ns
 # -----------------------------
 
 #infilepath="/data/mmilesi/HTopMultileptonsTestSamples/MC15/r6282/mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.AOD.e3698_s2608_s2183_r6765_r6282/*root*"
@@ -20,10 +20,10 @@ infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.8.2/mc15_13Te
 
 # ------------------------------------------------------------------------------------
 
-configpath=HTopMultilepAnalysis/scripts/jobOptions_HTopMultilep.py
+configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep.py"
 current_time="$(date +'%d-%m-%Y-%T')"
 outdir=output_local_DxAOD-2015-13TeV_${current_time}
-nevents=0
+nevents=1000
 
 echo ""
 echo "Input file path :"
