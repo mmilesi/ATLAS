@@ -281,7 +281,8 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   
   // initialise TauSelectionTool  
   //
-  m_TauSelTool = new TauAnalysisTools::TauSelectionTool( "TauSelectionTool_HTop" );
+  std::string tau_sel_tool_name = std::string("TauSelectionTool_") + m_name;
+  m_TauSelTool = new TauAnalysisTools::TauSelectionTool( tau_sel_tool_name );
   m_TauSelTool->msg().setLevel( MSG::INFO ); // VERBOSE, INFO, DEBUG
   
   RETURN_CHECK("TauSelector::initialize()", m_TauSelTool->setProperty("ConfigPath",m_ConfigPathTightTaus.c_str()), "Failed to set ConfigPath property");
