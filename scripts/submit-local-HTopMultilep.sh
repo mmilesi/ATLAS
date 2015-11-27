@@ -39,4 +39,4 @@ echo ""
 echo ${outdir}
 echo ""
 
-xAH_run.py --files ${infilepath} --config ${configpath} --submitDir ${outdir} --nevents ${nevents} direct
+xAH_run.py -vv --files ${infilepath} --config ${configpath} --submitDir ${outdir} --nevents ${nevents} direct
