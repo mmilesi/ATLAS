@@ -41,9 +41,8 @@
 # ~~~~ ttWW (background) ~~~~ #
 # ~~~~ bulk MC submission ~~~~ #
 #mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2413/
-#mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2434/
+mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2434/
 #mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2438/
-mc15_13TeV.361505.MadGraphPythia8EvtGen_A14NNPDF23LO_Zmumu_Np0.merge.DAOD_HIGG8D1.e3898_s2608_s2183_r6869_r6282_p2438_tid06808706_00/ 
 # ---------------------------------------
 # Full xAODs MC15
 # ---------------------------------------
@@ -117,7 +116,7 @@ mc15_13TeV.361505.MadGraphPythia8EvtGen_A14NNPDF23LO_Zmumu_Np0.merge.DAOD_HIGG8D
 #data15_13TeV.00267360.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
 #data15_13TeV.00267367.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
 #data15_13TeV.00267359.physics_Main.merge.DAOD_HIGG8D1.f597_m1441_p2361/
-# 
+#
 # *********************************************************
 #
 # Bulk reprocessing of 'physics_Main' (runs 267638, 267639)
@@ -158,5 +157,5 @@ mc15_13TeV.361505.MadGraphPythia8EvtGen_A14NNPDF23LO_Zmumu_Np0.merge.DAOD_HIGG8D
 # ******************************
 #data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2411/
 #data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2419/
-#data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2432/
+data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2432/
 #data15_13TeV.*.physics_Main.merge.DAOD_HIGG8D1.*_p2436/
