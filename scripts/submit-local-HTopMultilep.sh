@@ -16,7 +16,7 @@ infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.8.2/mc15_13Te
 # 20.1.6.3 - 25 ns - data
 # -----------------------
 #
-#infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.6.3/data15_13TeV.00276329.physics_Main.merge.DAOD_HIGG8D1.f620_m1480_p2411/*root*"
+#infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.6.3/data15_13TeV.00276329.physics_Main.merge.DAOD_HIGG8D1.f620_m1480_p2411/DAOD_HIGG8D1.06323611._000001.pool.root.1"
 
 # ------------------------------------------------------------------------------------
 

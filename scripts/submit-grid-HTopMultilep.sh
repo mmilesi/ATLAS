@@ -2,7 +2,7 @@
 
 username=mmilesi
 
-prodtag=021_testLeak7_DxAOD
+prodtag=022b_DxAOD
 
 infilepath="HTopMultilepAnalysis/doc/list-grid-DxAOD-2015-13TeV.txt"
 
