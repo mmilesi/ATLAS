@@ -127,7 +127,7 @@ MuonSelectorDict = { "m_name"                      : "muonSelect_selection",
 	             "m_muonQualityStr"            : "Loose",
                      "m_d0sig_max"	     	   : 10.0,
                      "m_z0sintheta_max"      	   : 2.0,
-                     "m_MinIsoWPCut"         	   : "",
+                     "m_MinIsoWPCut"         	   : "Loose",
 		     "m_IsoWPList"           	   : "Loose,GradientLoose,Gradient,FixedCutLoose,FixedCutTightTrackOnly,UserDefinedCut",
                      "m_CaloIsoEff"		   : "0.1*x",
                      "m_TrackIsoEff"		   : "0.1*x",
@@ -300,7 +300,7 @@ HTopMultilepEventSelectorDict = { "m_name"                   : "eventSelect_skim
    				  "m_n_leptons_with_tau_min" : 2,
    				  "m_n_taus_min"             : 2,
 				  "m_BTag_WP"                : "FixedCutBEff_77",
-                                  "m_n_jets_min"             : 1,
+                                  "m_n_jets_min"             : 0,
    				  "m_n_bjets_min"            : 0,
                                 }
 
