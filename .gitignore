@@ -1,0 +1,20 @@
+# OS noise
+*~
+.DS_Store
+*\#*
+
+# Python noise
+*.pyc
+
+# C++ noise
+*.d
+*.so
+*.pcm
+
+# Build noise
+libs/
+
+# Commit noise
+output_*
+*.out
+
