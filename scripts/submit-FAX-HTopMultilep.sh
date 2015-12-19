@@ -3,17 +3,21 @@
 # when using DQ2 CONTAINERS, put a trailing '/'
 #
 #inDS="mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2434/"
+#inDS="data15_13TeV.00280464.physics_Main.merge.DAOD_HIGG8D1.f629_m1504_p2432/"
 
 # when using DQ2 DATASETS, do *not* put a trailing '/'
 #
-#inDS="mc15_13TeV.361505.MadGraphPythia8EvtGen_A14NNPDF23LO_Zmumu_Np0.merge.DAOD_HIGG8D1.e3898_s2608_s2183_r6869_r6282_p2438_tid06808706_00"
 inDS="mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r6765_r6282_p2434_tid06670680_00"
 
 # ------------------------------------------------------------------------------------
 
+# tokenize inDS using '.' as separator
+#
+tokens=(${inDS//./ })
+
 configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep.py"
 current_time="$(date +'%d-%m-%Y-%T')"
-outdir=output_FAX_DxAOD-2015-13TeV_${current_time}
+outdir=output_FAX_DxAOD-2015-13TeV_${tokens[2]}_${current_time}
 nevents=0
 
 echo ""
