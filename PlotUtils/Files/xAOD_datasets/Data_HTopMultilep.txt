@@ -1,0 +1,44 @@
+@@@@@@@@ ttHp1562 @@@@@@@@
+######## data12 ########
+====== Muons ======
+---- PeriodA ----
+data12_8TeV.periodA.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1517_p1562/
+---- PeriodB ----
+data12_8TeV.periodB.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodC ----
+data12_8TeV.periodC.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodD ----
+data12_8TeV.periodD.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodE ----
+data12_8TeV.periodE.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodG ----
+data12_8TeV.periodG.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodH ----
+data12_8TeV.periodH.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodI ----
+data12_8TeV.periodI.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1562/
+---- PeriodJ ----
+data12_8TeV.periodJ.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1562/
+---- PeriodL ----
+data12_8TeV.periodL.physics_Muons.PhysCont.NTUP_COMMON.grp14_v01_p1562/
+====== Egamma ======
+---- PeriodA ----
+data12_8TeV.periodA.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1517_p1562/
+---- PeriodB ----
+data12_8TeV.periodB.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodC ----
+data12_8TeV.periodC.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodD ----
+data12_8TeV.periodD.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodE ----
+data12_8TeV.periodE.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodG ----
+data12_8TeV.periodG.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodH ----
+data12_8TeV.periodH.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1278_p1562/
+---- PeriodI ----
+data12_8TeV.periodI.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1562/
+---- PeriodJ ----
+data12_8TeV.periodJ.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1562/
+---- PeriodL ----
+data12_8TeV.periodL.physics_Egamma.PhysCont.NTUP_COMMON.grp14_v01_p1562/

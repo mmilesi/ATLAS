@@ -1,0 +1,123 @@
+There are three main steps in setting up the framework on your machine:
+
+A. Installing PyROOT
+B. Getting the framework
+C. Setting up your run environment
+
+(A) INSTALLING PYROOT (A)
+=========================
+
+This step only needs to be performed once on every machine you plan on running your framework on.
+
+
+    (i) Unimelb CoEPP maintained desktop computers, the UI (Tier 3), and lxplus machines
+    ------------------------------------------------------------------------------------
+
+    No installation necessary. PyROOT is already installed.
+
+
+    (ii) Your personal Mac OSX
+    --------------------------
+
+    1. Install the LATEST version of Xcode available for your OSX version. If you have Mac app store, you can use that. Otherwise, get it from the Apple dev website (you'll need to sign up and stuff):
+        https://developer.apple.com/xcode/
+	
+        On Mountain Lion (OSX 10.8), you'll also need to install "Command Line Tools" from within Xcode (Preferences->Downloads->Components).
+
+    2. Installing Homebrew is your first step:
+        > ruby -e "$(curl -fsSkL raw.github.com/mxcl/homebrew/go)"
+
+    3. Use Homebrew to install a Fortran compiler
+        > brew update
+        > brew install gfortran
+
+    4. Make a home for your ROOT installation
+        > sudo mkdir -p /opt/local
+        > sudo chown -R $USER:wheel /opt
+        > cd /opt/local
+
+    5. Download and extract a version of ROOT (check the website for available versions)
+        > curl -C - -O ftp://root.cern.ch/root/root_v5.32.01.source.tar.gz
+        > tar -xf root_v5.32.01.source.tar.gz
+        > mv root root_v5-32-01
+        > cd /opt/local/root_v5-32-01
+
+    6. Setup your compile options and compile!
+        > ./configure --with-f77=/usr/local/bin/gfortran --enable-python --enable-roofit --enable-minuit2
+        > make -j2
+
+    7. Test your installation
+        > source /opt/local/root_v5-32-01/bin/thisroot.sh
+        > root
+
+    Note: 'gmake -j2' for a 2-core machine. If you have 4 cores, use 'gmake -j4' instead, and etc.
+
+
+    (iii) Your personal linux box
+    -----------------------------
+
+    Use your distro's package manager to install ROOT with Python bindings, RooFit and minuit2. This section can probably do with more detailed instructions, if someone would volunteer.
+
+
+(B) GETTING THE FRAMEWORK (B)
+=============================
+
+NOTE: This section needs to be updated!
+
+You'll require two things at this step:
+
+  1. A BitBucket.org account (use your university email - you'll get free unlimited private repositories)
+  2. Git (on Max OSX, it comes with Xcode command line tools - see above)
+
+For example, to get the Core component of the framework, perform the command 
+below:
+    > git clone https://kongguan@bitbucket.org/kongguan/af_core.git
+
+The framework itself does not require any setting up or installation, so you're technically done. This also means you can run multiple versions of the framework, as long as you make a directory for each version.
+
+
+(C) SETTING UP YOUR RUN ENVIRONMENT (C)
+=======================================
+
+This step needs to be performed at every login. Or, you could automate this if you put it in your .bashrc file.
+
+Also note that if you're only interested in submitting jobs to the grid, you don't actually need to setup PyROOT, only the tools you need to send the jobs.
+
+
+    (i) Unimelb CoEPP maintained desktop computers
+    ----------------------------------------------
+
+    No setup necessary. Framework is ready to go here.
+
+
+    (ii) Unimelb CoEPP UI (Tier 3)
+    ------------------------------
+
+    Run the following command:
+        > source /opt/exp_soft/SL5/local/root/root_5-32_x86_64/bin/thisroot.sh
+
+    Note that not all installed versions of ROOT works on the UI, but version 5.32 definitely works.
+
+
+    (iii) CERN lxplus machines
+    --------------------------
+
+    You'll need to initialise a version of Athena. I use AtlasProduction 17.0.5, but others may also work.
+
+    Unfortunately, I haven't yet discovered an Athena-independent recipe for lxplus machines.
+
+
+    (iv) Your personal Mac OSX
+    --------------------------
+
+    Run the following command:
+        > source /opt/local/root_v5-32-01/bin/thisroot.sh
+
+    Note that your installed version of ROOT may be different. This also assumes that you installed PyROOT as instructed in this file.
+
+
+    (v) Your personal linux box
+    ---------------------------
+
+    No setup necessary, at least in theory (i.e. I haven't tried). This section may require updating. Volunteers?
+
