@@ -1270,7 +1270,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
   // declare event decorations for checking the probe type in event
   static SG::AuxElement::Decorator< char > isProbeElEventDecor( "isProbeElEvent" );
   static SG::AuxElement::Decorator< char > isProbeMuEventDecor( "isProbeMuEvent" );
-
+  
   // decorate with default values
   for ( auto lep_itr : leptons ) { isTagDecor( *lep_itr ) = 0; }
   isProbeElEventDecor( *eventInfo )  = 0;
@@ -1290,21 +1290,23 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
   static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
   static SG::AuxElement::ConstAccessor< int > truthTypeAcc("truthType");
   static SG::AuxElement::ConstAccessor< int > truthOriginAcc("truthOrigin");
+  static SG::AuxElement::Accessor< char > isTightAcc("isTight");
+  static SG::AuxElement::Accessor< char > isTrigMatchedLepAcc("isTrigMatchedLep");
 
-  bool found_a_prompt(false);
+  bool found_tag(false);
   if ( isSS ) {
 
     for ( auto lep_itr : leptons ) {
 
-      // The tag will be the first prompt lepton in the event which is not charge flip, provided it's found.
+      // In the SS case, the tag will be the first prompt lepton in the event which is not charge flip, provided it's found.
       // The other will be the probe
       // See below the treatment for the case where all leptons in SS event are non prompt...
       //
       if ( truthTypeAcc.isAvailable( *lep_itr ) ) {
 
-        if ( !found_a_prompt && ( truthTypeAcc( *lep_itr ) == 2 || truthTypeAcc( *lep_itr ) == 6 ) && isChFlipAcc( *lep_itr ) != 1 ) {
+        if ( !found_tag && ( truthTypeAcc( *lep_itr ) == 2 || truthTypeAcc( *lep_itr ) == 6 ) && isChFlipAcc( *lep_itr ) != 1 ) {
           isTagDecor( *lep_itr ) = 1;
-	  found_a_prompt = true;
+	  found_tag = true;
         }
 
       } else {
@@ -1314,27 +1316,42 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
 
     }
 
-    if ( !found_a_prompt ) {
-      // the probe will be the subleading lepton, no matter what
+    if ( !found_tag ) {
+      // the probe will be the subleading lepton
       //
-      if ( m_debug ) { Info("defineTagAndProbeRFRateVars_MC()","There are no prompt leptons in this SS event. Tag will b\
-e the leading, probe the subleading" ); }
+      if ( m_debug ) { Info("defineTagAndProbeRFRateVars_MC()","There are no prompt leptons in this SS event. Tag will be the leading, probe the subleading" ); }
       isTagDecor( *leadingLepton ) = 1;
     }
 
   } else {
 
-    // generate a uniformly distributed random number in [0,1]
-    //
-    TRandom3 rndm(0);
-    float unif = rndm.Uniform();
+    // Let's assume in th OS region both leptons are prompt.
+    // The first lepton that is tight && trigger-matched will be the tag, the other the probe
+    // if none satisfies the above, choose randomly who's tag and who's probe
 
-    // assign randomly who's tag and who's probe
-    //
-    if ( unif >= 0.5 ) {
-      isTagDecor( *leadingLepton )    = 1;
-    } else {
-      isTagDecor( *subLeadingLepton ) = 1;
+    for ( auto lep_itr : leptons ) {
+
+      if ( isTightAcc.isAvailable( *lep_itr ) && isTrigMatchedLepAcc.isAvailable( *lep_itr ) ) {
+        
+	if ( !found_tag && ( isTightAcc( *lep_itr ) == 1 && isTrigMatchedLepAcc( *lep_itr ) == 1 ) {
+          isTagDecor( *lep_itr ) = 1;
+	  found_tag = true;
+        }
+	
+      } 
+    }
+
+    if ( !found_tag ) {
+      
+      TRandom3 rndm(0);
+      float unif = rndm.Uniform();
+
+      if ( unif >= 0.5 ) {
+        isTagDecor( *leadingLepton )	= 1;
+      } else {
+        isTagDecor( *subLeadingLepton ) = 1;
+      }
+
     }
 
   }
