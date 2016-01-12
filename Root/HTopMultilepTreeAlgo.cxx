@@ -44,7 +44,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
   // get the file we created already
   TFile* treeFile = wk()->getOutputFile ("tree");
   
-  m_helpTree = new HTopMultilepTree( outTree, treeFile, m_event, m_store, 1e0, m_debug, m_DC14 ); // 1e0 = MeV, default 1e3 = GeV
+  m_HTopTree = new HTopMultilepTree( outTree, treeFile, m_event, m_store, 1e0, m_debug, m_DC14 ); // 1e0 = MeV, default 1e3 = GeV
 
   // tell the tree to go into the file
   outTree->SetDirectory( treeFile );
@@ -54,18 +54,18 @@ EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
     wk()->addOutput( outTree );
   }
 
-  m_helpTree->AddEvent(m_evtDetailStr);
-  if ( !m_trigDetailStr.empty() )        {   m_helpTree->AddTrigger    (m_trigDetailStr);    }
-  if ( !m_muContainerName.empty() )      {   m_helpTree->AddMuons      (m_muDetailStr);      }
-  if ( !m_elContainerName.empty() )      {   m_helpTree->AddElectrons  (m_elDetailStr);      }
-  if ( !m_jetContainerName.empty() )     {   m_helpTree->AddJets       (m_jetDetailStr, "jet"); }
-  if ( !m_trigJetContainerName.empty() ) {   m_helpTree->AddJets       (m_trigJetDetailStr, "trigJet"); }
-  if ( !m_truthJetContainerName.empty() ){   m_helpTree->AddJets       (m_truthJetDetailStr, "truthJet"); }
-  if ( !m_fatJetContainerName.empty() )  {   m_helpTree->AddFatJets    (m_fatJetDetailStr);  }
-  if ( !m_photonContainerName.empty() )  {   m_helpTree->AddPhotons    (m_photonDetailStr);  }
-  if ( !m_tauContainerName.empty() )     {   m_helpTree->AddTaus       (m_tauDetailStr);     }
-  if ( !m_METContainerName.empty() )     {   m_helpTree->AddMET        (m_METDetailStr);     }  
-  if ( !m_lepContainerName.empty() )     {   m_helpTree->AddLeptons    ();                   }
+  m_HTopTree->AddEvent(m_evtDetailStr);
+  if ( !m_trigDetailStr.empty() )        { m_HTopTree->AddTrigger    (m_trigDetailStr);    }
+  if ( !m_muContainerName.empty() )      { m_HTopTree->AddMuons      (m_muDetailStr);	   }
+  if ( !m_elContainerName.empty() )      { m_HTopTree->AddElectrons  (m_elDetailStr);	   }
+  if ( !m_jetContainerName.empty() )     { m_HTopTree->AddJets       (m_jetDetailStr, "jet"); }
+  if ( !m_trigJetContainerName.empty() ) { m_HTopTree->AddJets       (m_trigJetDetailStr, "trigJet"); }
+  if ( !m_truthJetContainerName.empty() ){ m_HTopTree->AddJets       (m_truthJetDetailStr, "truthJet"); }
+  if ( !m_fatJetContainerName.empty() )  { m_HTopTree->AddFatJets    (m_fatJetDetailStr);  }
+  if ( !m_photonContainerName.empty() )  { m_HTopTree->AddPhotons    (m_photonDetailStr);  }
+  if ( !m_tauContainerName.empty() )     { m_HTopTree->AddTaus       (m_tauDetailStr);     }
+  if ( !m_METContainerName.empty() )     { m_HTopTree->AddMET	     (m_METDetailStr);     }  
+  if ( !m_lepContainerName.empty() )     { m_HTopTree->AddLeptons    ();		   }
 
   Info("treeInitialize()", "Successfully initialized output tree");
   
@@ -128,11 +128,11 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
   // get the hard-scatter primaryVertex
   const xAOD::Vertex* primaryVertex = HelperFunctions::getPrimaryVertex( vertices );
 
-  m_helpTree->FillEvent( eventInfo );
+  m_HTopTree->FillEvent( eventInfo );
 
   // Fill trigger information
   if ( !m_trigDetailStr.empty() )    {
-    m_helpTree->FillTrigger( eventInfo );
+    m_HTopTree->FillTrigger( eventInfo );
   }
 
   // for the containers the were supplied, fill the appropiate vectors
@@ -150,7 +150,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
     
     // sort inMuons, and pass the reference to FillMuons()
     const xAOD::MuonContainer inMuonsSorted = HelperFunctions::sort_container_pt( inMuons );
-    m_helpTree->FillMuons( &inMuonsSorted, primaryVertex );
+    m_HTopTree->FillMuons( &inMuonsSorted, primaryVertex );
 
   }
   if ( !m_elContainerName.empty() ) { 	
@@ -159,7 +159,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
     
     // sort inElectrons, and pass the reference to FillElectrons()
     const xAOD::ElectronContainer inElectronsSorted = HelperFunctions::sort_container_pt( inElectrons );
-    m_helpTree->FillElectrons( &inElectronsSorted, primaryVertex );
+    m_HTopTree->FillElectrons( &inElectronsSorted, primaryVertex );
     
   }
   if ( !m_jetContainerName.empty() ) {
@@ -168,9 +168,9 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
 
     // sort inJets, and pass the reference to FillJets()
     const xAOD::JetContainer inJetsSorted = HelperFunctions::sort_container_pt( inJets );
-    m_helpTree->FillJets( &inJetsSorted, HelperFunctions::getPrimaryVertexLocation(vertices) );
+    m_HTopTree->FillJets( &inJetsSorted, HelperFunctions::getPrimaryVertexLocation(vertices) );
 
-    //m_helpTree->FillJets( inJets, HelperFunctions::getPrimaryVertexLocation(vertices) );
+    //m_HTopTree->FillJets( inJets, HelperFunctions::getPrimaryVertexLocation(vertices) );
   }
   if ( !m_tauContainerName.empty() ) {	
     
@@ -178,13 +178,13 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
     
     // sort inTaus, and pass the reference to FillTaus()
     const xAOD::TauJetContainer inTausSorted = HelperFunctions::sort_container_pt( inTaus );
-    m_helpTree->FillTaus( &inTausSorted );
+    m_HTopTree->FillTaus( &inTausSorted );
     
   }
   if ( !m_METContainerName.empty() ) {
 
     RETURN_CHECK("HTopMultilepTreeAlgo::execute()", HelperFunctions::retrieve(inMETCont, m_METContainerName, m_event, m_store, m_debug) , "");
-    m_helpTree->FillMET( inMETCont );
+    m_HTopTree->FillMET( inMETCont );
 
   }
   if ( !m_lepContainerName.empty() ) {	
@@ -193,15 +193,23 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
 
     // sort inLeptons, and pass the reference to FillLeptons()  
     const xAOD::IParticleContainer leptonsSorted = HelperFunctions::sort_container_pt( leptonsCDV->asDataVector() );
-    m_helpTree->FillLeptons( &leptonsSorted );
+    m_HTopTree->FillLeptons( &leptonsSorted );
 
   }    
     
   // fill the tree
-  m_helpTree->Fill();
+  m_HTopTree->Fill();
    
   return EL::StatusCode::SUCCESS;
 
 }
 
+EL::StatusCode HTopMultilepTreeAlgo :: finalize () {
+
+  Info("finalize()", "Deleting tree instances...");
+
+  if ( m_HTopTree ) { delete m_HTopTree; m_HTopTree = nullptr; }
+
+  return EL::StatusCode::SUCCESS;
+}
 
