@@ -1,49 +1,44 @@
-#ifndef xAODAnaHelpers_HTopMultilepTreeAlgo_H
-#define xAODAnaHelpers_HTopMultilepTreeAlgo_H
+#ifndef HTopMultilepAnalysis_HTopMultilepTreeAlgo_H
+#define HTopMultilepAnalysis_HTopMultilepTreeAlgo_H
 
+// EL include(s)
 #include <EventLoop/Algorithm.h>
-// Infrastructure include(s):
-#include "xAODRootAccess/Init.h"
-#include "xAODRootAccess/TEvent.h"
-#include "xAODRootAccess/TStore.h"
-#include "TTree.h"
 
 // package include(s):
-#include "xAODAnaHelpers/TreeAlgo.h" 
+#include <xAODAnaHelpers/TreeAlgo.h>
 #include <HTopMultilepAnalysis/HTopMultilepTree.h>
 
 class HTopMultilepTreeAlgo : public TreeAlgo
 {
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.
-public:
-
-  /*additional data members which are not already in xAH::TreeAlgo.h */
-  
-  std::string m_lepContainerName;
 
 private:
-
-  HTopMultilepTree* m_helpTree;  //!
+  HTopMultilepTree* m_HTopTree; //!
 
 public:
+
+  // additional data members which are not already in xAH::TreeAlgo.h 
+  std::string m_lepContainerName;
+
   // this is a standard constructor
-  HTopMultilepTreeAlgo ();  //!
+  HTopMultilepTreeAlgo () : 
+    TreeAlgo(),
+    m_HTopTree(nullptr) 
+    {};
 
   // these are the functions inherited from Algorithm
-  
-  /* overload only the ones that somehow differ from the original methods in TreeAlgo (e.g., the ones manipulating m_helpTree) */
-  
-  virtual EL::StatusCode treeInitialize ();                 //!
-  virtual EL::StatusCode initialize ();                     //!
-  virtual EL::StatusCode execute ();                        //!
-  virtual EL::StatusCode finalize ();                       //!
+
+  // overload only the ones that somehow differ from the original methods in TreeAlgo (e.g., the ones manipulating m_helpTree)
+  virtual EL::StatusCode treeInitialize ();     
+  virtual EL::StatusCode execute ();   
+  virtual EL::StatusCode finalize ();   
 
   // these are the functions not inherited from Algorithm
-  virtual EL::StatusCode configure ();                      //!
-
+  virtual EL::StatusCode configure ();                   
+  
   // this is needed to distribute the algorithm to the workers
-  ClassDef(HTopMultilepTreeAlgo, 1);                        //!
+  ClassDef(HTopMultilepTreeAlgo, 1);
 };
 
 #endif
