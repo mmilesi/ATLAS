@@ -26,35 +26,32 @@ class HTopMultilepEventSelector : public xAH::Algorithm
 public:
 
   // configuration variables
-  std::string  m_inContainerName_el;	 
-  std::string  m_inContainerName_mu;	 
-  std::string  m_inContainerName_jets;   
-  std::string  m_inContainerName_tau;	 
+  std::string  m_inContainerName_el;
+  std::string  m_inContainerName_mu;
+  std::string  m_inContainerName_jets;
   std::string  m_outContainerName_lep;
 
-  bool         m_useCutFlow;    
+  bool         m_useCutFlow;
 
   bool         m_DC14;
-  
+
   bool         m_doMinObjCut;
   bool         m_doMaxObjCut;
   int          m_n_leptons_min;
   int          m_n_leptons_max;
-  int          m_n_leptons_with_tau_min;
   int          m_n_jets_min;
-  int          m_n_jets_max; 
+  int          m_n_jets_max;
   int          m_n_bjets_min;
-  int          m_n_taus_min;
-  float        m_leptons_eta_max;	 
-  float        m_leading_lep_pT_min;		       
-  float        m_subleading_lep_pT_min; 
+  float        m_leptons_eta_max;
+  float        m_leading_lep_pT_min;
+  float        m_subleading_lep_pT_min;
 
   std::string  m_BTag_WP;
 
-  std::string              m_passAuxDecorKeys; 
-  std::string              m_failAuxDecorKeys; 
-  std::vector<std::string> m_passKeys; 
-  std::vector<std::string> m_failKeys; 
+  std::string              m_passAuxDecorKeys;
+  std::string              m_failAuxDecorKeys;
+  std::vector<std::string> m_passKeys;
+  std::vector<std::string> m_failKeys;
 
 private:
   int m_numEvent;           //!
