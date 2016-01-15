@@ -46,6 +46,7 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("isNonTightEvent",   &m_isNonTightEvent,    "isNonTightEvent/I");
   m_tree->Branch("isProbeElEvent",    &m_isProbeElEvent,     "isProbeElEvent/I");
   m_tree->Branch("isProbeMuEvent",    &m_isProbeMuEvent,     "isProbeMuEvent/I");
+  m_tree->Branch("weight_electron_trig_HTop", &m_weight_electron_trig_HTop);
 }
 
 /*
@@ -350,6 +351,8 @@ void HTopMultilepTree::ClearEventUser()
 {
   m_MMWeight.clear();
   m_FFWeight.clear();
+  
+  m_weight_electron_trig_HTop.clear();
 }
 
 /*
@@ -649,6 +652,10 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
   m_isNonTightEvent      =  ( eventInfo->isAvailable< char >( "isNonTightEvent" ) )	        ?  eventInfo->auxdecor< char >( "isNonTightEvent" )	   	 :  -1;
   m_isProbeElEvent       =  ( eventInfo->isAvailable< char >( "isProbeElEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeElEvent" )	   	 :  -1;
   m_isProbeMuEvent       =  ( eventInfo->isAvailable< char >( "isProbeMuEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeMuEvent" )	   	 :  -1;
+  
+  SG::AuxElement::ConstAccessor< std::vector<float> >   electronTrigSFVec( "ElectronEfficiencyCorrector_TrigSyst_GLOBAL_HTop" );
+  if( electronTrigSFVec.isAvailable( *eventInfo ) ) { m_weight_electron_trig_HTop = electronTrigSFVec( *eventInfo ); } else { m_weight_electron_trig_HTop.push_back(-999); }
+
 }
 
 /*

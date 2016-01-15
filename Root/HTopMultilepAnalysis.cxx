@@ -107,6 +107,7 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_BTag_WP                   = "MV2c20_Fix77";
 
   m_useMCForTagAndProbe       = false;
+
 }
 
 EL::StatusCode  HTopMultilepAnalysis :: configure ()
@@ -506,6 +507,11 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   const xAOD::EventInfo* eventInfo(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_verbose), "");
 
+  if ( m_debug ) {
+    Info( "execute()", " ******************************** ");
+    Info( "execute()", "eventNumber =  %llu \n", eventInfo->eventNumber() );
+  }
+
   // retrieve vertices
   const xAOD::VertexContainer* vertices(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(vertices, "PrimaryVertices", m_event, m_store,  m_verbose), "");
@@ -570,7 +576,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     unsigned int nSignalElectrons = signalElectrons->size();
     unsigned int nSignalMuons     = signalMuons->size();
 
-    Info("execute()","Event %i ", static_cast<int>(m_eventCounter));
     Info("execute()"," Initial vs Preselected vs Selected Signal Muons: \t %u \t %u \t %u  "    , nInMuons, nPreselMuons, nSignalMuons );
     Info("execute()"," Initial vs Preselected vs Selected Signal Electrons: %u \t %u \t %u "    , nInElectrons, nPreselElectrons, nSignalElectrons );
     Info("execute()"," Initial vs Preselected vs Selected Signal Jets: \t %u \t %u \t %u "      , nInJets, nPreselJets, nSignalJets );
@@ -594,24 +599,114 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   }
   mcEvtWeight = mcEvtWeightAcc( *eventInfo );
 
-  // multiply SFs to event weight
-  /*
-  if ( isMC ) {
-    // electron efficiency SF
-    static SG::AuxElement::Accessor< float > elEffSFAcc("SF");
+  // calculate electron trigger SF for the event
+  //
+  // egamma CP tool does not calculate the final event SF. Rather, it gives back the SF and MC efficiency *per electron*.
+  // With such ingredients in hand, the way to compute the event SF is the following:
+  // 
+  // eventSF = ( 1 - prod( 1 - SF(i)*eff(i) ) ) / ( 1 - prod ( 1 - eff(i) ) );
+  //
+  // where the productory is over the selected electrons in the event.
+  // The trick at the numerator is just to get the efficiency in data, which is not provided by egamma unlike the MC eff.
+  //
+  if ( m_isMC ) {
+
+    // electron trigger efficiency SF
+    static SG::AuxElement::Accessor< std::vector< float > > elTrigSFAcc("ElectronEfficiencyCorrector_TrigSyst");
+    // electron trigger MC efficiency
+    static SG::AuxElement::Accessor< std::vector< float > > elTrigMCEffAcc("ElectronEfficiencyCorrector_TrigMCEffSyst");
+
+    // Initialise product of SFs
+    // (use a large size just to make sure...)
+    std::vector<float> numerator(10,1.0), denominator(10,1.0);
+    
     for ( auto el_itr : *(signalElectrons) ) {
-      if ( !elEffSFAcc.isAvailable(*el_itr) ) { continue; }
-      mcEvtWeight *= elEffSFAcc(*el_itr);
+      
+      if ( m_debug ) { Info("execute", "electron pT = %f ", el_itr->pt()/1e3); }
+
+      if ( !elTrigSFAcc.isAvailable(*el_itr) ) { 
+        Error("execute", "Electron trigger SF is not available for this electron. Aborting.");
+        return EL::StatusCode::FAILURE; 
+      }
+      if ( !elTrigMCEffAcc.isAvailable(*el_itr) ) { 
+        Error("execute", "Electron trigger MC efficiency is not available for this electron. Aborting.");
+        return EL::StatusCode::FAILURE; 
+      }
+
+      // check SF and efficiency vectors have same size
+      //
+      if ( elTrigSFAcc(*el_itr).size() != elTrigMCEffAcc(*el_itr).size() ) { 
+        Error("execute","Electron trigger SF vector and trigger MC eff. vector have different size. Aborting.");
+        return EL::StatusCode::FAILURE; 
+      }      
+
+      std::vector<float> num_factor;
+      
+      auto effSF = elTrigSFAcc( *el_itr ).begin();
+      auto effMC = elTrigMCEffAcc( *el_itr ).begin();
+      int idx(0);
+      for ( ; effSF != elTrigSFAcc( *el_itr ).end() && effMC != elTrigMCEffAcc( *el_itr ).end(); ++effSF, ++effMC, ++idx ) {
+	
+	if ( m_debug ) {
+	  std::cout << "\t efficiency SF[" << idx << "] = " << *effSF << std::endl;
+	  std::cout << "\t efficiency[" << idx << "] = " << *effMC  << std::endl;
+	}
+	
+	num_factor.push_back( ( 1.0 - *effSF  * *effMC ) );
+      
+      }
+      // this makes sure numerator has got as much elements as num_factor
+      numerator.resize(num_factor.size());
+
+      // this updates the value of numerator to contain the element-wise product of the previous numerator and the num_factor for *this* electron
+      std::transform(numerator.begin(), numerator.end(), num_factor.begin(), numerator.begin(), std::multiplies<float>() );
+
+      std::vector<float> denom_factor;
+      for ( auto effMC : elTrigMCEffAcc( *el_itr ) ) {
+	denom_factor.push_back( ( 1.0 - effMC ) );
+      }
+      // this makes sure denominator has got as much elements as denom_factor
+      denominator.resize(denom_factor.size());
+
+      // check numerator and denominator have same size
+      if ( numerator.size() != denominator.size() ) {
+	Error("execute","numerator and denominator must have same size. Aborting.");
+	return EL::StatusCode::FAILURE;
+      }
+
+      // this updates the value of denominator to contain the element-wise product of the previous denominator and the denom_factor for *this* electron
+      std::transform(denominator.begin(), denominator.end(), denom_factor.begin(), denominator.begin(), std::multiplies<float>() );
+
     }
 
-    // muon efficiency SF
-    // bTagging efficiency SF
-    // trigger efficiency SF
-  }
-  */
+    // update numerator and denominator
+    // Make sure the SF in the 0/0 case (i.e, when efficiency=0) will be set equal to 1
+    //
+    for ( auto &it : numerator )   { it = ( it != 1.0 ) ? (1.0 - it) : 1.0; }
+    for ( auto &it : denominator ) { it = ( it != 1.0 ) ? (1.0 - it) : 1.0; }
+    
+    std::vector<float> eventTrigSF(numerator.size());
+    // ...and finally get the global SF w/ all systematics!
+    std::transform(numerator.begin(), numerator.end(), denominator.begin(), eventTrigSF.begin(), std::divides<float>() );
 
-  if ( m_debug ) {
-    Info("execute()", "event weight = %2f. ", mcEvtWeight );
+    // decorator for final (event!) trigger SF
+    SG::AuxElement::Decorator< std::vector<float> > elTrigSFDecor_GLOBAL("ElectronEfficiencyCorrector_TrigSyst_GLOBAL_HTop");
+
+    // store it as decoration to the event
+    elTrigSFDecor_GLOBAL(*eventInfo) = eventTrigSF;
+
+    if ( m_debug ) {
+      int idx(0);
+      for ( const auto &it : eventTrigSF ) {
+	Info( "execute()", "===>>>");
+	Info( "execute()", " ");
+	Info( "execute()", "Trigger efficiency SF[%i] = %f", idx, it);
+	++idx;
+      }
+      Info( "execute()", "--------------------------------------");
+
+    }
+
   }
 
   //-------------------------------

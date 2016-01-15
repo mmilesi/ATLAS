@@ -28,13 +28,13 @@ public:
 
   // configuration variables
   /* Muons */
-  std::string m_inContainerName_Muons;    
+  std::string m_inContainerName_Muons;
   /* Electrons */
   std::string m_inContainerName_Electrons;
   /* Leptons */
   std::string m_inContainerName_Leptons;
   /* Jets */
-  std::string m_inContainerName_Jets;     
+  std::string m_inContainerName_Jets;
   /* Taus */
   std::string m_inContainerName_Taus;
 
@@ -42,17 +42,17 @@ public:
   std::string m_inContainerName_PreSelectedMuons;
   std::string m_inContainerName_PreSelectedJets;
 
-  bool m_useCutFlow;   
-  
+  bool m_useCutFlow;
+
   /* to define "Tight" leptons */
   std::string m_TightElectronPID_WP;
   std::string m_TightElectronIso_WP;
   float       m_TightMuonD0sig_cut;
   std::string m_TightMuonIso_WP;
-  
+
   /* to define "Tight" taus */
   std::string m_ConfigPathTightTaus;
-  
+
   /* BTag WP to define nbjets*/
   std::string m_BTag_WP;
 
@@ -68,12 +68,12 @@ private:
 
   TH1D* m_cutflowHist;    //!
   TH1D* m_cutflowHistW;   //!
-  TH1D* m_histEventCount; //! 
-  
+  TH1D* m_histEventCount; //!
+
   int m_cutflow_bin;      //!
 
   /* for Francesco */
-  TH1D* m_totalEvents;    //!  
+  TH1D* m_totalEvents;    //!
   TH1D* m_totalEventsW;   //!
 
   JetHists* m_jetPlots;   //!
@@ -82,21 +82,21 @@ private:
   TauAnalysisTools::TauSelectionTool    *m_TauSelTool; //!
 
   /* MM/FF method stuff */
-  
+
   std::map< std::string, TH1D* > m_el_hist_map; //!
   std::map< std::string, TH1D* > m_mu_hist_map; //!
-  
+
   int m_n_el_bins_eta;        //!
   int m_n_el_bins_pt_fr;      //!
   int m_n_el_bins_pt_rr;      //!
   int m_n_mu_bins_eta;        //!
   int m_n_mu_bins_pt_fr;      //!
-  int m_n_mu_bins_pt_rr;      //!  
+  int m_n_mu_bins_pt_rr;      //!
   float m_el_rr_tot;	      //!
-  float m_el_fr_tot;	      //! 
+  float m_el_fr_tot;	      //!
   float m_mu_rr_tot;	      //!
-  float m_mu_fr_tot;	      //!    
-  
+  float m_mu_fr_tot;	      //!
+
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
   // node (done by the //!)
@@ -121,20 +121,20 @@ public:
 
   virtual EL::StatusCode defineTagAndProbeRFRateVars( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
   virtual EL::StatusCode defineTagAndProbeRFRateVars_MC( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
-  
+
   virtual EL::StatusCode addChannelDecorations( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
   virtual EL::StatusCode fakeWeightCalculator ( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
-  
-  std::vector<double>  calc_weights( std::map< std::string, TH1D* > &histograms, 
-				     float pt,    /* NB: internally converts MeV into GeV --> pass pT in MeV!!! */                        
-				     float eta, 
-				     bool isFakeLep, 
+
+  std::vector<double>  calc_weights( std::map< std::string, TH1D* > &histograms,
+				     float pt,    /* NB: internally converts MeV into GeV --> pass pT in MeV!!! */
+				     float eta,
+				     bool isFakeLep,
 				     int n_bins_eta,
 				     int n_bins_pt_fr,
 				     int n_bins_pt_rr,
 				     float fr_tot,
 				     float rr_tot
-			            );  
+			            );
   double calc_final_event_weight( std::string region, double f1, double f2, double r1 = 1.0, double r2 = 1.0 );
   double scaleRateToFactor( double rate );
 

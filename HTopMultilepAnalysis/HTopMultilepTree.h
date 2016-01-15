@@ -58,6 +58,9 @@ class HTopMultilepTree : public HelpTreeBase
     int                 m_isProbeElEvent;
     int                 m_isProbeMuEvent;
 
+    // HTop trigger scale factors
+    std::vector<float> m_weight_electron_trig_HTop;
+
     /* jet variables */
     std::vector<float> m_jet_m;
 
