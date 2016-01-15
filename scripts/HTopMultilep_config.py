@@ -159,7 +159,7 @@ ElectronSelectorDict = { "m_name"                      : "electronSelect_selecti
                          "m_readIDFlagsFromDerivation" : False,
                          "m_confDirPID"	               : "mc15_20150712",
                          "m_doLHPIDcut"                : True,
-                         "m_LHOperatingPoint"	       : "Loose_CutBL",
+                         "m_LHOperatingPoint"	       : "Loose",#"Loose_CutBL",
                          "m_doCutBasedPIDcut"          : False,
                          "m_CutBasedOperatingPoint"    : "IsEMLoose",
                          "m_CutBasedConfigYear"	       : "",
