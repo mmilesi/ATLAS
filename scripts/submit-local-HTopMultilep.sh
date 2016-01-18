@@ -11,8 +11,8 @@
 # 20.1.8.2 - 25 ns - MC
 # ---------------------
 
-#inDS="mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2434"
-#infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.8.2/${inDS}/*root*"
+inDS="mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2434"
+infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.8.2/${inDS}/*root*"
 #infilepath="/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/HIGG8D1_20.1.8.2/${inDS}/*root*"
 
 #inDS="mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r6765_r6282_p2434"
@@ -23,8 +23,8 @@
 # 20.1.9.3 - 25 ns - MC
 # ---------------------
 
-inDS="mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2501"
-infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.9.3/${inDS}/*root*"
+#inDS="mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2501"
+#infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.9.3/${inDS}/*root*"
 
 # -----------------------
 # 20.1.6.3 - 25 ns - data
@@ -42,7 +42,7 @@ tokens=(${inDS//./ })
 configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep.py"
 current_time="$(date +'%d-%m-%Y-%T')"
 outdir=output_local_DxAOD-2015-13TeV_${tokens[2]}_${current_time}
-nevents=100
+nevents=1000
 
 echo ""
 echo "Input file path :"

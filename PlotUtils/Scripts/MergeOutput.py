@@ -56,15 +56,15 @@ def main():
     samples = datasets.getListSamples(options.samplecsv)
     if options.inRunDir:
         if not os.path.isdir(options.inRunDir):
-            print "ERROR: input directory does not exist or is not a directory"
+            print("ERROR: input directory does not exist or is not a directory")
             return
         else:
             inputdir = options.inRunDir
         if not options.outRunDir:
-            print "ERROR: invalid output directory (set with --outRunDir)"
+            print("ERROR: invalid output directory (set with --outRunDir)")
             return
         elif os.path.isdir(options.outRunDir):
-            print "ERROR: output directory already exists...to avoid inconsistencies, please remove it first"
+            print("ERROR: output directory already exists...to avoid inconsistencies, please remove it first")
             return
         else:
             outputdir = options.outRunDir
@@ -97,11 +97,11 @@ def main():
         mergeOne(inputpath, outputpath, cutflow=options.cutflow)
 
 def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
-    print "Merging", inputpath, "...\n",
+    print("Merging {0} ...\n".format(inputpath)),
     original_inputpath = inputpath
     inputpath = listifyInputFiles(inputpath)
     if not inputpath:
-        print "ERROR: No inputs here specified!"
+        print("ERROR: No inputs here specified!")
         if logfile:
             logfile.write("ERROR: No inputs found for " + original_inputpath + "\n")
         return
@@ -111,7 +111,7 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
             if not os.path.isfile(i):
                 missingfiles.append(i)
         if missingfiles:
-            print "ERROR: File(s) not found:", ', '.join(missingfiles)
+            print("ERROR: File(s) not found:", ', '.join(missingfiles))
             if logfile:
                 logfile.write("ERROR: Missing input files for " + original_inputpath + ":\n")
                 for m in missingfiles:
@@ -121,7 +121,7 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
     target = TFile.Open(outputpath, "RECREATE")
     path = target.GetPath()
     path = path[path.index(':')+2:]
-    
+
     cache={'TOTALLUMI':0}
     errorfiles = []
 
@@ -131,14 +131,14 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
         if not f or f.IsZombie():
             errorfiles.append(i)
             continue
-	# take tree in file and add it to TChain     
-	chain.Add(i)    
-        #print '\t Merging input file: \n', i, '\n to target file'
+	# take tree in file and add it to TChain
+	chain.Add(i)
+        #print("\t Merging input file: \n {0} \n to target file".format(i))
         recursiveMerge(target, f, path, cache, cutflow)
         f.Close()
 
     if errorfiles:
-        print "ERROR in opening the following files:"
+        print("ERROR in opening the following files:")
         for e in errorfiles:
             print "    ", e
         if logfile:
@@ -160,23 +160,25 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
                 if type(obj) == TTree:
                     obj.SetWeight(weight/totalevents)
 
-        print "Applying weight - w = ( xsec*kfactor*filter_eff) / (TOT EVTS W ) = {0}*1e-3/{1} = {2}\n".format(weight,totalevents,(weight/totalevents)*1e-3)
+        print("Applying weight - w = ( xsec*kfactor*filter_eff) / (TOT EVTS W ) = {0}*1e-3/{1} = {2}\n".format(weight,totalevents,(weight/totalevents)*1e-3))
 
     target.Write()
 
     del cache
-    print "Merged", len(inputpath), "files into", outputpath
-    
+    print("Merged {0} files into {1}".format(len(inputpath), outputpath))
+
     merged_tree = target.Get("physics")
-    print "*******************************\n entries in chain: ", chain.GetEntries(), " \n entries in merged tree: ", merged_tree.GetEntries(),"\n*******************************"
-    
+
+    if ( chain.GetEntries() != merged_tree.GetEntries() ):
+        print("******** WARNING! ********\n entries in chain: {0} \n entries in merged TTree: {1} \n*************************".format(chain.GetEntries(), merged_tree.GetEntries()))
+
     target.Close()
-    
+
 def recursiveMerge(target, infile, path='', cache={'TOTALLUMI':0}, cutflow=True):
         l = infile.GetDirectory(path)
         keys = l.GetListOfKeys()
         cycles = {}
-        #print 'keys in input file: \n', keys.ls(), '\n'
+        #print("keys in input file: \n {0} \n".format(keys.ls()))
         for entry in range(keys.GetEntries()):
             name = keys.At(entry).GetName() + ";" + str(keys.At(entry).GetCycle())
             if path:
@@ -186,29 +188,29 @@ def recursiveMerge(target, infile, path='', cache={'TOTALLUMI':0}, cutflow=True)
             obj = l.Get(name)
 
             if type(obj) == TDirectoryFile:
-                #print 'TDirectory obj name: ', obj.GetName()
+                #print("TDirectory obj name: {0}".format(obj.GetName()))
                 targetpath = keys.At(entry).GetName()
                 if not target.Get(targetpath):
                     target.mkdir(targetpath)
                 recursiveMerge(target, infile, path + "/" + obj.GetName(), cache)
             elif type(obj) == TTree:
-                #print 'TTree obj name: ', obj.GetName(), ' - cachename: ', cachename
+                #print("TTree obj name: {0} - cachename: {1} ".format(obj.GetName(), cachename))
                 cyclename, cyclenumber = cachename.split(';')
                 if cyclename in cycles: continue
-                #print 'cyclename: ', cyclename, ' - cyclenumber: ', cyclenumber
+                #print("cyclename: {0} - cyclenumber: {1}".format(cyclename, cyclenumber))
                 cycles[cyclename] = cyclenumber
                 if not cyclename in cache:
-                    #print 'adding cyclename ', cyclename, ' to cache (via TTree::CloneTree())'
+                    #print("adding cyclename {0} to cache (via TTree::CloneTree())".format(cyclename))
                     target.cd(path)
                     cache[cyclename] = obj.CloneTree()
                 else:
                     objcached = cache[cyclename]
                     col = TObjArray()
                     col.Add(obj)
-                    #print 'merging TTree obj to cached object'
+                    #print("merging TTree obj to cached object")
                     objcached.Merge(col)
             elif issubclass(obj.__class__, TH1):
-                #print 'TH1 obj name: ', obj.GetName()
+                #print("TH1 obj name: {0}".format(obj.GetName()))
                 if not cutflow and keys.At(entry).GetName() == "CutFlow":
                     continue
                 if not cachename in cache:
@@ -220,7 +222,7 @@ def recursiveMerge(target, infile, path='', cache={'TOTALLUMI':0}, cutflow=True)
                     col.Add(obj)
                     objcached.Merge(col)
             elif type(obj) == TObjString:
-                #print 'TObjString obj name: ', obj.GetName()
+                #print("TObjString obj name: {0}".format(obj.GetName()))
                 if obj:
                     target.cd(path)
                     objnew = TObjString(obj.GetString().Data())
