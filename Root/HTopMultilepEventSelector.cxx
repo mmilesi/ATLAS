@@ -527,7 +527,7 @@ EL::StatusCode HTopMultilepEventSelector :: finalize ()
   // gets called on worker nodes that processed input events.
 
   if ( m_useCutFlow ) {
-    Info("histFinalize()", "Filling cutflow");
+    Info("finalize()", "Filling cutflow");
     m_cutflowHist ->SetBinContent( m_cutflow_bin, m_numEventPass        );
     m_cutflowHistW->SetBinContent( m_cutflow_bin, m_weightNumEventPass  );
   }

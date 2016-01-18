@@ -369,6 +369,12 @@ EL::StatusCode TruthMatchAlgo :: finalize ()
   delete m_ancestorTruthTypeAcc;     m_ancestorTruthTypeAcc = nullptr;
   delete m_ancestorTruthOriginAcc;   m_ancestorTruthOriginAcc = nullptr;
 
+  if ( m_useCutFlow ) {
+    Info("finalize()", "Filling cutflow");
+    m_cutflowHist ->SetBinContent( m_cutflow_bin, m_numEventPass        );
+    m_cutflowHistW->SetBinContent( m_cutflow_bin, m_weightNumEventPass  );
+  }
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -386,12 +392,6 @@ EL::StatusCode TruthMatchAlgo :: histFinalize ()
   // they processed input events.
 
   Info("histFinalize()", "Calling histFinalize");
-
-  if ( m_useCutFlow ) {
-    Info("histFinalize()", "Filling cutflow");
-    m_cutflowHist ->SetBinContent( m_cutflow_bin, m_numEventPass        );
-    m_cutflowHistW->SetBinContent( m_cutflow_bin, m_weightNumEventPass  );
-  }
 
   return EL::StatusCode::SUCCESS;
 }
