@@ -58,9 +58,12 @@ class HTopMultilepTree : public HelpTreeBase
     int                 m_isProbeElEvent;
     int                 m_isProbeMuEvent;
 
-    // HTop trigger scale factors
-    std::vector<float> m_weight_electron_trig_HTop;
-
+    // HTop scale factors per-event
+    std::vector<float> m_weight_lepton_trig_HTop;
+    std::vector<float> m_weight_lepton_reco_HTop;
+    std::vector<float> m_weight_lepton_iso_HTop;
+    std::vector<float> m_weight_lepton_ID_HTop;
+    
     /* jet variables */
     std::vector<float> m_jet_m;
 
@@ -89,13 +92,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_muon_tag_trkd0sig;
     std::vector<float> m_muon_tag_ptvarcone30;
     std::vector<float> m_muon_tag_topoetcone20;
-    std::vector<int>   m_muon_tag_isIsolated_LooseTrackOnly;
     std::vector<int>   m_muon_tag_isIsolated_Loose;
-    std::vector<int>   m_muon_tag_isIsolated_Tight;
-    std::vector<int>   m_muon_tag_isIsolated_Gradient;
-    std::vector<int>   m_muon_tag_isIsolated_GradientLoose;
-    std::vector<int>   m_muon_tag_isIsolated_UserDefinedFixEfficiency;
-    std::vector<int>   m_muon_tag_isIsolated_UserDefinedCut;
+    std::vector<int>   m_muon_tag_isIsolated_FixedCutTightTrackOnly;
     std::vector<int>   m_muon_tag_isTight;
     std::vector<int>   m_muon_tag_isMedium;
     std::vector<int>   m_muon_tag_isTruthMatched;
@@ -115,13 +113,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_muon_probe_trkd0sig;
     std::vector<float> m_muon_probe_ptvarcone30;
     std::vector<float> m_muon_probe_topoetcone20;
-    std::vector<int>   m_muon_probe_isIsolated_LooseTrackOnly;
     std::vector<int>   m_muon_probe_isIsolated_Loose;
-    std::vector<int>   m_muon_probe_isIsolated_Tight;
-    std::vector<int>   m_muon_probe_isIsolated_Gradient;
-    std::vector<int>   m_muon_probe_isIsolated_GradientLoose;
-    std::vector<int>   m_muon_probe_isIsolated_UserDefinedFixEfficiency;
-    std::vector<int>   m_muon_probe_isIsolated_UserDefinedCut;
+    std::vector<int>   m_muon_probe_isIsolated_FixedCutTightTrackOnly;
     std::vector<int>   m_muon_probe_isTight;
     std::vector<int>   m_muon_probe_isMedium;
     std::vector<int>   m_muon_probe_isTruthMatched;
@@ -137,7 +130,6 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_muon_probe_ancestorTruthStatus;
 
     /* electron variables */
-    std::vector<float> m_electron_calo_eta;
     std::vector<int>   m_electron_crack;
     std::vector<int>   m_electron_isTight;
     std::vector<int>   m_electron_isMedium;
@@ -158,7 +150,7 @@ class HTopMultilepTree : public HelpTreeBase
     /* electron TAG variables */
     std::vector<float> m_electron_tag_pt;
     std::vector<float> m_electron_tag_eta;
-    std::vector<int>   m_electron_tag_LHVeryLoose;
+    std::vector<float> m_electron_tag_caloCluster_eta;    
     std::vector<int>   m_electron_tag_LHLoose;
     std::vector<int>   m_electron_tag_LHMedium;
     std::vector<int>   m_electron_tag_LHTight;
@@ -167,13 +159,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_tag_IsEMTight;
     std::vector<float> m_electron_tag_ptvarcone20;
     std::vector<float> m_electron_tag_topoetcone20;
-    std::vector<int>   m_electron_tag_isIsolated_LooseTrackOnly;
     std::vector<int>   m_electron_tag_isIsolated_Loose;
-    std::vector<int>   m_electron_tag_isIsolated_Tight;
-    std::vector<int>   m_electron_tag_isIsolated_Gradient;
-    std::vector<int>   m_electron_tag_isIsolated_GradientLoose;
-    std::vector<int>   m_electron_tag_isIsolated_UserDefinedFixEfficiency;
-    std::vector<int>   m_electron_tag_isIsolated_UserDefinedCut;
+    std::vector<int>   m_electron_tag_isIsolated_FixedCutTight;
     std::vector<int>   m_electron_tag_isTight;
     std::vector<int>   m_electron_tag_isMedium;
     std::vector<int>   m_electron_tag_isTruthMatched;
@@ -190,7 +177,7 @@ class HTopMultilepTree : public HelpTreeBase
     /* electron PROBE variables */
     std::vector<float> m_electron_probe_pt;
     std::vector<float> m_electron_probe_eta;
-    std::vector<int>   m_electron_probe_LHVeryLoose;
+    std::vector<float> m_electron_probe_caloCluster_eta;
     std::vector<int>   m_electron_probe_LHLoose;
     std::vector<int>   m_electron_probe_LHMedium;
     std::vector<int>   m_electron_probe_LHTight;
@@ -199,13 +186,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_electron_probe_IsEMTight;
     std::vector<float> m_electron_probe_ptvarcone20;
     std::vector<float> m_electron_probe_topoetcone20;
-    std::vector<int>   m_electron_probe_isIsolated_LooseTrackOnly;
     std::vector<int>   m_electron_probe_isIsolated_Loose;
-    std::vector<int>   m_electron_probe_isIsolated_Tight;
-    std::vector<int>   m_electron_probe_isIsolated_Gradient;
-    std::vector<int>   m_electron_probe_isIsolated_GradientLoose;
-    std::vector<int>   m_electron_probe_isIsolated_UserDefinedFixEfficiency;
-    std::vector<int>   m_electron_probe_isIsolated_UserDefinedCut;
+    std::vector<int>   m_electron_probe_isIsolated_FixedCutTight;
     std::vector<int>   m_electron_probe_isTight;
     std::vector<int>   m_electron_probe_isMedium;
     std::vector<int>   m_electron_probe_isTruthMatched;
@@ -229,13 +211,6 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_lepton_charge;
     std::vector<int>   m_lepton_flavour;
     std::vector<int>   m_lepton_isTrigMatched;
-    std::vector<int>   m_lepton_isIsolated_LooseTrackOnly;
-    std::vector<int>   m_lepton_isIsolated_Loose;
-    std::vector<int>   m_lepton_isIsolated_Tight;
-    std::vector<int>   m_lepton_isIsolated_Gradient;
-    std::vector<int>   m_lepton_isIsolated_GradientLoose;
-    std::vector<int>   m_lepton_isIsolated_UserDefinedFixEfficiency;
-    std::vector<int>   m_lepton_isIsolated_UserDefinedCut;
     std::vector<int>   m_lepton_isTight;
     std::vector<int>   m_lepton_isMedium;
     std::vector<int>   m_lepton_isOS;
@@ -258,13 +233,6 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_lepton_tag_eta;
     std::vector<int>   m_lepton_tag_flavour;
     std::vector<int>   m_lepton_tag_charge;
-    std::vector<int>   m_lepton_tag_isIsolated_LooseTrackOnly;
-    std::vector<int>   m_lepton_tag_isIsolated_Loose;
-    std::vector<int>   m_lepton_tag_isIsolated_Tight;
-    std::vector<int>   m_lepton_tag_isIsolated_Gradient;
-    std::vector<int>   m_lepton_tag_isIsolated_GradientLoose;
-    std::vector<int>   m_lepton_tag_isIsolated_UserDefinedFixEfficiency;
-    std::vector<int>   m_lepton_tag_isIsolated_UserDefinedCut;
     std::vector<int>   m_lepton_tag_isTrigMatched;
     std::vector<int>   m_lepton_tag_isTight;
     std::vector<int>   m_lepton_tag_isMedium;
@@ -284,13 +252,6 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_lepton_probe_eta;
     std::vector<int>   m_lepton_probe_flavour;
     std::vector<int>   m_lepton_probe_charge;
-    std::vector<int>   m_lepton_probe_isIsolated_LooseTrackOnly;
-    std::vector<int>   m_lepton_probe_isIsolated_Loose;
-    std::vector<int>   m_lepton_probe_isIsolated_Tight;
-    std::vector<int>   m_lepton_probe_isIsolated_Gradient;
-    std::vector<int>   m_lepton_probe_isIsolated_GradientLoose;
-    std::vector<int>   m_lepton_probe_isIsolated_UserDefinedFixEfficiency;
-    std::vector<int>   m_lepton_probe_isIsolated_UserDefinedCut;
     std::vector<int>   m_lepton_probe_isTrigMatched;
     std::vector<int>   m_lepton_probe_isTight;
     std::vector<int>   m_lepton_probe_isMedium;

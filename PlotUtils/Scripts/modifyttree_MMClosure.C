@@ -66,7 +66,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
 
   Info("read_rates()", "REAL rate from directory: %s ", rr_dir.c_str() );
 
-  std::string path_R_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/PlotUtils/common_ntuple_melbourne/" + rr_dir + "/Rates.root";
+  std::string path_R_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/Rates.root";
   TFile *file_R_el = TFile::Open(path_R_el.c_str());
   if ( !file_R_el->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_el.c_str() );
@@ -74,7 +74,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
   } else {
     Info("read_rates()", "ELECTRON REAL rate: %s ", path_R_el.c_str() );
   }
-  std::string path_R_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/PlotUtils/common_ntuple_melbourne/" + rr_dir + "/MuMuRates.root";
+  std::string path_R_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/MuMuRates.root";
   TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
   if ( !file_R_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_mu.c_str() );
@@ -133,7 +133,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
      Info("read_rates()", "FAKE rate from same directory" );
   }
 
-  std::string path_F_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/PlotUtils/common_ntuple_melbourne/" + fake_dir + "/Rates.root";
+  std::string path_F_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/Rates.root";
   TFile *file_F_el = TFile::Open(path_F_el.c_str());
   if ( !file_F_el->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_el.c_str() );
@@ -142,7 +142,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
     Info("read_rates()", "ELECTRON FAKE rate: %s ", path_F_el.c_str() );
   }
 
-  std::string path_F_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/PlotUtils/common_ntuple_melbourne/" + fake_dir + "/MuMuRates.root";
+  std::string path_F_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/MuMuRates.root";
   TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
   if ( !file_F_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_mu.c_str() );
@@ -756,7 +756,7 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   std::string old_lep_eta_name("lep_eta");
   std::string old_lep_flavour_name("lep_flavour");
 
-  Int_t                  eventNumber_old; eventNumber_old = -1;
+  Long64_t               eventNumber_old; eventNumber_old = -1;
   Int_t                  nlep_old;        nlep_old = -1;
   Int_t                  isSS01_old;      isSS01_old = -1;
   Int_t 	         isTT_old;        isTT_old = -1;
@@ -824,8 +824,8 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   // read r/f rates from ROOT histograms
   //
   //std::string RR_dir("GOOD_STUFF/OutputPlots_MMClosureRates_v023_TTbar");
-  std::string RR_dir("GOOD_STUFF/OutputPlots_MMRates_v021_Madgraph_Expected");
-  
+  //std::string RR_dir("GOOD_STUFF/OutputPlots_MMRates_v021_Madgraph_Expected");
+  std::string RR_dir("OutputPlots_MMClosureRates_v025");  
 
   // when using ch-flip rate as RR (for electrons)
   //std::string RR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_ChFlipBkgRates_13F");
@@ -855,7 +855,7 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
 
     oldtree->GetEntry(i);
 
-    if ( g_debug ) { Info("modifytree()","\t Processing entry: %lld - eventNumber: %i \n",i, eventNumber_old); }
+    if ( g_debug ) { Info("modifytree()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_old); }
 
     // A security check...
     //

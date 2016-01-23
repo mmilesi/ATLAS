@@ -46,7 +46,14 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("isNonTightEvent",   &m_isNonTightEvent,    "isNonTightEvent/I");
   m_tree->Branch("isProbeElEvent",    &m_isProbeElEvent,     "isProbeElEvent/I");
   m_tree->Branch("isProbeMuEvent",    &m_isProbeMuEvent,     "isProbeMuEvent/I");
-  m_tree->Branch("weight_electron_trig_HTop", &m_weight_electron_trig_HTop);
+  
+  if ( m_isMC ) {
+    m_tree->Branch("weight_lepton_trig_HTop", &m_weight_lepton_trig_HTop);  
+    m_tree->Branch("weight_lepton_reco_HTop", &m_weight_lepton_reco_HTop);  
+    m_tree->Branch("weight_lepton_iso_HTop",  &m_weight_lepton_iso_HTop);  
+    m_tree->Branch("weight_lepton_ID_HTop",   &m_weight_lepton_ID_HTop);  
+  }
+  
 }
 
 /*
@@ -99,13 +106,8 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   m_tree->Branch("muon_tag_trkd0sig",                  &m_muon_tag_trkd0sig);
   m_tree->Branch("muon_tag_ptvarcone30",               &m_muon_tag_ptvarcone30);
   m_tree->Branch("muon_tag_topoetcone20",              &m_muon_tag_topoetcone20);
-  m_tree->Branch("muon_tag_isIsolated_LooseTrackOnly", &m_muon_tag_isIsolated_LooseTrackOnly);
   m_tree->Branch("muon_tag_isIsolated_Loose",	       &m_muon_tag_isIsolated_Loose);
-  m_tree->Branch("muon_tag_isIsolated_Tight",	       &m_muon_tag_isIsolated_Tight);
-  m_tree->Branch("muon_tag_isIsolated_Gradient",       &m_muon_tag_isIsolated_Gradient);
-  m_tree->Branch("muon_tag_isIsolated_GradientLoose",  &m_muon_tag_isIsolated_GradientLoose);
-  m_tree->Branch("muon_tag_isIsolated_UserDefinedFixEfficiency", &m_muon_tag_isIsolated_UserDefinedFixEfficiency);
-  m_tree->Branch("muon_tag_isIsolated_UserDefinedCut",		 &m_muon_tag_isIsolated_UserDefinedCut);
+  m_tree->Branch("muon_tag_isIsolated_FixedCutTightTrackOnly", &m_muon_tag_isIsolated_FixedCutTightTrackOnly);
   m_tree->Branch("muon_tag_isTightSelected",	       &m_muon_tag_isTight);
   m_tree->Branch("muon_tag_isMediumSelected",	       &m_muon_tag_isMedium);
   m_tree->Branch("muon_tag_isTruthMatchedToMuon",      &m_muon_tag_isTruthMatched);
@@ -125,13 +127,8 @@ void HTopMultilepTree::AddMuonsUser(const std::string detailStrUser)
   m_tree->Branch("muon_probe_trkd0sig",                &m_muon_probe_trkd0sig);
   m_tree->Branch("muon_probe_ptvarcone30",               &m_muon_probe_ptvarcone30);
   m_tree->Branch("muon_probe_topoetcone20",              &m_muon_probe_topoetcone20);
-  m_tree->Branch("muon_probe_isIsolated_LooseTrackOnly", &m_muon_probe_isIsolated_LooseTrackOnly);
   m_tree->Branch("muon_probe_isIsolated_Loose",	         &m_muon_probe_isIsolated_Loose);
-  m_tree->Branch("muon_probe_isIsolated_Tight",	         &m_muon_probe_isIsolated_Tight);
-  m_tree->Branch("muon_probe_isIsolated_Gradient",       &m_muon_probe_isIsolated_Gradient);
-  m_tree->Branch("muon_probe_isIsolated_GradientLoose",  &m_muon_probe_isIsolated_GradientLoose);
-  m_tree->Branch("muon_probe_isIsolated_UserDefinedFixEfficiency", &m_muon_probe_isIsolated_UserDefinedFixEfficiency);
-  m_tree->Branch("muon_probe_isIsolated_UserDefinedCut",	   &m_muon_probe_isIsolated_UserDefinedCut);
+  m_tree->Branch("muon_probe_isIsolated_FixedCutTightTrackOnly", &m_muon_probe_isIsolated_FixedCutTightTrackOnly);
   m_tree->Branch("muon_probe_isTightSelected",         &m_muon_probe_isTight);
   m_tree->Branch("muon_probe_isMediumSelected",         &m_muon_probe_isMedium);
   m_tree->Branch("muon_probe_isTruthMatchedToMuon",    &m_muon_probe_isTruthMatched);
@@ -154,7 +151,6 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   if ( m_debug ) { Info("AddElectronsUser()", "Adding branches w/ detail: %s", detailStrUser.c_str()); }
 
   // electron variables
-  m_tree->Branch("el_calo_eta",                        &m_electron_calo_eta);
   m_tree->Branch("el_crack",                           &m_electron_crack);
   m_tree->Branch("el_isTightSelected",                 &m_electron_isTight);
   m_tree->Branch("el_isMediumSelected",                &m_electron_isMedium);
@@ -175,22 +171,17 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   // electron TAG variables
   m_tree->Branch("el_tag_pt",	                       &m_electron_tag_pt);
   m_tree->Branch("el_tag_eta",	                       &m_electron_tag_eta);
-  m_tree->Branch("el_tag_LHVeryLoose",                 &m_electron_tag_LHVeryLoose);
+  m_tree->Branch("el_tag_caloCluster_eta",	       &m_electron_tag_caloCluster_eta);
   m_tree->Branch("el_tag_LHLoose",                     &m_electron_tag_LHLoose);
   m_tree->Branch("el_tag_LHMedium",                    &m_electron_tag_LHMedium);
   m_tree->Branch("el_tag_LHTight",                     &m_electron_tag_LHTight);
   m_tree->Branch("el_tag_IsEMLoose",                   &m_electron_tag_IsEMLoose);
   m_tree->Branch("el_tag_IsEMMedium",                  &m_electron_tag_IsEMMedium);
   m_tree->Branch("el_tag_IsEMTight",                   &m_electron_tag_IsEMTight);
-  m_tree->Branch("el_tag_ptvarcone20",                     &m_electron_tag_ptvarcone20);
-  m_tree->Branch("el_tag_topoetcone20",                    &m_electron_tag_topoetcone20);
-  m_tree->Branch("el_tag_isIsolated_LooseTrackOnly",   &m_electron_tag_isIsolated_LooseTrackOnly);
+  m_tree->Branch("el_tag_ptvarcone20",                 &m_electron_tag_ptvarcone20);
+  m_tree->Branch("el_tag_topoetcone20",                &m_electron_tag_topoetcone20);
   m_tree->Branch("el_tag_isIsolated_Loose",	       &m_electron_tag_isIsolated_Loose);
-  m_tree->Branch("el_tag_isIsolated_Tight",	       &m_electron_tag_isIsolated_Tight);
-  m_tree->Branch("el_tag_isIsolated_Gradient",         &m_electron_tag_isIsolated_Gradient);
-  m_tree->Branch("el_tag_isIsolated_GradientLoose",    &m_electron_tag_isIsolated_GradientLoose);
-  m_tree->Branch("el_tag_isIsolated_UserDefinedFixEfficiency",   &m_electron_tag_isIsolated_UserDefinedFixEfficiency);
-  m_tree->Branch("el_tag_isIsolated_UserDefinedCut",		 &m_electron_tag_isIsolated_UserDefinedCut);
+  m_tree->Branch("el_tag_isIsolated_FixedCutTight",    &m_electron_tag_isIsolated_FixedCutTight);
   m_tree->Branch("el_tag_isTightSelected",             &m_electron_tag_isTight);
   m_tree->Branch("el_tag_isMediumSelected",            &m_electron_tag_isMedium);
   m_tree->Branch("el_tag_isTruthMatchedToElectron",    &m_electron_tag_isTruthMatched);
@@ -207,22 +198,17 @@ void HTopMultilepTree::AddElectronsUser(const std::string detailStrUser)
   // electron PROBE variables
   m_tree->Branch("el_probe_pt",	                       &m_electron_probe_pt);
   m_tree->Branch("el_probe_eta",	               &m_electron_probe_eta);
-  m_tree->Branch("el_probe_LHVeryLoose",               &m_electron_probe_LHVeryLoose);
+  m_tree->Branch("el_probe_caloCluster_eta",	       &m_electron_probe_caloCluster_eta);
   m_tree->Branch("el_probe_LHLoose",                   &m_electron_probe_LHLoose);
   m_tree->Branch("el_probe_LHMedium",                  &m_electron_probe_LHMedium);
   m_tree->Branch("el_probe_LHTight",                   &m_electron_probe_LHTight);
   m_tree->Branch("el_probe_IsEMLoose",                 &m_electron_probe_IsEMLoose);
   m_tree->Branch("el_probe_IsEMMedium",                &m_electron_probe_IsEMMedium);
   m_tree->Branch("el_probe_IsEMTight",                 &m_electron_probe_IsEMTight);
-  m_tree->Branch("el_probe_ptvarcone20",                     &m_electron_probe_ptvarcone20);
-  m_tree->Branch("el_probe_topoetcone20",                    &m_electron_probe_topoetcone20);
-  m_tree->Branch("el_probe_isIsolated_LooseTrackOnly", &m_electron_probe_isIsolated_LooseTrackOnly);
+  m_tree->Branch("el_probe_ptvarcone20",               &m_electron_probe_ptvarcone20);
+  m_tree->Branch("el_probe_topoetcone20",              &m_electron_probe_topoetcone20);
   m_tree->Branch("el_probe_isIsolated_Loose",	       &m_electron_probe_isIsolated_Loose);
-  m_tree->Branch("el_probe_isIsolated_Tight",	       &m_electron_probe_isIsolated_Tight);
-  m_tree->Branch("el_probe_isIsolated_Gradient",       &m_electron_probe_isIsolated_Gradient);
-  m_tree->Branch("el_probe_isIsolated_GradientLoose",  &m_electron_probe_isIsolated_GradientLoose);
-  m_tree->Branch("el_probe_isIsolated_UserDefinedFixEfficiency", &m_electron_probe_isIsolated_UserDefinedFixEfficiency);
-  m_tree->Branch("el_probe_isIsolated_UserDefinedCut",		 &m_electron_probe_isIsolated_UserDefinedCut);
+  m_tree->Branch("el_probe_isIsolated_FixedCutTight",  &m_electron_probe_isIsolated_FixedCutTight);
   m_tree->Branch("el_probe_isTightSelected",	       &m_electron_probe_isTight);
   m_tree->Branch("el_probe_isMediumSelected",          &m_electron_probe_isMedium);
   m_tree->Branch("el_probe_isTruthMatchedToElectron",  &m_electron_probe_isTruthMatched);
@@ -251,13 +237,6 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_charge",      		       &m_lepton_charge);
   m_tree->Branch("lep_flavour",     		       &m_lepton_flavour);
   m_tree->Branch("lep_isTrigMatched",                  &m_lepton_isTrigMatched);
-  m_tree->Branch("lep_isIsolated_LooseTrackOnly",      &m_lepton_isIsolated_LooseTrackOnly);
-  m_tree->Branch("lep_isIsolated_Loose",	       &m_lepton_isIsolated_Loose);
-  m_tree->Branch("lep_isIsolated_Tight",	       &m_lepton_isIsolated_Tight);
-  m_tree->Branch("lep_isIsolated_Gradient",	       &m_lepton_isIsolated_Gradient);
-  m_tree->Branch("lep_isIsolated_GradientLoose",       &m_lepton_isIsolated_GradientLoose);
-  m_tree->Branch("lep_isIsolated_UserDefinedFixEfficiency",  &m_lepton_isIsolated_UserDefinedFixEfficiency);
-  m_tree->Branch("lep_isIsolated_UserDefinedCut",	     &m_lepton_isIsolated_UserDefinedCut);
   m_tree->Branch("lep_isTightSelected",                &m_lepton_isTight);
   m_tree->Branch("lep_isMediumSelected",               &m_lepton_isMedium);
   m_tree->Branch("lep_isTag",                          &m_lepton_isTag);
@@ -280,13 +259,6 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_tag_flavour",	               &m_lepton_tag_flavour);
   m_tree->Branch("lep_tag_charge",	               &m_lepton_tag_charge);
   m_tree->Branch("lep_tag_isTrigMatched",              &m_lepton_tag_isTrigMatched);
-  m_tree->Branch("lep_tag_isIsolated_LooseTrackOnly",  &m_lepton_tag_isIsolated_LooseTrackOnly);
-  m_tree->Branch("lep_tag_isIsolated_Loose",	       &m_lepton_tag_isIsolated_Loose);
-  m_tree->Branch("lep_tag_isIsolated_Tight",	       &m_lepton_tag_isIsolated_Tight);
-  m_tree->Branch("lep_tag_isIsolated_Gradient",        &m_lepton_tag_isIsolated_Gradient);
-  m_tree->Branch("lep_tag_isIsolated_GradientLoose",   &m_lepton_tag_isIsolated_GradientLoose);
-  m_tree->Branch("lep_tag_isIsolated_UserDefinedFixEfficiency",  &m_lepton_tag_isIsolated_UserDefinedFixEfficiency);
-  m_tree->Branch("lep_tag_isIsolated_UserDefinedCut",		 &m_lepton_tag_isIsolated_UserDefinedCut);
   m_tree->Branch("lep_tag_isTightSelected",            &m_lepton_tag_isTight);
   m_tree->Branch("lep_tag_isMediumSelected",           &m_lepton_tag_isMedium);
   m_tree->Branch("lep_tag_isTruthMatchedToLepton",     &m_lepton_tag_isTruthMatched);
@@ -306,13 +278,6 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_probe_flavour",	               &m_lepton_probe_flavour);
   m_tree->Branch("lep_probe_charge",	               &m_lepton_probe_charge);
   m_tree->Branch("lep_probe_isTrigMatched",            &m_lepton_probe_isTrigMatched);
-  m_tree->Branch("lep_probe_isIsolated_LooseTrackOnly",&m_lepton_probe_isIsolated_LooseTrackOnly);
-  m_tree->Branch("lep_probe_isIsolated_Loose",	       &m_lepton_probe_isIsolated_Loose);
-  m_tree->Branch("lep_probe_isIsolated_Tight",	       &m_lepton_probe_isIsolated_Tight);
-  m_tree->Branch("lep_probe_isIsolated_Gradient",      &m_lepton_probe_isIsolated_Gradient);
-  m_tree->Branch("lep_probe_isIsolated_GradientLoose", &m_lepton_probe_isIsolated_GradientLoose);
-  m_tree->Branch("lep_probe_isIsolated_UserDefinedFixEfficiency", &m_lepton_probe_isIsolated_UserDefinedFixEfficiency);
-  m_tree->Branch("lep_probe_isIsolated_UserDefinedCut",		  &m_lepton_probe_isIsolated_UserDefinedCut);
   m_tree->Branch("lep_probe_isTightSelected",          &m_lepton_probe_isTight);
   m_tree->Branch("lep_probe_isMediumSelected",         &m_lepton_probe_isMedium);
   m_tree->Branch("lep_probe_isTruthMatchedToLepton",   &m_lepton_probe_isTruthMatched);
@@ -351,8 +316,13 @@ void HTopMultilepTree::ClearEventUser()
 {
   m_MMWeight.clear();
   m_FFWeight.clear();
-  
-  m_weight_electron_trig_HTop.clear();
+  if ( m_isMC ) {
+    m_weight_lepton_trig_HTop.clear();
+    m_weight_lepton_trig_HTop.clear();
+    m_weight_lepton_reco_HTop.clear();
+    m_weight_lepton_iso_HTop.clear(); 
+    m_weight_lepton_ID_HTop.clear(); 
+  } 
 }
 
 /*
@@ -383,13 +353,8 @@ void HTopMultilepTree::ClearMuonsUser()
   m_muon_tag_trkd0sig.clear();
   m_muon_tag_ptvarcone30.clear();
   m_muon_tag_topoetcone20.clear();
-  m_muon_tag_isIsolated_LooseTrackOnly.clear();
   m_muon_tag_isIsolated_Loose.clear();
-  m_muon_tag_isIsolated_Tight.clear();
-  m_muon_tag_isIsolated_Gradient.clear();
-  m_muon_tag_isIsolated_GradientLoose.clear();
-  m_muon_tag_isIsolated_UserDefinedFixEfficiency.clear();
-  m_muon_tag_isIsolated_UserDefinedCut.clear();
+  m_muon_tag_isIsolated_FixedCutTightTrackOnly.clear();
   m_muon_tag_isTight.clear();
   m_muon_tag_isMedium.clear();
   m_muon_tag_isTruthMatched.clear();
@@ -408,13 +373,8 @@ void HTopMultilepTree::ClearMuonsUser()
   m_muon_probe_trkd0sig.clear();
   m_muon_probe_ptvarcone30.clear();
   m_muon_probe_topoetcone20.clear();
-  m_muon_probe_isIsolated_LooseTrackOnly.clear();
   m_muon_probe_isIsolated_Loose.clear();
-  m_muon_probe_isIsolated_Tight.clear();
-  m_muon_probe_isIsolated_Gradient.clear();
-  m_muon_probe_isIsolated_GradientLoose.clear();
-  m_muon_probe_isIsolated_UserDefinedFixEfficiency.clear();
-  m_muon_probe_isIsolated_UserDefinedCut.clear();
+  m_muon_probe_isIsolated_FixedCutTightTrackOnly.clear();
   m_muon_probe_isTight.clear();
   m_muon_probe_isMedium.clear();
   m_muon_probe_isTruthMatched.clear();
@@ -433,7 +393,6 @@ void HTopMultilepTree::ClearMuonsUser()
 void HTopMultilepTree::ClearElectronsUser()
 {
   // electron variables
-  m_electron_calo_eta.clear();
   m_electron_crack.clear();
   m_electron_isTight.clear();
   m_electron_isMedium.clear();
@@ -453,7 +412,7 @@ void HTopMultilepTree::ClearElectronsUser()
   m_electron_ancestorTruthStatus.clear();
   m_electron_tag_pt.clear();
   m_electron_tag_eta.clear();
-  m_electron_tag_LHVeryLoose.clear();
+  m_electron_tag_caloCluster_eta.clear();
   m_electron_tag_LHLoose.clear();
   m_electron_tag_LHMedium.clear();
   m_electron_tag_LHTight.clear();
@@ -462,13 +421,8 @@ void HTopMultilepTree::ClearElectronsUser()
   m_electron_tag_IsEMTight.clear();
   m_electron_tag_ptvarcone20.clear();
   m_electron_tag_topoetcone20.clear();
-  m_electron_tag_isIsolated_LooseTrackOnly.clear();
   m_electron_tag_isIsolated_Loose.clear();
-  m_electron_tag_isIsolated_Tight.clear();
-  m_electron_tag_isIsolated_Gradient.clear();
-  m_electron_tag_isIsolated_GradientLoose.clear();
-  m_electron_tag_isIsolated_UserDefinedFixEfficiency.clear();
-  m_electron_tag_isIsolated_UserDefinedCut.clear();
+  m_electron_tag_isIsolated_FixedCutTight.clear();
   m_electron_tag_isTight.clear();
   m_electron_tag_isMedium.clear();
   m_electron_tag_isTruthMatched.clear();
@@ -484,7 +438,7 @@ void HTopMultilepTree::ClearElectronsUser()
   m_electron_tag_ancestorTruthStatus.clear();
   m_electron_probe_pt.clear();
   m_electron_probe_eta.clear();
-  m_electron_probe_LHVeryLoose.clear();
+  m_electron_probe_caloCluster_eta.clear();
   m_electron_probe_LHLoose.clear();
   m_electron_probe_LHMedium.clear();
   m_electron_probe_LHTight.clear();
@@ -493,13 +447,8 @@ void HTopMultilepTree::ClearElectronsUser()
   m_electron_probe_IsEMTight.clear();
   m_electron_probe_ptvarcone20.clear();
   m_electron_probe_topoetcone20.clear();
-  m_electron_probe_isIsolated_LooseTrackOnly.clear();
   m_electron_probe_isIsolated_Loose.clear();
-  m_electron_probe_isIsolated_Tight.clear();
-  m_electron_probe_isIsolated_Gradient.clear();
-  m_electron_probe_isIsolated_GradientLoose.clear();
-  m_electron_probe_isIsolated_UserDefinedFixEfficiency.clear();
-  m_electron_probe_isIsolated_UserDefinedCut.clear();
+  m_electron_probe_isIsolated_FixedCutTight.clear();
   m_electron_probe_isTight.clear();
   m_electron_probe_isMedium.clear();
   m_electron_probe_isTruthMatched.clear();
@@ -534,13 +483,6 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_charge.clear();
   m_lepton_flavour.clear();
   m_lepton_isTrigMatched.clear();
-  m_lepton_isIsolated_LooseTrackOnly.clear();
-  m_lepton_isIsolated_Loose.clear();
-  m_lepton_isIsolated_Tight.clear();
-  m_lepton_isIsolated_Gradient.clear();
-  m_lepton_isIsolated_GradientLoose.clear();
-  m_lepton_isIsolated_UserDefinedFixEfficiency.clear();
-  m_lepton_isIsolated_UserDefinedCut.clear();
   m_lepton_isMedium.clear();
   m_lepton_isTight.clear();
   m_lepton_isOS.clear();
@@ -562,13 +504,6 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_tag_flavour.clear();
   m_lepton_tag_charge.clear();
   m_lepton_tag_isTrigMatched.clear();
-  m_lepton_tag_isIsolated_LooseTrackOnly.clear();
-  m_lepton_tag_isIsolated_Loose.clear();
-  m_lepton_tag_isIsolated_Tight.clear();
-  m_lepton_tag_isIsolated_Gradient.clear();
-  m_lepton_tag_isIsolated_GradientLoose.clear();
-  m_lepton_tag_isIsolated_UserDefinedFixEfficiency.clear();
-  m_lepton_tag_isIsolated_UserDefinedCut.clear();
   m_lepton_tag_isMedium.clear();
   m_lepton_tag_isTight.clear();
   m_lepton_tag_isTruthMatched.clear();
@@ -587,13 +522,6 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_probe_flavour.clear();
   m_lepton_probe_charge.clear();
   m_lepton_probe_isTrigMatched.clear();
-  m_lepton_probe_isIsolated_LooseTrackOnly.clear();
-  m_lepton_probe_isIsolated_Loose.clear();
-  m_lepton_probe_isIsolated_Tight.clear();
-  m_lepton_probe_isIsolated_Gradient.clear();
-  m_lepton_probe_isIsolated_GradientLoose.clear();
-  m_lepton_probe_isIsolated_UserDefinedFixEfficiency.clear();
-  m_lepton_probe_isIsolated_UserDefinedCut.clear();
   m_lepton_probe_isMedium.clear();
   m_lepton_probe_isTight.clear();
   m_lepton_probe_isTruthMatched.clear();
@@ -653,9 +581,18 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
   m_isProbeElEvent       =  ( eventInfo->isAvailable< char >( "isProbeElEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeElEvent" )	   	 :  -1;
   m_isProbeMuEvent       =  ( eventInfo->isAvailable< char >( "isProbeMuEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeMuEvent" )	   	 :  -1;
   
-  SG::AuxElement::ConstAccessor< std::vector<float> >   electronTrigSFVec( "ElectronEfficiencyCorrector_TrigSyst_GLOBAL_HTop" );
-  if( electronTrigSFVec.isAvailable( *eventInfo ) ) { m_weight_electron_trig_HTop = electronTrigSFVec( *eventInfo ); } else { m_weight_electron_trig_HTop.push_back(-999); }
-
+  if ( m_isMC ) {
+    std::vector<float> junk(1,1.0);
+    static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepTrigSF_GLOBAL("lepTrigEffSF_GLOBAL_HTop");
+    static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepRecoSF_GLOBAL("lepRecoEffSF_GLOBAL_HTop");
+    static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepIsoSF_GLOBAL("lepIsoEffSF_GLOBAL_HTop");
+    static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepIDSF_GLOBAL("lepIDEffSF_GLOBAL_HTop");
+  
+    if ( accLepTrigSF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_trig_HTop = accLepTrigSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_trig_HTop = junk; }
+    if ( accLepRecoSF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_reco_HTop = accLepRecoSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_reco_HTop = junk; }
+    if ( accLepIsoSF_GLOBAL.isAvailable( *eventInfo ) )  { m_weight_lepton_iso_HTop = accLepIsoSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_iso_HTop = junk; }
+    if ( accLepIDSF_GLOBAL.isAvailable( *eventInfo ) )   { m_weight_lepton_ID_HTop = accLepIDSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_ID_HTop = junk; }
+  }
 }
 
 /*
@@ -675,13 +612,8 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
   // access this info only to fill tag/probe branches
   static SG::AuxElement::Accessor<float> d0SigAcc ("d0sig");
   float d0_significance =  ( d0SigAcc.isAvailable( *muon ) ) ? fabs( d0SigAcc( *muon ) ) : -9999.0;
-  static SG::AuxElement::Accessor<char> isIsoLooseTrackOnlyAcc ("isIsolated_LooseTrackOnly");
   static SG::AuxElement::Accessor<char> isIsoLooseAcc ("isIsolated_Loose");
-  static SG::AuxElement::Accessor<char> isIsoTightAcc ("isIsolated_Tight");
-  static SG::AuxElement::Accessor<char> isIsoGradientAcc ("isIsolated_Gradient");
-  static SG::AuxElement::Accessor<char> isIsoGradientLooseAcc ("isIsolated_GradientLoose");
-  static SG::AuxElement::Accessor<char> isIsoUserDefinedFixEfficiencyAcc ("isIsolated_UserDefinedFixEfficiency");
-  static SG::AuxElement::Accessor<char> isIsoUserDefinedCutAcc ("isIsolated_UserDefinedCut");
+  static SG::AuxElement::Accessor<char> isIsoFixedCutTightTrackOnlyAcc ("isIsolated_FixedCutTightTrackOnly");
 
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
   static SG::AuxElement::Accessor< char > isMediumAcc("isMedium");
@@ -744,16 +676,11 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
       m_muon_tag_trkd0sig.push_back( d0_significance );
       m_muon_tag_ptvarcone30.push_back( muon->isolation( xAOD::Iso::ptvarcone30 ) );
       m_muon_tag_topoetcone20.push_back( muon->isolation( xAOD::Iso::topoetcone20 ) );
-      if ( isIsoLooseTrackOnlyAcc.isAvailable( *muon ) ) { m_muon_tag_isIsolated_LooseTrackOnly.push_back( isIsoLooseTrackOnlyAcc( *muon ) ); } else { m_muon_tag_isIsolated_LooseTrackOnly.push_back( -1 ); }
-      if ( isIsoLooseAcc.isAvailable( *muon ) )          { m_muon_tag_isIsolated_Loose.push_back( isIsoLooseAcc( *muon ) ); } else { m_muon_tag_isIsolated_Loose.push_back( -1 ); }
-      if ( isIsoTightAcc.isAvailable( *muon ) )          { m_muon_tag_isIsolated_Tight.push_back( isIsoTightAcc( *muon ) ); } else { m_muon_tag_isIsolated_Tight.push_back( -1 ); }
-      if ( isIsoGradientAcc.isAvailable( *muon ) )       { m_muon_tag_isIsolated_Gradient.push_back( isIsoGradientAcc( *muon ) ); } else { m_muon_tag_isIsolated_Gradient.push_back( -1 ); }
-      if ( isIsoGradientLooseAcc.isAvailable( *muon ) )  { m_muon_tag_isIsolated_GradientLoose.push_back( isIsoGradientLooseAcc( *muon ) ); } else { m_muon_tag_isIsolated_GradientLoose.push_back( -1 ); }
-      if ( isIsoUserDefinedFixEfficiencyAcc.isAvailable( *muon ) ) { m_muon_tag_isIsolated_UserDefinedFixEfficiency.push_back( isIsoUserDefinedFixEfficiencyAcc( *muon ) ); } else { m_muon_tag_isIsolated_UserDefinedFixEfficiency.push_back( -1 ); }
-      if ( isIsoUserDefinedCutAcc.isAvailable( *muon ) )           { m_muon_tag_isIsolated_UserDefinedCut.push_back( isIsoUserDefinedCutAcc( *muon ) ); } else { m_muon_tag_isIsolated_UserDefinedCut.push_back( -1 ); }
+      if ( isIsoLooseAcc.isAvailable( *muon ) )              { m_muon_tag_isIsolated_Loose.push_back( isIsoLooseAcc( *muon ) ); } else { m_muon_tag_isIsolated_Loose.push_back( -1 ); }
+      if ( isIsoFixedCutTightTrackOnlyAcc.isAvailable( *muon ) ) { m_muon_tag_isIsolated_FixedCutTightTrackOnly.push_back( isIsoFixedCutTightTrackOnlyAcc( *muon ) ); } else { m_muon_tag_isIsolated_FixedCutTightTrackOnly.push_back( -1 ); }
       if ( isTightAcc.isAvailable( *muon ) )                 { m_muon_tag_isTight.push_back(  isTightAcc( *muon ) ); }
       else { m_muon_tag_isTight .push_back(  -1 ); }
-      if ( isMediumAcc.isAvailable( *muon ) )                 { m_muon_tag_isMedium.push_back(  isMediumAcc( *muon ) ); }
+      if ( isMediumAcc.isAvailable( *muon ) )                { m_muon_tag_isMedium.push_back(  isMediumAcc( *muon ) ); }
       else { m_muon_tag_isMedium .push_back(  -1 ); }
       if ( isTruthMatchedAcc.isAvailable( *muon ) )          { m_muon_tag_isTruthMatched.push_back( isTruthMatchedAcc( *muon ) ); }
       else {  m_muon_tag_isTruthMatched .push_back( -1 ); }
@@ -786,13 +713,8 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
       m_muon_probe_trkd0sig.push_back( d0_significance );
       m_muon_probe_ptvarcone30.push_back( muon->isolation( xAOD::Iso::ptvarcone30 ) );
       m_muon_probe_topoetcone20.push_back( muon->isolation( xAOD::Iso::topoetcone20 ) );
-      if ( isIsoLooseTrackOnlyAcc.isAvailable( *muon ) ) { m_muon_probe_isIsolated_LooseTrackOnly.push_back( isIsoLooseTrackOnlyAcc( *muon ) ); } else { m_muon_probe_isIsolated_LooseTrackOnly.push_back( -1 ); }
       if ( isIsoLooseAcc.isAvailable( *muon ) )          { m_muon_probe_isIsolated_Loose.push_back( isIsoLooseAcc( *muon ) ); } else { m_muon_probe_isIsolated_Loose.push_back( -1 ); }
-      if ( isIsoTightAcc.isAvailable( *muon ) )          { m_muon_probe_isIsolated_Tight.push_back( isIsoTightAcc( *muon ) ); } else { m_muon_probe_isIsolated_Tight.push_back( -1 ); }
-      if ( isIsoGradientAcc.isAvailable( *muon ) )       { m_muon_probe_isIsolated_Gradient.push_back( isIsoGradientAcc( *muon ) ); } else { m_muon_probe_isIsolated_Gradient.push_back( -1 ); }
-      if ( isIsoGradientLooseAcc.isAvailable( *muon ) )  { m_muon_probe_isIsolated_GradientLoose.push_back( isIsoGradientLooseAcc( *muon ) ); } else { m_muon_probe_isIsolated_GradientLoose.push_back( -1 ); }
-      if ( isIsoUserDefinedFixEfficiencyAcc.isAvailable( *muon ) ) { m_muon_probe_isIsolated_UserDefinedFixEfficiency.push_back( isIsoUserDefinedFixEfficiencyAcc( *muon ) ); } else { m_muon_probe_isIsolated_UserDefinedFixEfficiency.push_back( -1 ); }
-      if ( isIsoUserDefinedCutAcc.isAvailable( *muon ) )           { m_muon_probe_isIsolated_UserDefinedCut.push_back( isIsoUserDefinedCutAcc( *muon ) ); } else { m_muon_probe_isIsolated_UserDefinedCut.push_back( -1 ); }
+      if ( isIsoFixedCutTightTrackOnlyAcc.isAvailable( *muon ) )  { m_muon_probe_isIsolated_FixedCutTightTrackOnly.push_back( isIsoFixedCutTightTrackOnlyAcc( *muon ) ); } else { m_muon_probe_isIsolated_FixedCutTightTrackOnly.push_back( -1 ); }
       if ( isTightAcc.isAvailable( *muon ) )                 { m_muon_probe_isTight.push_back(  isTightAcc( *muon ) ); }
       else { m_muon_probe_isTight.push_back(  -1 ); }
       if ( isMediumAcc.isAvailable( *muon ) )                 { m_muon_probe_isMedium.push_back(  isMediumAcc( *muon ) ); }
@@ -832,21 +754,15 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
 
   // access this info only to fill tag/probe branches
 
-  static SG::AuxElement::Accessor<char> LHVeryLooseAcc ("LHVeryLoose");
   static SG::AuxElement::Accessor<char> LHLooseAcc ("LHLoose");
   static SG::AuxElement::Accessor<char> LHMediumAcc ("LHMedium");
   static SG::AuxElement::Accessor<char> LHTightAcc ("LHTight");
   static SG::AuxElement::Accessor<char> EMLooseAcc ("Loose");
   static SG::AuxElement::Accessor<char> EMMediumAcc ("Medium");
   static SG::AuxElement::Accessor<char> EMTightAcc ("Tight");
-  static SG::AuxElement::Accessor<char> isIsoLooseTrackOnlyAcc ("isIsolated_LooseTrackOnly");
   static SG::AuxElement::Accessor<char> isIsoLooseAcc ("isIsolated_Loose");
-  static SG::AuxElement::Accessor<char> isIsoTightAcc ("isIsolated_Tight");
-  static SG::AuxElement::Accessor<char> isIsoGradientAcc ("isIsolated_Gradient");
-  static SG::AuxElement::Accessor<char> isIsoGradientLooseAcc ("isIsolated_GradientLoose");
-  static SG::AuxElement::Accessor<char> isIsoUserDefinedFixEfficiencyAcc ("isIsolated_UserDefinedFixEfficiency");
-  static SG::AuxElement::Accessor<char> isIsoUserDefinedCutAcc ("isIsolated_UserDefinedCut");
-
+  static SG::AuxElement::Accessor<char> isIsoFixedCutTightAcc ("isIsolated_FixedCutTight");
+ 
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
   static SG::AuxElement::Accessor< char > isMediumAcc("isMedium");
   static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
@@ -864,12 +780,11 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
   static SG::AuxElement::Accessor< int >  ancestorTruthPdgIdAcc("ancestorTruthPdgId");
   static SG::AuxElement::Accessor< int >  ancestorTruthOriginAcc("ancestorTruthOrigin");
   static SG::AuxElement::Accessor< int >  ancestorTruthStatusAcc("ancestorTruthStatus");
-
-  if ( electron->caloCluster() ) {  m_electron_calo_eta.push_back( electron->caloCluster()->eta() ); }
-  else {  m_electron_calo_eta.push_back(-999.); }
+      
+  float calo_eta = ( electron->caloCluster() ) ? electron->caloCluster()->etaBE(2) : -999.0;
 
   if ( electron->caloCluster() ) {
-    if ( fabs( electron->caloCluster()->eta() ) > 1.37 && fabs( electron->caloCluster()->eta() ) < 1.52 ) {
+    if ( fabs( calo_eta ) > 1.37 && fabs( calo_eta ) < 1.52 ) {
       m_electron_crack.push_back(1);
     } else {
       m_electron_crack.push_back(0);
@@ -918,7 +833,8 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
 
       m_electron_tag_pt.push_back(  electron->pt() );
       m_electron_tag_eta.push_back(  electron->eta() );
-      if ( LHVeryLooseAcc.isAvailable( *electron ) ) { m_electron_tag_LHVeryLoose.push_back( LHVeryLooseAcc( *electron ) ); } else { m_electron_tag_LHVeryLoose.push_back( -1 ); }
+      m_electron_tag_caloCluster_eta.push_back( calo_eta );
+      
       if ( LHLooseAcc.isAvailable( *electron ) )     { m_electron_tag_LHLoose.push_back( LHLooseAcc( *electron ) );         } else { m_electron_tag_LHLoose.push_back( -1 ); }
       if ( LHMediumAcc.isAvailable( *electron ) )    { m_electron_tag_LHMedium.push_back( LHMediumAcc( *electron ) );       } else { m_electron_tag_LHMedium.push_back( -1 ); }
       if ( LHTightAcc.isAvailable( *electron ) )     { m_electron_tag_LHTight.push_back( LHTightAcc( *electron ) );         } else { m_electron_tag_LHTight.push_back( -1 ); }
@@ -927,13 +843,8 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
       if ( EMTightAcc.isAvailable( *electron ) )         { m_electron_tag_IsEMTight.push_back( EMTightAcc( *electron ) );   } else { m_electron_tag_IsEMTight.push_back( -1 ); }
       m_electron_tag_ptvarcone20.push_back( electron->isolation( xAOD::Iso::ptvarcone20 ) );
       m_electron_tag_topoetcone20.push_back( electron->isolation( xAOD::Iso::topoetcone20 ) );
-      if ( isIsoLooseTrackOnlyAcc.isAvailable( *electron ) ) { m_electron_tag_isIsolated_LooseTrackOnly.push_back( isIsoLooseTrackOnlyAcc( *electron ) ); } else { m_electron_tag_isIsolated_LooseTrackOnly.push_back( -1 ); }
-      if ( isIsoLooseAcc.isAvailable( *electron ) )          { m_electron_tag_isIsolated_Loose.push_back( isIsoLooseAcc( *electron ) ); } else { m_electron_tag_isIsolated_Loose.push_back( -1 ); }
-      if ( isIsoTightAcc.isAvailable( *electron ) )          { m_electron_tag_isIsolated_Tight.push_back( isIsoTightAcc( *electron ) ); } else { m_electron_tag_isIsolated_Tight.push_back( -1 ); }
-      if ( isIsoGradientAcc.isAvailable( *electron ) )       { m_electron_tag_isIsolated_Gradient.push_back( isIsoGradientAcc( *electron ) ); } else { m_electron_tag_isIsolated_Gradient.push_back( -1 ); }
-      if ( isIsoGradientLooseAcc.isAvailable( *electron ) )  { m_electron_tag_isIsolated_GradientLoose.push_back( isIsoGradientLooseAcc( *electron ) ); } else { m_electron_tag_isIsolated_GradientLoose.push_back( -1 ); }
-      if ( isIsoUserDefinedFixEfficiencyAcc.isAvailable( *electron ) ) { m_electron_tag_isIsolated_UserDefinedFixEfficiency.push_back( isIsoUserDefinedFixEfficiencyAcc( *electron ) ); } else { m_electron_tag_isIsolated_UserDefinedFixEfficiency.push_back( -1 ); }
-      if ( isIsoUserDefinedCutAcc.isAvailable( *electron ) )           { m_electron_tag_isIsolated_UserDefinedCut.push_back( isIsoUserDefinedCutAcc( *electron ) ); } else { m_electron_tag_isIsolated_UserDefinedCut.push_back( -1 ); }
+      if ( isIsoLooseAcc.isAvailable( *electron ) )              { m_electron_tag_isIsolated_Loose.push_back( isIsoLooseAcc( *electron ) ); } else { m_electron_tag_isIsolated_Loose.push_back( -1 ); }
+      if ( isIsoFixedCutTightAcc.isAvailable( *electron ) )      { m_electron_tag_isIsolated_FixedCutTight.push_back( isIsoFixedCutTightAcc( *electron ) ); } else { m_electron_tag_isIsolated_FixedCutTight.push_back( -1 ); }
       if ( isTightAcc.isAvailable( *electron ) )                 { m_electron_tag_isTight.push_back(  isTightAcc( *electron ) ); }
       else { m_electron_tag_isMedium .push_back(  -1 ); }
       if ( isMediumAcc.isAvailable( *electron ) )                 { m_electron_tag_isMedium.push_back(  isMediumAcc( *electron ) ); }
@@ -966,8 +877,8 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
 
       m_electron_probe_pt.push_back(  electron->pt() );
       m_electron_probe_eta.push_back(  electron->eta() );
+      m_electron_probe_caloCluster_eta.push_back( calo_eta );
 
-      if ( LHVeryLooseAcc.isAvailable( *electron ) ) { m_electron_probe_LHVeryLoose.push_back( LHVeryLooseAcc( *electron ) ); } else { m_electron_probe_LHVeryLoose.push_back( -1 ); }
       if ( LHLooseAcc.isAvailable( *electron ) )     { m_electron_probe_LHLoose.push_back( LHLooseAcc( *electron ) );         } else { m_electron_probe_LHLoose.push_back( -1 ); }
       if ( LHMediumAcc.isAvailable( *electron ) )    { m_electron_probe_LHMedium.push_back( LHMediumAcc( *electron ) );       } else { m_electron_probe_LHMedium.push_back( -1 ); }
       if ( LHTightAcc.isAvailable( *electron ) )     { m_electron_probe_LHTight.push_back( LHTightAcc( *electron ) );         } else { m_electron_probe_LHTight.push_back( -1 ); }
@@ -976,16 +887,11 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
       if ( EMTightAcc.isAvailable( *electron ) )         { m_electron_probe_IsEMTight.push_back( EMTightAcc( *electron ) );   } else { m_electron_probe_IsEMTight.push_back( -1 ); }
       m_electron_probe_ptvarcone20.push_back( electron->isolation( xAOD::Iso::ptvarcone20 ) );
       m_electron_probe_topoetcone20.push_back( electron->isolation( xAOD::Iso::topoetcone20 ) );
-      if ( isIsoLooseTrackOnlyAcc.isAvailable( *electron ) ) { m_electron_probe_isIsolated_LooseTrackOnly.push_back( isIsoLooseTrackOnlyAcc( *electron ) ); } else { m_electron_probe_isIsolated_LooseTrackOnly.push_back( -1 ); }
-      if ( isIsoLooseAcc.isAvailable( *electron ) )          { m_electron_probe_isIsolated_Loose.push_back( isIsoLooseAcc( *electron ) ); } else { m_electron_probe_isIsolated_Loose.push_back( -1 ); }
-      if ( isIsoTightAcc.isAvailable( *electron ) )          { m_electron_probe_isIsolated_Tight.push_back( isIsoTightAcc( *electron ) ); } else { m_electron_probe_isIsolated_Tight.push_back( -1 ); }
-      if ( isIsoGradientAcc.isAvailable( *electron ) )       { m_electron_probe_isIsolated_Gradient.push_back( isIsoGradientAcc( *electron ) ); } else { m_electron_probe_isIsolated_Gradient.push_back( -1 ); }
-      if ( isIsoGradientLooseAcc.isAvailable( *electron ) )  { m_electron_probe_isIsolated_GradientLoose.push_back( isIsoGradientLooseAcc( *electron ) ); } else { m_electron_probe_isIsolated_GradientLoose.push_back( -1 ); }
-      if ( isIsoUserDefinedFixEfficiencyAcc.isAvailable( *electron ) ) { m_electron_probe_isIsolated_UserDefinedFixEfficiency.push_back( isIsoUserDefinedFixEfficiencyAcc( *electron ) ); } else { m_electron_probe_isIsolated_UserDefinedFixEfficiency.push_back( -1 ); }
-      if ( isIsoUserDefinedCutAcc.isAvailable( *electron ) )           { m_electron_probe_isIsolated_UserDefinedCut.push_back( isIsoUserDefinedCutAcc( *electron ) ); } else { m_electron_probe_isIsolated_UserDefinedCut.push_back( -1 ); }
+      if ( isIsoLooseAcc.isAvailable( *electron ) )              { m_electron_probe_isIsolated_Loose.push_back( isIsoLooseAcc( *electron ) ); } else { m_electron_probe_isIsolated_Loose.push_back( -1 ); }
+      if ( isIsoFixedCutTightAcc.isAvailable( *electron ) )      { m_electron_probe_isIsolated_FixedCutTight.push_back( isIsoFixedCutTightAcc( *electron ) ); } else { m_electron_probe_isIsolated_FixedCutTight.push_back( -1 ); }
       if ( isTightAcc.isAvailable( *electron ) )                 { m_electron_probe_isTight.push_back(  isTightAcc( *electron ) ); }
       else { m_electron_probe_isTight.push_back(  -1 ); }
-      if ( isMediumAcc.isAvailable( *electron ) )                 { m_electron_probe_isMedium.push_back(  isMediumAcc( *electron ) ); }
+      if ( isMediumAcc.isAvailable( *electron ) )                { m_electron_probe_isMedium.push_back(  isMediumAcc( *electron ) ); }
       else { m_electron_probe_isMedium.push_back(  -1 ); }
       if ( isTruthMatchedAcc.isAvailable( *electron ) )          { m_electron_probe_isTruthMatched.push_back( isTruthMatchedAcc( *electron ) ); }
       else {  m_electron_probe_isTruthMatched.push_back( -1 ); }
@@ -1039,14 +945,6 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
   m_nlep = 0;
 
   static SG::AuxElement::Accessor< char > isTrigMatchedLepAcc("isTrigMatchedLep");
-  static SG::AuxElement::Accessor<char> isIsoLooseTrackOnlyAcc ("isIsolated_LooseTrackOnly");
-  static SG::AuxElement::Accessor<char> isIsoLooseAcc ("isIsolated_Loose");
-  static SG::AuxElement::Accessor<char> isIsoTightAcc ("isIsolated_Tight");
-  static SG::AuxElement::Accessor<char> isIsoGradientAcc ("isIsolated_Gradient");
-  static SG::AuxElement::Accessor<char> isIsoGradientLooseAcc ("isIsolated_GradientLoose");
-  static SG::AuxElement::Accessor<char> isIsoUserDefinedFixEfficiencyAcc ("isIsolated_UserDefinedFixEfficiency");
-  static SG::AuxElement::Accessor<char> isIsoUserDefinedCutAcc ("isIsolated_UserDefinedCut");
-
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
   static SG::AuxElement::Accessor< char > isMediumAcc("isMedium");
   static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
@@ -1091,13 +989,6 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
 
       if (  isTrigMatchedLepAcc.isAvailable( *lep_itr ) )  {  m_lepton_isTrigMatched.push_back( isTrigMatchedLepAcc( *lep_itr ) ); }
       else {  m_lepton_isTrigMatched.push_back(-1); }
-      if ( isIsoLooseTrackOnlyAcc.isAvailable( *lep_itr ) ) { m_lepton_isIsolated_LooseTrackOnly.push_back( isIsoLooseTrackOnlyAcc( *lep_itr ) ); } else { m_lepton_isIsolated_LooseTrackOnly.push_back( -1 ); }
-      if ( isIsoLooseAcc.isAvailable( *lep_itr ) )          { m_lepton_isIsolated_Loose.push_back( isIsoLooseAcc( *lep_itr ) ); } else { m_lepton_isIsolated_Loose.push_back( -1 ); }
-      if ( isIsoTightAcc.isAvailable( *lep_itr ) )          { m_lepton_isIsolated_Tight.push_back( isIsoTightAcc( *lep_itr ) ); } else { m_lepton_isIsolated_Tight.push_back( -1 ); }
-      if ( isIsoGradientAcc.isAvailable( *lep_itr ) )       { m_lepton_isIsolated_Gradient.push_back( isIsoGradientAcc( *lep_itr ) ); } else { m_lepton_isIsolated_Gradient.push_back( -1 ); }
-      if ( isIsoGradientLooseAcc.isAvailable( *lep_itr ) )  { m_lepton_isIsolated_GradientLoose.push_back( isIsoGradientLooseAcc( *lep_itr ) ); } else { m_lepton_isIsolated_GradientLoose.push_back( -1 ); }
-      if ( isIsoUserDefinedFixEfficiencyAcc.isAvailable( *lep_itr ) ) { m_lepton_isIsolated_UserDefinedFixEfficiency.push_back( isIsoUserDefinedFixEfficiencyAcc( *lep_itr ) ); } else { m_lepton_isIsolated_UserDefinedFixEfficiency.push_back( -1 ); }
-      if ( isIsoUserDefinedCutAcc.isAvailable( *lep_itr ) )           { m_lepton_isIsolated_UserDefinedCut.push_back( isIsoUserDefinedCutAcc( *lep_itr ) ); } else { m_lepton_isIsolated_UserDefinedCut.push_back( -1 ); }
       if (  isTightAcc.isAvailable( *lep_itr ) )        {  m_lepton_isTight.push_back( isTightAcc( *lep_itr ) ); }
       else {  m_lepton_isTight.push_back(-1); }
       if (  isMediumAcc.isAvailable( *lep_itr ) )        {  m_lepton_isMedium.push_back( isMediumAcc( *lep_itr ) ); }
@@ -1143,13 +1034,6 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
 
 	  if ( isTrigMatchedLepAcc.isAvailable( *lep_itr ) )           { m_lepton_tag_isTrigMatched.push_back(  isTrigMatchedLepAcc( *lep_itr ) ); }
     	  else { m_lepton_tag_isTrigMatched .push_back(  -1 ); }
-          if ( isIsoLooseTrackOnlyAcc.isAvailable( *lep_itr ) ) { m_lepton_tag_isIsolated_LooseTrackOnly.push_back( isIsoLooseTrackOnlyAcc( *lep_itr ) ); } else { m_lepton_tag_isIsolated_LooseTrackOnly.push_back( -1 ); }
-          if ( isIsoLooseAcc.isAvailable( *lep_itr ) )  	{ m_lepton_tag_isIsolated_Loose.push_back( isIsoLooseAcc( *lep_itr ) ); } else { m_lepton_tag_isIsolated_Loose.push_back( -1 ); }
-          if ( isIsoTightAcc.isAvailable( *lep_itr ) )  	{ m_lepton_tag_isIsolated_Tight.push_back( isIsoTightAcc( *lep_itr ) ); } else { m_lepton_tag_isIsolated_Tight.push_back( -1 ); }
-          if ( isIsoGradientAcc.isAvailable( *lep_itr ) )	{ m_lepton_tag_isIsolated_Gradient.push_back( isIsoGradientAcc( *lep_itr ) ); } else { m_lepton_tag_isIsolated_Gradient.push_back( -1 ); }
-          if ( isIsoGradientLooseAcc.isAvailable( *lep_itr ) )  { m_lepton_tag_isIsolated_GradientLoose.push_back( isIsoGradientLooseAcc( *lep_itr ) ); } else { m_lepton_tag_isIsolated_GradientLoose.push_back( -1 ); }
-          if ( isIsoUserDefinedFixEfficiencyAcc.isAvailable( *lep_itr ) ) { m_lepton_tag_isIsolated_UserDefinedFixEfficiency.push_back( isIsoUserDefinedFixEfficiencyAcc( *lep_itr ) ); } else { m_lepton_tag_isIsolated_UserDefinedFixEfficiency.push_back( -1 ); }
-          if ( isIsoUserDefinedCutAcc.isAvailable( *lep_itr ) ) 	  { m_lepton_tag_isIsolated_UserDefinedCut.push_back( isIsoUserDefinedCutAcc( *lep_itr ) ); } else { m_lepton_tag_isIsolated_UserDefinedCut.push_back( -1 ); }
 	  if ( isTightAcc.isAvailable( *lep_itr ) )		    { m_lepton_tag_isTight.push_back(  isTightAcc( *lep_itr ) ); }
     	  else { m_lepton_tag_isTight .push_back(  -1 ); }
 	  if ( isMediumAcc.isAvailable( *lep_itr ) )		    { m_lepton_tag_isMedium.push_back(  isMediumAcc( *lep_itr ) ); }
@@ -1187,13 +1071,6 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
 
 	  if ( isTrigMatchedLepAcc.isAvailable( *lep_itr ) )           { m_lepton_probe_isTrigMatched.push_back(  isTrigMatchedLepAcc( *lep_itr ) ); }
     	  else { m_lepton_probe_isTrigMatched .push_back(  -1 ); }
-          if ( isIsoLooseTrackOnlyAcc.isAvailable( *lep_itr ) ) { m_lepton_probe_isIsolated_LooseTrackOnly.push_back( isIsoLooseTrackOnlyAcc( *lep_itr ) ); } else { m_lepton_probe_isIsolated_LooseTrackOnly.push_back( -1 ); }
-          if ( isIsoLooseAcc.isAvailable( *lep_itr ) )  	{ m_lepton_probe_isIsolated_Loose.push_back( isIsoLooseAcc( *lep_itr ) ); } else { m_lepton_probe_isIsolated_Loose.push_back( -1 ); }
-          if ( isIsoTightAcc.isAvailable( *lep_itr ) )  	{ m_lepton_probe_isIsolated_Tight.push_back( isIsoTightAcc( *lep_itr ) ); } else { m_lepton_probe_isIsolated_Tight.push_back( -1 ); }
-          if ( isIsoGradientAcc.isAvailable( *lep_itr ) )	{ m_lepton_probe_isIsolated_Gradient.push_back( isIsoGradientAcc( *lep_itr ) ); } else { m_lepton_probe_isIsolated_Gradient.push_back( -1 ); }
-          if ( isIsoGradientLooseAcc.isAvailable( *lep_itr ) )  { m_lepton_probe_isIsolated_GradientLoose.push_back( isIsoGradientLooseAcc( *lep_itr ) ); } else { m_lepton_probe_isIsolated_GradientLoose.push_back( -1 ); }
-          if ( isIsoUserDefinedFixEfficiencyAcc.isAvailable( *lep_itr ) ) { m_lepton_probe_isIsolated_UserDefinedFixEfficiency.push_back( isIsoUserDefinedFixEfficiencyAcc( *lep_itr ) ); } else { m_lepton_probe_isIsolated_UserDefinedFixEfficiency.push_back( -1 ); }
-          if ( isIsoUserDefinedCutAcc.isAvailable( *lep_itr ) ) 	  { m_lepton_probe_isIsolated_UserDefinedCut.push_back( isIsoUserDefinedCutAcc( *lep_itr ) ); } else { m_lepton_probe_isIsolated_UserDefinedCut.push_back( -1 ); }
     	  if ( isTightAcc.isAvailable( *lep_itr ) )		    { m_lepton_probe_isTight.push_back(  isTightAcc( *lep_itr ) ); }
     	  else { m_lepton_probe_isTight.push_back(  -1 ); }
     	  if ( isMediumAcc.isAvailable( *lep_itr ) )		    { m_lepton_probe_isMedium.push_back(  isMediumAcc( *lep_itr ) ); }

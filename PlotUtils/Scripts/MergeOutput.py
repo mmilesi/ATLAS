@@ -13,7 +13,7 @@ Additionally, you can provide a '-w' option to tell the script to use TTree.SetW
 
 from ROOT import gROOT
 gROOT.SetBatch(True) # important to run without popups
-from ROOT import TFile, TH1, TH1D, TObjString, TTree, TChain, TObjArray, TDirectoryFile
+from ROOT import TFile, TH1, TH1D, TList, TObjString, TTree, TChain, TObjArray, TDirectoryFile
 import sys, glob, os, optparse
 
 sys.path.append(os.path.abspath(os.path.curdir))
@@ -178,7 +178,9 @@ def recursiveMerge(target, infile, path='', cache={'TOTALLUMI':0}, cutflow=True)
         l = infile.GetDirectory(path)
         keys = l.GetListOfKeys()
         cycles = {}
+	
         #print("keys in input file: \n {0} \n".format(keys.ls()))
+	
         for entry in range(keys.GetEntries()):
             name = keys.At(entry).GetName() + ";" + str(keys.At(entry).GetCycle())
             if path:
@@ -228,6 +230,12 @@ def recursiveMerge(target, infile, path='', cache={'TOTALLUMI':0}, cutflow=True)
                     objnew = TObjString(obj.GetString().Data())
                     objnew.Write(keys.At(entry).GetName())
                     cache['TOTALLUMI'] += 1
+            elif issubclass(obj.__class__, TList):
+                #print("TList obj name: {0}".format(obj.GetName()))
+                if obj:
+                    target.cd(path)
+                    objnew = TList(obj)
+                    objnew.Write(keys.At(entry).GetName()) # not working...
             else:
                 print "UNKNOWN OBJECT", name, "OF TYPE", type(obj)
 

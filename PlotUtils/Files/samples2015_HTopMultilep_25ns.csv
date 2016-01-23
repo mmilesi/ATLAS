@@ -339,5 +339,5 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 410115,Background,0.0090148,1.0,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_tttautau_Np0,tops,tttautau
 410116,Background,0.014636,1.0,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_tttautau_Np1,tops,tttautau
 410142,Background,0.11309,1.0,1.0,Sherpa_NNPDF30NNLO_ttll_mll5,tops,Sherpa_ttll
-410143,Background,0.6881,1.0,1.0,Sherpa_NNPDF30NNLO_ttZnnqq,tops,Sherpa_ttZ
+410143,Background,0.6881,1.0,1.0,Sherpa_NNPDF30NNLO_ttZnnqq,tops,Sherpa_ttZnnqq
 410144,Background,0.57729,1.0,1.0,Sherpa_NNPDF30NNLO_ttW,tops,Sherpa_ttW

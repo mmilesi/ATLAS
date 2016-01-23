@@ -53,9 +53,6 @@ public:
   /* to define "Tight" taus */
   std::string m_ConfigPathTightTaus;
 
-  /* BTag WP to define nbjets*/
-  std::string m_BTag_WP;
-
   bool m_useMCForTagAndProbe; // To define tag and probe leptons for RF rate mesurement using MC truth
                               // NB: use it only for pure MC estimate (e.g. ttbar MM closure test)
 
@@ -72,11 +69,16 @@ private:
 
   int m_cutflow_bin;      //!
 
-  /* for Francesco */
   TH1D* m_totalEvents;    //!
   TH1D* m_totalEventsW;   //!
 
   JetHists* m_jetPlots;   //!
+
+  enum SFType {
+    RECO       = 0,
+    ISOLATION  = 1,
+    ID         = 2,
+  };
 
   // tools
   TauAnalysisTools::TauSelectionTool    *m_TauSelTool; //!
@@ -119,6 +121,14 @@ public:
   // these are the functions not inherited from Algorithm
   virtual EL::StatusCode configure ();
 
+  virtual EL::StatusCode computeEventLepTrigSF ( const xAOD::EventInfo* eventInfo,
+					         const xAOD::IParticleContainer& leptons
+					        );
+  virtual EL::StatusCode computeEventLepSF( const xAOD::EventInfo* eventInfo,
+                                            const xAOD::IParticleContainer& leptons,
+					    SFType TYPE
+		                          );
+							
   virtual EL::StatusCode defineTagAndProbeRFRateVars( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
   virtual EL::StatusCode defineTagAndProbeRFRateVars_MC( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
 
