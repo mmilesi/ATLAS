@@ -1270,7 +1270,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
   // declare event decorations for checking the probe type in event
   static SG::AuxElement::Decorator< char > isProbeElEventDecor( "isProbeElEvent" );
   static SG::AuxElement::Decorator< char > isProbeMuEventDecor( "isProbeMuEvent" );
-  
+
   // decorate with default values
   for ( auto lep_itr : leptons ) { isTagDecor( *lep_itr ) = 0; }
   isProbeElEventDecor( *eventInfo )  = 0;
@@ -1332,17 +1332,17 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
     for ( auto lep_itr : leptons ) {
 
       if ( isTightAcc.isAvailable( *lep_itr ) && isTrigMatchedLepAcc.isAvailable( *lep_itr ) ) {
-        
-	if ( !found_tag && ( isTightAcc( *lep_itr ) == 1 && isTrigMatchedLepAcc( *lep_itr ) == 1 ) {
+
+	if ( !found_tag && ( isTightAcc( *lep_itr ) == 1 && isTrigMatchedLepAcc( *lep_itr ) == 1 ) ) {
           isTagDecor( *lep_itr ) = 1;
 	  found_tag = true;
         }
-	
-      } 
+
+      }
     }
 
     if ( !found_tag ) {
-      
+
       TRandom3 rndm(0);
       float unif = rndm.Uniform();
 
