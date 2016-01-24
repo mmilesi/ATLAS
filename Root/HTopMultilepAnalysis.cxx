@@ -183,6 +183,18 @@ EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
   // connected.
   Info("histInitialize()", "Calling histInitialize");
 
+  TFile *fileMD = wk()->getOutputFile ("metadata");
+  m_histEventCount  = (TH1D*)fileMD->Get("MetaData_EventCount");
+  if ( !m_histEventCount ) {
+    Error("initialize()", "Failed to retrieve MetaData histogram. Aborting");
+    return EL::StatusCode::FAILURE;
+  }
+
+  m_totalEvents  = new TH1D("TotalEvents",  "TotalEvents",  2, 1, 3);
+  m_totalEventsW = new TH1D("TotalEventsW", "TotalEventsW", 2, 1, 3);
+  wk() -> addOutput(m_totalEvents);
+  wk() -> addOutput(m_totalEventsW);
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -257,18 +269,6 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
     // do it again for the weighted cutflow hist
     m_cutflowHistW->GetXaxis()->FindBin(m_name.c_str());
   }
-
-  TFile *fileMD = wk()->getOutputFile ("metadata");
-  m_histEventCount  = (TH1D*)fileMD->Get("MetaData_EventCount");
-  if ( !m_histEventCount ) {
-    Error("initialize()", "Failed to retrieve MetaData histogram. Aborting");
-    return EL::StatusCode::FAILURE;
-  }
-
-  m_totalEvents  = new TH1D("TotalEvents",  "TotalEvents",  2, 1, 3);
-  m_totalEventsW = new TH1D("TotalEventsW", "TotalEventsW", 2, 1, 3);
-  wk() -> addOutput(m_totalEvents);
-  wk() -> addOutput(m_totalEventsW);
 
   m_jetPlots = new JetHists( "highPtJets", "clean" ); // second argument: "kinematic", "clean", "energy", "resolution"
   m_jetPlots -> initialize();
@@ -575,8 +575,8 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     Info("execute()"," Selected Signal Taus: \t %u " , nSignalTaus );
 
   }
-  /*  
-  if ( nSignalLeptons > 1 ) {     
+  /*
+  if ( nSignalLeptons > 1 ) {
     Info( "execute()", " ******************************** ");
     Info( "execute()", "eventNumber =  %llu \n", eventInfo->eventNumber() );
     Info( "execute()"," Selected Signal Leptons: \t %u " , nSignalLeptons );
@@ -827,11 +827,12 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   // calculate lepton SFs for the event
   //-------------------------------------------
 
-  if ( m_isMC ) { 
-    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepTrigSF( eventInfo, leptonsSorted ) ); 
-    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::RECO ) ); 
-    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::ISOLATION ) ); 
-    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::ID ) ); 
+  if ( m_isMC ) {
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepTrigSF( eventInfo, leptonsSorted ) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::RECO ) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::ISOLATION ) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::ID ) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::TTVA ) );
   }
 
   //--------------------------------
@@ -2322,20 +2323,25 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepSF( const xAOD::EventInfo*
   std::vector<float> SF(10,1.0);
 
   std::string type;
-  
+
   for ( auto lep_itr : leptons ) {
 
+    // in some cases we want the SF vector to be the default one (i.e, all 1.0's...)
     bool skip(false);
 
-    std::string prefix, append_L, append_T;
+    std::string prefix(""), append_L(""), append_T("");
     bool lep_passWP_T(false); // for Isolation/ID
-    
+
     bool isEl = ( lep_itr->type() == xAOD::Type::Electron );
     bool isMu = ( lep_itr->type() == xAOD::Type::Muon );
-    
+
     if ( isEl )      { prefix = "ElectronEfficiencyCorrector"; }
     else if ( isMu ) { prefix = "MuonEfficiencyCorrector"; }
-    
+
+    // check whether this lepton is T,L
+    //
+    bool lep_T = ( lep_itr->auxdecor< char >( "isTight" ) );
+
     switch ( TYPE )
       {
       case SFType::RECO:
@@ -2368,23 +2374,29 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepSF( const xAOD::EventInfo*
 	  skip = true;
 	}
 	break;
+      case SFType::TTVA:
+	type = "TTVA";
+	if ( isEl ) {
+	  skip = true;
+	} else if ( isMu ) {
+	  // TTVA SF is to be applied only to tight muons!
+	  if ( !lep_T ) { skip = true; }
+	  append_T = "TTVASyst_TTVA";
+	}
+	break;
       default:
 	Error ("computeEventLepSF()", "Unsupported SF type. Aborting." );
 	return EL::StatusCode::FAILURE;
 	break;
       }
 
-    if ( m_debug ) {    
+    if ( m_debug ) {
       Info("computeEventLepSF()", "--------------------------------------");
       Info("computeEventLepSF()", "SF type = %s ", type.c_str() );
       Info("computeEventLepSF()", "lepton pT = %f \t lepton flavour = %i ", lep_itr->pt()/1e3, lep_itr->type());
     }
 
-    if ( skip ) continue;
-
-    // check whether this lepton is T,L
-    //
-    bool lep_T = ( lep_itr->auxdecor< char >( "isTight" ) );
+    if ( skip ) { continue; }
 
     std::string decor_name_SF("");
 
@@ -2392,7 +2404,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepSF( const xAOD::EventInfo*
 
     // NB: a loose lepton could still have tight iso/ tight ID since we use ( iso & (ID) & IP) to discriminate T/L...
     //
-    if ( lep_T || lep_passWP_T ) { decor_name_SF  = prefix + "_" + append_T; } 
+    if ( lep_T || lep_passWP_T ) { decor_name_SF  = prefix + "_" + append_T; }
     else                         { decor_name_SF  = prefix + "_" + append_L; }
 
     if ( m_debug ) { Info("computeEventLepSF()", "Reading SF decoration name = %s ", decor_name_SF.c_str() ); }

@@ -78,6 +78,7 @@ private:
     RECO       = 0,
     ISOLATION  = 1,
     ID         = 2,
+    TTVA       = 3,
   };
 
   // tools
@@ -128,7 +129,7 @@ public:
                                             const xAOD::IParticleContainer& leptons,
 					    SFType TYPE
 		                          );
-							
+
   virtual EL::StatusCode defineTagAndProbeRFRateVars( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
   virtual EL::StatusCode defineTagAndProbeRFRateVars_MC( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
 

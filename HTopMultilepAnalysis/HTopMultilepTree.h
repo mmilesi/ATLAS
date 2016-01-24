@@ -63,7 +63,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_weight_lepton_reco_HTop;
     std::vector<float> m_weight_lepton_iso_HTop;
     std::vector<float> m_weight_lepton_ID_HTop;
-    
+    std::vector<float> m_weight_lepton_TTVA_HTop;
+
     /* jet variables */
     std::vector<float> m_jet_m;
 
@@ -150,7 +151,7 @@ class HTopMultilepTree : public HelpTreeBase
     /* electron TAG variables */
     std::vector<float> m_electron_tag_pt;
     std::vector<float> m_electron_tag_eta;
-    std::vector<float> m_electron_tag_caloCluster_eta;    
+    std::vector<float> m_electron_tag_caloCluster_eta;
     std::vector<int>   m_electron_tag_LHLoose;
     std::vector<int>   m_electron_tag_LHMedium;
     std::vector<int>   m_electron_tag_LHTight;

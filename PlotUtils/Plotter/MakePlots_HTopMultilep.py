@@ -420,8 +420,8 @@ if doStandardPlots:
     print ''
     #vardb.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = 'jet_pt[0]/1e3', bins = 36, minval = 20.0, maxval = 200.0,) )
     #vardb.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = 'jet_eta[0]', bins = 50, minval = -5.0, maxval = 5.0) )
-    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = 0, maxval = 10) )
-    vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = 0, maxval = 4) )
+    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = 0, maxval = 10) )
+    #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = 0, maxval = 4) )
     #vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'njets+10.0*njets_mv2c20_Fix77', bins = 40, minval = 0, maxval = 40) )
     #
     # Inclusive m(ll) plot
@@ -430,7 +430,7 @@ if doStandardPlots:
     #
     # Z peak plot
     #
-    #vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
+    vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
     #
     #vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
     #
@@ -661,19 +661,19 @@ if doDataMCCR:
     #
     # 1.)  mumu
     #
-    #vardb.registerCategory( MyCategory('DataMC_InclusiveOS_MuMu',          cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'MuMu_Event', 'TauVeto', 'NBJet', 'Zmincut']) & -vardb.getCut('SS') ) ) )
+    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_MuMu',          cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'MuMu_Event', 'TauVeto', 'NBJet', 'Zmincut']) & -vardb.getCut('SS') ) ) )
     # this is the Real CR
-    vardb.registerCategory( MyCategory('DataMC_MuMu_RealCR',              cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'MuMu_Event', 'TauVeto', 'NBJet', 'LowJetCR']) & -vardb.getCut('SS') ) ) )
+    #vardb.registerCategory( MyCategory('DataMC_MuMu_RealCR',              cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'MuMu_Event', 'TauVeto', 'NBJet', 'LowJetCR']) & -vardb.getCut('SS') ) ) )
     # this is the Fake CR
-    vardb.registerCategory( MyCategory('DataMC_MuMu_FakeCR',              cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'MuMu_Event', 'TauVeto', 'NBJet', 'LowJetCR', 'SS'])  ) )
+    #vardb.registerCategory( MyCategory('DataMC_MuMu_FakeCR',              cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'MuMu_Event', 'TauVeto', 'NBJet', 'LowJetCR', 'SS'])  ) )
     #
     # 2.) elel
     #
-    #vardb.registerCategory( MyCategory('DataMC_InclusiveOS_ElEl',          cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'ElEl_Event', 'TauVeto', 'NBJet', 'Zmincut']) & -vardb.getCut('SS') ) ) )
+    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_ElEl',          cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'ElEl_Event', 'TauVeto', 'NBJet', 'Zmincut']) & -vardb.getCut('SS') ) ) )
     # this is the Real CR
-    vardb.registerCategory( MyCategory('DataMC_ElEl_RealCR',              cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'ElEl_Event', 'TauVeto', 'NBJet', 'LowJetCR']) & -vardb.getCut('SS') ) ) )
+    #vardb.registerCategory( MyCategory('DataMC_ElEl_RealCR',              cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'ElEl_Event', 'TauVeto', 'NBJet', 'LowJetCR']) & -vardb.getCut('SS') ) ) )
     # this is the Fake CR
-    vardb.registerCategory( MyCategory('DataMC_ElEl_FakeCR',              cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'ElEl_Event', 'TauVeto', 'NBJet', 'LowJetCR', 'SS'])  ) )
+    #vardb.registerCategory( MyCategory('DataMC_ElEl_FakeCR',              cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'ElEl_Event', 'TauVeto', 'NBJet', 'LowJetCR', 'SS'])  ) )
 
     # ----------------------------------------------------
     # OS ttbar ( top dilepton) (ee,mumu,emu)
@@ -878,7 +878,9 @@ ttH2015 = TTHBackgrounds2015(inputs, vardb)
 
 # period D1-J6, GRL v71
 
-ttH2015.luminosity = 3.302 # EOYE GRL
+#ttH2015.luminosity = 3.302 # EOYE GRL
+# GRL v73
+ttH2015.luminosity = 3.209
 
 #if doRelaxedBJetCut:
 #  ttH2015.luminosity = 3.25 # v022 ntuples
@@ -1025,12 +1027,19 @@ if ( doSR or doLowNJetCR ):
         plotbackgrounds	= ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
         ttH2015.backgrounds = ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
 
-if doMMRates or doDataMCCR:
+if doMMRates:
 
     ttH2015.signals     = []#['TTBarH']
     ttH2015.observed    = ['Observed']
     if args.ratesFromMC:
         ttH2015.observed    = []
+    plotbackgrounds     = ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
+    ttH2015.backgrounds = ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
+
+if doDataMCCR:
+
+    ttH2015.signals     = []#['TTBarH']
+    ttH2015.observed    = ['Observed']
     plotbackgrounds     = ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
     ttH2015.backgrounds = ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
 
@@ -1127,22 +1136,22 @@ for category in vardb.categorylist:
     # ---> apply the reco and trigger SF to the event here!
     # the ID and iso efficiency should be applied to events TT only (do it in ttH2015_Backgrounds.py ?)
 
-    #if not ( doMMClosureTest or doMMClosureRates ):
-    #
-    #	 if ("ElEl_Event") in category.cut.cutname :
-    #
-    #	     lepSF_weight = 'weight_electron_RecoEff_SF[0] * weight_electron_trig_HTop[0]'
-    #	     print "\t Category contains \'ElEl_Event\': apply this extra weight to events - MC only --> ", lepSF_weight
-    #
-    #	 elif ("MuMu_Event") in category.cut.cutname :
-    #
-    #	     lepSF_weight = 'weight_muon_RecoEff_SF[0] * weight_muon_trig[0]'
-    #	     print "\t Category contains \'MuMu_Event\': apply this extra weight to events - MC only --> ", lepSF_weight
-    #
-    #	 elif ( ("MuEl_Event"in category.cut.cutname)  or ("ElMu_Event" in category.cut.cutname) or ("OF_Event" in category.cut.cutname) ):
-    #
-    #	     lepSF_weight = 'weight_electron_RecoEff_SF[0] * weight_muon_RecoEff_SF[0]' # what to do with trigSF here?  weight_electron_trig_HTop[0] * weight_muon_trig[0]
-    #        print "\t Category contains (\'MuEl_Event\' || \'ElMu_Event\' || \'OF_Event\'): apply this extra weight to events - MC only --> ", lepSF_weight
+    if not ( doMMClosureTest or doMMClosureRates ):
+
+    	 if ("ElEl_Event") in category.cut.cutname :
+
+    	     lepSF_weight = 'weight_electron_RecoEff_SF[0] * weight_electron_trig_HTop[0]'
+    	     print "\t Category contains \'ElEl_Event\': apply this extra weight to events - MC only --> ", lepSF_weight
+
+    	 elif ("MuMu_Event") in category.cut.cutname :
+
+    	     lepSF_weight = 'weight_muon_RecoEff_SF[0] * weight_muon_trig[0]'
+    	     print "\t Category contains \'MuMu_Event\': apply this extra weight to events - MC only --> ", lepSF_weight
+
+    	 elif ( ("MuEl_Event"in category.cut.cutname)  or ("ElMu_Event" in category.cut.cutname) or ("OF_Event" in category.cut.cutname) ):
+
+    	     lepSF_weight = 'weight_electron_RecoEff_SF[0] * weight_muon_RecoEff_SF[0]' # what to do with trigSF here?  weight_electron_trig_HTop[0] * weight_muon_trig[0]
+             print "\t Category contains (\'MuEl_Event\' || \'ElMu_Event\' || \'OF_Event\'): apply this extra weight to events - MC only --> ", lepSF_weight
 
     # ------------------------------
     # Processing different variables

@@ -46,14 +46,15 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("isNonTightEvent",   &m_isNonTightEvent,    "isNonTightEvent/I");
   m_tree->Branch("isProbeElEvent",    &m_isProbeElEvent,     "isProbeElEvent/I");
   m_tree->Branch("isProbeMuEvent",    &m_isProbeMuEvent,     "isProbeMuEvent/I");
-  
+
   if ( m_isMC ) {
-    m_tree->Branch("weight_lepton_trig_HTop", &m_weight_lepton_trig_HTop);  
-    m_tree->Branch("weight_lepton_reco_HTop", &m_weight_lepton_reco_HTop);  
-    m_tree->Branch("weight_lepton_iso_HTop",  &m_weight_lepton_iso_HTop);  
-    m_tree->Branch("weight_lepton_ID_HTop",   &m_weight_lepton_ID_HTop);  
+    m_tree->Branch("weight_lepton_trig_HTop", &m_weight_lepton_trig_HTop);
+    m_tree->Branch("weight_lepton_reco_HTop", &m_weight_lepton_reco_HTop);
+    m_tree->Branch("weight_lepton_iso_HTop",  &m_weight_lepton_iso_HTop);
+    m_tree->Branch("weight_lepton_ID_HTop",   &m_weight_lepton_ID_HTop);
+    m_tree->Branch("weight_lepton_TTVA_HTop",   &m_weight_lepton_TTVA_HTop);
   }
-  
+
 }
 
 /*
@@ -320,9 +321,10 @@ void HTopMultilepTree::ClearEventUser()
     m_weight_lepton_trig_HTop.clear();
     m_weight_lepton_trig_HTop.clear();
     m_weight_lepton_reco_HTop.clear();
-    m_weight_lepton_iso_HTop.clear(); 
-    m_weight_lepton_ID_HTop.clear(); 
-  } 
+    m_weight_lepton_iso_HTop.clear();
+    m_weight_lepton_ID_HTop.clear();
+    m_weight_lepton_TTVA_HTop.clear();
+  }
 }
 
 /*
@@ -580,18 +582,21 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
   m_isNonTightEvent      =  ( eventInfo->isAvailable< char >( "isNonTightEvent" ) )	        ?  eventInfo->auxdecor< char >( "isNonTightEvent" )	   	 :  -1;
   m_isProbeElEvent       =  ( eventInfo->isAvailable< char >( "isProbeElEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeElEvent" )	   	 :  -1;
   m_isProbeMuEvent       =  ( eventInfo->isAvailable< char >( "isProbeMuEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeMuEvent" )	   	 :  -1;
-  
+
   if ( m_isMC ) {
     std::vector<float> junk(1,1.0);
     static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepTrigSF_GLOBAL("lepTrigEffSF_GLOBAL_HTop");
     static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepRecoSF_GLOBAL("lepRecoEffSF_GLOBAL_HTop");
     static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepIsoSF_GLOBAL("lepIsoEffSF_GLOBAL_HTop");
     static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepIDSF_GLOBAL("lepIDEffSF_GLOBAL_HTop");
-  
+    static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepTTVASF_GLOBAL("lepTTVAEffSF_GLOBAL_HTop");
+
     if ( accLepTrigSF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_trig_HTop = accLepTrigSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_trig_HTop = junk; }
     if ( accLepRecoSF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_reco_HTop = accLepRecoSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_reco_HTop = junk; }
     if ( accLepIsoSF_GLOBAL.isAvailable( *eventInfo ) )  { m_weight_lepton_iso_HTop = accLepIsoSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_iso_HTop = junk; }
     if ( accLepIDSF_GLOBAL.isAvailable( *eventInfo ) )   { m_weight_lepton_ID_HTop = accLepIDSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_ID_HTop = junk; }
+    if ( accLepTTVASF_GLOBAL.isAvailable( *eventInfo ) )   { m_weight_lepton_TTVA_HTop = accLepTTVASF_GLOBAL( *eventInfo ); } else { m_weight_lepton_TTVA_HTop = junk; }
+
   }
 }
 
@@ -762,7 +767,7 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
   static SG::AuxElement::Accessor<char> EMTightAcc ("Tight");
   static SG::AuxElement::Accessor<char> isIsoLooseAcc ("isIsolated_Loose");
   static SG::AuxElement::Accessor<char> isIsoFixedCutTightAcc ("isIsolated_FixedCutTight");
- 
+
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
   static SG::AuxElement::Accessor< char > isMediumAcc("isMedium");
   static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
@@ -780,7 +785,7 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
   static SG::AuxElement::Accessor< int >  ancestorTruthPdgIdAcc("ancestorTruthPdgId");
   static SG::AuxElement::Accessor< int >  ancestorTruthOriginAcc("ancestorTruthOrigin");
   static SG::AuxElement::Accessor< int >  ancestorTruthStatusAcc("ancestorTruthStatus");
-      
+
   float calo_eta = ( electron->caloCluster() ) ? electron->caloCluster()->etaBE(2) : -999.0;
 
   if ( electron->caloCluster() ) {
@@ -834,7 +839,7 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
       m_electron_tag_pt.push_back(  electron->pt() );
       m_electron_tag_eta.push_back(  electron->eta() );
       m_electron_tag_caloCluster_eta.push_back( calo_eta );
-      
+
       if ( LHLooseAcc.isAvailable( *electron ) )     { m_electron_tag_LHLoose.push_back( LHLooseAcc( *electron ) );         } else { m_electron_tag_LHLoose.push_back( -1 ); }
       if ( LHMediumAcc.isAvailable( *electron ) )    { m_electron_tag_LHMedium.push_back( LHMediumAcc( *electron ) );       } else { m_electron_tag_LHMedium.push_back( -1 ); }
       if ( LHTightAcc.isAvailable( *electron ) )     { m_electron_tag_LHTight.push_back( LHTightAcc( *electron ) );         } else { m_electron_tag_LHTight.push_back( -1 ); }

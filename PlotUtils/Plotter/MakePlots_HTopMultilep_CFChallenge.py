@@ -889,7 +889,10 @@ ttH2015 = TTHBackgrounds2015(inputs, vardb)
 
 # period D1-J6, GRL v71
 
-ttH2015.luminosity = 3.302 # EOYE GRL
+#ttH2015.luminosity = 3.302 # EOYE GRL
+
+# v73
+ttH2015.luminosity = 3.209
 
 #if doRelaxedBJetCut:
 #  ttH2015.luminosity = 3.25 # v022 ntuples
