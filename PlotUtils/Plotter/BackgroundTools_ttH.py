@@ -1067,8 +1067,8 @@ class Background:
             if type(showratio) is tuple:
                 ratiomc.GetYaxis().SetRangeUser(showratio[0], showratio[1])
             else:
-                ratiomc.GetYaxis().SetRangeUser(0.7, 1.3)
-                #ratiomc.GetYaxis().SetRangeUser(0., 2.)
+                #ratiomc.GetYaxis().SetRangeUser(0.8, 1.2)
+                ratiomc.GetYaxis().SetRangeUser(0.0, 2.0)
             #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
             pad2.cd()
             #pad2.SetLogy(2)

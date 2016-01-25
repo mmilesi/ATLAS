@@ -1230,6 +1230,7 @@ class TTHBackgrounds2015(Background):
             ttbarz = self.parent.procmap['TTBarZ'](treename, category, options)
             return (diboson + top + htozz + ttbarw+ttbarz)
 
+
     class ChargeFlipMC(Process):
         latexname = 'Charge flip (MC)'
         colour = kAzure -4
@@ -1278,9 +1279,8 @@ class TTHBackgrounds2015(Background):
             print ' \ttruth cut : ', self.vardb.getCut('2Lep_ChFlipEvent').cutstr
 
             return sp
-#"""
 
-    """
+"""
     class ChargeFlipMC(Process):
 
 	latexname = 'Charge flip (MC)'
