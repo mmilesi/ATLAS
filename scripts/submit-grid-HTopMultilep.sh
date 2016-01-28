@@ -18,7 +18,7 @@ outdir=output_grid_DxAOD-2015-13TeV_${current_time}
 #inSE=INFN-T1_DATADISK,MWT2_DATADISK
 
 destSE=AUSTRALIA-ATLAS_LOCALGROUPDISK
-exclSE=ANALY_IHEP
+exclSE=ANALY_IHEP,ANALY_VICTORIA,ANALY_SLAC
 
 gridDSname="user.${username}.HTopMultilep.${prodtag}.%in:name[2]%.%in:name[3]%"
 

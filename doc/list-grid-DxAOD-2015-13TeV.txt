@@ -57,10 +57,14 @@
 # ~~~~ ttZ(background) ~~~~ #
 # ~~~~ WZ (background) ~~~ #
 # ~~~~ ZZ (background) ~~~ #
+mc15_13TeV.361071.Sherpa_CT10_lllvjj_EW6.merge.DAOD_HIGG8D1.e3836_s2608_s2183_r6869_r6282_p2434/
+#mc15_13TeV.361072.Sherpa_CT10_lllljj_EW6.merge.DAOD_HIGG8D1.e3836_s2608_s2183_r6869_r6282_p2434/
+#mc15_13TeV.361073.Sherpa_CT10_ggllll.merge.DAOD_HIGG8D1.e3836_s2608_s2183_r6869_r6282_p2434/
+#mc15_13TeV.361077.Sherpa_CT10_ggllvv.merge.DAOD_HIGG8D1.e3836_s2608_s2183_r6869_r6282_p2434/
 # ~~~~ Wgamma+jets (background) ~~~ #
 # ~~~~ Zgamma+jets (background) ~~~ #
 # ~~~~ Z+jets (background) ~~~ #
-mc15_13TeV.361397.Sherpa_CT10_Zmumu_Pt0_70_CFilterBVeto.merge.DAOD_HIGG8D1.e3651_s2586_s2174_r7267_r6282_p2480/
+#mc15_13TeV.361397.Sherpa_CT10_Zmumu_Pt0_70_CFilterBVeto.merge.DAOD_HIGG8D1.e3651_s2586_s2174_r7267_r6282_p2480/
 # ~~~~ single t (background) ~~~ #
 # ~~~~ ttWW (background) ~~~~ #
 # ~~~~ bulk MC submission ~~~~ #
@@ -251,7 +255,7 @@ mc15_13TeV.361397.Sherpa_CT10_Zmumu_Pt0_70_CFilterBVeto.merge.DAOD_HIGG8D1.e3651
 #data15_13TeV.00284427.physics_Main.merge.DAOD_HIGG8D1.f643_m1518_p2432/
 #data15_13TeV.00284285.physics_Main.merge.DAOD_HIGG8D1.f643_m1518_p2432/
 #data15_13TeV.00280673.physics_Main.merge.DAOD_HIGG8D1.f629_m1504_p2436/
-data15_13TeV.00284154.physics_Main.merge.DAOD_HIGG8D1.f643_m1518_p2436/
+#data15_13TeV.00284154.physics_Main.merge.DAOD_HIGG8D1.f643_m1518_p2436/
 #data15_13TeV.00283270.physics_Main.merge.DAOD_HIGG8D1.f640_m1511_p2436/
 #data15_13TeV.00284213.physics_Main.merge.DAOD_HIGG8D1.f643_m1518_p2436/
 #data15_13TeV.00283780.physics_Main.merge.DAOD_HIGG8D1.f643_m1518_p2436/

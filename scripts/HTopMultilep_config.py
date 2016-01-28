@@ -238,7 +238,7 @@ OverlapRemoverDict = { "m_name"                       : "overlap_removal_HTopRun
 BJetEfficiencyCorrectorDict = { "m_name"                : "bjetEffCor_BTag_MV2c20_Fix77",
 		                "m_debug"		: False,
                         	"m_inContainerName"	: "AntiKt4EMTopoJets_OR",
-         	        	"m_corrFileName"        : "$ROOTCOREBIN/data/xAODAnaHelpers/2015-PreRecomm-13TeV-MC12-CDI-October23_v1.root",
+         	        	"m_corrFileName"        : "$ROOTCOREBIN/data/xAODAnaHelpers/2015-PreRecomm-13TeV-MC12-CDI-October23_v1.root",#2016-Winter-13TeV-MC15-CDI-January13_v1.root
          	        	"m_jetAuthor"           : "AntiKt4EMTopoJets",
          	        	"m_taggerName"          : "MV2c20",
          	        	"m_operatingPt"         : "FixedCutBEff_77",

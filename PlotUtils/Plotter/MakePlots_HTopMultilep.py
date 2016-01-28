@@ -423,10 +423,10 @@ if doMMClosureTest:
 
 if doStandardPlots:
     print ''
-#    vardb.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = 'jet_pt[0]/1e3', bins = 36, minval = 20.0, maxval = 200.0,) )
+    #vardb.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = 'jet_pt[0]/1e3', bins = 36, minval = 20.0, maxval = 200.0,) )
     #vardb.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = 'jet_eta[0]', bins = 50, minval = -5.0, maxval = 5.0) )
-#    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = 0, maxval = 10) )
-#    vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = 0, maxval = 4) )
+    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = 0, maxval = 10) )
+    #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = 0, maxval = 4) )
     vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'njets+10.0*njets_mv2c20_Fix77', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet')) )
     #
     # Inclusive m(ll) plot
@@ -437,17 +437,17 @@ if doStandardPlots:
     #
     #vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
     #
-    vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
+    #vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
     #
-    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 11, minval = 20.0, maxval = 240.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_pt[1]/1e3', bins = 7, minval = 20.0, maxval = 160.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'TMath::Abs(lep_eta[0])', bins = 8, minval = 0.0, maxval = 2.6) )
-    #vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'TMath::Abs(lep_eta[1])', bins = 8, minval = 0.0, maxval = 2.6) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_eta[0]', bins = 16, minval = -2.6, maxval = 2.6) )
+    #vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_eta[1]', bins = 16, minval = -2.6, maxval = 2.6) )
 
     #vardb.registerVar( Variable(shortname = 'Mll12', latexname = 'm(l_{1}l_{2}) [GeV]', ntuplename = 'mll12/1e3', bins = 15, minval = 0.0, maxval = 300.0,) )
-#    vardb.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageInteractionsPerCrossing', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
-    #vardb.registerVar( Variable(shortname = 'MET_FinalClus', latexname = 'E_{T}^{miss} (FinalClus) [GeV]', ntuplename = 'metFinalClus/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
-    vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} (FinalTrk) [GeV]', ntuplename = 'metFinalTrk/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
+    #vardb.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageInteractionsPerCrossing', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
+    #vardb.registerVar( Variable(shortname = 'MET_FinalClus', latexname = 'E_{T}^{miss} (FinalClus) [GeV]', ntuplename = 'metFinalClus/1e3', bins = 45, minval = 0.0, maxval = 180.0,))
+    #vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} (FinalTrk) [GeV]', ntuplename = 'metFinalTrk/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
     #vardb.registerVar( Variable(shortname = 'MET_SoftClus', latexname = 'E_{T}^{miss} (SoftClus) [GeV]', ntuplename = 'metSoftClus/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
     #vardb.registerVar( Variable(shortname = 'MET_SoftTrk', latexname = 'E_{T}^{miss} (SoftTrk) [GeV]', ntuplename = 'metSoftTrk/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
     #vardb.registerVar( Variable(shortname = 'MET_Electrons', latexname = 'E_{T}^{miss} (Electrons) [GeV]', ntuplename = 'metEle/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
@@ -458,10 +458,10 @@ if doStandardPlots:
     #vardb.registerVar( Variable(shortname = 'MT_Lep1MET', latexname = 'm_{T}(l_{1},MET) [GeV]', ntuplename = 'mT_lep1MET/1e3', bins = 40, minval = 0.0, maxval = 160.0,) )
     #vardb.registerVar( Variable(shortname = 'Tau0Pt', latexname = 'p_{T}^{lead tau} [GeV]', ntuplename = 'tau_pt[0]/1e3', bins = 30, minval = 25.0, maxval = 100.0,) )
 
-#    vardb.registerVar( Variable(shortname = 'El0Pt', latexname = 'p_{T}^{lead e} [GeV]', ntuplename = 'el_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
-#    vardb.registerVar( Variable(shortname = 'El1Pt', latexname = 'p_{T}^{2nd lead e} [GeV]', ntuplename = 'el_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
-#    vardb.registerVar( Variable(shortname = 'El0Eta', latexname = '#eta^{lead e}', ntuplename = 'el_caloCluster_eta[0]', bins = 16, minval = -2.6, maxval = 2.6, manualbins = [ -2.6, -2.25, -2.0, -1.52, -1.37, -1.1, -0.8, -0.5, 0.0, 0.5, 0.8, 1.1, 1.37, 1.52, 2.0, 2.25, 2.6]) )
-#    vardb.registerVar( Variable(shortname = 'El1Eta', latexname = '#eta^{2nd lead e}', ntuplename = 'el_caloCluster_eta[1]', bins = 16, minval = -2.6, maxval = 2.6, manualbins = [ -2.6, -2.25, -2.0, -1.52, -1.37, -1.1, -0.8, -0.5, 0.0, 0.5, 0.8, 1.1, 1.37, 1.52, 2.0, 2.25, 2.6]) )
+    #vardb.registerVar( Variable(shortname = 'El0Pt', latexname = 'p_{T}^{lead e} [GeV]', ntuplename = 'el_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
+    #vardb.registerVar( Variable(shortname = 'El1Pt', latexname = 'p_{T}^{2nd lead e} [GeV]', ntuplename = 'el_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
+    #vardb.registerVar( Variable(shortname = 'El0Eta', latexname = '#eta^{lead e}', ntuplename = 'el_caloCluster_eta[0]', bins = 16, minval = -2.6, maxval = 2.6, manualbins = [ -2.6, -2.25, -2.0, -1.52, -1.37, -1.1, -0.8, -0.5, 0.0, 0.5, 0.8, 1.1, 1.37, 1.52, 2.0, 2.25, 2.6]) )
+    #vardb.registerVar( Variable(shortname = 'El1Eta', latexname = '#eta^{2nd lead e}', ntuplename = 'el_caloCluster_eta[1]', bins = 16, minval = -2.6, maxval = 2.6, manualbins = [ -2.6, -2.25, -2.0, -1.52, -1.37, -1.1, -0.8, -0.5, 0.0, 0.5, 0.8, 1.1, 1.37, 1.52, 2.0, 2.25, 2.6]) )
     #vardb.registerVar( Variable(shortname = 'El0TopoEtCone20', latexname = 'topoetcone20^{lead e} [GeV]', ntuplename = 'el_topoetcone20[0]/1e3', bins = 40, minval = 0.0, maxval = 10.0, manualbins = [ 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 2.5, 3.0] ) )
     #vardb.registerVar( Variable(shortname = 'El1TopoEtCone20', latexname = 'topoetcone20^{2nd lead e} [GeV]', ntuplename = 'el_topoetcone20[1]/1e3', bins = 40, minval = 0.0, maxval = 10.0, manualbins = [ 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 2.5, 3.0] ) )
     #vardb.registerVar( Variable(shortname = 'El0PtVarCone20', latexname = 'ptvarcone20^{lead e} [GeV]', ntuplename = 'el_ptvarcone20[0]/1e3', bins = 40, minval = 1.0, maxval = 5.0) )
@@ -475,10 +475,10 @@ if doStandardPlots:
     #vardb.registerVar( Variable(shortname = 'El0z0sintheta', latexname = 'z_{0}*sin(#theta) lead e [mm]', ntuplename = 'el_trkz0sintheta[0]', bins = 20, minval = -1.0, maxval = 1.0,) )
     #vardb.registerVar( Variable(shortname = 'El1z0sintheta', latexname = 'z_{0}*sin(#theta) 2nd lead e [mm]', ntuplename = 'el_trkz0sintheta[1]', bins = 20, minval = -1.0, maxval = 1.0,) )
 
-#    vardb.registerVar( Variable(shortname = 'Mu0Pt', latexname = 'p_{T}^{lead #mu} [GeV]', ntuplename = 'muon_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
-#    vardb.registerVar( Variable(shortname = 'Mu1Pt', latexname = 'p_{T}^{2nd lead #mu} [GeV]', ntuplename = 'muon_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
-#    vardb.registerVar( Variable(shortname = 'Mu0Eta', latexname = '#eta^{lead #mu}', ntuplename = 'muon_eta[0]', bins = 16, minval = -2.5, maxval = 2.5, manualbins = [-2.5, -2.2, -1.9, -1.6, -1.3, -1.0, -0.7, -0.4, -0.1, 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
-#    vardb.registerVar( Variable(shortname = 'Mu1Eta', latexname = '#eta^{2nd lead #mu}', ntuplename = 'muon_eta[1]', bins = 16, minval = -2.5, maxval = 2.5, manualbins = [-2.5, -2.2, -1.9, -1.6, -1.3, -1.0, -0.7, -0.4, -0.1, 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
+    #vardb.registerVar( Variable(shortname = 'Mu0Pt', latexname = 'p_{T}^{lead #mu} [GeV]', ntuplename = 'muon_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
+    #vardb.registerVar( Variable(shortname = 'Mu1Pt', latexname = 'p_{T}^{2nd lead #mu} [GeV]', ntuplename = 'muon_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
+    #vardb.registerVar( Variable(shortname = 'Mu0Eta', latexname = '#eta^{lead #mu}', ntuplename = 'muon_eta[0]', bins = 16, minval = -2.5, maxval = 2.5, manualbins = [-2.5, -2.2, -1.9, -1.6, -1.3, -1.0, -0.7, -0.4, -0.1, 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
+    #vardb.registerVar( Variable(shortname = 'Mu1Eta', latexname = '#eta^{2nd lead #mu}', ntuplename = 'muon_eta[1]', bins = 16, minval = -2.5, maxval = 2.5, manualbins = [-2.5, -2.2, -1.9, -1.6, -1.3, -1.0, -0.7, -0.4, -0.1, 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
     #vardb.registerVar( Variable(shortname = 'Mu0TopoEtCone20', latexname = 'topoetcone20^{lead #mu} [GeV]', ntuplename = 'muon_topoetcone20[0]/1e3', bins = 40, minval = 0.0, maxval = 10.0, manualbins = [ 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 2.5, 3.0]) )
     #vardb.registerVar( Variable(shortname = 'Mu1TopoEtCone20', latexname = 'topoetcone20^{2nd lead #mu} [GeV]', ntuplename = 'muon_topoetcone20[1]/1e3', bins = 40, minval = 0.0, maxval = 10.0, manualbins = [ 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 2.5, 3.0]) )
     #vardb.registerVar( Variable(shortname = 'Mu0PtVarCone30', latexname = 'ptvarcone20^{lead #mu} [GeV]', ntuplename = 'muon_ptvarcone30[0]/1e3', bins = 40, minval = 1.0, maxval = 5.0) )
@@ -656,34 +656,33 @@ if doDataMCCR:
     # ----------------------------------------------------
     # Inclusive OS dilepton (ee,mumu, emu)
     #
-    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_MuMu', cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'MuMu_Event', 'TightLeptons_2Lep', 'ElEtaCut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_ElEl', cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'ElEl_Event', 'TightLeptons_2Lep', 'ElEtaCut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_OF',   cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'OF_Event',   'TightLeptons_2Lep', 'ElEtaCut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
+    #vardb.registerCategory( MyCategory('DataMC_InclusiveOS_MuMu', cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'MuMu_Event', 'TightLeptons_2Lep', 'ElEtaCut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
+    #vardb.registerCategory( MyCategory('DataMC_InclusiveOS_ElEl', cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'ElEl_Event', 'TightLeptons_2Lep', 'ElEtaCut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
+    #vardb.registerCategory( MyCategory('DataMC_InclusiveOS_OF',   cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'OF_Event',   'TightLeptons_2Lep', 'ElEtaCut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
     
     # ----------------------------------------------------
     # OS ttbar ( top dilepton) (ee,mumu,emu)
     #
-    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_MuMu', 	  cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'MuMu_Event', 'NJet4L', 'NBJet', 'Zsidescut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_ElEl', 	  cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'ElEl_Event', 'NJet4L', 'NBJet', 'Zsidescut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_OF', 	  cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'OF_Event',   'NJet4L', 'NBJet', 'Zsidescut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
+    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_MuMu', 	  cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'MuMu_Event', 'TightLeptons_2Lep', 'ElEtaCut', 'NJet4L', 'NBJet', 'Zsidescut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
+    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_ElEl', 	  cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'ElEl_Event', 'TightLeptons_2Lep', 'ElEtaCut', 'NJet4L', 'NBJet', 'Zsidescut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
+    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_OF', 	  cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'OF_Event',   'TightLeptons_2Lep', 'ElEtaCut', 'NJet4L', 'NBJet', 'Zsidescut', 'Zmincut']) & -vardb.getCut('SS') ) ) )
     
     # ----------------------------------------------------
     # SS ttbar (ee,mumu,emu)
     #
-    vardb.registerCategory( MyCategory('DataMC_SS_ttbar', 	  cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'LowJetCR_SStt', 'OneBJet', 'SS', 'Zmincut']) ) ) )
+    vardb.registerCategory( MyCategory('DataMC_SS_ttbar', 	  cut = ( vardb.getCuts(['2LepRelaxed', 'TrigDec', 'TrigMatchDataMC', 'LowJetCR_SStt', 'TightLeptons_2Lep', 'ElEtaCut', 'OneBJet', 'SS', 'Zmincut']) ) ) )
     
     # this is the Real CR for MM
     #
     #vardb.registerCategory( MyCategory('DataMC_MuMu_RealCR',              cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'MuMu_Event', 'NBJet', 'LowJetCR']) & -vardb.getCut('SS') ) ) )
     #vardb.registerCategory( MyCategory('DataMC_ElEl_RealCR',              cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'ElEl_Event', 'NBJet', 'LowJetCR']) & -vardb.getCut('SS') ) ) )
-    #vardb.registerCategory( MyCategory('DataMC_OF_RealCR', 	           cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'OF_Event','NBJet', 'LowJetCR']) & -vardb.getCut('SS') ) )
+    #vardb.registerCategory( MyCategory('DataMC_OF_RealCR', 	           cut = ( vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'OF_Event',   'NBJet', 'LowJetCR']) & -vardb.getCut('SS') ) ) )
     #
     # this is the Fake CR for MM
     #
     #vardb.registerCategory( MyCategory('DataMC_MuMu_FakeCR',              cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'MuMu_Event', 'NBJet', 'LowJetCR', 'SS'])  ) )
     #vardb.registerCategory( MyCategory('DataMC_ElEl_FakeCR',              cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'ElEl_Event', 'NBJet', 'LowJetCR', 'SS'])  ) )
-
-    # this is the Real CR
+    #vardb.registerCategory( MyCategory('DataMC_OF_FakeCR', 	           cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'OF_Event',   'NBJet', 'LowJetCR', 'SS'])  ) )
 
 # ----------------------------------------------
 # CRs where r/f rates for MM method are measured
@@ -1169,7 +1168,7 @@ for category in vardb.categorylist:
         if ( args.printEventYields and idx is 0 ):
         
             events[category.name] = background.events(cut=cut, eventweight=combined_SF_weight, category=category, hmass=['125'], systematics=systematics, systematicsdirection=systematicsdirection)
-
+#"""
         # --------------------------
         # Avoid making useless plots
         # --------------------------
@@ -1397,4 +1396,4 @@ for category in vardb.categorylist:
 
         if ( 'Mll01' in var.shortname ) or ( 'NJets' in var.shortname ):
             outfile.close()
-
+#"""
