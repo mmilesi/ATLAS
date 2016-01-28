@@ -103,10 +103,8 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   // to define "Tight" taus
   m_ConfigPathTightTaus       = "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15_final_sel.conf";
 
-  // BTag WP to define nbjets
-  m_BTag_WP                   = "MV2c20_Fix77";
-
   m_useMCForTagAndProbe       = false;
+
 }
 
 EL::StatusCode  HTopMultilepAnalysis :: configure ()
@@ -146,9 +144,6 @@ EL::StatusCode  HTopMultilepAnalysis :: configure ()
     // to define "Tight" taus
     m_ConfigPathTightTaus         = config->GetValue("ConfigPathTightTaus"  ,  m_ConfigPathTightTaus.c_str());
 
-    // BTag WP to define nbjets
-    m_BTag_WP                     = config->GetValue("BTagWP"               ,  m_BTag_WP.c_str());
-
     m_useMCForTagAndProbe         = config->GetValue("UseMCForTagAndProbe"  ,  m_useMCForTagAndProbe );
 
     config->Print();
@@ -187,6 +182,18 @@ EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
   // trees.  This method gets called before any input files are
   // connected.
   Info("histInitialize()", "Calling histInitialize");
+
+  TFile *fileMD = wk()->getOutputFile ("metadata");
+  m_histEventCount  = (TH1D*)fileMD->Get("MetaData_EventCount");
+  if ( !m_histEventCount ) {
+    Error("initialize()", "Failed to retrieve MetaData histogram. Aborting");
+    return EL::StatusCode::FAILURE;
+  }
+
+  m_totalEvents  = new TH1D("TotalEvents",  "TotalEvents",  2, 1, 3);
+  m_totalEventsW = new TH1D("TotalEventsW", "TotalEventsW", 2, 1, 3);
+  wk() -> addOutput(m_totalEvents);
+  wk() -> addOutput(m_totalEventsW);
 
   return EL::StatusCode::SUCCESS;
 }
@@ -263,18 +270,6 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
     m_cutflowHistW->GetXaxis()->FindBin(m_name.c_str());
   }
 
-  TFile *fileMD = wk()->getOutputFile ("metadata");
-  m_histEventCount  = (TH1D*)fileMD->Get("MetaData_EventCount");
-  if ( !m_histEventCount ) {
-    Error("initialize()", "Failed to retrieve MetaData histogram. Aborting");
-    return EL::StatusCode::FAILURE;
-  }
-
-  m_totalEvents  = new TH1D("TotalEvents",  "TotalEvents",  2, 1, 3);
-  m_totalEventsW = new TH1D("TotalEventsW", "TotalEventsW", 2, 1, 3);
-  wk() -> addOutput(m_totalEvents);
-  wk() -> addOutput(m_totalEventsW);
-
   m_jetPlots = new JetHists( "highPtJets", "clean" ); // second argument: "kinematic", "clean", "energy", "resolution"
   m_jetPlots -> initialize();
   m_jetPlots -> record( wk() );
@@ -282,11 +277,17 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   // initialise TauSelectionTool
   //
   std::string tau_sel_tool_name = std::string("TauSelectionTool_") + m_name;
-  m_TauSelTool = new TauAnalysisTools::TauSelectionTool( tau_sel_tool_name );
-  m_TauSelTool->msg().setLevel( MSG::INFO ); // VERBOSE, INFO, DEBUG
 
-  RETURN_CHECK("TauSelector::initialize()", m_TauSelTool->setProperty("ConfigPath",m_ConfigPathTightTaus.c_str()), "Failed to set ConfigPath property");
-  RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool_HTop" );
+  if ( asg::ToolStore::contains<TauAnalysisTools::TauSelectionTool>(tau_sel_tool_name) ) {
+    m_TauSelTool = asg::ToolStore::get<TauAnalysisTools::TauSelectionTool>(tau_sel_tool_name);
+  } else {
+
+    m_TauSelTool = new TauAnalysisTools::TauSelectionTool( tau_sel_tool_name );
+    m_TauSelTool->msg().setLevel( MSG::INFO ); // VERBOSE, INFO, DEBUG
+
+    RETURN_CHECK("TauSelector::initialize()", m_TauSelTool->setProperty("ConfigPath",m_ConfigPathTightTaus.c_str()), "Failed to set ConfigPath property");
+    RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool_HTop" );
+  }
 
   // ***********************************************************
   // For MM/FF: read r/f rates from input ROOT histograms
@@ -506,6 +507,11 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   const xAOD::EventInfo* eventInfo(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_verbose), "");
 
+  if ( m_debug ) {
+    Info( "execute()", " ******************************** ");
+    Info( "execute()", "eventNumber =  %llu \n", eventInfo->eventNumber() );
+  }
+
   // retrieve vertices
   const xAOD::VertexContainer* vertices(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(vertices, "PrimaryVertices", m_event, m_store,  m_verbose), "");
@@ -529,14 +535,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   unsigned int nSignalLeptons   = leptonsCDV->size();
   unsigned int nSignalJets      = signalJets->size();
   unsigned int nSignalTaus      = signalTauJets->size();
-  static SG::AuxElement::Accessor< unsigned int > nBjets_Acc("nBjets_"+m_BTag_WP);
-  unsigned int nBjets(0);
-  if ( nBjets_Acc.isAvailable( *eventInfo ) ) {
-    nBjets = nBjets_Acc( *eventInfo );
-  } else {
-    Error("execute()"," 'nBjets_%s' is not available as decoration. Aborting", m_BTag_WP.c_str() );
-    return EL::StatusCode::FAILURE;
-  }
 
   if ( m_debug ) {
 
@@ -570,7 +568,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     unsigned int nSignalElectrons = signalElectrons->size();
     unsigned int nSignalMuons     = signalMuons->size();
 
-    Info("execute()","Event %i ", static_cast<int>(m_eventCounter));
     Info("execute()"," Initial vs Preselected vs Selected Signal Muons: \t %u \t %u \t %u  "    , nInMuons, nPreselMuons, nSignalMuons );
     Info("execute()"," Initial vs Preselected vs Selected Signal Electrons: %u \t %u \t %u "    , nInElectrons, nPreselElectrons, nSignalElectrons );
     Info("execute()"," Initial vs Preselected vs Selected Signal Jets: \t %u \t %u \t %u "      , nInJets, nPreselJets, nSignalJets );
@@ -578,7 +575,13 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     Info("execute()"," Selected Signal Taus: \t %u " , nSignalTaus );
 
   }
-
+  /*
+  if ( nSignalLeptons > 1 ) {
+    Info( "execute()", " ******************************** ");
+    Info( "execute()", "eventNumber =  %llu \n", eventInfo->eventNumber() );
+    Info( "execute()"," Selected Signal Leptons: \t %u " , nSignalLeptons );
+  }
+  */
   //-------------------------------
   //***** Retrieve event weight
   //-------------------------------
@@ -593,26 +596,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     return EL::StatusCode::FAILURE;
   }
   mcEvtWeight = mcEvtWeightAcc( *eventInfo );
-
-  // multiply SFs to event weight
-  /*
-  if ( isMC ) {
-    // electron efficiency SF
-    static SG::AuxElement::Accessor< float > elEffSFAcc("SF");
-    for ( auto el_itr : *(signalElectrons) ) {
-      if ( !elEffSFAcc.isAvailable(*el_itr) ) { continue; }
-      mcEvtWeight *= elEffSFAcc(*el_itr);
-    }
-
-    // muon efficiency SF
-    // bTagging efficiency SF
-    // trigger efficiency SF
-  }
-  */
-
-  if ( m_debug ) {
-    Info("execute()", "event weight = %2f. ", mcEvtWeight );
-  }
 
   //-------------------------------
   //***** Fill cutflow histogram
@@ -840,6 +823,18 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     }
   }
 
+  //-------------------------------------------
+  // calculate lepton SFs for the event
+  //-------------------------------------------
+
+  if ( m_isMC ) {
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepTrigSF( eventInfo, leptonsSorted ) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::RECO ) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::ISOLATION ) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::ID ) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::TTVA ) );
+  }
+
   //--------------------------------
   //***** histogram filling
   //--------------------------------
@@ -859,8 +854,8 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   //-------------------------------------------
 
   if ( nSignalLeptons == 2 ) {
-    if ( m_useMCForTagAndProbe && m_isMC ) { this->defineTagAndProbeRFRateVars_MC( eventInfo, leptonsSorted ); }
-    else { this->defineTagAndProbeRFRateVars( eventInfo, leptonsSorted ); }
+    if ( m_useMCForTagAndProbe && m_isMC ) { EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->defineTagAndProbeRFRateVars_MC( eventInfo, leptonsSorted ) ); }
+    else                                   { EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->defineTagAndProbeRFRateVars( eventInfo, leptonsSorted ) ); }
   }
 
   //-----------------------------------
@@ -868,10 +863,12 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   //-----------------------------------
 
   // first, decorate event with specific variables ...
-  this->addChannelDecorations( eventInfo, leptonsSorted );
+  //
+  EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->addChannelDecorations( eventInfo, leptonsSorted ) );
 
   // ...then, decorate event with MM and FF weight!
-  this->fakeWeightCalculator( eventInfo, leptonsSorted );
+  //
+  EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->fakeWeightCalculator( eventInfo, leptonsSorted ) );
 
   return EL::StatusCode::SUCCESS;
 }
@@ -2151,3 +2148,307 @@ double HTopMultilepAnalysis :: calc_final_event_weight( std::string region, doub
    return weight;
 }
 
+
+// Calculate lepton trigger SF for the event
+//
+// The CP tools do not calculate the final event SF. Rather, they give back the SF and MC efficiency *per lepton*.
+// With such ingredients in hand, the HTop way to compute the event SF is the following:
+//
+// eventSF = ( 1 - prod( 1 - SF(i)*eff(i) ) ) / ( 1 - prod ( 1 - eff(i) ) );
+//
+// where the productory is over the selected leptons in the event.
+// The trick at the numerator is just to get the efficiency in data.
+//
+// The SF systematics are obtained by coherently varying the SF for each object (i.e. assume full correlation).
+// The MC efficiency is assumed to have negligible uncertainty.
+
+EL::StatusCode HTopMultilepAnalysis :: computeEventLepTrigSF( const xAOD::EventInfo* eventInfo,
+                                                              const xAOD::IParticleContainer& leptons
+		                                             )
+{
+  // Initialise product of SFs
+  // (use a large size just to make sure...)
+  //
+  std::vector<float> numerator(10,1.0), denominator(10,1.0);
+
+  for ( auto lep_itr : leptons ) {
+
+    if ( m_debug ) { Info("computeEventLepTrigSF()", "lepton pT = %f \t lepton flavour = %i ", lep_itr->pt()/1e3, lep_itr->type()); }
+
+    // check whether this lepton is T,L
+    //
+    bool lep_T = ( lep_itr->auxdecor< char >( "isTight" ) );
+
+    std::string decor_name_SF(""), decor_name_eff("");
+
+    std::vector < float > decor_SF, decor_eff;
+
+    if ( lep_itr->type() == xAOD::Type::Electron ) {
+
+      // hard-code this for now...FIXME
+      //
+      if ( lep_T ) {
+        decor_name_SF  =  "ElectronEfficiencyCorrector_TrigSyst_LHLooseAndBLayer";
+        decor_name_eff =  "ElectronEfficiencyCorrector_TrigMCEffSyst_LHLooseAndBLayer";
+      } else {
+        decor_name_SF  =  "ElectronEfficiencyCorrector_TrigSyst_LHTight";
+        decor_name_eff =  "ElectronEfficiencyCorrector_TrigMCEffSyst_LHTight";
+      }
+
+    } else if ( lep_itr->type()  == xAOD::Type::Muon ) {
+
+      if ( lep_T ) {
+        decor_name_SF  = "MuonEfficiencyCorrector_TrigSyst_RecoLoose_IsoLoose";
+        decor_name_eff = "MuonEfficiencyCorrector_TrigMCEff_RecoLoose_IsoLoose";
+      } else {
+        decor_name_SF  = "MuonEfficiencyCorrector_TrigSyst_RecoLoose_IsoFixedCutTightTrackOnly";
+        decor_name_eff = "MuonEfficiencyCorrector_TrigMCEff_RecoLoose_IsoFixedCutTightTrackOnly";
+      }
+
+    }
+
+    if ( !lep_itr->isAvailable< std::vector< float > >( decor_name_SF ) )  { Error("computeEventLepTrigSF()", "trigger SF not available for this lepton. Aborting."); return EL::StatusCode::FAILURE; }
+    if ( !lep_itr->isAvailable< std::vector< float > >( decor_name_eff ) ) { Error("computeEventLepTrigSF()", "trigger MC eff. not available for this lepton. Aborting."); return EL::StatusCode::FAILURE; }
+
+    decor_SF  = lep_itr->auxdecor< std::vector< float > >( decor_name_SF );
+    decor_eff = lep_itr->auxdecor< std::vector< float > >( decor_name_eff );
+
+    // check SF and efficiency vectors have same size
+    //
+    if ( decor_SF.size() != decor_eff.size() ) { Error("computeEventLepTrigSF()","trigger SF vector and trigger MC eff. vector have different size. Aborting."); return EL::StatusCode::FAILURE; }
+
+    // consider syst variations only for SF (keep nominal eff.)
+    //
+    auto effSF      = decor_SF.begin();
+    auto effNominal = decor_eff.at(0);
+
+    // ---------- NUMERATOR ----------
+    //
+
+    std::vector<float> num_factor;
+
+    int idx(0);
+    for ( ; effSF != decor_SF.end(); ++effSF, ++idx ) {
+
+      num_factor.push_back( 1.0 - *effSF  * effNominal );
+
+      if ( m_debug ) {
+        std::cout << "\t Numerator: " << std::endl;
+        std::cout << "\t efficiency SF[" << idx << "] = " << *effSF	 << std::endl;
+        std::cout << "\t efficiency[" << idx << "] = "    <<  effNominal << std::endl;
+        std::cout << "\t num_factor[" << idx << "] = "    <<   1.0 - *effSF  * effNominal << std::endl;
+      }
+
+    }
+    // this makes sure numerator has got as much elements as num_factor
+    //
+    numerator.resize(num_factor.size());
+
+    // this updates the value of numerator to contain the element-wise product
+    // of the previous numerator and the num_factor for *this* lepton
+    //
+    std::transform( numerator.begin(), numerator.end(), num_factor.begin(), numerator.begin(), std::multiplies<float>() );
+
+    // ---------- DENOMINATOR ----------
+    //
+
+    // just use the nominal MC efficiency
+    //
+    std::vector<float> denom_factor( decor_eff.size(), 1.0 - effNominal );
+
+    if ( m_debug ) {
+      for ( auto eff = denom_factor.begin(); eff != denom_factor.end(); ++eff, ++idx ) {
+        std::cout << "\t Denominator: " << std::endl;
+        std::cout << "\t efficiency[" << idx << "] = "    <<  effNominal << std::endl;
+        std::cout << "\t denom_factor[" << idx << "] = "  <<   1.0 - effNominal << std::endl;
+      }
+    }
+
+    // this makes sure denominator has got as much elements as denom_factor
+    //
+    denominator.resize(denom_factor.size());
+
+    // check numerator and denominator have same size
+    //
+    if ( numerator.size() != denominator.size() ) { Error("computeEventLepTrigSF()","Numerator and denominator in SF formula must have same size. Aborting."); return EL::StatusCode::FAILURE; }
+
+    // this updates the value of denominator to contain the element-wise product
+    // of the previous denominator and the denom_factor for *this* electron
+    //
+    std::transform( denominator.begin(), denominator.end(), denom_factor.begin(), denominator.begin(), std::multiplies<float>() );
+
+  }
+
+  // update numerator and denominator
+  // Make sure the SF in the 0/0 case (i.e, when efficiency=0) will be set equal to 1
+  //
+  for ( auto &it : numerator )   { it = ( it != 1.0 ) ? (1.0 - it) : 1.0; }
+  for ( auto &it : denominator ) { it = ( it != 1.0 ) ? (1.0 - it) : 1.0; }
+
+  std::vector<float> lepTrigSF(numerator.size());
+
+  // ...and finally get the global SF w/ all systematics!
+  //
+  std::transform( numerator.begin(), numerator.end(), denominator.begin(), lepTrigSF.begin(), std::divides<float>() );
+
+  // decorator for event trigger SF
+  //
+  SG::AuxElement::Decorator< std::vector<float> > lepTrigSFDecor_GLOBAL("lepTrigEffSF_GLOBAL_HTop");
+  lepTrigSFDecor_GLOBAL( *eventInfo ) = lepTrigSF;
+
+  if ( m_debug ) {
+    int idx(0);
+    for ( const auto &effSF : lepTrigSF ) {
+      Info( "computeEventLepTrigSF()", "===>>>");
+      Info( "computeEventLepTrigSF()", " ");
+      Info( "computeEventLepTrigSF()", "Trigger efficiency SF[%i] = %f", idx, effSF);
+      ++idx;
+    }
+    Info( "computeEventLepTrigSF()", "--------------------------------------");
+
+  }
+
+  return EL::StatusCode::SUCCESS;
+}
+
+
+EL::StatusCode HTopMultilepAnalysis :: computeEventLepSF( const xAOD::EventInfo* eventInfo,
+                                                          const xAOD::IParticleContainer& leptons,
+							  SFType TYPE
+		                                        )
+{
+  // Initialise global per-event SF ( will be the product of each object SF)
+  // (use a large size just to make sure...)
+  //
+  std::vector<float> SF(10,1.0);
+
+  std::string type;
+
+  for ( auto lep_itr : leptons ) {
+
+    // in some cases we want the SF vector to be the default one (i.e, all 1.0's...)
+    bool skip(false);
+
+    std::string prefix(""), append_L(""), append_T("");
+    bool lep_passWP_T(false); // for Isolation/ID
+
+    bool isEl = ( lep_itr->type() == xAOD::Type::Electron );
+    bool isMu = ( lep_itr->type() == xAOD::Type::Muon );
+
+    if ( isEl )      { prefix = "ElectronEfficiencyCorrector"; }
+    else if ( isMu ) { prefix = "MuonEfficiencyCorrector"; }
+
+    // check whether this lepton is T,L
+    //
+    bool lep_T = ( lep_itr->auxdecor< char >( "isTight" ) );
+
+    switch ( TYPE )
+      {
+      case SFType::RECO:
+	type = "Reco";
+	if ( isEl ) {
+	  append_L = append_T = "RecoSyst";
+	} else if ( isMu ) {
+	  append_L = append_T = "RecoSyst_Loose";
+	}
+	break;
+      case SFType::ISOLATION:
+	type = "Iso";
+	if ( isEl ) {
+	  append_L = "IsoSyst_IsoLoose";
+	  append_T = "IsoSyst_IsoFixedCutTight";
+	  lep_passWP_T = ( lep_itr->auxdecor< char >( "isIsolated_FixedCutTight" ) );
+	} else if ( isMu ) {
+	  append_L = "IsoSyst_IsoLoose";
+	  append_T = "IsoSyst_IsoFixedCutTightTrackOnly";
+	  lep_passWP_T = ( lep_itr->auxdecor< char >( "isIsolated_FixedCutTightTrackOnly" ) );
+	}
+	break;
+      case SFType::ID:
+	type = "ID";
+	if ( isEl ) {
+	  append_L = "PIDSyst_LHLooseAndBLayer";
+	  append_T = "PIDSyst_LHTight";
+	  lep_passWP_T  = ( lep_itr->auxdecor< char >( "LHTight" ) );
+	} else if ( isMu ) {
+	  skip = true;
+	}
+	break;
+      case SFType::TTVA:
+	type = "TTVA";
+	if ( isEl ) {
+	  skip = true;
+	} else if ( isMu ) {
+	  // TTVA SF is to be applied only to tight muons!
+	  if ( !lep_T ) { skip = true; }
+	  append_T = "TTVASyst_TTVA";
+	}
+	break;
+      default:
+	Error ("computeEventLepSF()", "Unsupported SF type. Aborting." );
+	return EL::StatusCode::FAILURE;
+	break;
+      }
+
+    if ( m_debug ) {
+      Info("computeEventLepSF()", "--------------------------------------");
+      Info("computeEventLepSF()", "SF type = %s ", type.c_str() );
+      Info("computeEventLepSF()", "lepton pT = %f \t lepton flavour = %i ", lep_itr->pt()/1e3, lep_itr->type());
+    }
+
+    if ( skip ) { continue; }
+
+    std::string decor_name_SF("");
+
+    std::vector < float > thisLepSF;
+
+    // NB: a loose lepton could still have tight iso/ tight ID since we use ( iso & (ID) & IP) to discriminate T/L...
+    //
+    if ( lep_T || lep_passWP_T ) { decor_name_SF  = prefix + "_" + append_T; }
+    else                         { decor_name_SF  = prefix + "_" + append_L; }
+
+    if ( m_debug ) { Info("computeEventLepSF()", "Reading SF decoration name = %s ", decor_name_SF.c_str() ); }
+
+    if ( !lep_itr->isAvailable< std::vector< float > >( decor_name_SF ) )  { Error("computeEventLepSF", "SF %s not available for this lepton. Aborting.", decor_name_SF.c_str() ); return EL::StatusCode::FAILURE; }
+
+    thisLepSF  = lep_itr->auxdecor< std::vector< float > >( decor_name_SF );
+
+    if ( m_debug ) {
+      unsigned int idx(0);
+      for ( const auto &effSF : thisLepSF ) {
+	std::cout << "\t efficiency SF[" << idx << "] = " << effSF  << std::endl;
+	 ++idx;
+      }
+    }
+
+    // this makes sure the global SF has got as much elements as this per-object SF
+    //
+    SF.resize(thisLepSF.size());
+
+    // this updates the value of the global SF to contain the element-wise product
+    // of the previous global SF and the SF for *this* lepton
+    //
+    std::transform( SF.begin(), SF.end(), thisLepSF.begin(), SF.begin(), std::multiplies<float>() );
+
+  }
+
+  // decorator for event SF
+  //
+  const std::string decor_name = "lep" + type + "EffSF_GLOBAL_HTop";
+  SG::AuxElement::Decorator< std::vector<float> > lepSFDecor_GLOBAL(decor_name);
+  lepSFDecor_GLOBAL( *eventInfo ) = SF;
+
+  if ( m_debug ) {
+    unsigned int idx(0);
+    for ( const auto &effSF : SF ) {
+      Info( "computeEventLepSF()", "===>>>");
+      Info( "computeEventLepSF()", " ");
+      Info( "computeEventLepSF()", "%s SF[%i] = %f", type.c_str(), idx, effSF);
+      ++idx;
+    }
+    Info( "computeEventLepSF()", "--------------------------------------");
+
+  }
+
+  return EL::StatusCode::SUCCESS;
+}

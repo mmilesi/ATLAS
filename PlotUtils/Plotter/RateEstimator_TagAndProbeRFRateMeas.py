@@ -185,8 +185,11 @@ for iLep in list_lep:
 
                        elif iType == "Real":
 
-                  	  nBIN  = 12
-                  	  xbins = [25,30,35,40,45,50,60,70,80,90,100,150,200]
+                  	  #nBIN  = 12
+                  	  #xbins = [25,30,35,40,45,50,60,70,80,90,100,150,200]
+			  nBIN  = 4
+                  	  xbins = [25,30,40,60,200]
+			  
 
                        vxbins = array.array("d", xbins)
 		       print "\t\t\t\t\t vxbins: ",vxbins

@@ -1,10 +1,10 @@
 /**********************************************
  *
- * Module that performs an event selection for 
+ * Module that performs an event selection for
  * HTopMultilepAnalysis.
  *
  * M. Milesi (marco.milesi@cern.ch)
- * 
+ *
  *
  *********************************************/
 
@@ -24,8 +24,6 @@
 #include "xAODEgamma/ElectronContainer.h"
 #include "xAODMuon/Muon.h"
 #include "xAODMuon/MuonContainer.h"
-#include "xAODTau/TauJet.h"
-#include "xAODTau/TauJetContainer.h"
 #include "xAODBase/IParticleContainer.h"
 #include "xAODBase/IParticle.h"
 #include "AthContainers/ConstDataVector.h"
@@ -64,34 +62,31 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector () :
 
   Info("HTopMultilepEventSelector()", "Calling constructor");
 
-  m_useCutFlow           = true; 
-  
-  m_inContainerName_el   = "";     
-  m_inContainerName_mu   = "";     
-  m_inContainerName_jets = "";   
-  m_inContainerName_tau  = "";    
-  
+  m_useCutFlow           = true;
+
+  m_inContainerName_el   = "";
+  m_inContainerName_mu   = "";
+  m_inContainerName_jets = "";
+
   m_outContainerName_lep = "Leptons_Selected";
-  
+
   m_doMinObjCut = false;
   m_doMaxObjCut = false;
   m_n_leptons_min = 0;
   m_n_leptons_max = 100000;
-  m_n_leptons_with_tau_min = 0;
   m_n_jets_min = 0;
-  m_n_jets_max = 100000; 
+  m_n_jets_max = 100000;
   m_n_bjets_min = 0;
-  m_n_taus_min = 0;
 
   m_BTag_WP = "FixedCutBEff_77";
 
-  m_leptons_eta_max = 2.6;	    
-  m_leading_lep_pT_min = 0.0;    
-  m_subleading_lep_pT_min = 0.0; 
-  
-  m_passAuxDecorKeys = ""; 
-  m_failAuxDecorKeys = ""; 
-  
+  m_leptons_eta_max = 2.6;
+  m_leading_lep_pT_min = 0.0;
+  m_subleading_lep_pT_min = 0.0;
+
+  m_passAuxDecorKeys = "";
+  m_failAuxDecorKeys = "";
+
 }
 
 HTopMultilepEventSelector::~HTopMultilepEventSelector() {}
@@ -109,38 +104,36 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
       return EL::StatusCode::FAILURE;
     }
     Info("configure()", "Configuing HTopMultilepEventSelector Interface. User configuration read from : %s", getConfig().c_str());
- 
+
     // read debug flag from .config file
     //
     m_debug	                 = config->GetValue("Debug" ,      m_debug);
     m_useCutFlow                 = config->GetValue("UseCutFlow",  m_useCutFlow);
-    
+
     // input container to be read from TEvent or TStore
     //
     m_inContainerName_el	 = config->GetValue("InputContainerElectrons", m_inContainerName_el.c_str());
     m_inContainerName_mu	 = config->GetValue("InputContainerMuons",     m_inContainerName_mu.c_str());
     m_inContainerName_jets	 = config->GetValue("InputContainerJets",      m_inContainerName_jets.c_str());
-    m_inContainerName_tau	 = config->GetValue("InputContainerTaus",      m_inContainerName_tau.c_str());
-    m_outContainerName_lep       = config->GetValue("OutputContainerLeptons",  m_outContainerName_lep.c_str());   
-     
+
+    m_outContainerName_lep       = config->GetValue("OutputContainerLeptons",  m_outContainerName_lep.c_str());
+
     // configurable cuts
     //
     m_doMinObjCut		 = config->GetValue("DoMinObjCut", m_doMinObjCut);
-    m_doMaxObjCut		 = config->GetValue("DoMaxObjCut", m_doMaxObjCut);  
+    m_doMaxObjCut		 = config->GetValue("DoMaxObjCut", m_doMaxObjCut);
     m_n_leptons_min		 = config->GetValue("MinNLeptons", m_n_leptons_min);
     m_n_leptons_max		 = config->GetValue("MaxNLeptons", m_n_leptons_max);
-    m_n_leptons_with_tau_min	 = config->GetValue("MinNLeptonsWithTau", m_n_leptons_with_tau_min);
-    m_n_taus_min		 = config->GetValue("MinNTaus", m_n_taus_min);
-    m_n_jets_min		 = config->GetValue("MinNJets", m_n_jets_min); 
-    m_n_jets_max		 = config->GetValue("MaxNJets", m_n_jets_max); 
-    m_n_bjets_min		 = config->GetValue("MinNBjets", m_n_bjets_min); 
+    m_n_jets_min		 = config->GetValue("MinNJets", m_n_jets_min);
+    m_n_jets_max		 = config->GetValue("MaxNJets", m_n_jets_max);
+    m_n_bjets_min		 = config->GetValue("MinNBjets", m_n_bjets_min);
     m_leading_lep_pT_min	 = config->GetValue("pTMinLeadingLepton",  m_leading_lep_pT_min);
     m_subleading_lep_pT_min	 = config->GetValue("pTMinSubLeadingLepton",  m_subleading_lep_pT_min);
 
     // BTag WP to count nbjets
     //
     m_BTag_WP                     = config->GetValue("BTagWP", m_BTag_WP.c_str());
-     
+
     if ( m_inContainerName_el.empty() ) {
       Error("configure()", "InputContainerElectrons is empty!");
       return EL::StatusCode::FAILURE;
@@ -149,14 +142,14 @@ EL::StatusCode  HTopMultilepEventSelector :: configure ()
       Error("configure()", "InputContainerMuons is empty!");
     return EL::StatusCode::FAILURE;
     }
-    
+
     config->Print();
-    
+
     Info("configure()", "HTopMultilepEventSelector Interface succesfully configured!");
-    
+
     delete config; config = nullptr;
   }
-  
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -278,22 +271,22 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   //
   const xAOD::EventInfo* eventInfo(nullptr);
   RETURN_CHECK("HTopMultilepEventSelector::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_debug) , "");
- 
-  // MC event weight 
+
+  // MC event weight
   //
-  float mcEvtWeight(1.0); 
+  float mcEvtWeight(1.0);
   static SG::AuxElement::Accessor< float > mcEvtWeightAcc("mcEventWeight");
   if ( !mcEvtWeightAcc.isAvailable(*eventInfo) ) {
     Info("execute()", "event weight is not available. Aborting ");
     return EL::StatusCode::FAILURE;
-  
-  } 
+
+  }
   mcEvtWeight = mcEvtWeightAcc(*eventInfo);
 
   m_numEvent++;
 
   //bool isMC = ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
-  
+
   // this will be the collection processed - no matter what!!
   //
   const xAOD::ElectronContainer* inElectrons(nullptr);
@@ -301,14 +294,11 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
 
   const xAOD::MuonContainer* inMuons(nullptr);
   RETURN_CHECK("HTopMultilepEventSelector::execute()", HelperFunctions::retrieve(inMuons, m_inContainerName_mu, m_event, m_store, m_debug) , "");
-  
-  const xAOD::JetContainer* inJets(nullptr);   
+
+  const xAOD::JetContainer* inJets(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(inJets, m_inContainerName_jets, m_event, m_store,  m_debug) , "");
 
-  const xAOD::TauJetContainer* inTauJets(nullptr);
-  RETURN_CHECK("HTopMultilepEventSelector::execute()", HelperFunctions::retrieve(inTauJets, m_inContainerName_tau, m_event, m_store, m_debug) , "");
-    
-  if ( m_debug ) { Info("execute()"," inElectrons N = %lu , inMuons N = %lu , inJets N = %lu, inTaus N = %lu ", inElectrons->size(), inMuons->size(), inJets->size(), inTauJets->size() ); }
+  if ( m_debug ) { Info("execute()"," inElectrons N = %lu , inMuons N = %lu , inJets N = %lu", inElectrons->size(), inMuons->size(), inJets->size() ); }
 
   /*
   if ( true ) {
@@ -334,11 +324,11 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   static SG::AuxElement::Accessor< std::map<std::string,char> > isTrigMatchedMapMuAcc("isTrigMatchedMapMu");
 
   static SG::AuxElement::Decorator< char > isTrigMatchedLepDecor("isTrigMatchedLep");
-  
+
   // fill this CDV with electrons and muons
   //
   for ( auto el_itr : *(inElectrons) ) {
-    
+
     const xAOD::IParticle *lepton = el_itr;
 
     // default
@@ -360,10 +350,10 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
 
     leptonsCDV->push_back( lepton );
     if ( m_debug ) { Info("execute()","pushing electron to leptonsCDV - pT = %2f ", el_itr->pt() / 1e3 ); }
-  
+
   }
   for ( auto mu_itr : *(inMuons) ) {
-      
+
     const xAOD::IParticle *lepton = mu_itr;
 
     // default
@@ -385,72 +375,58 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
 
     leptonsCDV->push_back( lepton );
     if ( m_debug ) { Info("execute()","pushing muon to leptonsCDV - pT = %2f ", mu_itr->pt() / 1e3 ); }
-      
+
   }
-  // Make a sorted version of the container 
+  // Make a sorted version of the container
   // (this can be on the stack! Will not be the one that is pushed to the store...)
   //
   const xAOD::IParticleContainer leptonsSorted = HelperFunctions::sort_container_pt( leptonsCDV->asDataVector() );
 
   unsigned int nLeptons = leptonsCDV->size();
-    
-  if ( m_debug ) { 
-    Info("execute()","inLeptons N = %u ", nLeptons ); 
+
+  if ( m_debug ) {
+    Info("execute()","inLeptons N = %u ", nLeptons );
     for ( auto lep_it : leptonsSorted ) {
       Info("execute()","\t after sorting - lepton pT = %2f ", lep_it->pt()/1e3 );
     }
   }
 
-  float leading_lep_pt(-1.0), subleading_lep_pt(-1.0); 
+  float leading_lep_pt(0.0), subleading_lep_pt(0.0);
   if ( nLeptons > 0 ) {
     const xAOD::IParticle* leadingLepton = *(leptonsSorted.begin());
     leading_lep_pt	 = leadingLepton->pt();
     if ( nLeptons > 1 ) {
       const xAOD::IParticle* subLeadingLepton = *(std::next(leptonsSorted.begin(),1));
-      subleading_lep_pt  = subLeadingLepton->pt(); 
+      subleading_lep_pt  = subLeadingLepton->pt();
     }
   }
-  
-  unsigned int nTaus = inTauJets->size();
-    
+
   // ***************************** //
   // now make the event selection
   // ***************************** //
 
-  bool passTwoLep(false), passLepTau(false), passnLepMax(false);
+  bool passnLepMin(false), passnLepMax(false);
 
   if ( nLeptons >= static_cast<unsigned int>(m_n_leptons_min)		      &&
-       leading_lep_pt > static_cast<unsigned int>(m_leading_lep_pT_min)       &&
-       subleading_lep_pt > static_cast<unsigned int>(m_subleading_lep_pT_min)  
-       ) { 
+       leading_lep_pt >= static_cast<unsigned int>(m_leading_lep_pT_min)      &&
+       subleading_lep_pt >= static_cast<unsigned int>(m_subleading_lep_pT_min)
+       ) {
     if ( m_debug ) {
-      Info("execute()","\t leading lepton pT = %2f    ", leading_lep_pt / 1e3 );
-      Info("execute()","\t subleading lepton pT = %2f ", subleading_lep_pt / 1e3 );
-    }    
-    passTwoLep = true;
+      Info("execute()","\t nLeptons = %i ", nLeptons );
+      if ( nLeptons > 0 ) Info("execute()","\t leading lepton pT = %2f    ", leading_lep_pt / 1e3 );
+      if ( nLeptons > 1 ) Info("execute()","\t subleading lepton pT = %2f ", subleading_lep_pt / 1e3 );
+    }
+    passnLepMin = true;
   }
 
-  if ( nLeptons >= static_cast<unsigned int>(m_n_leptons_with_tau_min)	   &&
-       nTaus >= static_cast<unsigned int>(m_n_taus_min)		           &&
-       leading_lep_pt > static_cast<unsigned int>(m_leading_lep_pT_min)     
-       ) { 
-    if ( m_debug ) {
-      for ( auto tau_it : *inTauJets ) {
-	Info("execute()", "\t\t tau pT: %2f ", tau_it->pt() );
-      }
-      Info("execute()","\t leading lepton pT = %2f ", leading_lep_pt / 1e3 );
-    }   
-    passLepTau = true;
-  }
-   
   if ( nLeptons <= static_cast<unsigned int>(m_n_leptons_max) ) {
     passnLepMax = true;
-  } 
-   
-  // count number of LF jets 
+  }
+
+  // count number of LF jets
   //
   unsigned int nJets = inJets->size();
-  bool passnJetsMin(false), passnJetsMax(false); 
+  bool passnJetsMin(false), passnJetsMax(false);
   passnJetsMin  = ( nJets >= static_cast<unsigned int>(m_n_jets_min) );
   passnJetsMax  = ( nJets <= static_cast<unsigned int>(m_n_jets_max) );
 
@@ -466,44 +442,43 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
     if ( isBTag.isAvailable(*jet_itr) ) {
       if ( isBTag(*jet_itr) == 1 ) ++nBjets;
     }
-  } 
-
-  bool passnBJetsMin(false); 
-  passnBJetsMin  = ( nBjets >= static_cast<unsigned int>(m_n_bjets_min) );
-    
-  if ( m_debug ) {
-    Info("execute()","***********************************");     
-    Info("execute()","event passes TwoLep? %i    ", static_cast<int>( passTwoLep ) );
-    Info("execute()","event passes LepTau? %i    ", static_cast<int>( passLepTau ) );  
-    Info("execute()","event passes nLepMax? %i   ", static_cast<int>( passnLepMax ) );  
-    Info("execute()","event passes nJetsMin? %i  ", static_cast<int>( passnJetsMin ) );  
-    Info("execute()","event passes nJetsMax? %i  ", static_cast<int>( passnJetsMax ) );  
-    Info("execute()","event passes nBJetsMin? %i ", static_cast<int>( passnBJetsMin ) );  
-    Info("execute()","*********************************** \n");  
   }
-  
-  bool passMinObj(false), passMaxObj(false); 
-  passMinObj = ( ( passTwoLep || passLepTau ) && passnJetsMin && passnBJetsMin );
+
+  bool passnBJetsMin(false);
+  passnBJetsMin  = ( nBjets >= static_cast<unsigned int>(m_n_bjets_min) );
+
+  if ( m_debug ) {
+    Info("execute()","***********************************");
+    Info("execute()","event passes nLepMin? %i   ", static_cast<int>( passnLepMin ) );
+    Info("execute()","event passes nLepMax? %i   ", static_cast<int>( passnLepMax ) );
+    Info("execute()","event passes nJetsMin? %i  ", static_cast<int>( passnJetsMin ) );
+    Info("execute()","event passes nJetsMax? %i  ", static_cast<int>( passnJetsMax ) );
+    Info("execute()","event passes nBJetsMin? %i ", static_cast<int>( passnBJetsMin ) );
+    Info("execute()","*********************************** \n");
+  }
+
+  bool passMinObj(false), passMaxObj(false);
+  passMinObj = ( passnLepMin && passnJetsMin && passnBJetsMin );
   passMaxObj = ( passnJetsMax && passnLepMax );
-  
+
   // decide whether to skip event or not
   //
   if ( m_doMinObjCut && !passMinObj ) {
-    if ( m_debug ) { Info("execute()","event did not pass minObjCut. nLeptons = %u , nBjets = %u , nTaus = %u. Reject it", nLeptons, nBjets, nTaus); }
+    if ( m_debug ) { Info("execute()","event did not pass minObjCut. nLeptons = %u , nJets = %u, nBjets = %u. Reject it", nLeptons, nJets, nBjets); }
     wk()->skipEvent();
     return EL::StatusCode::SUCCESS;
   }
   if ( m_doMaxObjCut && !passMaxObj ) {
-    if ( m_debug ) { Info("execute()","event did not pass maxObjCut. Reject it"); }
+    if ( m_debug ) { Info("execute()","event did not pass maxObjCut. nLeptons = %u , nJets = %u, nBjets = %u. Reject it", nLeptons, nJets, nBjets); }
     wk()->skipEvent();
     return EL::StatusCode::SUCCESS;
-  }   
-  
+  }
+
   // add ConstDataVector(s) to TStore
   // NB: don't store a sorted container to TStore and expect it will be still sorted at retrieval!!
   //
   RETURN_CHECK( "HTopMultilepEventSelector::execute()", m_store->record( leptonsCDV, m_outContainerName_lep ), "Failed to store const data container");
-  
+
   m_numEventPass++;
   m_weightNumEventPass += mcEvtWeight;
 
@@ -512,17 +487,17 @@ EL::StatusCode HTopMultilepEventSelector :: execute ()
   static SG::AuxElement::Decorator< unsigned int > nLeptonsDecor("nLeptons");
   static SG::AuxElement::Decorator< unsigned int > nBjets_Decor("nBjets_"+m_BTag_WP);
   static SG::AuxElement::Decorator< unsigned int > categoryFlagDecor("categoryFlag");
-  
+
   // compact way to categorise event based on object counting (exploiting prime numbers)
   //
-  unsigned int categoryFlag(0); 
+  unsigned int categoryFlag(0);
   categoryFlag = pow(2.0,static_cast<float>(nLeptons))*pow(3.0,static_cast<float>(nJets))*pow(5.0,static_cast<float>(nBjets));
-  
+
   nLeptonsDecor( *eventInfo )             = nLeptons;
   nBjets_Decor( *eventInfo )              = nBjets;
   categoryFlagDecor( *eventInfo )         = categoryFlag;
 
-   
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -552,7 +527,7 @@ EL::StatusCode HTopMultilepEventSelector :: finalize ()
   // gets called on worker nodes that processed input events.
 
   if ( m_useCutFlow ) {
-    Info("histFinalize()", "Filling cutflow");
+    Info("finalize()", "Filling cutflow");
     m_cutflowHist ->SetBinContent( m_cutflow_bin, m_numEventPass        );
     m_cutflowHistW->SetBinContent( m_cutflow_bin, m_weightNumEventPass  );
   }

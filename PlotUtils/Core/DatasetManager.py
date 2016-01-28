@@ -135,6 +135,7 @@ class DatasetManager:
             else:
                 entry = {}
                 for header in h:
+		    #print("token: {0}".format(tokens[h[header]]))
                     entry[header] = tokens[h[header]].strip('"')
                 samples.append(entry)
         return samples

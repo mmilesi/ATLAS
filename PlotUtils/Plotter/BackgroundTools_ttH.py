@@ -854,12 +854,12 @@ class Background:
         for name in processes:
             process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection, options=options) * scale
             if eventweight:
-		
+
 		if "FakesMM" in name:
 		  process = process.subprocess(eventweight=1.0) # this call will update the event weight
 		else:
 		  process = process.subprocess(eventweight=eventweight) # this call will update the event weight
-		
+
             h = process.hist(var, cut=cut, category=category)
             if overflowbins:
                 lastbin = h.GetNbinsX()
@@ -1067,8 +1067,8 @@ class Background:
             if type(showratio) is tuple:
                 ratiomc.GetYaxis().SetRangeUser(showratio[0], showratio[1])
             else:
-                #ratiomc.GetYaxis().SetRangeUser(0.5, 1.5)
-                ratiomc.GetYaxis().SetRangeUser(0., 2.)
+                #ratiomc.GetYaxis().SetRangeUser(0.8, 1.2)
+                ratiomc.GetYaxis().SetRangeUser(0.0, 2.0)
             #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
             pad2.cd()
             #pad2.SetLogy(2)

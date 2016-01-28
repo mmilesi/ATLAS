@@ -178,18 +178,21 @@ class TTHBackgrounds2015(Background):
 
 
     class TTBarH(Process):
-        latexname = 't#bar{t} H'
+
+	latexname = 't#bar{t} H'
         colour = kBlack
 
         def base(self, treename='physics', category=None, options={}):
             #hmass = options.get('hmass', '125')#300 is the default value if hmass is not in options, hmass is specified in one option passed to the plot function in the plotting script
             inputgroup = [
                 #('ttH', hmass),
-                ('ttH', '125'),
-                ]
+                #('ttH', '125'),
+                ('ttH', 'ttH_inc_dil'),
+                ('ttH', 'ttH_inc_semil'),
+                ('ttH', 'ttH_inc_allhad'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            #the division for /1000. is used to have the correct cross section
+            sp = self.subprocess(trees=trees) / 1000. # the division by 1000. is used to have the correct cross section
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -214,14 +217,15 @@ class TTHBackgrounds2015(Background):
             return sp
 
     class TTBarW(Process):
-        latexname = 't#bar{t} W'
+
+	latexname = 't#bar{t} W'
         colour = kRed - 4
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-                #('ttW', 'ttW'),
 		('tops', 'ttW'),
-                ]
+		#('tops', 'Sherpa_ttW'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             return sp
@@ -247,14 +251,19 @@ class TTHBackgrounds2015(Background):
             return sp
 
     class TTBarZ(Process):
-        latexname = 't#bar{t} Z'
+
+	latexname = 't#bar{t} Z'
         colour = kRed - 7
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-                #('ttZ', 'ttZ'),
-		('tops', 'ttZ'),
-                ]
+		('tops', 'ttZnnqq'),
+                ('tops', 'ttee'),
+                ('tops', 'ttmumu'),
+		('tops', 'tttautau'),
+                #('tops', 'Sherpa_ttZnnqq'),
+                #('tops', 'Sherpa_ttll'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             return sp
@@ -280,13 +289,14 @@ class TTHBackgrounds2015(Background):
             return sp
 
     class FakesFF(Process):
-        latexname = 'FakesFF'
+
+	latexname = 'FakesFF'
         colour = kAzure - 9
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
                     ('Data', 'physics_Main'),
-                ]
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
             return sp
@@ -331,13 +341,14 @@ class TTHBackgrounds2015(Background):
             return sp
 
     class FakesMM(Process):
-        latexname = 'FakesMM'
+
+	latexname = 'FakesMM'
         colour = kTeal - 9
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
                     ('Data', 'physics_Main'),
-                ]
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
             return sp
@@ -392,8 +403,9 @@ class TTHBackgrounds2015(Background):
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		    ('tops', 'ttbar'),
-                ]
+		    ('tops', 'ttbar_nonallhad'),
+		    #('tops', 'ttbar_dilep'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             return sp
@@ -435,7 +447,8 @@ class TTHBackgrounds2015(Background):
             return sp
 
     class FakesClosureABCD(Process):
-        latexname = 'FakesABCD - t#bar{t}'
+
+	latexname = 'FakesABCD - t#bar{t}'
         colour = kCyan - 9
 
         theta_el = {
@@ -447,8 +460,9 @@ class TTHBackgrounds2015(Background):
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		    ('tops', 'ttbar'),
-                ]
+		    ('tops', 'ttbar_nonallhad'),
+		    #('tops', 'ttbar_dilep'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             return sp
@@ -572,132 +586,18 @@ class TTHBackgrounds2015(Background):
 	    return sp
 
 
-    class ZjetsLF(Process):
-        latexname = 'Z/#gamma* + LF jets'
-        colour = kGreen
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		           ('Z+jets', '*'),
-		           #('SherpaZ+jets', '*'),
-		           #('DYZ+jets', '*'),
-		         ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            if self.parent.useZCorrections:
-                sp = sp*0.94
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'ZjetsLF - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class ZjetsHF(Process):
-        latexname = 'Z/#gamma* + HF jets'
-        colour = kGreen
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('Z+bb', '*'),
-                    ('Z+cc', '*'),
-                    ('DYZ+bb', '*'),
-                    ('DYZ+cc', '*'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            if self.parent.useZCorrections:
-                sp = sp*1.5
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'ZjetsHF - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class Zjets(Process):
-        latexname = 'Z/#gamma* + jets'
-        colour = kGreen
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		           ('Z+jets', '*'),
-		           #('DYZ+jets', '*'),
-		         ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            if self.parent.useZCorrections:
-                sp = sp*0.94
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'Zjets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-        #def base(self, treename='physics', category=None, options={}):
-        #    zlf = self.parent.procmap['ZjetsLF'].base(treename, category, options)
-        #    zhf = self.parent.procmap['ZjetsHF'].base(treename, category, options)
-        #    return zlf+zhf
-        #
-        #def __call__(self, treename='physics', category=None, options={}):
-        #    zlf = self.parent.procmap['ZjetsLF'](treename, category, options)
-        #    zhf = self.parent.procmap['ZjetsHF'](treename, category, options)
-        #    return zlf+zhf
-
-
     class Zeejets(Process):
-        latexname = 'Z/#gamma*#rightarrow#it{ee}+jets'
+
+	latexname = 'Z/#gamma*#rightarrow#it{ee}+jets'
         colour = kGreen-7
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		           ('Z+jets', 'ee'),
+		           #('Z+jets', 'ee'),
+                           #('MadGraphZ+jets', 'ee'),
+                           ('Z+jetsCVetoBVeto', 'ee'),
+			   ('Z+jetsCFilterBVeto', 'ee'),
+                           ('Z+jetsBFilter', 'ee'),
 		           #('DYZ+jets', 'ee'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -728,12 +628,17 @@ class TTHBackgrounds2015(Background):
 
 
     class Zmumujets(Process):
-        latexname = 'Z/#gamma*#rightarrow#mu#mu+jets'
+
+	latexname = 'Z/#gamma*#rightarrow#mu#mu+jets'
         colour = kTeal+2
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		           ('Z+jets', 'mumu'),
+		           #('Z+jets', 'mumu'),
+                           #('MadGraphZ+jets', 'mumu'),
+                           ('Z+jetsCVetoBVeto', 'mumu'),
+			   ('Z+jetsCFilterBVeto', 'mumu'),
+                           ('Z+jetsBFilter', 'mumu'),
 		           #('DYZ+jets', 'mumu'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -763,12 +668,17 @@ class TTHBackgrounds2015(Background):
             return sp
 
     class Ztautaujets(Process):
-        latexname = 'Z/#gamma*#rightarrow#tau#tau+jets'
+
+	latexname = 'Z/#gamma*#rightarrow#tau#tau+jets'
         colour = kTeal
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		           ('Z+jets', 'tautau'),
+		           #('Z+jets', 'tautau'),
+                           #('MadGraphZ+jets', 'tautau'),
+                           ('Z+jetsCVetoBVeto', 'tautau'),
+			   ('Z+jetsCFilterBVeto', 'tautau'),
+                           ('Z+jetsBFilter', 'tautau'),
 		           #('DYZ+jets', 'tautau'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -798,152 +708,35 @@ class TTHBackgrounds2015(Background):
             return sp
 
 
-    class MadGraphZjets(Process):
-        latexname = 'Z/#gamma* + jets'
+    class Zjets(Process):
+
+	latexname = 'Z/#gamma* + jets'
+        colour = kGreen
+
+        def base(self, treename='physics', category=None, options={}):
+
+	    zee = self.parent.procmap['Zeejets'].base(treename, category, options)
+            zmumu = self.parent.procmap['Zmumujets'].base(treename, category, options)
+            ztautau = self.parent.procmap['Ztautaujets'].base(treename, category, options)
+
+            return (zee + zmumu + ztautau)
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+	    zee = self.parent.procmap['Zeejets'](treename, category, options)
+            zmumu = self.parent.procmap['Zmumujets'](treename, category, options)
+            ztautau = self.parent.procmap['Ztautaujets'](treename, category, options)
+
+            return (zee + zmumu + ztautau)
+
+
+    class ZjetsLF(Process):
+
+	latexname = 'Z/#gamma* + LF jets'
         colour = kGreen
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		           ('MadGraphZ+jets', '*'),
-		         ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            if self.parent.useZCorrections:
-                sp = sp*0.94
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'MadGraphZjets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class MadGraphZeejets(Process):
-        latexname = 'Z/#gamma*#rightarrow#it{ee}+jets'
-        colour = kGreen-7
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		           ('MadGraphZ+jets', 'ee'),
-		         ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            if self.parent.useZCorrections:
-                sp = sp*0.94
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut= ''
-            weight= ''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'MadGraphZeejets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-
-    class MadGraphZmumujets(Process):
-        latexname = 'Z/#gamma*#rightarrow#mu#mu+jets'
-        colour = kTeal+2
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		           ('MadGraphZ+jets', 'mumu'),
-		         ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            if self.parent.useZCorrections:
-                sp = sp*0.94
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'MadGraphZmumujets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class MadGraphZtautaujets(Process):
-        latexname = 'Z/#gamma*#rightarrow#tau#tau+jets'
-        colour = kTeal
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		           ('MadGraphZ+jets', 'tautau'),
-		         ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            if self.parent.useZCorrections:
-                sp = sp*0.94
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'MadGraphZtautaujets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-
-    class SherpaZjets(Process):
-        latexname = 'Z/#gamma* + jets'
-        colour = kGreen
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		           ('Z+jetsBFilter', '*'),
-		           ('Z+jetsCFilterBVeto', '*'),
 		           ('Z+jetsCVetoBVeto', '*'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -965,65 +758,27 @@ class TTHBackgrounds2015(Background):
             if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
                 TTcut='TT'
 
-	    print 'SherpaZjets - weight : ', weight, ' TTcut : ', TTcut
+	    print 'ZjetsLF - weight : ', weight, ' TTcut : ', TTcut
 
 	    if TTcut!='':
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
             sp = sp.subprocess(cut=category.cut, eventweight=weight)
             return sp
 
+    class ZjetsHF(Process):
 
-    class SherpaZeejets(Process):
-        latexname = 'Z/#gamma*#rightarrow#it{ee}+jets'
-        colour = kGreen-7
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		           ('Z+jetsBFilter', 'ee'),
-		           ('Z+jetsCFilterBVeto', 'ee'),
-		           ('Z+jetsCVetoBVeto', 'ee'),
-		         ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            if self.parent.useZCorrections:
-                sp = sp*0.94
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut= ''
-            weight= ''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'SherpaZeejets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-
-    class SherpaZmumujets(Process):
-        latexname = 'Z/#gamma*#rightarrow#mu#mu+jets'
-        colour = kTeal+2
+        latexname = 'Z/#gamma* + HF jets'
+        colour = kGreen
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		           ('Z+jetsBFilter', 'mumu'),
-		           ('Z+jetsCFilterBVeto', 'mumu'),
-		           ('Z+jetsCVetoBVeto', 'mumu'),
-		         ]
+		           ('Z+jetsCFilterBVeto', '*'),
+		           ('Z+jetsBFilter', '*'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             if self.parent.useZCorrections:
-                sp = sp*0.94
+                sp = sp*1.5
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -1039,27 +794,54 @@ class TTHBackgrounds2015(Background):
             if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
                 TTcut='TT'
 
-	    print 'SherpaZmumujets - weight : ', weight, ' TTcut : ', TTcut
+	    print 'ZjetsHF - weight : ', weight, ' TTcut : ', TTcut
 
 	    if TTcut!='':
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
             sp = sp.subprocess(cut=category.cut, eventweight=weight)
             return sp
 
-    class SherpaZtautaujets(Process):
-        latexname = 'Z/#gamma*#rightarrow#tau#tau+jets'
-        colour = kTeal
+
+    class ZjetsCF(Process):
+
+	latexname = 'Z/#gamma*+jets (ChFlip only)'
+        colour = kAzure + 10
+
+	def base(self, treename='physics', category=None, options={}):
+            z = self.parent.procmap['Zjets'].base(treename, category, options)
+            return z
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            z = self.parent.procmap['Zjets'](treename, category, options)
+
+	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
+	    #
+	    truth_cut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
+	    truth_cut = truth_cut & self.vardb.getCut('2Lep_ChFlipEvent')
+
+            z = z.subprocess(cut=truth_cut)
+            print 'Zjets CF - \ttruth cut : ', self.vardb.getCut('2Lep_ChFlipEvent').cutstr
+
+            return z
+
+
+    class Wenujets(Process):
+
+	latexname = 'W#rightarrow#it{e}#nu+jets'
+        colour = kYellow
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		           ('Z+jetsBFilter', 'tautau'),
-		           ('Z+jetsCFilterBVeto', 'tautau'),
-		           ('Z+jetsCVetoBVeto', 'tautau'),
-		         ]
+                #('PowhegPythiaW+jets', 'Wplusenu'),
+                #('PowhegPythiaW+jets', 'Wminusenu'),
+                #('MadGraphW+jets', 'enu'),
+                ('W+jetsBFilter', 'enu'),
+                ('W+jetsCFilterBVeto', 'enu'),
+                ('W+jetsCVetoBVeto', 'enu'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
-            if self.parent.useZCorrections:
-                sp = sp*0.94
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -1075,7 +857,83 @@ class TTHBackgrounds2015(Background):
             if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
                 TTcut='TT'
 
-	    print 'SherpaZtautaujets - weight : ', weight, ' TTcut : ', TTcut
+	    print 'Wenujets - weight : ', weight, ' TTcut : ', TTcut
+
+	    if TTcut!='':
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+            sp = sp.subprocess(cut=category.cut, eventweight=weight)
+            return sp
+
+    class Wmunujets(Process):
+
+	latexname = 'W#rightarrow#mu#nu+jets'
+        colour = kYellow
+
+        def base(self, treename='physics', category=None, options={}):
+            inputgroup = [
+                #('PowhegPythiaW+jets', 'Wplusmunu'),
+                #('PowhegPythiaW+jets', 'Wminusmunu'),
+                #('MadGraphW+jets', 'munu'),
+                ('W+jetsBFilter', 'munu'),
+                ('W+jetsCFilterBVeto', 'munu'),
+                ('W+jetsCVetoBVeto', 'munu'),
+                         ]
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) / 1000.
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+            systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+            TTcut=''
+            weight=''
+            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
+                TTcut='TT'
+
+	    print 'Wmunujets - weight : ', weight, ' TTcut : ', TTcut
+
+	    if TTcut!='':
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+            sp = sp.subprocess(cut=category.cut, eventweight=weight)
+            return sp
+
+    class Wtaunujets(Process):
+
+	latexname = 'W#rightarrow#tau#nu+jets'
+        colour = kYellow
+
+        def base(self, treename='physics', category=None, options={}):
+            inputgroup = [
+                #('PowhegPythiaW+jets', 'Wplustaunu'),
+                #('PowhegPythiaW+jets', 'Wminustaunu'),
+                #('MadGraphW+jets', 'taunu'),
+                ('W+jetsBFilter', 'taunu'),
+                ('W+jetsCFilterBVeto', 'taunu'),
+                ('W+jetsCVetoBVeto', 'taunu'),
+                         ]
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) / 1000.
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+            systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+            TTcut=''
+            weight=''
+            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
+                TTcut='TT'
+
+	    print 'Wtaunujets - weight : ', weight, ' TTcut : ', TTcut
 
 	    if TTcut!='':
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -1083,320 +941,43 @@ class TTHBackgrounds2015(Background):
             return sp
 
     class Wjets(Process):
-        latexname = 'W + jets'
-        colour = kYellow
 
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('W+jets', '*'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'Wjets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class MadGraphWjets(Process):
         latexname = 'W+jets'
         colour = kYellow
 
         def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('MadGraphW+jets', '*'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
+
+	    wenu = self.parent.procmap['Wenujets'].base(treename, category, options)
+            wmunu = self.parent.procmap['Wmunujets'].base(treename, category, options)
+            wtaunu = self.parent.procmap['Wtaunujets'].base(treename, category, options)
+
+            return (wenu + wmunu + wtaunu)
 
         def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
 
-	    print 'MadGraphWjets - weight : ', weight, ' TTcut : ', TTcut
+            #sp = self.base(treename, category, options)
+            #return sp
+	    wenu = self.parent.procmap['Wenujets'](treename, category, options)
+            wmunu = self.parent.procmap['Wmunujets'](treename, category, options)
+            wtaunu = self.parent.procmap['Wtaunujets'](treename, category, options)
 
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class MadGraphWenujets(Process):
-        latexname = 'W#rightarrow#it{e}#nu+jets'
-        colour = kYellow
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('MadGraphW+jets', 'enu'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'MadGraphWenujets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class MadGraphWmunujets(Process):
-        latexname = 'W#rightarrow#mu#nu+jets'
-        colour = kYellow
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('MadGraphW+jets', 'munu'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'MadGraphWmunujets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class MadGraphWtaunujets(Process):
-        latexname = 'W#rightarrow#tau#nu+jets'
-        colour = kYellow
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('MadGraphW+jets', 'taunu'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'MadGraphWtaunujets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class SherpaWjets(Process):
-        latexname = 'W+jets'
-        colour = kYellow
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('W+jetsBFilter', '*'),
-                    ('W+jetsCFilterBVeto', '*'),
-                    ('W+jetsCVetoBVeto', '*'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'SherpaWjets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class SherpaWenujets(Process):
-        latexname = 'W#rightarrow#it{e}#nu+jets'
-        colour = kYellow
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('W+jetsBFilter', 'enu'),
-                    ('W+jetsCFilterBVeto', 'enu'),
-                    ('W+jetsCVetoBVeto', 'enu'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'SherpaWenujets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class SherpaWmunujets(Process):
-        latexname = 'W#rightarrow#mu#nu+jets'
-        colour = kYellow
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('W+jetsBFilter', 'munu'),
-                    ('W+jetsCFilterBVeto', 'munu'),
-                    ('W+jetsCVetoBVeto', 'munu'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'SherpaWmunujets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class SherpaWtaunujets(Process):
-        latexname = 'W#rightarrow#tau#nu+jets'
-        colour = kYellow
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('W+jetsBFilter', 'taunu'),
-                    ('W+jetsCFilterBVeto', 'taunu'),
-                    ('W+jetsCVetoBVeto', 'taunu'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-
-	    print 'SherpaWtaunujets - weight : ', weight, ' TTcut : ', TTcut
-
-	    if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
+	    return (wenu + wmunu + wtaunu)
 
     class Top(Process):
-        #latexname = 'tW, tt#it{l}{l}, ttWW, 4t, single t'
-        latexname = 'top (non t#bar{t})'
+
+        #latexname = 'tW, tZ, tt#it{l}{l}, ttWW, 4t, single t'
+        latexname = 'rare top'
 
         colour = kAzure + 1
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-                    #('tops', 'tZ'),
-		    #('tops', 'tW'),
-		    ('tops', 'tW_DS'),
-		    #('tops', 'singlet'),
-                    ('tops', '4top'),
-                    ('tops', 'ttWW'),
-                    ('tops', 'ttee'),
-                    ('tops', 'ttmumu'),
-		    ('tops', 'tttautau'),
-                ]
+                ('tops', 'tZ'),
+                ('tops', 'tW'),
+                ('tops', 'singlet'),
+                ('tops', '4top'),
+                ('tops', 'ttWW'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             return sp
@@ -1421,14 +1002,17 @@ class TTHBackgrounds2015(Background):
             sp = sp.subprocess(cut=category.cut, eventweight=weight)
             return sp
 
+
     class TTBar(Process):
+
         latexname = 't#bar{t}'
         colour = kAzure + 8
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		    ('tops', 'ttbar'),
-                ]
+                ('tops', 'ttbar_nonallhad'),
+                #('tops', 'ttbar_dilep'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             return sp
@@ -1458,13 +1042,15 @@ class TTHBackgrounds2015(Background):
     # that we plot only events with at least one !prompt lepton, and none charge flip
     #
     class TTBarClosureMM(Process):
+
         latexname = 't#bar{t}'
         colour = kAzure + 8
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		    ('tops', 'ttbar'),
-                ]
+                ('tops', 'ttbar_nonallhad'),
+                #('tops', 'ttbar_dilep'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             return sp
@@ -1497,14 +1083,46 @@ class TTHBackgrounds2015(Background):
 
 
     class TopCF(Process):
-        latexname = 't#bar{t}, single t (ChFlip only)'
+
+        latexname = 'tops (ChFlip only)'
         colour = kAzure - 4
 
         def base(self, treename='physics', category=None, options={}):
+
+	    raretop = self.parent.procmap['Top'].base(treename, category, options)
+            ttbar   = self.parent.procmap['TTBar'].base(treename, category, options)
+
+            return (raretop + ttbar)
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            sp = self.base(treename, category, options)
+
+	    raretop = self.parent.procmap['Top'](treename, category, options)
+            ttbar   = self.parent.procmap['TTBar'](treename, category, options)
+
+	    topcf = ttbar + raretop
+
+	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
+	    #
+	    truth_cut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
+	    truth_cut = truth_cut & self.vardb.getCut('2Lep_ChFlipEvent')
+
+            topcf = topcf.subprocess(cut=truth_cut)
+            print 'Top CF - \ttruth cut : ', self.vardb.getCut('2Lep_ChFlipEvent').cutstr
+
+            return topcf
+
+
+    class Diboson(Process):
+
+        latexname = 'WZ, ZZ, WW'
+        colour = kYellow - 9
+
+        def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-                    ('tops', 'ttbar'),
-                    ('tops', 'singlet'),
-                ]
+                ('Diboson', '*'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             return sp
@@ -1519,44 +1137,6 @@ class TTHBackgrounds2015(Background):
             sp = self.base(treename, category, options)
             TTcut=''
             weight=''
-
-	    print 'TopCF - weight : ', weight, ' TTcut : ', TTcut
-
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-            if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-    class Diboson(Process):
-        latexname = 'WZ, ZZ, WW'
-        colour = kYellow - 9
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    #('Diboson', 'WZ'),
-                    #('Diboson', 'ZZ'),
-		    #('Diboson', 'WW'),
-                    #('Diboson', 'Wgammastar'),
-                    #('Diboson', 'SSWW'),
-                    #('Zgamma',  'Zgammastar'),
-		    ('Diboson', '*'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight='0.91' # Sherpa diboson cross sections must be scaled by 0.91, which corrects for the alpha_QED and EWK parameters difference between the two generators, Powheg being better than Sherpa (https://twiki.cern.ch/twiki/bin/viewauth/AtlasProtected/MC15SystematicUncertainties#VV_Diboson_V_W_Z)
 
 	    print 'Diboson - weight : ', weight, ' TTcut : ', TTcut
 
@@ -1568,175 +1148,34 @@ class TTHBackgrounds2015(Background):
             return sp
 
 
-    class PowhegDiboson(Process):
-        latexname = 'WZ, ZZ, WW'
-        colour = kYellow - 9
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('PowhegDiboson', 'WZ'),
-                    ('PowhegDiboson', 'ZZ'),
-		    ('PowhegDiboson', 'WW'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-
-	    print 'PowhegDiboson - weight : ', weight, ' TTcut : ', TTcut
-
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-            if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-
-    class PowhegDibosonWW(Process):
-        latexname = 'WW'
-        colour = kYellow - 7
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		    ('PowhegDiboson', 'WW'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-
-	    print 'PowhegDibosonWW - weight : ', weight, ' TTcut : ', TTcut
-
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-            if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-
-    class PowhegDibosonWZ(Process):
-        latexname = 'WZ'
-        colour = kOrange - 3
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		    ('PowhegDiboson', 'WZ'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-
-	    print 'PowhegDibosonWZ - weight : ', weight, ' TTcut : ', TTcut
-
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-            if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-
-    class PowhegDibosonZZ(Process):
-        latexname = 'ZZ'
-        colour = kOrange - 2
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-		    ('PowhegDiboson', 'ZZ'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
-
-	    print 'PowhegDibosonZZ - weight : ', weight, ' TTcut : ', TTcut
-
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-            if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
-
-
     class DibosonCF(Process):
+
         latexname = 'WW, W#gamma, ZZ#rightarrow ll#nu#nu (ChFlip only)'
-        colour = kSpring + 1
+        colour = kAzure - 9
 
         def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    #('Diboson', 'WW'),
-                    ('Diboson', 'Wgamma'),
-                    ('Diboson', 'ZZnunu'),
-                ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
-            return sp
+
+	    diboson = self.parent.procmap['Diboson'].base(treename, category, options)
+
+            return diboson
 
         def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=''
 
-	    print 'DibosonCF - weight : ', weight, ' TTcut : ', TTcut
+	    dibosoncf = self.parent.procmap['Diboson'](treename, category, options)
 
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-            if TTcut!='':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-            sp = sp.subprocess(cut=category.cut, eventweight=weight)
-            return sp
+	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
+	    #
+	    truth_cut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
+	    truth_cut = truth_cut & self.vardb.getCut('2Lep_ChFlipEvent')
+
+            dibosoncf = dibosoncf.subprocess(cut=truth_cut)
+            print 'DibosonCF - \ttruth cut : ', self.vardb.getCut('2Lep_ChFlipEvent').cutstr
+
+            return dibosoncf
+
 
     class HtoZZ(Process):
+
         latexname = 'H #rightarrow ZZ'
         colour = kTeal + 9
 
@@ -1769,40 +1208,27 @@ class TTHBackgrounds2015(Background):
             return sp
 
     class Prompt(Process):
+
         latexname = 'Prompt'
         colour = kYellow - 9
 
         def base(self, treename='physics', category=None, options={}):
-            diboson = self.parent.procmap['Diboson'].base(treename, category, options)
+
+	    diboson = self.parent.procmap['Diboson'].base(treename, category, options)
             top = self.parent.procmap['Top'].base(treename, category, options)
             htozz = self.parent.procmap['HtoZZ'].base(treename, category, options)
             ttbarw = self.parent.procmap['TTBarW'].base(treename, category, options)
             ttbarz = self.parent.procmap['TTBarZ'].base(treename, category, options)
-            return diboson+top+htozz+ttbarw+ttbarz
+            return (diboson + top + htozz + ttbarw+ttbarz)
 
         def __call__(self, treename='physics', category=None, options={}):
+
             diboson = self.parent.procmap['Diboson'](treename, category, options)
             top = self.parent.procmap['Top'](treename, category, options)
             htozz = self.parent.procmap['HtoZZ'](treename, category, options)
             ttbarw = self.parent.procmap['TTBarW'](treename, category, options)
             ttbarz = self.parent.procmap['TTBarZ'](treename, category, options)
-            return diboson+top+htozz+ttbarw+ttbarz
-
-    class ChargeFlip(Process):
-        latexname = 'Charge Flip'
-        colour = kAzure - 4
-
-        def base(self, treename='physics', category=None, options={}):
-            diboson = self.parent.procmap['DibosonCF'].base(treename, category, options)
-            top = self.parent.procmap['TopCF'].base(treename, category, options)
-            zjets = self.parent.procmap['Zjets'].base(treename, category, options)
-            return diboson+top+zjets
-
-        def __call__(self, treename='physics', category=None, options={}):
-            diboson = self.parent.procmap['DibosonCF'](treename, category, options)
-            top = self.parent.procmap['TopCF'](treename, category, options)
-            zjets = self.parent.procmap['Zjets'](treename, category, options)
-            return diboson+top+zjets
+            return (diboson + top + htozz + ttbarw+ttbarz)
 
 
     class ChargeFlipMC(Process):
@@ -1811,11 +1237,17 @@ class TTHBackgrounds2015(Background):
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		    ('tops', 'ttbar'),
-                    ('tops', 'singlet'),
-		    ('MadGraphZ+jets', '*'),
-                    ('Diboson', '*'),
-                ]
+                ('tops', 'tZ'),
+                ('tops', 'tW'),
+                ('tops', 'singlet'),
+                ('tops', '4top'),
+                ('tops', 'ttWW'),
+                ('tops', 'ttbar_nonallhad'),
+                ('Diboson','*'),
+                ('Z+jetsCVetoBVeto', '*'),
+                ('Z+jetsCFilterBVeto', '*'),
+                ('Z+jetsBFilter', '*'),
+                         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) / 1000.
             return sp
@@ -1831,22 +1263,45 @@ class TTHBackgrounds2015(Background):
             TTcut=''
             weight=''
 
-	    print 'ChargeFlipMC - weight : ', weight, ' TTcut : ', TTcut
+            print 'ChargeFlipMC - weight : ', weight, ' TTcut : ', TTcut
 
             if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
                 TTcut='TT'
             if TTcut != '':
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
-	    #
-	    truth_cut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
-	    truth_cut = truth_cut & self.vardb.getCut('2Lep_ChFlipEvent')
+            # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
+            #
+            truth_cut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
+            truth_cut = truth_cut & self.vardb.getCut('2Lep_ChFlipEvent')
 
             sp = sp.subprocess(cut=truth_cut, eventweight=weight)
             print ' \ttruth cut : ', self.vardb.getCut('2Lep_ChFlipEvent').cutstr
 
             return sp
+
+"""
+    class ChargeFlipMC(Process):
+
+	latexname = 'Charge flip (MC)'
+        colour = kAzure - 4
+
+        def base(self, treename='physics', category=None, options={}):
+
+	    dibosoncf = self.parent.procmap['DibosonCF'].base(treename, category, options)
+            topcf = self.parent.procmap['TopCF'].base(treename, category, options)
+            zjetscf = self.parent.procmap['ZjetsCF'].base(treename, category, options)
+            return (dibosoncf + topcf + zjetscf)
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            dibosoncf = self.parent.procmap['DibosonCF'](treename, category, options)
+            topcf = self.parent.procmap['TopCF'](treename, category, options)
+            zjetscf = self.parent.procmap['ZjetsCF'](treename, category, options)
+            return (dibosoncf + topcf + zjetscf)
+
+"""
+
 
 '''
     class Prompt2(Process):
