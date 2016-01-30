@@ -970,30 +970,6 @@ EL::StatusCode HTopMultilepAnalysis :: histFinalize ()
 EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons )
 {
 
-  // ----------------------------------------
-  // Categorise event based on lepton flavour
-  // ----------------------------------------
-
-  int prod_lep_charge(1);
-  unsigned int count_el(0), count_mu(0);
-  for ( auto lep_it : leptons ) {
-      // get the lepton flavour
-      xAOD::Type::ObjectType leptonFlavour = lep_it->type();
-      if ( leptonFlavour == xAOD::Type::Electron ) {
-        ++count_el;
-        prod_lep_charge *= dynamic_cast<const xAOD::Electron*>( lep_it )->charge();
-      } else if ( leptonFlavour == xAOD::Type::Muon ) {
-        ++count_mu;
-        prod_lep_charge *= dynamic_cast<const xAOD::Muon*>( lep_it )->charge();
-      }
-  }
-  bool isElEl = ( count_el == 2 && count_mu == 0 );
-  bool isElMu = ( count_el == 1 && count_mu == 1 );
-  bool isMuMu = ( count_el == 0 && count_mu == 2 );
-
-  bool isSS = (   prod_lep_charge > 0  );
-  bool isOS = ( !(prod_lep_charge > 0) );
-
   // --------------------------------
   // Declare accessors and decorators
   // --------------------------------
@@ -1022,210 +998,54 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
   // -------------------------------------------
 
   const xAOD::IParticle* leadingLepton           = leptons.at(0);
-  xAOD::Type::ObjectType leadingLeptonFlavour    = leadingLepton->type();
-  bool                   isLeadingTight(false);
-  if ( isTightAcc.isAvailable( *leadingLepton ) ) {
-    isLeadingTight = isTightAcc( *leadingLepton );
-  } else {
-    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTight') is not available for the leading lepton. Should not happen. Assigning 'isTight' = false" );
-  }
-  bool 			 isLeadingTrigMatched(false);
-  if ( isTrigMatchedLepAcc.isAvailable( *leadingLepton ) ) {
-    isLeadingTrigMatched = isTrigMatchedLepAcc( *leadingLepton );
-  } else {
-    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTrigMatchedLep') is not available for the leading lepton. Should not happen. Assigning 'isLeadingTrigMatched' = false" );
-  }
-
   const xAOD::IParticle* subLeadingLepton        = leptons.at(1);
-  xAOD::Type::ObjectType subLeadingLeptonFlavour = subLeadingLepton->type();
-  bool                   isSubLeadingTight (false);
-  if ( isTightAcc.isAvailable( *subLeadingLepton ) ) {
-    isLeadingTight = isTightAcc( *subLeadingLepton );
-  } else {
-    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTight') is not available for the subleading lepton. Should not happen. Assigning 'isTight' = false" );
-  }
-  bool 			 isSubLeadingTrigMatched(false);
-  if ( isTrigMatchedLepAcc.isAvailable( *subLeadingLepton ) ) {
-    isSubLeadingTrigMatched = isTrigMatchedLepAcc( *subLeadingLepton );
-  } else {
-    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTrigMatchedLep') is not available for the subleading lepton. Should not happen. Assigning 'isSubLeadingTrigMatched' = false" );
-  }
-
-  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Leading lepton: isTight: %i \t isTrigMatched: %i ", isLeadingTight, isLeadingTrigMatched ); }
-  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Subleading lepton: isTight: %i \t isTrigMatched: %i ", isSubLeadingTight, isSubLeadingTrigMatched ); }
 
   // --------------------------------------------
   // Now decide who's the tag and who's the probe
   // --------------------------------------------
 
-  // generate a uniformly distributed random number in [0,1]
-  TRandom3 rndm(0);
-  float unif = rndm.Uniform();
+  // The first lepton found that is tight && trigger-matched will be the tag, the other the probe
+  // Note that the lepton container is sorted, so in case both are T & TM, the leading will be the tag and the subleading the probe
+  // If none satisfies the above, choose the leading as tight and the subleading as probe, but flag the event as "bad"
+  //
+  // Use the same logic for OS and SS events
 
-  if ( isElEl || isMuMu ) {
+  bool found_tag(false);
 
-    //In the real case (i.e. OS SF leptons) we ask randomly if either the leading lep or the subleading lep satisfy the tag requirement otherwise we have trigger pt treshold problem.
-    //In the fake case (i.e. SS SF leptons) if both leptons are matched, the one with smaller pt is the probe because it has been seen that the low pt lepton is the fake.
-
-    // 1. leading & subleading lepton are both tight & trigger-matched
-    //    OR
-    // 2. leading lepton is tight & trigger-matched, but subleading is not
-    if ( ( isLeadingTight && isSubLeadingTight && isLeadingTrigMatched && isSubLeadingTrigMatched ) ||
-         ( isLeadingTight && isLeadingTrigMatched )
-       ) {
-
-      if ( isSS ) {
-
-	// the probe will be the subleading lepton, no matter what
-	isTagDecor( *leadingLepton ) = 1;
-
-	// categorise event
-	isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-	isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-
-      } else if ( isOS ) {
-
-	// assign randomly who's tag and who's probe
-	if ( unif >= 0.5 ) {
-
-	    isTagDecor( *leadingLepton )    = 1;
-
-	    // categorise event
-	    isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-	    isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-	} else {
-
-	    isTagDecor( *subLeadingLepton ) = 1;
-
-	    // categorise event
-	    isProbeElEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Electron );
-	    isProbeMuEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Muon );
-
-	}
-
+  for ( auto lep_itr : leptons ) {
+    if ( isTightAcc.isAvailable( *lep_itr ) && isTrigMatchedLepAcc.isAvailable( *lep_itr ) ) {
+      if ( !found_tag && ( isTightAcc( *lep_itr ) == 1 && isTrigMatchedLepAcc( *lep_itr ) == 1 ) ) {
+	isTagDecor( *lep_itr ) = 1;
+	found_tag = true;
       }
-
     }
-    // 3. subleading lepton is tight & trigger-matched, but leading is not
-    else if ( isSubLeadingTight  && isSubLeadingTrigMatched ) {
+  }
 
-      if ( isSS ) {
+  if ( !found_tag ) {
+    isTagDecor( *leadingLepton ) = 1;
+    // take note that this event should not be used
+    isNonTightEventDecor( *eventInfo ) = 1;
+  }
 
-	// the probe will be the leading lepton, which is also !tight
-	isTagDecor( *subLeadingLepton ) = 1;
-
-	// categorise event
-	isProbeElEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Electron );
-	isProbeMuEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Muon );
-
-      } else if ( isOS ) {
-
-	// assign randomly who's tag and who's probe
-        if ( unif >= 0.5 ) {
-
-	    isTagDecor( *leadingLepton )    = 1;
-
-	    // categorise event
-	    isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-	    isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-	} else {
-
-	    isTagDecor( *subLeadingLepton ) = 1;
-
-	    // categorise event
-	    isProbeElEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Electron );
-	    isProbeMuEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Muon );
-
-	}
-
-      }
-
-    }
-     // 4. neither the leading, nor the subleading lepton are tight & trigger-matched
-    else {
-       // take note that this event has no Tight leptons
-       isNonTightEventDecor( *eventInfo ) = 1;
-
-       // the probe will be the subleading lepton
-       isTagDecor( *leadingLepton )    = 1;
-
-       // categorise event
-       isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-       isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-
-  } // end check ( isElEl || isMuMu )
-  else if ( isElMu )
-  {
-
-    // 1. leading & subleading lepton are both tight & trigger-matched
-    //   need to distinguish assignment btwn/ SS and OS
-    if ( isLeadingTight && isSubLeadingTight && isLeadingTrigMatched && isSubLeadingTrigMatched ) {
-
-	// In the fake case (i.e. SS leptons), if both leptons are matched, I must chose which lepton is the tag and which one is the probe
-        // because I want the probe to be the fake and the real the tag.
-        // I chose the low pt one as probe.
-        // In the real case (OS leptons), the leading is the tag and subleading is the probe, no matter what.
-
-	// ---> no need to separate OS/SS here!
-
-        isTagDecor( *leadingLepton )    = 1;
-
-        // categorise event
-        isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-        isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-    // 2. leading lepton is tight & trigger-matched, but subleading is not
-    else if ( isLeadingTight && isLeadingTrigMatched ) {
-
-	// the probe will be the subleading, which is also !tight
-	isTagDecor( *leadingLepton )    = 1;
-
-        // categorise event
-        isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-        isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-    // 3. subleading lepton is tight & trigger-matched, but leading is not
-    else if ( isSubLeadingTight  && isSubLeadingTrigMatched  ) {
-
-	// the probe will be the leading, which is also !tight
-        isTagDecor( *subLeadingLepton ) = 1;
-
-        // categorise event
-        isProbeElEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Electron );
-        isProbeMuEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-     // 4. neither the leading, nor the subleading lepton are tight & trigger-matched
-    else {
-       // take note that this event has no Tight leptons
-       isNonTightEventDecor( *eventInfo ) = 1;
-
-       // the probe will be the subleading lepton
-       isTagDecor( *leadingLepton )    = 1;
-
-       // categorise event
-       isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-       isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-
-  } // end check isElMu
-
-  // accessor to tag leptons
+  // Accessor to tag leptons
+  //
   static SG::AuxElement::Accessor< char > isTagAcc("isTag");
 
-  if ( m_debug ) {
-    Info("execute()","Checking *isTag* lepton decoration");
-    for ( auto lep_it : leptons ) {
-      Info("execute()","\t lepton isTag: %i ", isTagAcc( *lep_it ) );
+  // Now loop over the leptons, and check whether the probe is an electron or a muon
+  //
+  for ( auto lep_itr : leptons ) {
+    if ( !isTagAcc( *lep_itr ) ) {
+      isProbeElEventDecor( *eventInfo ) = ( lep_itr->type() == xAOD::Type::Electron );
+      isProbeMuEventDecor( *eventInfo ) = ( lep_itr->type() == xAOD::Type::Muon );
     }
+  }
+
+  if ( m_debug ) {
+    Info("defineTagAndProbeRFRateVars"," ********** Checking 'isTag' lepton decoration ********** ");
+    for ( auto lep_itr : leptons ) {
+      Info("defineTagAndProbeRFRateVars()","\t lepton \n \t isTag?: %i \n \t truthType(): %i \n \t truthOrigin(): %i \n ", isTagAcc( *lep_itr ), truthTypeAcc( *lep_itr ), truthOriginAcc( *lep_itr ) );
+    }
+    Info("defineTagAndProbeRFRateVars()"," ********** ");
   }
 
   return EL::StatusCode::SUCCESS;
@@ -1239,22 +1059,19 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
 EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons )
 {
 
-  // ----------------------------------------
-  // Categorise event based on lepton flavour
-  // ----------------------------------------
+  // -------------------------------
+  // Categorise event based on OS/SS
+  // -------------------------------
 
   int prod_lep_charge(1);
-  unsigned int count_el(0), count_mu(0);
   for ( auto lep_it : leptons ) {
-      // get the lepton flavour
-      xAOD::Type::ObjectType leptonFlavour = lep_it->type();
-      if ( leptonFlavour == xAOD::Type::Electron ) {
-        ++count_el;
-        prod_lep_charge *= dynamic_cast<const xAOD::Electron*>( lep_it )->charge();
-      } else if ( leptonFlavour == xAOD::Type::Muon ) {
-        ++count_mu;
-        prod_lep_charge *= dynamic_cast<const xAOD::Muon*>( lep_it )->charge();
-      }
+    // get the lepton flavour
+    xAOD::Type::ObjectType leptonFlavour = lep_it->type();
+    if ( leptonFlavour == xAOD::Type::Electron ) {
+      prod_lep_charge *= dynamic_cast<const xAOD::Electron*>( lep_it )->charge();
+    } else if ( leptonFlavour == xAOD::Type::Muon ) {
+      prod_lep_charge *= dynamic_cast<const xAOD::Muon*>( lep_it )->charge();
+    }
   }
   bool isSS = (  prod_lep_charge > 0  );
 
@@ -1264,12 +1081,15 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
 
   // decorate lepton w/ is tag/probe
   static SG::AuxElement::Decorator< char > isTagDecor("isTag");
+  // declare an event decoration in case there are no "good" leptons for the rate calculation
+  static SG::AuxElement::Decorator< char > isNonTightEventDecor("isNonTightEvent");
   // declare event decorations for checking the probe type in event
   static SG::AuxElement::Decorator< char > isProbeElEventDecor( "isProbeElEvent" );
   static SG::AuxElement::Decorator< char > isProbeMuEventDecor( "isProbeMuEvent" );
 
   // decorate with default values
   for ( auto lep_itr : leptons ) { isTagDecor( *lep_itr ) = 0; }
+  isNonTightEventDecor( *eventInfo ) = 0;
   isProbeElEventDecor( *eventInfo )  = 0;
   isProbeMuEventDecor( *eventInfo )  = 0;
 
@@ -1318,37 +1138,33 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
       //
       if ( m_debug ) { Info("defineTagAndProbeRFRateVars_MC()","There are no prompt leptons in this SS event. Tag will be the leading, probe the subleading" ); }
       isTagDecor( *leadingLepton ) = 1;
+      // take note that this event should not be used
+      isNonTightEventDecor( *eventInfo ) = 1;
     }
 
   } else {
 
-    // Let's assume in th OS region both leptons are prompt.
-    // The first lepton that is tight && trigger-matched will be the tag, the other the probe
-    // if none satisfies the above, choose randomly who's tag and who's probe
+    // OS case
+    // The first lepton found that is tight && trigger-matched will be the tag, the other the probe
+    // Note that the lepton container is sorted, so in case both are T & TM, the leading will be the tag and the subleading the probe
+    // If none satisfies the above, choose the leading as tight and the subleading as probe, but flag the event as "bad"
+    //
+
+    bool found_tag(false);
 
     for ( auto lep_itr : leptons ) {
-
       if ( isTightAcc.isAvailable( *lep_itr ) && isTrigMatchedLepAcc.isAvailable( *lep_itr ) ) {
-
 	if ( !found_tag && ( isTightAcc( *lep_itr ) == 1 && isTrigMatchedLepAcc( *lep_itr ) == 1 ) ) {
-          isTagDecor( *lep_itr ) = 1;
+	  isTagDecor( *lep_itr ) = 1;
 	  found_tag = true;
-        }
-
+	}
       }
     }
 
     if ( !found_tag ) {
-
-      TRandom3 rndm(0);
-      float unif = rndm.Uniform();
-
-      if ( unif >= 0.5 ) {
-        isTagDecor( *leadingLepton )	= 1;
-      } else {
-        isTagDecor( *subLeadingLepton ) = 1;
-      }
-
+      isTagDecor( *leadingLepton ) = 1;
+      // take note that this event should not be used
+      isNonTightEventDecor( *eventInfo ) = 1;
     }
 
   }
