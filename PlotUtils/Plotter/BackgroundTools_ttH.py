@@ -368,6 +368,11 @@ class SubProcess:
             cut = self.basecut & cut
         elif self.basecut and not cut:
             cut = self.basecut
+
+	#print("\tCut: {0}".format(cut.cutname))
+	#print("\tBaseweight: {0}".format(self.baseweight))
+	#print("\tweight: {0}".format(weight))
+
         sp = SubProcess(tree=tree, basecut=cut, baseweight=self.baseweight*weight, eventweight=eventweight)
         return sp
 
@@ -494,7 +499,7 @@ class OperatorProcess(SubProcess):
             rightname = str(right)
         else:
             rightname = right.name
-
+        self.basecut = left.basecut
         self.name = '('+leftname+operator+rightname+')'
         self.left = left
         self.operator = operator
@@ -504,17 +509,17 @@ class OperatorProcess(SubProcess):
         return 'OperatorProcess:(' + self.left.__str__() + ' ' + self.operator + ' ' + self.right.__str__() + ')'
 
     def subprocess(self, tree=None, cut=None, weight=1.0, eventweight=None):
-        if hasattr(self.left, 'subprocess'):
-            left = self.left.subprocess(tree, cut, weight, eventweight)
-        else:
-            left = self.left
-        if hasattr(self.right, 'subprocess'):
-            right = self.right.subprocess(tree, cut, weight, eventweight)
-        else:
-            right = self.right
+    	if hasattr(self.left, 'subprocess'):
+    	    left = self.left.subprocess(tree, cut, weight, eventweight)
+    	else:
+    	    left = self.left
+    	if hasattr(self.right, 'subprocess'):
+    	    right = self.right.subprocess(tree, cut, weight, eventweight)
+    	else:
+    	    right = self.right
 
-        sp = OperatorProcess(left, self.operator, right)
-        return sp
+    	sp = OperatorProcess(left, self.operator, right)
+    	return sp
 
     def numberstats(self, cut = None, weight = None, eventweight = None, category = None):
         number = self.number(cut, weight, eventweight, category)
@@ -855,7 +860,7 @@ class Background:
             process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection, options=options) * scale
             if eventweight:
 
-		if "FakesMM" in name:
+		if "FakesMM" in name or "FakesABCD" in name:
 		  process = process.subprocess(eventweight=1.0) # this call will update the event weight
 		else:
 		  process = process.subprocess(eventweight=eventweight) # this call will update the event weight
