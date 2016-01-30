@@ -1567,7 +1567,7 @@ class TTHBackgrounds2015(Background):
 
 	    if not ("OF_Event") in category.cut.cutname:
                 sp_B = self.parent.procmap['TTBar'].base(treename,category,options)
-                sp_B = sp_B.subprocess(cut=cut_sp_B_SF,eventweight=weight)
+                sp_B = sp_B.subprocess(cut=cut_sp_B_SF,eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]')
                 #sp_B = sp.subprocess(cut=cut_sp_B_SF,eventweight=weight)
                 #sp_B = self.applyThetaFactor(sp_B,self.theta_el)
                 if ("ElEl_Event") in category.cut.cutname:
@@ -1577,8 +1577,8 @@ class TTHBackgrounds2015(Background):
             else:
                 sp_B_Lel = self.parent.procmap['TTBar'].base(treename,category,options)
                 sp_B_Lmu = self.parent.procmap['TTBar'].base(treename,category,options)
-                sp_B_Lel = sp_B_Lel.subprocess(cut=cut_sp_B_OF_Lel, eventweight=weight)
-                sp_B_Lmu = sp_B_Lmu.subprocess(cut=cut_sp_B_OF_Lmu, eventweight=weight)
+                sp_B_Lel = sp_B_Lel.subprocess(cut=cut_sp_B_OF_Lel, eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]')
+                sp_B_Lmu = sp_B_Lmu.subprocess(cut=cut_sp_B_OF_Lmu, eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]')
                 #sp_B_Lel = sp.subprocess(cut=cut_sp_B_OF_Lel, eventweight=weight)
                 #sp_B_Lmu = sp.subprocess(cut=cut_sp_B_OF_Lmu, eventweight=weight)
                 sp_B = self.applyThetaFactor(sp_B_Lmu,self.theta_mu) + self.applyThetaFactor(sp_B_Lel,self.theta_el)
