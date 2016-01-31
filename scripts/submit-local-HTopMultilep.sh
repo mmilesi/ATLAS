@@ -30,15 +30,15 @@
 # 20.1.9.3 - 25 ns - MC
 # ---------------------
 
-inDS="mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2501"
-infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.9.3/${inDS}/*root*"
+#inDS="mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2501"
+#infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.9.3/${inDS}/*root*"
 
 # -----------------------
 # 20.1.6.3 - 25 ns - data
 # -----------------------
 #
-#inDS="data15_13TeV.00276329.physics_Main.merge.DAOD_HIGG8D1.f620_m1480_p2411/DAOD_HIGG8D1.06323611._000001.pool.root.1"
-#infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.6.3/${inDS}"
+inDS="data15_13TeV.00276329.physics_Main.merge.DAOD_HIGG8D1.f620_m1480_p2411/DAOD_HIGG8D1.06323611._000001.pool.root.1"
+infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.6.3/${inDS}"
 
 # ------------------------------------------------------------------------------------
 

@@ -2,7 +2,8 @@
 
 username=mmilesi
 
-prodtag=027_DxAOD
+prodtag=028_DxAOD
+#028_TruthTP_DxAOD
 #025a_TruthTP_DxAOD
 #CFChallenge_v04_DxAOD
 #024a_DxAOD
@@ -18,7 +19,7 @@ outdir=output_grid_DxAOD-2015-13TeV_${current_time}
 #inSE=INFN-T1_DATADISK,MWT2_DATADISK
 
 destSE=AUSTRALIA-ATLAS_LOCALGROUPDISK
-exclSE=ANALY_IHEP,ANALY_VICTORIA,ANALY_SLAC
+exclSE=ANALY_IHEP
 
 gridDSname="user.${username}.HTopMultilep.${prodtag}.%in:name[2]%.%in:name[3]%"
 

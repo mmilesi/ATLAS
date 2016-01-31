@@ -998,11 +998,14 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
   // -------------------------------------------
 
   const xAOD::IParticle* leadingLepton           = leptons.at(0);
-  const xAOD::IParticle* subLeadingLepton        = leptons.at(1);
 
   // --------------------------------------------
   // Now decide who's the tag and who's the probe
   // --------------------------------------------
+
+  static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
+  static SG::AuxElement::ConstAccessor< int > truthTypeAcc("truthType");
+  static SG::AuxElement::ConstAccessor< int > truthOriginAcc("truthOrigin");
 
   // The first lepton found that is tight && trigger-matched will be the tag, the other the probe
   // Note that the lepton container is sorted, so in case both are T & TM, the leading will be the tag and the subleading the probe
@@ -1098,7 +1101,6 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
   // -------------------------------------------
 
   const xAOD::IParticle* leadingLepton           = leptons.at(0);
-  const xAOD::IParticle* subLeadingLepton        = leptons.at(1);
 
   // --------------------------------------------
   // Now decide who's the tag and who's the probe

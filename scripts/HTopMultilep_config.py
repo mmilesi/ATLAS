@@ -137,7 +137,7 @@ MuonSelectorDict = { "m_name"                      : "muonSelect_selection",
 	             "m_muonQualityStr"            : "Loose",
                      "m_d0sig_max"	     	   : 10.0,
                      "m_z0sintheta_max"      	   : 2.0,
-                     "m_MinIsoWPCut"         	   : "Loose",
+                     "m_MinIsoWPCut"         	   : "", #Loose
 		     "m_IsoWPList"           	   : "Loose,GradientLoose,Gradient,FixedCutLoose,FixedCutTightTrackOnly,UserDefinedCut",
                      "m_CaloIsoEff"		   : "0.1*x",
                      "m_TrackIsoEff"		   : "0.1*x",
@@ -238,7 +238,7 @@ OverlapRemoverDict = { "m_name"                       : "overlap_removal_HTopRun
 BJetEfficiencyCorrectorDict = { "m_name"                : "bjetEffCor_BTag_MV2c20_Fix77",
 		                "m_debug"		: False,
                         	"m_inContainerName"	: "AntiKt4EMTopoJets_OR",
-         	        	"m_corrFileName"        : "$ROOTCOREBIN/data/xAODAnaHelpers/2015-PreRecomm-13TeV-MC12-CDI-October23_v1.root",#2016-Winter-13TeV-MC15-CDI-January13_v1.root
+         	        	"m_corrFileName"        : "$ROOTCOREBIN/data/xAODAnaHelpers/2016-Winter-13TeV-MC15-CDI-January13_v1.root",
          	        	"m_jetAuthor"           : "AntiKt4EMTopoJets",
          	        	"m_taggerName"          : "MV2c20",
          	        	"m_operatingPt"         : "FixedCutBEff_77",
@@ -346,7 +346,7 @@ HTopMultilepEventSelectorDict = { "m_name"                   : "eventSelect_skim
 		                  "m_doMaxObjCut"            : False,
    				  "m_n_leptons_min"          : 2,
 				  "m_BTag_WP"                : "FixedCutBEff_77",
-                                  "m_n_jets_min"             : 0,
+                                  "m_n_jets_min"             : 1,
    				  "m_n_bjets_min"            : 0,
                                 }
 
