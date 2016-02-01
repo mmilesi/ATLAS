@@ -369,10 +369,6 @@ class SubProcess:
         elif self.basecut and not cut:
             cut = self.basecut
 
-	#print("\tCut: {0}".format(cut.cutname))
-	#print("\tBaseweight: {0}".format(self.baseweight))
-	#print("\tweight: {0}".format(weight))
-
         sp = SubProcess(tree=tree, basecut=cut, baseweight=self.baseweight*weight, eventweight=eventweight)
         return sp
 
@@ -406,19 +402,19 @@ class SubProcess:
             #
             # Debug
             #
-            #print 'Adding eventweight to baseweight - ROOT cut string: %s * %s * %s * (%s)'% (self.baseweight, self.eventweight, eventweight, cutstr)
+            print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * %s * (%s)'% (self.baseweight, self.eventweight, eventweight, cutstr)
         elif self.eventweight :
             self.tree.Project('NUM'+cachename, '1.0', '%s * (%s)' % (self.eventweight, cutstr))
             #
             # Debug
             #
-            #print 'Adding eventweight to baseweight - ROOT cut string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
         else:
             self.tree.Project('NUM'+cachename, '1.0', '%s' % (cutstr))
             #
             # Debug
             #
-            #print 'Only baseweight - ROOT cut string: %s * (%s)'% (self.baseweight, cutstr)
+            print '\nOnly baseweight - ROOT cut string: %s * (%s)'% (self.baseweight, cutstr)
         self.numcache[cachename] = h.GetBinContent(1), h.GetBinError(1)
         del h
 
@@ -476,13 +472,13 @@ class SubProcess:
             #
             # Debug
             #
-            print 'Adding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
 	else:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s' % (cutstr))
             #
             # Debug
             #
-            #print 'Only baseweight - ROOT plotting string: %s * (%s)'% (self.baseweight, cutstr)
+            #print '\nOnly baseweight - ROOT plotting string: %s * (%s)'% (self.baseweight, cutstr)
 
         h = self.histcache[cachename].Clone()
         h.SetName(self.histcache[cachename].GetName()+str(weight))

@@ -825,7 +825,9 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   //
   //std::string RR_dir("GOOD_STUFF/OutputPlots_MMClosureRates_v023_TTbar");
   //std::string RR_dir("GOOD_STUFF/OutputPlots_MMRates_v021_Madgraph_Expected");
-  std::string RR_dir("OutputPlots_MMClosureRates_v025");  
+  //std::string RR_dir("OutputPlots_MMClosureRates_v025");  
+  std::string RR_dir("OutputPlots_MMClosureRates_v028");  
+
 
   // when using ch-flip rate as RR (for electrons)
   //std::string RR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_ChFlipBkgRates_13F");
