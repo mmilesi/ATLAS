@@ -1016,10 +1016,12 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
   bool found_tag(false);
 
   for ( auto lep_itr : leptons ) {
+    if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","lepton pT = %f", lep_itr->pt()/1e3 ); }
     if ( isTightAcc.isAvailable( *lep_itr ) && isTrigMatchedLepAcc.isAvailable( *lep_itr ) ) {
       if ( !found_tag && ( isTightAcc( *lep_itr ) == 1 && isTrigMatchedLepAcc( *lep_itr ) == 1 ) ) {
 	isTagDecor( *lep_itr ) = 1;
 	found_tag = true;
+        if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","\t ===> found tag!"); }
       }
     }
   }
@@ -1028,6 +1030,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
     isTagDecor( *leadingLepton ) = 1;
     // take note that this event should not be used
     isNonTightEventDecor( *eventInfo ) = 1;
+    if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","None lepton is T&TM - choose leading as tag (pT = %f)",leadingLepton->pt()/1e3 ); }
   }
 
   // Accessor to tag leptons
@@ -1044,7 +1047,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
   }
 
   if ( m_debug ) {
-    Info("defineTagAndProbeRFRateVars"," ********** Checking 'isTag' lepton decoration ********** ");
+    Info("defineTagAndProbeRFRateVars()"," ********** Checking 'isTag' lepton decoration ********** ");
     for ( auto lep_itr : leptons ) {
       Info("defineTagAndProbeRFRateVars()","\t lepton \n \t isTag?: %i \n \t truthType(): %i \n \t truthOrigin(): %i \n ", isTagAcc( *lep_itr ), truthTypeAcc( *lep_itr ), truthOriginAcc( *lep_itr ) );
     }
