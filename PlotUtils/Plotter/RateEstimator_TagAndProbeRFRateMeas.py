@@ -82,7 +82,7 @@ gROOT.SetBatch(True)
 
 TH1.SetDefaultSumw2()
 
-def RatesToFactors( v ):
+def RateToEfficiency( v ):
     v = float(v)
     if v < 0:
         v = 0.
@@ -273,63 +273,58 @@ for iLep in list_lep:
 
 
 outfile = open( args.inputDir + channel_str + "Rates.txt", "w")
-outfile.write( "Rates for FF amd Matrix Method \n")
+outfile.write( "Efficiencies/Rates for FF amd Matrix Method \n")
 
 foutname = args.inputDir + channel_str + "Rates.root"
 fout = TFile( foutname,"RECREATE" )
 fout.cd()
 
 for g in sorted( graphs.keys() ):
+   
    print "saving graph: ", graphs[g].GetName()
+
    graphs[g].Write()
+
+   Eff=[]
+      
+   if (args.debug ) :
+       print "saving efficiencies (and errors) from graph: ", graphs[g].GetName()
+   
+   for ipoint in range( 0, graphs[g].GetN() ):
+   
+       x = Double(0)
+       y = Double(0)
+       graphs[g].GetPoint(ipoint,x,y)
+       set = [ ipoint, y, graphs[g].GetErrorYhigh(ipoint), graphs[g].GetErrorYlow(ipoint) ]
+       Eff.append( set )
+   
+   outfile.write("%s \n" %(g) )
+   for set in Eff:
+       outfile.write("{ %s }; \n" %( "Bin nr: " + str(set[0]) + ", efficiency = " + str(round(set[1],3)) + " + " + str(round(set[2],3)) + " - " + str(round(set[3],3)) ) )   
+
 
 for h in sorted( hists.keys() ):
 
-   if (not args.saveOnlyRates) or ("_Rate_" in h)  :
+   print "saving histogram: ", hists[h].GetName()
 
-       print "saving histogram: ", hists[h].GetName()
+   hists[h].Write()
+   Rate=[]
 
-       hists[h].Write()
-       Rval=[]
-       Rerr=[]
-       Fval=[]
-       Ferrup=[]
-       Ferrdn=[]
+   if "_Rate_" in h:
 
-       if "_Rate_" in h:
+      if (args.debug ) :
+   	 print "saving rates (and errors) for histogram: ", hists[h].GetName()
 
-	  if (args.debug ) :
-             print "saving factors from rates for histogram: ", hists[h].GetName()
+      Rtot=yields[h]
 
-          Rtot=yields[h]
-          Ftot=RatesToFactors(yields[h])
+      for ibin in range( 1, hists[h].GetNbinsX()+1 ):
 
-          for ibin in range( 1, hists[h].GetNbinsX()+1 ):
+         set = [ ibin, hists[h].GetBinContent(ibin), hists[h].GetBinError(ibin)]
+  	 Rate.append( set )
 
-             Rval.append(hists[h].GetBinContent(ibin))
-             #Rerr.append(hists[h].GetBinError(ibin)/hists[h].GetBinContent(ibin))
-             Rerr.append(hists[h].GetBinError(ibin))
-             Fval.append(RatesToFactors(hists[h].GetBinContent(ibin)))
-             Ferrup.append(RatesToFactors(hists[h].GetBinContent(ibin)+hists[h].GetBinError(ibin))-RatesToFactors(hists[h].GetBinContent(ibin)))
-             Ferrdn.append(RatesToFactors(hists[h].GetBinContent(ibin))-RatesToFactors(hists[h].GetBinContent(ibin)-hists[h].GetBinError(ibin)))
-             #Ferrup.append(RatesToFactors(hists[h].GetBinContent(ibin)+hists[h].GetBinError(ibin))/RatesToFactors(hists[h].GetBinContent(ibin)))
-             #Ferrdn.append(RatesToFactors(hists[h].GetBinContent(ibin)-hists[h].GetBinError(ibin))/RatesToFactors(hists[h].GetBinContent(ibin)))
-
-	     if (args.debug ) :
-             	print "Rtot = ", round(Rtot, 3)
-             	print "Rval = ", [ round(elem, 3) for elem in Rval ]
-             	print "Rerr = ", [ round(elem, 3) for elem in Rerr ]
-             	print "Ftot = ", round(Ftot, 3)
-             	print "Fval = ", [ round(elem, 3) for elem in Fval ]
-             	print "Ferrdn = ", [ round(elem, 3) for elem in Ferrdn ]
-             	print "Ferrup = ", [ round(elem, 3) for elem in Ferrup ]
-             	print ""
-
-             outfile.write("%s \n" %(h) )
-             outfile.write("Rtot = %s \n" %(round(Rtot, 3)))
-             outfile.write("Rval = { %s }; \n" %(", ".join(str(e) for e in[ round(elem, 3) for elem in Rval ])) )
-             outfile.write("Rerr = { %s }; \n" %(", ".join(str(e) for e in[ round(elem, 3) for elem in Rerr ])) )
-
+      outfile.write("%s \n" %(h) )
+      for set in Rate:
+          outfile.write("{ %s }; \n" %( "Bin nr: " + str(set[0]) + ", rate = " + str(round(set[1],3)) + " +- " + str(round(set[2],3)) ) )   
 
 outfile.close()
 fout.Write()
