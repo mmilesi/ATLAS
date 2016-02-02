@@ -600,13 +600,13 @@ if doTwoLepLowNJetCR :
     if ( args.fakeMethod == 'MM' or args.fakeMethod == 'FF' or args.fakeMethod == 'ABCD' ):
         # MuMu region
         #
-        #vardb.registerCategory( MyCategory('MuMuSS_LowNJetCR_DataDriven',  cut = vardb.getCuts(['TrigDec', 'TrigMatch', 'NBJet', '2Lep', 'SS', 'MuMu_Event', 'TauVeto', '2Lep_PurePromptEvent',             'LowJetCR']) ) )
+        vardb.registerCategory( MyCategory('MuMuSS_LowNJetCR_DataDriven',  cut = vardb.getCuts(['TrigDec', 'TrigMatch', 'NBJet', '2Lep', 'SS', 'MuMu_Event', 'TauVeto', '2Lep_PurePromptEvent',             'LowJetCR']) ) )
         # OF region
         #
         vardb.registerCategory( MyCategory('OFSS_LowNJetCR_DataDriven',    cut = vardb.getCuts(['TrigDec', 'TrigMatch', 'NBJet', '2Lep', 'SS', 'OF_Event',   'TauVeto', '2Lep_PurePromptEvent', 'ElEtaCut', 'LowJetCR']) ) )
         # ElEl region
         #
-        #vardb.registerCategory( MyCategory('ElElSS_LowNJetCR_DataDriven',  cut = vardb.getCuts(['TrigDec', 'TrigMatch', 'NBJet', '2Lep', 'SS', 'ElEl_Event', 'TauVeto', '2Lep_PurePromptEvent', 'ElEtaCut', 'LowJetCR']) ) )
+        vardb.registerCategory( MyCategory('ElElSS_LowNJetCR_DataDriven',  cut = vardb.getCuts(['TrigDec', 'TrigMatch', 'NBJet', '2Lep', 'SS', 'ElEl_Event', 'TauVeto', '2Lep_PurePromptEvent', 'ElEtaCut', 'LowJetCR']) ) )
     else:
     	vardb.registerCategory( MyCategory('MuMuSS_LowNJetCR',	     cut = vardb.getCuts(['TrigDec', 'TrigMatch', 'NBJet', '2Lep', 'SS', 'MuMu_Event', 'TauVeto',	       'LowJetCR']) ) )
     	vardb.registerCategory( MyCategory('OFSS_LowNJetCR',	     cut = vardb.getCuts(['TrigDec', 'TrigMatch', 'NBJet', '2Lep', 'SS', 'OF_Event',   'TauVeto',  'ElEtaCut', 'LowJetCR']) ) )
@@ -825,20 +825,20 @@ if doMMClosureTest:
         # MuMu region
         #
         #vardb.registerCategory( MyCategory('MuMuSS_SR_HighJet_DataDriven_Closure',   cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'MuMu_Event',  'NJet2L']) ) )
-        #vardb.registerCategory( MyCategory('MuMuSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'MuMu_Event',  'LowJetCR']) ) )
-        vardb.registerCategory( MyCategory('MuMuSS_SR_AllJet_DataDriven_Closure',    cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'MuMu_Event']) ) )
+        vardb.registerCategory( MyCategory('MuMuSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'MuMu_Event',  'LowJetCR']) ) )
+        #vardb.registerCategory( MyCategory('MuMuSS_SR_AllJet_DataDriven_Closure',    cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'MuMu_Event']) ) )
         #
 	# OF region
 	#
 	#vardb.registerCategory( MyCategory('OFSS_SR_HighJet_DataDriven_Closure',     cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'OF_Event', 'ElEtaCut',  'NJet2L']) ) )
-	#vardb.registerCategory( MyCategory('OFSS_SR_LowJet_DataDriven_Closure',      cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'OF_Event', 'ElEtaCut',  'LowJetCR']) ) )
-	vardb.registerCategory( MyCategory('OFSS_SR_AllJet_DataDriven_Closure',      cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'OF_Event', 'ElEtaCut']) ) )
+	vardb.registerCategory( MyCategory('OFSS_SR_LowJet_DataDriven_Closure',      cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'OF_Event', 'ElEtaCut',  'LowJetCR']) ) )
+	#vardb.registerCategory( MyCategory('OFSS_SR_AllJet_DataDriven_Closure',      cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'OF_Event', 'ElEtaCut']) ) )
 	#
 	# ElEl region
 	#
 	#vardb.registerCategory( MyCategory('ElElSS_SR_HighJet_DataDriven_Closure',   cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'ElEl_Event', 'ElEtaCut', 'NJet2L']) ) )
-	#vardb.registerCategory( MyCategory('ElElSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'ElEl_Event', 'ElEtaCut', 'LowJetCR']) ) )
-        vardb.registerCategory( MyCategory('ElElSS_SR_AllJet_DataDriven_Closure',    cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'ElEl_Event', 'ElEtaCut']) ) )
+	vardb.registerCategory( MyCategory('ElElSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'ElEl_Event', 'ElEtaCut', 'LowJetCR']) ) )
+        #vardb.registerCategory( MyCategory('ElElSS_SR_AllJet_DataDriven_Closure',    cut = vardb.getCuts(['TrigMatch', 'TrigDec', 'NBJet', '2Lep', 'TauVeto', 'SS', 'ElEl_Event', 'ElEtaCut']) ) )
 
 
 # ------------------------------------------------------------
@@ -862,7 +862,7 @@ ttH2015.lumi_units = 'fb-1'
 
 # for MM closure
 if doMMClosureTest or doMMClosureRates:
-	ttH2015.luminosity = 5.4
+	ttH2015.luminosity = 3.209 # 5.4
 	ttH2015.lumi_units = 'fb-1'
 
 # --------------------
@@ -876,8 +876,8 @@ weight_generator = 'mcEventWeight'
 # PRW weight
 #
 weight_pileup = '1.0'
-if not ( doMMClosureTest or doMMClosureRates ):
-	weight_pileup = 'weight_pileup'
+#if not ( doMMClosureTest or doMMClosureRates ):
+weight_pileup = 'weight_pileup'
 
 weight_glob = str(weight_generator) + ' * ' + str(weight_pileup)
 
@@ -1123,9 +1123,9 @@ for category in vardb.categorylist:
     #
     if not ( doMMClosureTest or doMMClosureRates ):
 
-    	 lepSF_weight = 'weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]'
+        lepSF_weight = 'weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]'
 
-	 print ("\tApplying lepton SFs (to MC only) --> {0}\n".format( lepSF_weight ))
+    print ("\tApplying lepton SFs (to MC only) --> {0}\n".format( lepSF_weight ))
 
     # ------------------------------
     # Processing different variables

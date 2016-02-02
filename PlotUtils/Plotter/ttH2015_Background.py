@@ -780,7 +780,7 @@ class TTHBackgrounds2015(Background):
             return sp
 
     # the only difference with the above class is
-    # that we plot only events with at least one !prompt lepton, and none charge flip
+    # that we plot only events with at least one !prompt lepton, and veto charge flip
     #
     class TTBarClosureMM(Process):
 

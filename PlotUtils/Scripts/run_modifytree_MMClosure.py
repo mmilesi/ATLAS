@@ -28,8 +28,8 @@ gROOT.SetBatch(True)
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_025_MMClosure_DxAOD_WEIGHTED/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_025_MMClosure_TruthTP_DxAOD_WEIGHTED/'
 
-oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_025_MMClosure_DxAOD/'
-newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_MMClosure_TruthTP_DxAOD_WEIGHTED/'
+oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_MMClosure_DxAOD/'
+newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_MMClosure_TruthTP_DxAOD_WEIGHTED_2/'
 
 treename = 'physics'
 nentries = 'ALL' #ALL

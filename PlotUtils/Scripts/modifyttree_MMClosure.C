@@ -18,7 +18,7 @@
 *************** */
 
 bool g_debug(false);
-bool g_debug2(false);
+bool g_debug_2(false);
 
 std::map< std::string, TH1D* > g_el_hist_map;
 std::map< std::string, TH1D* > g_mu_hist_map;
@@ -246,13 +246,13 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
 /
 ************************** */
 
-double  scaleRateToFactor( double rate )
+double  scaleRateToEfficiency( double rate )
 {
   if ( rate < 0 ) { rate = 0.0; }
 
-  double factor = ( rate / (rate+1.0) );
+  double eff = ( rate / (rate+1.0) );
 
-  return factor;
+  return eff;
 }
 
 /* ********************************************************
@@ -279,7 +279,7 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
   // As a first thing, convert pT in GeV!
   //
   pt = pt/1e3;
-
+  
   std::vector<double> weights(3,0.0); //initialized with zeroes
 
   weights.at(0) = 1.0;
@@ -292,6 +292,11 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
     // check whether the eta under question is in *this* eta range
     //
+    if ( g_debug_2 ) {     
+      Info("calc_weights()", "\tlepton fabs(eta) = %f", fabs(eta) ); 
+      Info("calc_weights()", "\tbin %i : lower edge = %f, upper edge = %f", e, (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e),(histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) ); 
+    }
+    
     if ( ( fabs(eta) >= (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e) ) && ( fabs(eta) < (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) ) ) {
 
       // case 1) : lepton is fake: choose correct pt histogram
@@ -303,6 +308,11 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
         //
         for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
 
+          if ( g_debug_2 ) { 
+            Info("calc_weights()", "\t\tlepton pT = %f", pt ); 
+            Info("calc_weights()", "\t\tbin %i : lower edge = %f, upper edge = %f", p,(histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) ); 
+          }
+	  
      	  if ( ( pt >= (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
 
 	    // combine eta and pt rates
@@ -312,6 +322,12 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
 	    double fr_pt_err  = (histograms.find("pt_fr")->second)->GetBinError(p);
 	    double fr_eta_err = (histograms.find("eta_fr")->second)->GetBinError(e);
+
+            if ( g_debug_2 ) { 
+	       Info("calc_weights()", "\t\tFake lepton"  ); 
+	       Info("calc_weights()", "\t\tfr_pt = %f", fr_pt ); 
+	       Info("calc_weights()", "\t\tfr_eta = %f", fr_eta ); 
+	    }
 
 	    // nominal
 	    //
@@ -355,6 +371,13 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 	    double rr_pt_err  = (histograms.find("pt_rr")->second)->GetBinError(p);
 	    double rr_eta_err = (histograms.find("eta_rr")->second)->GetBinError(e);
 
+
+            if ( g_debug_2 ) { 
+	       Info("calc_weights()", "Real lepton"  ); 
+	       Info("calc_weights()", "rr_pt = %f", rr_pt ); 
+	       Info("calc_weights()", "rr_eta = %f", rr_eta ); 
+	    }
+	    
 	    // nominal
 	    //
 	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
@@ -384,13 +407,13 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
   // Now converting rates to the factors for the MM/FF
   //
-  if ( g_debug ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  if ( g_debug_2 ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
-  weights.at(0) = scaleRateToFactor(weights.at(0));
-  weights.at(1) = scaleRateToFactor(weights.at(1));
-  weights.at(2) = scaleRateToFactor(weights.at(2));
+  weights.at(0) = scaleRateToEfficiency(weights.at(0));
+  weights.at(1) = scaleRateToEfficiency(weights.at(1));
+  weights.at(2) = scaleRateToEfficiency(weights.at(2));
 
-  if ( g_debug ) { Info("calc_weights()", "MM/FF factor = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  if ( g_debug_2 ) { Info("calc_weights()", "MM/FF efficiency = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
   return weights;
 }
@@ -560,11 +583,11 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
   //
   if ( g_debug ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
-  weights.at(0) = scaleRateToFactor(weights.at(0));
-  weights.at(1) = scaleRateToFactor(weights.at(1));
-  weights.at(2) = scaleRateToFactor(weights.at(2));
+  weights.at(0) = scaleRateToEfficiency(weights.at(0));
+  weights.at(1) = scaleRateToEfficiency(weights.at(1));
+  weights.at(2) = scaleRateToEfficiency(weights.at(2));
 
-  if ( g_debug ) { Info("calc_weights()", "MM/FF factor = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  if ( g_debug ) { Info("calc_weights()", "MM/FF efficiency = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
   return weights;
 }
@@ -618,6 +641,11 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
 
   bool isFakeLep = true;
 
+  if ( g_debug_2 ) {
+    Info("recomputeMMW()", "\n Lepton 1 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n", lep_flavour.at(0), lep_pt.at(0)/1e3, lep_eta.at(0) );
+    Info("recomputeMMW()", "\n Lepton 2 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n", lep_flavour.at(1), lep_pt.at(1)/1e3, lep_eta.at(1) );
+  }
+
   // NB: input lep_* vectors are pT-ordered.
   //
   if ( lep_flavour.at(0) == 11 ) {
@@ -636,7 +664,7 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
      f2 = calc_weights( g_mu_hist_map, lep_pt.at(1), lep_eta.at(1), isFakeLep,  g_n_mu_bins_eta, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_mu_fr_tot, g_mu_rr_tot );
   }
 
-  if ( g_debug ) {
+  if ( g_debug_2 ) {
     Info("recomputeMMW()", "\n Lepton 1 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n ****** \n Nominal real and fake rates: \n r1 = %f , f1 = %f ", lep_flavour.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), r1.at(0), f1.at(0) );
     Info("recomputeMMW()", "\n Lepton 2 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n ****** \n Nominal real and fake rates: \n r2 = %f , f2 = %f ", lep_flavour.at(1), lep_pt.at(1)/1e3, lep_eta.at(1), r2.at(0), f2.at(0) );
   }
@@ -654,7 +682,7 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
   if ( (r1.at(0) == 0) || (r2.at(0) == 0) || (r1.at(0) <= f1.at(0)) || (r2.at(0) <= f2.at(0)) ) {
       // event will get null weight - will basically cancel out this event at plotting
       //
-      if ( g_debug ) {
+      if ( g_debug_2 ) {
         Warning("recomputeMMW()", "Warning! The Matrix Method cannot be applied because : \n r1 = %f , r2 = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", r1.at(0), r2.at(0),  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
         Warning("recomputeMMW()", "applying MM weight = 0 ...");
       }
@@ -668,7 +696,7 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
   //
   MMW_new->at(0) = mm_weight;
 
-  if ( g_debug ) { Info("recomputeMMW()", "MM final weight = %f ", mm_weight ); }
+  if ( g_debug_2 ) { Info("recomputeMMW()", "MM final weight = %f ", mm_weight ); }
 
   if ( mm_weight != 0.0 ) {
 
@@ -696,7 +724,7 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
       //
       MMW_new->at(2) = ( calc_final_event_weight(region, f1.at(0), f2.at(0), r1dn, r2dn) / mm_weight );
     } else {
-      if ( g_debug ) {
+      if ( g_debug_2 ) {
          Warning("recomputeMMW()", "Warning! Systematic MMWeight_rdn cannot be calculated because : \n r1dn = %f , r2dn = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", r1dn, r2dn,  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
       }
     }
@@ -706,7 +734,7 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
       //
       MMW_new->at(3) = ( calc_final_event_weight(region, f1up, f2up, r1.at(0),  r2.at(0)) / mm_weight );
     } else {
-      if ( g_debug ) {
+      if ( g_debug_2 ) {
          Warning("recomputeMMW()", "Warning! Systematic MMWeight_fup cannot be calculated because : \n r1dn = %f , r2dn = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", r1dn, r2dn,  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
       }
     }
@@ -751,7 +779,7 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   std::string old_isTL_name("isTL");
   std::string old_isLT_name("isLT");
   std::string old_isLL_name("isLL");
-  std::string old_MMWeight_name("MMWeight");
+  //std::string old_MMWeight_name("MMWeight");
   std::string old_lep_pt_name("lep_pt");
   std::string old_lep_eta_name("lep_eta");
   std::string old_lep_flavour_name("lep_flavour");
@@ -763,7 +791,7 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   Int_t 	         isTL_old;        isTL_old = -1;
   Int_t 	         isLT_old;        isLT_old = -1;
   Int_t 	         isLL_old;        isLL_old = -1;
-  std::vector<double>*   MMWeight_old;    MMWeight_old = 0;
+  //std::vector<double>*   MMWeight_old;    MMWeight_old = 0;
   std::vector<float>*    lep_pt_old;      lep_pt_old = 0;
   std::vector<float>*    lep_eta_old;     lep_eta_old = 0;
   std::vector<int>*      lep_flavour_old; lep_flavour_old = 0;
@@ -777,7 +805,7 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   TBranch	 *b_isTL = 0;    	  //!
   TBranch	 *b_isLT = 0;    	  //!
   TBranch	 *b_isLL = 0;    	  //!
-  TBranch        *b_MMWeight_old = 0;     //!
+  //TBranch        *b_MMWeight_old = 0;     //!
   TBranch	 *b_lep_pt_old = 0;       //!
   TBranch	 *b_lep_eta_old = 0;      //!
   TBranch	 *b_lep_flavour_old = 0;  //!
@@ -786,10 +814,10 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   // except for the one you want to change
   //
   oldtree->SetBranchStatus("*",1);
-  oldtree->SetBranchStatus(old_MMWeight_name.c_str(),0);
+  //oldtree->SetBranchStatus(old_MMWeight_name.c_str(),0);
 
   std::string new_MMWeight_name("MMWeight");
-  std::vector<double>*   MMWeight_new;  MMWeight_new = 0;
+  std::vector<double>  MMWeight_new;  //MMWeight_new = 0;
 
   // Create a new file + a clone of old tree in new file
   //
@@ -798,7 +826,7 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
 
   // MUST re-activate the branch(es) previously deactivated before calling SetBranchAddress()!!
   //
-  oldtree->SetBranchStatus(old_MMWeight_name.c_str(),1);
+  //oldtree->SetBranchStatus(old_MMWeight_name.c_str(),1);
 
   // Get branches from input TTree
   //
@@ -809,7 +837,7 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   oldtree->SetBranchAddress(old_isTL_name.c_str(), &isTL_old, &b_isTL);
   oldtree->SetBranchAddress(old_isLT_name.c_str(), &isLT_old, &b_isLT);
   oldtree->SetBranchAddress(old_isLL_name.c_str(), &isLL_old, &b_isLL);
-  oldtree->SetBranchAddress(old_MMWeight_name.c_str(), &MMWeight_old, &b_MMWeight_old);
+  //oldtree->SetBranchAddress(old_MMWeight_name.c_str(), &MMWeight_old, &b_MMWeight_old);
   oldtree->SetBranchAddress(old_lep_pt_name.c_str(), &lep_pt_old, &b_lep_pt_old);
   oldtree->SetBranchAddress(old_lep_eta_name.c_str(), &lep_eta_old, &b_lep_eta_old);
   oldtree->SetBranchAddress(old_lep_flavour_name.c_str(), &lep_flavour_old, &b_lep_flavour_old);
@@ -839,6 +867,8 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
 
   // Loop over entries in TTree
   //
+  Info("modifytree()","Input tree: %s \n",filename.c_str() );  
+  Info("modifytree()","Number of entries in input tree: %llu \n", nentries);  
   Info("modifytree()","Begin loop on input tree entries...\n");
   int count_bad(0);
   Long64_t i = 0;
@@ -851,9 +881,9 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
     // Now, in the input tree, reset to 1 the status of the branches you
     // deactivated before cloning
     //
-    if ( !oldtree->GetBranchStatus(old_MMWeight_name.c_str()) ) {
-      oldtree->SetBranchStatus(old_MMWeight_name.c_str(),1);
-    }
+    //if ( !oldtree->GetBranchStatus(old_MMWeight_name.c_str()) ) {
+    //  oldtree->SetBranchStatus(old_MMWeight_name.c_str(),1);
+    //}
 
     oldtree->GetEntry(i);
 
@@ -861,48 +891,80 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
 
     // A security check...
     //
-    if ( !MMWeight_old ) {
-      Info("modifytree()","\t --> MMWeight_old is NULL!! Skipping event...  \n");
-      ++count_bad;
-      continue;
-    }
+    //if ( !MMWeight_old ) {
+    //   Info("modifytree()","\t --> MMWeight_old is NULL!! Skipping event...  \n");
+    //  ++count_bad;
+    //  continue;
+    //}
 
     // To start off, copy the old branch into the new
     // (then it will be overridden , if necessary)
     //
-    *MMWeight_new = *MMWeight_old;
+    //*MMWeight_new = *MMWeight_old;
 
+    //MMWeight_new->clear();
+    
+    //std::cout << "ciao 0 " << std::endl;
+    
+    //for ( int i = 0; i < 5; ++i ) { MMWeight_new.push_back(1.0); }
+    MMWeight_new.resize(5,1.0);
+    
     // and now, recompute the MM weights!
     // Do it only for 2lepSS events
     //
-    if ( nlep_old == 2 && isSS01_old == 1 ) {
+    //std::cout << "ciao 1 " << std::endl;
 
+    if ( nlep_old == 2 && isSS01_old == 1 ) {
+      
       // Just recompute MMWeight w/ new rates
       //
-      recomputeMMW( MMWeight_new, isTT_old, isTL_old, isLT_old, isLL_old, *lep_pt_old, *lep_eta_old, *lep_flavour_old );
+      recomputeMMW( &MMWeight_new, isTT_old, isTL_old, isLT_old, isLL_old, *lep_pt_old, *lep_eta_old, *lep_flavour_old );
+    
+      if ( g_debug_2 ) {
+        int idx_new(0);
+        for ( const auto& itr : MMWeight_new ) {
+    	  Info("modifytree()","\t\t NEW MMWeight[%i] = %f", idx_new, itr );
+    	  ++idx_new;
+        }
+        Info("modifytree()","\n\n");
+      }
 
+    } 
+    /*
+    else {
+    
+      MMWeight_new->push_back(1.0);
+    
     }
+    */
 
     if ( g_debug ) {
       int idx_old(0), idx_new(0);
-      for ( auto itr : *MMWeight_old ) {
-	Info("modifytree()","\t\t OLD MMWeight[%i] = %f", idx_old, itr );
-	++idx_old;
-      }
-      for ( auto itr : *MMWeight_new ) {
+      //for ( auto itr : *MMWeight_old ) {
+      //	Info("modifytree()","\t\t OLD MMWeight[%i] = %f", idx_old, itr );
+	//++idx_old;
+      //}
+      //std::cout << "ciao 2 " << std::endl;
+      
+      for ( const auto& itr : MMWeight_new ) {
 	Info("modifytree()","\t\t NEW MMWeight[%i] = %f", idx_new, itr );
 	++idx_new;
       }
     }
 
     // to avoid overriding new branch (old has same name) ?
-    oldtree->SetBranchStatus(old_MMWeight_name.c_str(),0);
+    //oldtree->SetBranchStatus(old_MMWeight_name.c_str(),0);
 
     newtree->Fill();
+
+    MMWeight_new.clear();
+
 
   }
 
   Info("modifytree()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
+
+  Info("modifytree()","Output tree: %s \n", newfilename.c_str() );  
 
   newfile->Write();
   newfile->Close();
