@@ -2,7 +2,7 @@
 
 username=mmilesi
 
-prodtag=028_DxAOD
+prodtag=028bis_DxAOD
 #028_TruthTP_DxAOD
 #025a_TruthTP_DxAOD
 #CFChallenge_v04_DxAOD
