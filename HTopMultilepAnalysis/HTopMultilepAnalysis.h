@@ -147,7 +147,7 @@ public:
 				     float rr_tot
 			            );
   double calc_final_event_weight( std::string region, double f1, double f2, double r1 = 1.0, double r2 = 1.0 );
-  double scaleRateToFactor( double rate );
+  double scaleRateToEfficiency( double rate );
 
   // this is needed to distribute the algorithm to the workers
   ClassDef(HTopMultilepAnalysis, 1);

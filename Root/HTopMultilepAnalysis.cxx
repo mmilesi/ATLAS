@@ -1366,10 +1366,424 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
 
 //*****************************************************************************
 //
-// Matrix Method  & Fake Factor Method stuff
+// Matrix Method & Fake Factor Method stuff
 //
 //
 
+EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons )
+{
+  // This method calculates the final weights to be applied to (for MM) data events
+  // with leptons TT, TL, LT, LL in order to obtain the fake estimate
+  // in the TT signal/control region
+  // We manually plug in the lepton fake/real rates calculated via tag-and-probe analysis (FIXME)
+  //
+  //NB: MM and FF Method are applied only to the 2lep and the 3lep case when there are 2 SS leptons
+
+  unsigned int nLeptons = leptons.size();
+
+  // retrieve some previously applied event object decorations
+  //
+  static SG::AuxElement::Accessor< char > isSS01("isSS01");
+  if ( !isSS01.isAvailable(*eventInfo) ) {
+    Error("fakeWeightCalculator()", "isSS01 is not available. Aborting ");
+    return EL::StatusCode::FAILURE;
+  }
+  static SG::AuxElement::Accessor< char > isSS12("isSS12");
+  if ( !isSS12.isAvailable(*eventInfo) ) {
+    Error("fakeWeightCalculator()", "isSS12 is not available. Aborting ");
+    return EL::StatusCode::FAILURE;
+  }
+
+  // accessor to tight leptons
+  //
+  static SG::AuxElement::Accessor< char > isTightAcc("isTight");
+  static SG::AuxElement::Accessor< char > isMediumAcc("isMedium");
+
+  // event decorators to identify the TT,TL,LT,LL regions (ordering depends on the category)
+  //
+  static SG::AuxElement::Decorator< char > isTTDecor("isTT");
+  static SG::AuxElement::Decorator< char > isTLDecor("isTL");
+  static SG::AuxElement::Decorator< char > isLTDecor("isLT");
+  static SG::AuxElement::Decorator< char > isLLDecor("isLL");
+  isTTDecor( *eventInfo ) = 0;
+  isTLDecor( *eventInfo ) = 0;
+  isLTDecor( *eventInfo ) = 0;
+  isLLDecor( *eventInfo ) = 0;
+
+  static SG::AuxElement::Decorator< char > isTMDecor("isTM");
+  static SG::AuxElement::Decorator< char > isMTDecor("isMT");
+  static SG::AuxElement::Decorator< char > isMMDecor("isMM");
+  isTMDecor( *eventInfo ) = 0;
+  isMTDecor( *eventInfo ) = 0;
+  isMMDecor( *eventInfo ) = 0;
+
+  // These will be the two leptons used for the fake estimate and to define the "tightness" of the region, both in 2 lep SS and in 3 lep category
+  //
+  xAOD::IParticle* lepA(nullptr);
+  xAOD::IParticle* lepB(nullptr);
+
+  // The "real" lepton for 3 lep category
+  //
+  xAOD::IParticle* lep0(nullptr);
+
+  // Features of the two leptons that are considered for the fake estimate
+  //
+  float lepA_pt(-1.0), lepA_eta(-999.0), lepB_pt(-1.0), lepB_eta(-999.0);
+  int lepA_flavour(0), lepB_flavour(0);
+
+  std::string region("");
+
+  bool is2lepOS = ( nLeptons == 2 && isSS01(*eventInfo) );
+  bool is3lep   = ( nLeptons == 3 && isSS12(*eventInfo) );
+  
+  if ( !( is2lepOS || is3lep ) ) {
+    return EL::StatusCode::SUCCESS; // no weights in the other categories: just return
+  }
+
+  if ( is2lepOS ) {
+
+    // start from lepton container
+    //
+    // ordering criterion is simply based on pT
+    // by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
+
+    // retrieve lepA : the leading lepton
+    //
+    lepA = const_cast<xAOD::IParticle*>(leptons.at(0));
+    // retrieve lepB: the subleading lepton
+    //
+    lepB = const_cast<xAOD::IParticle*>(leptons.at(1));
+
+  } else if ( is3lep ) {
+
+    // start from lepton container
+    //
+    // for trilepton, ordering criterion is:
+    // lep0: the OS lepton (assume this is real!)
+    // lepA: the SS lepton with min{ deltaR(lep0) }
+    // lepB: the other SS lepton
+    // --> lepA and lepB define the "tightness" of the region
+
+    // retrieve some previously applied lepton object decorations
+    //
+    static SG::AuxElement::Accessor< char > isOSlep("isOSlep");
+    static SG::AuxElement::Accessor< char > isClosestSSlep("isClosestSSlep");
+
+    for (auto lep_it :leptons ) {
+
+      xAOD::IParticle* this_lep = const_cast<xAOD::IParticle*>(lep_it);
+
+      if ( !isOSlep.isAvailable(*lep_it) ) {
+    	Error("fakeWeightCalculator()", "isOSlep lepton decoration is not available. Aborting ");
+    	return EL::StatusCode::FAILURE;
+      }
+
+      if ( isOSlep(*this_lep) ) {
+
+    	// retrieve lep0 : the OS lepton
+    	//
+    	lep0 = this_lep;
+    	continue;
+
+      } else {
+
+    	if ( !isClosestSSlep.isAvailable(*this_lep) ) {
+    	  Error("fakeWeightCalculator()", "isClosestSSlep lepton decoration is not available. Aborting");
+    	  return EL::StatusCode::FAILURE;
+    	}
+
+    	// retrieve lepA : the SS lepton with min{ deltaR(lep0) }
+    	//
+    	if ( isClosestSSlep(*this_lep) ) {
+    	  lepA = this_lep;
+    	  continue;
+    	}
+    	// retrieve lepB : the other SS lepton
+    	//
+    	lepB = this_lep;
+
+      }
+
+    } // close loop over lepton container
+
+    // just a safety check
+    //
+    if ( !( lep0 && lepA && lepB ) ) {
+      Error("fakeWeightCalculator()", "Trilepton region, but no (lep0 and lepA and lepB) pointers! Aborting");
+      return EL::StatusCode::FAILURE;
+    }
+
+  }
+
+  // set the region string based on tightness
+  //
+  if (  isTightAcc( *lepA )    &&  isTightAcc( *lepB )    ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
+  if (  isTightAcc( *lepA )    && !isTightAcc( *lepB )    ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
+  if ( !isTightAcc( *lepA )    &&  isTightAcc( *lepB )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
+  if ( !isTightAcc( *lepA )    && !isTightAcc( *lepB )    ) { region = "LL"; isLLDecor( *eventInfo ) = 1; }
+  if (  isTightAcc( *lepA )    &&  isMediumAcc( *lepB )   ) { region = "TM"; isTMDecor( *eventInfo ) = 1; }
+  if (  isMediumAcc( *lepA )   &&  isTightAcc( *lepB )    ) { region = "MT"; isMTDecor( *eventInfo ) = 1; }
+  if (  isMediumAcc( *lepA )   &&  isMediumAcc( *lepB )   ) { region = "MM"; isMMDecor( *eventInfo ) = 1; }
+
+  if ( is2lepOS && m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
+  if ( is3lep && m_debug )   { Info("fakeWeightCalculator()", "Trilepton 2SS+1OS category. Region (defined by the 2SS leptons) is %s ", region.c_str() ); }
+
+  // set the properties of the two relevant leptons for future convenience
+  //
+  lepA_pt  = lepA->pt();
+  lepA_eta = lepA->eta();
+  if ( lepA->type() == xAOD::Type::Electron )  { lepA_flavour = 11; }
+  else if ( lepA->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
+
+  lepB_pt  = lepB->pt();
+  lepB_eta = lepB->eta();
+  if ( lepB->type() == xAOD::Type::Electron )  { lepB_flavour = 11; }
+  else if ( lepB->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }
+
+  // Save a special flag for TL,LT OF events (used for "theta factior" ABCD method)
+  //
+  static SG::AuxElement::Decorator< char > isTelLmuDecor("isTelLmu");
+  static SG::AuxElement::Decorator< char > isTmuLelDecor("isTmuLel");
+  static SG::AuxElement::Decorator< char > isLelTmuDecor("isLelTmu");
+  static SG::AuxElement::Decorator< char > isLmuTelDecor("isLmuTel");
+  isTelLmuDecor( *eventInfo ) = 0;
+  isTmuLelDecor( *eventInfo ) = 0;
+  isLelTmuDecor( *eventInfo ) = 0;
+  isLmuTelDecor( *eventInfo ) = 0;
+  static SG::AuxElement::Decorator< char > isTelMmuDecor("isTelMmu");
+  static SG::AuxElement::Decorator< char > isTmuMelDecor("isTmuMel");
+  static SG::AuxElement::Decorator< char > isMelTmuDecor("isMelTmu");
+  static SG::AuxElement::Decorator< char > isMmuTelDecor("isMmuTel");
+  isTelMmuDecor( *eventInfo ) = 0;
+  isTmuMelDecor( *eventInfo ) = 0;
+  isMelTmuDecor( *eventInfo ) = 0;
+  isMmuTelDecor( *eventInfo ) = 0;
+
+  bool OF = ( ( lepA_flavour == 11 && lepB_flavour == 13 ) || ( lepA_flavour == 13 && lepB_flavour == 11 ) );
+  if ( OF ) {
+    if ( region == "TL" ) {
+      // the tight is an electron, the loose is a muon
+      if (  lepA_flavour == 11 )     { isTelLmuDecor( *eventInfo ) = 1; }
+      // the tight is a muon, the loose is an electron
+      else if ( lepA_flavour == 13 ) { isTmuLelDecor( *eventInfo ) = 1; }
+    } else if ( region == "LT" ) {
+      // the loose is an electron, the tight is a muon
+      if (  lepA_flavour == 11 )     { isLelTmuDecor( *eventInfo ) = 1; }
+      // the loose is a muon, the tight is an electron
+      else if ( lepA_flavour == 13 ) { isLmuTelDecor( *eventInfo ) = 1; }
+    } else if ( region == "TM" ) {
+      // the tight is an electron, the medium is a muon
+      if (  lepA_flavour == 11 )     { isTelMmuDecor( *eventInfo ) = 1; }
+      // the tight is a muon, the medium is an electron
+      else if ( lepA_flavour == 13 ) { isTmuMelDecor( *eventInfo ) = 1; }
+    } else if ( region == "MT" ) {
+      // the medium is an electron, the tight is a muon
+      if (  lepA_flavour == 11 )     { isMelTmuDecor( *eventInfo ) = 1; }
+      // the medium is a muon, the tight is an electron
+      else if ( lepA_flavour == 13 ) { isMmuTelDecor( *eventInfo ) = 1; }
+    }
+  }
+
+  if ( m_debug ) { Info("fakeWeightCalculator()", "Start calculating MM and FF weights... "); }
+
+  // *******************************************
+  // Now calculating MM real rate and fake rate.
+  //
+  // NB: NO NEED TO CALCULATE FF RATE BECAUSE FF ARE NOW OBTAINED FROM THE MM FOR r1=r2=1
+
+  // real and fake rates w/ syst variations
+  //
+  std::vector<double> r1, r2, f1, f2;
+  double r1up,r1dn, r2up, r2dn, f1up, f1dn, f2up, f2dn;
+
+  bool isFakeLep(true);
+
+  if ( lepA_flavour == 11 ) {
+     r1 = calc_weights( m_el_hist_map, lepA_pt, lepA_eta, !isFakeLep, m_n_el_bins_eta, m_n_el_bins_pt_fr, m_n_el_bins_pt_rr, m_el_fr_tot, m_el_rr_tot );
+     f1 = calc_weights( m_el_hist_map, lepA_pt, lepA_eta, isFakeLep,  m_n_el_bins_eta, m_n_el_bins_pt_fr, m_n_el_bins_pt_rr, m_el_fr_tot, m_el_rr_tot );
+  } else if ( lepA_flavour == 13 ) {
+     r1 = calc_weights( m_mu_hist_map, lepA_pt, lepA_eta, !isFakeLep, m_n_mu_bins_eta, m_n_mu_bins_pt_fr, m_n_mu_bins_pt_rr, m_mu_fr_tot, m_mu_rr_tot );
+     f1 = calc_weights( m_mu_hist_map, lepA_pt, lepA_eta, isFakeLep,  m_n_mu_bins_eta, m_n_mu_bins_pt_fr, m_n_mu_bins_pt_rr, m_mu_fr_tot, m_mu_rr_tot );
+  }
+
+  if ( lepB_flavour == 11 ) {
+     r2 = calc_weights( m_el_hist_map, lepB_pt, lepB_eta, !isFakeLep, m_n_el_bins_eta, m_n_el_bins_pt_fr, m_n_el_bins_pt_rr, m_el_fr_tot, m_el_rr_tot );
+     f2 = calc_weights( m_el_hist_map, lepB_pt, lepB_eta, isFakeLep,  m_n_el_bins_eta, m_n_el_bins_pt_fr, m_n_el_bins_pt_rr, m_el_fr_tot, m_el_rr_tot );
+  } else if ( lepB_flavour == 13 ) {
+     r2 = calc_weights( m_mu_hist_map, lepB_pt, lepB_eta, !isFakeLep, m_n_mu_bins_eta, m_n_mu_bins_pt_fr, m_n_mu_bins_pt_rr, m_mu_fr_tot, m_mu_rr_tot );
+     f2 = calc_weights( m_mu_hist_map, lepB_pt, lepB_eta, isFakeLep,  m_n_mu_bins_eta, m_n_mu_bins_pt_fr, m_n_mu_bins_pt_rr, m_mu_fr_tot, m_mu_rr_tot );
+  }
+
+  if ( m_debug ) {
+    Info("fakeWeightCalculator()", "\n Lepton 1 \n flavour: %i \n pT = %.2f \n eta = %.2f \n ****** \n Nominal real and fake rates: \n r1 = %f , f1 = %f ", lepA_flavour, lepA_pt, lepA_eta,  r1.at(0), f1.at(0) );
+    Info("fakeWeightCalculator()", "\n Lepton 2 \n flavour: %i \n pT = %.2f \n eta = %.2f \n ****** \n Nominal real and fake rates: \n r2 = %f , f2 = %f ", lepB_flavour, lepB_pt, lepB_eta,  r2.at(0), f2.at(0) );
+  }
+
+  // **********************************************************************************
+  // declare MM and FF weight decorations
+  //
+  // decorate each event with a vector<double>: the first component will be the nominal,
+  // the next components are w/ syst
+  //
+  // construct the vector with fixed number of components, and default weight 1.0 :
+  //
+  // nominal: MMWeightDecor( *eventInfo ).at(0);
+  // rup:     MMWeightDecor( *eventInfo ).at(1);
+  // rdn:     MMWeightDecor( *eventInfo ).at(2);
+  // fup:     MMWeightDecor( *eventInfo ).at(3);
+  // fdn:     MMWeightDecor( *eventInfo ).at(4);
+  //
+  // nominal: FFWeightDecor( *eventInfo ).at(0);
+  // up:      FFWeightDecor( *eventInfo ).at(1);
+  // dn:      FFWeightDecor( *eventInfo ).at(2);
+
+
+  SG::AuxElement::Decorator< std::vector<double> > MMWeightDecor( "MMWeight" );
+  if ( !MMWeightDecor.isAvailable( *eventInfo ) ) {
+    MMWeightDecor( *eventInfo ) = std::vector<double>( 5, 1.0 );
+  }
+  SG::AuxElement::Decorator< std::vector<double> > FFWeightDecor( "FFWeight" );
+  if ( !FFWeightDecor.isAvailable( *eventInfo ) ) {
+    FFWeightDecor( *eventInfo ) = std::vector<double>( 3, 1.0 );
+  }
+
+  // *************************************
+  // The Matrix Method: weight the events!
+  //
+  //  Cannot be done also for the MC (even if MMweight is not used) because
+  //  when it will be required to calculate the systematic sys_MMrweight_,
+  //  it will then shift also MC and this is wrong.
+  //  Not a problem for FF method
+
+  if ( !m_isMC || m_useMCForTagAndProbe ) {
+
+    // r cannot be 0 and has always to be more than f
+    // WARNING!
+    // WE SHOULD BE ALSO SURE THAT REAL EFFICIENCY IS ALWAYS < 1 FOR ANY PART OF THE PHASE SPACE.
+    // YOU COULD HAVE SOME R(PT)*R(ETA)>1 AND THIS CANNOT HAPPEN
+
+    double mm_weight(0.0);
+
+    if ( (r1.at(0) == 0) || (r2.at(0) == 0) || (r1.at(0) <= f1.at(0)) || (r2.at(0) <= f2.at(0)) ) {
+    	// event will be decorated w/ null weight - will basically cancel out this event at plotting
+    	//
+    	if ( m_debug ) {
+	  Warning("fakeWeightCalculator()", "Warning! The Matrix Method cannot be applied in event %llu for run %i because : \n r1 = %f , r2 = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), r1.at(0), r2.at(0),  f1.at(0), f2.at(0), lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+	  Warning("fakeWeightCalculator()", "applying MM weight = 0 ...");
+    	}
+    } else {
+    	//decorate event w/ calculated MM weight
+    	//
+    	mm_weight      = calc_final_event_weight( region, f1.at(0), f2.at(0), r1.at(0), r2.at(0) );
+    }
+
+    // decorate with nominal MM weight
+    MMWeightDecor( *eventInfo ).at(0) = mm_weight;
+
+    if ( m_debug ) { Info("fakeWeightCalculator()", "MM final weight = %f ", mm_weight ); }
+
+    if ( mm_weight != 0.0 ) {
+
+      // decorate event w/ MM weight with systematics
+      //
+      r1up = ( r1.at(1) > 1.0 ) ? 1.0 :  r1.at(1) ;
+      r2up = ( r2.at(1) > 1.0 ) ? 1.0 :  r2.at(1) ;
+      r1dn = r1.at(2);
+      r2dn = r2.at(2);
+
+      f1up = f1.at(1);
+      f2up = f2.at(1);
+      f1dn = ( f1.at(2) < 0.0 ) ? 0.0 :  f1.at(2) ;
+      f2dn = ( f2.at(2) < 0.0 ) ? 0.0 :  f2.at(2) ;
+
+      // rup syst
+      //
+      MMWeightDecor( *eventInfo ).at(1) = ( calc_final_event_weight( region, f1.at(0), f2.at(0), r1up, r2up ) / mm_weight );
+      // fdn syst
+      //
+      MMWeightDecor( *eventInfo ).at(4) = ( calc_final_event_weight( region, f1dn, f2dn, r1.at(0), r2.at(0) ) / mm_weight );
+
+      if ( (r1dn > f1.at(0)) && (r2dn > f2.at(0)) ) {
+        // rdn syst
+        //
+        MMWeightDecor( *eventInfo ).at(2) = ( calc_final_event_weight(region, f1.at(0), f2.at(0), r1dn, r2dn) / mm_weight );
+      } else {
+        if ( m_debug ) {
+	   Warning("fakeWeightCalculator()", "Warning! Systematic MMWeight_rdn cannot be calculated in event %llu for run %i because : \n r1dn = %f , r2dn = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), r1dn, r2dn,  f1.at(0), f2.at(0), lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+        }
+      }
+
+      if ( (r1.at(0) > f1up) && (r2.at(0) > f2up) ) {
+        // fup syst
+        //
+        MMWeightDecor( *eventInfo ).at(3) = ( calc_final_event_weight(region, f1up, f2up, r1.at(0),  r2.at(0)) / mm_weight );
+      } else {
+        if ( m_debug ) {
+	   Warning("fakeWeightCalculator()", "Warning! Systematic MMWeight_fup cannot be calculated in event %llu for run %i because : \n r1 = %f , r2 = %f , f1up = %f , f2up = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), r1.at(0), r2.at(0),  f1up, f2up, lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+        }
+      }
+    }
+
+  } // close check on m_isMC
+
+  // *****************************************
+  // The Fake Factor Method: weight the events!
+  //
+  // NB: it must hold: r = 1, f != 1
+  //
+  //
+
+  double ff_weight(0.0);
+
+  if ( (f1.at(0) == 1.0) || (f2.at(0) == 1.0) ) {
+
+    if (true) {
+      Warning("fakeWeightCalculator()", "Warning! The Fake Factor Method cannot be applied in event %llu for run %i because : \n f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), f1.at(0), f2.at(0), lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+      Warning("fakeWeightCalculator()", "applying FF weight = 0 ...");
+    }
+
+    // decorate event w/ (nominal) null weight
+    //
+    FFWeightDecor( *eventInfo ).at(0) = ff_weight;
+
+  } else {
+
+    //decorate event w/ calculated nominal FF weight
+    //
+    ff_weight		 =  calc_final_event_weight( region, f1.at(0), f2.at(0) );
+    FFWeightDecor( *eventInfo ).at(0) = ff_weight;
+
+    if ( ff_weight != 0.0 ) {
+
+      // decorate event w/ FF weight with systematics
+      //
+      f1up = f1.at(1);
+      f2up = f2.at(1);
+      f1dn = ( f1.at(2) < 0.0 ) ? 0.0 : f1.at(2) ;
+      f2dn = ( f2.at(2) < 0.0 ) ? 0.0 : f2.at(2);
+
+      // dn syst
+      //
+      FFWeightDecor( *eventInfo ).at(2) = ( calc_final_event_weight( region, f1dn, f2dn ) / ff_weight );
+
+      if ( (f1up < 1) && (f2up < 1)) {
+        // up syst
+        //
+        FFWeightDecor( *eventInfo ).at(1) = ( calc_final_event_weight( region, f1up, f2up ) / ff_weight );
+      } else {
+        Warning("fakeWeightCalculator()", "Warning! Systematic FFWeight_up cannot be calculated in event %llu for run %i because : \n f1up = %f , f2up = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", eventInfo->eventNumber(), eventInfo->runNumber(), f1up, f2up, lepA_pt/1e3, lepA_eta, lepB_pt/1e3, lepB_eta);
+      }
+
+    }
+  }
+
+  if ( m_debug ) { Info("fakeWeightCalculator()", "FF final weight = %f ", ff_weight ); }
+
+  return EL::StatusCode::SUCCESS;
+
+}
+
+/*
 EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons )
 {
   // This method calculates the final weights to be applied to (for MM) data events
@@ -1456,7 +1870,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	else if (  isTightAcc( *lepA )    &&  isMediumAcc( *lepB ) ) { region = "TM"; isTMDecor( *eventInfo ) = 1; }
 	else if (  isMediumAcc( *lepA )   &&  isTightAcc( *lepB )  ) { region = "MT"; isMTDecor( *eventInfo ) = 1; }
 	else if (  isMediumAcc( *lepA )   &&  isMediumAcc( *lepB ) ) { region = "MM"; isMMDecor( *eventInfo ) = 1; }
-
+ 
   	if ( m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
 
         // set the properties of the two relevant leptons for future convenience
@@ -1800,14 +2214,15 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   return EL::StatusCode::SUCCESS;
 
 }
+*/
 
-double  HTopMultilepAnalysis :: scaleRateToFactor( double rate )
+double  HTopMultilepAnalysis :: scaleRateToEfficiency( double rate )
 {
   if ( rate < 0 ) { rate = 0.0; }
 
-  double factor = ( rate /(rate+1.0) );
+  double eff = ( rate /(rate+1.0) );
 
-  return factor;
+  return eff;
 }
 
 std::vector<double>  HTopMultilepAnalysis :: calc_weights( std::map< std::string, TH1D* > &histograms,
@@ -1936,9 +2351,9 @@ std::vector<double>  HTopMultilepAnalysis :: calc_weights( std::map< std::string
   //
   if ( m_debug ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
-  weights.at(0) = scaleRateToFactor(weights.at(0));
-  weights.at(1) = scaleRateToFactor(weights.at(1));
-  weights.at(2) = scaleRateToFactor(weights.at(2));
+  weights.at(0) = scaleRateToEfficiency(weights.at(0));
+  weights.at(1) = scaleRateToEfficiency(weights.at(1));
+  weights.at(2) = scaleRateToEfficiency(weights.at(2));
 
   if ( m_debug ) { Info("calc_weights()", "MM/FF factor = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
