@@ -402,19 +402,19 @@ class SubProcess:
             #
             # Debug
             #
-            print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * %s * (%s)'% (self.baseweight, self.eventweight, eventweight, cutstr)
+            #print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * %s * (%s)'% (self.baseweight, self.eventweight, eventweight, cutstr)
         elif self.eventweight :
             self.tree.Project('NUM'+cachename, '1.0', '%s * (%s)' % (self.eventweight, cutstr))
             #
             # Debug
             #
-            print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            #print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
         else:
             self.tree.Project('NUM'+cachename, '1.0', '%s' % (cutstr))
             #
             # Debug
             #
-            print '\nOnly baseweight - ROOT cut string: %s * (%s)'% (self.baseweight, cutstr)
+            #print '\nOnly baseweight - ROOT cut string: %s * (%s)'% (self.baseweight, cutstr)
         self.numcache[cachename] = h.GetBinContent(1), h.GetBinError(1)
         del h
 
@@ -959,7 +959,9 @@ class Background:
             legs.insert(0, (tSum,"Stat. Unc.","F"))
         else:
             print "No background processes are plotted!"
-        # temp
+        
+	# ----------------------------------------------------------------------------
+	# temp
 	#
         sig, siglist = self.sumhist(var, processes=self.signals, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, scale=signalfactor, options=options)
         if sig:
@@ -972,6 +974,7 @@ class Background:
             # temp
 	    #
             legs.append([sig, process.latexname, "F"])
+	# ----------------------------------------------------------------------------
 
 	#options['hmass'] = signal
         #sig, siglist = self.sumhist(var, processes=self.signals, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, scale=signalfactor, options=options)

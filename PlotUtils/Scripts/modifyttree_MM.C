@@ -18,7 +18,7 @@
 *************** */
 
 bool g_debug(false);
-bool g_debug2(false);
+bool g_verbose(false);
 
 std::map< std::string, TH1D* > g_el_hist_map;
 std::map< std::string, TH1D* > g_mu_hist_map;
@@ -74,7 +74,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
   } else {
     Info("read_rates()", "ELECTRON REAL rate: %s ", path_R_el.c_str() );
   }
-  std::string path_R_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/MuMuRates.root";
+  std::string path_R_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/Rates.root";
   TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
   if ( !file_R_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_mu.c_str() );
@@ -142,7 +142,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
     Info("read_rates()", "ELECTRON FAKE rate: %s ", path_F_el.c_str() );
   }
 
-  std::string path_F_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/MuMuRates.root";
+  std::string path_F_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/Rates.root";
   TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
   if ( !file_F_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_mu.c_str() );
@@ -246,13 +246,13 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
 /
 ************************** */
 
-double  scaleRateToFactor( double rate )
+double  scaleRateToEfficiency( double rate )
 {
   if ( rate < 0 ) { rate = 0.0; }
 
-  double factor = ( rate / (rate+1.0) );
+  double eff = ( rate / (rate+1.0) );
 
-  return factor;
+  return eff;
 }
 
 /* ********************************************************
@@ -292,6 +292,11 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
     // check whether the eta under question is in *this* eta range
     //
+    if ( g_verbose ) {
+      Info("calc_weights()", "\tlepton fabs(eta) = %f", fabs(eta) );
+      Info("calc_weights()", "\tbin %i : lower edge = %f, upper edge = %f", e, (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e),(histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) );
+    }    
+    
     if ( ( fabs(eta) >= (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e) ) && ( fabs(eta) < (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) ) ) {
 
       // case 1) : lepton is fake: choose correct pt histogram
@@ -303,6 +308,11 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
         //
         for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
 
+          if ( g_verbose ) {
+            Info("calc_weights()", "\t\tlepton pT = %f", pt );
+            Info("calc_weights()", "\t\tbin %i : lower edge = %f, upper edge = %f", p,(histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
+          }
+
      	  if ( ( pt >= (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
 
 	    // combine eta and pt rates
@@ -312,6 +322,12 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
 	    double fr_pt_err  = (histograms.find("pt_fr")->second)->GetBinError(p);
 	    double fr_eta_err = (histograms.find("eta_fr")->second)->GetBinError(e);
+
+            if ( g_verbose ) {
+	       Info("calc_weights()", "\t\tFake lepton"  );
+	       Info("calc_weights()", "\t\tfr_pt = %f", fr_pt );
+	       Info("calc_weights()", "\t\tfr_eta = %f", fr_eta );
+	    }
 
 	    // nominal
 	    //
@@ -355,6 +371,12 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 	    double rr_pt_err  = (histograms.find("pt_rr")->second)->GetBinError(p);
 	    double rr_eta_err = (histograms.find("eta_rr")->second)->GetBinError(e);
 
+            if ( g_verbose ) {
+	       Info("calc_weights()", "Real lepton"  );
+	       Info("calc_weights()", "rr_pt = %f", rr_pt );
+	       Info("calc_weights()", "rr_eta = %f", rr_eta );
+	    }
+	    
 	    // nominal
 	    //
 	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
@@ -384,13 +406,13 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
   // Now converting rates to the factors for the MM/FF
   //
-  if ( g_debug ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  if ( g_verbose ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
-  weights.at(0) = scaleRateToFactor(weights.at(0));
-  weights.at(1) = scaleRateToFactor(weights.at(1));
-  weights.at(2) = scaleRateToFactor(weights.at(2));
+  weights.at(0) = scaleRateToEfficiency(weights.at(0));
+  weights.at(1) = scaleRateToEfficiency(weights.at(1));
+  weights.at(2) = scaleRateToEfficiency(weights.at(2));
 
-  if ( g_debug ) { Info("calc_weights()", "MM/FF factor = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  if ( g_verbose ) { Info("calc_weights()", "MM/FF efficiency = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
   return weights;
 }
@@ -560,9 +582,9 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
   //
   if ( g_debug ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
-  weights.at(0) = scaleRateToFactor(weights.at(0));
-  weights.at(1) = scaleRateToFactor(weights.at(1));
-  weights.at(2) = scaleRateToFactor(weights.at(2));
+  weights.at(0) = scaleRateToEfficiency(weights.at(0));
+  weights.at(1) = scaleRateToEfficiency(weights.at(1));
+  weights.at(2) = scaleRateToEfficiency(weights.at(2));
 
   if ( g_debug ) { Info("calc_weights()", "MM/FF factor = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
@@ -618,6 +640,11 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
 
   bool isFakeLep = true;
 
+  if ( g_verbose ) {
+    Info("recomputeMMW()", "\n Lepton 1 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n", lep_flavour.at(0), lep_pt.at(0)/1e3, lep_eta.at(0) );
+    Info("recomputeMMW()", "\n Lepton 2 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n", lep_flavour.at(1), lep_pt.at(1)/1e3, lep_eta.at(1) );
+  }
+  
   // NB: input lep_* vectors are pT-ordered.
   //
   if ( lep_flavour.at(0) == 11 ) {
@@ -755,6 +782,7 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
   std::string old_lep_pt_name("lep_pt");
   std::string old_lep_eta_name("lep_eta");
   std::string old_lep_flavour_name("lep_flavour");
+  std::string old_lep_isT_name("lep_isTightSelected");
 
   Long64_t               eventNumber_old; eventNumber_old = -1;
   Int_t                  nlep_old;        nlep_old = -1;
@@ -767,6 +795,7 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
   std::vector<float>*    lep_pt_old;      lep_pt_old = 0;
   std::vector<float>*    lep_eta_old;     lep_eta_old = 0;
   std::vector<int>*      lep_flavour_old; lep_flavour_old = 0;
+  std::vector<int>*      lep_isT_old;     lep_isT_old = 0;
 
   // List of old branches
   //
@@ -781,6 +810,7 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
   TBranch	 *b_lep_pt_old = 0;       //!
   TBranch	 *b_lep_eta_old = 0;      //!
   TBranch	 *b_lep_flavour_old = 0;  //!
+  TBranch        *b_lep_isT_old = 0;      //!
 
   // Before cloning input TTree, tell ROOT to process all the old branches,
   // except for the one you want to change
@@ -813,6 +843,7 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
   oldtree->SetBranchAddress(old_lep_pt_name.c_str(), &lep_pt_old, &b_lep_pt_old);
   oldtree->SetBranchAddress(old_lep_eta_name.c_str(), &lep_eta_old, &b_lep_eta_old);
   oldtree->SetBranchAddress(old_lep_flavour_name.c_str(), &lep_flavour_old, &b_lep_flavour_old);
+  oldtree->SetBranchAddress(old_lep_isT_name.c_str(), &lep_isT_old, &b_lep_isT_old);
 
   //Info("modifytree()", "--> lep_pt before SetBranchAddress() %p\n", oldtree->GetBranch(old_lep_pt_name.c_str())->GetAddress());
   //Info("modifytree()", "--> lep_pt after SetBranchAddress() %p\n", oldtree->GetBranch(old_lep_pt_name.c_str())->GetAddress());
@@ -825,7 +856,7 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
   //
   //std::string RR_dir("GOOD_STUFF/OutputPlots_MMRates_v021_Madgraph_Observed");
   //std::string RR_dir("OutputPlots_MMRates_v025");
-  std::string RR_dir("OutputPlots_MMRates_v028");
+  std::string RR_dir("OutputPlots_MMRates_v028_FINAL");
 
   // when using ch-flip rate as RR (for electrons)
   //std::string RR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_ChFlipBkgRates_13F");
@@ -875,22 +906,35 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
     //
     if ( nlep_old == 2 && isSS01_old == 1 ) {
 
+      if ( g_debug ) {
+        int idx_old(0);
+        for ( const auto& itr : *MMWeight_old ) {
+    	  Info("modifytree()","\t\t OLD MMWeight[%i] = %f", idx_old, itr );
+    	  ++idx_old;
+        }
+      }
+
       // Just recompute MMWeight w/ new rates
       //
-      recomputeMMW( MMWeight_new, isTT_old, isTL_old, isLT_old, isLL_old, *lep_pt_old, *lep_eta_old, *lep_flavour_old );
+      //recomputeMMW( MMWeight_new, isTT_old, isTL_old, isLT_old, isLL_old, *lep_pt_old, *lep_eta_old, *lep_flavour_old );
 
-    }
+      bool TT =  ( lep_isT_old->at(0) == 1 && lep_isT_old->at(1) == 1 );
+      bool TL =  ( lep_isT_old->at(0) == 1 && lep_isT_old->at(1) == 0 );
+      bool LT =  ( lep_isT_old->at(0) == 0 && lep_isT_old->at(1) == 1 );
+      bool LL =  ( lep_isT_old->at(0) == 0 && lep_isT_old->at(1) == 0 );
 
-    if ( g_debug ) {
-      int idx_old(0), idx_new(0);
-      for ( auto itr : *MMWeight_old ) {
-	Info("modifytree()","\t\t OLD MMWeight[%i] = %f", idx_old, itr );
-	++idx_old;
+      recomputeMMW( MMWeight_new, TT, TL, LT, LL, *lep_pt_old, *lep_eta_old, *lep_flavour_old );
+
+      if ( g_debug ) {
+        int idx_new(0);
+        for ( const auto& itr : *MMWeight_new ) {
+    	  Info("modifytree()","\t\t NEW MMWeight[%i] = %f", idx_new, itr );
+    	  ++idx_new;
+        }
       }
-      for ( auto itr : *MMWeight_new ) {
-	Info("modifytree()","\t\t NEW MMWeight[%i] = %f", idx_new, itr );
-	++idx_new;
-      }
+
+      if ( g_debug ) { Info("modifytree()","\n\n"); }
+
     }
 
     // to avoid overriding new branch (old has same name) ?

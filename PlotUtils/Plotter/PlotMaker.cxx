@@ -202,7 +202,7 @@ void PlotRateEff(const char* EXTENSION, const char* HOME_DIRECTORY, const char* 
 
        legend->Draw();
        leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-       leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.3 fb^{-1}");
+       leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}");
 
        string prepend = ( flav_comp.empty() ) ? "" : (flav_comp + "_");
        string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + rate_or_eff + "_" + data_type + "."; // the final period is important
