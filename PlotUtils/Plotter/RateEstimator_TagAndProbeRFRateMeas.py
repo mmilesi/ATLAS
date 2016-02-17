@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.curdir))
 # -------------------------------
 import argparse
 
-parser = argparse.ArgumentParser(description="Plotting python macro for deriving real/fake lepton rates for MM.")
+parser = argparse.ArgumentParser(description="Plotting python macro for deriving real/fake lepton efficiencies/rates for MM.")
 
 #***********************************
 # positional arguments (compulsory!)
@@ -24,7 +24,7 @@ parser.add_argument("inputDir", metavar="inputDir",type=str,
 parser.add_argument("--flavourComp", metavar="FLAVOUR_COMP", dest="flavourComp", default="", type=str,
 		  help="Flavour composition of the two leptons in CR (*empty_string*, ElEl, MuMu, OF) - default is *empty_string*")
 parser.add_argument("--usePrediction", metavar="DATA_TYPE", dest="usePrediction", action="store", default="DATA", type=str,
-		    help="use Monte-Carlo (MC) or data (DATA) to derive rates - default is DATA")
+		    help="use Monte-Carlo (MC) or data (DATA) to derive efficiencies/rates - default is DATA")
 parser.add_argument("--debug", dest="debug", action="store_true",
 		    help="run in debug mode")
 parser.add_argument("--doBkgSub", dest="doBkgSub", action="store_true",
@@ -33,6 +33,8 @@ parser.add_argument("--rebinEta", dest="rebinEta", action="store_true",default=F
 		    help="do rebinning in eta")
 parser.add_argument("--rebinPt", dest="rebinPt", action="store_true",default=False,
 		    help="do rebinning in pT")
+parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
+		    help="get average efficiencies/rates (i.e, make 1 bin)")
 parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",
 		    help="save only rates")
 args = parser.parse_args()
@@ -64,7 +66,7 @@ dict_channels_lep = {
 
 list_lep         = dict_channels_lep[args.flavourComp]
 list_types       = ["Fake","Real"]
-list_variables   = ["ProbeEta","ProbePt"]
+list_variables   = ["ProbeEta","ProbePt","ProbeNJets"]
 list_selections  = ["T","L"]
 list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                               # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
@@ -179,13 +181,9 @@ for iLep in list_lep:
                           if iLep == "Mu":
                              nBIN  = 3
                              xbins = [25,35,50,200]
-			     #nBIN = 1
-			     #xbins = [25,200]  		      
 			  elif iLep == "El":
                              nBIN  = 3
                              xbins = [25,40,60,200]
-			     #nBIN = 1
-			     #xbins = [25,200]
 
                        elif iType == "Real":
 
@@ -193,14 +191,30 @@ for iLep in list_lep:
                   	  #xbins = [25,30,35,40,45,50,60,70,80,90,100,150,200]
 			  nBIN  = 4
                   	  xbins = [25,30,40,60,200]
-			  #nBIN = 1
-			  #xbins = [25,200]
 
                        vxbins = array.array("d", xbins)
 		       print "\t\t\t\t\t vxbins: ",vxbins
                        # the rebinning method automatically creates a new histogram
                        #
                        hists[histname]  = htmp.Rebin( nBIN, histname, vxbins )
+
+                  if args.doAvg:
+
+                     nBIN = 1
+                     if iVar == "ProbePt":
+                        xbins = [25,200]
+                     elif iVar == "ProbeEta":
+                        if iLep == "El":
+                           xbins = [0.0,2.6]
+                        elif iLep == "Mu":
+                           xbins == [0.0,2.5]
+                     elif iVar == "ProbeNJets":
+                        xbins = [2,10]
+                     vxbins = array.array("d", xbins)
+                     print "\t\t\t\t\t vxbins: ",vxbins
+                     # the rebinning method automatically creates a new histogram
+                     #
+                     hists[histname]  = htmp.Rebin( nBIN, histname, vxbins )
 
 		  yields[histname] = hists[histname].Integral()
 
@@ -276,6 +290,8 @@ for iLep in list_lep:
 
           print "\t\t --> ratio hist name: ", histname + "_Rate_" + append_str
 
+if args.doAvg:
+   channel_str += "Avg"
 
 outfile = open( args.inputDir + channel_str + "Rates.txt", "w")
 outfile.write( "Efficiencies/Rates for FF amd Matrix Method \n")
@@ -285,27 +301,27 @@ fout = TFile( foutname,"RECREATE" )
 fout.cd()
 
 for g in sorted( graphs.keys() ):
-   
+
    print "saving graph: ", graphs[g].GetName()
 
    graphs[g].Write()
 
    Eff=[]
-      
+
    if (args.debug ) :
        print "saving efficiencies (and errors) from graph: ", graphs[g].GetName()
-   
+
    for ipoint in range( 0, graphs[g].GetN() ):
-   
+
        x = Double(0)
        y = Double(0)
        graphs[g].GetPoint(ipoint,x,y)
        set = [ ipoint, y, graphs[g].GetErrorYhigh(ipoint), graphs[g].GetErrorYlow(ipoint) ]
        Eff.append( set )
-   
+
    outfile.write("%s \n" %(g) )
    for set in Eff:
-       outfile.write("{ %s }; \n" %( "Bin nr: " + str(set[0]) + ", efficiency = " + str(round(set[1],3)) + " + " + str(round(set[2],3)) + " - " + str(round(set[3],3)) ) )   
+       outfile.write("{ %s }; \n" %( "Bin nr: " + str(set[0]) + ", efficiency = " + str(round(set[1],3)) + " + " + str(round(set[2],3)) + " - " + str(round(set[3],3)) ) )
 
 
 for h in sorted( hists.keys() ):
@@ -329,7 +345,7 @@ for h in sorted( hists.keys() ):
 
       outfile.write("%s \n" %(h) )
       for set in Rate:
-          outfile.write("{ %s }; \n" %( "Bin nr: " + str(set[0]) + ", rate = " + str(round(set[1],3)) + " +- " + str(round(set[2],3)) ) )   
+          outfile.write("{ %s }; \n" %( "Bin nr: " + str(set[0]) + ", rate = " + str(round(set[1],3)) + " +- " + str(round(set[2],3)) ) )
 
 outfile.close()
 fout.Write()

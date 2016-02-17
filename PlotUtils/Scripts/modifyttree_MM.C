@@ -66,7 +66,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
 
   Info("read_rates()", "REAL rate from directory: %s ", rr_dir.c_str() );
 
-  std::string path_R_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/Rates.root";
+  std::string path_R_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/AvgRates.root";// "/Rates.root";
   TFile *file_R_el = TFile::Open(path_R_el.c_str());
   if ( !file_R_el->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_el.c_str() );
@@ -74,7 +74,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
   } else {
     Info("read_rates()", "ELECTRON REAL rate: %s ", path_R_el.c_str() );
   }
-  std::string path_R_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/Rates.root";
+  std::string path_R_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/AvgRates.root"; //"/Rates.root";
   TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
   if ( !file_R_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_mu.c_str() );
@@ -133,7 +133,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
      Info("read_rates()", "FAKE rate from same directory" );
   }
 
-  std::string path_F_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/Rates.root";
+  std::string path_F_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/AvgRates.root"; // "/Rates.root";
   TFile *file_F_el = TFile::Open(path_F_el.c_str());
   if ( !file_F_el->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_el.c_str() );
@@ -142,7 +142,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
     Info("read_rates()", "ELECTRON FAKE rate: %s ", path_F_el.c_str() );
   }
 
-  std::string path_F_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/Rates.root";
+  std::string path_F_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/AvgRates.root"; // "/Rates.root";
   TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
   if ( !file_F_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_mu.c_str() );
@@ -295,8 +295,8 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
     if ( g_verbose ) {
       Info("calc_weights()", "\tlepton fabs(eta) = %f", fabs(eta) );
       Info("calc_weights()", "\tbin %i : lower edge = %f, upper edge = %f", e, (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e),(histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) );
-    }    
-    
+    }
+
     if ( ( fabs(eta) >= (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e) ) && ( fabs(eta) < (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) ) ) {
 
       // case 1) : lepton is fake: choose correct pt histogram
@@ -376,7 +376,7 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 	       Info("calc_weights()", "rr_pt = %f", rr_pt );
 	       Info("calc_weights()", "rr_eta = %f", rr_eta );
 	    }
-	    
+
 	    // nominal
 	    //
 	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
@@ -644,7 +644,7 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
     Info("recomputeMMW()", "\n Lepton 1 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n", lep_flavour.at(0), lep_pt.at(0)/1e3, lep_eta.at(0) );
     Info("recomputeMMW()", "\n Lepton 2 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n", lep_flavour.at(1), lep_pt.at(1)/1e3, lep_eta.at(1) );
   }
-  
+
   // NB: input lep_* vectors are pT-ordered.
   //
   if ( lep_flavour.at(0) == 11 ) {

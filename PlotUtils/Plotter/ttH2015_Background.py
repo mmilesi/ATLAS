@@ -1142,7 +1142,7 @@ class TTHBackgrounds2015(Background):
                 weight = 'MMWeight[0]'
 
             # There is no prompt subtraction in the MM!
-            
+
 	    basecut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
 
             sp_TT  = sp.subprocess(cut=basecut & self.vardb.getCut(TTcut), eventweight=weight)
@@ -1242,6 +1242,8 @@ class TTHBackgrounds2015(Background):
             TmuLelCut =''
             LmuTelCut =''
             weight=1.0
+            weightMC='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]'
+
             if self.parent.channel=='TwoLepSS':
                 TTCut  = self.vardb.getCut('TT')
                 TLCut  = self.vardb.getCut('TL')
@@ -1265,7 +1267,7 @@ class TTHBackgrounds2015(Background):
             basecut = basecut.removeCut(self.vardb.getCut('MuMu_Event'))
             basecut = basecut.removeCut(self.vardb.getCut('OF_Event'))
 
-            # Remove the cuts defiining the jet multiplicity
+            # Remove the cuts defining the jet multiplicity
             basecut = basecut.removeCut(self.vardb.getCut('NJet2L'))
             basecut = basecut.removeCut(self.vardb.getCut('LowJetCR'))
 
@@ -1277,6 +1279,11 @@ class TTHBackgrounds2015(Background):
                 #
                 cut_sp_C_el = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('ElEl_Event') & TTCut & self.vardb.getCut('Zsidescut') & self.vardb.getCut('ElEtaCut')
                 cut_sp_D_el = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('ElEl_Event') & TL_LT_Cut & self.vardb.getCut('Zsidescut') & self.vardb.getCut('ElEtaCut')
+
+                # Lower pT threshold of subleading lepton to enrich in fakes
+                #
+                cut_sp_C_el     = cut_sp_C_el.swapCut(self.vardb.getCut('2Lep'),self.vardb.getCut('2LepRelaxed'))
+                cut_sp_D_el     = cut_sp_D_el.swapCut(self.vardb.getCut('2Lep'),self.vardb.getCut('2LepRelaxed'))
 
                 sp_C_el = sp.subprocess( cut = cut_sp_C_el, eventweight=weight )
                 sp_D_el = sp.subprocess( cut = cut_sp_D_el, eventweight=weight )
@@ -1304,7 +1311,7 @@ class TTHBackgrounds2015(Background):
                     if sample == "ChargeFlipMC":
                         this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
 
-                    sub_sample_C_el = sub_sample_C_el.subprocess( cut = this_cut_sp_C_el, eventweight=weight )
+                    sub_sample_C_el = sub_sample_C_el.subprocess( cut = this_cut_sp_C_el, eventweight=weightMC )
 
                     #print ("sub_sample_C_el ={0} ".format(sub_sample_C_el.basecut.cutnamelist))
 
@@ -1321,7 +1328,7 @@ class TTHBackgrounds2015(Background):
                     if sample == "ChargeFlipMC":
                         this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
 
-                    sub_sample_D_el = sub_sample_D_el.subprocess( cut = this_cut_sp_D_el, eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]' )
+                    sub_sample_D_el = sub_sample_D_el.subprocess( cut = this_cut_sp_D_el, eventweight=weightMC)
 
                     #print ("sub_sample_D_el ={0} ".format(sub_sample_D_el.basecut.cutnamelist))
 
@@ -1352,6 +1359,11 @@ class TTHBackgrounds2015(Background):
                 cut_sp_C_mu = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('MuMu_Event') & TTCut
                 cut_sp_D_mu = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('MuMu_Event') & TL_LT_Cut
 
+                # Lower pT threshold of subleading lepton to enrich in fakes
+                #
+                cut_sp_C_mu     = cut_sp_C_mu.swapCut(self.vardb.getCut('2Lep'),self.vardb.getCut('2LepRelaxed'))
+                cut_sp_D_mu     = cut_sp_D_mu.swapCut(self.vardb.getCut('2Lep'),self.vardb.getCut('2LepRelaxed'))
+
                 sp_C_mu = sp.subprocess( cut = cut_sp_C_mu, eventweight=weight )
                 sp_D_mu = sp.subprocess( cut = cut_sp_D_mu, eventweight=weight )
 
@@ -1378,7 +1390,7 @@ class TTHBackgrounds2015(Background):
                     if sample == "ChargeFlipMC":
                         this_cut_sp_C_mu = this_cut_sp_C_mu.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
 
-                    sub_sample_C_mu = sub_sample_C_mu.subprocess( cut = this_cut_sp_C_mu, eventweight=weight )
+                    sub_sample_C_mu = sub_sample_C_mu.subprocess( cut = this_cut_sp_C_mu, eventweight=weightMC )
 
                     #print ("sub_sample_C_mu ={0} ".format(sub_sample_C_mu.basecut.cutnamelist))
 
@@ -1395,7 +1407,7 @@ class TTHBackgrounds2015(Background):
                     if sample == "ChargeFlipMC":
                         this_cut_sp_D_mu = this_cut_sp_D_mu.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
 
-                    sub_sample_D_mu = sub_sample_D_mu.subprocess( cut = this_cut_sp_D_mu, eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]' )
+                    sub_sample_D_mu = sub_sample_D_mu.subprocess( cut = this_cut_sp_D_mu, eventweight=weightMC )
 
                     #print ("sub_sample_D_mu ={0} ".format(sub_sample_D_mu.basecut.cutnamelist))
 
@@ -1403,7 +1415,6 @@ class TTHBackgrounds2015(Background):
                     #print ("D (mu) - yields MC: ", sub_sample_D_mu.numberstats())
                     sp_D_mu = sp_D_mu - sub_sample_D_mu
                     #print ("D (mu) - yields after sub: ", sp_D_mu.numberstats())
-
 
                 print ("---------------------------------------------------------------------\n")
 		print ("C (mu) - data yields after prompt/ch-flip subtraction: ", sp_C_mu.numberstats())
@@ -1431,7 +1442,10 @@ class TTHBackgrounds2015(Background):
 
 	    if not ("OF_Event") in category.cut.cutname:
                 sp_B = self.parent.procmap['TTBar'].base(treename,category,options)
-                sp_B = sp_B.subprocess(cut=cut_sp_B_SF,eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]')
+                sp_B = sp_B.subprocess(cut=cut_sp_B_SF,eventweight=weightMC )
+
+                print ("Region B (mumu,ee), yield: ", sp_B.numberstats() , "\n")
+
                 if ("ElEl_Event") in category.cut.cutname:
                     sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta['El'])
                 elif ("MuMu_Event") in category.cut.cutname:
@@ -1439,13 +1453,15 @@ class TTHBackgrounds2015(Background):
             else:
                 sp_B_Lel = self.parent.procmap['TTBar'].base(treename,category,options)
                 sp_B_Lmu = self.parent.procmap['TTBar'].base(treename,category,options)
-                sp_B_Lel = sp_B_Lel.subprocess(cut=cut_sp_B_OF_Lel, eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]')
-                sp_B_Lmu = sp_B_Lmu.subprocess(cut=cut_sp_B_OF_Lmu, eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]')
+                sp_B_Lel = sp_B_Lel.subprocess(cut=cut_sp_B_OF_Lel, eventweight=weightMC )
+                sp_B_Lmu = sp_B_Lmu.subprocess(cut=cut_sp_B_OF_Lmu, eventweight=weightMC )
+
+                print ("Region B (emu)","\n", "yield (loose el): ", sp_B_Lel.numberstats() , "\n", "yield (loose mu): ", sp_B_Lmu.numberstats(), "\n")
+
                 sp_B = self.applyThetaFactor(sp_B_Lmu,TTHBackgrounds2015.theta['Mu']) + self.applyThetaFactor(sp_B_Lel,TTHBackgrounds2015.theta['El'])
 
 	    print ("=================>\n")
-	    print ("Region B sp: {0} \n".format(sp_B.basecut.cutnamelist))
-            print ("fakes yield: ", sp_B.numberstats() ,"\n")
+            print ("Final fakes yield: ", sp_B.numberstats() ,"\n")
 
             return sp_B
 
@@ -1697,12 +1713,12 @@ class TTHBackgrounds2015(Background):
         # Theta factors as measured in DATA
 
         # v027 - w/ isolation for loose muons
-        #theta_el = 0.1274 # 0.1467
-        #theta_mu = 0.3206 # 0.6856
-	
+        theta_el = 0.1274 # 0.1467
+        theta_mu = 0.3206 # 0.6856
+
         # v028 - w/o isolation for loose muons
-        theta_el = 0.1075
-        theta_mu = 0.1011	
+        #theta_el = 0.1075
+        #theta_mu = 0.1011
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
@@ -1731,6 +1747,7 @@ class TTHBackgrounds2015(Background):
             TmuLelCut =''
             LmuTelCut =''
             weight=1.0
+            weightMC='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]'
             if self.parent.channel=='TwoLepSS':
                 TTCut  = self.vardb.getCut('TT')
                 TLCut  = self.vardb.getCut('TL')
@@ -1758,8 +1775,8 @@ class TTHBackgrounds2015(Background):
 
             # plug in the theta factors by hand...CHANGE ME!
             #
-            sp_Lel = sp.subprocess(cut=cut_sp_OF_Lel, eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]')
-            sp_Lmu = sp.subprocess(cut=cut_sp_OF_Lmu, eventweight='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]')
+            sp_Lel = sp.subprocess(cut=cut_sp_OF_Lel, eventweight=weightMC )
+            sp_Lmu = sp.subprocess(cut=cut_sp_OF_Lmu, eventweight=weightMC )
             sp_final = ( sp_Lel * self.theta_el ) + ( sp_Lmu * self.theta_mu )
 
 	    print ("=================>\n")

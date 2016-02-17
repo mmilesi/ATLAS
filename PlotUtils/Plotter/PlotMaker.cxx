@@ -65,7 +65,7 @@ void PlotRateEff(const char* EXTENSION, const char* HOME_DIRECTORY, const char* 
      exit(-1);
   }
 
-  string filename(flav_comp + "Rates.root");
+  string filename(flav_comp + "AvgRates.root");
   string home_directory(HOME_DIRECTORY);
   //string home_directory = "~/PhD/ttH_MultiLeptons/RUN2/PlotUtils/common_ntuple_melbourne/OutputPlots_ChFlipRates/";
   //string home_directory = "~/PhD/ttH_MultiLeptons/RUN2/PlotUtils/common_ntuple_melbourne/OutputPlots_HFRates/";
@@ -78,6 +78,7 @@ void PlotRateEff(const char* EXTENSION, const char* HOME_DIRECTORY, const char* 
   vector<string> variables;
   variables.push_back("Eta");
   variables.push_back("Pt");
+  variables.push_back("NJets");
 
   vector<string> rates;
   rates.push_back("Real");
@@ -173,6 +174,7 @@ void PlotRateEff(const char* EXTENSION, const char* HOME_DIRECTORY, const char* 
 
 	 if ( variables.at(iVar) == "Eta" )	{ h->GetXaxis()->SetTitle("Probe |#eta|");   }
 	 else if ( variables.at(iVar) == "Pt" ) { h->GetXaxis()->SetTitle("Probe pT [GeV]"); }
+	 else if ( variables.at(iVar) == "NJets" ) { h->GetXaxis()->SetTitle("Jet multiplicity"); }
 
 	 string flavour("");
 	 if ( lepton_flavours.at(iFlav).find("El") != string::npos )      { flavour = "Electrons:"; }
