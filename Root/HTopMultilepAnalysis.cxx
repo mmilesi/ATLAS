@@ -1,13 +1,12 @@
-/*********************************************
+/************************************************
  *
  * The actual HTopMultilepAnalysis algorithm.
- * Here the user categorises events, and does
+ * Here the user categorises events, and performs
  * the background estimation.
  *
  * M. Milesi (marco.milesi@cern.ch)
  *
- *
- *********************************************/
+ ** *********************************************/
 
 // EL include(s):
 #include <EventLoop/Job.h>
@@ -1274,7 +1273,7 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      static SG::AuxElement::Decorator<float> mTLep0METDecor("mT_lep0MET");
      static SG::AuxElement::Decorator<float> mTLep1METDecor("mT_lep1MET");
 
-     const xAOD::MissingET* final = *inMETCont->find("FinalClus"); // ("FinalClus" uses the calocluster-based soft terms, "FinalTrk" uses the track-based ones)
+     const xAOD::MissingET* final = *inMETCont->find("FinalTrk"); // ("FinalClus" uses the calocluster-based soft terms, "FinalTrk" uses the track-based ones)
      TLorentzVector MET;
      MET.SetPtEtaPhiM( final->met(), 0, final->phi(), 0 );
 
@@ -1413,6 +1412,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   static SG::AuxElement::Decorator< char > isTMDecor("isTM");
   static SG::AuxElement::Decorator< char > isMTDecor("isMT");
   static SG::AuxElement::Decorator< char > isMMDecor("isMM");
+
   isTMDecor( *eventInfo ) = 0;
   isMTDecor( *eventInfo ) = 0;
   isMMDecor( *eventInfo ) = 0;
@@ -1435,7 +1435,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 
   bool is2lepOS = ( nLeptons == 2 && isSS01(*eventInfo) );
   bool is3lep   = ( nLeptons == 3 && isSS12(*eventInfo) );
-  
+
   if ( !( is2lepOS || is3lep ) ) {
     return EL::StatusCode::SUCCESS; // no weights in the other categories: just return
   }
@@ -1870,7 +1870,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 	else if (  isTightAcc( *lepA )    &&  isMediumAcc( *lepB ) ) { region = "TM"; isTMDecor( *eventInfo ) = 1; }
 	else if (  isMediumAcc( *lepA )   &&  isTightAcc( *lepB )  ) { region = "MT"; isMTDecor( *eventInfo ) = 1; }
 	else if (  isMediumAcc( *lepA )   &&  isMediumAcc( *lepB ) ) { region = "MM"; isMMDecor( *eventInfo ) = 1; }
- 
+
   	if ( m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
 
         // set the properties of the two relevant leptons for future convenience
