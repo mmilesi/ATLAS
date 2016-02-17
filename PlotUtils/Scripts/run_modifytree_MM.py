@@ -18,11 +18,12 @@ sys.path.append(os.path.abspath(os.path.curdir))
 
 gROOT.SetBatch(True)
 
-oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM/'
-newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED/'
+#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED/'
 
-#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
+oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_WEIGHTED/'
+newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_AVGEFF_WEIGHTED/'
 
 treename = 'physics'
 nentries = 'ALL' #ALL
