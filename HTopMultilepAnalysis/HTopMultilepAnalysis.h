@@ -53,6 +53,12 @@ public:
   /* to define "Tight" taus */
   std::string m_ConfigPathTightTaus;
 
+  bool m_useLooseAsLoosest;
+  bool m_useMediumAsLoosest;
+  bool m_vetoMediumNonTight;
+  bool m_useMediumAsTight;
+  bool m_useTightAsTight;
+
   bool m_useMCForTagAndProbe; // To define tag and probe leptons for RF rate mesurement using MC truth
                               // NB: use it only for pure MC estimate (e.g. ttbar MM closure test)
 

@@ -39,21 +39,43 @@ class HTopMultilepTree : public HelpTreeBase
     float  		m_mlll012;
     float               m_mT_lep0MET;
     float               m_mT_lep1MET;
-    int  		m_isTT;
-    int  		m_isTL;
-    int  		m_isLT;
-    int  		m_isLL;
-    int  		m_isTM;
-    int  		m_isMT;
-    int  		m_isMM;
-    int  		m_isTelLmu;
-    int  		m_isLelTmu;
-    int  		m_isTmuLel;
-    int  		m_isLmuTel;
-    int  		m_isTelMmu;
-    int  		m_isMelTmu;
-    int  		m_isTmuMel;
-    int  		m_isMmuTel;
+
+    int  		m_is_T_T;
+    int  		m_is_T_AntiT;
+    int  		m_is_AntiT_T;
+    int  		m_is_AntiT_AntiT;
+
+    int  		m_isT_MAntiT;
+    int  		m_is_MAntiT_T;
+    int  		m_is_MAntiT_MAntiT;
+
+    int  		m_is_M_M;
+    int                 m_is_T_AntiM;
+    int                 m_is_AntiM_T;
+    int                 m_is_M_AntiM;
+    int                 m_is_AntiM_M;
+    int                 m_is_AntiM_AntiM;
+
+    int  		m_is_Tel_AntiTmu;
+    int  		m_is_AntiTel_Tmu;
+    int  		m_is_Tmu_AntiTel;
+    int  		m_is_AntiTmu_Tel;
+
+    int  		m_is_Tel_MAntiTmu;
+    int  		m_is_MAntiTel_Tmu;
+    int  		m_is_Tmu_MAntiTel;
+    int  		m_is_MAntiTmu_Tel;
+
+    int  		m_is_Mel_AntiMmu;
+    int  		m_is_AntiMel_Mmu;
+    int  		m_is_Mmu_AntiMel;
+    int  		m_is_AntiMmu_Mel;
+
+    int  		m_is_Tel_AntiMmu;
+    int  		m_is_AntiMel_Tmu;
+    int  		m_is_Tmu_AntiMel;
+    int  		m_is_AntiMmu_Tel;
+
     int                 m_isNonTightEvent;
     int                 m_isProbeElEvent;
     int                 m_isProbeMuEvent;
