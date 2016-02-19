@@ -179,17 +179,17 @@ for iLep in list_lep:
 		       if iType == "Fake":
 
                           if iLep == "Mu":
-                             nBIN  = 3
+                             nBIN  = 4
                              xbins = [20,25,35,50,200]
 			  elif iLep == "El":
-                             nBIN  = 3
+                             nBIN  = 4
                              xbins = [20,25,40,60,200]
 
                        elif iType == "Real":
 
                   	  #nBIN  = 12
                   	  #xbins = [25,30,35,40,45,50,60,70,80,90,100,150,200]
-			  nBIN  = 4
+			  nBIN  = 5
                   	  xbins = [20,25,30,40,60,200]
 
                        vxbins = array.array("d", xbins)
@@ -202,7 +202,7 @@ for iLep in list_lep:
 
                      nBIN = 1
                      if iVar == "ProbePt":
-                        xbins = [25,200]
+                        xbins = [20,200]
                      elif iVar == "ProbeEta":
                         if iLep == "El":
                            xbins = [0.0,2.6]

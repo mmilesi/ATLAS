@@ -768,15 +768,15 @@ if doMMRates or doMMClosureRates:
     # Special plots for MM real/fake rate CRs
     # ---------------------------------------
 
-    #vardb.registerVar( Variable(shortname = 'ElTagPt', latexname = 'p_{T}^{tag e} [GeV]', ntuplename = 'el_tag_pt[0]/1e3', bins = 90, minval = 25.0, maxval = 205.0,) )
+    #vardb.registerVar( Variable(shortname = 'ElTagPt', latexname = 'p_{T}^{tag e} [GeV]', ntuplename = 'el_tag_pt[0]/1e3', bins = 95, minval = 20.0, maxval = 210.0,) )
     #vardb.registerVar( Variable(shortname = 'ElTagEta', latexname = '#eta^{tag e}', ntuplename = 'TMath::Abs( el_tag_eta[0] )',bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
-    vardb.registerVar( Variable(shortname = 'ElProbePt', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'el_probe_pt[0]/1e3', bins = 90, minval = 25.0, maxval = 205.0,) ) #maxval = 310.0,) )
+    vardb.registerVar( Variable(shortname = 'ElProbePt', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'el_probe_pt[0]/1e3', bins = 95, minval = 20.0, maxval = 210.0,) ) #maxval = 310.0,) )
     vardb.registerVar( Variable(shortname = 'ElProbeEta', latexname = '#eta^{probe e}', ntuplename = 'TMath::Abs( el_probe_eta[0] )', bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
     #vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 8, minval = 2, maxval = 10) )
 
-    #vardb.registerVar( Variable(shortname = 'MuTagPt', latexname = 'p_{T}^{tag #mu} [GeV]', ntuplename = 'muon_tag_pt[0]/1e3', bins = 90, minval = 25.0, maxval = 205.0,) )
+    #vardb.registerVar( Variable(shortname = 'MuTagPt', latexname = 'p_{T}^{tag #mu} [GeV]', ntuplename = 'muon_tag_pt[0]/1e3', bins = 95, minval = 20.0, maxval = 210.0,) )
     #vardb.registerVar( Variable(shortname = 'MuTagEta', latexname = '#eta^{tag #mu}', ntuplename = 'TMath::Abs( muon_tag_eta[0] )', bins = 8,  minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
-    vardb.registerVar( Variable(shortname = 'MuProbePt', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'muon_probe_pt[0]/1e3', bins = 90, minval = 25.0, maxval = 205.0) ) # maxval = 310.0,) )
+    vardb.registerVar( Variable(shortname = 'MuProbePt', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'muon_probe_pt[0]/1e3', bins = 95, minval = 20.0, maxval = 210.0) ) # maxval = 310.0,) )
     vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = 'TMath::Abs( muon_probe_eta[0] )', bins = 8, minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
     #vardb.registerVar( Variable(shortname = 'MuProbeNJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 8, minval = 2, maxval = 10) )
 
