@@ -1227,13 +1227,24 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   static SG::AuxElement::Decorator< float > mll12Decor("mll12"); // 2nd lead + 3rd lead
   static SG::AuxElement::Decorator< float > mlll012Decor("mlll012");
 
+  static SG::AuxElement::Decorator< float > mOSPair01Decor("mOSPair01"); // for events with 1 OS (lep0) and 2 SS (lep1,lep2), save m(lep0,lep1)
+  static SG::AuxElement::Decorator< float > mOSPair02Decor("mOSPair02"); // for events with 1 OS (lep0) and 2 SS (lep1,lep2), save m(lep0,lep2)
+
+  static SG::AuxElement::Decorator< char > isOSPairSF01Decor("isOSPairSF01"); // for events with 1 OS and 2 SS, check whether lep0,lep1 are same-flavour
+  static SG::AuxElement::Decorator< char > isOSPairSF02Decor("isOSPairSF02"); // for events with 1 OS and 2 SS, check whether lep0,lep1 are same-flavour
+
   // start decorating with default values
-  isSS01Decor(*eventInfo)  = 0; // false
-  isSS12Decor(*eventInfo)  = 0; // false
+  isSS01Decor(*eventInfo)  = 0;
+  isSS12Decor(*eventInfo)  = 0;
   mll01Decor(*eventInfo)   = -1.0;
   mll02Decor(*eventInfo)   = -1.0;
   mll12Decor(*eventInfo)   = -1.0;
   mlll012Decor(*eventInfo) = -1.0;
+
+  mOSPair01Decor(*eventInfo) = -1.0;
+  mOSPair02Decor(*eventInfo) = -1.0;
+  isOSPairSF01Decor(*eventInfo) = 0;
+  isOSPairSF02Decor(*eventInfo) = 0;
 
   unsigned int nLeptons = leptons.size();
 
@@ -1322,7 +1333,7 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      lepBcharge =  ( lepBFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepB))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepB))->charge() ) ;
      lepCcharge =  ( lepCFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepC))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepC))->charge() ) ;
 
-     // look only at events where there is an OS pair
+     // look only at events where there is one OS pair
      if ( fabs( lepAcharge/fabs(lepAcharge) + lepBcharge/fabs(lepBcharge) + lepCcharge/fabs(lepCcharge)  ) != 3 )
      {
         // now decorate event!
@@ -1334,27 +1345,46 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
         isOSlepDecor(*lepC) = ( (lepAcharge * lepBcharge) > 0 );
 
         // once OS lepton has been found, find the SS lep with min{ deltaR(lep0) } and decorate!
+        //
+	// Flag events where an OS, SF pair is found with m(ll) < 12 GeV or within Z peak [81,101] GeV.
+	// Will reject such events
+        //
 	float dR_i(-1), dR_j(-1);
 	if ( isOSlepDecor(*lepA) ) {
 	   dR_i = lepA_4mom.DeltaR(lepB_4mom );
 	   dR_j = lepA_4mom.DeltaR(lepC_4mom );
 	   isClosestSSlepDecor(*lepB) = ( dR_i <=  dR_j );
 	   isClosestSSlepDecor(*lepC) = ( dR_j  <  dR_i );
+
+	   if ( pairAB.M() < 12e3 || fabs( pairAB.M() - 91e3 ) < 10e3 ) flag_bad_event
+	   if ( pairAC.M() < 12e3 || fabs( pairAC.M() - 91e3 ) < 10e3 ) flag_bad_event
+
 	}
 	else if ( isOSlepDecor(*lepB) ) {
 	   dR_i = lepB_4mom.DeltaR(lepA_4mom );
 	   dR_j = lepB_4mom.DeltaR(lepC_4mom );
 	   isClosestSSlepDecor(*lepA) = ( dR_i <=  dR_j );
 	   isClosestSSlepDecor(*lepC) = ( dR_j  <  dR_i );
+
+	   if ( pairAB.M() < 12e3 || fabs( pairAB.M() - 91e3 ) < 10e3 ) flag_bad_event
+	   if ( pairBC.M() < 12e3 || fabs( pairBC.M() - 91e3 ) < 10e3 ) flag_bad_event
+
 	}
 	else if ( isOSlepDecor(*lepC) ) {
 	   dR_i = lepC_4mom.DeltaR(lepA_4mom );
 	   dR_j = lepC_4mom.DeltaR(lepB_4mom );
 	   isClosestSSlepDecor(*lepA) = ( dR_i <=  dR_j );
 	   isClosestSSlepDecor(*lepB) = ( dR_j  <  dR_i );
+
+	   if ( pairAC.M() < 12e3 || fabs( pairAC.M() - 91e3 ) < 10e3 ) flag_bad_event
+	   if ( pairBC.M() < 12e3 || fabs( pairBC.M() - 91e3 ) < 10e3 ) flag_bad_event
+
 	}
      }
   }
+
+
+
 
   // FIXME: add Z/JPsi mass window
   /*
