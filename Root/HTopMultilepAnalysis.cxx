@@ -640,8 +640,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   static SG::AuxElement::Accessor< char >  TightElectronIDAcc(m_TightElectronPID_WP);
   static SG::AuxElement::Accessor< char >  TightMuonIsoAcc(m_TightMuonIso_WP);
   static SG::AuxElement::Accessor< float > d0SigAcc ("d0sig");
-
-  const xAOD::Vertex *primaryVertex = HelperFunctions::getPrimaryVertex(vertices);
+  static SG::AuxElement::Accessor< float > z0sinthetaAcc ("z0sintheta");
 
   // -----------------------
   //        electrons
@@ -664,19 +663,14 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
       return EL::StatusCode::FAILURE;
     }
 
-    const xAOD::TrackParticle* trk = el_itr->trackParticle();
-    if ( !trk ) {
-      Error("execute()", "no track available for this electron. Aborting " );
+    if ( !z0sinthetaAcc.isAvailable( *el_itr ) ) {
+      Error("execute()", "'z0sintheta' attribute is not available for this electron. Aborting " );
       return EL::StatusCode::FAILURE;
     }
 
-    float z0 =  trk->z0()  - ( primaryVertex->z() - trk->vz() ) ; // distance between z0 and zPV ( after referring the PV z coordinate to the beamspot position, given by vz() )
-    // see https://twiki.cern.ch/twiki/bin/view/AtlasProtected/InDetTrackingDC14 for further reference
-    float theta = trk->theta();
-
     // preliminary: tighten impact parameter cuts
     //
-    if ( fabs( d0SigAcc( *el_itr ) ) < 5.0 && fabs( z0*sin(theta) ) < 0.5 ) {
+    if ( fabs( d0SigAcc( *el_itr ) ) < 5.0 && fabs( z0sinthetaAcc( *el_itr ) ) < 0.5 ) {
 
       // if using isolation...
       //
@@ -754,19 +748,14 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     isTightDecor( *mu_itr ) =  0;
     isMediumDecor( *mu_itr ) =  0;
 
-    const xAOD::TrackParticle* trk = mu_itr->primaryTrackParticle();
-    if ( !trk ) {
-      Error("execute()", "no track available for this muon. Aborting " );
+    if ( !z0sinthetaAcc.isAvailable( *mu_itr ) ) {
+      Error("execute()", "'z0sintheta' attribute is not available for this muon. Aborting " );
       return EL::StatusCode::FAILURE;
     }
 
-    float z0 =  trk->z0()  - ( primaryVertex->z() - trk->vz() ) ; // distance between z0 and zPV ( after referring the PV z coordinate to the beamspot position, given by vz() )
-    // see https://twiki.cern.ch/twiki/bin/view/AtlasProtected/InDetTrackingDC14 for further reference
-    float theta = trk->theta();
-
     // preliminary: tighten impact parameter cuts
     //
-    if ( fabs( z0*sin(theta) ) < 0.5 ) {
+    if ( fabs( z0sinthetaAcc( *mu_itr ) ) < 0.5 ) {
 
       // if using isolation...
       //
@@ -1229,7 +1218,6 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
 
   static SG::AuxElement::Decorator< float > mOSPair01Decor("mOSPair01"); // for events with 1 OS (lep0) and 2 SS (lep1,lep2), save m(lep0,lep1)
   static SG::AuxElement::Decorator< float > mOSPair02Decor("mOSPair02"); // for events with 1 OS (lep0) and 2 SS (lep1,lep2), save m(lep0,lep2)
-
   static SG::AuxElement::Decorator< char > isOSPairSF01Decor("isOSPairSF01"); // for events with 1 OS and 2 SS, check whether lep0,lep1 are same-flavour
   static SG::AuxElement::Decorator< char > isOSPairSF02Decor("isOSPairSF02"); // for events with 1 OS and 2 SS, check whether lep0,lep1 are same-flavour
 
@@ -1258,9 +1246,9 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   // initialize TLorentzVectors (for invariant mass computation)
   xAOD::IParticle::FourMom_t lepA_4mom, lepB_4mom, lepC_4mom;
 
-  if ( nLeptons == 2 )
-  {
-     // retrieve lepA
+  if ( nLeptons == 2 ) {
+
+      // retrieve lepA
      const xAOD::IParticle* lepA = leptons.at(0);
      // retrieve lepB
      const xAOD::IParticle* lepB = leptons.at(1);
@@ -1300,10 +1288,9 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      mT = sqrt( 2.0 * lepB_4mom.Pt() * ( MET.Pt() ) * ( 1.0 - cos( lepB_4mom.DeltaPhi(MET) ) ) );
      mTLep1METDecor( *eventInfo ) = mT;
 
-  }
-  else if ( nLeptons == 3 )
-  {
-     // retrieve lepA
+  } else if ( nLeptons == 3 ) {
+
+      // retrieve lepA
      const xAOD::IParticle* lepA = leptons.at(0);
      // retrieve lepB
      const xAOD::IParticle* lepB = leptons.at(1);
@@ -1333,10 +1320,11 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      lepBcharge =  ( lepBFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepB))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepB))->charge() ) ;
      lepCcharge =  ( lepCFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepC))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepC))->charge() ) ;
 
-     // look only at events where there is one OS pair
-     if ( fabs( lepAcharge/fabs(lepAcharge) + lepBcharge/fabs(lepBcharge) + lepCcharge/fabs(lepCcharge)  ) != 3 )
-     {
-        // now decorate event!
+     // look only at events where there is (at least) one OS pair
+     //
+     if ( fabs( lepAcharge/fabs(lepAcharge) + lepBcharge/fabs(lepBcharge) + lepCcharge/fabs(lepCcharge)  ) != 3 ) {
+
+	 // now decorate event!
 	isSS12Decor(*eventInfo) = 1;
 
         // now find the OS lepton and decorate!
@@ -1346,55 +1334,63 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
 
         // once OS lepton has been found, find the SS lep with min{ deltaR(lep0) } and decorate!
         //
-	// Flag events where an OS, SF pair is found with m(ll) < 12 GeV or within Z peak [81,101] GeV.
-	// Will reject such events
+	// Save the invariant mass of all the lepton pairs containing the OS one, and whether the pair is
+        // made up of same flavour leptons
         //
 	float dR_i(-1), dR_j(-1);
 	if ( isOSlepDecor(*lepA) ) {
 	   dR_i = lepA_4mom.DeltaR(lepB_4mom );
 	   dR_j = lepA_4mom.DeltaR(lepC_4mom );
-	   isClosestSSlepDecor(*lepB) = ( dR_i <=  dR_j );
-	   isClosestSSlepDecor(*lepC) = ( dR_j  <  dR_i );
-
-	   if ( pairAB.M() < 12e3 || fabs( pairAB.M() - 91e3 ) < 10e3 ) flag_bad_event
-	   if ( pairAC.M() < 12e3 || fabs( pairAC.M() - 91e3 ) < 10e3 ) flag_bad_event
-
+	   if ( dR_i <=  dR_j ) {
+	       isClosestSSlepDecor(*lepB) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairAB.M();
+	       mOSPair02Decor( *eventInfo ) = pairAC.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepAFlavour == lepBFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepAFlavour == lepCFlavour );
+	   } else {
+	       isClosestSSlepDecor(*lepC) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairAC.M();
+	       mOSPair02Decor( *eventInfo ) = pairAB.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepAFlavour == lepCFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepAFlavour == lepBFlavour );
+	   }
 	}
 	else if ( isOSlepDecor(*lepB) ) {
 	   dR_i = lepB_4mom.DeltaR(lepA_4mom );
 	   dR_j = lepB_4mom.DeltaR(lepC_4mom );
-	   isClosestSSlepDecor(*lepA) = ( dR_i <=  dR_j );
-	   isClosestSSlepDecor(*lepC) = ( dR_j  <  dR_i );
-
-	   if ( pairAB.M() < 12e3 || fabs( pairAB.M() - 91e3 ) < 10e3 ) flag_bad_event
-	   if ( pairBC.M() < 12e3 || fabs( pairBC.M() - 91e3 ) < 10e3 ) flag_bad_event
-
+	   if ( dR_i <=  dR_j ) {
+	       isClosestSSlepDecor(*lepA) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairAB.M();
+	       mOSPair02Decor( *eventInfo ) = pairBC.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepAFlavour == lepBFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepBFlavour == lepCFlavour );
+	   } else {
+	       isClosestSSlepDecor(*lepC) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairBC.M();
+	       mOSPair02Decor( *eventInfo ) = pairAB.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepBFlavour == lepCFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepAFlavour == lepBFlavour );
+	   }
 	}
 	else if ( isOSlepDecor(*lepC) ) {
 	   dR_i = lepC_4mom.DeltaR(lepA_4mom );
 	   dR_j = lepC_4mom.DeltaR(lepB_4mom );
-	   isClosestSSlepDecor(*lepA) = ( dR_i <=  dR_j );
-	   isClosestSSlepDecor(*lepB) = ( dR_j  <  dR_i );
-
-	   if ( pairAC.M() < 12e3 || fabs( pairAC.M() - 91e3 ) < 10e3 ) flag_bad_event
-	   if ( pairBC.M() < 12e3 || fabs( pairBC.M() - 91e3 ) < 10e3 ) flag_bad_event
-
+	   if ( dR_i <=  dR_j ) {
+	       isClosestSSlepDecor(*lepA) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairAC.M();
+	       mOSPair02Decor( *eventInfo ) = pairBC.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepAFlavour == lepCFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepBFlavour == lepCFlavour );
+	   } else {
+	       isClosestSSlepDecor(*lepB) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairBC.M();
+	       mOSPair02Decor( *eventInfo ) = pairAC.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepBFlavour == lepCFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepAFlavour == lepCFlavour );
+	   }
 	}
      }
   }
-
-
-
-
-  // FIXME: add Z/JPsi mass window
-  /*
-  const float Zmass(91187.6);     // in MeV
-  const float JPsimass(3096.916); // in MeV
-
-  mJPsiCand_ee, mJPsiCand_mm
-  mZCand_ee, mZCand_mm, mZCand_ee_SS
-
-  */
 
   return EL::StatusCode::SUCCESS;
 }

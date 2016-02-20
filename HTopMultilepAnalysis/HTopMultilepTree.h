@@ -37,6 +37,12 @@ class HTopMultilepTree : public HelpTreeBase
     float  		m_mll02;
     float  		m_mll12;
     float  		m_mlll012;
+
+    float               m_mOSPair01;
+    float               m_mOSPair02;
+    int                 m_isOSPairSF01;
+    int                 m_isOSPairSF02;
+
     float               m_mT_lep0MET;
     float               m_mT_lep1MET;
 
@@ -113,6 +119,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_muon_tag_pt;
     std::vector<float> m_muon_tag_eta;
     std::vector<float> m_muon_tag_trkd0sig;
+    std::vector<float> m_muon_tag_trkz0sintheta;
     std::vector<float> m_muon_tag_ptvarcone30;
     std::vector<float> m_muon_tag_topoetcone20;
     std::vector<int>   m_muon_tag_isIsolated_Loose;
@@ -134,6 +141,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_muon_probe_pt;
     std::vector<float> m_muon_probe_eta;
     std::vector<float> m_muon_probe_trkd0sig;
+    std::vector<float> m_muon_probe_trkz0sintheta;
     std::vector<float> m_muon_probe_ptvarcone30;
     std::vector<float> m_muon_probe_topoetcone20;
     std::vector<int>   m_muon_probe_isIsolated_Loose;
@@ -174,6 +182,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_electron_tag_pt;
     std::vector<float> m_electron_tag_eta;
     std::vector<float> m_electron_tag_caloCluster_eta;
+    std::vector<float> m_electron_tag_trkd0sig;
+    std::vector<float> m_electron_tag_trkz0sintheta;
     std::vector<int>   m_electron_tag_LHLoose;
     std::vector<int>   m_electron_tag_LHMedium;
     std::vector<int>   m_electron_tag_LHTight;
@@ -201,6 +211,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_electron_probe_pt;
     std::vector<float> m_electron_probe_eta;
     std::vector<float> m_electron_probe_caloCluster_eta;
+    std::vector<float> m_electron_probe_trkd0sig;
+    std::vector<float> m_electron_probe_trkz0sintheta;
     std::vector<int>   m_electron_probe_LHLoose;
     std::vector<int>   m_electron_probe_LHMedium;
     std::vector<int>   m_electron_probe_LHTight;
@@ -231,6 +243,8 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_lepton_phi;
     std::vector<float> m_lepton_eta;
     std::vector<float> m_lepton_m;
+    std::vector<float> m_lepton_trkd0sig;
+    std::vector<float> m_lepton_trkz0sintheta;
     std::vector<float> m_lepton_charge;
     std::vector<int>   m_lepton_flavour;
     std::vector<int>   m_lepton_isTrigMatched;
@@ -251,9 +265,46 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_ancestorTruthOrigin;
     std::vector<int>   m_lepton_ancestorTruthStatus;
 
+    /* Flat varables for leptons in the 3lep category */
+    std::vector<float> m_lepton_3lepOS_pt;
+    std::vector<float> m_lepton_3lepOS_phi;
+    std::vector<float> m_lepton_3lepOS_eta;
+    std::vector<float> m_lepton_3lepOS_m;
+    std::vector<float> m_lepton_3lepOS_trkd0sig;
+    std::vector<float> m_lepton_3lepOS_trkz0sintheta;
+    std::vector<float> m_lepton_3lepOS_charge;
+    std::vector<int>   m_lepton_3lepOS_flavour;
+    std::vector<int>   m_lepton_3lepOS_isTrigMatched;
+    std::vector<int>   m_lepton_3lepOS_isTight;
+    std::vector<int>   m_lepton_3lepOS_isMedium;
+    std::vector<float> m_lepton_3lepClosestSS_pt;
+    std::vector<float> m_lepton_3lepClosestSS_phi;
+    std::vector<float> m_lepton_3lepClosestSS_eta;
+    std::vector<float> m_lepton_3lepClosestSS_m;
+    std::vector<float> m_lepton_3lepClosestSS_trkd0sig;
+    std::vector<float> m_lepton_3lepClosestSS_trkz0sintheta;
+    std::vector<float> m_lepton_3lepClosestSS_charge;
+    std::vector<int>   m_lepton_3lepClosestSS_flavour;
+    std::vector<int>   m_lepton_3lepClosestSS_isTrigMatched;
+    std::vector<int>   m_lepton_3lepClosestSS_isTight;
+    std::vector<int>   m_lepton_3lepClosestSS_isMedium;
+    std::vector<float> m_lepton_3lepOtherSS_pt;
+    std::vector<float> m_lepton_3lepOtherSS_phi;
+    std::vector<float> m_lepton_3lepOtherSS_eta;
+    std::vector<float> m_lepton_3lepOtherSS_m;
+    std::vector<float> m_lepton_3lepOtherSS_trkd0sig;
+    std::vector<float> m_lepton_3lepOtherSS_trkz0sintheta;
+    std::vector<float> m_lepton_3lepOtherSS_charge;
+    std::vector<int>   m_lepton_3lepOtherSS_flavour;
+    std::vector<int>   m_lepton_3lepOtherSS_isTrigMatched;
+    std::vector<int>   m_lepton_3lepOtherSS_isTight;
+    std::vector<int>   m_lepton_3lepOtherSS_isMedium;
+
     /* lepton TAG variables */
     std::vector<float> m_lepton_tag_pt;
     std::vector<float> m_lepton_tag_eta;
+    std::vector<float> m_lepton_tag_trkd0sig;
+    std::vector<float> m_lepton_tag_trkz0sintheta;
     std::vector<int>   m_lepton_tag_flavour;
     std::vector<int>   m_lepton_tag_charge;
     std::vector<int>   m_lepton_tag_isTrigMatched;
@@ -273,6 +324,8 @@ class HTopMultilepTree : public HelpTreeBase
     /* lepton PROBE variables */
     std::vector<float> m_lepton_probe_pt;
     std::vector<float> m_lepton_probe_eta;
+    std::vector<float> m_lepton_probe_trkd0sig;
+    std::vector<float> m_lepton_probe_trkz0sintheta;
     std::vector<int>   m_lepton_probe_flavour;
     std::vector<int>   m_lepton_probe_charge;
     std::vector<int>   m_lepton_probe_isTrigMatched;
