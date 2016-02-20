@@ -51,7 +51,7 @@ class HTopMultilepTree : public HelpTreeBase
     int  		m_is_AntiT_T;
     int  		m_is_AntiT_AntiT;
 
-    int  		m_isT_MAntiT;
+    int  		m_is_T_MAntiT;
     int  		m_is_MAntiT_T;
     int  		m_is_MAntiT_MAntiT;
 

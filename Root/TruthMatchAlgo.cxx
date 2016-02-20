@@ -69,40 +69,6 @@ TruthMatchAlgo :: TruthMatchAlgo () :
 
 TruthMatchAlgo::~TruthMatchAlgo() {}
 
-EL::StatusCode  TruthMatchAlgo :: configure ()
-{
-
-  if ( !getConfig().empty() ) {
-
-    // read in user configuration from text file
-    TEnv *config = new TEnv(getConfig(true).c_str());
-    if ( !config ) {
-      Error("TruthMatchAlgo()", "Failed to initialize reading of config file. Exiting." );
-      return EL::StatusCode::FAILURE;
-    }
-    Info("configure()", "Configuing TruthMatchAlgo Interface. User configuration read from : %s", getConfig().c_str());
-
-    // read debug flag from .config file
-    m_debug			 = config->GetValue("Debug" ,	  m_debug );
-    m_useCutFlow		 = config->GetValue("UseCutFlow", m_useCutFlow );
-
-    m_inContainerName_Electrons  = config->GetValue("InputContainerElectrons", m_inContainerName_Electrons.c_str());
-    m_inContainerName_Muons      = config->GetValue("InputContainerMuons",     m_inContainerName_Muons.c_str());
-    m_inContainerName_Leptons	 = config->GetValue("InputContainerLeptons",   m_inContainerName_Leptons.c_str());
-
-    m_doMuonTruthPartMatching	 = config->GetValue("DoMuonTruthPartMatching" , m_doMuonTruthPartMatching );
-    m_doMuonTrackMatching	 = config->GetValue("DoMuonTrackMatching"  , m_doMuonTrackMatching );
-
-    config->Print();
-
-    Info("configure()", "TruthMatchAlgo Interface succesfully configured!");
-
-    delete config; config = nullptr;
-  }
-
-  return EL::StatusCode::SUCCESS;
-}
-
 
 EL::StatusCode TruthMatchAlgo :: setupJob (EL::Job& job)
 {
@@ -204,11 +170,6 @@ EL::StatusCode TruthMatchAlgo :: initialize ()
   }
 
   Info("initialize()", "Number of events: %lld ", m_event->getEntries() );
-
-  if ( configure() == EL::StatusCode::FAILURE ) {
-    Error("initialize()", "Failed to properly configure. Exiting." );
-    return EL::StatusCode::FAILURE;
-  }
 
   m_numEvent            = 0;
   m_numObject           = 0;

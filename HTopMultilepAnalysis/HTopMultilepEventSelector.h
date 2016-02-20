@@ -90,9 +90,6 @@ public:
   virtual EL::StatusCode histFinalize ();
 
   // these are the functions not inherited from Algorithm
-  virtual EL::StatusCode configure ();
-
-  // added functions not from Algorithm
 
   // this is needed to distribute the algorithm to the workers
   ClassDef(HTopMultilepEventSelector, 1);

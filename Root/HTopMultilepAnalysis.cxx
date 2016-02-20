@@ -112,56 +112,6 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
 
 }
 
-EL::StatusCode  HTopMultilepAnalysis :: configure ()
-{
-
-  if ( !getConfig().empty() ) {
-
-    // read in user configuration from text file
-    TEnv *config = new TEnv(getConfig(true).c_str());
-    if ( !config ) {
-      Error("BasicEventSelection()", "Failed to initialize reading of config file. Exiting." );
-      return EL::StatusCode::FAILURE;
-    }
-    Info("configure()", "Configuing HTopMultilepAnalysis Interface. User configuration read from : %s", getConfig().c_str());
-
-    // read debug flag from .config file
-    m_debug	                 = config->GetValue("Debug" ,      m_debug);
-    m_useCutFlow                 = config->GetValue("UseCutFlow",  m_useCutFlow);
-
-    // input container to be read from TEvent or TStore
-    m_inContainerName_Electrons	 = config->GetValue("InputContainerElectrons", m_inContainerName_Electrons.c_str());
-    m_inContainerName_Muons	 = config->GetValue("InputContainerMuons",     m_inContainerName_Muons.c_str());
-    m_inContainerName_Leptons    = config->GetValue("InputContainerLeptons",   m_inContainerName_Leptons.c_str());
-    m_inContainerName_Jets	 = config->GetValue("InputContainerJets",      m_inContainerName_Jets.c_str());
-    m_inContainerName_Taus	 = config->GetValue("InputContainerTaus",      m_inContainerName_Taus.c_str());
-
-    m_inContainerName_PreSelectedElectrons = config->GetValue("InputContainerPreSelectedElectrons", m_inContainerName_PreSelectedElectrons.c_str());
-    m_inContainerName_PreSelectedMuons     = config->GetValue("InputContainerPreSelectedMuons",     m_inContainerName_PreSelectedMuons.c_str());
-    m_inContainerName_PreSelectedJets	   = config->GetValue("InputContainerPreSelectedJets",      m_inContainerName_PreSelectedJets.c_str());
-
-    // to define "Tight" leptons
-    m_TightElectronPID_WP         = config->GetValue("TightElectronPID_WP"  ,  m_TightElectronPID_WP.c_str());
-    m_TightElectronIso_WP         = config->GetValue("TightElectronIso_WP"  ,  m_TightElectronIso_WP.c_str());
-    m_TightMuonD0sig_cut          = config->GetValue("TightMuonD0sig_cut"   ,  m_TightMuonD0sig_cut );
-    m_TightMuonIso_WP             = config->GetValue("TightMuonIso_WP"      ,  m_TightMuonIso_WP.c_str());
-
-    // to define "Tight" taus
-    m_ConfigPathTightTaus         = config->GetValue("ConfigPathTightTaus"  ,  m_ConfigPathTightTaus.c_str());
-
-    m_useMCForTagAndProbe         = config->GetValue("UseMCForTagAndProbe"  ,  m_useMCForTagAndProbe );
-
-    config->Print();
-
-    Info("configure()", "HTopMultilepAnalysis Interface succesfully configured!");
-
-    delete config; config = nullptr;
-  }
-
-  return EL::StatusCode::SUCCESS;
-}
-
-
 EL::StatusCode HTopMultilepAnalysis :: setupJob (EL::Job& job)
 {
   // Here you put code that sets up the job on the submission object
@@ -177,8 +127,6 @@ EL::StatusCode HTopMultilepAnalysis :: setupJob (EL::Job& job)
 
   return EL::StatusCode::SUCCESS;
 }
-
-
 
 EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
 {
@@ -203,8 +151,6 @@ EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
   return EL::StatusCode::SUCCESS;
 }
 
-
-
 EL::StatusCode HTopMultilepAnalysis :: fileExecute ()
 {
   // Here you do everything that needs to be done exactly once for every
@@ -225,8 +171,6 @@ EL::StatusCode HTopMultilepAnalysis :: fileExecute ()
 
 }
 
-
-
 EL::StatusCode HTopMultilepAnalysis :: changeInput (bool /*firstFile*/)
 {
   // Here you do everything you need to do when we change input files,
@@ -234,8 +178,6 @@ EL::StatusCode HTopMultilepAnalysis :: changeInput (bool /*firstFile*/)
   // D3PDReader or a similar service this method is not needed.
   return EL::StatusCode::SUCCESS;
 }
-
-
 
 EL::StatusCode HTopMultilepAnalysis :: initialize ()
 {
@@ -253,11 +195,6 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
 
   // count number of events
   m_eventCounter = 0;
-
-  if ( this->configure() == EL::StatusCode::FAILURE ) {
-    Error("initialize()", "Failed to properly configure. Exiting." );
-    return EL::StatusCode::FAILURE;
-  }
 
   // check if sample is MC
   //
@@ -492,7 +429,6 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   return EL::StatusCode::SUCCESS;
 }
 
-
 EL::StatusCode HTopMultilepAnalysis :: execute ()
 {
   // Here you do everything that needs to be done on every single
@@ -690,19 +626,19 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 	    return EL::StatusCode::FAILURE;
 	  }
 
-	  // "Tight"  ---> iso + ID
-	  // "Medium" ---> !iso + ID
+	  // "Tight"  ---> IP + ID + iso
+	  // "Medium" ---> IP + ID (any iso)
 	  //
 	  if ( ( TightElectronIsoAcc( *el_itr ) == 1 ) && ( TightElectronIDAcc( *el_itr ) == 1 ) ) { isTightDecor( *el_itr ) = 1; }
-	  else if ( ( TightElectronIDAcc( *el_itr ) == 1 ) )                                       { isMediumDecor( *el_itr ) = 1; }
+	  if ( ( TightElectronIDAcc( *el_itr ) == 1 )  )                                           { isMediumDecor( *el_itr ) = 1; }
 
 	} else {
 
-	  // "Tight"  ---> iso
-	  // "Medium" ---> !iso
+	  // "Tight"  ---> IP + iso (any ID)
+	  // "Medium" ---> IP (any iso, ID)
 	  //
 	  if ( TightElectronIsoAcc( *el_itr ) == 1 ) { isTightDecor( *el_itr ) = 1; }
-	  else                                       { isMediumDecor( *el_itr ) = 1; }
+	  isMediumDecor( *el_itr ) = 1;
 
 	}
 
@@ -716,11 +652,11 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 	  return EL::StatusCode::FAILURE;
 	}
 
-	// "Tight"  ---> ID
-	// "Medium" ---> !ID
+	// "Tight"  ---> IP + ID (any iso)
+	// "Medium" ---> IP (any ID, iso)
 	//
 	if ( TightElectronIDAcc( *el_itr ) == 1 ) { isTightDecor( *el_itr ) = 1; }
-	else                                      { isMediumDecor( *el_itr ) = 1; }
+	isMediumDecor( *el_itr ) = 1;
 
       }
       // if using neither isolation, nor Electron ID..
@@ -775,19 +711,19 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 	    return EL::StatusCode::FAILURE;
 	  }
 
-	  // "Tight"  ---> iso + d0sig
-	  // "Medium" ---> !iso + d0sig
+	  // "Tight"  ---> z0 + iso + d0sig
+	  // "Medium" ---> z0 + d0sig (any iso)
 	  //
 	  if ( ( TightMuonIsoAcc( *mu_itr ) == 1 ) && ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) ) { isTightDecor( *mu_itr ) = 1; }
-	  else if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second )                                       { isMediumDecor( *mu_itr ) = 1; }
+	  if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second )                                            { isMediumDecor( *mu_itr ) = 1; }
 
 	} else {
 
-	  // "Tight"  ---> iso
-	  // "Medium" ---> !iso
+	  // "Tight"  ---> z0 + iso (any d0sig)
+	  // "Medium" ---> z0 (any iso, d0sig)
 	  //
 	  if ( TightMuonIsoAcc( *mu_itr ) == 1 ) { isTightDecor( *mu_itr ) = 1; }
-	  else                                   { isMediumDecor( *mu_itr ) = 1; }
+	  isMediumDecor( *mu_itr ) = 1;
 
 	}
 
@@ -801,11 +737,11 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 	  return EL::StatusCode::FAILURE;
 	}
 
-	// "Tight"  ---> d0sig
-	// "Medium" ---> !d0sig
+	// "Tight"  ---> z0 + d0sig (any iso)
+	// "Medium" ---> z0 (any d0sig, iso)
 	//
 	if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) { isTightDecor( *mu_itr ) = 1; }
-	else                                                         { isMediumDecor( *mu_itr ) = 1; }
+	isMediumDecor( *mu_itr ) = 1;
 
       }
       // if using neither isolation, nor d0sig..
@@ -1236,10 +1172,12 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
 
   unsigned int nLeptons = leptons.size();
 
+  // Set defaults
   if ( nLeptons > 0 ) {
     for( auto lep_it : leptons ) {
-      isOSlepDecor(*(lep_it)) = 0; // false
-      isSS12Decor(*(lep_it))  = 0; // false
+      isOSlepDecor(*lep_it) = 0;
+      isClosestSSlepDecor(*lep_it) = 0;
+      isSS12Decor(*lep_it)  = 0;
     }
   }
 
