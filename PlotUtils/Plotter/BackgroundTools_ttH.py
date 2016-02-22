@@ -472,13 +472,13 @@ class SubProcess:
             #
             # Debug
             #
-            #print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
 	else:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s' % (cutstr))
             #
             # Debug
             #
-            #print '\nOnly baseweight - ROOT plotting string: %s * (%s)'% (self.baseweight, cutstr)
+            print '\nOnly baseweight - ROOT plotting string: %s * (%s)'% (self.baseweight, cutstr)
 
         h = self.histcache[cachename].Clone()
         h.SetName(self.histcache[cachename].GetName()+str(weight))

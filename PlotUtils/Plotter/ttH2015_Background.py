@@ -1263,13 +1263,13 @@ class TTHBackgrounds2015(Background):
 
 	    # Remove the cuts defining the flavour composition (this is made just for calculating thetas...)
 	    #
-            basecut = category.cut.removeCut(self.vardb.getCut('ElEl_Event'))
-            basecut = basecut.removeCut(self.vardb.getCut('MuMu_Event'))
-            basecut = basecut.removeCut(self.vardb.getCut('OF_Event'))
+            basecut = category.cut.removeCut(self.vardb.getCut('2Lep_ElEl_Event'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_MuMu_Event'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_OF_Event'))
 
             # Remove the cuts defining the jet multiplicity
-            basecut = basecut.removeCut(self.vardb.getCut('NJet2L'))
-            basecut = basecut.removeCut(self.vardb.getCut('LowJetCR'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_NJet_SR'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_NJet_CR'))
 
 	    if TTHBackgrounds2015.theta['El'][0] == 999.0 :
 
@@ -1277,8 +1277,8 @@ class TTHBackgrounds2015(Background):
 
                 # define selection for region C and D (ee)
                 #
-                cut_sp_C_el = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('ElEl_Event') & TTCut & self.vardb.getCut('Zsidescut') & self.vardb.getCut('ElEtaCut')
-                cut_sp_D_el = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('ElEl_Event') & TL_LT_Cut & self.vardb.getCut('Zsidescut') & self.vardb.getCut('ElEtaCut')
+                cut_sp_C_el = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_ElEl_Event') & TTCut & self.vardb.getCut('2Lep_Zsidescut') & self.vardb.getCut('2Lep_ElEtaCut')
+                cut_sp_D_el = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_ElEl_Event') & TL_LT_Cut & self.vardb.getCut('2Lep_Zsidescut') & self.vardb.getCut('2Lep_ElEtaCut')
 
                 # Lower pT threshold of subleading lepton to enrich in fakes
                 #
@@ -1356,8 +1356,8 @@ class TTHBackgrounds2015(Background):
 
                 # define selection for region C and D (mumu)
                 #
-                cut_sp_C_mu = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('MuMu_Event') & TTCut
-                cut_sp_D_mu = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('MuMu_Event') & TL_LT_Cut
+                cut_sp_C_mu = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_MuMu_Event') & TTCut
+                cut_sp_D_mu = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_MuMu_Event') & TL_LT_Cut
 
                 # Lower pT threshold of subleading lepton to enrich in fakes
                 #
@@ -1434,21 +1434,21 @@ class TTHBackgrounds2015(Background):
             # Take TTbar MC, excluding all prompts and charge flips, and reweight it by the theta factors measured in data
             #
 	    cut_sp_B_SF     = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_NonPromptEvent'))
-            cut_sp_B_SF     = cut_sp_B_SF.swapCut(self.vardb.getCut('LowJetCR'),self.vardb.getCut('NJet2L')) & TL_LT_Cut
+            cut_sp_B_SF     = cut_sp_B_SF.swapCut(self.vardb.getCut('2Lep_NJet_CR'),self.vardb.getCut('2Lep_NJet_SR')) & TL_LT_Cut
 	    cut_sp_B_OF_Lel = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_NonPromptEvent'))
-	    cut_sp_B_OF_Lel = cut_sp_B_OF_Lel.swapCut(self.vardb.getCut('LowJetCR'),self.vardb.getCut('NJet2L')) & (LelTmuCut | TmuLelCut)
+	    cut_sp_B_OF_Lel = cut_sp_B_OF_Lel.swapCut(self.vardb.getCut('2Lep_NJet_CR'),self.vardb.getCut('2Lep_NJet_SR')) & (LelTmuCut | TmuLelCut)
             cut_sp_B_OF_Lmu = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_NonPromptEvent'))
-	    cut_sp_B_OF_Lmu = cut_sp_B_OF_Lmu.swapCut(self.vardb.getCut('LowJetCR'),self.vardb.getCut('NJet2L')) & (TelLmuCut | LmuTelCut)
+	    cut_sp_B_OF_Lmu = cut_sp_B_OF_Lmu.swapCut(self.vardb.getCut('2Lep_NJet_CR'),self.vardb.getCut('2Lep_NJet_SR')) & (TelLmuCut | LmuTelCut)
 
-	    if not ("OF_Event") in category.cut.cutname:
+	    if not ("2Lep_OF_Event") in category.cut.cutname:
                 sp_B = self.parent.procmap['TTBar'].base(treename,category,options)
                 sp_B = sp_B.subprocess(cut=cut_sp_B_SF,eventweight=weightMC )
 
                 print ("Region B (mumu,ee), yield: ", sp_B.numberstats() , "\n")
 
-                if ("ElEl_Event") in category.cut.cutname:
+                if ("2Lep_ElEl_Event") in category.cut.cutname:
                     sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta['El'])
-                elif ("MuMu_Event") in category.cut.cutname:
+                elif ("2Lep_MuMu_Event") in category.cut.cutname:
                     sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta['Mu'])
             else:
                 sp_B_Lel = self.parent.procmap['TTBar'].base(treename,category,options)
@@ -1602,13 +1602,13 @@ class TTHBackgrounds2015(Background):
 
 	    # Remove the cuts defining the flavour composition (this is made just for calculating thetas...)
 	    #
-            basecut = category.cut.removeCut(self.vardb.getCut('ElEl_Event'))
-            basecut = basecut.removeCut(self.vardb.getCut('MuMu_Event'))
-            basecut = basecut.removeCut(self.vardb.getCut('OF_Event'))
+            basecut = category.cut.removeCut(self.vardb.getCut('2Lep_ElEl_Event'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_MuMu_Event'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_OF_Event'))
 
             # Remove the cuts defiining the jet multiplicity
-            basecut = basecut.removeCut(self.vardb.getCut('NJet2L'))
-            basecut = basecut.removeCut(self.vardb.getCut('LowJetCR'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_NJet_SR'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_NJet_CR'))
 
             # For closure test, consider only TTBar non-prompt, vetoing all charge flips!
             #
@@ -1620,8 +1620,8 @@ class TTHBackgrounds2015(Background):
 
                 # define selection for region C and D (ee)
                 #
-                cut_sp_C_el = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('ElEl_Event') & TTCut & self.vardb.getCut('Zsidescut') & self.vardb.getCut('ElEtaCut')
-                cut_sp_D_el = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('ElEl_Event') & TL_LT_Cut & self.vardb.getCut('Zsidescut') & self.vardb.getCut('ElEtaCut')
+                cut_sp_C_el = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_ElEl_Event') & TTCut & self.vardb.getCut('2Lep_Zsidescut') & self.vardb.getCut('2Lep_ElEtaCut')
+                cut_sp_D_el = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_ElEl_Event') & TL_LT_Cut & self.vardb.getCut('2Lep_Zsidescut') & self.vardb.getCut('2Lep_ElEtaCut')
 
                 sp_C_el = sp.subprocess( cut = cut_sp_C_el, eventweight=weight )
                 sp_D_el = sp.subprocess( cut = cut_sp_D_el, eventweight=weight )
@@ -1650,8 +1650,8 @@ class TTHBackgrounds2015(Background):
 
                 # define selection for region C and D (mumu)
                 #
-                cut_sp_C_mu = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('MuMu_Event') & TTCut
-                cut_sp_D_mu = basecut & self.vardb.getCut('LowJetCR') & self.vardb.getCut('MuMu_Event') & TL_LT_Cut
+                cut_sp_C_mu = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_MuMu_Event') & TTCut
+                cut_sp_D_mu = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_MuMu_Event') & TL_LT_Cut
 
                 sp_C_mu = sp.subprocess( cut = cut_sp_C_mu, eventweight=weight )
                 sp_D_mu = sp.subprocess( cut = cut_sp_D_mu, eventweight=weight )
@@ -1678,16 +1678,16 @@ class TTHBackgrounds2015(Background):
 	    #
             # Take TTbar MC, excluding all prompts and charge flips (cut already applied above...), and reweight it by the theta factors measured in TTBar
             #
-            cut_sp_B_SF     = category.cut.swapCut(self.vardb.getCut('LowJetCR'),self.vardb.getCut('NJet2L')) & TL_LT_Cut
-	    cut_sp_B_OF_Lel = category.cut.swapCut(self.vardb.getCut('LowJetCR'),self.vardb.getCut('NJet2L')) & (LelTmuCut | TmuLelCut)
-	    cut_sp_B_OF_Lmu = category.cut.swapCut(self.vardb.getCut('LowJetCR'),self.vardb.getCut('NJet2L')) & (TelLmuCut | LmuTelCut)
+            cut_sp_B_SF     = category.cut.swapCut(self.vardb.getCut('2Lep_NJet_CR'),self.vardb.getCut('2Lep_NJet_SR')) & TL_LT_Cut
+	    cut_sp_B_OF_Lel = category.cut.swapCut(self.vardb.getCut('2Lep_NJet_CR'),self.vardb.getCut('2Lep_NJet_SR')) & (LelTmuCut | TmuLelCut)
+	    cut_sp_B_OF_Lmu = category.cut.swapCut(self.vardb.getCut('2Lep_NJet_CR'),self.vardb.getCut('2Lep_NJet_SR')) & (TelLmuCut | LmuTelCut)
 
-	    if not ("OF_Event") in category.cut.cutname:
+	    if not ("2Lep_OF_Event") in category.cut.cutname:
                 sp_B = self.parent.procmap['TTBarClosure'].base(treename,category,options)
                 sp_B = sp_B.subprocess(cut=cut_sp_B_SF,eventweight=weight)
-                if ("ElEl_Event") in category.cut.cutname:
+                if ("2Lep_ElEl_Event") in category.cut.cutname:
                     sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta['El'])
-                elif ("MuMu_Event") in category.cut.cutname:
+                elif ("2Lep_MuMu_Event") in category.cut.cutname:
                     sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta['Mu'])
             else:
                 sp_B_Lel = self.parent.procmap['TTBarClosure'].base(treename,category,options)
