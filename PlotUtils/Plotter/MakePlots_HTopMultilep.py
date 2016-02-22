@@ -32,10 +32,14 @@ parser.add_argument('samplesCSV', metavar='samplesCSV',type=str,
 #*******************
 # optional arguments
 #*******************
-parser.add_argument('--selection', dest='selection', action='store', default='', type=str,
-                    help='the selection chosen (e.g. noTypeOriginMatch, noTruthMatch... )')
+
+list_available_channel = ['TwoLepSR','ThreeLepSR','FourLepSR','MMRates',
+			  'TwoLepLowNJetCR', 'ThreeLepLowNJetCR',
+			  'WZonCR', 'WZoffCR', 'WZHFonCR', 'WZHFoffCR',
+			  'ttWCR', 'ttZCR','ZSSpeakCR', 'DataMC', 'MMClosureTest', 'MMClosureRates','CutFlowChallenge']
+			  
 parser.add_argument('--channel', dest='channel', action='store', default='TwoLepSR', type=str,
-		    help='the channel chosen (e.g. TwoLepSR, ThreeLepSR... )')
+		    help='the channel chosen ({0})'.format(list_available_channel))
 parser.add_argument('--ratesFromMC', dest='ratesFromMC', action='store_true', default=False,
                     help='Extract rates from pure simulation. Use w/ option --channel=MMRates')
 parser.add_argument('--MCCompRF', dest='MCCompRF', action='store_true', default=False,
@@ -56,6 +60,8 @@ parser.add_argument('--debug', dest='debug', action='store_true',
                     help='run in debug mode')
 parser.add_argument('--noSignal', action='store_true', dest='noSignal',
                     help='exclude signal')
+parser.add_argument('--noWeights', action='store_true', dest='noWeights', default=False,
+                    help='do not apply weights, except for mcEventWeight and Xsec*lumi...')		    
 parser.add_argument('--noStandardPlots', action='store_true', dest='noStandardPlots',
                     help='exclude all standard plots')
 parser.add_argument('--doEPS', action='store_true', dest='doEPS',
@@ -95,15 +101,6 @@ from Plotter.BackgroundTools_ttH import loadSamples, Category, Background, Proce
 # ---------------------------------------------------------------------------
 from Plotter.ttH2015_Background import MyCategory, TTHBackgrounds2015
 
-# -------------
-# Check channel
-# -------------
-list_available_channel = ['TwoLepSR','ThreeLepSR','FourLepSR','MMRates',
-			  'TwoLepLowNJetCR', 'ThreeLepLowNJetCR',
-			  'WZonCR', 'WZoffCR', 'WZHFonCR', 'WZHFoffCR',
-			  'ttWCR', 'ttZCR',
-			  'ZSSpeakCR', 'DataMC', 'MMClosureTest', 'MMClosureRates']
-
 try:
     args.channel in list_available_channel
 except ValueError:
@@ -125,6 +122,7 @@ doZSSpeakCR             = bool( args.channel == 'ZSSpeakCR' )
 doDataMCCR              = bool( args.channel == 'DataMC' )
 doMMClosureTest         = bool( args.channel == 'MMClosureTest' )
 doMMClosureRates        = bool( args.channel == 'MMClosureRates' )
+doCFChallenge           = bool( args.channel == 'CutflowChallenge' )
 
 # -----------------------------------------
 # a comprehensive flag for all possible SRs
@@ -139,7 +137,7 @@ doLowNJetCR = (doTwoLepLowNJetCR or doThreeLepLowNJetCR)
 # ------------------------------------------
 # a comprehensive flag for all the other CRs
 # ------------------------------------------
-doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZSSpeakCR or doMMRates or doDataMCCR or doMMClosureTest or doMMClosureRates)
+doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZSSpeakCR or doMMRates or doDataMCCR or doMMClosureTest or doMMClosureRates or doCFChallenge)
 
 # ------------------------------------------------
 # make standard plots unless differently specified
@@ -185,7 +183,7 @@ if ( args.debug ):
 # --------------------------
 inputs = loadSamples(
                         # path of the data to be processed
-                        inputdir    = args.inputDir + args.selection,
+                        inputdir    = args.inputDir,
                         samplescsv  = args.samplesCSV,
                         nomtree     = 'physics',
                         # name of the trees that contains values for shifted systematics
@@ -402,7 +400,7 @@ vardb.registerCut( Cut('LelTmu',  '( isLelTmu == 1 )') )
 vardb.registerCut( Cut('TmuLel',  '( isTmuLel == 1 )') )
 vardb.registerCut( Cut('LmuTel',  '( isLmuTel == 1 )') )
 """
-#"""
+"""
 vardb.registerCut( Cut('TT',  '( Sum$( lep_isTightSelected ) == 2 )') )
 vardb.registerCut( Cut('TL',  '( lep_isTightSelected[0] == 1 && lep_isTightSelected[1] == 0 )') )
 vardb.registerCut( Cut('LT',  '( lep_isTightSelected[0] == 0 && lep_isTightSelected[1] == 1 )') )
@@ -411,10 +409,17 @@ vardb.registerCut( Cut('TelLmu',  '( ( lep_flavour[0] == 11 && lep_isTightSelect
 vardb.registerCut( Cut('LelTmu',  '( ( lep_flavour[0] == 11 && lep_isTightSelected[0] == 0 ) && ( lep_flavour[1] == 13 && lep_isTightSelected[1] == 1 ) )') )
 vardb.registerCut( Cut('TmuLel',  '( ( lep_flavour[0] == 13 && lep_isTightSelected[0] == 1 ) && ( lep_flavour[1] == 11 && lep_isTightSelected[1] == 0 ) )') )
 vardb.registerCut( Cut('LmuTel',  '( ( lep_flavour[0] == 13 && lep_isTightSelected[0] == 0 ) && ( lep_flavour[1] == 11 && lep_isTightSelected[1] == 1 ) )') )
+"""
 #"""
-vardb.registerCut( Cut('TM',  '( isTM == 1 )') )
-vardb.registerCut( Cut('MT',  '( isMT == 1 )') )
-vardb.registerCut( Cut('MM',  '( isMM == 1 )') )
+vardb.registerCut( Cut('TT',  '( is_T_T == 1 )') )
+vardb.registerCut( Cut('TL',  '( is_T_AntiT == 1 )') )
+vardb.registerCut( Cut('LT',  '( is_AntiT_T == 1 )') )
+vardb.registerCut( Cut('LL',  '( is_AntiT_AntiT == 1 )') )
+vardb.registerCut( Cut('TelLmu',  '( is_Tel_AntiTmu == 1 )') )
+vardb.registerCut( Cut('LelTmu',  '( is_Lel_Tmu == 1 )') )
+vardb.registerCut( Cut('TmuLel',  '( is_Tmu_AntiTel == 1 )') )
+vardb.registerCut( Cut('LmuTel',  '( is_Lmu_Tel == 1 )') )
+#"""
 
 # ---------------------------
 # A list of variables to plot
@@ -426,6 +431,7 @@ if doSR or doLowNJetCR:
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = 0, maxval = 4) )
     #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
     #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 11, minval = 20.0, maxval = 240.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
     #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '|#eta^{lead lep}|', ntuplename = 'TMath::Abs(lep_eta[0])', bins = 8, minval = 0.0, maxval = 2.6) )
 if doMMRates or doMMClosureRates:
     print ''
@@ -444,22 +450,22 @@ if doStandardPlots:
     #vardb.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = 'jet_eta[0]', bins = 50, minval = -5.0, maxval = 5.0) )
     #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = 0, maxval = 10) )
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = 0, maxval = 4) )
-    vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'njets+10.0*njets_mv2c20_Fix77', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet')) )
+    #vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'njets+10.0*njets_mv2c20_Fix77', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet')) )
     #
     # Inclusive m(ll) plot
     #
-    vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 40, minval = 40.0, maxval = 240.0,) )
+    #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 40, minval = 40.0, maxval = 240.0,) )
     #
     # Z peak plot
     #
     #vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
     #
-    vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
+    #vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
     #
-    vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
-    vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
-    vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_eta[0]', bins = 16, minval = -2.6, maxval = 2.6) )
-    vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_eta[1]', bins = 16, minval = -2.6, maxval = 2.6) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_eta[0]', bins = 16, minval = -2.6, maxval = 2.6) )
+    #vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_eta[1]', bins = 16, minval = -2.6, maxval = 2.6) )
 
     #vardb.registerVar( Variable(shortname = 'Mll12', latexname = 'm(l_{1}l_{2}) [GeV]', ntuplename = 'mll12/1e3', bins = 15, minval = 0.0, maxval = 300.0,) )
     #vardb.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageInteractionsPerCrossing', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
@@ -714,6 +720,45 @@ if doDataMCCR:
     #vardb.registerCategory( MyCategory('DataMC_ElEl_FakeCR',    cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'ElEl_Event', 'NBJet', 'LowJetCR', 'SS'])  ) )
     #vardb.registerCategory( MyCategory('DataMC_OF_FakeCR', 	cut = vardb.getCuts(['2Lep', 'TrigDec', 'TrigMatch', 'OF_Event',   'NBJet', 'LowJetCR', 'SS'])  ) )
 
+# --------------------------------------------
+# Full breakdown of cuts for cutflow challenge
+# --------------------------------------------
+
+if doCFChallenge:
+
+    vardb.registerCut( Cut('2Lep_NLep',   '( nlep == 2 )') )
+    vardb.registerCut( Cut('2Lep_TightLeptons',   '(  Sum$( lep_isTightSelected ) == 2)') )
+    vardb.registerCut( Cut('2Lep_pT',     '( Min$( lep_pt ) > 25e3 )') )
+    vardb.registerCut( Cut('2Lep_TrigMatch', '( ( lep_isTrigMatched[0] == 1 && lep_pt[0] > 25e3 ) || ( lep_isTrigMatched[1] == 1 && lep_pt[1] > 25e3 ) )') )
+
+    vardb.registerCut( Cut('3Lep_NLep',  '( nlep == 3 )') )
+    vardb.registerCut( Cut('3Lep_Charge',  '( TMath::Abs( Sum$(lep_charge) ) == 1 )') )    
+    vardb.registerCut( Cut('3Lep_TightLeptons',  '( lep_3lepClosestSS_isTightSelected[0] == 1 && lep_3lepOtherSS_isTightSelected[0] == 1 && TMath::Abs(lep_3lepOS_trkz0sintheta[0]) < 0.5 && ( ( lep_3lepOS_flavour[0] == 13 && TMath::Abs(lep_3lepOS_trkd0sig[0]) < 3.0 ) || ( lep_3lepOS_flavour[0] == 11 && TMath::Abs(lep_3lepOS_trkd0sig[0]) < 5.0 ) ) )') )
+    vardb.registerCut( Cut('3Lep_pT',  '( lep_3lepClosestSS_pt[0] > 20e3 && lep_3lepOtherSS_pt[0] > 20e3 && lep_3lepOS_pt[0] > 10e3 )') )
+    vardb.registerCut( Cut('3Lep_TrigMatch',   '( ( lep_isTrigMatched[0] == 1 && lep_pt[0] > 25e3 ) || ( lep_isTrigMatched[1] == 1 && lep_pt[1] > 25e3 ) || ( lep_isTrigMatched[2] == 1 && lep_pt[2] > 25e3 ) )') )
+    vardb.registerCut( Cut('3Lep_ZVeto',  '( ( isOSPairSF01 == 0 || ( isOSPairSF01 == 1 &&  TMath::Abs( mOSPair01 - 91e3 ) < 10e3 ) ) || ( isOSPairSF02 == 0 || ( isOSPairSF02 == 1 &&  TMath::Abs( mOSPair02 - 91e3 ) < 10e3 ) ) )') )
+    vardb.registerCut( Cut('3Lep_MinZCut','( ( isOSPairSF01 == 0 || ( isOSPairSF01 == 1 &&  mOSPair01 > 12e3 ) ) || ( isOSPairSF02 == 0 || ( isOSPairSF02 == 1 &&  mOSPair02 > 12e3 ) ) )') )
+    vardb.registerCut( Cut('3Lep_NJets',  '( ( njets_mv2c20_Fix77 > 0 && njets > 3 ) || ( njets_mv2c20_Fix77 > 1 && njets == 3) )') )
+
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_NLep', 	cut = vardb.getCuts(['2Lep_NLep'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_TightLeptons', cut = vardb.getCuts(['2Lep_NLep','2Lep_TightLeptons'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_pT', 	        cut = vardb.getCuts(['2Lep_NLep','2Lep_TightLeptons','2Lep_pT'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_eta', 	        cut = vardb.getCuts(['2Lep_NLep','2Lep_TightLeptons','2Lep_pT','ElEtaCut'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_TrigMatch', 	cut = vardb.getCuts(['2Lep_NLep','2Lep_TightLeptons','2Lep_pT','ElEtaCut','2Lep_TrigMatch'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_SS', 	        cut = vardb.getCuts(['2Lep_NLep','2Lep_TightLeptons','2Lep_pT','ElEtaCut','2Lep_TrigMatch','SS'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_TauVeto', 	cut = vardb.getCuts(['2Lep_NLep','2Lep_TightLeptons','2Lep_pT','ElEtaCut','2Lep_TrigMatch','SS','TauVeto'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_NJets', 	cut = vardb.getCuts(['2Lep_NLep','2Lep_TightLeptons','2Lep_pT','ElEtaCut','2Lep_TrigMatch','SS','TauVeto','NJet2L'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_NBJets', 	cut = vardb.getCuts(['2Lep_NLep','2Lep_TightLeptons','2Lep_pT','ElEtaCut','2Lep_TrigMatch','SS','TauVeto','NJet2L','NBJet'])  ) )
+
+    vardb.registerCategory( MyCategory('CFChallenge_3Lep_NLep', 	cut = vardb.getCuts(['3Lep_NLep'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_3Lep_Charge', 	cut = vardb.getCuts(['3Lep_NLep','3Lep_Charge'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_3Lep_TightLeptons', cut = vardb.getCuts(['3Lep_NLep','3Lep_Charge','3Lep_TightLeptons'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_3Lep_pT', 	        cut = vardb.getCuts(['3Lep_NLep','3Lep_Charge','3Lep_TightLeptons','3Lep_pT'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_3Lep_TrigMatch', 	cut = vardb.getCuts(['3Lep_NLep','3Lep_Charge','3Lep_TightLeptons','3Lep_pT','3Lep_TrigMatch'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_3Lep_ZVeto', 	cut = vardb.getCuts(['3Lep_NLep','3Lep_Charge','3Lep_TightLeptons','3Lep_pT','3Lep_TrigMatch','3Lep_ZVeto'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_3Lep_MinZCut', 	cut = vardb.getCuts(['3Lep_NLep','3Lep_Charge','3Lep_TightLeptons','3Lep_pT','3Lep_TrigMatch','3Lep_ZVeto','3Lep_MinZCut'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_3Lep_NJets', 	cut = vardb.getCuts(['3Lep_NLep','3Lep_Charge','3Lep_TightLeptons','3Lep_pT','3Lep_TrigMatch','3Lep_ZVeto','3Lep_MinZCut','3Lep_NJets'])  ) )
+
 # ----------------------------------------------
 # CRs where r/f rates for MM method are measured
 # ----------------------------------------------
@@ -946,7 +991,7 @@ weight_generator = 'mcEventWeight'
 # PRW weight
 #
 weight_pileup = '1.0'
-if not ( doMMClosureTest or doMMClosureRates ):
+if not ( args.noWeights or doMMClosureTest or doMMClosureRates ):
     weight_pileup = 'weight_pileup'
 
 weight_glob = str(weight_generator) + ' * ' + str(weight_pileup)
@@ -959,13 +1004,13 @@ ttH2015.eventweight = weight_glob
 
 ttH2015.useZCorrections = False
 
-if doTwoLepSR or doTwoLepLowNJetCR or dottWCR or doZSSpeakCR or doMMClosureTest :
+if doTwoLepSR or doTwoLepLowNJetCR or dottWCR or doZSSpeakCR or doMMClosureTest:
     ttH2015.channel = 'TwoLepSS'
 elif doThreeLepSR or doThreeLepLowNJetCR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
     ttH2015.channel = 'ThreeLep'
 elif doFourLepSR:
     ttH2015.channel = 'FourLep'
-elif doDataMCCR or doMMRates or doMMClosureRates :
+elif doDataMCCR or doMMRates or doMMClosureRates or doCFChallenge:
     ttH2015.channel = 'TwoLepCR'
 
 cut = None
@@ -1096,6 +1141,13 @@ if doDataMCCR:
     plotbackgrounds     = ['Zeejets','Zmumujets','Ztautaujets','TTBar','Diboson','Top','Wjets','TTBarW','TTBarZ']
     ttH2015.backgrounds = ['Zeejets','Zmumujets','Ztautaujets','TTBar','Diboson','Top','Wjets','TTBarW','TTBarZ']
 
+
+if doCFChallenge:
+    ttH2015.signals     = []#['TTBarH']
+    ttH2015.observed    = []
+    plotbackgrounds     = ['TTBarH']
+    ttH2015.backgrounds = ['TTBarH']
+
 if doMMClosureRates:
       ttH2015.signals	  = []
       ttH2015.observed    = []
@@ -1186,7 +1238,7 @@ for category in vardb.categorylist:
 
     # ---> apply the lepton SFs to the event here!
     #
-    if not ( doMMClosureTest or doMMClosureRates ):
+    if not ( args.noWeights or doMMClosureTest or doMMClosureRates ):
 
         lepSF_weight = 'weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]'
 
@@ -1206,7 +1258,7 @@ for category in vardb.categorylist:
 
         # When looking at jet multiplicity distributions w/ bjets, BTag SF must be applied also to categories w/o any bjet cut
         #
-        if not ( doMMClosureTest or doMMClosureRates ):
+        if not ( args.noWeights or doMMClosureTest or doMMClosureRates ):
 
             if  ( ( ("BJet") in category.cut.cutname and not doRelaxedBJetCut ) or  ( ("BJetSR") in category.cut.cutname ) ) or ("BJet") in var.shortname:
 
@@ -1265,7 +1317,7 @@ for category in vardb.categorylist:
         if doABCD:
             fakeestimate='_ABCD'
 
-        dirname =  'OutputPlots' + args.selection + fakeestimate + '_' + args.outdirname + '/'
+        dirname =  'OutputPlots' + fakeestimate + '_' + args.outdirname + '/'
 
         # If specified a cut before entering the loop, it will be applied
         # Otherwise, all the cuts registered above for *this* category will be applied
