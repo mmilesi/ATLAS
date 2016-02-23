@@ -33,6 +33,7 @@
 #include "xAODAnaHelpers/tools/ReturnCheck.h"
 #include "xAODAnaHelpers/tools/ReturnCheckConfig.h"
 #include "HTopMultilepAnalysis/HTopMultilepAnalysis.h"
+#include "HTopMultilepAnalysis/tools/HTopReturnCheck.h"
 
 // external tools include(s):
 #include "TauAnalysisTools/TauSelectionTool.h"
@@ -98,7 +99,7 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_TightElectronIso_WP            = "isIsolated_Gradient";
   m_TightElectronD0sig_cut         = 5.0;
   m_TightElectronTrkz0sinTheta_cut = 0.5;
-  
+
   m_TightMuonD0sig_cut         = -1.0;
   m_TightMuonTrkz0sinTheta_cut = 0.5;
   m_TightMuonIso_WP            = "isIsolated_Gradient";
@@ -221,7 +222,7 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   m_jetPlots -> initialize();
   m_jetPlots -> record( wk() );
   */
-  
+
   // initialise TauSelectionTool
   //
   std::string tau_sel_tool_name = std::string("TauSelectionTool_") + m_name;
@@ -236,16 +237,16 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
     RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->setProperty("ConfigPath",m_ConfigPathTightTaus.c_str()), "Failed to set ConfigPath property");
     RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool_HTop" );
   }
-  
+
   const std::string path("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/");
-  
+
   // Read QMisID rates from input ROOT histograms
   //
-  EL_RETURN_CHECK("HTopMultilepAnalysis::initialize()", this->readQMisIDRates( path ) ); 
-  
+  EL_RETURN_CHECK("HTopMultilepAnalysis::initialize()", this->readQMisIDRates( path ) );
+
   // Read fake(real) rates from input ROOT histograms
   //
-  EL_RETURN_CHECK("HTopMultilepAnalysis::initialize()", this->readFakeRates( path ) ); 
+  EL_RETURN_CHECK("HTopMultilepAnalysis::initialize()", this->readFakeRates( path ) );
 
   Info("initialize()", "HTopMultilepAnalysis Interface succesfully initialized!" );
 
@@ -627,9 +628,10 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   //
   // Make a sorted version of the electron container
   //
-  const xAOD::ElectronContainer electronsSorted = HelperFunctions::sort_container_pt( signalElectrons );
+  //const xAOD::ElectronContainer electronsSorted = HelperFunctions::sort_container_pt( signalElectrons );
 
-  EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->QMisIDWeightCalculator( eventInfo, electronsSorted ) );
+  //EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->QMisIDWeightCalculator( eventInfo, electronsSorted ) );
+  EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->QMisIDWeightCalculator( eventInfo, signalElectrons ) );
 
   return EL::StatusCode::SUCCESS;
 }
@@ -728,20 +730,20 @@ EL::StatusCode HTopMultilepAnalysis :: readQMisIDRates ( const std::string& inpu
 
   std::string path_AntiT = input_path + "QMisIDRates_Data_Loose.root";
   std::string path_T     = input_path + "QMisIDRates_Data_nominal_v4.root";
- 
+
   TFile *file_AntiT = TFile::Open(path_AntiT.c_str());
   TFile *file_T     = TFile::Open(path_T.c_str());
- 
-  RETURN_CHECK( "HTopMultilepAnalysis::readQMisIDRates()", file_AntiT->IsOpen() );
-  RETURN_CHECK( "HTopMultilepAnalysis::readQMisIDRates()", file_T->IsOpen() );
 
-  Info("readQMisIDRates()", "Successfully opened ROOT files with QMisID rates from path:\n AntiT --> %s \n T --> %s", path_AntiT.c_str(), path_T.c_str() ); 
-  
+  HTOP_RETURN_CHECK( "HTopMultilepAnalysis::readQMisIDRates()", file_AntiT->IsOpen(), "Failed to open ROOT file" );
+  HTOP_RETURN_CHECK( "HTopMultilepAnalysis::readQMisIDRates()", file_T->IsOpen(), "Failed to open ROOT file" );
+
+  Info("readQMisIDRates()", "Successfully opened ROOT files with QMisID rates from path:\n AntiT --> %s \n T --> %s", path_AntiT.c_str(), path_T.c_str() );
+
   TH2D *hist_QMisID_AntiT = get_object<TH2D>( *file_AntiT, "Rates" );
   TH2D *hist_QMisID_T     = get_object<TH2D>( *file_T, "Rates" );
-  
+
   // fill a map for later usage
-  //  
+  //
   m_QMisID_hist_map["AntiT"] = hist_QMisID_AntiT;
   m_QMisID_hist_map["T"]     = hist_QMisID_T;
 
@@ -752,13 +754,13 @@ EL::StatusCode HTopMultilepAnalysis :: readQMisIDRates ( const std::string& inpu
 EL::StatusCode HTopMultilepAnalysis :: readFakeRates ( const std::string& input_path )
 {
 
-  path = ( !m_useMCForTagAndProbe ) ? ( input_path + "ObservedRates.root" ) : ( input_path + "ExpectedRates.root" );
+  std::string path = ( !m_useMCForTagAndProbe ) ? ( input_path + "ObservedRates.root" ) : ( input_path + "ExpectedRates.root" );
 
   TFile *file = TFile::Open(path.c_str());
 
-  RETURN_CHECK( "HTopMultilepAnalysis::readFakeRates()", file->IsOpen() );
+  HTOP_RETURN_CHECK( "HTopMultilepAnalysis::readFakeRates()", file->IsOpen() , "Failed to open ROOT file");
 
-  Info("readFakeRates()", " Successfully opened ROOT file with r/f rates from path: %s ", path.c_str() ); 
+  Info("readFakeRates()", " Successfully opened ROOT file with r/f rates from path: %s ", path.c_str() );
 
   // 1) ELECTRONS
   //
@@ -2089,35 +2091,32 @@ double HTopMultilepAnalysis :: calc_final_event_weight( std::string region, doub
 
 // Calculate QMisID weight
 //
-EL::StatusCode HTopMultilepAnalysis :: QMisIDWeightCalculator (const xAOD::EventInfo* eventInfo, const xAOD::ElectronContainer& electrons )
+EL::StatusCode HTopMultilepAnalysis :: QMisIDWeightCalculator (const xAOD::EventInfo* eventInfo, const xAOD::ElectronContainer* electrons )
 {
-  
+
   SG::AuxElement::Decorator< std::vector<float> > QMisIDWeightDecor( "QMisIDWeight" );
-  if ( !QMisIDWeightDecor.isAvailable( *eventInfo ) ) {
-    QMisIDWeightDecor( *eventInfo ) = std::vector<float>( 3, 1.0 );
-  }
-  
-  if ( m_debug ) { Info("QMisIDWeightCalculator()", "QMisID initial weight = %f ( up = %f, dn = %f )", QMisIDWeightDecor( *eventInfo ).at(0), QMisIDWeightDecor( *eventInfo ).at(1), QMisIDWeightDecor( *eventInfo ).at(2) ); }
+
+  std::vector<float> weights(3,1.0);
+
+  if ( m_debug ) { Info("QMisIDWeightCalculator()", "QMisID initial weight = %f ( up = %f, dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
   // QMisID is a data weight only
   //
-  if ( !m_isMC ) {
+  if ( m_isMC ) {
 
     const xAOD::Electron* elA(nullptr);
     const xAOD::Electron* elB(nullptr);
-    
-    unsigned int nel = electrons.size();
-    
-    if ( nel > 0 ) { elA = electrons.at(0); }
-    if ( nel > 1 ) { elB = electrons.at(1); }
 
-    std::vector<float> weights;
-    
+    unsigned int nel = electrons->size();
+
+    if ( nel > 0 ) { elA = electrons->at(0); }
+    if ( nel > 1 ) { elB = electrons->at(1); }
+
     EL_RETURN_CHECK("HTopMultilepAnalysis::QMisIDWeightCalculator()", this->calc_QMisID_weights( weights, elA, elB ) );
-    
+
     QMisIDWeightDecor( *eventInfo ) = weights;
   }
-  
+
   if ( m_debug ) { Info("QMisIDWeightCalculator()", "QMisID final weight = %f ( up = %f, dn = %f )", QMisIDWeightDecor( *eventInfo ).at(0), QMisIDWeightDecor( *eventInfo ).at(1), QMisIDWeightDecor( *eventInfo ).at(2) ); }
 
   return EL::StatusCode::SUCCESS;
@@ -2129,105 +2128,105 @@ EL::StatusCode HTopMultilepAnalysis :: calc_QMisID_weights( std::vector<float>& 
 
   // If there are no electrons, return dummy
   //
-  if ( !elA && !elB ) { return EL::StatusCode::SUCCESS; }  
-  
+  if ( !elA && !elB ) { return EL::StatusCode::SUCCESS; }
+
   // accessor to tight selected electrons
   //
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
-  
+
   float elA_eta = elA->caloCluster()->etaBE(2);
   float elA_pt  = elA->pt()/1e3;
   bool  elA_isT = isTightAcc( *elA );
-  
+
   float elB_eta = ( elB ) ? elB->caloCluster()->etaBE(2) : -999.0;
-  float elB_pt  = ( elB ) ? elB->pt()/1e3 : -1.0;  
+  float elB_pt  = ( elB ) ? elB->pt()/1e3 : -1.0;
   bool  elB_isT = ( elB ) ? isTightAcc( *elB ) : false;
-  
+
   float rA(0.0), rA_up(0.0), rA_dn(0.0), rB(0.0), rB_up(0.0), rB_dn(0.0);
-  
+
   // Get the 2D histogram from the map
   //
-  TH1D* 2D_rates_T     = ( m_QMisID_map.find.("T")->second );
-  TH1D* 2D_rates_AntiT = ( m_QMisID_map.find.("AntiT")->second );
-  
-  // Make X and Y projections of the 2D histogram with the rates
-  //
-  TH1D* proj_eta_T     = 2D_rates_T->ProjectionX("proj_eta_T");
-  TH1D* proj_pt_T      = 2D_rates_T->ProjectionY("proj_pt_T");
-  TH1D* proj_eta_AntiT = 2D_rates_AntiT->ProjectionX("proj_eta_AntiT");
-  TH1D* proj_pt_AntiT  = 2D_rates_AntiT->ProjectionY("proj_pt_AntiT");  
+  TH2D* twoD_rates_T     = ( m_QMisID_hist_map.find("T")->second );
+  TH2D* twoD_rates_AntiT = ( m_QMisID_hist_map.find("AntiT")->second );
 
-  float this_low_edge(-999.0),this_up_edge(-999.0);
-  
+  // Make X and Y projections of the twoD histogram with the rates
+  //
+  TH1D* proj_eta_T     = twoD_rates_T->ProjectionX("proj_eta_T");
+  TH1D* proj_pt_T      = twoD_rates_T->ProjectionY("proj_pt_T");
+  TH1D* proj_eta_AntiT = twoD_rates_AntiT->ProjectionX("proj_eta_AntiT");
+  TH1D* proj_pt_AntiT  = twoD_rates_AntiT->ProjectionY("proj_pt_AntiT");
+
   // Look at elA first...
   //
   if ( elA_isT ) {
-    EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(2D_rates_T, proj_eta_T, proj_pt_T, elA_eta, elA_pt, rA, rA_up, rA_dn) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(twoD_rates_T, proj_eta_T, proj_pt_T, elA_eta, elA_pt, rA, rA_up, rA_dn) );
   } else {
-    EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(2D_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elA_eta, elA_pt, rA, rA_up, rA_dn) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elA_eta, elA_pt, rA, rA_up, rA_dn) );
   }
-  
+
   // .. and now at elB (if any)
   //
   if ( elB ) {
     if ( elB_isT ) {
-      EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(2D_rates_T, proj_eta_T, proj_pt_T, elB_eta, elB_pt, rB, rB_up, rB_dn) );
+      EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(twoD_rates_T, proj_eta_T, proj_pt_T, elB_eta, elB_pt, rB, rB_up, rB_dn) );
     } else {
-      EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(2D_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elB_eta, elB_pt, rB, rB_up, rB_dn) );
+      EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elB_eta, elB_pt, rB, rB_up, rB_dn) );
     }
   }
 
   // Finally, store the event weight + variations
   //
-  weight.push_back( ( rA + rB - 2.0 * rA * rB ) / ( 1.0 - rA - rB + 2.0 * rA * rB ) );
-  weight.push_back( ( rA_up + rB_up - 2.0 * rA_up * rB_up ) / ( 1.0 - rA_up - rB_up + 2.0 * rA_up * rB_up ) );
-  weight.push_back( ( rA_dn + rB_dn - 2.0 * rA_dn * rB_dn ) / ( 1.0 - rA_dn - rB_dn + 2.0 * rA_dn * rB_dn ) );
+  weights.at(0) = ( rA + rB - 2.0 * rA * rB ) / ( 1.0 - rA - rB + 2.0 * rA * rB ) ;
+  weights.at(1) = ( rA_up + rB_up - 2.0 * rA_up * rB_up ) / ( 1.0 - rA_up - rB_up + 2.0 * rA_up * rB_up );
+  weights.at(2) = ( rA_dn + rB_dn - 2.0 * rA_dn * rB_dn ) / ( 1.0 - rA_dn - rB_dn + 2.0 * rA_dn * rB_dn );
 
-  return EL::StatusCode::SUCCESS; 
-  
+  return EL::StatusCode::SUCCESS;
+
 }
 
-EL::StatusCode HTopMultilepAnalysis :: readRatesAndError(TH2D* rate_map, TH1D* proj_X, TH1D* proj_Y, 
-                                                         const float& x, const float& y, 
-							 float& r, float& r_up, float& r_dn ) 
+EL::StatusCode HTopMultilepAnalysis :: readRatesAndError(TH2D* rate_map, TH1D* proj_X, TH1D* proj_Y,
+                                                         const float& x, const float& y,
+							 float& r, float& r_up, float& r_dn )
 {
-    
+
   float this_low_edge(-999.0),this_up_edge(-999.0);
+
+  int xbin_nr(-1), ybin_nr(-1);
 
   // Loop over the projections, and keep track of the bin number where (x,y) is found
   //
   for ( int xbin = 0; xbin < proj_X->GetNbinsX()+1; ++xbin  ) {
-  
+
     this_low_edge = proj_X->GetXaxis()->GetBinLowEdge(xbin);
     this_up_edge  = proj_X->GetXaxis()->GetBinLowEdge(xbin+1);
-    
+
     if ( fabs(x) >= this_low_edge && fabs(x) < this_up_edge ) {
       xbin_nr = proj_X->GetBin(xbin);
       break;
     }
 
-  } 
+  }
   for ( int ybin = 0; ybin < proj_Y->GetNbinsX()+1; ++ ybin ) {
-  
+
     this_low_edge = proj_Y->GetXaxis()->GetBinLowEdge(ybin);
     this_up_edge  = proj_Y->GetXaxis()->GetBinLowEdge(ybin+1);
-    
+
     if ( y >= this_low_edge && y < this_up_edge ) {
       ybin_nr = proj_Y->GetBin(ybin);
       break;
     }
 
-  }	
+  }
 
   // Now get the NOMINAL rate via global bin number (x,y)
-  
+
   r = rate_map->GetBinContent( rate_map->GetBin( xbin_nr, ybin_nr ) );
-  
+
   // Get the UP and DOWN variations
   //
   // QUESTION: Why the hell ROOT has GetBinErrorUp and GetBinErrorLow for TH2 ??
   // They seem to give always the same result...
-  //	
+  //
   r_up = r + rate_map->GetBinErrorUp( rate_map->GetBin( xbin_nr, ybin_nr ) );
   r_dn = r - rate_map->GetBinErrorUp( rate_map->GetBin( xbin_nr, ybin_nr ) );
   r_dn = ( r_dn > 0.0 ) ? r_dn : 0.0;
