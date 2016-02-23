@@ -18,25 +18,24 @@ private:
 
 public:
 
-  // additional data members which are not already in xAH::TreeAlgo.h 
+  // additional data members which are not already in xAH::TreeAlgo.h
   std::string m_lepContainerName;
 
   // this is a standard constructor
-  HTopMultilepTreeAlgo () : 
+  HTopMultilepTreeAlgo () :
     TreeAlgo(),
-    m_HTopTree(nullptr) 
+    m_HTopTree(nullptr)
     {};
 
   // these are the functions inherited from Algorithm
 
   // overload only the ones that somehow differ from the original methods in TreeAlgo (e.g., the ones manipulating m_helpTree)
-  virtual EL::StatusCode treeInitialize ();     
-  virtual EL::StatusCode execute ();   
-  virtual EL::StatusCode finalize ();   
+  virtual EL::StatusCode treeInitialize ();
+  virtual EL::StatusCode execute ();
+  virtual EL::StatusCode finalize ();
 
   // these are the functions not inherited from Algorithm
-  virtual EL::StatusCode configure ();                   
-  
+
   // this is needed to distribute the algorithm to the workers
   ClassDef(HTopMultilepTreeAlgo, 1);
 };

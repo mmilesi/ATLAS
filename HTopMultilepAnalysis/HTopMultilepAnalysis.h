@@ -47,11 +47,21 @@ public:
   /* to define "Tight" leptons */
   std::string m_TightElectronPID_WP;
   std::string m_TightElectronIso_WP;
+  float       m_TightElectronD0sig_cut;  
+  float       m_TightElectronTrkz0sinTheta_cut;
+  
   float       m_TightMuonD0sig_cut;
+  float       m_TightMuonTrkz0sinTheta_cut;
   std::string m_TightMuonIso_WP;
 
   /* to define "Tight" taus */
   std::string m_ConfigPathTightTaus;
+
+  bool m_useLooseAsLoosest;
+  bool m_useMediumAsLoosest;
+  bool m_vetoMediumNonTight;
+  bool m_useMediumAsTightest;
+  bool m_useTightAsTightest;
 
   bool m_useMCForTagAndProbe; // To define tag and probe leptons for RF rate mesurement using MC truth
                               // NB: use it only for pure MC estimate (e.g. ttbar MM closure test)
@@ -120,7 +130,6 @@ public:
   virtual EL::StatusCode histFinalize ();
 
   // these are the functions not inherited from Algorithm
-  virtual EL::StatusCode configure ();
 
   virtual EL::StatusCode computeEventLepTrigSF ( const xAOD::EventInfo* eventInfo,
 					         const xAOD::IParticleContainer& leptons
@@ -147,7 +156,7 @@ public:
 				     float rr_tot
 			            );
   double calc_final_event_weight( std::string region, double f1, double f2, double r1 = 1.0, double r2 = 1.0 );
-  double scaleRateToFactor( double rate );
+  double scaleRateToEfficiency( double rate );
 
   // this is needed to distribute the algorithm to the workers
   ClassDef(HTopMultilepAnalysis, 1);

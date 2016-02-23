@@ -33,14 +33,14 @@ class TruthMatchAlgo : public xAH::Algorithm
   // that way they can be set directly from CINT and python.
 public:
 
-  std::string    m_inContainerName_Electrons; 
-  std::string    m_inContainerName_Muons; 
-  std::string    m_inContainerName_Leptons; 
-  
+  std::string    m_inContainerName_Electrons;
+  std::string    m_inContainerName_Muons;
+  std::string    m_inContainerName_Leptons;
+
   bool m_doMuonTruthPartMatching;
   bool m_doMuonTrackMatching;
 
-private:    
+private:
 
   int m_numEvent;           //!
   int m_numObject;          //!
@@ -52,11 +52,11 @@ private:
   bool m_isDerivation;      //!
 
   // cutflow
-  bool  m_useCutFlow;       //!            
-  TH1D* m_cutflowHist;      //!     
-  TH1D* m_cutflowHistW;     //!     
-  int   m_cutflow_bin;      //!     
-  
+  bool  m_useCutFlow;       //!
+  TH1D* m_cutflowHist;      //!
+  TH1D* m_cutflowHistW;     //!
+  int   m_cutflow_bin;      //!
+
   /* Initialise decorators */
   SG::AuxElement::Decorator< char >* 	   m_isTruthMatchedDecor;	   //! /* has a lepton truth match */
   SG::AuxElement::Decorator< int >*  	   m_truthTypeDecor;		   //! /* type of the parent particle (according to MCTruthClassifier) - need it for muons since we have to retrieve this from the truth track */
@@ -73,16 +73,16 @@ private:
   /* Initialise accessors */
   SG::AuxElement::Accessor< float >*       m_mcEvtWeightAcc;		   //!
   SG::AuxElement::Accessor< char >*        m_isTruthMatchedAcc; 	   //!
-  SG::AuxElement::Accessor< char >*        m_isChFlipAcc;		   //!  	      
+  SG::AuxElement::Accessor< char >*        m_isChFlipAcc;		   //!
   SG::AuxElement::Accessor< char >*        m_isBremAcc; 		   //!
-  typedef ElementLink< xAOD::TruthParticleContainer > TruthLink_t; 
+  typedef ElementLink< xAOD::TruthParticleContainer > TruthLink_t;
   SG::AuxElement::Accessor< TruthLink_t >* m_truthPLAcc; 	           //!
   SG::AuxElement::ConstAccessor< int >*    m_truthTypeAcc;		   //!  /* accessor to built-in xAOD attribute */
   SG::AuxElement::ConstAccessor< int >*    m_truthOriginAcc;		   //!  /* accessor to built-in xAOD attribute */
-  SG::AuxElement::Accessor< float >*       m_truthMatchProbabilityAcc;     //!  
-  SG::AuxElement::Accessor< int >*         m_ancestorTruthTypeAcc;         //! 
-  SG::AuxElement::Accessor< int >*         m_ancestorTruthOriginAcc;       //! 
-  
+  SG::AuxElement::Accessor< float >*       m_truthMatchProbabilityAcc;     //!
+  SG::AuxElement::Accessor< int >*         m_ancestorTruthTypeAcc;         //!
+  SG::AuxElement::Accessor< int >*         m_ancestorTruthOriginAcc;       //!
+
   // MC Truth Classifier
   MCTruthClassifier *m_MCTClassifier; //!
 
@@ -93,7 +93,7 @@ public:
 
   // this is a standard constructor
   TruthMatchAlgo ();
-  
+
   ~TruthMatchAlgo();
 
   // these are the functions inherited from Algorithm
@@ -108,28 +108,25 @@ public:
   virtual EL::StatusCode histFinalize ();
 
   // these are the functions not inherited from Algorithm
-  virtual EL::StatusCode configure ();
 
-  // added functions not from Algorithm
-  
   /*
   / For muons, there are two options to perform the truth matching:
   /
-  /  1) use the truth-link and get the info from the TruthParticle in the "MuonTruthParticles" container. 
+  /  1) use the truth-link and get the info from the TruthParticle in the "MuonTruthParticles" container.
   /     Since this is filled only with truth muons one can only get the type and origin information for 'isolated' and 'not-isolated' truth muons.
   /
-  /  2) retrieve the truth and origin information from the ID TrackParticle linked from the xAOD::Muon. 
-  /     This includes all types as defined by MCTruthClassifier for muons (i.e. also when the ID track is a pion). 
+  /  2) retrieve the truth and origin information from the ID TrackParticle linked from the xAOD::Muon.
+  /     This includes all types as defined by MCTruthClassifier for muons (i.e. also when the ID track is a pion).
   /     Clearly this is available only within ID coverage (|eta|<2.5).
   /
   */
   virtual EL::StatusCode applyTruthMatchingMuon ( const xAOD::IParticle* recoParticle );
   virtual EL::StatusCode doMuonTruthPartMatching ( const xAOD::IParticle* recoParticle );
   virtual EL::StatusCode doMuonTrackMatching ( const xAOD::IParticle* recoParticle );
-  
+
   virtual EL::StatusCode applyTruthMatchingElectron ( const xAOD::IParticle* recoParticle );
 
-  virtual EL::StatusCode checkChargeFlip ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth );  
+  virtual EL::StatusCode checkChargeFlip ( const xAOD::IParticle* recoPart, const xAOD::TruthParticle* matchTruth );
 
   // this is needed to distribute the algorithm to the workers
   ClassDef(TruthMatchAlgo, 1);

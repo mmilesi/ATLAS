@@ -91,69 +91,6 @@ HTopMultilepEventSelector :: HTopMultilepEventSelector () :
 
 HTopMultilepEventSelector::~HTopMultilepEventSelector() {}
 
-EL::StatusCode  HTopMultilepEventSelector :: configure ()
-{
-
-  if ( !getConfig().empty() ) {
-
-    // read in user configuration from text file
-    //
-    TEnv *config = new TEnv(getConfig(true).c_str());
-    if ( !config ) {
-      Error("HTopMultilepEventSelection()", "Failed to initialize reading of config file. Exiting." );
-      return EL::StatusCode::FAILURE;
-    }
-    Info("configure()", "Configuing HTopMultilepEventSelector Interface. User configuration read from : %s", getConfig().c_str());
-
-    // read debug flag from .config file
-    //
-    m_debug	                 = config->GetValue("Debug" ,      m_debug);
-    m_useCutFlow                 = config->GetValue("UseCutFlow",  m_useCutFlow);
-
-    // input container to be read from TEvent or TStore
-    //
-    m_inContainerName_el	 = config->GetValue("InputContainerElectrons", m_inContainerName_el.c_str());
-    m_inContainerName_mu	 = config->GetValue("InputContainerMuons",     m_inContainerName_mu.c_str());
-    m_inContainerName_jets	 = config->GetValue("InputContainerJets",      m_inContainerName_jets.c_str());
-
-    m_outContainerName_lep       = config->GetValue("OutputContainerLeptons",  m_outContainerName_lep.c_str());
-
-    // configurable cuts
-    //
-    m_doMinObjCut		 = config->GetValue("DoMinObjCut", m_doMinObjCut);
-    m_doMaxObjCut		 = config->GetValue("DoMaxObjCut", m_doMaxObjCut);
-    m_n_leptons_min		 = config->GetValue("MinNLeptons", m_n_leptons_min);
-    m_n_leptons_max		 = config->GetValue("MaxNLeptons", m_n_leptons_max);
-    m_n_jets_min		 = config->GetValue("MinNJets", m_n_jets_min);
-    m_n_jets_max		 = config->GetValue("MaxNJets", m_n_jets_max);
-    m_n_bjets_min		 = config->GetValue("MinNBjets", m_n_bjets_min);
-    m_leading_lep_pT_min	 = config->GetValue("pTMinLeadingLepton",  m_leading_lep_pT_min);
-    m_subleading_lep_pT_min	 = config->GetValue("pTMinSubLeadingLepton",  m_subleading_lep_pT_min);
-
-    // BTag WP to count nbjets
-    //
-    m_BTag_WP                     = config->GetValue("BTagWP", m_BTag_WP.c_str());
-
-    if ( m_inContainerName_el.empty() ) {
-      Error("configure()", "InputContainerElectrons is empty!");
-      return EL::StatusCode::FAILURE;
-    }
-    if ( m_inContainerName_mu.empty() ) {
-      Error("configure()", "InputContainerMuons is empty!");
-    return EL::StatusCode::FAILURE;
-    }
-
-    config->Print();
-
-    Info("configure()", "HTopMultilepEventSelector Interface succesfully configured!");
-
-    delete config; config = nullptr;
-  }
-
-  return EL::StatusCode::SUCCESS;
-}
-
-
 EL::StatusCode HTopMultilepEventSelector :: setupJob (EL::Job& job)
 {
   // Here you put code that sets up the job on the submission object
@@ -239,11 +176,6 @@ EL::StatusCode HTopMultilepEventSelector :: initialize ()
   }
 
   Info("initialize()", "Number of events: %lld ", m_event->getEntries() );
-
-  if ( configure() == EL::StatusCode::FAILURE ) {
-    Error("initialize()", "Failed to properly configure. Exiting." );
-    return EL::StatusCode::FAILURE;
-  }
 
   m_numEvent      = 0;
   m_numObject     = 0;

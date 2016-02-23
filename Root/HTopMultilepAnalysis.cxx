@@ -1,13 +1,12 @@
-/*********************************************
+/************************************************
  *
  * The actual HTopMultilepAnalysis algorithm.
- * Here the user categorises events, and does
+ * Here the user categorises events, and performs
  * the background estimation.
  *
  * M. Milesi (marco.milesi@cern.ch)
  *
- *
- *********************************************/
+ ** *********************************************/
 
 // EL include(s):
 #include <EventLoop/Job.h>
@@ -95,67 +94,27 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_inContainerName_PreSelectedJets      = "AntiKt4EMTopoJets";
 
   // to define "Tight" leptons
-  m_TightElectronPID_WP       = "LHTight";
-  m_TightElectronIso_WP       = "isIsolated_Gradient";
-  m_TightMuonD0sig_cut        = -1.0;
-  m_TightMuonIso_WP           = "isIsolated_Gradient";
+  m_TightElectronPID_WP            = "LHTight";
+  m_TightElectronIso_WP            = "isIsolated_Gradient";
+  m_TightElectronD0sig_cut         = 5.0;
+  m_TightElectronTrkz0sinTheta_cut = 0.5;
+  
+  m_TightMuonD0sig_cut         = -1.0;
+  m_TightMuonTrkz0sinTheta_cut = 0.5;
+  m_TightMuonIso_WP            = "isIsolated_Gradient";
 
   // to define "Tight" taus
   m_ConfigPathTightTaus       = "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15_final_sel.conf";
 
+  m_useLooseAsLoosest         = true;
+  m_useMediumAsLoosest        = false;
+  m_vetoMediumNonTight        = false;
+  m_useMediumAsTightest       = false;
+  m_useTightAsTightest        = true;
+
   m_useMCForTagAndProbe       = false;
 
 }
-
-EL::StatusCode  HTopMultilepAnalysis :: configure ()
-{
-
-  if ( !getConfig().empty() ) {
-
-    // read in user configuration from text file
-    TEnv *config = new TEnv(getConfig(true).c_str());
-    if ( !config ) {
-      Error("BasicEventSelection()", "Failed to initialize reading of config file. Exiting." );
-      return EL::StatusCode::FAILURE;
-    }
-    Info("configure()", "Configuing HTopMultilepAnalysis Interface. User configuration read from : %s", getConfig().c_str());
-
-    // read debug flag from .config file
-    m_debug	                 = config->GetValue("Debug" ,      m_debug);
-    m_useCutFlow                 = config->GetValue("UseCutFlow",  m_useCutFlow);
-
-    // input container to be read from TEvent or TStore
-    m_inContainerName_Electrons	 = config->GetValue("InputContainerElectrons", m_inContainerName_Electrons.c_str());
-    m_inContainerName_Muons	 = config->GetValue("InputContainerMuons",     m_inContainerName_Muons.c_str());
-    m_inContainerName_Leptons    = config->GetValue("InputContainerLeptons",   m_inContainerName_Leptons.c_str());
-    m_inContainerName_Jets	 = config->GetValue("InputContainerJets",      m_inContainerName_Jets.c_str());
-    m_inContainerName_Taus	 = config->GetValue("InputContainerTaus",      m_inContainerName_Taus.c_str());
-
-    m_inContainerName_PreSelectedElectrons = config->GetValue("InputContainerPreSelectedElectrons", m_inContainerName_PreSelectedElectrons.c_str());
-    m_inContainerName_PreSelectedMuons     = config->GetValue("InputContainerPreSelectedMuons",     m_inContainerName_PreSelectedMuons.c_str());
-    m_inContainerName_PreSelectedJets	   = config->GetValue("InputContainerPreSelectedJets",      m_inContainerName_PreSelectedJets.c_str());
-
-    // to define "Tight" leptons
-    m_TightElectronPID_WP         = config->GetValue("TightElectronPID_WP"  ,  m_TightElectronPID_WP.c_str());
-    m_TightElectronIso_WP         = config->GetValue("TightElectronIso_WP"  ,  m_TightElectronIso_WP.c_str());
-    m_TightMuonD0sig_cut          = config->GetValue("TightMuonD0sig_cut"   ,  m_TightMuonD0sig_cut );
-    m_TightMuonIso_WP             = config->GetValue("TightMuonIso_WP"      ,  m_TightMuonIso_WP.c_str());
-
-    // to define "Tight" taus
-    m_ConfigPathTightTaus         = config->GetValue("ConfigPathTightTaus"  ,  m_ConfigPathTightTaus.c_str());
-
-    m_useMCForTagAndProbe         = config->GetValue("UseMCForTagAndProbe"  ,  m_useMCForTagAndProbe );
-
-    config->Print();
-
-    Info("configure()", "HTopMultilepAnalysis Interface succesfully configured!");
-
-    delete config; config = nullptr;
-  }
-
-  return EL::StatusCode::SUCCESS;
-}
-
 
 EL::StatusCode HTopMultilepAnalysis :: setupJob (EL::Job& job)
 {
@@ -173,8 +132,6 @@ EL::StatusCode HTopMultilepAnalysis :: setupJob (EL::Job& job)
   return EL::StatusCode::SUCCESS;
 }
 
-
-
 EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
 {
   // Here you do everything that needs to be done at the very
@@ -184,7 +141,7 @@ EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
   Info("histInitialize()", "Calling histInitialize");
 
   TFile *fileMD = wk()->getOutputFile ("metadata");
-  m_histEventCount  = (TH1D*)fileMD->Get("MetaData_EventCount");
+  m_histEventCount  = dynamic_cast<TH1D*>( fileMD->Get("MetaData_EventCount") );
   if ( !m_histEventCount ) {
     Error("initialize()", "Failed to retrieve MetaData histogram. Aborting");
     return EL::StatusCode::FAILURE;
@@ -198,15 +155,13 @@ EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
   return EL::StatusCode::SUCCESS;
 }
 
-
-
 EL::StatusCode HTopMultilepAnalysis :: fileExecute ()
 {
   // Here you do everything that needs to be done exactly once for every
   // single file, e.g. collect a list of all lumi-blocks processed
 
   // get the MetaData tree once a new file is opened, with
-  TTree *MetaData = dynamic_cast<TTree*>(wk()->inputFile()->Get("MetaData"));
+  TTree *MetaData = dynamic_cast<TTree*>( wk()->inputFile()->Get("MetaData") );
   if ( !MetaData ) {
     Error("fileExecute()", "MetaData not found! Exiting.");
     return EL::StatusCode::FAILURE;
@@ -220,8 +175,6 @@ EL::StatusCode HTopMultilepAnalysis :: fileExecute ()
 
 }
 
-
-
 EL::StatusCode HTopMultilepAnalysis :: changeInput (bool /*firstFile*/)
 {
   // Here you do everything you need to do when we change input files,
@@ -229,8 +182,6 @@ EL::StatusCode HTopMultilepAnalysis :: changeInput (bool /*firstFile*/)
   // D3PDReader or a similar service this method is not needed.
   return EL::StatusCode::SUCCESS;
 }
-
-
 
 EL::StatusCode HTopMultilepAnalysis :: initialize ()
 {
@@ -249,11 +200,6 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   // count number of events
   m_eventCounter = 0;
 
-  if ( this->configure() == EL::StatusCode::FAILURE ) {
-    Error("initialize()", "Failed to properly configure. Exiting." );
-    return EL::StatusCode::FAILURE;
-  }
-
   // check if sample is MC
   //
   const xAOD::EventInfo* eventInfo(nullptr);
@@ -262,18 +208,20 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
 
   if ( m_useCutFlow ) {
     TFile *fileCF  = wk()->getOutputFile ("cutflow");
-    m_cutflowHist  = (TH1D*)fileCF->Get("cutflow");
-    m_cutflowHistW = (TH1D*)fileCF->Get("cutflow_weighted");
+    m_cutflowHist  = dynamic_cast<TH1D*>( fileCF->Get("cutflow") );
+    m_cutflowHistW = dynamic_cast<TH1D*>( fileCF->Get("cutflow_weighted") );
     // label the bins for the cutflow
     m_cutflow_bin     = m_cutflowHist->GetXaxis()->FindBin(m_name.c_str());
     // do it again for the weighted cutflow hist
     m_cutflowHistW->GetXaxis()->FindBin(m_name.c_str());
   }
 
+  /*
   m_jetPlots = new JetHists( "highPtJets", "clean" ); // second argument: "kinematic", "clean", "energy", "resolution"
   m_jetPlots -> initialize();
   m_jetPlots -> record( wk() );
-
+  */
+  
   // initialise TauSelectionTool
   //
   std::string tau_sel_tool_name = std::string("TauSelectionTool_") + m_name;
@@ -487,7 +435,6 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
   return EL::StatusCode::SUCCESS;
 }
 
-
 EL::StatusCode HTopMultilepAnalysis :: execute ()
 {
   // Here you do everything that needs to be done on every single
@@ -635,8 +582,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   static SG::AuxElement::Accessor< char >  TightElectronIDAcc(m_TightElectronPID_WP);
   static SG::AuxElement::Accessor< char >  TightMuonIsoAcc(m_TightMuonIso_WP);
   static SG::AuxElement::Accessor< float > d0SigAcc ("d0sig");
-
-  const xAOD::Vertex *primaryVertex = HelperFunctions::getPrimaryVertex(vertices);
+  static SG::AuxElement::Accessor< float > z0sinthetaAcc ("z0sintheta");
 
   // -----------------------
   //        electrons
@@ -659,19 +605,14 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
       return EL::StatusCode::FAILURE;
     }
 
-    const xAOD::TrackParticle* trk = el_itr->trackParticle();
-    if ( !trk ) {
-      Error("execute()", "no track available for this electron. Aborting " );
+    if ( !z0sinthetaAcc.isAvailable( *el_itr ) ) {
+      Error("execute()", "'z0sintheta' attribute is not available for this electron. Aborting " );
       return EL::StatusCode::FAILURE;
     }
 
-    float z0 =  trk->z0()  - ( primaryVertex->z() - trk->vz() ) ; // distance between z0 and zPV ( after referring the PV z coordinate to the beamspot position, given by vz() )
-    // see https://twiki.cern.ch/twiki/bin/view/AtlasProtected/InDetTrackingDC14 for further reference
-    float theta = trk->theta();
-
     // preliminary: tighten impact parameter cuts
     //
-    if ( fabs( d0SigAcc( *el_itr ) ) < 5.0 && fabs( z0*sin(theta) ) < 0.5 ) {
+    if ( fabs( d0SigAcc( *el_itr ) ) < m_TightElectronD0sig_cut && fabs( z0sinthetaAcc( *el_itr ) ) < m_TightElectronTrkz0sinTheta_cut ) {
 
       // if using isolation...
       //
@@ -691,19 +632,19 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 	    return EL::StatusCode::FAILURE;
 	  }
 
-	  // "Tight"  ---> iso + ID
-	  // "Medium" ---> !iso + ID
+	  // "Tight"  ---> IP + ID + iso
+	  // "Medium" ---> IP + ID (any iso)
 	  //
 	  if ( ( TightElectronIsoAcc( *el_itr ) == 1 ) && ( TightElectronIDAcc( *el_itr ) == 1 ) ) { isTightDecor( *el_itr ) = 1; }
-	  else if ( ( TightElectronIDAcc( *el_itr ) == 1 ) )                                       { isMediumDecor( *el_itr ) = 1; }
+	  if ( ( TightElectronIDAcc( *el_itr ) == 1 )  )                                           { isMediumDecor( *el_itr ) = 1; }
 
 	} else {
 
-	  // "Tight"  ---> iso
-	  // "Medium" ---> !iso
+	  // "Tight"  ---> IP + iso (any ID)
+	  // "Medium" ---> IP (any iso, ID)
 	  //
 	  if ( TightElectronIsoAcc( *el_itr ) == 1 ) { isTightDecor( *el_itr ) = 1; }
-	  else                                       { isMediumDecor( *el_itr ) = 1; }
+	  isMediumDecor( *el_itr ) = 1;
 
 	}
 
@@ -717,11 +658,11 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 	  return EL::StatusCode::FAILURE;
 	}
 
-	// "Tight"  ---> ID
-	// "Medium" ---> !ID
+	// "Tight"  ---> IP + ID (any iso)
+	// "Medium" ---> IP (any ID, iso)
 	//
 	if ( TightElectronIDAcc( *el_itr ) == 1 ) { isTightDecor( *el_itr ) = 1; }
-	else                                      { isMediumDecor( *el_itr ) = 1; }
+	isMediumDecor( *el_itr ) = 1;
 
       }
       // if using neither isolation, nor Electron ID..
@@ -749,19 +690,14 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     isTightDecor( *mu_itr ) =  0;
     isMediumDecor( *mu_itr ) =  0;
 
-    const xAOD::TrackParticle* trk = mu_itr->primaryTrackParticle();
-    if ( !trk ) {
-      Error("execute()", "no track available for this muon. Aborting " );
+    if ( !z0sinthetaAcc.isAvailable( *mu_itr ) ) {
+      Error("execute()", "'z0sintheta' attribute is not available for this muon. Aborting " );
       return EL::StatusCode::FAILURE;
     }
 
-    float z0 =  trk->z0()  - ( primaryVertex->z() - trk->vz() ) ; // distance between z0 and zPV ( after referring the PV z coordinate to the beamspot position, given by vz() )
-    // see https://twiki.cern.ch/twiki/bin/view/AtlasProtected/InDetTrackingDC14 for further reference
-    float theta = trk->theta();
-
     // preliminary: tighten impact parameter cuts
     //
-    if ( fabs( z0*sin(theta) ) < 0.5 ) {
+    if ( fabs( z0sinthetaAcc( *mu_itr ) ) < m_TightMuonTrkz0sinTheta_cut ) {
 
       // if using isolation...
       //
@@ -781,19 +717,19 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 	    return EL::StatusCode::FAILURE;
 	  }
 
-	  // "Tight"  ---> iso + d0sig
-	  // "Medium" ---> !iso + d0sig
+	  // "Tight"  ---> z0 + iso + d0sig
+	  // "Medium" ---> z0 + d0sig (any iso)
 	  //
 	  if ( ( TightMuonIsoAcc( *mu_itr ) == 1 ) && ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) ) { isTightDecor( *mu_itr ) = 1; }
-	  else if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second )                                       { isMediumDecor( *mu_itr ) = 1; }
+	  if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second )                                            { isMediumDecor( *mu_itr ) = 1; }
 
 	} else {
 
-	  // "Tight"  ---> iso
-	  // "Medium" ---> !iso
+	  // "Tight"  ---> z0 + iso (any d0sig)
+	  // "Medium" ---> z0 (any iso, d0sig)
 	  //
 	  if ( TightMuonIsoAcc( *mu_itr ) == 1 ) { isTightDecor( *mu_itr ) = 1; }
-	  else                                   { isMediumDecor( *mu_itr ) = 1; }
+	  isMediumDecor( *mu_itr ) = 1;
 
 	}
 
@@ -807,11 +743,11 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 	  return EL::StatusCode::FAILURE;
 	}
 
-	// "Tight"  ---> d0sig
-	// "Medium" ---> !d0sig
+	// "Tight"  ---> z0 + d0sig (any iso)
+	// "Medium" ---> z0 (any d0sig, iso)
 	//
 	if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) { isTightDecor( *mu_itr ) = 1; }
-	else                                                         { isMediumDecor( *mu_itr ) = 1; }
+	isMediumDecor( *mu_itr ) = 1;
 
       }
       // if using neither isolation, nor d0sig..
@@ -934,9 +870,9 @@ EL::StatusCode HTopMultilepAnalysis :: histFinalize ()
   double n_init_evts(0.0);
   double n_init_evts_W(0.0);
 
-  // if MetaData is not empty, and file is a DAOD, use it (to take DAOD skimming into account!)
+  // if MetaData is not empty, use it
   //
-  if ( m_isDerivation && m_histEventCount->GetBinContent(1) > 0 && m_histEventCount->GetBinContent(3) > 0 ) {
+  if ( m_histEventCount->GetBinContent(1) > 0 && m_histEventCount->GetBinContent(3) > 0 ) {
     n_init_evts   =  m_histEventCount->GetBinContent(1);  // nEvents initial
     n_init_evts_W =  m_histEventCount->GetBinContent(3);  // sumOfWeights initial
   }
@@ -970,30 +906,6 @@ EL::StatusCode HTopMultilepAnalysis :: histFinalize ()
 EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons )
 {
 
-  // ----------------------------------------
-  // Categorise event based on lepton flavour
-  // ----------------------------------------
-
-  int prod_lep_charge(1);
-  unsigned int count_el(0), count_mu(0);
-  for ( auto lep_it : leptons ) {
-      // get the lepton flavour
-      xAOD::Type::ObjectType leptonFlavour = lep_it->type();
-      if ( leptonFlavour == xAOD::Type::Electron ) {
-        ++count_el;
-        prod_lep_charge *= dynamic_cast<const xAOD::Electron*>( lep_it )->charge();
-      } else if ( leptonFlavour == xAOD::Type::Muon ) {
-        ++count_mu;
-        prod_lep_charge *= dynamic_cast<const xAOD::Muon*>( lep_it )->charge();
-      }
-  }
-  bool isElEl = ( count_el == 2 && count_mu == 0 );
-  bool isElMu = ( count_el == 1 && count_mu == 1 );
-  bool isMuMu = ( count_el == 0 && count_mu == 2 );
-
-  bool isSS = (   prod_lep_charge > 0  );
-  bool isOS = ( !(prod_lep_charge > 0) );
-
   // --------------------------------
   // Declare accessors and decorators
   // --------------------------------
@@ -1021,211 +933,61 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
   // Now, take the leading and subleading lepton
   // -------------------------------------------
 
-  const xAOD::IParticle* leadingLepton           = leptons.at(0);
-  xAOD::Type::ObjectType leadingLeptonFlavour    = leadingLepton->type();
-  bool                   isLeadingTight(false);
-  if ( isTightAcc.isAvailable( *leadingLepton ) ) {
-    isLeadingTight = isTightAcc( *leadingLepton );
-  } else {
-    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTight') is not available for the leading lepton. Should not happen. Assigning 'isTight' = false" );
-  }
-  bool 			 isLeadingTrigMatched(false);
-  if ( isTrigMatchedLepAcc.isAvailable( *leadingLepton ) ) {
-    isLeadingTrigMatched = isTrigMatchedLepAcc( *leadingLepton );
-  } else {
-    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTrigMatchedLep') is not available for the leading lepton. Should not happen. Assigning 'isLeadingTrigMatched' = false" );
-  }
-
-  const xAOD::IParticle* subLeadingLepton        = leptons.at(1);
-  xAOD::Type::ObjectType subLeadingLeptonFlavour = subLeadingLepton->type();
-  bool                   isSubLeadingTight (false);
-  if ( isTightAcc.isAvailable( *subLeadingLepton ) ) {
-    isLeadingTight = isTightAcc( *subLeadingLepton );
-  } else {
-    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTight') is not available for the subleading lepton. Should not happen. Assigning 'isTight' = false" );
-  }
-  bool 			 isSubLeadingTrigMatched(false);
-  if ( isTrigMatchedLepAcc.isAvailable( *subLeadingLepton ) ) {
-    isSubLeadingTrigMatched = isTrigMatchedLepAcc( *subLeadingLepton );
-  } else {
-    Warning("defineTagAndProbeRFRateVars()","SG::AuxElement::Accessor('isTrigMatchedLep') is not available for the subleading lepton. Should not happen. Assigning 'isSubLeadingTrigMatched' = false" );
-  }
-
-  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Leading lepton: isTight: %i \t isTrigMatched: %i ", isLeadingTight, isLeadingTrigMatched ); }
-  if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","Subleading lepton: isTight: %i \t isTrigMatched: %i ", isSubLeadingTight, isSubLeadingTrigMatched ); }
+  const xAOD::IParticle* leadingLepton = leptons.at(0);
 
   // --------------------------------------------
   // Now decide who's the tag and who's the probe
   // --------------------------------------------
 
-  // generate a uniformly distributed random number in [0,1]
-  TRandom3 rndm(0);
-  float unif = rndm.Uniform();
+  static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
+  static SG::AuxElement::ConstAccessor< int > truthTypeAcc("truthType");
+  static SG::AuxElement::ConstAccessor< int > truthOriginAcc("truthOrigin");
 
-  if ( isElEl || isMuMu ) {
+  // The first lepton found that is tight && trigger-matched will be the tag, the other the probe
+  // Note that the lepton container is sorted, so in case both are T & TM, the leading will be the tag and the subleading the probe
+  // If none satisfies the above, choose the leading as tight and the subleading as probe, but flag the event as "bad"
+  //
+  // Use the same logic for OS and SS events
 
-    //In the real case (i.e. OS SF leptons) we ask randomly if either the leading lep or the subleading lep satisfy the tag requirement otherwise we have trigger pt treshold problem.
-    //In the fake case (i.e. SS SF leptons) if both leptons are matched, the one with smaller pt is the probe because it has been seen that the low pt lepton is the fake.
+  bool found_tag(false);
 
-    // 1. leading & subleading lepton are both tight & trigger-matched
-    //    OR
-    // 2. leading lepton is tight & trigger-matched, but subleading is not
-    if ( ( isLeadingTight && isSubLeadingTight && isLeadingTrigMatched && isSubLeadingTrigMatched ) ||
-         ( isLeadingTight && isLeadingTrigMatched )
-       ) {
-
-      if ( isSS ) {
-
-	// the probe will be the subleading lepton, no matter what
-	isTagDecor( *leadingLepton ) = 1;
-
-	// categorise event
-	isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-	isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-
-      } else if ( isOS ) {
-
-	// assign randomly who's tag and who's probe
-	if ( unif >= 0.5 ) {
-
-	    isTagDecor( *leadingLepton )    = 1;
-
-	    // categorise event
-	    isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-	    isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-	} else {
-
-	    isTagDecor( *subLeadingLepton ) = 1;
-
-	    // categorise event
-	    isProbeElEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Electron );
-	    isProbeMuEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Muon );
-
-	}
-
+  for ( auto lep_itr : leptons ) {
+    if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","lepton pT = %f", lep_itr->pt()/1e3 ); }
+    if ( isTightAcc.isAvailable( *lep_itr ) && isTrigMatchedLepAcc.isAvailable( *lep_itr ) ) {
+      if ( !found_tag && ( isTightAcc( *lep_itr ) == 1 && isTrigMatchedLepAcc( *lep_itr ) == 1 ) ) {
+	isTagDecor( *lep_itr ) = 1;
+	found_tag = true;
+        if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","\t ===> found tag!"); }
       }
-
     }
-    // 3. subleading lepton is tight & trigger-matched, but leading is not
-    else if ( isSubLeadingTight  && isSubLeadingTrigMatched ) {
+  }
 
-      if ( isSS ) {
+  if ( !found_tag ) {
+    isTagDecor( *leadingLepton ) = 1;
+    // take note that this event should not be used
+    isNonTightEventDecor( *eventInfo ) = 1;
+    if ( m_debug ) { Info("defineTagAndProbeRFRateVars()","None lepton is T&TM - choose leading as tag (pT = %f)",leadingLepton->pt()/1e3 ); }
+  }
 
-	// the probe will be the leading lepton, which is also !tight
-	isTagDecor( *subLeadingLepton ) = 1;
-
-	// categorise event
-	isProbeElEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Electron );
-	isProbeMuEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Muon );
-
-      } else if ( isOS ) {
-
-	// assign randomly who's tag and who's probe
-        if ( unif >= 0.5 ) {
-
-	    isTagDecor( *leadingLepton )    = 1;
-
-	    // categorise event
-	    isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-	    isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-	} else {
-
-	    isTagDecor( *subLeadingLepton ) = 1;
-
-	    // categorise event
-	    isProbeElEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Electron );
-	    isProbeMuEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Muon );
-
-	}
-
-      }
-
-    }
-     // 4. neither the leading, nor the subleading lepton are tight & trigger-matched
-    else {
-       // take note that this event has no Tight leptons
-       isNonTightEventDecor( *eventInfo ) = 1;
-
-       // the probe will be the subleading lepton
-       isTagDecor( *leadingLepton )    = 1;
-
-       // categorise event
-       isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-       isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-
-  } // end check ( isElEl || isMuMu )
-  else if ( isElMu )
-  {
-
-    // 1. leading & subleading lepton are both tight & trigger-matched
-    //   need to distinguish assignment btwn/ SS and OS
-    if ( isLeadingTight && isSubLeadingTight && isLeadingTrigMatched && isSubLeadingTrigMatched ) {
-
-	// In the fake case (i.e. SS leptons), if both leptons are matched, I must chose which lepton is the tag and which one is the probe
-        // because I want the probe to be the fake and the real the tag.
-        // I chose the low pt one as probe.
-        // In the real case (OS leptons), the leading is the tag and subleading is the probe, no matter what.
-
-	// ---> no need to separate OS/SS here!
-
-        isTagDecor( *leadingLepton )    = 1;
-
-        // categorise event
-        isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-        isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-    // 2. leading lepton is tight & trigger-matched, but subleading is not
-    else if ( isLeadingTight && isLeadingTrigMatched ) {
-
-	// the probe will be the subleading, which is also !tight
-	isTagDecor( *leadingLepton )    = 1;
-
-        // categorise event
-        isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-        isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-    // 3. subleading lepton is tight & trigger-matched, but leading is not
-    else if ( isSubLeadingTight  && isSubLeadingTrigMatched  ) {
-
-	// the probe will be the leading, which is also !tight
-        isTagDecor( *subLeadingLepton ) = 1;
-
-        // categorise event
-        isProbeElEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Electron );
-        isProbeMuEventDecor( *eventInfo ) = ( leadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-     // 4. neither the leading, nor the subleading lepton are tight & trigger-matched
-    else {
-       // take note that this event has no Tight leptons
-       isNonTightEventDecor( *eventInfo ) = 1;
-
-       // the probe will be the subleading lepton
-       isTagDecor( *leadingLepton )    = 1;
-
-       // categorise event
-       isProbeElEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Electron );
-       isProbeMuEventDecor( *eventInfo ) = ( subLeadingLeptonFlavour == xAOD::Type::Muon );
-
-    }
-
-  } // end check isElMu
-
-  // accessor to tag leptons
+  // Accessor to tag leptons
+  //
   static SG::AuxElement::Accessor< char > isTagAcc("isTag");
 
-  if ( m_debug ) {
-    Info("execute()","Checking *isTag* lepton decoration");
-    for ( auto lep_it : leptons ) {
-      Info("execute()","\t lepton isTag: %i ", isTagAcc( *lep_it ) );
+  // Now loop over the leptons, and check whether the probe is an electron or a muon
+  //
+  for ( auto lep_itr : leptons ) {
+    if ( !isTagAcc( *lep_itr ) ) {
+      isProbeElEventDecor( *eventInfo ) = ( lep_itr->type() == xAOD::Type::Electron );
+      isProbeMuEventDecor( *eventInfo ) = ( lep_itr->type() == xAOD::Type::Muon );
     }
+  }
+
+  if ( m_debug ) {
+    Info("defineTagAndProbeRFRateVars()"," ********** Checking 'isTag' lepton decoration ********** ");
+    for ( auto lep_itr : leptons ) {
+      Info("defineTagAndProbeRFRateVars()","\t lepton \n \t isTag?: %i \n \t truthType(): %i \n \t truthOrigin(): %i \n ", isTagAcc( *lep_itr ), truthTypeAcc( *lep_itr ), truthOriginAcc( *lep_itr ) );
+    }
+    Info("defineTagAndProbeRFRateVars()"," ********** ");
   }
 
   return EL::StatusCode::SUCCESS;
@@ -1239,22 +1001,19 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
 EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons )
 {
 
-  // ----------------------------------------
-  // Categorise event based on lepton flavour
-  // ----------------------------------------
+  // -------------------------------
+  // Categorise event based on OS/SS
+  // -------------------------------
 
   int prod_lep_charge(1);
-  unsigned int count_el(0), count_mu(0);
   for ( auto lep_it : leptons ) {
-      // get the lepton flavour
-      xAOD::Type::ObjectType leptonFlavour = lep_it->type();
-      if ( leptonFlavour == xAOD::Type::Electron ) {
-        ++count_el;
-        prod_lep_charge *= dynamic_cast<const xAOD::Electron*>( lep_it )->charge();
-      } else if ( leptonFlavour == xAOD::Type::Muon ) {
-        ++count_mu;
-        prod_lep_charge *= dynamic_cast<const xAOD::Muon*>( lep_it )->charge();
-      }
+    // get the lepton flavour
+    xAOD::Type::ObjectType leptonFlavour = lep_it->type();
+    if ( leptonFlavour == xAOD::Type::Electron ) {
+      prod_lep_charge *= dynamic_cast<const xAOD::Electron*>( lep_it )->charge();
+    } else if ( leptonFlavour == xAOD::Type::Muon ) {
+      prod_lep_charge *= dynamic_cast<const xAOD::Muon*>( lep_it )->charge();
+    }
   }
   bool isSS = (  prod_lep_charge > 0  );
 
@@ -1264,12 +1023,15 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
 
   // decorate lepton w/ is tag/probe
   static SG::AuxElement::Decorator< char > isTagDecor("isTag");
+  // declare an event decoration in case there are no "good" leptons for the rate calculation
+  static SG::AuxElement::Decorator< char > isNonTightEventDecor("isNonTightEvent");
   // declare event decorations for checking the probe type in event
   static SG::AuxElement::Decorator< char > isProbeElEventDecor( "isProbeElEvent" );
   static SG::AuxElement::Decorator< char > isProbeMuEventDecor( "isProbeMuEvent" );
 
   // decorate with default values
   for ( auto lep_itr : leptons ) { isTagDecor( *lep_itr ) = 0; }
+  isNonTightEventDecor( *eventInfo ) = 0;
   isProbeElEventDecor( *eventInfo )  = 0;
   isProbeMuEventDecor( *eventInfo )  = 0;
 
@@ -1278,7 +1040,6 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
   // -------------------------------------------
 
   const xAOD::IParticle* leadingLepton           = leptons.at(0);
-  const xAOD::IParticle* subLeadingLepton        = leptons.at(1);
 
   // --------------------------------------------
   // Now decide who's the tag and who's the probe
@@ -1318,37 +1079,33 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars_MC( const xAO
       //
       if ( m_debug ) { Info("defineTagAndProbeRFRateVars_MC()","There are no prompt leptons in this SS event. Tag will be the leading, probe the subleading" ); }
       isTagDecor( *leadingLepton ) = 1;
+      // take note that this event should not be used
+      isNonTightEventDecor( *eventInfo ) = 1;
     }
 
   } else {
 
-    // Let's assume in th OS region both leptons are prompt.
-    // The first lepton that is tight && trigger-matched will be the tag, the other the probe
-    // if none satisfies the above, choose randomly who's tag and who's probe
+    // OS case
+    // The first lepton found that is tight && trigger-matched will be the tag, the other the probe
+    // Note that the lepton container is sorted, so in case both are T & TM, the leading will be the tag and the subleading the probe
+    // If none satisfies the above, choose the leading as tight and the subleading as probe, but flag the event as "bad"
+    //
+
+    bool found_tag(false);
 
     for ( auto lep_itr : leptons ) {
-
       if ( isTightAcc.isAvailable( *lep_itr ) && isTrigMatchedLepAcc.isAvailable( *lep_itr ) ) {
-
 	if ( !found_tag && ( isTightAcc( *lep_itr ) == 1 && isTrigMatchedLepAcc( *lep_itr ) == 1 ) ) {
-          isTagDecor( *lep_itr ) = 1;
+	  isTagDecor( *lep_itr ) = 1;
 	  found_tag = true;
-        }
-
+	}
       }
     }
 
     if ( !found_tag ) {
-
-      TRandom3 rndm(0);
-      float unif = rndm.Uniform();
-
-      if ( unif >= 0.5 ) {
-        isTagDecor( *leadingLepton )	= 1;
-      } else {
-        isTagDecor( *subLeadingLepton ) = 1;
-      }
-
+      isTagDecor( *leadingLepton ) = 1;
+      // take note that this event should not be used
+      isNonTightEventDecor( *eventInfo ) = 1;
     }
 
   }
@@ -1401,29 +1158,41 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
   static SG::AuxElement::Decorator< float > mll12Decor("mll12"); // 2nd lead + 3rd lead
   static SG::AuxElement::Decorator< float > mlll012Decor("mlll012");
 
+  static SG::AuxElement::Decorator< float > mOSPair01Decor("mOSPair01"); // for events with 1 OS (lep0) and 2 SS (lep1,lep2), save m(lep0,lep1)
+  static SG::AuxElement::Decorator< float > mOSPair02Decor("mOSPair02"); // for events with 1 OS (lep0) and 2 SS (lep1,lep2), save m(lep0,lep2)
+  static SG::AuxElement::Decorator< char > isOSPairSF01Decor("isOSPairSF01"); // for events with 1 OS and 2 SS, check whether lep0,lep1 are same-flavour
+  static SG::AuxElement::Decorator< char > isOSPairSF02Decor("isOSPairSF02"); // for events with 1 OS and 2 SS, check whether lep0,lep1 are same-flavour
+
   // start decorating with default values
-  isSS01Decor(*eventInfo)  = 0; // false
-  isSS12Decor(*eventInfo)  = 0; // false
+  isSS01Decor(*eventInfo)  = 0;
+  isSS12Decor(*eventInfo)  = 0;
   mll01Decor(*eventInfo)   = -1.0;
   mll02Decor(*eventInfo)   = -1.0;
   mll12Decor(*eventInfo)   = -1.0;
   mlll012Decor(*eventInfo) = -1.0;
 
+  mOSPair01Decor(*eventInfo) = -1.0;
+  mOSPair02Decor(*eventInfo) = -1.0;
+  isOSPairSF01Decor(*eventInfo) = 0;
+  isOSPairSF02Decor(*eventInfo) = 0;
+
   unsigned int nLeptons = leptons.size();
 
+  // Set defaults
   if ( nLeptons > 0 ) {
     for( auto lep_it : leptons ) {
-      isOSlepDecor(*(lep_it)) = 0; // false
-      isSS12Decor(*(lep_it))  = 0; // false
+      isOSlepDecor(*lep_it) = 0;
+      isClosestSSlepDecor(*lep_it) = 0;
+      isSS12Decor(*lep_it)  = 0;
     }
   }
 
   // initialize TLorentzVectors (for invariant mass computation)
   xAOD::IParticle::FourMom_t lepA_4mom, lepB_4mom, lepC_4mom;
 
-  if ( nLeptons == 2 )
-  {
-     // retrieve lepA
+  if ( nLeptons == 2 ) {
+
+      // retrieve lepA
      const xAOD::IParticle* lepA = leptons.at(0);
      // retrieve lepB
      const xAOD::IParticle* lepB = leptons.at(1);
@@ -1453,7 +1222,7 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      static SG::AuxElement::Decorator<float> mTLep0METDecor("mT_lep0MET");
      static SG::AuxElement::Decorator<float> mTLep1METDecor("mT_lep1MET");
 
-     const xAOD::MissingET* final = *inMETCont->find("FinalClus"); // ("FinalClus" uses the calocluster-based soft terms, "FinalTrk" uses the track-based ones)
+     const xAOD::MissingET* final = *inMETCont->find("FinalTrk"); // ("FinalClus" uses the calocluster-based soft terms, "FinalTrk" uses the track-based ones)
      TLorentzVector MET;
      MET.SetPtEtaPhiM( final->met(), 0, final->phi(), 0 );
 
@@ -1463,10 +1232,9 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      mT = sqrt( 2.0 * lepB_4mom.Pt() * ( MET.Pt() ) * ( 1.0 - cos( lepB_4mom.DeltaPhi(MET) ) ) );
      mTLep1METDecor( *eventInfo ) = mT;
 
-  }
-  else if ( nLeptons == 3 )
-  {
-     // retrieve lepA
+  } else if ( nLeptons == 3 ) {
+
+      // retrieve lepA
      const xAOD::IParticle* lepA = leptons.at(0);
      // retrieve lepB
      const xAOD::IParticle* lepB = leptons.at(1);
@@ -1496,10 +1264,11 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
      lepBcharge =  ( lepBFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepB))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepB))->charge() ) ;
      lepCcharge =  ( lepCFlavour == xAOD::Type::Electron  ) ?  ( (dynamic_cast<const xAOD::Electron*>(lepC))->charge() ) : ( (dynamic_cast<const xAOD::Muon*>(lepC))->charge() ) ;
 
-     // look only at events where there is an OS pair
-     if ( fabs( lepAcharge/fabs(lepAcharge) + lepBcharge/fabs(lepBcharge) + lepCcharge/fabs(lepCcharge)  ) != 3 )
-     {
-        // now decorate event!
+     // look only at events where there is (at least) one OS pair
+     //
+     if ( fabs( lepAcharge/fabs(lepAcharge) + lepBcharge/fabs(lepBcharge) + lepCcharge/fabs(lepCcharge)  ) != 3 ) {
+
+	 // now decorate event!
 	isSS12Decor(*eventInfo) = 1;
 
         // now find the OS lepton and decorate!
@@ -1508,44 +1277,71 @@ EL::StatusCode HTopMultilepAnalysis ::  addChannelDecorations(const xAOD::EventI
         isOSlepDecor(*lepC) = ( (lepAcharge * lepBcharge) > 0 );
 
         // once OS lepton has been found, find the SS lep with min{ deltaR(lep0) } and decorate!
+        //
+	// Save the invariant mass of all the lepton pairs containing the OS one, and whether the pair is
+        // made up of same flavour leptons
+        //
 	float dR_i(-1), dR_j(-1);
 	if ( isOSlepDecor(*lepA) ) {
 	   dR_i = lepA_4mom.DeltaR(lepB_4mom );
 	   dR_j = lepA_4mom.DeltaR(lepC_4mom );
-	   isClosestSSlepDecor(*lepB) = ( dR_i <=  dR_j );
-	   isClosestSSlepDecor(*lepC) = ( dR_j  <  dR_i );
+	   if ( dR_i <=  dR_j ) {
+	       isClosestSSlepDecor(*lepB) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairAB.M();
+	       mOSPair02Decor( *eventInfo ) = pairAC.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepAFlavour == lepBFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepAFlavour == lepCFlavour );
+	   } else {
+	       isClosestSSlepDecor(*lepC) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairAC.M();
+	       mOSPair02Decor( *eventInfo ) = pairAB.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepAFlavour == lepCFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepAFlavour == lepBFlavour );
+	   }
 	}
 	else if ( isOSlepDecor(*lepB) ) {
 	   dR_i = lepB_4mom.DeltaR(lepA_4mom );
 	   dR_j = lepB_4mom.DeltaR(lepC_4mom );
-	   isClosestSSlepDecor(*lepA) = ( dR_i <=  dR_j );
-	   isClosestSSlepDecor(*lepC) = ( dR_j  <  dR_i );
+	   if ( dR_i <=  dR_j ) {
+	       isClosestSSlepDecor(*lepA) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairAB.M();
+	       mOSPair02Decor( *eventInfo ) = pairBC.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepAFlavour == lepBFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepBFlavour == lepCFlavour );
+	   } else {
+	       isClosestSSlepDecor(*lepC) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairBC.M();
+	       mOSPair02Decor( *eventInfo ) = pairAB.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepBFlavour == lepCFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepAFlavour == lepBFlavour );
+	   }
 	}
 	else if ( isOSlepDecor(*lepC) ) {
 	   dR_i = lepC_4mom.DeltaR(lepA_4mom );
 	   dR_j = lepC_4mom.DeltaR(lepB_4mom );
-	   isClosestSSlepDecor(*lepA) = ( dR_i <=  dR_j );
-	   isClosestSSlepDecor(*lepB) = ( dR_j  <  dR_i );
+	   if ( dR_i <=  dR_j ) {
+	       isClosestSSlepDecor(*lepA) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairAC.M();
+	       mOSPair02Decor( *eventInfo ) = pairBC.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepAFlavour == lepCFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepBFlavour == lepCFlavour );
+	   } else {
+	       isClosestSSlepDecor(*lepB) = 1;
+	       mOSPair01Decor( *eventInfo ) = pairBC.M();
+	       mOSPair02Decor( *eventInfo ) = pairAC.M();
+	       isOSPairSF01Decor( *eventInfo ) = ( lepBFlavour == lepCFlavour );
+	       isOSPairSF02Decor( *eventInfo ) = ( lepAFlavour == lepCFlavour );
+	   }
 	}
      }
   }
-
-  // FIXME: add Z/JPsi mass window
-  /*
-  const float Zmass(91187.6);     // in MeV
-  const float JPsimass(3096.916); // in MeV
-
-  mJPsiCand_ee, mJPsiCand_mm
-  mZCand_ee, mZCand_mm, mZCand_ee_SS
-
-  */
 
   return EL::StatusCode::SUCCESS;
 }
 
 //*****************************************************************************
 //
-// Matrix Method  & Fake Factor Method stuff
+// Matrix Method & Fake Factor Method stuff
 //
 //
 
@@ -1573,30 +1369,86 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
     return EL::StatusCode::FAILURE;
   }
 
-  // accessor to tight leptons
+  // accessor to tight/medium selected leptons
   //
   static SG::AuxElement::Accessor< char > isTightAcc("isTight");
   static SG::AuxElement::Accessor< char > isMediumAcc("isMedium");
 
-  // event decorators to identify the TT,TL,LT,LL regions (ordering depends on the category)
+  // event decorators to identify the regions based on lepton tightness (lepton ordering criterion depends on the category)
   //
-  static SG::AuxElement::Decorator< char > isTTDecor("isTT");
-  static SG::AuxElement::Decorator< char > isTLDecor("isTL");
-  static SG::AuxElement::Decorator< char > isLTDecor("isLT");
-  static SG::AuxElement::Decorator< char > isLLDecor("isLL");
-  isTTDecor( *eventInfo ) = 0;
-  isTLDecor( *eventInfo ) = 0;
-  isLTDecor( *eventInfo ) = 0;
-  isLLDecor( *eventInfo ) = 0;
+  static SG::AuxElement::Decorator< char > is_T_T_Decor("is_T_T");
+  static SG::AuxElement::Decorator< char > is_T_AntiT_Decor("is_T_AntiT");
+  static SG::AuxElement::Decorator< char > is_AntiT_T_Decor("is_AntiT_T");
+  static SG::AuxElement::Decorator< char > is_AntiT_AntiT_Decor("is_AntiT_AntiT");
 
-  static SG::AuxElement::Decorator< char > isTMDecor("isTM");
-  static SG::AuxElement::Decorator< char > isMTDecor("isMT");
-  static SG::AuxElement::Decorator< char > isMMDecor("isMM");
-  isTMDecor( *eventInfo ) = 0;
-  isMTDecor( *eventInfo ) = 0;
-  isMMDecor( *eventInfo ) = 0;
+  is_T_T_Decor( *eventInfo ) = 0;
+  is_T_AntiT_Decor( *eventInfo ) = 0;
+  is_AntiT_T_Decor( *eventInfo ) = 0;
+  is_AntiT_AntiT_Decor( *eventInfo ) = 0;
 
-  // These will be the two leptons used for the fake estimate and to define the "tightness" of the region, both in 2 lep SS and in 3 lep category
+  static SG::AuxElement::Decorator< char > is_T_MAntiT_Decor("is_T_MAntiT");
+  static SG::AuxElement::Decorator< char > is_MAntiT_T_Decor("is_MAntiT_T");
+  static SG::AuxElement::Decorator< char > is_MAntiT_MAntiT_Decor("is_MAntiT_MAntiT");
+
+  is_T_MAntiT_Decor( *eventInfo ) = 0;
+  is_MAntiT_T_Decor( *eventInfo ) = 0;
+  is_MAntiT_MAntiT_Decor( *eventInfo ) = 0;
+
+  static SG::AuxElement::Decorator< char > is_M_M_Decor("is_M_M");
+  static SG::AuxElement::Decorator< char > is_T_AntiM_Decor("is_T_AntiM");
+  static SG::AuxElement::Decorator< char > is_AntiM_T_Decor("is_AntiM_T");
+  static SG::AuxElement::Decorator< char > is_M_AntiM_Decor("is_M_AntiM");
+  static SG::AuxElement::Decorator< char > is_AntiM_M_Decor("is_AntiM_M");
+  static SG::AuxElement::Decorator< char > is_AntiM_AntiM_Decor("is_AntiM_AntiM");
+
+  is_M_M_Decor( *eventInfo ) = 0;
+  is_T_AntiM_Decor( *eventInfo ) = 0;
+  is_AntiM_T_Decor( *eventInfo ) = 0;
+  is_M_AntiM_Decor( *eventInfo ) = 0;
+  is_AntiM_M_Decor( *eventInfo ) = 0;
+  is_AntiM_AntiM_Decor( *eventInfo ) = 0;
+
+  // Save a special set of flags for TL,LT OF events (used for "theta factior" ABCD method)
+  //
+  static SG::AuxElement::Decorator< char > is_Tel_AntiTmu_Decor("is_Tel_AntiTmu");
+  static SG::AuxElement::Decorator< char > is_Tmu_AntiTel_Decor("is_Tmu_AntiTel");
+  static SG::AuxElement::Decorator< char > is_AntiTel_Tmu_Decor("is_AntiTel_Tmu");
+  static SG::AuxElement::Decorator< char > is_AntiTmu_Tel_Decor("is_AntiTmu_Tel");
+  is_Tel_AntiTmu_Decor( *eventInfo ) = 0;
+  is_Tmu_AntiTel_Decor( *eventInfo ) = 0;
+  is_AntiTel_Tmu_Decor( *eventInfo ) = 0;
+  is_AntiTmu_Tel_Decor( *eventInfo ) = 0;
+  static SG::AuxElement::Decorator< char > is_Tel_MAntiTmu_Decor("is_Tel_MAntiTmu");
+  static SG::AuxElement::Decorator< char > is_Tmu_MAntiTel_Decor("is_Tmu_MAntiTel");
+  static SG::AuxElement::Decorator< char > is_MAntiTel_Tmu_Decor("is_MAntiTel_Tmu");
+  static SG::AuxElement::Decorator< char > is_MAntiTmu_Tel_Decor("is_MAntiTmu_Tel");
+  is_Tel_MAntiTmu_Decor( *eventInfo ) = 0;
+  is_Tmu_MAntiTel_Decor( *eventInfo ) = 0;
+  is_MAntiTel_Tmu_Decor( *eventInfo ) = 0;
+  is_MAntiTmu_Tel_Decor( *eventInfo ) = 0;
+
+  static SG::AuxElement::Decorator< char > is_Mel_AntiMmu_Decor("is_Mel_AntiMmu");
+  static SG::AuxElement::Decorator< char > is_Mmu_AntiMel_Decor("is_Mmu_AntiMel");
+  static SG::AuxElement::Decorator< char > is_AntiMel_Mmu_Decor("is_AntiMel_Mmu");
+  static SG::AuxElement::Decorator< char > is_AntiMmu_Mel_Decor("is_AntiMmu_Mel");
+  is_Mel_AntiMmu_Decor( *eventInfo ) = 0;
+  is_Mmu_AntiMel_Decor( *eventInfo ) = 0;
+  is_AntiMel_Mmu_Decor( *eventInfo ) = 0;
+  is_AntiMmu_Mel_Decor( *eventInfo ) = 0;
+
+  static SG::AuxElement::Decorator< char > is_Tel_AntiMmu_Decor("is_Tel_AntiMmu");
+  static SG::AuxElement::Decorator< char > is_Tmu_AntiMel_Decor("is_Tmu_AntiMel");
+  static SG::AuxElement::Decorator< char > is_AntiMel_Tmu_Decor("is_AntiMel_Tmu");
+  static SG::AuxElement::Decorator< char > is_AntiMmu_Tel_Decor("is_AntiMmu_Tel");
+  is_Tel_AntiMmu_Decor( *eventInfo ) = 0;
+  is_Tmu_AntiMel_Decor( *eventInfo ) = 0;
+  is_AntiMel_Tmu_Decor( *eventInfo ) = 0;
+  is_AntiMmu_Tel_Decor( *eventInfo ) = 0;
+
+  // **********************************************************************
+  //
+  // These will be the two leptons used for the fake estimate and to define
+  // the "tightness" of the region, both in 2 lep SS and in 3 lep category
   //
   xAOD::IParticle* lepA(nullptr);
   xAOD::IParticle* lepB(nullptr);
@@ -1610,176 +1462,219 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   float lepA_pt(-1.0), lepA_eta(-999.0), lepB_pt(-1.0), lepB_eta(-999.0);
   int lepA_flavour(0), lepB_flavour(0);
 
-  std::string region;
+  std::string region("");
 
-  if ( nLeptons == 2 && isSS01(*eventInfo) ) {
+  bool is2lepOS = ( nLeptons == 2 && isSS01(*eventInfo) );
+  bool is3lep   = ( nLeptons == 3 && isSS12(*eventInfo) );
 
-	// start from lepton container
-	//
-	// ordering criterion is simply based on pT
-	// by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
-
-	// retrieve lepA : the leading lepton
-	//
-	lepA = const_cast<xAOD::IParticle*>(leptons.at(0));
-	// retrieve lepB: the subleading lepton
-        //
-	lepB = const_cast<xAOD::IParticle*>(leptons.at(1));
-
-	// set the region string
-	//
-	if      (  isTightAcc( *lepA )    &&  isTightAcc( *lepB )    ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
-	else if (  isTightAcc( *lepA )    &&  ( !(isTightAcc( *lepB )) && !(isMediumAcc( *lepB )) ) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
-	else if (  ( !(isTightAcc( *lepA )) && !(isMediumAcc( *lepA )) ) &&  isTightAcc( *lepB )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
-	else if (  ( !(isTightAcc( *lepA )) && !(isMediumAcc( *lepA )) ) &&  ( !(isTightAcc( *lepB )) && !(isMediumAcc( *lepB )) ) ) { region = "LL"; isLLDecor( *eventInfo ) = 1; }
-	else if (  isTightAcc( *lepA )    &&  isMediumAcc( *lepB ) ) { region = "TM"; isTMDecor( *eventInfo ) = 1; }
-	else if (  isMediumAcc( *lepA )   &&  isTightAcc( *lepB )  ) { region = "MT"; isMTDecor( *eventInfo ) = 1; }
-	else if (  isMediumAcc( *lepA )   &&  isMediumAcc( *lepB ) ) { region = "MM"; isMMDecor( *eventInfo ) = 1; }
-
-  	if ( m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
-
-        // set the properties of the two relevant leptons for future convenience
-	//
-	lepA_pt  = lepA->pt();
-	lepA_eta = lepA->eta();
-	if ( lepA->type() == xAOD::Type::Electron )  { lepA_flavour = 11; }
-	else if ( lepA->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
-
-	lepB_pt  = lepB->pt();
-	lepB_eta = lepB->eta();
-	if ( lepB->type() == xAOD::Type::Electron )  { lepB_flavour = 11; }
-	else if ( lepB->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }
-
-  } else if ( nLeptons == 3 && isSS12(*eventInfo) ) {
-
-	// start from lepton container
-	//
-	// for trilepton, ordering criterion is:
-	// lep0: the OS lepton (assume this is real!)
-	// lepA: the SS lepton with min{ deltaR(lep0) }
-	// lepB: the other SS lepton
-        // --> lepA and lepB define the "tightness" of the region
-
-	// retrieve some previously applied lepton object decorations
-	//
-  	static SG::AuxElement::Accessor< char > isOSlep("isOSlep");
-  	static SG::AuxElement::Accessor< char > isClosestSSlep("isClosestSSlep");
-
-	for (auto lep_it :leptons ) {
-
-	  xAOD::IParticle* this_lep = const_cast<xAOD::IParticle*>(lep_it);
-
-	  if ( !isOSlep.isAvailable(*lep_it) ) {
-	    Error("fakeWeightCalculator()", "isOSlep lepton decoration is not available. Aborting ");
-    	    return EL::StatusCode::FAILURE;
- 	  }
-
-	  if ( isOSlep(*this_lep) ) {
-
-	    // retrieve lep0 : the OS lepton
-	    //
-	    lep0 = this_lep;
-	    continue;
-
-	  } else {
-
-	    if ( !isClosestSSlep.isAvailable(*this_lep) ) {
-	      Error("fakeWeightCalculator()", "isClosestSSlep lepton decoration is not available. Aborting");
-    	      return EL::StatusCode::FAILURE;
- 	    }
-
-	    // retrieve lepA : the SS lepton with min{ deltaR(lep0) }
-	    //
-	    if ( isClosestSSlep(*this_lep) ) {
-	      lepA = this_lep;
-	      continue;
-	    }
-	    // retrieve lepB : the other SS lepton
-	    //
-	    lepB = this_lep;
-
-	  }
-
-	} // close loop over lepton container
-
-	// just a safety check
-	//
-	if ( !( lep0 && lepA && lepB ) ) {
-	  Error("fakeWeightCalculator()", "Trilepton region, but no (lep0 and lepA and lepB) pointers! Aborting");
-	  return EL::StatusCode::FAILURE;
-	}
-
-	// set the region string
-	//
-	if      (  isTightAcc( *lepA )    &&  isTightAcc( *lepB )    ) { region = "TT"; isTTDecor( *eventInfo ) = 1; }
-	else if (  isTightAcc( *lepA )    &&  ( !(isTightAcc( *lepB )) && !(isMediumAcc( *lepB )) ) ) { region = "TL"; isTLDecor( *eventInfo ) = 1; }
-	else if (  ( !(isTightAcc( *lepA )) && !(isMediumAcc( *lepA )) ) &&  isTightAcc( *lepB )    ) { region = "LT"; isLTDecor( *eventInfo ) = 1; }
-	else if (  ( !(isTightAcc( *lepA )) && !(isMediumAcc( *lepA )) ) &&  ( !(isTightAcc( *lepB )) && !(isMediumAcc( *lepB )) ) ) { region = "LL"; isLLDecor( *eventInfo ) = 1; }
-	else if (  isTightAcc( *lepA )    &&  isMediumAcc( *lepB ) ) { region = "TM"; isTMDecor( *eventInfo ) = 1; }
-	else if (  isMediumAcc( *lepA )   &&  isTightAcc( *lepB )  ) { region = "MT"; isMTDecor( *eventInfo ) = 1; }
-	else if (  isMediumAcc( *lepA )   &&  isMediumAcc( *lepB ) ) { region = "MM"; isMMDecor( *eventInfo ) = 1; }
-
-	if ( m_debug ) { Info("fakeWeightCalculator()", "Trilepton 2SS+1OS category. Region (defined by the 2SS leptons) is %s ", region.c_str() ); }
-
-	// set the properties of the two SS leptons for future convenience
-	//
-	lepA_pt  = lepA->pt();
-	lepA_eta = lepA->eta();
-	if ( lepA->type() == xAOD::Type::Electron )  { lepA_flavour = 11; }
-	else if ( lepA->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
-
-	lepB_pt  = lepB->pt();
-	lepB_eta = lepB->eta();
-	if ( lepB->type() == xAOD::Type::Electron )  { lepB_flavour = 11; }
-	else if ( lepB->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }
-
-  } else  {
-    return EL::StatusCode::SUCCESS; //no weights in the other categories
+  if ( !( is2lepOS || is3lep ) ) {
+    return EL::StatusCode::SUCCESS; // no weights in the other categories: just return
   }
 
-  // Save a special flag for TL,LT OF events (used for "theta factior" ABCD method)
+  if ( is2lepOS ) {
+
+    // start from lepton container
+    //
+    // ordering criterion is simply based on pT
+    // by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
+
+    // retrieve lepA : the leading lepton
+    //
+    lepA = const_cast<xAOD::IParticle*>(leptons.at(0));
+    // retrieve lepB: the subleading lepton
+    //
+    lepB = const_cast<xAOD::IParticle*>(leptons.at(1));
+
+  } else if ( is3lep ) {
+
+    // start from lepton container
+    //
+    // for trilepton, ordering criterion is:
+    // lep0: the OS lepton (assume this is real!)
+    // lepA: the SS lepton with min{ deltaR(lep0) }
+    // lepB: the other SS lepton
+    // --> lepA and lepB define the "tightness" of the region
+
+    // retrieve some previously applied lepton object decorations
+    //
+    static SG::AuxElement::Accessor< char > isOSlep("isOSlep");
+    static SG::AuxElement::Accessor< char > isClosestSSlep("isClosestSSlep");
+
+    for (auto lep_it :leptons ) {
+
+      xAOD::IParticle* this_lep = const_cast<xAOD::IParticle*>(lep_it);
+
+      if ( !isOSlep.isAvailable(*lep_it) ) {
+    	Error("fakeWeightCalculator()", "isOSlep lepton decoration is not available. Aborting ");
+    	return EL::StatusCode::FAILURE;
+      }
+
+      if ( isOSlep(*this_lep) ) {
+
+    	// retrieve lep0 : the OS lepton
+    	//
+    	lep0 = this_lep;
+    	continue;
+
+      } else {
+
+    	if ( !isClosestSSlep.isAvailable(*this_lep) ) {
+    	  Error("fakeWeightCalculator()", "isClosestSSlep lepton decoration is not available. Aborting");
+    	  return EL::StatusCode::FAILURE;
+    	}
+
+    	// retrieve lepA : the SS lepton with min{ deltaR(lep0) }
+    	//
+    	if ( isClosestSSlep(*this_lep) ) {
+    	  lepA = this_lep;
+    	  continue;
+    	}
+    	// retrieve lepB : the other SS lepton
+    	//
+    	lepB = this_lep;
+
+      }
+
+    } // close loop over lepton container
+
+    // just a safety check
+    //
+    if ( !( lep0 && lepA && lepB ) ) {
+      Error("fakeWeightCalculator()", "Trilepton region, but no (lep0 and lepA and lepB) pointers! Aborting");
+      return EL::StatusCode::FAILURE;
+    }
+
+  }
+
+  // set the properties of the two relevant leptons for future convenience
   //
-  static SG::AuxElement::Decorator< char > isTelLmuDecor("isTelLmu");
-  static SG::AuxElement::Decorator< char > isTmuLelDecor("isTmuLel");
-  static SG::AuxElement::Decorator< char > isLelTmuDecor("isLelTmu");
-  static SG::AuxElement::Decorator< char > isLmuTelDecor("isLmuTel");
-  isTelLmuDecor( *eventInfo ) = 0;
-  isTmuLelDecor( *eventInfo ) = 0;
-  isLelTmuDecor( *eventInfo ) = 0;
-  isLmuTelDecor( *eventInfo ) = 0;
-  static SG::AuxElement::Decorator< char > isTelMmuDecor("isTelMmu");
-  static SG::AuxElement::Decorator< char > isTmuMelDecor("isTmuMel");
-  static SG::AuxElement::Decorator< char > isMelTmuDecor("isMelTmu");
-  static SG::AuxElement::Decorator< char > isMmuTelDecor("isMmuTel");
-  isTelMmuDecor( *eventInfo ) = 0;
-  isTmuMelDecor( *eventInfo ) = 0;
-  isMelTmuDecor( *eventInfo ) = 0;
-  isMmuTelDecor( *eventInfo ) = 0;
+  lepA_pt  = lepA->pt();
+  lepA_eta = lepA->eta();
+  if ( lepA->type() == xAOD::Type::Electron )  { lepA_flavour = 11; }
+  else if ( lepA->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
+
+  lepB_pt  = lepB->pt();
+  lepB_eta = lepB->eta();
+  if ( lepB->type() == xAOD::Type::Electron )  { lepB_flavour = 11; }
+  else if ( lepB->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }
 
   bool OF = ( ( lepA_flavour == 11 && lepB_flavour == 13 ) || ( lepA_flavour == 13 && lepB_flavour == 11 ) );
-  if ( OF ) {
-    if ( region == "TL" ) {
-      // the tight is an electron, the loose is a muon
-      if (  lepA_flavour == 11 )     { isTelLmuDecor( *eventInfo ) = 1; }
-      // the tight is a muon, the loose is an electron
-      else if ( lepA_flavour == 13 ) { isTmuLelDecor( *eventInfo ) = 1; }
-    } else if ( region == "LT" ) {
-      // the loose is an electron, the tight is a muon
-      if (  lepA_flavour == 11 )     { isLelTmuDecor( *eventInfo ) = 1; }
-      // the loose is a muon, the tight is an electron
-      else if ( lepA_flavour == 13 ) { isLmuTelDecor( *eventInfo ) = 1; }
-    } else if ( region == "TM" ) {
-      // the tight is an electron, the medium is a muon
-      if (  lepA_flavour == 11 )     { isTelMmuDecor( *eventInfo ) = 1; }
-      // the tight is a muon, the medium is an electron
-      else if ( lepA_flavour == 13 ) { isTmuMelDecor( *eventInfo ) = 1; }
-    } else if ( region == "MT" ) {
-      // the medium is an electron, the tight is a muon
-      if (  lepA_flavour == 11 )     { isMelTmuDecor( *eventInfo ) = 1; }
-      // the medium is a muon, the tight is an electron
-      else if ( lepA_flavour == 13 ) { isMmuTelDecor( *eventInfo ) = 1; }
-    }
+
+  // ******************************************************************************************
+  //
+  // Set the region string for MM/FF based on tightness. This depends on the
+  // choice of loosest and tightest definition made at configuration.
+  //
+  // Regardless of this choice, save an event flag with the T-M-L composition of the
+  // dilepton (or dilepton+1lep) events
+  //
+  // For the theta method, specify the flavour of the two leptons in TL,LT regions
+
+  // the TT region is defined in this way EXCEPT when "Medium" defines our tightest definition
+  //
+  if (  isTightAcc( *lepA ) &&  isTightAcc( *lepB ) ) {
+      if ( !( m_useLooseAsLoosest && m_useMediumAsTightest ) ) { region = "TT"; }
+      is_T_T_Decor( *eventInfo ) = 1;
   }
+
+  // -) "Loose" defines the loosest definition, "Tight" defines the tightest
+  //
+  if (  isTightAcc( *lepA ) && !isTightAcc( *lepB ) ) {
+      if ( m_useLooseAsLoosest && m_useTightAsTightest ) { region = "TL"; }
+      is_T_AntiT_Decor( *eventInfo ) = 1;
+      if ( OF ) {
+	  // the tight is an electron, the loose is a muon
+	  if (  lepA_flavour == 11 )     { is_Tel_AntiTmu_Decor( *eventInfo ) = 1; }
+	  // the tight is a muon, the loose is an electron
+	  else if ( lepA_flavour == 13 ) { is_Tmu_AntiTel_Decor( *eventInfo ) = 1; }
+      }
+  }
+  if ( !isTightAcc( *lepA ) &&  isTightAcc( *lepB ) ) {
+      if ( m_useLooseAsLoosest && m_useTightAsTightest ) { region = "LT"; }
+      is_AntiT_T_Decor( *eventInfo ) = 1;
+      if ( OF ) {
+	  if (  lepA_flavour == 11 )     { is_AntiTel_Tmu_Decor( *eventInfo ) = 1; }
+	  else if ( lepA_flavour == 13 ) { is_AntiTmu_Tel_Decor( *eventInfo ) = 1; }
+      }
+  }
+  if ( !isTightAcc( *lepA ) && !isTightAcc( *lepB ) ) {
+      if ( m_useLooseAsLoosest && m_useTightAsTightest ) { region = "LL"; }
+      is_AntiT_AntiT_Decor( *eventInfo ) = 1;
+  }
+
+  // -) "Medium" defines the loosest definition, "Tight" defines the tightest
+  //
+  if (  isTightAcc( *lepA ) && ( isMediumAcc( *lepB ) && !isTightAcc( *lepB ) ) ) {
+      if ( m_useMediumAsLoosest && m_useTightAsTightest ) { region = "TL"; }
+      is_T_MAntiT_Decor( *eventInfo ) = 1;
+      if ( OF ) {
+	  if (  lepA_flavour == 11 )     { is_Tel_MAntiTmu_Decor( *eventInfo ) = 1; }
+	  else if ( lepA_flavour == 13 ) { is_Tmu_MAntiTel_Decor( *eventInfo ) = 1; }
+      }
+  }
+  if ( ( isMediumAcc( *lepA ) && !isTightAcc( *lepA ) ) && isTightAcc( *lepB ) ) {
+      if ( m_useMediumAsLoosest && m_useTightAsTightest ) { region = "LT"; }
+      is_MAntiT_T_Decor( *eventInfo ) = 1;
+      if ( OF ) {
+	  if (  lepA_flavour == 11 )     { is_MAntiTel_Tmu_Decor( *eventInfo ) = 1; }
+	  else if ( lepA_flavour == 13 ) { is_MAntiTmu_Tel_Decor( *eventInfo ) = 1; }
+      }
+  }
+  if ( ( isMediumAcc( *lepA ) && !isTightAcc( *lepA ) ) && ( isMediumAcc( *lepB ) && !isTightAcc( *lepB ) ) ) {
+      if ( m_useMediumAsLoosest && m_useTightAsTightest ) { region = "LL"; }
+      is_MAntiT_MAntiT_Decor( *eventInfo ) = 1;
+  }
+
+  // -) "Loose" defines the loosest definition, "Tight" defines the tightest, and exclude all the "Medium-!Tight" leptons from the loose set
+  //
+  if (  isTightAcc( *lepA ) && !isMediumAcc( *lepB )  ) {
+      if ( ( m_useLooseAsLoosest && m_vetoMediumNonTight ) && m_useTightAsTightest ) { region = "TL"; }
+      is_T_AntiM_Decor( *eventInfo ) = 1;
+      if ( OF ) {
+	  if (  lepA_flavour == 11 )     { is_Tel_AntiMmu_Decor( *eventInfo ) = 1; }
+	  else if ( lepA_flavour == 13 ) { is_Tmu_AntiMel_Decor( *eventInfo ) = 1; }
+      }
+  }
+  if (  !isMediumAcc( *lepA ) && isTightAcc( *lepB ) ) {
+      if ( ( m_useLooseAsLoosest && m_vetoMediumNonTight ) && m_useTightAsTightest ) { region = "LT"; }
+      is_AntiM_T_Decor( *eventInfo ) = 1;
+      if ( OF ) {
+	  if (  lepA_flavour == 11 )     { is_AntiMel_Tmu_Decor( *eventInfo ) = 1; }
+	  else if ( lepA_flavour == 13 ) { is_AntiMmu_Tel_Decor( *eventInfo ) = 1; }
+      }
+  }
+
+  // -) "Loose" defines the loosest definition, "Medium" defines the tightest
+  //
+  if (  isMediumAcc( *lepA )   &&  isMediumAcc( *lepB )   ) {
+      if ( m_useLooseAsLoosest && m_useMediumAsTightest ) { region = "TT"; }
+      is_M_M_Decor( *eventInfo ) = 1;
+  }
+  if (  isMediumAcc( *lepA )   &&  !isMediumAcc( *lepB )  ) {
+      if ( m_useLooseAsLoosest && m_useMediumAsTightest ) { region = "TL"; }
+      is_M_AntiM_Decor( *eventInfo ) = 1;
+      if ( OF ) {
+	  if (  lepA_flavour == 11 )     { is_Mel_AntiMmu_Decor( *eventInfo ) = 1; }
+	  else if ( lepA_flavour == 13 ) { is_Mmu_AntiMel_Decor( *eventInfo ) = 1; }
+      }
+  }
+  if (  !isMediumAcc( *lepA )  &&  isMediumAcc( *lepB )   ) {
+      if ( m_useLooseAsLoosest && m_useMediumAsTightest ) { region = "LT"; }
+      is_AntiM_M_Decor( *eventInfo ) = 1;
+      if ( OF ) {
+	  if (  lepA_flavour == 11 )     { is_AntiMel_Mmu_Decor( *eventInfo ) = 1; }
+	  else if ( lepA_flavour == 13 ) { is_AntiMmu_Mel_Decor( *eventInfo ) = 1; }
+      }
+  }
+  if (  !isMediumAcc( *lepA )  &&  !isMediumAcc( *lepB )  ) {
+      if ( m_useLooseAsLoosest && m_useMediumAsTightest ) { region = "LL"; }
+      is_AntiM_AntiM_Decor( *eventInfo ) = 1;
+  }
+
+  // ***********************************************
+
+  if ( is2lepOS && m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
+  if ( is3lep && m_debug )   { Info("fakeWeightCalculator()", "Trilepton 2SS+1OS category. Region (defined by the 2SS leptons) is %s ", region.c_str() ); }
 
   if ( m_debug ) { Info("fakeWeightCalculator()", "Start calculating MM and FF weights... "); }
 
@@ -1980,13 +1875,13 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 
 }
 
-double  HTopMultilepAnalysis :: scaleRateToFactor( double rate )
+double  HTopMultilepAnalysis :: scaleRateToEfficiency( double rate )
 {
   if ( rate < 0 ) { rate = 0.0; }
 
-  double factor = ( rate /(rate+1.0) );
+  double eff = ( rate / (rate+1.0) );
 
-  return factor;
+  return eff;
 }
 
 std::vector<double>  HTopMultilepAnalysis :: calc_weights( std::map< std::string, TH1D* > &histograms,
@@ -2115,9 +2010,9 @@ std::vector<double>  HTopMultilepAnalysis :: calc_weights( std::map< std::string
   //
   if ( m_debug ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
-  weights.at(0) = scaleRateToFactor(weights.at(0));
-  weights.at(1) = scaleRateToFactor(weights.at(1));
-  weights.at(2) = scaleRateToFactor(weights.at(2));
+  weights.at(0) = scaleRateToEfficiency(weights.at(0));
+  weights.at(1) = scaleRateToEfficiency(weights.at(1));
+  weights.at(2) = scaleRateToEfficiency(weights.at(2));
 
   if ( m_debug ) { Info("calc_weights()", "MM/FF factor = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
