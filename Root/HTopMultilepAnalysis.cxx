@@ -233,202 +233,19 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
     m_TauSelTool = new TauAnalysisTools::TauSelectionTool( tau_sel_tool_name );
     m_TauSelTool->msg().setLevel( MSG::INFO ); // VERBOSE, INFO, DEBUG
 
-    RETURN_CHECK("TauSelector::initialize()", m_TauSelTool->setProperty("ConfigPath",m_ConfigPathTightTaus.c_str()), "Failed to set ConfigPath property");
+    RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->setProperty("ConfigPath",m_ConfigPathTightTaus.c_str()), "Failed to set ConfigPath property");
     RETURN_CHECK( "HTopMultilepAnalysis::initialize()", m_TauSelTool->initialize(), "Failed to properly initialize TauSelectionTool_HTop" );
   }
-
-  // ***********************************************************
-  // For MM/FF: read r/f rates from input ROOT histograms
+  
+  const std::string path("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/");
+  
+  // Read QMisID rates from input ROOT histograms
   //
-
-  std::string path = "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/";
-  path = ( !m_useMCForTagAndProbe ) ? ( path +"ObservedRates.root" ) : ( path+"ExpectedRates.root" );
-
-  TFile *file = TFile::Open(path.c_str());
-  if ( !file->IsOpen() ) {
-    Error("histInitialize()", "Failed to open ROOT file with r/f rates from path: %s . Aborting", path.c_str() );
-    return EL::StatusCode::FAILURE;
-  }
-
-  if ( m_debug ) { Info("initialize()", " Successfully opened ROOT file with r/f rates from path: %s ", path.c_str() ); }
-
-  // 1) ELECTRONS
+  EL_RETURN_CHECK("HTopMultilepAnalysis::initialize()", this->readQMisIDRates( path ) ); 
+  
+  // Read fake(real) rates from input ROOT histograms
   //
-
-  std::string histname_el_eta_rr   = "El_ProbeEta_Real_Rate_";
-  std::string histname_el_eta_fr   = "El_ProbeEta_Fake_Rate_";
-  std::string histname_el_pt_rr    = "El_ProbePt_Real_Rate_";
-  std::string histname_el_pt_fr    = "El_ProbePt_Fake_Rate_";
-  std::string histname_el_eta_r_T  = "El_ProbeEta_Real_T_";
-  std::string histname_el_eta_r_L  = "El_ProbeEta_Real_L_";
-  std::string histname_el_pt_r_T   = "El_ProbePt_Real_T_";
-  std::string histname_el_pt_r_L   = "El_ProbePt_Real_L_";
-  std::string histname_el_eta_f_T  = "El_ProbeEta_Fake_T_";
-  std::string histname_el_eta_f_L  = "El_ProbeEta_Fake_L_";
-  std::string histname_el_pt_f_T   = "El_ProbePt_Fake_T_";
-  std::string histname_el_pt_f_L   = "El_ProbePt_Fake_L_";
-
-  if ( !m_useMCForTagAndProbe ) {
-    histname_el_eta_rr   += "observed";
-    histname_el_eta_fr   += "observed";
-    histname_el_pt_rr    += "observed";
-    histname_el_pt_fr    += "observed";
-    histname_el_eta_r_T  += "observed";
-    histname_el_eta_r_L  += "observed";
-    histname_el_pt_r_T   += "observed";
-    histname_el_pt_r_L   += "observed";
-    histname_el_eta_f_T  += "observed";
-    histname_el_eta_f_L  += "observed";
-    histname_el_pt_f_T   += "observed";
-    histname_el_pt_f_L   += "observed";
-  } else {
-    histname_el_eta_rr   += "expected";
-    histname_el_eta_fr   += "expected";
-    histname_el_pt_rr    += "expected";
-    histname_el_pt_fr    += "expected";
-    histname_el_eta_r_T  += "expected";
-    histname_el_eta_r_L  += "expected";
-    histname_el_pt_r_T   += "expected";
-    histname_el_pt_r_L   += "expected";
-    histname_el_eta_f_T  += "expected";
-    histname_el_eta_f_L  += "expected";
-    histname_el_pt_f_T   += "expected";
-    histname_el_pt_f_L   += "expected";
-  }
-
-  // get eta real/fake rate hist
-  //
-  TH1D *hist_el_eta_rr   = get_object<TH1D>( *file, histname_el_eta_rr );
-  TH1D *hist_el_eta_fr   = get_object<TH1D>( *file, histname_el_eta_fr );
-  TH1D *hist_el_pt_rr    = get_object<TH1D>( *file, histname_el_pt_rr );
-  TH1D *hist_el_pt_fr    = get_object<TH1D>( *file, histname_el_pt_fr );
-  TH1D *hist_el_eta_r_T  = get_object<TH1D>( *file, histname_el_eta_r_T );
-  TH1D *hist_el_eta_r_L  = get_object<TH1D>( *file, histname_el_eta_r_L );
-  TH1D *hist_el_pt_r_T   = get_object<TH1D>( *file, histname_el_pt_r_T );
-  TH1D *hist_el_pt_r_L   = get_object<TH1D>( *file, histname_el_pt_r_L );
-  TH1D *hist_el_eta_f_T  = get_object<TH1D>( *file, histname_el_eta_f_T );
-  TH1D *hist_el_eta_f_L  = get_object<TH1D>( *file, histname_el_eta_f_L );
-  TH1D *hist_el_pt_f_T   = get_object<TH1D>( *file, histname_el_pt_f_T );
-  TH1D *hist_el_pt_f_L   = get_object<TH1D>( *file, histname_el_pt_f_L );
-
-  // fill a map for later usage
-  //
-  m_el_hist_map["eta_rr"]   = hist_el_eta_rr;
-  m_el_hist_map["eta_fr"]   = hist_el_eta_fr;
-  m_el_hist_map["pt_rr"]    = hist_el_pt_rr;
-  m_el_hist_map["pt_fr"]    = hist_el_pt_fr;
-  m_el_hist_map["eta_r_T"]  = hist_el_eta_r_T;
-  m_el_hist_map["eta_r_L"]  = hist_el_eta_r_L;
-  m_el_hist_map["pt_r_T"]   = hist_el_pt_r_T;
-  m_el_hist_map["pt_r_L"]   = hist_el_pt_r_L;
-  m_el_hist_map["eta_f_T"]  = hist_el_eta_f_T;
-  m_el_hist_map["eta_f_L"]  = hist_el_eta_f_L;
-  m_el_hist_map["pt_f_T"]   = hist_el_pt_f_T;
-  m_el_hist_map["pt_f_L"]   = hist_el_pt_f_L;
-
-  // eta hist has same binning for r/f
-  //
-  m_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX();
-
-  // pt hist has two different binning for r/f
-  //
-  m_n_el_bins_pt_rr =  hist_el_pt_rr->GetNbinsX();
-  m_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX();
-
-  // normalistaion factor is the same for eta and pt r/f histograms: use eta
-  //
-  m_el_rr_tot = ( hist_el_eta_r_T->Integral() ) / ( hist_el_eta_r_L->Integral() );
-  m_el_fr_tot = ( hist_el_eta_f_T->Integral() ) / ( hist_el_eta_f_L->Integral() );
-
-  // 2) MUONS
-  //
-
-  std::string histname_mu_eta_rr   = "Mu_ProbeEta_Real_Rate_";
-  std::string histname_mu_eta_fr   = "Mu_ProbeEta_Fake_Rate_";
-  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Rate_";
-  std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Rate_";
-  std::string histname_mu_eta_r_T  = "Mu_ProbeEta_Real_T_";
-  std::string histname_mu_eta_r_L  = "Mu_ProbeEta_Real_L_";
-  std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_";
-  std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_L_";
-  std::string histname_mu_eta_f_T  = "Mu_ProbeEta_Fake_T_";
-  std::string histname_mu_eta_f_L  = "Mu_ProbeEta_Fake_L_";
-  std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_";
-  std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_L_";
-
-  if ( !m_useMCForTagAndProbe ) {
-    histname_mu_eta_rr   += "observed";
-    histname_mu_eta_fr   += "observed";
-    histname_mu_pt_rr    += "observed";
-    histname_mu_pt_fr    += "observed";
-    histname_mu_eta_r_T  += "observed";
-    histname_mu_eta_r_L  += "observed";
-    histname_mu_pt_r_T   += "observed";
-    histname_mu_pt_r_L   += "observed";
-    histname_mu_eta_f_T  += "observed";
-    histname_mu_eta_f_L  += "observed";
-    histname_mu_pt_f_T   += "observed";
-    histname_mu_pt_f_L   += "observed";
-  } else {
-    histname_mu_eta_rr   += "expected";
-    histname_mu_eta_fr   += "expected";
-    histname_mu_pt_rr    += "expected";
-    histname_mu_pt_fr    += "expected";
-    histname_mu_eta_r_T  += "expected";
-    histname_mu_eta_r_L  += "expected";
-    histname_mu_pt_r_T   += "expected";
-    histname_mu_pt_r_L   += "expected";
-    histname_mu_eta_f_T  += "expected";
-    histname_mu_eta_f_L  += "expected";
-    histname_mu_pt_f_T   += "expected";
-    histname_mu_pt_f_L   += "expected";
-  }
-
-  // get eta real/fake rate hist
-  //
-  TH1D *hist_mu_eta_rr	 = get_object<TH1D>( *file, histname_mu_eta_rr );
-  TH1D *hist_mu_eta_fr	 = get_object<TH1D>( *file, histname_mu_eta_fr );
-  TH1D *hist_mu_pt_rr	 = get_object<TH1D>( *file, histname_mu_pt_rr );
-  TH1D *hist_mu_pt_fr	 = get_object<TH1D>( *file, histname_mu_pt_fr );
-  TH1D *hist_mu_eta_r_T  = get_object<TH1D>( *file, histname_mu_eta_r_T );
-  TH1D *hist_mu_eta_r_L  = get_object<TH1D>( *file, histname_mu_eta_r_L );
-  TH1D *hist_mu_pt_r_T	 = get_object<TH1D>( *file, histname_mu_pt_r_T );
-  TH1D *hist_mu_pt_r_L	 = get_object<TH1D>( *file, histname_mu_pt_r_L );
-  TH1D *hist_mu_eta_f_T  = get_object<TH1D>( *file, histname_mu_eta_f_T );
-  TH1D *hist_mu_eta_f_L  = get_object<TH1D>( *file, histname_mu_eta_f_L );
-  TH1D *hist_mu_pt_f_T	 = get_object<TH1D>( *file, histname_mu_pt_f_T );
-  TH1D *hist_mu_pt_f_L	 = get_object<TH1D>( *file, histname_mu_pt_f_L );
-
-  // fill a map for later usage
-  //
-  m_mu_hist_map["eta_rr"]   = hist_mu_eta_rr;
-  m_mu_hist_map["eta_fr"]   = hist_mu_eta_fr;
-  m_mu_hist_map["pt_rr"]    = hist_mu_pt_rr;
-  m_mu_hist_map["pt_fr"]    = hist_mu_pt_fr;
-  m_mu_hist_map["eta_r_T"]  = hist_mu_eta_r_T;
-  m_mu_hist_map["eta_r_L"]  = hist_mu_eta_r_L;
-  m_mu_hist_map["pt_r_T"]   = hist_mu_pt_r_T;
-  m_mu_hist_map["pt_r_L"]   = hist_mu_pt_r_L;
-  m_mu_hist_map["eta_f_T"]  = hist_mu_eta_f_T;
-  m_mu_hist_map["eta_f_L"]  = hist_mu_eta_f_L;
-  m_mu_hist_map["pt_f_T"]   = hist_mu_pt_f_T;
-  m_mu_hist_map["pt_f_L"]   = hist_mu_pt_f_L;
-
-  // eta hist has same binning for r/f
-  //
-  m_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX();
-
-  // pt hist has two different binning for r/f
-  //
-  m_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX();
-  m_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX();
-
-  // normalistaion factor is the same for eta and pt r/f histograms: use eta
-  //
-  m_mu_rr_tot = ( hist_mu_eta_r_T->Integral() ) / ( hist_mu_eta_r_L->Integral() );
-  m_mu_fr_tot = ( hist_mu_eta_f_T->Integral() ) / ( hist_mu_eta_f_L->Integral() );
-
-  // ***********************************************************
+  EL_RETURN_CHECK("HTopMultilepAnalysis::initialize()", this->readFakeRates( path ) ); 
 
   Info("initialize()", "HTopMultilepAnalysis Interface succesfully initialized!" );
 
@@ -806,6 +623,14 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   //
   EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->fakeWeightCalculator( eventInfo, leptonsSorted ) );
 
+  // ...and the QMisID weight!
+  //
+  // Make a sorted version of the electron container
+  //
+  const xAOD::ElectronContainer electronsSorted = HelperFunctions::sort_container_pt( signalElectrons );
+
+  EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->QMisIDWeightCalculator( eventInfo, electronsSorted ) );
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -893,6 +718,223 @@ EL::StatusCode HTopMultilepAnalysis :: histFinalize ()
   m_totalEvents->SetBinContent( 2, n_init_evts );
   m_totalEventsW->SetBinContent( 1, n_init_evts_W );
   m_totalEventsW->SetBinContent( 2, n_init_evts_W );
+
+  return EL::StatusCode::SUCCESS;
+
+}
+
+EL::StatusCode HTopMultilepAnalysis :: readQMisIDRates ( const std::string& input_path )
+{
+
+  std::string path_AntiT = input_path + "QMisIDRates_Data_Loose.root";
+  std::string path_T     = input_path + "QMisIDRates_Data_nominal_v4.root";
+ 
+  TFile *file_AntiT = TFile::Open(path_AntiT.c_str());
+  TFile *file_T     = TFile::Open(path_T.c_str());
+ 
+  RETURN_CHECK( "HTopMultilepAnalysis::readQMisIDRates()", file_AntiT->IsOpen() );
+  RETURN_CHECK( "HTopMultilepAnalysis::readQMisIDRates()", file_T->IsOpen() );
+
+  Info("readQMisIDRates()", "Successfully opened ROOT files with QMisID rates from path:\n AntiT --> %s \n T --> %s", path_AntiT.c_str(), path_T.c_str() ); 
+  
+  TH2D *hist_QMisID_AntiT = get_object<TH2D>( *file_AntiT, "Rates" );
+  TH2D *hist_QMisID_T     = get_object<TH2D>( *file_T, "Rates" );
+  
+  // fill a map for later usage
+  //  
+  m_QMisID_hist_map["AntiT"] = hist_QMisID_AntiT;
+  m_QMisID_hist_map["T"]     = hist_QMisID_T;
+
+  return EL::StatusCode::SUCCESS;
+
+}
+
+EL::StatusCode HTopMultilepAnalysis :: readFakeRates ( const std::string& input_path )
+{
+
+  path = ( !m_useMCForTagAndProbe ) ? ( input_path + "ObservedRates.root" ) : ( input_path + "ExpectedRates.root" );
+
+  TFile *file = TFile::Open(path.c_str());
+
+  RETURN_CHECK( "HTopMultilepAnalysis::readFakeRates()", file->IsOpen() );
+
+  Info("readFakeRates()", " Successfully opened ROOT file with r/f rates from path: %s ", path.c_str() ); 
+
+  // 1) ELECTRONS
+  //
+  std::string histname_el_eta_rr   = "El_ProbeEta_Real_Rate_";
+  std::string histname_el_eta_fr   = "El_ProbeEta_Fake_Rate_";
+  std::string histname_el_pt_rr    = "El_ProbePt_Real_Rate_";
+  std::string histname_el_pt_fr    = "El_ProbePt_Fake_Rate_";
+  std::string histname_el_eta_r_T  = "El_ProbeEta_Real_T_";
+  std::string histname_el_eta_r_L  = "El_ProbeEta_Real_L_";
+  std::string histname_el_pt_r_T   = "El_ProbePt_Real_T_";
+  std::string histname_el_pt_r_L   = "El_ProbePt_Real_L_";
+  std::string histname_el_eta_f_T  = "El_ProbeEta_Fake_T_";
+  std::string histname_el_eta_f_L  = "El_ProbeEta_Fake_L_";
+  std::string histname_el_pt_f_T   = "El_ProbePt_Fake_T_";
+  std::string histname_el_pt_f_L   = "El_ProbePt_Fake_L_";
+
+  if ( !m_useMCForTagAndProbe ) {
+    histname_el_eta_rr   += "observed";
+    histname_el_eta_fr   += "observed";
+    histname_el_pt_rr    += "observed";
+    histname_el_pt_fr    += "observed";
+    histname_el_eta_r_T  += "observed";
+    histname_el_eta_r_L  += "observed";
+    histname_el_pt_r_T   += "observed";
+    histname_el_pt_r_L   += "observed";
+    histname_el_eta_f_T  += "observed";
+    histname_el_eta_f_L  += "observed";
+    histname_el_pt_f_T   += "observed";
+    histname_el_pt_f_L   += "observed";
+  } else {
+    histname_el_eta_rr   += "expected";
+    histname_el_eta_fr   += "expected";
+    histname_el_pt_rr    += "expected";
+    histname_el_pt_fr    += "expected";
+    histname_el_eta_r_T  += "expected";
+    histname_el_eta_r_L  += "expected";
+    histname_el_pt_r_T   += "expected";
+    histname_el_pt_r_L   += "expected";
+    histname_el_eta_f_T  += "expected";
+    histname_el_eta_f_L  += "expected";
+    histname_el_pt_f_T   += "expected";
+    histname_el_pt_f_L   += "expected";
+  }
+
+  // get eta real/fake rate hist
+  //
+  TH1D *hist_el_eta_rr   = get_object<TH1D>( *file, histname_el_eta_rr );
+  TH1D *hist_el_eta_fr   = get_object<TH1D>( *file, histname_el_eta_fr );
+  TH1D *hist_el_pt_rr    = get_object<TH1D>( *file, histname_el_pt_rr );
+  TH1D *hist_el_pt_fr    = get_object<TH1D>( *file, histname_el_pt_fr );
+  TH1D *hist_el_eta_r_T  = get_object<TH1D>( *file, histname_el_eta_r_T );
+  TH1D *hist_el_eta_r_L  = get_object<TH1D>( *file, histname_el_eta_r_L );
+  TH1D *hist_el_pt_r_T   = get_object<TH1D>( *file, histname_el_pt_r_T );
+  TH1D *hist_el_pt_r_L   = get_object<TH1D>( *file, histname_el_pt_r_L );
+  TH1D *hist_el_eta_f_T  = get_object<TH1D>( *file, histname_el_eta_f_T );
+  TH1D *hist_el_eta_f_L  = get_object<TH1D>( *file, histname_el_eta_f_L );
+  TH1D *hist_el_pt_f_T   = get_object<TH1D>( *file, histname_el_pt_f_T );
+  TH1D *hist_el_pt_f_L   = get_object<TH1D>( *file, histname_el_pt_f_L );
+
+  // fill a map for later usage
+  //
+  m_el_hist_map["eta_rr"]   = hist_el_eta_rr;
+  m_el_hist_map["eta_fr"]   = hist_el_eta_fr;
+  m_el_hist_map["pt_rr"]    = hist_el_pt_rr;
+  m_el_hist_map["pt_fr"]    = hist_el_pt_fr;
+  m_el_hist_map["eta_r_T"]  = hist_el_eta_r_T;
+  m_el_hist_map["eta_r_L"]  = hist_el_eta_r_L;
+  m_el_hist_map["pt_r_T"]   = hist_el_pt_r_T;
+  m_el_hist_map["pt_r_L"]   = hist_el_pt_r_L;
+  m_el_hist_map["eta_f_T"]  = hist_el_eta_f_T;
+  m_el_hist_map["eta_f_L"]  = hist_el_eta_f_L;
+  m_el_hist_map["pt_f_T"]   = hist_el_pt_f_T;
+  m_el_hist_map["pt_f_L"]   = hist_el_pt_f_L;
+
+  // eta hist has same binning for r/f
+  //
+  m_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX();
+
+  // pt hist has two different binning for r/f
+  //
+  m_n_el_bins_pt_rr =  hist_el_pt_rr->GetNbinsX();
+  m_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX();
+
+  // normalistaion factor is the same for eta and pt r/f histograms: use eta
+  //
+  m_el_rr_tot = ( hist_el_eta_r_T->Integral() ) / ( hist_el_eta_r_L->Integral() );
+  m_el_fr_tot = ( hist_el_eta_f_T->Integral() ) / ( hist_el_eta_f_L->Integral() );
+
+  // 2) MUONS
+  //
+  std::string histname_mu_eta_rr   = "Mu_ProbeEta_Real_Rate_";
+  std::string histname_mu_eta_fr   = "Mu_ProbeEta_Fake_Rate_";
+  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Rate_";
+  std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Rate_";
+  std::string histname_mu_eta_r_T  = "Mu_ProbeEta_Real_T_";
+  std::string histname_mu_eta_r_L  = "Mu_ProbeEta_Real_L_";
+  std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_";
+  std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_L_";
+  std::string histname_mu_eta_f_T  = "Mu_ProbeEta_Fake_T_";
+  std::string histname_mu_eta_f_L  = "Mu_ProbeEta_Fake_L_";
+  std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_";
+  std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_L_";
+
+  if ( !m_useMCForTagAndProbe ) {
+    histname_mu_eta_rr   += "observed";
+    histname_mu_eta_fr   += "observed";
+    histname_mu_pt_rr    += "observed";
+    histname_mu_pt_fr    += "observed";
+    histname_mu_eta_r_T  += "observed";
+    histname_mu_eta_r_L  += "observed";
+    histname_mu_pt_r_T   += "observed";
+    histname_mu_pt_r_L   += "observed";
+    histname_mu_eta_f_T  += "observed";
+    histname_mu_eta_f_L  += "observed";
+    histname_mu_pt_f_T   += "observed";
+    histname_mu_pt_f_L   += "observed";
+  } else {
+    histname_mu_eta_rr   += "expected";
+    histname_mu_eta_fr   += "expected";
+    histname_mu_pt_rr    += "expected";
+    histname_mu_pt_fr    += "expected";
+    histname_mu_eta_r_T  += "expected";
+    histname_mu_eta_r_L  += "expected";
+    histname_mu_pt_r_T   += "expected";
+    histname_mu_pt_r_L   += "expected";
+    histname_mu_eta_f_T  += "expected";
+    histname_mu_eta_f_L  += "expected";
+    histname_mu_pt_f_T   += "expected";
+    histname_mu_pt_f_L   += "expected";
+  }
+
+  // get eta real/fake rate hist
+  //
+  TH1D *hist_mu_eta_rr	 = get_object<TH1D>( *file, histname_mu_eta_rr );
+  TH1D *hist_mu_eta_fr	 = get_object<TH1D>( *file, histname_mu_eta_fr );
+  TH1D *hist_mu_pt_rr	 = get_object<TH1D>( *file, histname_mu_pt_rr );
+  TH1D *hist_mu_pt_fr	 = get_object<TH1D>( *file, histname_mu_pt_fr );
+  TH1D *hist_mu_eta_r_T  = get_object<TH1D>( *file, histname_mu_eta_r_T );
+  TH1D *hist_mu_eta_r_L  = get_object<TH1D>( *file, histname_mu_eta_r_L );
+  TH1D *hist_mu_pt_r_T	 = get_object<TH1D>( *file, histname_mu_pt_r_T );
+  TH1D *hist_mu_pt_r_L	 = get_object<TH1D>( *file, histname_mu_pt_r_L );
+  TH1D *hist_mu_eta_f_T  = get_object<TH1D>( *file, histname_mu_eta_f_T );
+  TH1D *hist_mu_eta_f_L  = get_object<TH1D>( *file, histname_mu_eta_f_L );
+  TH1D *hist_mu_pt_f_T	 = get_object<TH1D>( *file, histname_mu_pt_f_T );
+  TH1D *hist_mu_pt_f_L	 = get_object<TH1D>( *file, histname_mu_pt_f_L );
+
+  // fill a map for later usage
+  //
+  m_mu_hist_map["eta_rr"]   = hist_mu_eta_rr;
+  m_mu_hist_map["eta_fr"]   = hist_mu_eta_fr;
+  m_mu_hist_map["pt_rr"]    = hist_mu_pt_rr;
+  m_mu_hist_map["pt_fr"]    = hist_mu_pt_fr;
+  m_mu_hist_map["eta_r_T"]  = hist_mu_eta_r_T;
+  m_mu_hist_map["eta_r_L"]  = hist_mu_eta_r_L;
+  m_mu_hist_map["pt_r_T"]   = hist_mu_pt_r_T;
+  m_mu_hist_map["pt_r_L"]   = hist_mu_pt_r_L;
+  m_mu_hist_map["eta_f_T"]  = hist_mu_eta_f_T;
+  m_mu_hist_map["eta_f_L"]  = hist_mu_eta_f_L;
+  m_mu_hist_map["pt_f_T"]   = hist_mu_pt_f_T;
+  m_mu_hist_map["pt_f_L"]   = hist_mu_pt_f_L;
+
+  // eta hist has same binning for r/f
+  //
+  m_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX();
+
+  // pt hist has two different binning for r/f
+  //
+  m_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX();
+  m_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX();
+
+  // normalistaion factor is the same for eta and pt r/f histograms: use eta
+  //
+  m_mu_rr_tot = ( hist_mu_eta_r_T->Integral() ) / ( hist_mu_eta_r_L->Integral() );
+  m_mu_fr_tot = ( hist_mu_eta_f_T->Integral() ) / ( hist_mu_eta_f_L->Integral() );
+
+  // ***********************************************************
 
   return EL::StatusCode::SUCCESS;
 
@@ -1938,6 +1980,7 @@ std::vector<double>  HTopMultilepAnalysis :: calc_weights( std::map< std::string
 	    double fr_eta_err = (histograms.find("eta_fr")->second)->GetBinError(e);
 
 	    // nominal
+	    // (since we take the 1Dx1D rates, we use a normalisation factor at the denominator)
 	    //
      	    weights.at(0) = ( fr_pt * fr_eta ) / fr_tot;
 
@@ -1980,6 +2023,7 @@ std::vector<double>  HTopMultilepAnalysis :: calc_weights( std::map< std::string
 	    double rr_eta_err = (histograms.find("eta_rr")->second)->GetBinError(e);
 
 	    // nominal
+	    // (since we take the 1Dx1D rates, we use a normalisation factor at the denominator)
 	    //
 	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
 
@@ -2043,6 +2087,154 @@ double HTopMultilepAnalysis :: calc_final_event_weight( std::string region, doub
    return weight;
 }
 
+// Calculate QMisID weight
+//
+EL::StatusCode HTopMultilepAnalysis :: QMisIDWeightCalculator (const xAOD::EventInfo* eventInfo, const xAOD::ElectronContainer& electrons )
+{
+  
+  SG::AuxElement::Decorator< std::vector<float> > QMisIDWeightDecor( "QMisIDWeight" );
+  if ( !QMisIDWeightDecor.isAvailable( *eventInfo ) ) {
+    QMisIDWeightDecor( *eventInfo ) = std::vector<float>( 3, 1.0 );
+  }
+  
+  if ( m_debug ) { Info("QMisIDWeightCalculator()", "QMisID initial weight = %f ( up = %f, dn = %f )", QMisIDWeightDecor( *eventInfo ).at(0), QMisIDWeightDecor( *eventInfo ).at(1), QMisIDWeightDecor( *eventInfo ).at(2) ); }
+
+  // QMisID is a data weight only
+  //
+  if ( !m_isMC ) {
+
+    const xAOD::Electron* elA(nullptr);
+    const xAOD::Electron* elB(nullptr);
+    
+    unsigned int nel = electrons.size();
+    
+    if ( nel > 0 ) { elA = electrons.at(0); }
+    if ( nel > 1 ) { elB = electrons.at(1); }
+
+    std::vector<float> weights;
+    
+    EL_RETURN_CHECK("HTopMultilepAnalysis::QMisIDWeightCalculator()", this->calc_QMisID_weights( weights, elA, elB ) );
+    
+    QMisIDWeightDecor( *eventInfo ) = weights;
+  }
+  
+  if ( m_debug ) { Info("QMisIDWeightCalculator()", "QMisID final weight = %f ( up = %f, dn = %f )", QMisIDWeightDecor( *eventInfo ).at(0), QMisIDWeightDecor( *eventInfo ).at(1), QMisIDWeightDecor( *eventInfo ).at(2) ); }
+
+  return EL::StatusCode::SUCCESS;
+
+}
+
+EL::StatusCode HTopMultilepAnalysis :: calc_QMisID_weights( std::vector<float>& weights, const xAOD::Electron* elA, const xAOD::Electron* elB )
+{
+
+  // If there are no electrons, return dummy
+  //
+  if ( !elA && !elB ) { return EL::StatusCode::SUCCESS; }  
+  
+  // accessor to tight selected electrons
+  //
+  static SG::AuxElement::Accessor< char > isTightAcc("isTight");
+  
+  float elA_eta = elA->caloCluster()->etaBE(2);
+  float elA_pt  = elA->pt()/1e3;
+  bool  elA_isT = isTightAcc( *elA );
+  
+  float elB_eta = ( elB ) ? elB->caloCluster()->etaBE(2) : -999.0;
+  float elB_pt  = ( elB ) ? elB->pt()/1e3 : -1.0;  
+  bool  elB_isT = ( elB ) ? isTightAcc( *elB ) : false;
+  
+  float rA(0.0), rA_up(0.0), rA_dn(0.0), rB(0.0), rB_up(0.0), rB_dn(0.0);
+  
+  // Get the 2D histogram from the map
+  //
+  TH1D* 2D_rates_T     = ( m_QMisID_map.find.("T")->second );
+  TH1D* 2D_rates_AntiT = ( m_QMisID_map.find.("AntiT")->second );
+  
+  // Make X and Y projections of the 2D histogram with the rates
+  //
+  TH1D* proj_eta_T     = 2D_rates_T->ProjectionX("proj_eta_T");
+  TH1D* proj_pt_T      = 2D_rates_T->ProjectionY("proj_pt_T");
+  TH1D* proj_eta_AntiT = 2D_rates_AntiT->ProjectionX("proj_eta_AntiT");
+  TH1D* proj_pt_AntiT  = 2D_rates_AntiT->ProjectionY("proj_pt_AntiT");  
+
+  float this_low_edge(-999.0),this_up_edge(-999.0);
+  
+  // Look at elA first...
+  //
+  if ( elA_isT ) {
+    EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(2D_rates_T, proj_eta_T, proj_pt_T, elA_eta, elA_pt, rA, rA_up, rA_dn) );
+  } else {
+    EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(2D_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elA_eta, elA_pt, rA, rA_up, rA_dn) );
+  }
+  
+  // .. and now at elB (if any)
+  //
+  if ( elB ) {
+    if ( elB_isT ) {
+      EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(2D_rates_T, proj_eta_T, proj_pt_T, elB_eta, elB_pt, rB, rB_up, rB_dn) );
+    } else {
+      EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(2D_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elB_eta, elB_pt, rB, rB_up, rB_dn) );
+    }
+  }
+
+  // Finally, store the event weight + variations
+  //
+  weight.push_back( ( rA + rB - 2.0 * rA * rB ) / ( 1.0 - rA - rB + 2.0 * rA * rB ) );
+  weight.push_back( ( rA_up + rB_up - 2.0 * rA_up * rB_up ) / ( 1.0 - rA_up - rB_up + 2.0 * rA_up * rB_up ) );
+  weight.push_back( ( rA_dn + rB_dn - 2.0 * rA_dn * rB_dn ) / ( 1.0 - rA_dn - rB_dn + 2.0 * rA_dn * rB_dn ) );
+
+  return EL::StatusCode::SUCCESS; 
+  
+}
+
+EL::StatusCode HTopMultilepAnalysis :: readRatesAndError(TH2D* rate_map, TH1D* proj_X, TH1D* proj_Y, 
+                                                         const float& x, const float& y, 
+							 float& r, float& r_up, float& r_dn ) 
+{
+    
+  float this_low_edge(-999.0),this_up_edge(-999.0);
+
+  // Loop over the projections, and keep track of the bin number where (x,y) is found
+  //
+  for ( int xbin = 0; xbin < proj_X->GetNbinsX()+1; ++xbin  ) {
+  
+    this_low_edge = proj_X->GetXaxis()->GetBinLowEdge(xbin);
+    this_up_edge  = proj_X->GetXaxis()->GetBinLowEdge(xbin+1);
+    
+    if ( fabs(x) >= this_low_edge && fabs(x) < this_up_edge ) {
+      xbin_nr = proj_X->GetBin(xbin);
+      break;
+    }
+
+  } 
+  for ( int ybin = 0; ybin < proj_Y->GetNbinsX()+1; ++ ybin ) {
+  
+    this_low_edge = proj_Y->GetXaxis()->GetBinLowEdge(ybin);
+    this_up_edge  = proj_Y->GetXaxis()->GetBinLowEdge(ybin+1);
+    
+    if ( y >= this_low_edge && y < this_up_edge ) {
+      ybin_nr = proj_Y->GetBin(ybin);
+      break;
+    }
+
+  }	
+
+  // Now get the NOMINAL rate via global bin number (x,y)
+  
+  r = rate_map->GetBinContent( rate_map->GetBin( xbin_nr, ybin_nr ) );
+  
+  // Get the UP and DOWN variations
+  //
+  // QUESTION: Why the hell ROOT has GetBinErrorUp and GetBinErrorLow for TH2 ??
+  // They seem to give always the same result...
+  //	
+  r_up = r + rate_map->GetBinErrorUp( rate_map->GetBin( xbin_nr, ybin_nr ) );
+  r_dn = r - rate_map->GetBinErrorUp( rate_map->GetBin( xbin_nr, ybin_nr ) );
+  r_dn = ( r_dn > 0.0 ) ? r_dn : 0.0;
+
+  return EL::StatusCode::SUCCESS;
+
+}
 
 // Calculate lepton trigger SF for the event
 //

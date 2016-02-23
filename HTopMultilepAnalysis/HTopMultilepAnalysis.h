@@ -94,8 +94,9 @@ private:
   // tools
   TauAnalysisTools::TauSelectionTool    *m_TauSelTool; //!
 
-  /* MM/FF method stuff */
+  /* QMisID, MM/FF method stuff */
 
+  std::map< std::string, TH2D* > m_QMisID_map;  //!
   std::map< std::string, TH1D* > m_el_hist_map; //!
   std::map< std::string, TH1D* > m_mu_hist_map; //!
 
@@ -130,6 +131,9 @@ public:
   virtual EL::StatusCode histFinalize ();
 
   // these are the functions not inherited from Algorithm
+ 
+  EL::StatusCode readQMisIDRates ( const std::string& input_path );
+  EL::StatusCode readFakeRates ( const std::string& input_path );
 
   virtual EL::StatusCode computeEventLepTrigSF ( const xAOD::EventInfo* eventInfo,
 					         const xAOD::IParticleContainer& leptons
@@ -143,7 +147,9 @@ public:
   virtual EL::StatusCode defineTagAndProbeRFRateVars_MC( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
 
   virtual EL::StatusCode addChannelDecorations( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
+  
   virtual EL::StatusCode fakeWeightCalculator ( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
+  virtual EL::StatusCode QMisIDWeightCalculator ( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
 
   std::vector<double>  calc_weights( std::map< std::string, TH1D* > &histograms,
 				     float pt,    /* NB: internally converts MeV into GeV --> pass pT in MeV!!! */
@@ -157,7 +163,12 @@ public:
 			            );
   double calc_final_event_weight( std::string region, double f1, double f2, double r1 = 1.0, double r2 = 1.0 );
   double scaleRateToEfficiency( double rate );
-
+  
+  EL::StatusCode calc_QMisID_weights( std::vector<float>& weights, const xAOD::Electron* elA, const xAOD::Electron* elB );
+  EL::StatusCode readRatesAndError(TH2D* rate_map, TH1D* proj_X, TH1D* proj_Y, 
+                                   const float& x, const float& y, 
+				   float& r, float& r_up, float& r_dn );
+							 
   // this is needed to distribute the algorithm to the workers
   ClassDef(HTopMultilepAnalysis, 1);
 };
