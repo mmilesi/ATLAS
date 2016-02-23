@@ -47,7 +47,11 @@ public:
   /* to define "Tight" leptons */
   std::string m_TightElectronPID_WP;
   std::string m_TightElectronIso_WP;
+  float       m_TightElectronD0sig_cut;  
+  float       m_TightElectronTrkz0sinTheta_cut;
+  
   float       m_TightMuonD0sig_cut;
+  float       m_TightMuonTrkz0sinTheta_cut;
   std::string m_TightMuonIso_WP;
 
   /* to define "Tight" taus */

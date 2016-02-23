@@ -94,10 +94,14 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
   m_inContainerName_PreSelectedJets      = "AntiKt4EMTopoJets";
 
   // to define "Tight" leptons
-  m_TightElectronPID_WP       = "LHTight";
-  m_TightElectronIso_WP       = "isIsolated_Gradient";
-  m_TightMuonD0sig_cut        = -1.0;
-  m_TightMuonIso_WP           = "isIsolated_Gradient";
+  m_TightElectronPID_WP            = "LHTight";
+  m_TightElectronIso_WP            = "isIsolated_Gradient";
+  m_TightElectronD0sig_cut         = 5.0;
+  m_TightElectronTrkz0sinTheta_cut = 0.5;
+  
+  m_TightMuonD0sig_cut         = -1.0;
+  m_TightMuonTrkz0sinTheta_cut = 0.5;
+  m_TightMuonIso_WP            = "isIsolated_Gradient";
 
   // to define "Tight" taus
   m_ConfigPathTightTaus       = "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15_final_sel.conf";
@@ -137,7 +141,7 @@ EL::StatusCode HTopMultilepAnalysis :: histInitialize ()
   Info("histInitialize()", "Calling histInitialize");
 
   TFile *fileMD = wk()->getOutputFile ("metadata");
-  m_histEventCount  = (TH1D*)fileMD->Get("MetaData_EventCount");
+  m_histEventCount  = dynamic_cast<TH1D*>( fileMD->Get("MetaData_EventCount") );
   if ( !m_histEventCount ) {
     Error("initialize()", "Failed to retrieve MetaData histogram. Aborting");
     return EL::StatusCode::FAILURE;
@@ -157,7 +161,7 @@ EL::StatusCode HTopMultilepAnalysis :: fileExecute ()
   // single file, e.g. collect a list of all lumi-blocks processed
 
   // get the MetaData tree once a new file is opened, with
-  TTree *MetaData = dynamic_cast<TTree*>(wk()->inputFile()->Get("MetaData"));
+  TTree *MetaData = dynamic_cast<TTree*>( wk()->inputFile()->Get("MetaData") );
   if ( !MetaData ) {
     Error("fileExecute()", "MetaData not found! Exiting.");
     return EL::StatusCode::FAILURE;
@@ -204,18 +208,20 @@ EL::StatusCode HTopMultilepAnalysis :: initialize ()
 
   if ( m_useCutFlow ) {
     TFile *fileCF  = wk()->getOutputFile ("cutflow");
-    m_cutflowHist  = (TH1D*)fileCF->Get("cutflow");
-    m_cutflowHistW = (TH1D*)fileCF->Get("cutflow_weighted");
+    m_cutflowHist  = dynamic_cast<TH1D*>( fileCF->Get("cutflow") );
+    m_cutflowHistW = dynamic_cast<TH1D*>( fileCF->Get("cutflow_weighted") );
     // label the bins for the cutflow
     m_cutflow_bin     = m_cutflowHist->GetXaxis()->FindBin(m_name.c_str());
     // do it again for the weighted cutflow hist
     m_cutflowHistW->GetXaxis()->FindBin(m_name.c_str());
   }
 
+  /*
   m_jetPlots = new JetHists( "highPtJets", "clean" ); // second argument: "kinematic", "clean", "energy", "resolution"
   m_jetPlots -> initialize();
   m_jetPlots -> record( wk() );
-
+  */
+  
   // initialise TauSelectionTool
   //
   std::string tau_sel_tool_name = std::string("TauSelectionTool_") + m_name;
@@ -606,7 +612,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 
     // preliminary: tighten impact parameter cuts
     //
-    if ( fabs( d0SigAcc( *el_itr ) ) < 5.0 && fabs( z0sinthetaAcc( *el_itr ) ) < 0.5 ) {
+    if ( fabs( d0SigAcc( *el_itr ) ) < m_TightElectronD0sig_cut && fabs( z0sinthetaAcc( *el_itr ) ) < m_TightElectronTrkz0sinTheta_cut ) {
 
       // if using isolation...
       //
@@ -691,7 +697,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 
     // preliminary: tighten impact parameter cuts
     //
-    if ( fabs( z0sinthetaAcc( *mu_itr ) ) < 0.5 ) {
+    if ( fabs( z0sinthetaAcc( *mu_itr ) ) < m_TightMuonTrkz0sinTheta_cut ) {
 
       // if using isolation...
       //
@@ -864,9 +870,9 @@ EL::StatusCode HTopMultilepAnalysis :: histFinalize ()
   double n_init_evts(0.0);
   double n_init_evts_W(0.0);
 
-  // if MetaData is not empty, and file is a DAOD, use it (to take DAOD skimming into account!)
+  // if MetaData is not empty, use it
   //
-  if ( m_isDerivation && m_histEventCount->GetBinContent(1) > 0 && m_histEventCount->GetBinContent(3) > 0 ) {
+  if ( m_histEventCount->GetBinContent(1) > 0 && m_histEventCount->GetBinContent(3) > 0 ) {
     n_init_evts   =  m_histEventCount->GetBinContent(1);  // nEvents initial
     n_init_evts_W =  m_histEventCount->GetBinContent(3);  // sumOfWeights initial
   }
@@ -927,7 +933,7 @@ EL::StatusCode HTopMultilepAnalysis :: defineTagAndProbeRFRateVars( const xAOD::
   // Now, take the leading and subleading lepton
   // -------------------------------------------
 
-  const xAOD::IParticle* leadingLepton           = leptons.at(0);
+  const xAOD::IParticle* leadingLepton = leptons.at(0);
 
   // --------------------------------------------
   // Now decide who's the tag and who's the probe
@@ -1873,7 +1879,7 @@ double  HTopMultilepAnalysis :: scaleRateToEfficiency( double rate )
 {
   if ( rate < 0 ) { rate = 0.0; }
 
-  double eff = ( rate /(rate+1.0) );
+  double eff = ( rate / (rate+1.0) );
 
   return eff;
 }
