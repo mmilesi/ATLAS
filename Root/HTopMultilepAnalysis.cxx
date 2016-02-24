@@ -626,11 +626,6 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
 
   // ...and the QMisID weight!
   //
-  // Make a sorted version of the electron container
-  //
-  //const xAOD::ElectronContainer electronsSorted = HelperFunctions::sort_container_pt( signalElectrons );
-
-  //EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->QMisIDWeightCalculator( eventInfo, electronsSorted ) );
   EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->QMisIDWeightCalculator( eventInfo, signalElectrons ) );
 
   return EL::StatusCode::SUCCESS;
@@ -2096,13 +2091,15 @@ EL::StatusCode HTopMultilepAnalysis :: QMisIDWeightCalculator (const xAOD::Event
 
   SG::AuxElement::Decorator< std::vector<float> > QMisIDWeightDecor( "QMisIDWeight" );
 
+  // Set default weight (w/ up and dn variations)
+  //
   std::vector<float> weights(3,1.0);
 
   if ( m_debug ) { Info("QMisIDWeightCalculator()", "QMisID initial weight = %f ( up = %f, dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
   // QMisID is a data weight only
   //
-  if ( m_isMC ) {
+  if ( !m_isMC ) {
 
     const xAOD::Electron* elA(nullptr);
     const xAOD::Electron* elB(nullptr);
@@ -2126,7 +2123,7 @@ EL::StatusCode HTopMultilepAnalysis :: QMisIDWeightCalculator (const xAOD::Event
 EL::StatusCode HTopMultilepAnalysis :: calc_QMisID_weights( std::vector<float>& weights, const xAOD::Electron* elA, const xAOD::Electron* elB )
 {
 
-  // If there are no electrons, return dummy
+  // If there are no electrons, return 
   //
   if ( !elA && !elB ) { return EL::StatusCode::SUCCESS; }
 
@@ -2164,7 +2161,7 @@ EL::StatusCode HTopMultilepAnalysis :: calc_QMisID_weights( std::vector<float>& 
     EL_RETURN_CHECK("HTopMultilepAnalysis::calc_QMisID_weights()", this->readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elA_eta, elA_pt, rA, rA_up, rA_dn) );
   }
 
-  // .. and now at elB (if any)
+  // .. and now at elB (if any...otherwise rB weights will be zero by default)
   //
   if ( elB ) {
     if ( elB_isT ) {

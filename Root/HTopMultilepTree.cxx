@@ -20,8 +20,11 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("categoryFlag",      &m_categoryFlag, "categoryFlag/i");
   m_tree->Branch("isSS01",            &m_isSS01, "isSS01/I");
   m_tree->Branch("isSS12",            &m_isSS12, "isSS12/I");
+  
   m_tree->Branch("MMWeight",          &m_MMWeight);
   m_tree->Branch("FFWeight",          &m_FFWeight);
+  m_tree->Branch("QMisIDWeight",      &m_QMisIDWeight);
+
   m_tree->Branch("mll01",             &m_mll01, "mll01/F");
   m_tree->Branch("mll02",             &m_mll02, "mll02/F");
   m_tree->Branch("mll12",             &m_mll12, "mll12/F");
@@ -392,6 +395,7 @@ void HTopMultilepTree::ClearEventUser()
 {
   m_MMWeight.clear();
   m_FFWeight.clear();
+  m_QMisIDWeight.clear();  
   if ( m_isMC ) {
     m_weight_lepton_trig_HTop.clear();
     m_weight_lepton_trig_HTop.clear();
@@ -672,56 +676,59 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
 {
 
   m_is_mc                =  ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
-  m_ystar                =  ( eventInfo->isAvailable< float >( "ystar" ) )                      ?  eventInfo->auxdecor< float >( "ystar" )                       :   999.0;
-  m_categoryFlag         =  ( eventInfo->isAvailable< unsigned int >( "categoryFlag" ) )        ?  eventInfo->auxdecor< unsigned int >( "categoryFlag" )         :   -1;
-  m_isSS01   	         =  ( eventInfo->isAvailable< char >( "isSS01" ) )		        ?  eventInfo->auxdecor< char >( "isSS01" )		         :   -1;
-  m_isSS12   	         =  ( eventInfo->isAvailable< char >( "isSS12" ) )		        ?  eventInfo->auxdecor< char >( "isSS12" )		     	 :   -1;
-  m_MMWeight 	         =  ( eventInfo->isAvailable< std::vector<double> >( "MMWeight" ) )     ?  eventInfo->auxdecor< std::vector<double> >( "MMWeight" )  	 :  std::vector<double>( 5, 1.0 );
-  m_FFWeight 	         =  ( eventInfo->isAvailable< std::vector<double> >( "FFWeight" ) )     ?  eventInfo->auxdecor< std::vector<double> >( "FFWeight" )  	 :  std::vector<double>( 5, 1.0 );
-  m_mll01    	         =  ( eventInfo->isAvailable< float >( "mll01" ) )		        ?  ( eventInfo->auxdecor< float >( "mll01" ) / m_units )    	 : -1.0;
-  m_mll02    	         =  ( eventInfo->isAvailable< float >( "mll02" ) )		        ?  ( eventInfo->auxdecor< float >( "mll02" ) / m_units )    	 : -1.0;
-  m_mll12    	         =  ( eventInfo->isAvailable< float >( "mll12" ) )		        ?  ( eventInfo->auxdecor< float >( "mll12" ) / m_units )    	 : -1.0;
-  m_mlll012  	         =  ( eventInfo->isAvailable< float >( "mlll012" ) )		        ?  ( eventInfo->auxdecor< float >( "mlll012" ) / m_units )       : -1.0;
-  m_mOSPair01    	 =  ( eventInfo->isAvailable< float >( "mOSPair01" ) )		        ?  ( eventInfo->auxdecor< float >( "mOSPair01" ) / m_units )     : -1.0;
-  m_mOSPair02    	 =  ( eventInfo->isAvailable< float >( "mOSPair02" ) )		        ?  ( eventInfo->auxdecor< float >( "mOSPair02" ) / m_units )     : -1.0;
-  m_isOSPairSF01   	 =  ( eventInfo->isAvailable< char >( "isOSPairSF01" ) )		?  eventInfo->auxdecor< char >( "isOSPairSF01" )	   	 :   -1;
-  m_isOSPairSF02   	 =  ( eventInfo->isAvailable< char >( "isOSPairSF02" ) )	        ?  eventInfo->auxdecor< char >( "isOSPairSF02" )	   	 :   -1;
-  m_mT_lep0MET           =  ( eventInfo->isAvailable< float >( "mT_lep0MET" ) ) 	        ?  ( eventInfo->auxdecor< float >( "mT_lep0MET" ) / m_units )	 : -1.0;
-  m_mT_lep1MET           =  ( eventInfo->isAvailable< float >( "mT_lep1MET" ) ) 	        ?  ( eventInfo->auxdecor< float >( "mT_lep1MET" ) / m_units )	 : -1.0;
+  m_ystar                =  ( eventInfo->isAvailable< float >( "ystar" ) )                      ?  eventInfo->auxdata< float >( "ystar" )                        :   999.0;
+  m_categoryFlag         =  ( eventInfo->isAvailable< unsigned int >( "categoryFlag" ) )        ?  eventInfo->auxdata< unsigned int >( "categoryFlag" )          :   -1;
+  m_isSS01   	         =  ( eventInfo->isAvailable< char >( "isSS01" ) )		        ?  eventInfo->auxdata< char >( "isSS01" )		         :   -1;
+  m_isSS12   	         =  ( eventInfo->isAvailable< char >( "isSS12" ) )		        ?  eventInfo->auxdata< char >( "isSS12" )		     	 :   -1;
+  
+  m_MMWeight 	         =  ( eventInfo->isAvailable< std::vector<double> >( "MMWeight" ) )     ?  eventInfo->auxdata< std::vector<double> >( "MMWeight" )  	 :  std::vector<double>( 5, 1.0 );
+  m_FFWeight 	         =  ( eventInfo->isAvailable< std::vector<double> >( "FFWeight" ) )     ?  eventInfo->auxdata< std::vector<double> >( "FFWeight" )  	 :  std::vector<double>( 5, 1.0 );
+  m_QMisIDWeight 	 =  ( eventInfo->isAvailable< std::vector<float> >( "QMisIDWeight" ) )  ?  eventInfo->auxdata< std::vector<float> >( "QMisIDWeight" )    :  std::vector<float>( 3, 1.0 );
+  
+  m_mll01    	         =  ( eventInfo->isAvailable< float >( "mll01" ) )		        ?  ( eventInfo->auxdata< float >( "mll01" ) / m_units )    	 : -1.0;
+  m_mll02    	         =  ( eventInfo->isAvailable< float >( "mll02" ) )		        ?  ( eventInfo->auxdata< float >( "mll02" ) / m_units )    	 : -1.0;
+  m_mll12    	         =  ( eventInfo->isAvailable< float >( "mll12" ) )		        ?  ( eventInfo->auxdata< float >( "mll12" ) / m_units )    	 : -1.0;
+  m_mlll012  	         =  ( eventInfo->isAvailable< float >( "mlll012" ) )		        ?  ( eventInfo->auxdata< float >( "mlll012" ) / m_units )        : -1.0;
+  m_mOSPair01    	 =  ( eventInfo->isAvailable< float >( "mOSPair01" ) )		        ?  ( eventInfo->auxdata< float >( "mOSPair01" ) / m_units )      : -1.0;
+  m_mOSPair02    	 =  ( eventInfo->isAvailable< float >( "mOSPair02" ) )		        ?  ( eventInfo->auxdata< float >( "mOSPair02" ) / m_units )      : -1.0;
+  m_isOSPairSF01   	 =  ( eventInfo->isAvailable< char >( "isOSPairSF01" ) )		?  eventInfo->auxdata< char >( "isOSPairSF01" )	   	         :   -1;
+  m_isOSPairSF02   	 =  ( eventInfo->isAvailable< char >( "isOSPairSF02" ) )	        ?  eventInfo->auxdata< char >( "isOSPairSF02" )	   	         :   -1;
+  m_mT_lep0MET           =  ( eventInfo->isAvailable< float >( "mT_lep0MET" ) ) 	        ?  ( eventInfo->auxdata< float >( "mT_lep0MET" ) / m_units )	 : -1.0;
+  m_mT_lep1MET           =  ( eventInfo->isAvailable< float >( "mT_lep1MET" ) ) 	        ?  ( eventInfo->auxdata< float >( "mT_lep1MET" ) / m_units )	 : -1.0;
 
-  m_is_T_T   	         =  ( eventInfo->isAvailable< char >( "is_T_T" ) )		        ?  eventInfo->auxdecor< char >( "is_T_T" )		   	 :   -1;
-  m_is_T_AntiT   	 =  ( eventInfo->isAvailable< char >( "is_T_AntiT" ) )		        ?  eventInfo->auxdecor< char >( "is_T_AntiT" )		   	 :   -1;
-  m_is_AntiT_T   	 =  ( eventInfo->isAvailable< char >( "is_AntiT_T" ) )		        ?  eventInfo->auxdecor< char >( "is_AntiT_T" )		   	 :   -1;
-  m_is_AntiT_AntiT   	 =  ( eventInfo->isAvailable< char >( "is_AntiT_AntiT" ) )		?  eventInfo->auxdecor< char >( "is_AntiT_AntiT" )	   	 :   -1;
-  m_is_T_MAntiT   	 =  ( eventInfo->isAvailable< char >( "is_T_MAntiT" ) )		        ?  eventInfo->auxdecor< char >( "is_T_MAntiT" )		   	 :   -1;
-  m_is_MAntiT_T   	 =  ( eventInfo->isAvailable< char >( "is_MAntiT_T" ) )		        ?  eventInfo->auxdecor< char >( "is_MAntiT_T" )		   	 :   -1;
-  m_is_MAntiT_MAntiT   	 =  ( eventInfo->isAvailable< char >( "is_MAntiT_MAntiT" ) )	        ?  eventInfo->auxdecor< char >( "is_MAntiT_MAntiT" )	   	 :   -1;
-  m_is_M_M   	         =  ( eventInfo->isAvailable< char >( "is_M_M" ) )		        ?  eventInfo->auxdecor< char >( "is_M_M" )		   	 :   -1;
-  m_is_T_AntiM   	 =  ( eventInfo->isAvailable< char >( "is_T_AntiM" ) )		        ?  eventInfo->auxdecor< char >( "is_T_AntiM" )		   	 :   -1;
-  m_is_AntiM_T   	 =  ( eventInfo->isAvailable< char >( "is_AntiM_T" ) )		        ?  eventInfo->auxdecor< char >( "is_AntiM_T" )		   	 :   -1;
-  m_is_M_AntiM   	 =  ( eventInfo->isAvailable< char >( "is_M_AntiM" ) )		        ?  eventInfo->auxdecor< char >( "is_M_AntiM" )		   	 :   -1;
-  m_is_AntiM_M   	 =  ( eventInfo->isAvailable< char >( "is_AntiM_M" ) )		        ?  eventInfo->auxdecor< char >( "is_AntiM_M" )		   	 :   -1;
-  m_is_AntiM_AntiM   	 =  ( eventInfo->isAvailable< char >( "is_AntiM_AntiM" ) )		?  eventInfo->auxdecor< char >( "is_AntiM_AntiM" )	   	 :   -1;
-  m_is_Tel_AntiTmu	=  ( eventInfo->isAvailable< char >( "is_Tel_AntiTmu" ) )		?  eventInfo->auxdecor< char >( "is_Tel_AntiTmu" )		 :   -1;
-  m_is_AntiTel_Tmu	=  ( eventInfo->isAvailable< char >( "is_AntiTel_Tmu" ) )		?  eventInfo->auxdecor< char >( "is_AntiTel_Tmu" )		 :   -1;
-  m_is_Tmu_AntiTel	=  ( eventInfo->isAvailable< char >( "is_Tmu_AntiTel" ) )		?  eventInfo->auxdecor< char >( "is_Tmu_AntiTel" )		 :   -1;
-  m_is_AntiTmu_Tel	=  ( eventInfo->isAvailable< char >( "is_AntiTmu_Tel" ) )		?  eventInfo->auxdecor< char >( "is_AntiTmu_Tel" )		 :   -1;
-  m_is_Tel_MAntiTmu	=  ( eventInfo->isAvailable< char >( "is_Tel_MAntiTmu" ) )		?  eventInfo->auxdecor< char >( "is_Tel_MAntiTmu" )		 :   -1;
-  m_is_MAntiTel_Tmu	=  ( eventInfo->isAvailable< char >( "is_MAntiTel_Tmu" ) )		?  eventInfo->auxdecor< char >( "is_MAntiTel_Tmu" )		 :   -1;
-  m_is_Tmu_MAntiTel	=  ( eventInfo->isAvailable< char >( "is_Tmu_MAntiTel" ) )		?  eventInfo->auxdecor< char >( "is_Tmu_MAntiTel" )		 :   -1;
-  m_is_MAntiTmu_Tel	=  ( eventInfo->isAvailable< char >( "is_MAntiTmu_Tel" ) )		?  eventInfo->auxdecor< char >( "is_MAntiTmu_Tel" )		 :   -1;
-  m_is_Mel_AntiMmu	=  ( eventInfo->isAvailable< char >( "is_Mel_AntiMmu" ) )		?  eventInfo->auxdecor< char >( "is_Mel_AntiMmu" )		 :   -1;
-  m_is_AntiMel_Mmu	=  ( eventInfo->isAvailable< char >( "is_AntiMel_Mmu" ) )		?  eventInfo->auxdecor< char >( "is_AntiMel_Mmu" )		 :   -1;
-  m_is_Mmu_AntiMel	=  ( eventInfo->isAvailable< char >( "is_Mmu_AntiMel" ) )		?  eventInfo->auxdecor< char >( "is_Mmu_AntiMel" )		 :   -1;
-  m_is_AntiMmu_Mel	=  ( eventInfo->isAvailable< char >( "is_AntiMmu_Mel" ) )		?  eventInfo->auxdecor< char >( "is_AntiMmu_Mel" )		 :   -1;
-  m_is_Tel_AntiMmu	=  ( eventInfo->isAvailable< char >( "is_Tel_AntiMmu" ) )		?  eventInfo->auxdecor< char >( "is_Tel_AntiMmu" )		 :   -1;
-  m_is_AntiMel_Tmu	=  ( eventInfo->isAvailable< char >( "is_AntiMel_Tmu" ) )		?  eventInfo->auxdecor< char >( "is_AntiMel_Tmu" )		 :   -1;
-  m_is_Tmu_AntiMel	=  ( eventInfo->isAvailable< char >( "is_Tmu_AntiMel" ) )		?  eventInfo->auxdecor< char >( "is_Tmu_AntiMel" )		 :   -1;
-  m_is_AntiMmu_Tel	=  ( eventInfo->isAvailable< char >( "is_AntiMmu_Tel" ) )		?  eventInfo->auxdecor< char >( "is_AntiMmu_Mel" )		 :   -1;
+  m_is_T_T   	         =  ( eventInfo->isAvailable< char >( "is_T_T" ) )		        ?  eventInfo->auxdata< char >( "is_T_T" )		   	 :   -1;
+  m_is_T_AntiT   	 =  ( eventInfo->isAvailable< char >( "is_T_AntiT" ) )		        ?  eventInfo->auxdata< char >( "is_T_AntiT" )		   	 :   -1;
+  m_is_AntiT_T   	 =  ( eventInfo->isAvailable< char >( "is_AntiT_T" ) )		        ?  eventInfo->auxdata< char >( "is_AntiT_T" )		   	 :   -1;
+  m_is_AntiT_AntiT   	 =  ( eventInfo->isAvailable< char >( "is_AntiT_AntiT" ) )		?  eventInfo->auxdata< char >( "is_AntiT_AntiT" )	   	 :   -1;
+  m_is_T_MAntiT   	 =  ( eventInfo->isAvailable< char >( "is_T_MAntiT" ) )		        ?  eventInfo->auxdata< char >( "is_T_MAntiT" )		   	 :   -1;
+  m_is_MAntiT_T   	 =  ( eventInfo->isAvailable< char >( "is_MAntiT_T" ) )		        ?  eventInfo->auxdata< char >( "is_MAntiT_T" )		   	 :   -1;
+  m_is_MAntiT_MAntiT   	 =  ( eventInfo->isAvailable< char >( "is_MAntiT_MAntiT" ) )	        ?  eventInfo->auxdata< char >( "is_MAntiT_MAntiT" )	   	 :   -1;
+  m_is_M_M   	         =  ( eventInfo->isAvailable< char >( "is_M_M" ) )		        ?  eventInfo->auxdata< char >( "is_M_M" )		   	 :   -1;
+  m_is_T_AntiM   	 =  ( eventInfo->isAvailable< char >( "is_T_AntiM" ) )		        ?  eventInfo->auxdata< char >( "is_T_AntiM" )		   	 :   -1;
+  m_is_AntiM_T   	 =  ( eventInfo->isAvailable< char >( "is_AntiM_T" ) )		        ?  eventInfo->auxdata< char >( "is_AntiM_T" )		   	 :   -1;
+  m_is_M_AntiM   	 =  ( eventInfo->isAvailable< char >( "is_M_AntiM" ) )		        ?  eventInfo->auxdata< char >( "is_M_AntiM" )		   	 :   -1;
+  m_is_AntiM_M   	 =  ( eventInfo->isAvailable< char >( "is_AntiM_M" ) )		        ?  eventInfo->auxdata< char >( "is_AntiM_M" )		   	 :   -1;
+  m_is_AntiM_AntiM   	 =  ( eventInfo->isAvailable< char >( "is_AntiM_AntiM" ) )		?  eventInfo->auxdata< char >( "is_AntiM_AntiM" )	   	 :   -1;
+  m_is_Tel_AntiTmu	 =  ( eventInfo->isAvailable< char >( "is_Tel_AntiTmu" ) )		?  eventInfo->auxdata< char >( "is_Tel_AntiTmu" )		 :   -1;
+  m_is_AntiTel_Tmu	 =  ( eventInfo->isAvailable< char >( "is_AntiTel_Tmu" ) )		?  eventInfo->auxdata< char >( "is_AntiTel_Tmu" )		 :   -1;
+  m_is_Tmu_AntiTel	 =  ( eventInfo->isAvailable< char >( "is_Tmu_AntiTel" ) )		?  eventInfo->auxdata< char >( "is_Tmu_AntiTel" )		 :   -1;
+  m_is_AntiTmu_Tel	 =  ( eventInfo->isAvailable< char >( "is_AntiTmu_Tel" ) )		?  eventInfo->auxdata< char >( "is_AntiTmu_Tel" )		 :   -1;
+  m_is_Tel_MAntiTmu	 =  ( eventInfo->isAvailable< char >( "is_Tel_MAntiTmu" ) )		?  eventInfo->auxdata< char >( "is_Tel_MAntiTmu" )		 :   -1;
+  m_is_MAntiTel_Tmu	 =  ( eventInfo->isAvailable< char >( "is_MAntiTel_Tmu" ) )		?  eventInfo->auxdata< char >( "is_MAntiTel_Tmu" )		 :   -1;
+  m_is_Tmu_MAntiTel	 =  ( eventInfo->isAvailable< char >( "is_Tmu_MAntiTel" ) )		?  eventInfo->auxdata< char >( "is_Tmu_MAntiTel" )		 :   -1;
+  m_is_MAntiTmu_Tel	 =  ( eventInfo->isAvailable< char >( "is_MAntiTmu_Tel" ) )		?  eventInfo->auxdata< char >( "is_MAntiTmu_Tel" )		 :   -1;
+  m_is_Mel_AntiMmu	 =  ( eventInfo->isAvailable< char >( "is_Mel_AntiMmu" ) )		?  eventInfo->auxdata< char >( "is_Mel_AntiMmu" )		 :   -1;
+  m_is_AntiMel_Mmu	 =  ( eventInfo->isAvailable< char >( "is_AntiMel_Mmu" ) )		?  eventInfo->auxdata< char >( "is_AntiMel_Mmu" )		 :   -1;
+  m_is_Mmu_AntiMel	 =  ( eventInfo->isAvailable< char >( "is_Mmu_AntiMel" ) )		?  eventInfo->auxdata< char >( "is_Mmu_AntiMel" )		 :   -1;
+  m_is_AntiMmu_Mel	 =  ( eventInfo->isAvailable< char >( "is_AntiMmu_Mel" ) )		?  eventInfo->auxdata< char >( "is_AntiMmu_Mel" )		 :   -1;
+  m_is_Tel_AntiMmu	 =  ( eventInfo->isAvailable< char >( "is_Tel_AntiMmu" ) )		?  eventInfo->auxdata< char >( "is_Tel_AntiMmu" )		 :   -1;
+  m_is_AntiMel_Tmu	 =  ( eventInfo->isAvailable< char >( "is_AntiMel_Tmu" ) )		?  eventInfo->auxdata< char >( "is_AntiMel_Tmu" )		 :   -1;
+  m_is_Tmu_AntiMel	 =  ( eventInfo->isAvailable< char >( "is_Tmu_AntiMel" ) )		?  eventInfo->auxdata< char >( "is_Tmu_AntiMel" )		 :   -1;
+  m_is_AntiMmu_Tel	 =  ( eventInfo->isAvailable< char >( "is_AntiMmu_Tel" ) )		?  eventInfo->auxdata< char >( "is_AntiMmu_Mel" )		 :   -1;
 
-  m_isNonTightEvent      =  ( eventInfo->isAvailable< char >( "isNonTightEvent" ) )	        ?  eventInfo->auxdecor< char >( "isNonTightEvent" )         	 :  -1;
-  m_isProbeElEvent       =  ( eventInfo->isAvailable< char >( "isProbeElEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeElEvent" )	   	 :  -1;
-  m_isProbeMuEvent       =  ( eventInfo->isAvailable< char >( "isProbeMuEvent" ) )	        ?  eventInfo->auxdecor< char >( "isProbeMuEvent" )	   	 :  -1;
+  m_isNonTightEvent      =  ( eventInfo->isAvailable< char >( "isNonTightEvent" ) )	        ?  eventInfo->auxdata< char >( "isNonTightEvent" )         	 :  -1;
+  m_isProbeElEvent       =  ( eventInfo->isAvailable< char >( "isProbeElEvent" ) )	        ?  eventInfo->auxdata< char >( "isProbeElEvent" )	   	 :  -1;
+  m_isProbeMuEvent       =  ( eventInfo->isAvailable< char >( "isProbeMuEvent" ) )	        ?  eventInfo->auxdata< char >( "isProbeMuEvent" )	   	 :  -1;
 
   if ( m_isMC ) {
     std::vector<float> junk(1,1.0);
@@ -733,9 +740,9 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
 
     if ( accLepTrigSF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_trig_HTop = accLepTrigSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_trig_HTop = junk; }
     if ( accLepRecoSF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_reco_HTop = accLepRecoSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_reco_HTop = junk; }
-    if ( accLepIsoSF_GLOBAL.isAvailable( *eventInfo ) )  { m_weight_lepton_iso_HTop = accLepIsoSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_iso_HTop = junk; }
-    if ( accLepIDSF_GLOBAL.isAvailable( *eventInfo ) )   { m_weight_lepton_ID_HTop = accLepIDSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_ID_HTop = junk; }
-    if ( accLepTTVASF_GLOBAL.isAvailable( *eventInfo ) )   { m_weight_lepton_TTVA_HTop = accLepTTVASF_GLOBAL( *eventInfo ); } else { m_weight_lepton_TTVA_HTop = junk; }
+    if ( accLepIsoSF_GLOBAL.isAvailable( *eventInfo ) )  { m_weight_lepton_iso_HTop = accLepIsoSF_GLOBAL( *eventInfo ); }   else { m_weight_lepton_iso_HTop = junk; }
+    if ( accLepIDSF_GLOBAL.isAvailable( *eventInfo ) )   { m_weight_lepton_ID_HTop = accLepIDSF_GLOBAL( *eventInfo ); }     else { m_weight_lepton_ID_HTop = junk; }
+    if ( accLepTTVASF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_TTVA_HTop = accLepTTVASF_GLOBAL( *eventInfo ); } else { m_weight_lepton_TTVA_HTop = junk; }
 
   }
 }
