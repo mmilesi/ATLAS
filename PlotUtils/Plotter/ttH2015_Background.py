@@ -1053,6 +1053,52 @@ class TTHBackgrounds2015(Background):
 	    return (dibosoncf + topcf + zjetscf)
 
     """
+    
+    class ChargeFlip(Process):
+
+	latexname = 'QMisID'
+        colour = kAzure -4
+
+        def base(self, treename='physics', category=None, options={}):
+            inputgroup = [
+                    ('Data', 'physics_Main'),
+                         ]
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees)
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+            TTcut  = ''
+            weight = 1.0
+
+            if ( self.parent.channel=='TwoLepSS' ) or ( self.parent.channel=='ThreeLep' ):
+                TTcut  = 'TT'
+		weight = 'QMisIDWeight[0]'
+	    
+	    # Remove any truth cut
+	    #
+	    basecut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
+            
+	    if TTcut != '':
+	        basecut = basecut & self.vardb.getCut(TTcut)
+
+	    # Get OS events
+	    #
+            basecut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
+	    
+	    sp = sp.subprocess(cut=basecut,eventweight=weight)
+
+	    print("ChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
+
+            return sp
 
 
     class FakesFF(Process):
@@ -1069,7 +1115,8 @@ class TTHBackgrounds2015(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
-            systematics = options.get('systematics', None)
+            
+	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
             systname_opts = {}
             if systematics and systematics.name == 'SystName':
@@ -1140,9 +1187,9 @@ class TTHBackgrounds2015(Background):
                 LTcut  = 'LT'
                 LLcut  = 'LL'
                 weight = 'MMWeight[0]'
-
-            # There is no prompt subtraction in the MM!
-
+	    
+	    # Remove any truth cut
+	    #
 	    basecut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
 
             sp_TT  = sp.subprocess(cut=basecut & self.vardb.getCut(TTcut), eventweight=weight)
