@@ -31,8 +31,11 @@ class HTopMultilepTree : public HelpTreeBase
     unsigned int        m_nBjets_MV2c20_Fix70;
     int  	  	m_isSS01;
     int  	  	m_isSS12;
+    
     std::vector<double> m_MMWeight;
     std::vector<double> m_FFWeight;
+    std::vector<float>  m_QMisIDWeight;
+    
     float  		m_mll01;
     float  		m_mll02;
     float  		m_mll12;
