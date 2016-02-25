@@ -25,7 +25,7 @@ newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_QM
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_QMisID_WEIGHTED/'
 
 treename = 'physics'
-nentries = '100' #ALL
+nentries = 'ALL' #ALL
 
 if not os.path.exists(newpath):
     os.makedirs(newpath)

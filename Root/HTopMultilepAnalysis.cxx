@@ -1395,6 +1395,10 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 
   unsigned int nLeptons = leptons.size();
 
+  // Make sure nothing is done if there are less than 2 leptons...
+  //
+  if ( nLeptons < 2 ) { return EL::StatusCode::SUCCESS; }
+
   // retrieve some previously applied event object decorations
   //
   static SG::AuxElement::Accessor< char > isSS01("isSS01");
@@ -1503,14 +1507,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 
   std::string region("");
 
-  bool is2lepOS = ( nLeptons == 2 && isSS01(*eventInfo) );
-  bool is3lep   = ( nLeptons == 3 && isSS12(*eventInfo) );
-
-  if ( !( is2lepOS || is3lep ) ) {
-    return EL::StatusCode::SUCCESS; // no weights in the other categories: just return
-  }
-
-  if ( is2lepOS ) {
+  if ( nLeptons == 2 ) {
 
     // start from lepton container
     //
@@ -1524,7 +1521,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
     //
     lepB = const_cast<xAOD::IParticle*>(leptons.at(1));
 
-  } else if ( is3lep ) {
+  } else if ( nLeptons == 3 ) {
 
     // start from lepton container
     //
@@ -1584,7 +1581,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
     }
 
   }
-
+  
   // set the properties of the two relevant leptons for future convenience
   //
   lepA_pt  = lepA->pt();
@@ -1712,7 +1709,14 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
 
   // ***********************************************
 
-  if ( is2lepOS && m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
+  bool is2lepSS = ( nLeptons == 2 && isSS01(*eventInfo) );
+  bool is3lep   = ( nLeptons == 3 && isSS12(*eventInfo) );
+
+  if ( !( is2lepSS || is3lep ) ) {
+    return EL::StatusCode::SUCCESS; // no weights in the other categories: just return
+  }
+
+  if ( is2lepSS && m_debug ) { Info("fakeWeightCalculator()", "Dilepton SS category. Region is %s ", region.c_str() ); }
   if ( is3lep && m_debug )   { Info("fakeWeightCalculator()", "Trilepton 2SS+1OS category. Region (defined by the 2SS leptons) is %s ", region.c_str() ); }
 
   if ( m_debug ) { Info("fakeWeightCalculator()", "Start calculating MM and FF weights... "); }

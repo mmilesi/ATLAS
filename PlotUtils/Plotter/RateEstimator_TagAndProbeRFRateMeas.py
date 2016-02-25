@@ -1,4 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
+""" RateEstimator_TagAndProbeRFRateMeas.py: measure r/f efficiencies/rates for Matrix Method and Fake Factor Method """
+
+__author__     = "Marco Milesi, Francesco Nuti"
+__email__      = "marco.milesi@cern.ch, francesco.nuti@cern.ch"
+__maintainer__ = "Marco Milesi"
 
 import array
 import os
@@ -179,18 +185,18 @@ for iLep in list_lep:
 		       if iType == "Fake":
 
                           if iLep == "Mu":
-                             nBIN  = 4
-                             xbins = [20,25,35,50,200]
+                             nBIN  = 6
+                             xbins = [10,15,20,25,35,50,200]
 			  elif iLep == "El":
-                             nBIN  = 4
-                             xbins = [20,25,40,60,200]
+                             nBIN  = 6
+                             xbins = [10,15,20,25,40,60,200]
 
                        elif iType == "Real":
 
                   	  #nBIN  = 12
                   	  #xbins = [25,30,35,40,45,50,60,70,80,90,100,150,200]
-			  nBIN  = 5
-                  	  xbins = [20,25,30,40,60,200]
+			  nBIN  = 7
+                  	  xbins = [10,15,20,25,30,40,60,200]
 
                        vxbins = array.array("d", xbins)
 		       print "\t\t\t\t\t vxbins: ",vxbins
@@ -202,7 +208,7 @@ for iLep in list_lep:
 
                      nBIN = 1
                      if iVar == "ProbePt":
-                        xbins = [20,200]
+                        xbins = [10,200]
                      elif iVar == "ProbeEta":
                         if iLep == "El":
                            xbins = [0.0,2.6]
