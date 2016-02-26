@@ -11,9 +11,9 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 302457,Signal,2.8246e-05,1.0,1.0,Pythia8EvtGen_A14NNPDF23LO_DCH1100,DCH,DCH1100
 302458,Signal,1.5651e-05,1.0,1.0,Pythia8EvtGen_A14NNPDF23LO_DCH1200,DCH,DCH1200
 302459,Signal,8.8774e-06,1.0,1.0,Pythia8EvtGen_A14NNPDF23LO_DCH1300,DCH,DCH1300
-341177,Signal,0.5085,1.0,0.10554,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_dil,ttH,ttH_inc_dil
-341270,Signal,0.5085,1.0,0.43929,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep,ttH,ttH_inc_semil
-341271,Signal,0.5085,1.0,0.45517,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_allhad,ttH,ttH_inc_allhad
+341177,Signal,0.0536,1.0,0.1054,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_dil,ttH,ttH_dil
+341270,Signal,0.5085,1.0,0.4393,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep,ttH,ttH_semilep
+341271,Signal,0.5085,1.0,0.45517,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_allhad,ttH,ttH_allhad
 342170,Signal,0.0536,1.0,0.0632,aMcAtNloHppEG_UE5_C6L1_CT10ME_ttH125_H2tau_dilep_hist,ttH,ttH_ditau_dil
 342171,Signal,0.2234,1.0,0.0632,aMcAtNloHppEG_UE5_C6L1_CT10ME_ttH125_H2tau_semilep_hist,ttH,ttH_ditau_semil
 342172,Signal,0.2315,1.0,0.0632,aMcAtNloHppEG_UE5_C6L1_CT10ME_ttH125_H2tau_allhad_hist,ttH,ttH_ditau_allhad

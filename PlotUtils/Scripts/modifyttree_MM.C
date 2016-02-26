@@ -66,7 +66,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
 
   Info("read_rates()", "REAL rate from directory: %s ", rr_dir.c_str() );
 
-  std::string path_R_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/AvgRates.root";// "/Rates.root";
+  std::string path_R_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/Rates.root";// "/AvgRates.root";
   TFile *file_R_el = TFile::Open(path_R_el.c_str());
   if ( !file_R_el->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_el.c_str() );
@@ -74,7 +74,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
   } else {
     Info("read_rates()", "ELECTRON REAL rate: %s ", path_R_el.c_str() );
   }
-  std::string path_R_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/AvgRates.root"; //"/Rates.root";
+  std::string path_R_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/Rates.root"; //"/AvgRates.root";
   TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
   if ( !file_R_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_mu.c_str() );
@@ -133,7 +133,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
      Info("read_rates()", "FAKE rate from same directory" );
   }
 
-  std::string path_F_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/AvgRates.root"; // "/Rates.root";
+  std::string path_F_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/Rates.root"; // "/AvgRates.root";
   TFile *file_F_el = TFile::Open(path_F_el.c_str());
   if ( !file_F_el->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_el.c_str() );
@@ -142,7 +142,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
     Info("read_rates()", "ELECTRON FAKE rate: %s ", path_F_el.c_str() );
   }
 
-  std::string path_F_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/AvgRates.root"; // "/Rates.root";
+  std::string path_F_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/Rates.root"; // "/AvgRates.root";
   TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
   if ( !file_F_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_mu.c_str() );
@@ -856,8 +856,9 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
   //
   //std::string RR_dir("GOOD_STUFF/OutputPlots_MMRates_v021_Madgraph_Observed");
   //std::string RR_dir("OutputPlots_MMRates_v025");
-  std::string RR_dir("OutputPlots_MMRates_v028_FINAL");
-
+  //std::string RR_dir("OutputPlots_MMRates_v028_FINAL");
+  std::string RR_dir("OutputPlots_MMRates_v027_20GeVpT");
+ 
   // when using ch-flip rate as RR (for electrons)
   //std::string RR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_ChFlipBkgRates_13F");
   //std::string FR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_NonPromptBkgRates_13F");

@@ -855,8 +855,7 @@ class Background:
         for name in processes:
             process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection, options=options) * scale
             if eventweight:
-
-		if "FakesMM" in name or "FakesABCD" in name:
+		if ( name == "FakesMM" ) or ( name == "FakesABCD" ) or ( name == "ChargeFlip" ) or ( name == "ChargeFlipForRates" ):
 		  process = process.subprocess(eventweight=1.0) # this call will update the event weight
 		else:
 		  process = process.subprocess(eventweight=eventweight) # this call will update the event weight
@@ -963,34 +962,34 @@ class Background:
 	# ----------------------------------------------------------------------------
 	# temp
 	#
-        sig, siglist = self.sumhist(var, processes=self.signals, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, scale=signalfactor, options=options)
-        if sig:
-            process = siglist[0][1]
-	    pname = process.__class__.__name__
-            sig.SetMarkerSize(1.2)
-            sig.SetLineColor(self.style.get(pname+'LineColour', kBlue))
-	    sig.SetMarkerColor(self.style.get(pname+'MarkerColour', kBlue))
-            sig.SetMarkerStyle(self.style.get(pname+'MarkerStyle', 22))
-            # temp
-	    #
-            legs.append([sig, process.latexname, "F"])
-	# ----------------------------------------------------------------------------
-
-	#options['hmass'] = signal
         #sig, siglist = self.sumhist(var, processes=self.signals, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, scale=signalfactor, options=options)
-        #
         #if sig:
         #    process = siglist[0][1]
-        #    sig.SetFillColor(self.style.get('SignalFillColour', 10))
-        #    sig.SetFillStyle(self.style.get('SignalFillStyle', 1001))
-        #    sig.SetLineWidth(self.style.get('SignalLineWidth', 3))
-        #    sig.SetLineColor(self.style.get('SignalLineColour', 2))
-        #    sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
-        #    stack.Add(sig)
-        #    h_name = process.latexname+signal
-        #    if signalfactor != 1.:
-        #        h_name += " [#times"+str(int(signalfactor))+']'
-        #    legs.append([sig, h_name, 'f'])
+	#    pname = process.__class__.__name__
+        #    sig.SetMarkerSize(1.2)
+        #    sig.SetLineColor(self.style.get(pname+'LineColour', kBlue))
+	#    sig.SetMarkerColor(self.style.get(pname+'MarkerColour', kBlue))
+        #    sig.SetMarkerStyle(self.style.get(pname+'MarkerStyle', 22))
+        #    # temp
+	#    #
+        #   legs.append([sig, process.latexname, "F"])
+	# ----------------------------------------------------------------------------
+
+	options['hmass'] = signal
+        sig, siglist = self.sumhist(var, processes=self.signals, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, scale=signalfactor, options=options)
+        
+        if sig:
+            process = siglist[0][1]
+            sig.SetFillColor(self.style.get('SignalFillColour', 10))
+            sig.SetFillStyle(self.style.get('SignalFillStyle', 1001))
+            sig.SetLineWidth(self.style.get('SignalLineWidth', 3))
+            sig.SetLineColor(self.style.get('SignalLineColour', 2))
+            sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
+            stack.Add(sig)
+            h_name = process.latexname+signal
+            if signalfactor != 1.:
+        	h_name += " [#times"+str(int(signalfactor))+']'
+            legs.append([sig, h_name, 'f'])
 
 
         if showratio and obs and bkg:
@@ -1131,8 +1130,8 @@ class Background:
 
         # temp
 	#
-	if sig:
-	    sig.Draw("PE SAME")
+	#if sig:
+	#    sig.Draw("PE SAME")
 
         if obs:
             if stack:
