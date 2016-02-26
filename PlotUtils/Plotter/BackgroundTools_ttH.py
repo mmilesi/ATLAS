@@ -855,7 +855,7 @@ class Background:
         for name in processes:
             process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection, options=options) * scale
             if eventweight:
-		if ( name == "FakesMM" ) or ( name == "FakesABCD" ) or ( name == "ChargeFlip" ):
+		if ( name == "FakesMM" ) or ( name == "FakesABCD" ) or ( name == "ChargeFlip" ) or ( name == "ChargeFlipForRates" ):
 		  process = process.subprocess(eventweight=1.0) # this call will update the event weight
 		else:
 		  process = process.subprocess(eventweight=eventweight) # this call will update the event weight

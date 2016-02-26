@@ -36,7 +36,7 @@ list_available_channel    = ['TwoLepSR','ThreeLepSR','FourLepSR','MMRates',
 			     'ttWCR', 'ttZCR','ZSSpeakCR', 'DataMC', 'MMClosureTest',
 			     'MMClosureRates','CutFlowChallenge']
 list_available_fakemethod = ['MC','MM','FF','ABCD']
-list_available_flavcomp   = ['ee','mm','em', '']
+list_available_flavcomp   = ['OF','SF','INCLUSIVE']
 
 parser.add_argument('--debug', dest='debug', action='store_true', default=False,
                     help='Run in debug mode')
@@ -44,14 +44,16 @@ parser.add_argument('--channel', dest='channel', action='store', default='TwoLep
 		    help='The channel chosen ({0})'.format(list_available_channel))
 parser.add_argument('--ratesFromMC', dest='ratesFromMC', action='store_true', default=False,
                     help='Extract rates from pure simulation. Use w/ option --channel=MMRates')
+parser.add_argument('--useMCChFlip', dest='useMCChFlip', action='store_true', default=False,
+                    help='Use Monte-Carlo based estimate of QMisID')
 parser.add_argument('--MCCompRF', dest='MCCompRF', action='store_true', default=False,
                     help='Plot simulation estimate in real/fake efficiency CRs. Use w/ option --channel=MMRates')
 parser.add_argument('--outdirname', dest='outdirname', action='store', default='', type=str,
 		    help='Specify a name to append to the output directory')
 parser.add_argument('--fakeMethod', dest='fakeMethod', action='store', default='MC', type=str,
 		    help='The fake estimation method chosen ({0})'.format(list_available_fakemethod))
-parser.add_argument('--lepFlavComp', dest='lepFlavComp', action='store', default='', type=str,
-                    help='Flavour composition of the SS pair ({0})'.format(list_available_flavcomp))
+parser.add_argument('--lepFlavComp', dest='lepFlavComp', action='store', default='INCLUSIVE', type=str,
+                    help='Flavour composition of the dilepton pair used for efficiency measurement. Use w/ option --channel=MMRates,MMClosureRates. Default is \'INCLUSIVE\' ({0})'.format(list_available_flavcomp))
 parser.add_argument('--doLogScaleX', dest='doLogScaleX', action='store_true',
                     help='Use log scale on the X axis')
 parser.add_argument('--doLogScaleY', dest='doLogScaleY', action='store_true',
@@ -157,18 +159,15 @@ doMM   = bool( args.fakeMethod == 'MM' )
 doFF   = bool( args.fakeMethod == 'FF' )
 doABCD = bool( args.fakeMethod == 'ABCD' )
 
-# -----------------------------------------------
-# Check lepton flavour composition of the SS pair
-# -----------------------------------------------
+# -----------------------------------------------------
+# Check lepton flavour composition of the dilepton pair
+# for efficiency measurement
+# -----------------------------------------------------
 
 try:
     args.lepFlavComp in list_available_flavcomp
 except ValueError:
-    sys.exit('ERROR: the lepton flavour composition of the SS pair is incorrect. Must be one of ', list_available_flavcomp)
-else:
-    if not ( args.lepFlavComp ):
-        print 'WARNING: lepton flavour composition of the SS pair unspecified ( i.e., empty string '' )... will not use any restriction on the lepton flavour'
-
+    sys.exit('ERROR: the lepton flavour composition of the 2Lep pair is incorrect. Must be one of ', list_available_flavcomp)
 
 # ----------------------------------------------------
 # When in debug mode, print out all the input commands
@@ -292,6 +291,7 @@ vardb.registerCut( Cut('2Lep_NJet_CR',      '( njets > 1 && njets < 4 )') ) # us
 vardb.registerCut( Cut('2Lep_NJet_CR_ttW',  '( njets > 1 && njets < 4 )') )
 vardb.registerCut( Cut('2Lep_NJet_CR_SStt', '( njets < 4 )') )
 vardb.registerCut( Cut('2Lep_SS',           '( isSS01 == 1 )') )
+vardb.registerCut( Cut('2Lep_OS',           '( isSS01 == 0 )') )
 vardb.registerCut( Cut('2Lep_NLep_MMRates', '( nlep == 2 && Min$( lep_pt ) > 10e3 )') )
 vardb.registerCut( Cut('2Lep_NLep',         '( nlep == 2 && Min$( lep_pt ) > 25e3 )') )
 vardb.registerCut( Cut('2Lep_NLep_Relaxed', '( nlep == 2 && lep_pt[0] > 25e3 && lep_pt[1] > 10e3 )') )
@@ -671,26 +671,26 @@ if doTwoLepLowNJetCR :
 if doThreeLepLowNJetCR:
     # take OS pairs
     #
-    vardb.registerCategory( MyCategory('ThreeLep_LowNJetCR',   cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', '2Lep_NBJet', '3Lep_NLep', '2Lep_NJet_CR','ZOSsidescut']) & -vardb.getCut('2Lep_SS') ) ) )
+    vardb.registerCategory( MyCategory('ThreeLep_LowNJetCR',   cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','2Lep_NJet_CR','ZOSsidescut','2Lep_OS']) ) ) )
 
 # -------------
 # other CRs
 # -------------
 
 if doWZonCR:
-    vardb.registerCategory( MyCategory('WZonCR',      cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'BJetVeto',   '3Lep_NLep',  		  '2Lep_Zpeakcut'])  & -vardb.getCut('2Lep_SS') ) ) )
+    vardb.registerCategory( MyCategory('WZonCR',      cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','BJetVeto','3Lep_NLep','2Lep_Zpeakcut','2Lep_OS']) ) ) )
 
 if doWZoffCR:
-    vardb.registerCategory( MyCategory('WZoffCR',     cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'BJetVeto',   '3Lep_NLep',  		  '2Lep_Zsidescut']) & -vardb.getCut('2Lep_SS') ) ) )
+    vardb.registerCategory( MyCategory('WZoffCR',     cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','BJetVeto','3Lep_NLep','2Lep_Zsidescut','2Lep_OS']) ) ) )
 
 if doWZHFonCR:
-    vardb.registerCategory( MyCategory('WZHFonCR',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', '2Lep_NBJet',      '3Lep_NLep',  		  '2Lep_Zpeakcut'])  & -vardb.getCut('2Lep_SS') ) ) )
+    vardb.registerCategory( MyCategory('WZHFonCR',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','2Lep_Zpeakcut','2Lep_OS']) ) ) )
 
 if doWZHFoffCR:
-    vardb.registerCategory( MyCategory('WZHFoffCR',   cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', '2Lep_NBJet',      '3Lep_NLep',  		  '2Lep_Zsidescut']) & -vardb.getCut('2Lep_SS') ) ) )
+    vardb.registerCategory( MyCategory('WZHFoffCR',   cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','2Lep_Zsidescut','2Lep_OS']) ) ) )
 
 if dottZCR:
-    vardb.registerCategory( MyCategory('ttZCR',       cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', '2Lep_NBJet',      '3Lep_NLep',   'NJet3L',    '2Lep_Zpeakcut'])  & -vardb.getCut('2Lep_SS') ) ) )
+    vardb.registerCategory( MyCategory('ttZCR',       cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','NJet3L','2Lep_Zpeakcut','2Lep_OS']) ) ) )
 
 if dottWCR:
     #vardb.registerCategory( MyCategory('ttWCR',       cut =   vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LargeNBjet', '2Lep_NLep',  '2Lep_NJet_CR',  'TauVeto', '2Lep_SS']) ) )
@@ -710,16 +710,16 @@ if doDataMCCR:
     # ----------------------------------------------------
     # Inclusive OS dilepton (ee,mumu, emu)
     #
-    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_MuMu', cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_MuMu_Event', '2Lep_TightLeptons', '2Lep_ElEtaCut', '2Lep_Zmincut']) & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_ElEl', cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_ElEl_Event', '2Lep_TightLeptons', '2Lep_ElEtaCut', '2Lep_Zmincut']) & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_OF',   cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_OF_Event',   '2Lep_TightLeptons', '2Lep_ElEtaCut', '2Lep_Zmincut']) & -vardb.getCut('2Lep_SS') ) ) )
+    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_MuMu', cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_MuMu_Event', '2Lep_TightLeptons', '2Lep_ElEtaCut', '2Lep_Zmincut','2Lep_OS']) ) ) )
+    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_ElEl', cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_ElEl_Event', '2Lep_TightLeptons', '2Lep_ElEtaCut', '2Lep_Zmincut','2Lep_OS']) ) ) )
+    vardb.registerCategory( MyCategory('DataMC_InclusiveOS_OF',   cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_OF_Event',   '2Lep_TightLeptons', '2Lep_ElEtaCut', '2Lep_Zmincut','2Lep_OS']) ) ) )
 
     # ----------------------------------------------------
     # OS ttbar ( top dilepton) (ee,mumu,emu)
     #
-    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_MuMu', 	  cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_MuMu_Event', '2Lep_TightLeptons', '2Lep_ElEtaCut', '4Lep_NJets', '2Lep_NBJet', '2Lep_Zsidescut', '2Lep_Zmincut']) & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_ElEl', 	  cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_ElEl_Event', '2Lep_TightLeptons', '2Lep_ElEtaCut', '4Lep_NJets', '2Lep_NBJet', '2Lep_Zsidescut', '2Lep_Zmincut']) & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_OF', 	  cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_OF_Event',   '2Lep_TightLeptons', '2Lep_ElEtaCut', '4Lep_NJets', '2Lep_NBJet', '2Lep_Zsidescut', '2Lep_Zmincut']) & -vardb.getCut('2Lep_SS') ) ) )
+    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_MuMu', 	  cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_MuMu_Event', '2Lep_TightLeptons', '2Lep_ElEtaCut', '4Lep_NJets', '2Lep_NBJet', '2Lep_Zsidescut', '2Lep_Zmincut','2Lep_OS']) ) ) )
+    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_ElEl', 	  cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_ElEl_Event', '2Lep_TightLeptons', '2Lep_ElEtaCut', '4Lep_NJets', '2Lep_NBJet', '2Lep_Zsidescut', '2Lep_Zmincut','2Lep_OS']) ) ) )
+    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_OF', 	  cut = ( vardb.getCuts(['2Lep_NLep_Relaxed', 'TrigDec', '2Lep_TrigMatchDataMC', '2Lep_OF_Event',   '2Lep_TightLeptons', '2Lep_ElEtaCut', '4Lep_NJets', '2Lep_NBJet', '2Lep_Zsidescut', '2Lep_Zmincut','2Lep_OS']) ) ) )
 
     # ----------------------------------------------------
     # SS ttbar (ee,mumu,emu)
@@ -728,9 +728,9 @@ if doDataMCCR:
 
     # this is the Real CR for MM
     #
-    vardb.registerCategory( MyCategory('DataMC_MuMu_RealCR',	  cut = ( vardb.getCuts(['2Lep_NLep', 'TrigDec', '2Lep_TrigMatch', '2Lep_MuMu_Event', '2Lep_NBJet', '2Lep_NJet_CR']) & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_ElEl_RealCR',	  cut = ( vardb.getCuts(['2Lep_NLep', 'TrigDec', '2Lep_TrigMatch', '2Lep_ElEl_Event', '2Lep_NBJet', '2Lep_NJet_CR']) & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('DataMC_OF_RealCR',        cut = ( vardb.getCuts(['2Lep_NLep', 'TrigDec', '2Lep_TrigMatch', '2Lep_OF_Event',   '2Lep_NBJet', '2Lep_NJet_CR']) & -vardb.getCut('2Lep_SS') ) ) )
+    vardb.registerCategory( MyCategory('DataMC_MuMu_RealCR',	  cut = ( vardb.getCuts(['2Lep_NLep', 'TrigDec', '2Lep_TrigMatch', '2Lep_MuMu_Event', '2Lep_NBJet', '2Lep_NJet_CR','2Lep_OS']) ) ) )
+    vardb.registerCategory( MyCategory('DataMC_ElEl_RealCR',	  cut = ( vardb.getCuts(['2Lep_NLep', 'TrigDec', '2Lep_TrigMatch', '2Lep_ElEl_Event', '2Lep_NBJet', '2Lep_NJet_CR','2Lep_OS']) ) ) )
+    vardb.registerCategory( MyCategory('DataMC_OF_RealCR',        cut = ( vardb.getCuts(['2Lep_NLep', 'TrigDec', '2Lep_TrigMatch', '2Lep_OF_Event',   '2Lep_NBJet', '2Lep_NJet_CR','2Lep_OS']) ) ) )
     #
     # this is the Fake CR for MM
     #
@@ -824,11 +824,6 @@ if doMMRates or doMMClosureRates:
     vardb.registerCut( Cut('ElTagEtaCut_ProbeElEvent', '( nel == 1 || ( nel == 2 && TMath::Abs(el_tag_caloCluster_eta[0]) < 1.37 ) )') )
     vardb.registerCut( Cut('ElTagEtaCut_ProbeMuEvent', '( nel == 0 || ( nel == 1 && TMath::Abs(el_tag_caloCluster_eta[0]) < 1.37 ) )') )
 
-    # define regions with at least one muon/electron
-    #
-    mu_region = ( vardb.getCut('2Lep_MuMu_Event') | vardb.getCut('2Lep_OF_Event') )
-    el_region = ( vardb.getCut('2Lep_ElEl_Event') | vardb.getCut('2Lep_OF_Event') )
-
     # ---------------------------------------
     # Special plots for MM real/fake rate CRs
     # ---------------------------------------
@@ -851,9 +846,13 @@ if doMMRates or doMMClosureRates:
     # ---> to account for ttV,VV, rare top: use '2Lep_PurePromptEvent' (NB: this does not take into account charge flips!)
     # ---> to account for charge flip background : just use the data-driven estimate
     #
-    #truth_sub_SS = ( vardb.getCut('2Lep_PurePromptEvent') | vardb.getCut('2Lep_ChFlipEvent') )
     truth_sub_SS = vardb.getCut('2Lep_PurePromptEvent')
     truth_sub_OS = ( vardb.getCut('DummyCut') )
+
+    # Only if looking at MC-based QMisID...
+    #
+    if args.useMCChFlip :
+       truth_sub_SS = ( vardb.getCut('2Lep_PurePromptEvent') | vardb.getCut('2Lep_ChFlipEvent') )
 
     # Require at least one non-prompt or charge flip lepton if you want to see the MC bkg composition in the fake region
     #
@@ -883,56 +882,58 @@ if doMMRates or doMMClosureRates:
     # TEMP: remove the |eta| < 1.37 cut for electrons for consistency w/ Kun and Giulia --> put it back asap!
 
     # combine OF + SF
-    #"""
-    vardb.registerCategory( MyCategory('FakeCRMuL',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeAntiTight']) & mu_region & truth_sub_SS ) ) ) # 'ElTagEtaCut_ProbeMuEvent'
-    vardb.registerCategory( MyCategory('FakeCRMuT',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeTight'    ]) & mu_region & truth_sub_SS ) ) ) # 'ElTagEtaCut_ProbeMuEvent'
-    vardb.registerCategory( MyCategory('RealCRMuL',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	       '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeAntiTight']) & mu_region & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('RealCRMuT',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	       '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeTight'    ]) & mu_region & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
     #
-    vardb.registerCategory( MyCategory('FakeCRElL',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeAntiTight', '2Lep_Zsidescut']) & el_region & truth_sub_SS ) ) ) #  'ElTagEtaCut_ProbeElEvent'
-    vardb.registerCategory( MyCategory('FakeCRElT',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeTight',     '2Lep_Zsidescut']) & el_region & truth_sub_SS ) ) ) #   'ElTagEtaCut_ProbeElEvent'
-    vardb.registerCategory( MyCategory('RealCRElL',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	       '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeAntiTight'	      ]) & truth_sub_OS & el_region & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('RealCRElT',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	       '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeTight'	      ]) & truth_sub_OS & el_region & -vardb.getCut('2Lep_SS') ) ) )
-    #"""
-    # temp: measure rates in inclusive jet multiplicity region
-    """
-    vardb.registerCategory( MyCategory('FakeCRMuL',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', 'MuRealFakeRateCR', 'MuProbeAntiTight']) & mu_region & truth_sub_SS ) ) ) # 'ElTagEtaCut_ProbeMuEvent'
-    vardb.registerCategory( MyCategory('FakeCRMuT',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', 'MuRealFakeRateCR', 'MuProbeTight'	 ]) & mu_region & truth_sub_SS ) ) ) # 'ElTagEtaCut_ProbeMuEvent'
-    vardb.registerCategory( MyCategory('RealCRMuL',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	   'MuRealFakeRateCR', 'MuProbeAntiTight']) & mu_region & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('RealCRMuT',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	   'MuRealFakeRateCR', 'MuProbeTight'	 ]) & mu_region & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    #
-    vardb.registerCategory( MyCategory('FakeCRElL',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', 'ElRealFakeRateCR', 'ElProbeAntiTight', '2Lep_Zsidescut']) & el_region & truth_sub_SS ) ) ) #  'ElTagEtaCut_ProbeElEvent'
-    vardb.registerCategory( MyCategory('FakeCRElT',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', 'ElRealFakeRateCR', 'ElProbeTight',     '2Lep_Zsidescut']) & el_region & truth_sub_SS ) ) ) #   'ElTagEtaCut_ProbeElEvent'
-    vardb.registerCategory( MyCategory('RealCRElL',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	   'ElRealFakeRateCR', 'ElProbeAntiTight'	      ]) & truth_sub_OS & el_region & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('RealCRElT',    cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	   'ElRealFakeRateCR', 'ElProbeTight'		      ]) & truth_sub_OS & el_region & -vardb.getCut('2Lep_SS') ) ) )
-    """
+    if ( args.lepFlavComp == "INCLUSIVE" ):
+        #"""
+    	vardb.registerCategory( MyCategory('FakeCRMuL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeAntiTight']) & truth_sub_SS ) ) ) # 'ElTagEtaCut_ProbeMuEvent'
+    	vardb.registerCategory( MyCategory('FakeCRMuT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeTight']) & truth_sub_SS ) ) ) # 'ElTagEtaCut_ProbeMuEvent'
+    	vardb.registerCategory( MyCategory('RealCRMuL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeAntiTight']) & truth_sub_OS ) ) )
+    	vardb.registerCategory( MyCategory('RealCRMuT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeTight']) & truth_sub_OS ) ) )
+    	
+    	vardb.registerCategory( MyCategory('FakeCRElL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeAntiTight','2Lep_Zsidescut']) & truth_sub_SS ) ) ) #  'ElTagEtaCut_ProbeElEvent'
+    	vardb.registerCategory( MyCategory('FakeCRElT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeTight','2Lep_Zsidescut']) & truth_sub_SS ) ) ) #  'ElTagEtaCut_ProbeElEvent'
+    	vardb.registerCategory( MyCategory('RealCRElL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeAntiTight']) & truth_sub_OS ) ) )
+    	vardb.registerCategory( MyCategory('RealCRElT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeTight']) & truth_sub_OS ) ) )
+    	#"""
+    	# temp: measure rates in inclusive jet multiplicity region
+    	"""
+    	vardb.registerCategory( MyCategory('FakeCRMuL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','MuRealFakeRateCR','MuProbeAntiTight']) & truth_sub_SS ) ) ) # 'ElTagEtaCut_ProbeMuEvent'
+    	vardb.registerCategory( MyCategory('FakeCRMuT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','MuRealFakeRateCR','MuProbeTight']) & truth_sub_SS ) ) ) # 'ElTagEtaCut_ProbeMuEvent'
+    	vardb.registerCategory( MyCategory('RealCRMuL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','MuRealFakeRateCR','MuProbeAntiTight']) & truth_sub_OS ) ) )
+    	vardb.registerCategory( MyCategory('RealCRMuT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','MuRealFakeRateCR','MuProbeTight']) & truth_sub_OS ) ) )
+    	#
+    	vardb.registerCategory( MyCategory('FakeCRElL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','ElRealFakeRateCR','ElProbeAntiTight','2Lep_Zsidescut']) & truth_sub_SS ) ) ) #  'ElTagEtaCut_ProbeElEvent'
+    	vardb.registerCategory( MyCategory('FakeCRElT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','ElRealFakeRateCR','ElProbeTight','2Lep_Zsidescut']) & truth_sub_SS ) ) ) #  'ElTagEtaCut_ProbeElEvent'
+    	vardb.registerCategory( MyCategory('RealCRElL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','ElRealFakeRateCR','ElProbeAntiTight']) & truth_sub_OS ) ) )
+    	vardb.registerCategory( MyCategory('RealCRElT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','ElRealFakeRateCR','ElProbeTight']) & truth_sub_OS ) ) )
+    	"""
     # SF only
-    """
-    vardb.registerCategory( MyCategory('MuMuFakeCRMuL',  cut =   vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeAntiTight', '2Lep_MuMu_Event']) & truth_sub_SS ) )
-    vardb.registerCategory( MyCategory('MuMuFakeCRMuT',  cut =   vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeTight',	 '2Lep_MuMu_Event']) & truth_sub_SS ) )
-    vardb.registerCategory( MyCategory('MuMuRealCRMuL',  cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	     '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeAntiTight', '2Lep_MuMu_Event']) & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('MuMuRealCRMuT',  cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	     '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeTight',	 '2Lep_MuMu_Event']) & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    """
     #
-    """
-    vardb.registerCategory( MyCategory('ElElFakeCRElL',  cut =   vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeAntiTight', '2Lep_ElEl_Event', '2Lep_Zsidescut']) & truth_sub_SS ) )
-    vardb.registerCategory( MyCategory('ElElFakeCRElT',  cut =   vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeTight',	 '2Lep_ElEl_Event', '2Lep_Zsidescut']) & truth_sub_SS ) )
-    vardb.registerCategory( MyCategory('ElElRealCRElL',  cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	     '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeAntiTight', '2Lep_ElEl_Event'		  ]) & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('ElElRealCRElT',  cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	     '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeTight',	 '2Lep_ElEl_Event'		  ]) & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    """
+    if ( args.lepFlavComp == "SF" ):
+    
+    	vardb.registerCategory( MyCategory('MuMuFakeCRMuL',  cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeAntiTight','2Lep_MuMu_Event']) & truth_sub_SS ) ) )
+    	vardb.registerCategory( MyCategory('MuMuFakeCRMuT',  cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeTight','2Lep_MuMu_Event']) & truth_sub_SS ) ) )
+    	vardb.registerCategory( MyCategory('MuMuRealCRMuL',  cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeAntiTight','2Lep_MuMu_Event']) & truth_sub_OS ) ) )
+    	vardb.registerCategory( MyCategory('MuMuRealCRMuT',  cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeTight','2Lep_MuMu_Event']) & truth_sub_OS ) ) )
+
+    	vardb.registerCategory( MyCategory('ElElFakeCRElL',  cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeAntiTight', '2Lep_ElEl_Event','2Lep_Zsidescut']) & truth_sub_SS ) ) )
+    	vardb.registerCategory( MyCategory('ElElFakeCRElT',  cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeTight','2Lep_ElEl_Event','2Lep_Zsidescut']) & truth_sub_SS ) ) )
+    	vardb.registerCategory( MyCategory('ElElRealCRElL',  cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeAntiTight', '2Lep_ElEl_Event']) & truth_sub_OS ) ) )
+    	vardb.registerCategory( MyCategory('ElElRealCRElT',  cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeTight','2Lep_ElEl_Event']) & truth_sub_OS ) ) )
+    
     # OF only
-    """
-    vardb.registerCategory( MyCategory('OFFakeCRMuL',	cut =	vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeAntiTight', '2Lep_OF_Event'  ]) & truth_sub_SS ) )
-    vardb.registerCategory( MyCategory('OFFakeCRMuT',	cut =	vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeTight',	'2Lep_OF_Event'  ]) & truth_sub_SS ) )
-    vardb.registerCategory( MyCategory('OFRealCRMuL',	cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	    '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeAntiTight', '2Lep_OF_Event'  ]) & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('OFRealCRMuT',	cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	    '2Lep_NJet_CR', 'MuRealFakeRateCR', 'MuProbeTight',	'2Lep_OF_Event'  ]) & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    """
-    """
-    vardb.registerCategory( MyCategory('OFFakeCRElL',	cut =	vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeAntiTight', '2Lep_OF_Event',   '2Lep_Zsidescut']) & truth_sub_SS ) )
-    vardb.registerCategory( MyCategory('OFFakeCRElT',	cut =	vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto', '2Lep_SS', '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeTight',	'2Lep_OF_Event',   '2Lep_Zsidescut']) & truth_sub_SS ) )
-    vardb.registerCategory( MyCategory('OFRealCRElL',	cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',	    '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeAntiTight', '2Lep_OF_Event'		 ]) & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    vardb.registerCategory( MyCategory('OFRealCRElT',	cut = ( vardb.getCuts(['TrigDec', '2Lep_TrigMatch', 'LepTagTightTrigMatched',  '2Lep_NBJet', '2Lep_NLep_MMRates', 'TauVeto',       '2Lep_NJet_CR', 'ElRealFakeRateCR', 'ElProbeTight',	'2Lep_OF_Event'		 ]) & truth_sub_OS & -vardb.getCut('2Lep_SS') ) ) )
-    """
+    #
+    if ( args.lepFlavComp == "OF" ):
+       
+        vardb.registerCategory( MyCategory('OFFakeCRMuL',   cut =   vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeAntiTight','2Lep_OF_Event']) & truth_sub_SS ) )
+        vardb.registerCategory( MyCategory('OFFakeCRMuT',   cut =   vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeTight','2Lep_OF_Event']) & truth_sub_SS ) )
+        vardb.registerCategory( MyCategory('OFRealCRMuL',   cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeAntiTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
+        vardb.registerCategory( MyCategory('OFRealCRMuT',   cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','MuRealFakeRateCR','MuProbeTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
+
+        vardb.registerCategory( MyCategory('OFFakeCRElL',   cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeAntiTight','2Lep_OF_Event','2Lep_Zsidescut']) & truth_sub_SS ) ) )
+        vardb.registerCategory( MyCategory('OFFakeCRElT',   cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeTight','2Lep_OF_Event','2Lep_Zsidescut']) & truth_sub_SS ) ) )
+        vardb.registerCategory( MyCategory('OFRealCRElL',   cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeAntiTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
+        vardb.registerCategory( MyCategory('OFRealCRElT',   cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','ElRealFakeRateCR','ElProbeTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
 
 
 # NB: do NOT apply truth cuts here! They will be implemented in the appropriate background classes...
@@ -1071,6 +1072,7 @@ samplenames = { 'Observed':'observed',
 		'Wtaunujets':'wtaunujets',
 		'Prompt':'promptbkg',
 		'ChargeFlip':'chargeflipbkg',
+		'ChargeFlipInclusiveFlavRates':'chargeflipbkg',		
 		'ChargeFlipMC':'chargeflipbkg',
 		'FakesFF':'fakesbkg',
 		'FakesMM':'fakesbkg',
@@ -1087,13 +1089,13 @@ colours      = {'Observed':kBlack,
         	'TTBarW':kYellow-9, # kRed-4,
         	'TTBarZ':kAzure+1,  # kRed-7,
         	'Top':kGray, #kBlue+1,
-        	'TTBar':kAzure+8,
+        	'TTBar': kRed - 4,# kAzure+8,
 		'TTBarClosure':kAzure+8,
         	'TopCF':kAzure-4,
         	'Diboson':kGreen-9, # kYellow-9,
         	'DibosonCF':kOrange-3,
         	'HtoZZ':kTeal+9,
-        	'Zjets':kGreen,
+        	'Zjets': kCyan -9, # kGreen,
 		'Zeejets':kGreen-7,
 		'Zmumujets':kTeal+2,
 		'Ztautaujets':kTeal,
@@ -1105,6 +1107,7 @@ colours      = {'Observed':kBlack,
 		'Wtaunujets':kGray+2,
         	'Prompt':kOrange,
         	'ChargeFlip':kMagenta+3,# kAzure-4,
+        	'ChargeFlipInclusiveFlavRates':kMagenta+3,# kAzure-4,		
         	'ChargeFlipMC':kAzure-4,
         	'FakesFF':kAzure-9,
         	'FakesMM':kTeal-9,
@@ -1118,75 +1121,104 @@ if ( doSR or doLowNJetCR ):
 
     ttH2015.signals     = ['TTBarH']
     ttH2015.observed    = ['Observed']
+    
     if not doFourLepSR:
-    	if doMM:
-	    # ---> NB: using charge flip estimate from MC until we have an estimate from data (CHANGE ME!!!)
+    	
+	if doMM:
             # ---> all the MC backgrounds use a truth req. of only prompt leptons in the event (and ch-flip veto) to avoid double counting with
-            #      data-driven  charge flip and fakes estimate
-    	    #plotbackgrounds	 = ['TTBarW','TTBarZ','Diboson''FakesMM',,'ChargeFlipMC','Top']
-    	    #ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson''FakesMM',,'ChargeFlipMC','Top']
-    	    plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','FakesMM','ChargeFlip','Top']
-    	    ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','FakesMM','ChargeFlip','Top']
+            #      data-driven charge flip and fakes estimate
+    	    
+	    plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
+    	    ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
+	    
+	    if args.useMCChFlip:
+	      plotbackgrounds.append('ChargeFlipMC')
+	      ttH2015.backgrounds.append('ChargeFlipMC')
+	    else:
+	      plotbackgrounds.append('ChargeFlip')
+	      ttH2015.backgrounds.append('ChargeFlip')
+	    
 	elif doFF:
-    	    #plotbackgrounds	     = ['TTBarW','TTBarZ','Diboson','FakesFF','ChargeFlipMC','Top']
-    	    #ttH2015.backgrounds     = ['TTBarW','TTBarZ','Diboson','FakesFF','ChargeFlipMC','Top']
-	    #ttH2015.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top','ChargeFlipMC']
-    	    plotbackgrounds	    = ['TTBarW','TTBarZ','Diboson','FakesFF','ChargeFlip','Top']
-    	    ttH2015.backgrounds     = ['TTBarW','TTBarZ','Diboson','FakesFF','ChargeFlip','Top']
-	    ttH2015.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top','ChargeFlip']
+
+    	    plotbackgrounds	    = ['TTBarW','TTBarZ','Diboson','Top','FakesFF']
+    	    ttH2015.backgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesFF']
+	    ttH2015.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
+	    
+	    if args.useMCChFlip:
+	      plotbackgrounds.append('ChargeFlipMC')
+	      ttH2015.backgrounds.append('ChargeFlipMC')
+	      ttH2015.sub_backgrounds.append('ChargeFlipMC')
+	    else:
+	      plotbackgrounds.append('ChargeFlip')
+	      ttH2015.backgrounds.append('ChargeFlip')
+	      ttH2015.sub_backgrounds.append('ChargeFlip')	    
+	    
 	elif doABCD:
-    	    #plotbackgrounds         = ['TTBarW','TTBarZ','Diboson','FakesABCD','ChargeFlipMC','Top']
-    	    #ttH2015.backgrounds     = ['TTBarW','TTBarZ','Diboson','FakesABCD','ChargeFlipMC','Top']
-	    #ttH2015.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top','ChargeFlipMC']
-    	    plotbackgrounds         = ['TTBarW','TTBarZ','Diboson','FakesABCD','ChargeFlip','Top']
-    	    ttH2015.backgrounds     = ['TTBarW','TTBarZ','Diboson','FakesABCD','ChargeFlip','Top']
-	    ttH2015.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top','ChargeFlip']
+  
+      	    plotbackgrounds         = ['TTBarW','TTBarZ','Diboson','Top','FakesABCD']
+    	    ttH2015.backgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesABCD']
+	    ttH2015.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
 
             if doTwoLepLowNJetCR :
 	        # Closure in OF, low njet w/ ttbar MC rewweighted by theta factors
-    	        #plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','FakesClosureDataABCD','ChargeFlipMC','Top']
-    	        #ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','FakesClosureDataABCD','ChargeFlipMC','Top']
-    	        plotbackgrounds	    = ['TTBarW','TTBarZ','Diboson','FakesClosureDataABCD','ChargeFlip','Top']
-    	        ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','FakesClosureDataABCD','ChargeFlip','Top']
+    	        plotbackgrounds	    = ['TTBarW','TTBarZ','Diboson','Top','FakesClosureDataABCD']
+    	        ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesClosureDataABCD']
+
+	    if args.useMCChFlip:
+	      plotbackgrounds.append('ChargeFlipMC')
+	      ttH2015.backgrounds.append('ChargeFlipMC')
+	      ttH2015.sub_backgrounds.append('ChargeFlipMC')
+	    else:
+	      plotbackgrounds.append('ChargeFlip')
+	      ttH2015.backgrounds.append('ChargeFlip')
+	      ttH2015.sub_backgrounds.append('ChargeFlip')	    
+		
 	else:
     	    # MC based estimate of fakes (and charge flips) - make sure any truth cut is removed!!
-    	    plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','TTBar','Zeejets','Zmumujets','Ztautaujets','Top']
-    	    ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Zeejets','Zmumujets','Ztautaujets','Top']
+    	    plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
+    	    ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
     else:
         # no fakes in 4lep
-        plotbackgrounds	= ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
-        ttH2015.backgrounds = ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
+        plotbackgrounds	    = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
+        ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
 
 if doMMRates:
+
     ttH2015.signals     = []#['TTBarH']
     ttH2015.observed    = ['Observed']
     if args.ratesFromMC:
         ttH2015.observed    = []
-    #plotbackgrounds     = ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
-    #ttH2015.backgrounds = ['Top','TTBar','Zeejets','Zmumujets','Ztautaujets','Diboson','Wjets','TTBarW','TTBarZ']
-    plotbackgrounds         = ['TTBarW','TTBarZ','Diboson','Wjets','ChargeFlip','Top']
-    ttH2015.backgrounds     = ['TTBarW','TTBarZ','Diboson','Wjets','ChargeFlip','Top']
-
+	
+    if args.useMCChFlip:
+       plotbackgrounds     = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Wjets','Top']
+       ttH2015.backgrounds = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Wjets','Top']
+    else:
+       plotbackgrounds	    = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Wjets','ChargeFlipInclusiveFlavRates','Top']
+       ttH2015.backgrounds  = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Wjets','ChargeFlipInclusiveFlavRates','Top']
+ 
 if doDataMCCR:
+
     ttH2015.signals     = []#['TTBarH']
     ttH2015.observed    = ['Observed']
     plotbackgrounds     = ['Zeejets','Zmumujets','Ztautaujets','TTBar','Diboson','Top','Wjets','TTBarW','TTBarZ']
     ttH2015.backgrounds = ['Zeejets','Zmumujets','Ztautaujets','TTBar','Diboson','Top','Wjets','TTBarW','TTBarZ']
 
-
 if doCFChallenge:
-    ttH2015.signals     = []#['TTBarH']
+
+    ttH2015.signals     = []
     ttH2015.observed    = []
     plotbackgrounds     = ['TTBarH']
     ttH2015.backgrounds = ['TTBarH']
 
 if doMMClosureRates:
+
       ttH2015.signals	  = []
       ttH2015.observed    = []
       plotbackgrounds	  = ['TTBar']
       ttH2015.backgrounds = ['TTBar']
 
 if doMMClosureTest:
+
     if doMM:
         ttH2015.signals     = ['FakesClosureABCD'] #[]
         ttH2015.observed    = ['TTBarClosure'] # truth cuts done internally in TTBarClosure class
@@ -1315,27 +1347,27 @@ for category in vardb.categorylist:
         # --------------------------
 
         if ( ("MuMu") in category.name and ("El") in var.shortname ) or ( ("ElEl") in category.name and ("Mu") in var.shortname ):
-            print ("\t\Skipping variable: {0}\n".format( var.shortname ))
+            print ("\tSkipping variable: {0}\n".format( var.shortname ))
             continue
         if ( ( ("MuEl") in category.name or ("ElMu") in category.name or ("OF") in category.name ) and ( ("El1") in var.shortname or ("Mu1") in var.shortname ) ) :
-            print ("\t\Skipping variable: {0}\n".format( var.shortname ))
+            print ("\tSkipping variable: {0}\n".format( var.shortname ))
             continue
 
         if doMMRates:
             # if probe is a muon, do not plot ElProbe* stuff!
             if ( ( ("MuRealFakeRateCR") in category.cut.cutname ) and ( ("ElProbe") in var.shortname ) ):
-                print ("\t\Skipping variable: {0}\n".format( var.shortname ))
+                print ("\tSkipping variable: {0}\n".format( var.shortname ))
                 continue
             # if probe is an electron, do not plot MuProbe* stuff!
             if ( ( ("ElRealFakeRateCR") in category.cut.cutname ) and ( ("MuProbe") in var.shortname ) ):
-                print ("\t\Skipping variable: {0}\n".format( var.shortname ))
+                print ("\tSkipping variable: {0}\n".format( var.shortname ))
                 continue
             # be smart when looking at OF regions!
             if ( ("OF") in category.name and( ("MuRealFakeRateCR") in category.cut.cutname ) and ( ("MuTag") in var.shortname ) ):
-                print ("\t\Skipping variable: {0}\n".format( var.shortname ))
+                print ("\tSkipping variable: {0}\n".format( var.shortname ))
                 continue
             if ( ("OF") in category.name and( ("ElRealFakeRateCR") in category.cut.cutname ) and ( ("ElTag") in var.shortname ) ):
-                print ("\t\Skipping variable: {0}\n".format( var.shortname ))
+                print ("\tSkipping variable: {0}\n".format( var.shortname ))
                 continue
 
         # ---------------------------------------------------------
@@ -1536,8 +1568,8 @@ for category in vardb.categorylist:
                         err_bin=histograms[samp].GetBinError(bin)
                         print ("\t\t {0} - {1}-jets bin: {2} +- {3}".format( histname[samp], bin-1, value_bin, err_bin ))
                     # Get integral and error from njets=5 bin onwards in one go!
-		    err_HJ  = Double(0)
-                    value_HJ= histograms[samp].IntegralAndError (7,histograms[samp].GetNbinsX(),err_HJ)
+		    err_HJ   = Double(0)
+                    value_HJ = histograms[samp].IntegralAndError (6,histograms[samp].GetNbinsX(),err_HJ)
                     print ("\t\t {0} - >=5-jets bin: {1} +- {2}".format( histname[samp], value_HJ, err_HJ ))
 	    print ("\n\t\tGetEntries:\n")
             outfile.write('GetEntries: \n')
