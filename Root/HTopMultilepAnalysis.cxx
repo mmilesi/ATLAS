@@ -1521,7 +1521,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
     //
     lepB = const_cast<xAOD::IParticle*>(leptons.at(1));
 
-  } else if ( nLeptons == 3 ) {
+  } else if ( nLeptons == 3 && isSS12( *eventInfo ) ) {
 
     // start from lepton container
     //
@@ -1581,7 +1581,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
     }
 
   }
-  
+
   // set the properties of the two relevant leptons for future convenience
   //
   lepA_pt  = lepA->pt();
@@ -2127,7 +2127,7 @@ EL::StatusCode HTopMultilepAnalysis :: QMisIDWeightCalculator (const xAOD::Event
 EL::StatusCode HTopMultilepAnalysis :: calc_QMisID_weights( std::vector<float>& weights, const xAOD::Electron* elA, const xAOD::Electron* elB )
 {
 
-  // If there are no electrons, return 
+  // If there are no electrons, return
   //
   if ( !elA && !elB ) { return EL::StatusCode::SUCCESS; }
 
