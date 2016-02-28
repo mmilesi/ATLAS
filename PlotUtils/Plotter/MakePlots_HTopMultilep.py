@@ -222,8 +222,6 @@ vardb.registerCut( Cut('DummyCut',    '( 1 )') )
 vardb.registerCut( Cut('IsMC',        '( isMC == 1 )') )
 # To ask for an event be passing an OR of triggers
 #
-
-#gROOT.ProcessLineSync(".x $ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/containsAny.cxx+")
 #gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/containsAny.cxx+")
 #from ROOT import containsAny
 
@@ -394,11 +392,10 @@ pT_Z = '( TMath::Sqrt( (lep_pt[0]*lep_pt[0]) + (lep_pt[1]*lep_pt[1]) + 2*lep_pt[
 
 # Calculate DeltaR(lep0,lep1) in 2LepSS + 0 tau category
 #
-gROOT.ProcessLineSync(".x $ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/deltaR.cxx+")
 gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/deltaR.cxx+")
 from ROOT import deltaR
 
-delta_R_lep0lep1 = 'deltaR( lep_eta[0], lep_eta[1], lep_phi[0], lep_phi[1] )'
+delta_R_lep0lep1 = 'deltaR( lep_eta[0], lep_phi[0], lep_eta[1], lep_phi[1] )'
 
 # -------------------------------------------------------------------
 #  Used for the fake estimate in the 2lepSS and 3lep channel
@@ -450,9 +447,9 @@ vardb.registerCut( Cut('LmuTel',  '( is_Lmu_Tel == 1 )') )
 
 if doSR or doLowNJetCR:
     print ''
-    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
-    if doSR:
-        vardb.registerVar( Variable(shortname = 'NJets4j5j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 4, minval = 1.5, maxval = 5.5) )
+    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
+    #if doSR:
+    #    vardb.registerVar( Variable(shortname = 'NJets4j5j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 4, minval = 1.5, maxval = 5.5) )
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = -0.5, maxval = 3.5) )
     #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
     #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 11, minval = 20.0, maxval = 240.0,) )
