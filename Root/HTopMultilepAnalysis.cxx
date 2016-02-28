@@ -1391,7 +1391,7 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   // in the TT signal/control region
   // We manually plug in the lepton fake/real rates calculated via tag-and-probe analysis (FIXME)
   //
-  //NB: MM and FF Method are applied only to the 2lep and the 3lep case when there are 2 SS leptons
+  //NB: MM and FF Method are applied only to the 2lepSS and the 3lep case when there are 2 SS leptons
 
   unsigned int nLeptons = leptons.size();
 
@@ -1402,20 +1402,120 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   // retrieve some previously applied event object decorations
   //
   static SG::AuxElement::Accessor< char > isSS01("isSS01");
-  if ( !isSS01.isAvailable(*eventInfo) ) {
-    Error("fakeWeightCalculator()", "isSS01 is not available. Aborting ");
-    return EL::StatusCode::FAILURE;
-  }
   static SG::AuxElement::Accessor< char > isSS12("isSS12");
-  if ( !isSS12.isAvailable(*eventInfo) ) {
-    Error("fakeWeightCalculator()", "isSS12 is not available. Aborting ");
-    return EL::StatusCode::FAILURE;
+
+  HTOP_RETURN_CHECK( "HTopMultilepAnalysis::fakeWeightCalculator()", isSS01.isAvailable(*eventInfo), "isSS01 event decoration is not available. Aborting");
+  HTOP_RETURN_CHECK( "HTopMultilepAnalysis::fakeWeightCalculator()", isSS12.isAvailable(*eventInfo), "isSS12 event decoration is not available. Aborting");
+
+
+  // **********************************************************************
+  //
+  // These will be the two leptons used for the fake estimate and to define
+  // the "tightness" of the region, both in 2 lep SS and in 3 lep category
+  //
+  xAOD::IParticle* lepA(nullptr);
+  xAOD::IParticle* lepB(nullptr);
+
+  // The "real" lepton for 3 lep category
+  //
+  //xAOD::IParticle* lep0(nullptr);
+
+  // Features of the two leptons that are considered for the fake estimate
+  //
+  float lepA_pt(-1.0), lepA_eta(-999.0), lepB_pt(-1.0), lepB_eta(-999.0);
+  int lepA_flavour(0), lepB_flavour(0);
+
+  if ( nLeptons == 2 ) {
+
+    // start from lepton container
+    //
+    // ordering criterion is simply based on pT
+    // by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
+
+    // retrieve lepA : the leading lepton
+    //
+    lepA = const_cast<xAOD::IParticle*>(leptons.at(0));
+    // retrieve lepB: the subleading lepton
+    //
+    lepB = const_cast<xAOD::IParticle*>(leptons.at(1));
+
+  } else if ( nLeptons == 3 && isSS12( *eventInfo ) ) {
+
+    // start from lepton container
+    //
+    // for trilepton, ordering criterion is:
+    // lep0: the OS lepton (assume this is real!)
+    // lepA: the SS lepton with min{ deltaR(lep0) }
+    // lepB: the other SS lepton
+    // --> lepA and lepB define the "tightness" of the region
+
+    // retrieve some previously applied lepton object decorations
+    //
+    static SG::AuxElement::Accessor< char > isOSlep("isOSlep");
+    static SG::AuxElement::Accessor< char > isClosestSSlep("isClosestSSlep");
+
+    for (auto lep_it :leptons ) {
+
+      xAOD::IParticle* this_lep = const_cast<xAOD::IParticle*>(lep_it);
+
+      HTOP_RETURN_CHECK( "HTopMultilepAnalysis::fakeWeightCalculator()", isOSlep.isAvailable(*lep_it), "isOSlep lepton decoration is not available. Aborting");
+
+      if ( isOSlep(*this_lep) ) {
+
+    	// retrieve lep0 : the OS lepton
+    	//
+    	//lep0 = this_lep;
+    	continue;
+
+      } else {
+
+	  HTOP_RETURN_CHECK( "HTopMultilepAnalysis::fakeWeightCalculator()", isClosestSSlep.isAvailable(*lep_it), "isClosestSSlep lepton decoration is not available. Aborting");
+
+    	// retrieve lepA : the SS lepton with min{ deltaR(lep0) }
+    	//
+    	if ( isClosestSSlep(*this_lep) ) {
+    	  lepA = this_lep;
+    	  continue;
+    	}
+    	// retrieve lepB : the other SS lepton
+    	//
+    	lepB = this_lep;
+
+      }
+
+    } // close loop over lepton container
+
+  } else {
+    return EL::StatusCode::SUCCESS;
   }
 
-  // accessor to tight/medium selected leptons
+  // just a safety check
   //
-  static SG::AuxElement::Accessor< char > isTightAcc("isTight");
-  static SG::AuxElement::Accessor< char > isMediumAcc("isMedium");
+  HTOP_RETURN_CHECK( "HTopMultilepAnalysis::fakeWeightCalculator()", ( lepA && lepB ), "2Lep/3Lep(12SS) region, but no (lepA and lepB) pointers! Aborting" );
+
+  // set the properties of the two relevant leptons for future convenience
+  //
+  lepA_pt  = lepA->pt();
+  lepA_eta = lepA->eta();
+  if ( lepA->type() == xAOD::Type::Electron )  { lepA_flavour = 11; }
+  else if ( lepA->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
+
+  lepB_pt  = lepB->pt();
+  lepB_eta = lepB->eta();
+  if ( lepB->type() == xAOD::Type::Electron )  { lepB_flavour = 11; }
+  else if ( lepB->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }
+
+  bool OF = ( ( lepA_flavour == 11 && lepB_flavour == 13 ) || ( lepA_flavour == 13 && lepB_flavour == 11 ) );
+
+  // ******************************************************************************************
+  //
+  // Set the region string for MM/FF based on tightness. This depends on the
+  // choice of loosest and tightest definition made at configuration.
+  //
+  // Regardless of this choice, save an event flag with the T-M-L composition of the
+  // dilepton (or dilepton+1lep) events
+  //
+  // For the theta method, specify the flavour of the two leptons in TL,LT regions
 
   // event decorators to identify the regions based on lepton tightness (lepton ordering criterion depends on the category)
   //
@@ -1488,125 +1588,12 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
   is_AntiMel_Tmu_Decor( *eventInfo ) = 0;
   is_AntiMmu_Tel_Decor( *eventInfo ) = 0;
 
-  // **********************************************************************
-  //
-  // These will be the two leptons used for the fake estimate and to define
-  // the "tightness" of the region, both in 2 lep SS and in 3 lep category
-  //
-  xAOD::IParticle* lepA(nullptr);
-  xAOD::IParticle* lepB(nullptr);
-
-  // The "real" lepton for 3 lep category
-  //
-  xAOD::IParticle* lep0(nullptr);
-
-  // Features of the two leptons that are considered for the fake estimate
-  //
-  float lepA_pt(-1.0), lepA_eta(-999.0), lepB_pt(-1.0), lepB_eta(-999.0);
-  int lepA_flavour(0), lepB_flavour(0);
-
   std::string region("");
 
-  if ( nLeptons == 2 ) {
-
-    // start from lepton container
-    //
-    // ordering criterion is simply based on pT
-    // by construction, the first element of the DV is the leading lepton, the second (and last!) element is the subleading
-
-    // retrieve lepA : the leading lepton
-    //
-    lepA = const_cast<xAOD::IParticle*>(leptons.at(0));
-    // retrieve lepB: the subleading lepton
-    //
-    lepB = const_cast<xAOD::IParticle*>(leptons.at(1));
-
-  } else if ( nLeptons == 3 && isSS12( *eventInfo ) ) {
-
-    // start from lepton container
-    //
-    // for trilepton, ordering criterion is:
-    // lep0: the OS lepton (assume this is real!)
-    // lepA: the SS lepton with min{ deltaR(lep0) }
-    // lepB: the other SS lepton
-    // --> lepA and lepB define the "tightness" of the region
-
-    // retrieve some previously applied lepton object decorations
-    //
-    static SG::AuxElement::Accessor< char > isOSlep("isOSlep");
-    static SG::AuxElement::Accessor< char > isClosestSSlep("isClosestSSlep");
-
-    for (auto lep_it :leptons ) {
-
-      xAOD::IParticle* this_lep = const_cast<xAOD::IParticle*>(lep_it);
-
-      if ( !isOSlep.isAvailable(*lep_it) ) {
-    	Error("fakeWeightCalculator()", "isOSlep lepton decoration is not available. Aborting ");
-    	return EL::StatusCode::FAILURE;
-      }
-
-      if ( isOSlep(*this_lep) ) {
-
-    	// retrieve lep0 : the OS lepton
-    	//
-    	lep0 = this_lep;
-    	continue;
-
-      } else {
-
-    	if ( !isClosestSSlep.isAvailable(*this_lep) ) {
-    	  Error("fakeWeightCalculator()", "isClosestSSlep lepton decoration is not available. Aborting");
-    	  return EL::StatusCode::FAILURE;
-    	}
-
-    	// retrieve lepA : the SS lepton with min{ deltaR(lep0) }
-    	//
-    	if ( isClosestSSlep(*this_lep) ) {
-    	  lepA = this_lep;
-    	  continue;
-    	}
-    	// retrieve lepB : the other SS lepton
-    	//
-    	lepB = this_lep;
-
-      }
-
-    } // close loop over lepton container
-
-    // just a safety check
-    //
-    if ( !( lep0 && lepA && lepB ) ) {
-      Error("fakeWeightCalculator()", "Trilepton region, but no (lep0 and lepA and lepB) pointers! Aborting");
-      return EL::StatusCode::FAILURE;
-    }
-
-  } else {
-    return EL::StatusCode::SUCCESS;
-  }
-
-  // set the properties of the two relevant leptons for future convenience
+  // Accessor to tight/medium selected leptons
   //
-  lepA_pt  = lepA->pt();
-  lepA_eta = lepA->eta();
-  if ( lepA->type() == xAOD::Type::Electron )  { lepA_flavour = 11; }
-  else if ( lepA->type() == xAOD::Type::Muon ) { lepA_flavour = 13; }
-
-  lepB_pt  = lepB->pt();
-  lepB_eta = lepB->eta();
-  if ( lepB->type() == xAOD::Type::Electron )  { lepB_flavour = 11; }
-  else if ( lepB->type() == xAOD::Type::Muon ) { lepB_flavour = 13; }
-
-  bool OF = ( ( lepA_flavour == 11 && lepB_flavour == 13 ) || ( lepA_flavour == 13 && lepB_flavour == 11 ) );
-
-  // ******************************************************************************************
-  //
-  // Set the region string for MM/FF based on tightness. This depends on the
-  // choice of loosest and tightest definition made at configuration.
-  //
-  // Regardless of this choice, save an event flag with the T-M-L composition of the
-  // dilepton (or dilepton+1lep) events
-  //
-  // For the theta method, specify the flavour of the two leptons in TL,LT regions
+  static SG::AuxElement::Accessor< char > isTightAcc("isTight");
+  static SG::AuxElement::Accessor< char > isMediumAcc("isMedium");
 
   // the TT region is defined in this way EXCEPT when "Medium" defines our tightest definition
   //

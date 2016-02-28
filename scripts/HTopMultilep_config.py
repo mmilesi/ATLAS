@@ -340,7 +340,7 @@ HTopMultilepEventSelectorDict = { "m_name"                   : "eventSelect_skim
                 		  "m_outContainerName_lep"   : "Leptons_OR",
 		                  "m_doMinObjCut"            : True,
 		                  "m_doMaxObjCut"            : False,
-   				  "m_n_leptons_min"          : 0,
+   				  "m_n_leptons_min"          : 2,
 				  "m_BTag_WP"                : "FixedCutBEff_77",
                                   "m_n_jets_min"             : 0,
    				  "m_n_bjets_min"            : 0,
@@ -368,7 +368,7 @@ HTopMultilepAnalysisDict = { "m_name"                      : "multilep_analysis"
    			     "m_TightMuonD0sig_cut"	   : 3.0,
 			     "m_TightMuonIso_WP"	   : "isIsolated_FixedCutTightTrackOnly",
                              "m_ConfigPathTightTaus"       : "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15_final_sel.conf",
-		             "m_useMCForTagAndProbe"       : False,
+		             "m_useMCForTagAndProbe"       : True,
                            }
 
 HTopMultilepTreeAlgoDict = { "m_name"                  : "physics",
