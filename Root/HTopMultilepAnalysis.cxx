@@ -1580,6 +1580,8 @@ EL::StatusCode HTopMultilepAnalysis :: fakeWeightCalculator (const xAOD::EventIn
       return EL::StatusCode::FAILURE;
     }
 
+  } else {
+    return EL::StatusCode::SUCCESS;
   }
 
   // set the properties of the two relevant leptons for future convenience
