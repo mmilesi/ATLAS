@@ -1,20 +1,16 @@
-#!/usr/bin/python
-#
-# ***********************************************************************
-# Steering macro for modifyttree_AddQMisID.C:
-# loop over the merged samples to change the content of branches in TTree
-#
-# Authors:
-#  Francesco Nuti ( francesco.nuti@cern.ch )
-#
-# ***********************************************************************
+#!/usr/bin/env python
 
-from math import sqrt, pow
-from ROOT import TCanvas, TFile, TGraph, TGraphErrors, TColor, TAttFill, TStyle, TLegend, TH1D, gROOT, TF1, TTree
-import array
-import copy
-import os, subprocess, sys, time, shlex
+""" run_modifytree_QMisID.py: simple script to execute a ROOT macro by calling the CINT interpreter with TROOT::ProcessLine() """
+
+__author__     = "Marco Milesi, Francesco Nuti"
+__email__      = "marco.milesi@cern.ch, francesco.nuti@cern.ch"
+__maintainer__ = "Marco Milesi"
+
+import os, subprocess, sys, time, shlex, copy
+
 sys.path.append(os.path.abspath(os.path.curdir))
+
+from ROOT import gROOT
 
 gROOT.SetBatch(True)
 
@@ -30,7 +26,9 @@ nentries = 'ALL' #ALL
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-gROOT.LoadMacro("modifyttree_AddQMisID.C+g")
+gROOT.LoadMacro("modifyttree_AddQMisID.cxx+g")
+#gROOT.LoadMacro("modifyttree_QMisID.cxx+g")
+
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
 for group in group_list:
@@ -45,15 +43,17 @@ for group in group_list:
         outfile=newpath+group+'/'+sample
 
         command_line = 'modifyttree_AddQMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+        #command_line = 'modifyttree_QMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+
         print command_line
         gROOT.ProcessLine(command_line);
 
-        #command_line = 'root -l -q \"modifyttree_AddQMisID.C+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")\"'
+        #command_line = 'root -l -q \"modifyttree_AddQMisID.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")\"'
         #print command_line
         #args = shlex.split(command_line)
         #print args
-        #subprocess.call(args)
-        #subprocess.call(['root', '-l', '-q', '"modifyttree_AddQMisID.C+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")"'])
+        #subprocess.cxxall(args)
+        #subprocess.cxxall(['root', '-l', '-q', '"modifyttree_AddQMisID.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")"'])
         #f = TFile.Open(path+group+'/'+sample)
         #h_tot = f.Get('TotalEvents')
         #t = f.Get('physics')

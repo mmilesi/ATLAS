@@ -213,7 +213,6 @@ doRelaxedBJetCut = False # if true, be inclusive in bjet multiplicity, otherwise
 #
 # -----------------------------------------------------
 
-
 # ---------------------
 # General cuts
 # ---------------------
@@ -276,8 +275,8 @@ vardb.registerCut( Cut('2Lep1Tau_NBJet',        '( njets_mv2c20_Fix77 > 0 )') )
 # ---------------------
 # 2Lep SS + 0 tau cuts
 # ---------------------
-#vardb.registerCut( Cut('2Lep_TrigMatch',   '( ( lep_isTrigMatched[0] == 1 && ( ( lep_flavour[0] == 11 && lep_pt[0] > 25e3 ) || ( lep_flavour[0] == 13 && lep_pt[0] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[1] == 11 && lep_pt[1] > 25e3 ) || ( lep_flavour[1] == 13 && lep_pt[1] > 21e3 ) ) ) )') )
-vardb.registerCut( Cut('2Lep_TrigMatch',    '( ( lep_isTrigMatched[0] == 1 && lep_pt[0] > 25e3 ) || ( lep_isTrigMatched[1] == 1 && lep_pt[1] > 25e3 ) )') )
+vardb.registerCut( Cut('2Lep_TrigMatch',   '( ( lep_isTrigMatched[0] == 1 && ( ( lep_flavour[0] == 11 && lep_pt[0] > 25e3 ) || ( lep_flavour[0] == 13 && lep_pt[0] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[1] == 11 && lep_pt[1] > 25e3 ) || ( lep_flavour[1] == 13 && lep_pt[1] > 21e3 ) ) ) )') )
+#vardb.registerCut( Cut('2Lep_TrigMatch',    '( ( lep_isTrigMatched[0] == 1 && lep_pt[0] > 25e3 ) || ( lep_isTrigMatched[1] == 1 && lep_pt[1] > 25e3 ) )') )
 vardb.registerCut( Cut('2Lep_TrigMatchDataMC', '( ( lep_isTrigMatched[0] == 1 || lep_isTrigMatched[1] == 1 ) )') )
 if doRelaxedBJetCut:
     print("\nUsing relaxed nr. bjet cut: INCLUSIVE bjet multiplicity...\n")
@@ -464,7 +463,8 @@ if doMMClosureTest:
     print ''
     vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = -0.5, maxval = 3.5) )
-    #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
+    vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
+    vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
 
 if doStandardPlots:
     print ''
@@ -484,11 +484,11 @@ if doStandardPlots:
     #
     #vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
     #
-    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
+    vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
+    vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
     #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_eta[0]', bins = 16, minval = -2.6, maxval = 2.6) )
     #vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_eta[1]', bins = 16, minval = -2.6, maxval = 2.6) )
-    vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
+    #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
     #vardb.registerVar( Variable(shortname = 'Mll12', latexname = 'm(l_{1}l_{2}) [GeV]', ntuplename = 'mll12/1e3', bins = 15, minval = 0.0, maxval = 300.0,) )
     #vardb.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageInteractionsPerCrossing', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
     #vardb.registerVar( Variable(shortname = 'MET_FinalClus', latexname = 'E_{T}^{miss} (FinalClus) [GeV]', ntuplename = 'metFinalClus/1e3', bins = 45, minval = 0.0, maxval = 180.0,))
@@ -951,20 +951,20 @@ if doMMClosureTest:
         #
         # MuMu region
         #
-        vardb.registerCategory( MyCategory('MuMuSS_SR_HighJet_DataDriven_Closure',   cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_MuMu_Event',  '2Lep_NJet_SR']) ) )
-        #vardb.registerCategory( MyCategory('MuMuSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_MuMu_Event',  '2Lep_NJet_CR']) ) )
+        #vardb.registerCategory( MyCategory('MuMuSS_SR_HighJet_DataDriven_Closure',   cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_MuMu_Event',  '2Lep_NJet_SR']) ) )
+        vardb.registerCategory( MyCategory('MuMuSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_MuMu_Event',  '2Lep_NJet_CR']) ) )
         #vardb.registerCategory( MyCategory('MuMuSS_SR_AllJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_MuMu_Event']) ) )
         #
 	# OF region
 	#
-	vardb.registerCategory( MyCategory('OFSS_SR_HighJet_DataDriven_Closure',     cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_OF_Event', '2Lep_ElEtaCut',  '2Lep_NJet_SR']) ) )
-	#vardb.registerCategory( MyCategory('OFSS_SR_LowJet_DataDriven_Closure',      cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_OF_Event', '2Lep_ElEtaCut',  '2Lep_NJet_CR']) ) )
+	#vardb.registerCategory( MyCategory('OFSS_SR_HighJet_DataDriven_Closure',     cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_OF_Event', '2Lep_ElEtaCut',  '2Lep_NJet_SR']) ) )
+	vardb.registerCategory( MyCategory('OFSS_SR_LowJet_DataDriven_Closure',      cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_OF_Event', '2Lep_ElEtaCut',  '2Lep_NJet_CR']) ) )
 	#vardb.registerCategory( MyCategory('OFSS_SR_AllJet_DataDriven_Closure',      cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_OF_Event', '2Lep_ElEtaCut']) ) )
 	#
 	# ElEl region
 	#
-	vardb.registerCategory( MyCategory('ElElSS_SR_HighJet_DataDriven_Closure',   cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_ElEl_Event', '2Lep_ElEtaCut', '2Lep_NJet_SR']) ) )
-	#vardb.registerCategory( MyCategory('ElElSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_ElEl_Event', '2Lep_ElEtaCut', '2Lep_NJet_CR']) ) )
+	#vardb.registerCategory( MyCategory('ElElSS_SR_HighJet_DataDriven_Closure',   cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_ElEl_Event', '2Lep_ElEtaCut', '2Lep_NJet_SR']) ) )
+	vardb.registerCategory( MyCategory('ElElSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_ElEl_Event', '2Lep_ElEtaCut', '2Lep_NJet_CR']) ) )
         #vardb.registerCategory( MyCategory('ElElSS_SR_AllJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_ElEl_Event', '2Lep_ElEtaCut']) ) )
 
     elif ( args.fakeMethod == 'ABCD' ):

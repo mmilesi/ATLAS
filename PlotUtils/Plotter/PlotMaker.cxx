@@ -68,8 +68,6 @@ void PlotRateEff(const char* EXTENSION, const char* HOME_DIRECTORY, const char* 
   string filename(flav_comp + "Rates.root");
   //string filename(flav_comp + "AvgRates.root");
   string home_directory(HOME_DIRECTORY);
-  //string home_directory = "~/PhD/ttH_MultiLeptons/RUN2/PlotUtils/common_ntuple_melbourne/OutputPlots_ChFlipRates/";
-  //string home_directory = "~/PhD/ttH_MultiLeptons/RUN2/PlotUtils/common_ntuple_melbourne/OutputPlots_HFRates/";
   if ( home_directory.back() != '/' ) { home_directory += "/"; }
 
   vector<string> lepton_flavours;
