@@ -60,13 +60,15 @@ TH1D* get_hist( TFile& file, const std::string& name ) {
 void read_rates(const std::string rr_dir, const std::string fr_dir = "")
 {
 
+  std::string glob_path("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/");
+
   // ******************************************************
   //
   // 1. 'REAL' rate
 
   Info("read_rates()", "REAL rate from directory: %s ", rr_dir.c_str() );
 
-  std::string path_R_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/Rates.root";
+  std::string path_R_el = glob_path + rr_dir + "/Rates.root";
   TFile *file_R_el = TFile::Open(path_R_el.c_str());
   if ( !file_R_el->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_el.c_str() );
@@ -74,7 +76,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
   } else {
     Info("read_rates()", "ELECTRON REAL rate: %s ", path_R_el.c_str() );
   }
-  std::string path_R_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + rr_dir + "/Rates.root"; // "/MuMuRates.root";
+  std::string path_R_mu = glob_path + rr_dir + "/Rates.root"; // "/MuMuRates.root";
   TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
   if ( !file_R_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_mu.c_str() );
@@ -133,7 +135,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
      Info("read_rates()", "FAKE rate from same directory" );
   }
 
-  std::string path_F_el = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/Rates.root";
+  std::string path_F_el = glob_path + fake_dir + "/Rates.root";
   TFile *file_F_el = TFile::Open(path_F_el.c_str());
   if ( !file_F_el->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_el.c_str() );
@@ -142,7 +144,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
     Info("read_rates()", "ELECTRON FAKE rate: %s ", path_F_el.c_str() );
   }
 
-  std::string path_F_mu = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/" + fake_dir + "/Rates.root"; //"/MuMuRates.root";
+  std::string path_F_mu = glob_path + fake_dir + "/Rates.root"; //"/MuMuRates.root";
   TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
   if ( !file_F_mu->IsOpen() ) {
     SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_mu.c_str() );
@@ -775,10 +777,16 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   std::string old_eventNumber_name("eventNumber");
   std::string old_nlep_name("nlep");
   std::string old_isSS01_name("isSS01");
+
   std::string old_isTT_name("isTT");
   std::string old_isTL_name("isTL");
   std::string old_isLT_name("isLT");
   std::string old_isLL_name("isLL");
+
+  //std::string old_isTT_name("is_T_T");
+  //std::string old_isTL_name("is_T_AntiT");
+  //std::string old_isLT_name("is_AntiT_T");
+  //std::string old_isLL_name("is_AntiT_AntiT");
 
   //std::string old_isTM_name("isTM");
   //std::string old_isMT_name("isMT");
@@ -886,8 +894,10 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   //std::string RR_dir("GOOD_STUFF/OutputPlots_MMClosureRates_v023_TTbar");
   //std::string RR_dir("GOOD_STUFF/OutputPlots_MMRates_v021_Madgraph_Expected");
   //std::string RR_dir("OutputPlots_MMClosureRates_v025");
-  //std::string RR_dir("OutputPlots_MMClosureRates_v028");
-  std::string RR_dir("OutputPlots_MMClosureRates_HighNJet_v028");
+  std::string RR_dir("OutputPlots_MMClosureRates_v028");
+  //std::string RR_dir("OutputPlots_MMClosureRates_HighNJet_v028");
+  //std::string RR_dir("OutputPlots_MMClosureRates_v027");
+
 
   // when using ch-flip rate as RR (for electrons)
   //std::string RR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_ChFlipBkgRates_13F");

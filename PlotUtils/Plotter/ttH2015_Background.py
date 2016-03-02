@@ -55,10 +55,21 @@ class TTHBackgrounds2015(Background):
     }
 
     theta = {
-    	#'El': (999.0, 0.0),
-    	#'Mu': (999.0, 0.0),
-    	'El': (0.163, 0.036),
-    	'Mu': (0.159, 0.022),
+        #'El': (999.0, 0.0),
+        #'Mu': (999.0, 0.0),
+    	'El': (0.163, 0.036), # v027
+    	'Mu': (0.159, 0.022), # v027
+	#'El': (0.170, 0.037), # v028	  
+	#'Mu': (0.132, 0.017), # v028 
+    }
+
+    theta_MC = {
+        #'El': (999.0, 0.0),
+        #'Mu': (999.0, 0.0),
+    	'El': (0.194, 0.037), # v027
+    	'Mu': (0.153, 0.022), # v027
+	#'El': (0.194, 0.038), # v028 
+	#'Mu': (0.067, 0.008), # v028
     }
 
     def str_to_class(self, field):
@@ -1106,7 +1117,7 @@ class TTHBackgrounds2015(Background):
                 basecut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
             else:
                 weight = '0.0'
-            
+
 	    # Dimuon events do not have charge flips. At all.
 	    #
             if ("2Lep_MuMu_Event") in category.cut.cutname:
@@ -1137,63 +1148,63 @@ class TTHBackgrounds2015(Background):
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
             systname_opts = {}
-            
+
 	    if systematics and systematics.name == 'SystName':
                 systname_opts['systematics'] = True
                 systname_opts['systematicsdirection'] = direction
-            
+
 	    sp = self.base(treename, category, options)
-            
+
 	    # Take the category cut
 	    #
 	    basecut = category.cut
-	    
+
 	    print("\nChargeFlipInclusiveFlavRates initial cut: {0}".format(basecut.cutnamelist))
-            
+
 	    # Treat differently the cases where e/mu is the probe
 	    # If the probe is a muon, the QMisID weight for the SF region must be set to 0!
 	    #
 	    weight = '0.0'
-            weight_SF = '0.0' 
+            weight_SF = '0.0'
 	    weight_OF = '0.0'
-	    
+
 	    if ("2Lep_SS") in category.cut.cutname:
                basecut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
 	       weight  ='QMisIDWeight[0]'
-	    
+
 	    # Remove any truth cut
 	    #
 	    basecut = basecut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
-	    
+
 	    sp_SF = None
 	    sp_OF = None
-	    
+
 	    if ( 'ElRealFakeRateCR' ) in category.cut.cutname:
-	    
+
 	       cut_SF = basecut & self.vardb.getCut('2Lep_ElEl_Event')
 	       cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
-           
-	       weight_SF = weight_OF = weight 
-	       
+
+	       weight_SF = weight_OF = weight
+
 	       sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
 	       sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
-	       
+
 	    elif ( 'MuRealFakeRateCR' ) in category.cut.cutname:
-	       
+
 	       cut_SF = basecut & self.vardb.getCut('2Lep_MuMu_Event')
 	       cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
-	    
+
 	       weight_SF = '0.0' # mu-mu region MUST get zero QMisID weight!
 	       weight_OF = weight
-	       
-	       sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF) 
+
+	       sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
 	       sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
-	    
+
 	    print("\nChargeFlipInclusiveFlavRates sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
 	    print("\nChargeFlipInclusiveFlavRates sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
-  
+
 	    sp = sp_SF + sp_OF
-	    
+
             return sp
 
 
@@ -1771,7 +1782,7 @@ class TTHBackgrounds2015(Background):
             #
             basecut = basecut & self.vardb.getCut('2Lep_NonPromptEvent')
 
-	    if TTHBackgrounds2015.theta['El'][0] == 999.0 :
+	    if TTHBackgrounds2015.theta_MC['El'][0] == 999.0 :
 
                 print ("Calculating theta_el from TTBar in regions C,D...")
 
@@ -1795,13 +1806,13 @@ class TTHBackgrounds2015(Background):
 
                 # derive theta factors for el
                 #
-                TTHBackgrounds2015.theta['El'] = self.calcTheta(sp_C_el,sp_D_el,stream='El')
+                TTHBackgrounds2015.theta_MC['El'] = self.calcTheta(sp_C_el,sp_D_el,stream='El')
 
 	    else :
-                print ("Reading theta(el) value: {0} +- {1}".format(TTHBackgrounds2015.theta['El'][0], TTHBackgrounds2015.theta['El'][1]))
+                print ("Reading theta(el) value: {0} +- {1}".format(TTHBackgrounds2015.theta_MC['El'][0], TTHBackgrounds2015.theta_MC['El'][1]))
 
 
-	    if TTHBackgrounds2015.theta['Mu'][0] == 999.0 :
+	    if TTHBackgrounds2015.theta_MC['Mu'][0] == 999.0 :
 
                 print ("Calculating theta_mu from TTBar in regions C,D...")
 
@@ -1825,10 +1836,10 @@ class TTHBackgrounds2015(Background):
 
                 # derive theta factors for mu
                 #
-                TTHBackgrounds2015.theta['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
+                TTHBackgrounds2015.theta_MC['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
 
 	    else :
-                print ("Reading theta(mu) value: {0} +- {1}".format(TTHBackgrounds2015.theta['Mu'][0], TTHBackgrounds2015.theta['Mu'][1]))
+                print ("Reading theta(mu) value: {0} +- {1}".format(TTHBackgrounds2015.theta_MC['Mu'][0], TTHBackgrounds2015.theta_MC['Mu'][1]))
 
 
 	    # Define Region B,  depending on which flavour composition we are looking at:
@@ -1842,15 +1853,15 @@ class TTHBackgrounds2015(Background):
                 sp_B = self.parent.procmap['TTBarClosure'].base(treename,category,options)
                 sp_B = sp_B.subprocess(cut=cut_sp_B_SF,eventweight=weight)
                 if ("2Lep_ElEl_Event") in category.cut.cutname:
-                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta['El'])
+                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta_MC['El'])
                 elif ("2Lep_MuMu_Event") in category.cut.cutname:
-                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta['Mu'])
+                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta_MC['Mu'])
             else:
                 sp_B_Lel = self.parent.procmap['TTBarClosure'].base(treename,category,options)
                 sp_B_Lmu = self.parent.procmap['TTBarClosure'].base(treename,category,options)
                 sp_B_Lel = sp_B_Lel.subprocess(cut=cut_sp_B_OF_Lel, eventweight=weight)
                 sp_B_Lmu = sp_B_Lmu.subprocess(cut=cut_sp_B_OF_Lmu, eventweight=weight)
-                sp_B = self.applyThetaFactor(sp_B_Lmu,TTHBackgrounds2015.theta['Mu']) + self.applyThetaFactor(sp_B_Lel,TTHBackgrounds2015.theta['El'])
+                sp_B = self.applyThetaFactor(sp_B_Lmu,TTHBackgrounds2015.theta_MC['Mu']) + self.applyThetaFactor(sp_B_Lel,TTHBackgrounds2015.theta_MC['El'])
 
 	    print ("=================>\n")
 	    print ("Region B sp: {0} \n".format(sp_B.basecut.cutnamelist))
@@ -1863,19 +1874,9 @@ class TTHBackgrounds2015(Background):
     #
     class FakesClosureDataABCD(Process):
 
-	latexname = 'Fakes #theta method (t#bar{t})'
+	latexname = 'Fakes #theta method'
         colour = kCyan - 9
-
-        # Theta factors as measured in DATA
-
-        # v027 - w/ isolation for loose muons
-        theta_el = 0.1274 # 0.1467
-        theta_mu = 0.3206 # 0.6856
-
-        # v028 - w/o isolation for loose muons
-        #theta_el = 0.1075
-        #theta_mu = 0.1011
-
+	
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
 		    ('tops', 'ttbar_nonallhad'),
@@ -1933,7 +1934,7 @@ class TTHBackgrounds2015(Background):
             #
             sp_Lel = sp.subprocess(cut=cut_sp_OF_Lel, eventweight=weightMC )
             sp_Lmu = sp.subprocess(cut=cut_sp_OF_Lmu, eventweight=weightMC )
-            sp_final = ( sp_Lel * self.theta_el ) + ( sp_Lmu * self.theta_mu )
+            sp_final = ( sp_Lel * TTHBackgrounds2015.theta['El'][0] ) + ( sp_Lmu * TTHBackgrounds2015.theta['Mu'][0] )
 
 	    print ("=================>\n")
 	    print ("Region closure sp: {0}".format(sp_final.basecut.cutnamelist))

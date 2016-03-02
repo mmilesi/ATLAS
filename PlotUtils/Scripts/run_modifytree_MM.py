@@ -1,30 +1,28 @@
-#!/usr/bin/python
-#
-# ***********************************************************************
-# Steering macro for modifytree_MM.C:
-# loop over the merged samples to change the content of branches in TTree
-#
-# Authors:
-#  Francesco Nuti ( francesco.nuti@cern.ch )
-#
-# ***********************************************************************
+#!/usr/bin/env python
 
-from math import sqrt, pow
-from ROOT import TCanvas, TFile, TGraph, TGraphErrors, TColor, TAttFill, TStyle, TLegend, TH1D, gROOT, TF1, TTree
-import array
-import copy
-import os, subprocess, sys, time, shlex
+""" run_modifytree_MM.py: simple script to execute a ROOT macro by calling the CINT interpreter with TROOT::ProcessLine() """
+
+__author__     = "Marco Milesi, Francesco Nuti"
+__email__      = "marco.milesi@cern.ch, francesco.nuti@cern.ch"
+__maintainer__ = "Marco Milesi"
+
+import os, subprocess, sys, time, shlex, copy
+
 sys.path.append(os.path.abspath(os.path.curdir))
+
+from ROOT import gROOT
 
 gROOT.SetBatch(True)
 
 oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED/'
-newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED_FIXED/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED_FIXED/'
+newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED_DataDrivenQMisID/'
 
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_WEIGHTED/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_AVGEFF_WEIGHTED/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_WEIGHTED_DataDrivenQMisID/'
 
 treename = 'physics'
 nentries = 'ALL' #ALL
@@ -32,7 +30,7 @@ nentries = 'ALL' #ALL
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-gROOT.LoadMacro("modifyttree_MM.C+g")
+gROOT.LoadMacro("modifyttree_MM.cxx+g")
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
 for group in group_list:
@@ -50,12 +48,12 @@ for group in group_list:
         print command_line
         gROOT.ProcessLine(command_line);
 
-        #command_line = 'root -l -q \"modifyttree_MM.C+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")\"'
+        #command_line = 'root -l -q \"modifyttree_MM.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")\"'
         #print command_line
         #args = shlex.split(command_line)
         #print args
         #subprocess.call(args)
-        #subprocess.call(['root', '-l', '-q', '"modifyttree_MM.C+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")"'])
+        #subprocess.call(['root', '-l', '-q', '"modifyttree_MM.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")"'])
         #f = TFile.Open(path+group+'/'+sample)
         #h_tot = f.Get('TotalEvents')
         #t = f.Get('physics')

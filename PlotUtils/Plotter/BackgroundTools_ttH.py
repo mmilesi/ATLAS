@@ -12,7 +12,9 @@ from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
 class Inputs:
+   
     def __init__(self):
+       
         self.alltrees = {}
         self.sampleids = {}
         self.nomtree = 'physics'
@@ -20,7 +22,8 @@ class Inputs:
         self.sysweights = []
 
     def registerTree(self, filegroup, nomtree = 'physics', systrees=[], ismc=True, isembedding=False, isdata=False, group='', subgroup='', sampleid=None):
-        #this function add a tree to TChain contained in self.alltrees = {}. In this dictionary each group and subgroup is separated and has it's proper Tchain. This function create the TChain for the group specified if not exist and if already exist add the three founded to this chain. I'm not very sure of the role of the sampleid variable. Can do this for many samples (all those in filegroup) and for many trees (for the nominal and for all those in systrees)
+        
+	#this function add a tree to TChain contained in self.alltrees = {}. In this dictionary each group and subgroup is separated and has it's proper Tchain. This function create the TChain for the group specified if not exist and if already exist add the three founded to this chain. I'm not very sure of the role of the sampleid variable. Can do this for many samples (all those in filegroup) and for many trees (for the nominal and for all those in systrees)
         self.nomtree = nomtree
         self.systrees = systrees #are the names of the tree which contains the samples with shifted systematics
         syslist = []
@@ -317,6 +320,7 @@ class VariableDB:
         return self.categorydb[name]
 
 class SubProcess:
+    
     histcache = {}
     numcache = {}
 
@@ -472,13 +476,13 @@ class SubProcess:
             #
             # Debug
             #
-            #print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
 	else:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s' % (cutstr))
             #
             # Debug
             #
-            #print '\nOnly baseweight - ROOT plotting string: %s * (%s)'% (self.baseweight, cutstr)
+            print '\nOnly baseweight - ROOT plotting string: %s * (%s)'% (self.baseweight, cutstr)
 
         h = self.histcache[cachename].Clone()
         h.SetName(self.histcache[cachename].GetName()+str(weight))
@@ -487,8 +491,10 @@ class SubProcess:
         return h
 
 class OperatorProcess(SubProcess):
+    
     def __init__(self, left, operator, right):
-        leftname = left.name
+        
+	leftname = left.name
         if type(right) is int:
             right = float(right)
         if type(right) is float:
@@ -625,7 +631,9 @@ class ScaleFactors(SubProcess):
         return self.number(cut, weight, eventweight, category)
 
 class Process:
+    
     name = 'Default'
+      
     def __init__(self, inputs, vardb, parent):
         self.inputs = inputs
         self.vardb = vardb
@@ -651,12 +659,14 @@ class Process:
 	        eventweight = '1.0'
             if tree.GetTitle().startswith('$ISMC$') or tree.GetTitle().startswith('$ISEMBED$'):
                 weight *= self.parent.luminosity
+		
             s = SubProcess(tree=tree, basecut=basecut, baseweight=weight, eventweight=eventweight)
             if sp: sp = sp + s
             else: sp = s
         return sp
 
 class Background:
+   
     backgrounds = []
     signals = []
     observed = []
@@ -850,15 +860,17 @@ class Background:
         return hbkg, hobs, hsig
 
     def sumhist(self, var, processes = [], cut = None, eventweight = None, category = None, systematics = None, systematicsdirection = None, scale = 1.0, overflowbins = False, options={}):
-        tSum = None
+        
+	tSum = None
         histlist = []
+	
         for name in processes:
             process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection, options=options) * scale
             if eventweight:
-		if ( name == "FakesMM" ) or ( name == "FakesABCD" ) or ( name == "ChargeFlip" ) or ( name == "ChargeFlipForRates" ):
-		  process = process.subprocess(eventweight=1.0) # this call will update the event weight
+		if ("$ISDATA$") in process.name:
+		  process = process.subprocess(eventweight=1.0) 
 		else:
-		  process = process.subprocess(eventweight=eventweight) # this call will update the event weight
+		  process = process.subprocess(eventweight=eventweight) 
 
             h = process.hist(var, cut=cut, category=category)
             if overflowbins:
@@ -888,7 +900,8 @@ class Background:
         return tSum, histlist
 
     def plot(self, var, cut = None, eventweight=None, category = None, signal = '125', signalfactor = 1., systematics = None, systematicsdirection = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps'], options = {}, normalise = False, log=False, logx=False):
-        if not wait:
+        
+	if not wait:
             gROOT.SetBatch(True)
         cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
         if type(var) is str:
@@ -897,15 +910,12 @@ class Background:
         c = TCanvas("c1","Temp",50,50,600,600)
         legs = []
 
-        data_weight = 1.0
-        if not 'Observed' in self.observed :
-           data_weight = eventweight
-
-        obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=data_weight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
-        if obs:
+        obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
+	
+	if obs:
             process = obslist[0][1]
             datagr = None
-	    if not 'Observed' in self.observed :
+	    if not ( ("$ISDATA$") in process.name ):
 		#
 		# the two lines below are actually equivalent...
 		#
@@ -934,21 +944,21 @@ class Background:
 
         bkg = {}
 	if bkglist:
-		stack = THStack('Stack'+tSum.GetName(), self.__class__.__name__+';'+tSum.GetXaxis().GetTitle()+';'+tSum.GetYaxis().GetTitle())
-		for h, process in reversed(bkglist):
-		    h.Draw()
-		    h.SetLineWidth(self.style.get('BackgroundLineWidth', 3))
-		    h.SetLineStyle(self.style.get('BackgroundLineStyle', 1))
-		    pname = process.__class__.__name__
-		    h.SetLineColor(self.style.get(pname+'LineColour', self.style.get('BackgroundLineColour', 1)))
-		    h.SetFillColor(self.style.get(pname+'FillColour', process.colour))
-		    h.SetFillStyle(self.style.get(pname+'FillStyle', 1001))
-		    stack.Add(h)
-		    legs.append([h, process.latexname, 'f'])
-		    bkg[pname] = h
+	    stack = THStack('Stack'+tSum.GetName(), self.__class__.__name__+';'+tSum.GetXaxis().GetTitle()+';'+tSum.GetYaxis().GetTitle())
+	    for h, process in reversed(bkglist):
+	    	h.Draw()
+	    	h.SetLineWidth(self.style.get('BackgroundLineWidth', 3))
+	    	h.SetLineStyle(self.style.get('BackgroundLineStyle', 1))
+	    	pname = process.__class__.__name__
+	    	h.SetLineColor(self.style.get(pname+'LineColour', self.style.get('BackgroundLineColour', 1)))
+	    	h.SetFillColor(self.style.get(pname+'FillColour', process.colour))
+	    	h.SetFillStyle(self.style.get(pname+'FillStyle', 1001))
+	    	stack.Add(h)
+	    	legs.append([h, process.latexname, 'f'])
+	    	bkg[pname] = h
 	else:
-		stack = None
-		print "No Stack"
+	    stack = None
+	    print "No Stack"
 
         if bkg:
             tSum.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
@@ -959,37 +969,30 @@ class Background:
         else:
             print "No background processes are plotted!"
 
-	# ----------------------------------------------------------------------------
-	# temp
-	#
-        #sig, siglist = self.sumhist(var, processes=self.signals, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, scale=signalfactor, options=options)
-        #if sig:
-        #    process = siglist[0][1]
-	#    pname = process.__class__.__name__
-        #    sig.SetMarkerSize(1.2)
-        #    sig.SetLineColor(self.style.get(pname+'LineColour', kBlue))
-	#    sig.SetMarkerColor(self.style.get(pname+'MarkerColour', kBlue))
-        #    sig.SetMarkerStyle(self.style.get(pname+'MarkerStyle', 22))
-        #    # temp
-	#    #
-        #   legs.append([sig, process.latexname, "F"])
-	# ----------------------------------------------------------------------------
-
 	options['hmass'] = signal
         sig, siglist = self.sumhist(var, processes=self.signals, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, scale=signalfactor, options=options)
         
         if sig:
-            process = siglist[0][1]
-            sig.SetFillColor(self.style.get('SignalFillColour', 10))
-            sig.SetFillStyle(self.style.get('SignalFillStyle', 1001))
-            sig.SetLineWidth(self.style.get('SignalLineWidth', 3))
-            sig.SetLineColor(self.style.get('SignalLineColour', 2))
-            sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
-            stack.Add(sig)
-            h_name = process.latexname+signal
-            if signalfactor != 1.:
-        	h_name += " [#times"+str(int(signalfactor))+']'
-            legs.append([sig, h_name, 'f'])
+	    if ( "FakesClosureABCD" in self.signals ):
+            	process = siglist[0][1]
+	    	pname = process.__class__.__name__
+            	sig.SetMarkerSize(1.2)
+            	sig.SetLineColor(self.style.get(pname+'LineColour', kBlue))
+	    	sig.SetMarkerColor(self.style.get(pname+'MarkerColour', kBlue))
+            	sig.SetMarkerStyle(self.style.get(pname+'MarkerStyle', 22))
+                legs.append([sig, process.latexname, "F"])
+	    else:
+            	process = siglist[0][1]
+            	sig.SetFillColor(self.style.get('SignalFillColour', 10))
+            	sig.SetFillStyle(self.style.get('SignalFillStyle', 1001))
+            	sig.SetLineWidth(self.style.get('SignalLineWidth', 3))
+            	sig.SetLineColor(self.style.get('SignalLineColour', 2))
+            	sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
+            	stack.Add(sig)
+                h_name = process.latexname+signal
+                if signalfactor != 1.:
+        	   h_name += " [#times"+str(int(signalfactor))+']'
+                legs.append([sig, h_name, 'f'])
 
 
         if showratio and obs and bkg:
@@ -1088,65 +1091,63 @@ class Background:
 
         # trick to rescale:
 	if stack:
-		ymax_new = stack.GetMaximum()
-		if obs and obs.GetMaximum() > ymax_new:
-		    ymax_new = obs.GetMaximum()
-		if stack and stack.GetMaximum() > ymax_new:
-		    ymax_new = stack.GetMaximum()
-		if showratio and bkg and obs:
-		    stack.SetMaximum(ymax_new*(2.-lower+0.075))
-		    if log is True or (var.logaxis and log is None):
-			stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
-		else:
-		    stack.SetMaximum(ymax_new*(2.-lower+0.15))
-		stack.Draw('HIST')
-		#if ymax:
-		#    dummy = stack.GetHists().At(0)
-		#    dummy.GetYaxis().SetRangeUser(ymin, ymax)
-		#    dummy.GetXaxis().SetTitle(xTitle)
-		#    dummy.GetYaxis().SetTitle(yTitle)
-		#    dummy.GetYaxis().SetTitleOffset(1.7)
-		#    dummy.Draw()
-		#    stack.Draw("HIST,same")
-		#stack.GetHistogram().GetXaxis().SetNdivisions(8)
-		if showratio and obs and bkg:
-		    stack.GetHistogram().GetXaxis().SetLabelOffset(999)
-		    stack.GetHistogram().GetXaxis().SetLabelSize(0)
-		    stack.GetHistogram().GetYaxis().SetTitleSize(stack.GetHistogram().GetYaxis().GetTitleSize() * 1.2)
-		    stack.GetHistogram().GetYaxis().SetTitleOffset(1.20)
-		    #ratiomc.GetXaxis().SetNdivisions(8)
-		    ratiomc.GetXaxis().SetTitleSize(ratiomc.GetXaxis().GetTitleSize() * 1.2)
-		    ratiomc.GetYaxis().SetTitleSize(ratiomc.GetYaxis().GetTitleSize() * 1.2)
-		else:
-		    stack.GetHistogram().GetXaxis().SetLabelSize(stack.GetHistogram().GetXaxis().GetLabelSize() * 0.75)
-		    stack.GetHistogram().GetYaxis().SetLabelSize(stack.GetHistogram().GetYaxis().GetLabelSize() * 0.75)
-		    if var.typeval is TH1I:
-			stack.GetHistogram().GetXaxis().SetNdivisions(tSum.GetNbinsX())
-			stack.GetHistogram().GetXaxis().CenterLabels(True)
-
+	   ymax_new = stack.GetMaximum()
+	   if obs and obs.GetMaximum() > ymax_new:
+	       ymax_new = obs.GetMaximum()
+	   if stack and stack.GetMaximum() > ymax_new:
+	       ymax_new = stack.GetMaximum()
+	   if showratio and bkg and obs:
+	       stack.SetMaximum(ymax_new*(2.-lower+0.075))
+	       if log is True or (var.logaxis and log is None):
+	   	   stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
+	   else:
+	       stack.SetMaximum(ymax_new*(2.-lower+0.15))
+	   stack.Draw('HIST')
+	   #if ymax:
+	   #	dummy = stack.GetHists().At(0)
+	   #	dummy.GetYaxis().SetRangeUser(ymin, ymax)
+	   #	dummy.GetXaxis().SetTitle(xTitle)
+	   #	dummy.GetYaxis().SetTitle(yTitle)
+	   #	dummy.GetYaxis().SetTitleOffset(1.7)
+	   #	dummy.Draw()
+	   #	stack.Draw("HIST,same")
+	   #stack.GetHistogram().GetXaxis().SetNdivisions(8)
+	   if showratio and obs and bkg:
+	       stack.GetHistogram().GetXaxis().SetLabelOffset(999)
+	       stack.GetHistogram().GetXaxis().SetLabelSize(0)
+	       stack.GetHistogram().GetYaxis().SetTitleSize(stack.GetHistogram().GetYaxis().GetTitleSize() * 1.2)
+	       stack.GetHistogram().GetYaxis().SetTitleOffset(1.20)
+	       #ratiomc.GetXaxis().SetNdivisions(8)
+	       ratiomc.GetXaxis().SetTitleSize(ratiomc.GetXaxis().GetTitleSize() * 1.2)
+	       ratiomc.GetYaxis().SetTitleSize(ratiomc.GetYaxis().GetTitleSize() * 1.2)
+	   else:
+	       stack.GetHistogram().GetXaxis().SetLabelSize(stack.GetHistogram().GetXaxis().GetLabelSize() * 0.75)
+	       stack.GetHistogram().GetYaxis().SetLabelSize(stack.GetHistogram().GetYaxis().GetLabelSize() * 0.75)
+	       if var.typeval is TH1I:
+	   	   stack.GetHistogram().GetXaxis().SetNdivisions(tSum.GetNbinsX())
+	   	   stack.GetHistogram().GetXaxis().CenterLabels(True)
 
         if bkg:
             tSum.Draw("E2 SAME")
 
-        # temp
-	#
-	#if sig:
-	#    sig.Draw("PE SAME")
+	if ( "FakesClosureABCD" in self.signals ):
+	   if sig:
+	      sig.Draw("PE SAME")
 
         if obs:
             if stack:
-                   datagr.Draw("PE SAME")
-                   #obs.Draw("SAME")
+               datagr.Draw("PE SAME")
+               #obs.Draw("SAME")
             else:
-		   if logx:
-		       gPad.SetLogx()
-		   if log:
-		       gPad.SetLogy()
-                   datagr.GetXaxis().SetTitle(var.latexname)
-		   binwidth = (var.maxval - var.minval) / var.bins
-		   ytitle = 'Events / %.2g GeV' % (binwidth)
-		   datagr.GetYaxis().SetTitle(ytitle)
-                   datagr.Draw('AP')
+	       if logx:
+	           gPad.SetLogx()
+	       if log:
+	           gPad.SetLogy()
+               datagr.GetXaxis().SetTitle(var.latexname)
+	       binwidth = (var.maxval - var.minval) / var.bins
+	       ytitle = 'Events / %.2g GeV' % (binwidth)
+	       datagr.GetYaxis().SetTitle(ytitle)
+               datagr.Draw('AP')
 
         lower, labels = self.labels(legs, showratio and obs and bkg)
         #gPad.RedrawAxis()
@@ -1162,7 +1163,8 @@ class Background:
         return bkg, tSum, obs, sig, stack
 
     def plotSystematics(self, systematics, var = 'MMC', cut = None, eventweight=None, category = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps']):
-        if not wait:
+        
+	if not wait:
             gROOT.SetBatch(True)
         cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
         if type(var) is str:
@@ -1172,18 +1174,26 @@ class Background:
         up, uplist      = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection='UP', overflowbins=overflowbins)
         down, downlist  = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection='DOWN', overflowbins=overflowbins)
         obs, obslist    = self.sumhist(var, processes=self.observed,      cut=cut, eventweight=1.0,         category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
+        signalweight = eventweight
+	if ( "FakesClosureABCD" in self.signals ):
+	   signalweight = 1.0
+	sig, siglist    = self.sumhist(var, processes=self.signals,       cut=cut, eventweight=signalweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
 
-        # temp
-	#
-        sig, siglist    = self.sumhist(var, processes=self.signals,      cut=cut, eventweight=1.0,          category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
-        #
-        if sig:
-            process = siglist[0][1]
-	    pname = process.__class__.__name__
-            sig.SetMarkerSize(1.2)
-            sig.SetLineColor(self.style.get(pname+'LineColour', kBlue))
-	    sig.SetMarkerColor(self.style.get(pname+'MarkerColour', kBlue))
-            sig.SetMarkerStyle(self.style.get(pname+'MarkerStyle', 22))
+        legs = [
+            [nom, 'Nominal', "F"],
+            [up, systematics.name + ' + 1#sigma', "F"],
+            [down, systematics.name + ' - 1#sigma', "F"],
+        ]
+
+	if ( "FakesClosureABCD" in self.signals ):
+           if sig:
+              process = siglist[0][1]
+	      pname = process.__class__.__name__
+              sig.SetMarkerSize(1.2)
+              sig.SetLineColor(self.style.get(pname+'LineColour', kBlue))
+	      sig.SetMarkerColor(self.style.get(pname+'MarkerColour', kBlue))
+              sig.SetMarkerStyle(self.style.get(pname+'MarkerStyle', 22))
+              legs.append([sig, process.latexname, "F"])
 
         bkguplist = {}
         bkgdownlist = {}
@@ -1206,7 +1216,7 @@ class Background:
 
         if obs:
             process = obslist[0][1]
-	    if not 'Observed' in self.observed :
+	    if not ( ("$ISDATA$") in process.name ):
 		#
 		# the two lines below are actually equivalent...
 		#
@@ -1220,6 +1230,7 @@ class Background:
             datagr.SetMarkerStyle(20)
             datagr.SetMarkerSize(1.2)
             datagr.SetMarkerColor(1)
+            legs.insert(0, (datagr, process.latexname,"P"))
 
 
         c = TCanvas("c1","Temp",50,50,600,600)
@@ -1333,20 +1344,6 @@ class Background:
             refl.Draw("SAME")
             pad1.cd()
 
-        legs = [
-            [nom, 'Nominal', "F"],
-            [up, systematics.name + ' + 1#sigma', "F"],
-            [down, systematics.name + ' - 1#sigma', "F"],
-        ]
-	if not 'Observed' in self.observed :
-             legs.insert(0, (datagr, process.latexname,"P"))
-        else :
-             legs.insert(0, (datagr,'Observed',"P"))
-        # temp
-	#
-        if sig:
-             legs.insert(0, (sig, 'ABCD t#bar{t}', "P"))
-
 
         lower, labels = self.labels(legs, showratio)
 
@@ -1392,10 +1389,9 @@ class Background:
 	nom_clone.Draw("E2 SAME")
         datagr.Draw("PE SAME")
 
-	# temp
-	#
-	if sig:
-	  sig.Draw("PE SAME")
+	if ( "FakesClosureABCD" in self.signals ):
+	   if sig:
+	      sig.Draw("PE SAME")
 
         lower, labels = self.labels(legs, showratio)
 
