@@ -49,6 +49,8 @@ class HTopMultilepTree : public HelpTreeBase
     float               m_mT_lep0MET;
     float               m_mT_lep1MET;
 
+    float               m_HT;
+    
     int  		m_is_T_T;
     int  		m_is_T_AntiT;
     int  		m_is_AntiT_T;
