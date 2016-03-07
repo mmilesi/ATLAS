@@ -38,6 +38,8 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("mT_lep0MET",        &m_mT_lep0MET, "mT_lep0MET/F");
   m_tree->Branch("mT_lep1MET",        &m_mT_lep1MET, "mT_lep1MET/F");
 
+  m_tree->Branch("HT",                &m_HT, "m_HT/F");
+
   m_tree->Branch("is_T_T",            &m_is_T_T, "is_T_T/I");
   m_tree->Branch("is_T_AntiT",        &m_is_T_AntiT, "is_T_AntiT/I");
   m_tree->Branch("is_AntiT_T",        &m_is_AntiT_T, "is_AntiT_T/I");
@@ -695,6 +697,7 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
   m_isOSPairSF02   	 =  ( eventInfo->isAvailable< char >( "isOSPairSF02" ) )	        ?  eventInfo->auxdata< char >( "isOSPairSF02" )	   	         :   -1;
   m_mT_lep0MET           =  ( eventInfo->isAvailable< float >( "mT_lep0MET" ) ) 	        ?  ( eventInfo->auxdata< float >( "mT_lep0MET" ) / m_units )	 : -1.0;
   m_mT_lep1MET           =  ( eventInfo->isAvailable< float >( "mT_lep1MET" ) ) 	        ?  ( eventInfo->auxdata< float >( "mT_lep1MET" ) / m_units )	 : -1.0;
+  m_HT                   =  ( eventInfo->isAvailable< float >( "HT" ) ) 	                ?  ( eventInfo->auxdata< float >( "HT" ) / m_units )	         : -1.0;
 
   m_is_T_T   	         =  ( eventInfo->isAvailable< char >( "is_T_T" ) )		        ?  eventInfo->auxdata< char >( "is_T_T" )		   	 :   -1;
   m_is_T_AntiT   	 =  ( eventInfo->isAvailable< char >( "is_T_AntiT" ) )		        ?  eventInfo->auxdata< char >( "is_T_AntiT" )		   	 :   -1;

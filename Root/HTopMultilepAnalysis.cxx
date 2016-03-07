@@ -1,13 +1,3 @@
-/************************************************
- *
- * The actual HTopMultilepAnalysis algorithm.
- * Here the user categorises events, and performs
- * the background estimation.
- *
- * M. Milesi (marco.milesi@cern.ch)
- *
- ** *********************************************/
-
 // EL include(s):
 #include <EventLoop/Job.h>
 #include <EventLoop/Worker.h>
@@ -292,7 +282,8 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalTauJets,  m_inContainerName_Taus, m_event, m_store, m_verbose), "");
   ConstDataVector<xAOD::IParticleContainer>* leptonsCDV(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(leptonsCDV, m_inContainerName_Leptons, m_event, m_store, m_verbose),"");
-  // Make a sorted version of the lepton container
+  
+  // Make a sorted version of the containers
   // (this can be on the stack! Will not be pushed to the store...)
   //
   const xAOD::IParticleContainer leptonsSorted = HelperFunctions::sort_container_pt( leptonsCDV->asDataVector() );
@@ -379,16 +370,29 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   static SG::AuxElement::Decorator< float >  ystarDecor("ystar");
 
   // now decorate event!
-  ystarDecor(*eventInfo) = ( signalJets->size() > 1 ) ? ( signalJets->at(0)->rapidity() - signalJets->at(1)->rapidity() ) / 2.0 : 999.0;
+  ystarDecor( *eventInfo ) = ( signalJets->size() > 1 ) ? ( signalJets->at(0)->rapidity() - signalJets->at(1)->rapidity() ) / 2.0 : 999.0;
 
   // decorate taus
 
   static SG::AuxElement::Decorator< char > isTauBDTTightDecor("isTauBDTTight");
   for ( auto tau_itr : *signalTauJets ) {
     isTauBDTTightDecor( *tau_itr ) = 0;
-    if ( m_TauSelTool->accept(*tau_itr) ) { isTauBDTTightDecor( *tau_itr ) = 1; }
+    if ( m_TauSelTool->accept( *tau_itr ) ) { isTauBDTTightDecor( *tau_itr ) = 1; }
   }
 
+  static SG::AuxElement::Decorator< float >  HTDecor("HT");
+  
+  // HT: scalar sum of the pT of all particles in the event
+  //
+  
+  ConstDataVector<xAOD::IParticleContainer> allObjectCont(SG::VIEW_ELEMENTS);
+  
+  allObjectCont.insert( allObjectCont.end(), signalJets->begin(), signalJets->end() );
+  allObjectCont.insert( allObjectCont.end(), signalTauJets->begin(), signalTauJets->end() );
+  allObjectCont.insert( allObjectCont.end(), leptonsCDV->begin(), leptonsCDV->end() );
+  
+  HTDecor( *eventInfo ) = this->computeHT( allObjectCont );
+  
   //-------------------------------------------
   // definition of "Tight" and "Medium" leptons
   //-------------------------------------------

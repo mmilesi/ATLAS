@@ -1,3 +1,10 @@
+/**
+ + * @file   HTopMultilepAnalysis.h
+ + * @Author Marco Milesi <marco.milesi@cern.ch>
+ + * @brief The actual analysis algorithm. Here the user categorises events, and performs the background estimation.
+ + *
+ + */
+
 #ifndef HTopMultilepAnalysis_HTopMultilepAnalysis_H
 #define HTopMultilepAnalysis_HTopMultilepAnalysis_H
 
@@ -9,6 +16,7 @@
 #include "xAODRootAccess/Init.h"
 #include "xAODRootAccess/TEvent.h"
 #include "xAODRootAccess/TStore.h"
+#include "AthContainers/ConstDataVector.h"
 
 // ROOT include(s):
 #include "TH1D.h"
@@ -134,6 +142,12 @@ public:
 
   EL::StatusCode readQMisIDRates ( const std::string& input_path );
   EL::StatusCode readFakeRates ( const std::string& input_path );
+
+  inline  float computeHT( ConstDataVector<xAOD::IParticleContainer>& objects ) {
+    float HT(0.0);
+    for ( auto obj_itr : objects ) { HT += obj_itr->pt(); }
+    return HT;
+  };
 
   virtual EL::StatusCode computeEventLepTrigSF ( const xAOD::EventInfo* eventInfo,
 					         const xAOD::IParticleContainer& leptons
