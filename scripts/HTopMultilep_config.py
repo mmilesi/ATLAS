@@ -242,7 +242,7 @@ BJetEfficiencyCorrectorDict = { "m_name"                : "bjetEffCor_BTag_MV2c2
                               }
 
 MuonEfficiencyCorrectorDict = { "m_name"                  : "muonEfficiencyCorrector",
-                                "m_debug"	          : False,
+                                "m_debug"	          : True,
                                 "m_inContainerName"       : "Muons_OR",
                                 "m_inputAlgoSystNames"    : "MuonSelector_Syst",
                                 "m_systNameReco"          : "",
@@ -266,7 +266,7 @@ MuonEfficiencyCorrectorDict = { "m_name"                  : "muonEfficiencyCorre
                               }
 
 MuonEfficiencyCorrectorTightDict = { "m_name"                  : "muonEfficiencyCorrectorTight",
-                                     "m_debug"	               : False,
+                                     "m_debug"	               : True,
                                      "m_inContainerName"       : "Muons_OR",
                                      "m_inputAlgoSystNames"    : "MuonSelector_Syst",
                                      "m_systNameReco"          : "",
@@ -302,9 +302,9 @@ ElectronEfficiencyCorrectorDict = { "m_name"                  : "electronEfficie
                                     "m_outputSystNamesIso"    : "ElectronEfficiencyCorrector_IsoSyst",
                                     "m_outputSystNamesTrig"   : "ElectronEfficiencyCorrector_TrigSyst",
                                     "m_outputSystNamesTrigMCEff"   : "ElectronEfficiencyCorrector_TrigMCEffSyst",
-                                    "m_corrFileNameReco"      : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.RecoTrk.2015.13TeV.rel20p0.25ns.v04.root",
+                                    #"m_corrFileNameReco"      : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.RecoTrk.2015.13TeV.rel20p0.25ns.v04.root",
                                     "m_corrFileNamePID"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.LooseAndBLayerLLH_d0z0.2015.13TeV.rel20p0.25ns.v04.root",
-                                    #"m_corrFileNamePID"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.LooseAndBLayerLLH.2015.13TeV.rel20p0.25ns.v04.root",
+                                    "m_corrFileNamePID"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.LooseAndBLayerLLH.2015.13TeV.rel20p0.25ns.v04.root",
                                     "m_corrFileNameIso"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.Isolation.LooseAndBLayerLLH_d0z0_v8_isolLoose.2015.13TeV.rel20p0.25ns.v04.root",
                                     "m_WorkingPointIDTrig"    : "LHLooseAndBLayer",
 				    "m_corrFileNameTrig"      : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.LooseAndBLayerLLH_d0z0_v8.2015.13TeV.rel20p0.25ns.v04.root",
@@ -326,7 +326,6 @@ ElectronEfficiencyCorrectorTightDict = { "m_name"                  : "electronEf
                                          "m_outputSystNamesTrigMCEff"   : "ElectronEfficiencyCorrector_TrigMCEffSyst",
                                          "m_corrFileNameReco"      : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.RecoTrk.2015.13TeV.rel20p0.25ns.v04.root",
                                          "m_corrFileNamePID"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.TightLLH_d0z0.2015.13TeV.rel20p0.25ns.v04.root",
-                                         #"m_corrFileNamePID"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.TightLLH.2015.13TeV.rel20p0.25ns.v04.root",
                                          "m_corrFileNameIso"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.Isolation.TightLLH_d0z0_v8_isolFixedCutTight.2015.13TeV.rel20p0.25ns.v04.root",
                                          "m_WorkingPointIDTrig"    : "LHTight",
                                          "m_corrFileNameTrig"      : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.TightLLH_d0z0_v8.2015.13TeV.rel20p0.25ns.v04.root",
@@ -342,9 +341,9 @@ HTopMultilepEventSelectorDict = { "m_name"                   : "eventSelect_skim
                 		  "m_outContainerName_lep"   : "Leptons_OR",
 		                  "m_doMinObjCut"            : True,
 		                  "m_doMaxObjCut"            : False,
-   				  "m_n_leptons_min"          : 2,
+   				  "m_n_leptons_min"          : 0,
 				  "m_BTag_WP"                : "FixedCutBEff_77",
-                                  "m_n_jets_min"             : 1,
+                                  "m_n_jets_min"             : 0,
    				  "m_n_bjets_min"            : 0,
                                 }
 
