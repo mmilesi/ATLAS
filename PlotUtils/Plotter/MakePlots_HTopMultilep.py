@@ -753,35 +753,35 @@ if doDataMCCR:
 
 if doCFChallenge:
 
-    vardb.registerCut( Cut('2Lep_JustNLep',   '( nlep == 2 )') )
-    vardb.registerCut( Cut('2Lep_pT',         '( Min$( lep_pt ) > 25e3 )') )
+    vardb.registerCut( Cut('2Lep_JustNLep',               '( nlep == 2 )') )
+    vardb.registerCut( Cut('2Lep_pT',                     '( Min$( lep_pt ) > 25e3 )') )
     vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched', '( lep_tag_isTightSelected[0] == 1 && lep_tag_isTrigMatched[0] == 1 && ( ( lep_tag_flavour[0] == 11 && lep_tag_pt[0] > 25e3 ) || ( lep_tag_flavour[0] == 13 && lep_tag_pt[0] > 21e3 ) ) )') )
-    #vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched', '( isNonTightEvent == 0 )') )
-    vardb.registerCut( Cut('2Lep_ProbeTight',      '( lep_probe_isTightSelected[0] == 1 )') )
-    vardb.registerCut( Cut('2Lep_ProbeAntiTight',  '( lep_probe_isTightSelected[0] == 0 )') )
-    vardb.registerCut( Cut('2Lep_ElTagEtaCut',     '( ( lep_tag_flavour[0] == 13 ) || ( lep_tag_flavour[0] == 11 && TMath::Abs(el_tag_caloCluster_eta[0]) < 1.37 ) )') )
+    #vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched', '( isNonTightEvent == 0 && ( ( lep_tag_flavour[0] == 11 && lep_tag_pt[0] > 25e3 ) || ( lep_tag_flavour[0] == 13 && lep_tag_pt[0] > 21e3 ) ) )') )
+    vardb.registerCut( Cut('2Lep_ProbeTight',             '( lep_probe_isTightSelected[0] == 1 )') )
+    vardb.registerCut( Cut('2Lep_ProbeAntiTight',         '( lep_probe_isTightSelected[0] == 0 )') )
+    vardb.registerCut( Cut('2Lep_ElTagEtaCut',            '( ( lep_tag_flavour[0] == 13 ) || ( lep_tag_flavour[0] == 11 && TMath::Abs(el_tag_caloCluster_eta[0]) < 1.37 ) )') )
 
     vardb.registerCut( Cut('3Lep_JustNLep',  '( nlep == 3 )') )
     vardb.registerCut( Cut('3Lep_pT',  '( lep_3lepClosestSS_pt[0] > 20e3 && lep_3lepOtherSS_pt[0] > 20e3 && lep_3lepOS_pt[0] > 10e3 )') )
 
     # CF Challenge for MM rates measurement
     #
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NLep',		   cut = vardb.getCuts(['2Lep_JustNLep'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TrigMatch',		   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TauVeto',		   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NJets',		   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NBJets',		  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NLep', 		  cut = vardb.getCuts(['2Lep_JustNLep'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TrigMatch',		  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TauVeto',		  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NJets',		  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NBJets',		  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet'])  ) )
     vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_LepTagTightTrigMatched', cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched'])  ) )
-    #
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS',  		   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_ProbeT',		   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_ProbeTight'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_ProbeAntiT',	   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_ProbeAntiTight'])  ) )
+    
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS',			  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_ProbeT',		  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_ProbeTight'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_ProbeAntiT',	  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_ProbeAntiTight'])  ) )
 
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS',  		   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_Zveto',		   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_Eta',		   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElTagEtaCut'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_ProbeT',		   cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElTagEtaCut','2Lep_ProbeTight'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_ProbeAntiT',	  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElTagEtaCut','2Lep_ProbeAntiTight'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS',			  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_Zveto',		  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_Eta',		  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElTagEtaCut'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_ProbeT',		  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElTagEtaCut','2Lep_ProbeTight'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_ProbeAntiT',	  cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElTagEtaCut','2Lep_ProbeAntiTight'])  ) )
 
     #vardb.registerCategory( MyCategory('CFChallenge_2Lep_NLep', 	cut = vardb.getCuts(['2Lep_JustNLep'])  ) )
     #vardb.registerCategory( MyCategory('CFChallenge_2Lep_TightLeptons', cut = vardb.getCuts(['2Lep_JustNLep','2Lep_TightLeptons'])  ) )
