@@ -1940,6 +1940,50 @@ class TTHBackgrounds2015(Background):
             print ("yield: ", sp_final.numberstats())
 
             return sp_final
+    
+    class FakesMC(Process):
+
+	latexname = 'Fakes (MC)'
+        colour = kCyan -9
+
+        def base(self, treename='physics', category=None, options={}):
+            inputgroup = [
+                ('tops', 'ttbar_nonallhad'),
+                ('Diboson','*'),                
+		('W+jetsBFilter', '*'),
+                ('W+jetsCFilterBVeto', '*'),
+                ('W+jetsCVetoBVeto', '*'),
+                         ]
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) / 1000.
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+            TTcut=''
+            weight=1.0
+
+            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
+                TTcut='TT'
+            if TTcut != '':
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+
+	    # plot only events where at least one lepton is non-prompt (+ch-flip veto). Remove any req. where both lep must be prompt
+	    #
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_NonPromptEvent'))
+
+	    sp = sp.subprocess(cut=truthcut)
+
+	    print("\nFakesMC sp: {0}".format(sp.basecut.cutnamelist))
+
+            return sp
 
     '''
     class Prompt2(Process):
