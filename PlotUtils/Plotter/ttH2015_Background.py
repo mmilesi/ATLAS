@@ -1098,11 +1098,10 @@ class TTHBackgrounds2015(Background):
             sp = self.base(treename, category, options)
 
 	    TTcut  = ''
-            weight = 1.0
+	    weight = 'QMisIDWeight[0]'
 
             if ( self.parent.channel=='TwoLepSS' ) or ( self.parent.channel=='ThreeLep' ):
                 TTcut  = 'TT'
-		weight = 'QMisIDWeight[0]'
 
 	    # Remove any truth cut
 	    #
