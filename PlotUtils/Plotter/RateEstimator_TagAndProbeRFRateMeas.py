@@ -294,7 +294,8 @@ for iLep in list_lep:
           g_efficiency.Divide(hist_pass,hist_tot,"cl=0.683 b(1,1) mode")
           graphs[histname + "_Efficiency_" + append_str + "_graph"] = g_efficiency
 
-          print "\t\t --> ratio hist name: ", histname + "_Rate_" + append_str
+          print "\t\t --> RATE hist name: ", histname + "_Rate_" + append_str
+          print "\t\t --> EFFICIENCY hist name: ", histname + "_Efficiency_" + append_str
 
 if args.doAvg:
    channel_str += "Avg"
