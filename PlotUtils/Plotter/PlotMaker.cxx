@@ -641,9 +641,12 @@ void execute() {
 void execute_DiffSamples() {
   
   vector<pair<string,string> > vec;
-  vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","Baseline"));
-  vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV/","No Isolation"));
-  vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIP_MCQMisID_Mllgt40GeV/","Relaxed IP"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","Baseline"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV/","No Isolation"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIP_MCQMisID_Mllgt40GeV/","Relaxed IP"));
+  
+  vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","OF+SF - |#eta_{e}| < 1.37 on tag"));
+  vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","OF+SF - |#eta_{e}| < 1.37 all"));
   
   PlotRateEff_DiffSamples(vec);
 

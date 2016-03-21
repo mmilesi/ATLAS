@@ -20,7 +20,7 @@
 bool g_debug(false);
 bool g_verbose(false);
 
-std::map< std::string, TH2D* > g_QMisID_hist_map;  
+std::map< std::string, TH2D* > g_QMisID_hist_map;
 
 /* ***********************************
 /
@@ -41,15 +41,17 @@ T* get_object( TFile& file, const std::string& name ) {
 /
 ********************************************** */
 
-void getRates(const std::string& input_path)
+void getRates(std::string& input_path, std::string& filename_T, std::string& filename_AntiT)
 {
-  
-  std::string path_AntiT = input_path + "QMisIDRates_Data_Loose.root";
-  std::string path_T     = input_path + "QMisIDRates_Data_nominal_v4.root";
+
+  if ( input_path.back() != '/' ) { input_path += "/"; }
+
+  std::string path_AntiT = input_path + filename_AntiT;
+  std::string path_T     = input_path + filename_T;
 
   TFile *file_AntiT = TFile::Open(path_AntiT.c_str());
   TFile *file_T     = TFile::Open(path_T.c_str());
-  
+
   if ( !file_AntiT->IsOpen() ) {
     SysError("getRates()", "Failed to open ROOT file from path: %s . Aborting", path_AntiT.c_str() );
     exit(-1);
@@ -57,8 +59,8 @@ void getRates(const std::string& input_path)
   if ( !file_T->IsOpen() ) {
     SysError("getRates()", "Failed to open ROOT file from path: %s . Aborting", path_T.c_str() );
     exit(-1);
-  }  
-  
+  }
+
   Info("readQMisIDRates()", "Successfully opened ROOT files with QMisID rates from path:\n AntiT --> %s \n T --> %s", path_AntiT.c_str(), path_T.c_str() );
 
   TH2D *hist_QMisID_AntiT = get_object<TH2D>( *file_AntiT, "Rates" );
@@ -68,7 +70,7 @@ void getRates(const std::string& input_path)
   //
   g_QMisID_hist_map["AntiT"] = hist_QMisID_AntiT;
   g_QMisID_hist_map["T"]     = hist_QMisID_T;
- 
+
 }
 
 
@@ -95,11 +97,11 @@ void readRatesAndError( TH2D* rate_map, TH1D* proj_X, TH1D* proj_Y,
     this_up_edge  = proj_X->GetXaxis()->GetBinLowEdge(xbin+1);
 
     if ( fabs(x) >= this_low_edge && fabs(x) < this_up_edge ) {
-    
+
       if ( g_debug ) { Info("readRatesAndError()","\t\t x = %.2f found in %i-th bin", x, xbin ); }
-      
+
       xbin_nr = proj_X->GetBin(xbin);
-     
+
       break;
     }
 
@@ -110,9 +112,9 @@ void readRatesAndError( TH2D* rate_map, TH1D* proj_X, TH1D* proj_Y,
     this_up_edge  = proj_Y->GetXaxis()->GetBinLowEdge(ybin+1);
 
     if ( y >= this_low_edge && y < this_up_edge ) {
-      
+
       if ( g_debug ) { Info("readRatesAndError()","\t\t y = %.2f found in %i-th bin", y, ybin ); }
-      
+
       ybin_nr = proj_Y->GetBin(ybin);
 
       break;
@@ -143,7 +145,7 @@ void readRatesAndError( TH2D* rate_map, TH1D* proj_X, TH1D* proj_Y,
 /
 *********************************************************** */
 
-void QMisIDWeightCalculator (std::vector<float>* weights, 
+void QMisIDWeightCalculator (std::vector<float>* weights,
                              const float& elA_eta, const float& elA_pt, const bool& elA_isT,
                              const float& elB_eta, const float& elB_pt, const bool& elB_isT )
 {
@@ -151,7 +153,7 @@ void QMisIDWeightCalculator (std::vector<float>* weights,
   bool elA = ( fabs(elA_eta) < 2.5 && elA_pt >= 0.0 );
   bool elB = ( fabs(elB_eta) < 2.5 && elB_pt >= 0.0 );
 
-  // If there are no electrons, return 
+  // If there are no electrons, return
   //
   if ( !elA && !elB ) { return; }
 
@@ -161,7 +163,7 @@ void QMisIDWeightCalculator (std::vector<float>* weights,
   //
   TH2D* twoD_rates_T     = ( g_QMisID_hist_map.find("T")->second );
   TH2D* twoD_rates_AntiT = ( g_QMisID_hist_map.find("AntiT")->second );
-  
+
   // Make X and Y projections of the twoD histogram with the rates
   //
   TH1D* proj_eta_T     = twoD_rates_T->ProjectionX("proj_eta_T");
@@ -187,9 +189,9 @@ void QMisIDWeightCalculator (std::vector<float>* weights,
     }
   }
 
-  if ( g_debug ) { 
-    Info("QMisIDWeightCalculator()","\t rA = %f ( up = %f, dn = %f )", rA, rA_up, rA_dn ); 
-    Info("QMisIDWeightCalculator()","\t rB = %f ( up = %f, dn = %f )", rB, rB_up, rB_dn ); 
+  if ( g_debug ) {
+    Info("QMisIDWeightCalculator()","\t rA = %f ( up = %f, dn = %f )", rA, rA_up, rA_dn );
+    Info("QMisIDWeightCalculator()","\t rB = %f ( up = %f, dn = %f )", rB, rB_up, rB_dn );
   }
 
   // Finally, store the event weight + variations
@@ -208,7 +210,7 @@ void QMisIDWeightCalculator (std::vector<float>* weights,
 
 void modifyttree_QMisID(std::string filename = "input.root", std::string  NENTRIES = "ALL", std::string treename= "physics", std::string newfilename = "output.root")
 {
-  
+
   // This script loads a tree, clones it, removes a branch and substitutes it with another.
   // The branch can also have the same name and in this way you can change for example the type of the variable or the content.
 
@@ -288,9 +290,13 @@ void modifyttree_QMisID(std::string filename = "input.root", std::string  NENTRI
   // read QMisID rates from ROOT histograms
   //
   std::string path("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/");
+  //std::string filename_AntiT("QMisIDRates_Data_Loose.root");
+  //std::string filename_T("QMisIDRates_Data_nominal_v4.root");
+  std::string filename_AntiT("QMisIDRates_TAntiT_ICHEPBaseline.root");
+  std::string filename_T("QMisIDRates_TT_ICHEPBaseline.root");
 
   Info("modifytree()","Reading QMisID rates from ROOT file(s)..");
-  getRates(path);
+  getRates(path,filename_T,filename_AntiT);
 
   // Loop over entries in TTree
   //
@@ -348,8 +354,8 @@ void modifyttree_QMisID(std::string filename = "input.root", std::string  NENTRI
       elB_eta = el_eta_old->at(1);
       elB_pt  = el_pt_old->at(1) / 1e3;
       elB_isT = el_isT_old->at(1);
-    } 
-    
+    }
+
     QMisIDWeightCalculator( QMisIDWeight_new, elA_eta, elA_pt, elA_isT, elB_eta, elB_pt, elB_isT );
 
     if ( g_debug ) {

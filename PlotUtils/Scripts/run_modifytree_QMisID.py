@@ -14,11 +14,17 @@ from ROOT import gROOT
 
 gROOT.SetBatch(True)
 
-#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_QMisID_WEIGHTED/'
+#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v027/Merged_Melb15_ttH_027_DxAOD_DATA_MM/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v027/Merged_Melb15_ttH_027_DxAOD_DATA_QMisID_WEIGHTED/'
+#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v028/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v028/Merged_Melb15_ttH_028_DxAOD_DATA_QMisID_WEIGHTED/'
 
-oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
-newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_QMisID_WEIGHTED/'
+oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA/'
+newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
+
+# Set only if QMisID weight branch does not exist yet
+#
+addQMisID = False
 
 treename = 'physics'
 nentries = 'ALL' #ALL
@@ -26,8 +32,10 @@ nentries = 'ALL' #ALL
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-gROOT.LoadMacro("modifyttree_AddQMisID.cxx+g")
-#gROOT.LoadMacro("modifyttree_QMisID.cxx+g")
+if addQMisID:
+  gROOT.LoadMacro("modifyttree_AddQMisID.cxx+g")
+else: 
+  gROOT.LoadMacro("modifyttree_QMisID.cxx+g")
 
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
@@ -42,8 +50,10 @@ for group in group_list:
         infile=oldpath+group+'/'+sample
         outfile=newpath+group+'/'+sample
 
-        command_line = 'modifyttree_AddQMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
-        #command_line = 'modifyttree_QMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+        if addQMisID:
+	   command_line = 'modifyttree_AddQMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+        else:  
+	   command_line = 'modifyttree_QMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
 
         print command_line
         gROOT.ProcessLine(command_line);

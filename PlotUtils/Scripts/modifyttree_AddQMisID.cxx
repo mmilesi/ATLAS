@@ -41,11 +41,13 @@ T* get_object( TFile& file, const std::string& name ) {
 /
 ********************************************** */
 
-void getRates(const std::string& input_path)
+void getRates(std::string& input_path, std::string& filename_T, std::string& filename_AntiT)
 {
   
-  std::string path_AntiT = input_path + "QMisIDRates_Data_Loose.root";
-  std::string path_T     = input_path + "QMisIDRates_Data_nominal_v4.root";
+  if ( input_path.back() != '/' ) { input_path += "/"; }
+
+  std::string path_AntiT = input_path + filename_AntiT;
+  std::string path_T     = input_path + filename_T;
 
   TFile *file_AntiT = TFile::Open(path_AntiT.c_str());
   TFile *file_T     = TFile::Open(path_T.c_str());
@@ -276,9 +278,11 @@ void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NEN
   // read QMisID rates from ROOT histograms
   //
   std::string path("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/");
+  std::string filename_AntiT("QMisIDRates_Data_Loose.root");
+  std::string filename_T("QMisIDRates_Data_nominal_v4.root");
 
   Info("modifytree()","Reading QMisID rates from ROOT file(s)..");
-  getRates(path);
+  getRates(path,filename_T,filename_AntiT);
 
   // Loop over entries in TTree
   //
