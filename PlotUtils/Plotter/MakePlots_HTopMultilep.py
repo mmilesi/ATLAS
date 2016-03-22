@@ -438,7 +438,7 @@ if doSR or doLowNJetCR:
         vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 3, minval = 1.5, maxval = 4.5) )
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = -0.5, maxval = 3.5) )
     #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 11, minval = 20.0, maxval = 240.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 9, minval = 20.0, maxval = 200.0,) )
     #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '|#eta^{lead lep}|', ntuplename = 'TMath::Abs(lep_eta[0])', bins = 8, minval = 0.0, maxval = 2.6) )
     #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
 
@@ -1169,8 +1169,11 @@ if ( doSR or doLowNJetCR ):
             # ---> all the MC backgrounds use a truth req. of only prompt leptons in the event (and ch-flip veto) to avoid double counting with
             #      data-driven charge flip and fakes estimate
 
-	    plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
-    	    ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
+	    #plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
+    	    #ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
+	    
+	    plotbackgrounds	= ['Prompt','FakesMM']
+    	    ttH2015.backgrounds = ['Prompt','FakesMM']
 
 	    if args.useMCChFlip:
 	      plotbackgrounds.append('ChargeFlipMC')
@@ -1619,7 +1622,7 @@ for category in vardb.categorylist:
             histograms[samp].SetNameTitle(histname[samp],'')
             histograms[samp].SetLineColor(histcolour[samp])
 
-        if ( 'Mll01' in var.shortname ) or ( var.shortname == 'NJets' ):
+        if ( 'Mll01' in var.shortname ) or ( 'NJets' in  var.shortname ):
 	    print (" ")
             print ("\t\tCategory: {0} - Variable: {1}\n".format( category.name, var.shortname ))
 	    print ("\t\tIntegral:\n")
@@ -1632,7 +1635,7 @@ for category in vardb.categorylist:
                 value = histograms[samp].IntegralAndError(1,histograms[samp].GetNbinsX(),err)
                 print ("\t\t{0}: {1} +- {2}".format( histname[samp], value, err ))
                 outfile.write('yields %s: %f +- %f \n' %(histname[samp], value, err))
-                if ( var.shortname == 'NJets' ):
+                if ( 'NJets' in  var.shortname ):
                     for bin in range(1,histograms[samp].GetNbinsX()):
                         err_bin=Double(0)
                         value_bin=0
@@ -1653,7 +1656,7 @@ for category in vardb.categorylist:
                     histograms[samp].Write()
         foutput.Close()
 
-        if ( 'Mll01' in var.shortname ) or ( var.shortname == 'NJets' ):
+        if ( 'Mll01' in var.shortname ) or ( 'NJets' in  var.shortname ):
             outfile.close()
 
 	#"""

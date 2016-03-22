@@ -560,23 +560,47 @@ class TTHBackgrounds2015(Background):
 	latexname = 'Z/#gamma*+jets (ChFlip only)'
         colour = kAzure + 10
 
-	def base(self, treename='physics', category=None, options={}):
-            z = self.parent.procmap['Zjets'].base(treename, category, options)
-            return z
+        def base(self, treename='physics', category=None, options={}):
+            inputgroup = [
+		           #('Z+jets', '*'),
+                           #('MadGraphZ+jets', '*'),
+                           ('Z+jetsCVetoBVeto', '*'),
+			   ('Z+jetsCFilterBVeto', '*'),
+                           ('Z+jetsBFilter', '*'),
+		           #('DYZ+jets', '*'),
+		         ]
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) / 1000.
+            if self.parent.useZCorrections:
+                sp = sp*0.94
+            return sp
 
         def __call__(self, treename='physics', category=None, options={}):
 
-            z = self.parent.procmap['Zjets'](treename, category, options)
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+            TTcut=''
+            weight=1.0
+
+            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
+                TTcut='TT'
+            if TTcut != '':
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-	    truth_cut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
 
-            z = z.subprocess(cut=truth_cut)
+	    sp = sp.subprocess(cut=truthcut)
 
-	    print("\nZjets CF sp: {0}".format(z.basecut.cutnamelist))
+	    print("\nZjets CF sp: {0}".format(sp.basecut.cutnamelist))
 
-            return z
+            return sp
 
 
     class Wenujets(Process):
@@ -852,30 +876,45 @@ class TTHBackgrounds2015(Background):
         colour = kAzure - 4
 
         def base(self, treename='physics', category=None, options={}):
-
-	    raretop = self.parent.procmap['Top'].base(treename, category, options)
-            ttbar   = self.parent.procmap['TTBar'].base(treename, category, options)
-
-            return (raretop + ttbar)
+            inputgroup = [
+                ('tops', 'ttbar_nonallhad'),
+                #('tops', 'ttbar_dilep'),
+                ('tops', 'tZ'),
+                ('tops', 'tW'),
+                ('tops', 'singlet'),
+                ('tops', '4top'),
+                ('tops', 'ttWW'),
+                         ]
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) / 1000.
+            return sp
 
         def __call__(self, treename='physics', category=None, options={}):
 
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
+            TTcut=''
+            weight=1.0
 
-	    raretop = self.parent.procmap['Top'](treename, category, options)
-            ttbar   = self.parent.procmap['TTBar'](treename, category, options)
-
-	    topcf = ttbar + raretop
+            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
+                TTcut='TT'
+            if TTcut != '':
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
             truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
 
-	    topcf = topcf.subprocess(cut=truthcut)
+	    sp = sp.subprocess(cut=truthcut)
 
-	    print("\nTopCF sp: {0}".format(topcf.basecut.cutnamelist))
+	    print("\nTopCF sp: {0}".format(sp.basecut.cutnamelist))
 
-            return topcf
+            return sp
 
 
     class Diboson(Process):
@@ -922,24 +961,39 @@ class TTHBackgrounds2015(Background):
         colour = kAzure - 9
 
         def base(self, treename='physics', category=None, options={}):
-
-	    diboson = self.parent.procmap['Diboson'].base(treename, category, options)
-
-            return diboson
+            inputgroup = [
+                ('Diboson', '*'),
+                         ]
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) / 1000.
+            return sp
 
         def __call__(self, treename='physics', category=None, options={}):
 
-	    dibosoncf = self.parent.procmap['Diboson'](treename, category, options)
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+            TTcut=''
+            weight=1.0
+
+            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
+                TTcut='TT'
+            if TTcut != '':
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
             truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
 
-	    dibosoncf = dibosoncf.subprocess(cut=truthcut)
+	    sp = sp.subprocess(cut=truthcut)
 
-	    print("\nDibosonCF sp: {0}".format(dibosoncf.basecut.cutnamelist))
+	    print("\nDibosonCF sp: {0}".format(sp.basecut.cutnamelist))
 
-            return dibosoncf
+            return sp
 
 
     class HtoZZ(Process):
@@ -997,10 +1051,30 @@ class TTHBackgrounds2015(Background):
             top = self.parent.procmap['Top'](treename, category, options)
             ttbarw = self.parent.procmap['TTBarW'](treename, category, options)
             ttbarz = self.parent.procmap['TTBarZ'](treename, category, options)
-
 	    return (diboson + top + ttbarw + ttbarz)
 
+    #"""
+    class ChargeFlipMC(Process):
 
+	latexname = 'QMisID (MC)'
+        colour = kAzure -4
+
+        def base(self, treename='physics', category=None, options={}):
+
+	    dibosoncf = self.parent.procmap['DibosonCF'].base(treename, category, options)
+            topcf = self.parent.procmap['TopCF'].base(treename, category, options)
+            zjetscf = self.parent.procmap['ZjetsCF'].base(treename, category, options)
+	    return (dibosoncf + topcf + zjetscf)
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            dibosoncf = self.parent.procmap['DibosonCF'](treename, category, options)
+            topcf = self.parent.procmap['TopCF'](treename, category, options)
+            zjetscf = self.parent.procmap['ZjetsCF'](treename, category, options)
+	    return (dibosoncf + topcf + zjetscf)
+    #"""
+
+    """
     class ChargeFlipMC(Process):
 
 	latexname = 'QMisID (MC)'
@@ -1049,30 +1123,8 @@ class TTHBackgrounds2015(Background):
 	    print("\nChargeFlipMC sp: {0}".format(sp.basecut.cutnamelist))
 
             return sp
-
     """
-    class ChargeFlipMC(Process):
 
-	latexname = 'QMisID (MC)'
-        colour = kAzure - 4
-
-        def base(self, treename='physics', category=None, options={}):
-
-	    dibosoncf = self.parent.procmap['DibosonCF'].base(treename, category, options)
-            topcf = self.parent.procmap['TopCF'].base(treename, category, options)
-            zjetscf = self.parent.procmap['ZjetsCF'].base(treename, category, options)
-
-	    return (dibosoncf + topcf + zjetscf)
-
-        def __call__(self, treename='physics', category=None, options={}):
-
-            dibosoncf = self.parent.procmap['DibosonCF'](treename, category, options)
-            topcf = self.parent.procmap['TopCF'](treename, category, options)
-            zjetscf = self.parent.procmap['ZjetsCF'](treename, category, options)
-
-	    return (dibosoncf + topcf + zjetscf)
-
-    """
 
     class ChargeFlip(Process):
 

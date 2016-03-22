@@ -41,13 +41,13 @@ void set_plot_style()
 
 }
 
-void PlotRateEff( pair<string,string>& SAMPLE, 
-		  const string& DATA_TYPE = "Data", 
+void PlotRateEff( pair<string,string>& SAMPLE,
+		  const string& DATA_TYPE = "Data",
 		  const string& FLAV_COMP = "Inclusive",
 		  const string& RATE_OR_EFF = "Efficiency",
-		  const string& EXTENSION = "png" ) 
+		  const string& EXTENSION = "png" )
 {
-  
+
   // Use ATLAS style for plotting
   //
   SetAtlasStyle();
@@ -66,7 +66,7 @@ void PlotRateEff( pair<string,string>& SAMPLE,
   }
 
   if ( SAMPLE.first.back() != '/' ) { SAMPLE.first += "/"; }
-  
+
   string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : FLAV_COMP;
   string path = SAMPLE.first + prepend + "Rates.root"; // "AvgRates.root"
 
@@ -92,7 +92,7 @@ void PlotRateEff( pair<string,string>& SAMPLE,
   string data_type("");
   if ( DATA_TYPE == "Data" )     { data_type = "observed"; }
   else if ( DATA_TYPE == "MC" )  { data_type = "expected"; }
-   
+
   // loop over variables
   //
   for ( unsigned int iVar(0); iVar < variables.size() ; ++iVar ) {
@@ -127,14 +127,14 @@ void PlotRateEff( pair<string,string>& SAMPLE,
       legend->SetFillColor(0);   // Legend background should be white
       legend->SetTextSize(0.035); // Increase entry font size!
       legend->SetTextFont(42);   // Helvetica
-      
+
       TLatex* leg_ATLAS  = new TLatex();
       TLatex* leg_lumi   = new TLatex();
       leg_ATLAS->SetTextSize(0.04);
       leg_ATLAS->SetNDC();
       leg_lumi->SetTextSize(0.04);
       leg_lumi->SetNDC();
-	
+
       // loop over Rate types
       //
       for( unsigned int iRate(0); iRate < Rates.size() ; ++iRate ) {
@@ -151,8 +151,8 @@ void PlotRateEff( pair<string,string>& SAMPLE,
         if ( !h ) {
           cout << "Error, could not get histogram " << histname << endl;
           exit(-1);
-        }     
-        
+        }
+
         h->SetStats(kFALSE); // delete the stats box on the top right corner
         h->SetLineWidth(2);
         h->SetMarkerSize(1.0);
@@ -162,7 +162,7 @@ void PlotRateEff( pair<string,string>& SAMPLE,
         if ( RATE_OR_EFF == "Efficiency" ) {
           h->GetYaxis()->SetRangeUser(0.0,1.0);
         }
-        
+
         string title("");
         if ( variables.at(iVar) == "Eta" )	  { title = "Probe |#eta| - " + flavour; }
         else if ( variables.at(iVar) == "Pt" )    { title = "Probe pT [GeV] - " + flavour; }
@@ -187,22 +187,22 @@ void PlotRateEff( pair<string,string>& SAMPLE,
             break;
         }
 
-        if ( iRate == 0 ) { h->Draw("E0"); } // E0 options draws error bars 
+        if ( iRate == 0 ) { h->Draw("E0"); } // E0 options draws error bars
         else		  { h->Draw("E0,SAME");}
 
         string legend_entry = Rates.at(iRate) + " - " + SAMPLE.second;
         legend->AddEntry(h, legend_entry.c_str(), "P");
-        legend->AddEntry((TObject*)0, "", ""); 
+        legend->AddEntry((TObject*)0, "", "");
 
       } // close loop over Rates
-       
+
       legend->Draw();
-       
+
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
       leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
-      string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_" + DATA_TYPE + "." + EXTENSION; 
+      string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_" + DATA_TYPE + "." + EXTENSION;
 
       canvas->SaveAs( outputname.c_str() );
 
@@ -211,18 +211,18 @@ void PlotRateEff( pair<string,string>& SAMPLE,
       delete leg_lumi;
 
     } // close loop on flavours
-     
+
   } // close loop on variables
 
 }
 
 //********************************************************
 
-void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST, 
-			      const string& DATA_TYPE = "Data", 
+void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
+			      const string& DATA_TYPE = "Data",
 			      const string& FLAV_COMP = "Inclusive",
 			      const string& RATE_OR_EFF = "Efficiency",
-			      const string& EXTENSION = "png" ) 
+			      const string& EXTENSION = "png" )
 {
 
   // Use ATLAS style for plotting
@@ -243,13 +243,15 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
   }
 
   vector< pair< TFile*,string> > input_files;
-  
+
   for ( auto& samp : SAMPLE_LIST ) {
-    
+
     if ( samp.first.back() != '/' ) { samp.first += "/"; }
-    
+
     string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : FLAV_COMP;
     string path = samp.first + prepend + "Rates.root"; // "AvgRates.root"
+
+    //string path = samp.first;
 
     TFile *f = TFile::Open(path.c_str());
     if ( !f->IsOpen() ) {
@@ -258,7 +260,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
     }
     pair<TFile*,string> this_pair = make_pair(f, samp.second);
     input_files.push_back(this_pair);
-     
+
   }
 
   vector<string> lepton_flavours;
@@ -277,7 +279,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
   string data_type("");
   if ( DATA_TYPE == "Data" )     { data_type = "observed"; }
   else if ( DATA_TYPE == "MC" )  { data_type = "expected"; }
-   
+
   // loop over variables
   //
   for ( unsigned int iVar(0); iVar < variables.size() ; ++iVar ) {
@@ -312,7 +314,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
       legend->SetFillColor(0);   // Legend background should be white
       legend->SetTextSize(0.035); // Increase entry font size!
       legend->SetTextFont(42);   // Helvetica
-      
+
       TLatex* leg_ATLAS  = new TLatex();
       TLatex* leg_lumi   = new TLatex();
       leg_ATLAS->SetTextSize(0.04);
@@ -323,10 +325,10 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
       // loop over files
       //
       for ( unsigned int iFile(0); iFile < input_files.size(); ++iFile  ) {
-        
+
 	cout << "\t\tFile : " << (input_files.at(iFile).first)->GetName()  << endl;
         cout << "-------------------------------" << endl;
-	
+
         // loop over Rate types
         //
         for( unsigned int iRate(0); iRate < Rates.size() ; ++iRate ) {
@@ -343,8 +345,8 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
           if ( !h ) {
             cout << "Error, could not get histogram " << histname << endl;
             exit(-1);
-          }	
-	  
+          }
+
           h->SetStats(kFALSE); // delete the stats box on the top right corner
           h->SetLineWidth(2);
           h->SetMarkerSize(1.0);
@@ -354,7 +356,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 	  if ( RATE_OR_EFF == "Efficiency" ) {
 	    h->GetYaxis()->SetRangeUser(0.0,1.0);
 	  }
-          
+
 	  string title("");
 	  if ( variables.at(iVar) == "Eta" )	    { title = "Probe |#eta| - " + flavour; }
 	  else if ( variables.at(iVar) == "Pt" )    { title = "Probe pT [GeV] - " + flavour; }
@@ -395,24 +397,24 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 	      break;
 	  }
 
-          if ( iRate == 0 && iFile == 0 ) { h->Draw("E0"); } // E0 options draws error bars 
+          if ( iRate == 0 && iFile == 0 ) { h->Draw("E0"); } // E0 options draws error bars
 	  else                            { h->Draw("E0,SAME");}
 
 	  string legend_entry = Rates.at(iRate) + " - " + input_files.at(iFile).second;
           legend->AddEntry(h, legend_entry.c_str(), "P");
-          legend->AddEntry((TObject*)0, "", ""); 
-	
+          legend->AddEntry((TObject*)0, "", "");
+
 	} // close loop over Rates
-       
+
       } // close loop over files
-       
+
       legend->Draw();
-       
+
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
       leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
-      string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_" + DATA_TYPE + "." + EXTENSION; 
+      string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_" + DATA_TYPE + "." + EXTENSION;
 
       canvas->SaveAs( outputname.c_str() );
 
@@ -421,17 +423,17 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
       delete leg_lumi;
 
     } // close loop on flavours
-     
+
   } // close loop on variables
 
 }
 
 // ********************************************************
 
-void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST, 
+void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 			   const string& FLAV_COMP = "Inclusive",
 			   const string& RATE_OR_EFF = "Efficiency",
-			   const string& EXTENSION = "png" ) 
+			   const string& EXTENSION = "png" )
 {
 
   // Use ATLAS style for plotting
@@ -446,15 +448,15 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
      cout << "Error! Flavour composition not supported' "<< endl;
      exit(-1);
   }
- 
+
   vector< pair< TFile*,string> > input_files;
-  
+
   for ( auto& samp : SAMPLE_LIST ) {
-  
+
     if ( samp.first.back() != '/' ) { samp.first += "/"; }
-    
+
     string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : FLAV_COMP;
-    string path = samp.first + prepend + "Rates.root"; // "AvgRates.root"    
+    string path = samp.first + prepend + "Rates.root"; // "AvgRates.root"
 
     TFile *f = TFile::Open(path.c_str());
     if ( !f->IsOpen() ) {
@@ -463,7 +465,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
     }
     pair<TFile*,string> this_pair = make_pair(f, samp.second);
     input_files.push_back(this_pair);
-     
+
   }
 
   vector<string> lepton_flavours;
@@ -478,7 +480,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
   vector<string> Rates;
   Rates.push_back("Real");
   Rates.push_back("Fake");
-   
+
   // loop over variables
   //
   for ( unsigned int iVar(0); iVar < variables.size() ; ++iVar ) {
@@ -513,7 +515,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
       legend->SetFillColor(0);   // Legend background should be white
       legend->SetTextSize(0.035); // Increase entry font size!
       legend->SetTextFont(42);   // Helvetica
- 
+
       TLatex* leg_ATLAS  = new TLatex();
       TLatex* leg_lumi   = new TLatex();
       leg_ATLAS->SetTextSize(0.04);
@@ -524,7 +526,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
       // loop over files
       //
       for ( unsigned int iFile(0); iFile < input_files.size(); ++iFile  ) {
-        
+
 	string filename((input_files.at(iFile).first)->GetName());
 	cout << "\t\tFile : " << filename  << endl;
         cout << "-------------------------------" << endl;
@@ -539,7 +541,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
           TH1D *h(nullptr);
 
           string data_type = ( input_files.at(iFile).second.find("Data") != string::npos ) ? "observed" : "expected";
-	  
+
 	  string histname = lepton_flavours.at(iFlav) + "_Probe" + variables.at(iVar) + "_" + Rates.at(iRate) + "_" + RATE_OR_EFF  + "_" + data_type;
 
           (input_files.at(iFile).first)->GetObject(histname.c_str(), h);
@@ -547,8 +549,8 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
           if ( !h ) {
             cout << "Error, could not get histogram " << histname << endl;
             exit(-1);
-          }	
-	  
+          }
+
           h->SetStats(kFALSE); // delete the stats box on the top right corner
           h->SetLineWidth(2);
           h->SetMarkerSize(1.0);
@@ -599,23 +601,23 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 	      break;
 	  }
 
-          if ( iRate == 0 && iFile == 0 ) { h->Draw("E0"); } // E0 options draws error bars 
+          if ( iRate == 0 && iFile == 0 ) { h->Draw("E0"); } // E0 options draws error bars
 	  else                            { h->Draw("E0,SAME");}
 
 	  string legend_entry = Rates.at(iRate) + " - " + input_files.at(iFile).second;
           legend->AddEntry(h, legend_entry.c_str(), "P");
-          legend->AddEntry((TObject*)0, "", ""); 
-	
+          legend->AddEntry((TObject*)0, "", "");
+
 	} // close loop over Rates
-       
+
       } // close loop over files
-       
+
       legend->Draw();
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
       leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
-      string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_DataVSMC." + EXTENSION; 
+      string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_DataVSMC." + EXTENSION;
 
       canvas->SaveAs( outputname.c_str() );
 
@@ -624,47 +626,54 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
       delete leg_lumi;
 
     } // close loop on flavours
-     
+
   } // close loop on variables
 
 }
 
 void execute() {
-  
+
   pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","Data");
-  //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV/","Baseline - MC t#bar{t}"); 
-  
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV/","Baseline - MC t#bar{t}");
+
   PlotRateEff(my_pair);
 
 }
 
 void execute_DiffSamples() {
-  
+
   vector<pair<string,string> > vec;
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","Baseline"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV/","No Isolation"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIP_MCQMisID_Mllgt40GeV/","Relaxed IP"));
-  
-  vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","OF+SF - |#eta_{e}| < 1.37 on tag"));
-  vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","OF+SF - |#eta_{e}| < 1.37 all"));
-  
+  vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","Baseline"));
+  vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/","No Isolation"));
+  vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIP_MCQMisID_Mllgt40GeV_AllElEtaCut/","Relaxed IP"));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_ElTagEtaCut/","|#eta_{e}| < 1.37 on tag only"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","|#eta_{e}| < 1.37 on all"));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/Rates.root","OF+SF"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/MuMuRates.root","SF"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/ElElRates.root","SF"));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","MC QMisID"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_DDQMisID_Mllgt40GeV_AllElEtaCut/","DD QMisID"));
+
   PlotRateEff_DiffSamples(vec);
 
 }
 
 void execute_DataVSMC() {
-  
+
   vector<pair<string,string> > vec;
-  
+
   vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","Baseline - Data"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV/","Baseline - MC t#bar{t}")); 
-   
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV/","Baseline - MC t#bar{t}"));
+
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV/","No Isolation - Data"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV/","No Isolation - MC t#bar{t}")); 
- 
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV/","No Isolation - MC t#bar{t}"));
+
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIP_MCQMisID_Mllgt40GeV/","Relaxed IP - Data"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV/","Relaxed IP - MC t#bar{t}")); 
-  
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV/","Relaxed IP - MC t#bar{t}"));
+
   PlotRateEff_DataVSMC(vec);
 
 }
