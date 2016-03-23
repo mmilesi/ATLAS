@@ -39,7 +39,7 @@ tokens=(${inDS//./ })
 configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep.py"
 current_time="$(date +'%d-%m-%Y-%T')"
 outdir=output_local_DxAOD-2015-13TeV_${tokens[2]}_${current_time}
-nevents=10
+nevents=1000
 
 echo ""
 echo "Input file path :"

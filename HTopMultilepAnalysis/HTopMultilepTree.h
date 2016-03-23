@@ -11,6 +11,7 @@
 #include "xAODEgamma/Electron.h"
 #include "xAODJet/Jet.h"
 #include "xAODTau/TauJet.h"
+#include  "xAODCaloEvent/CaloCluster.h"
 
 // Infrastructure include(s):
 #include "xAODRootAccess/TEvent.h"
@@ -247,6 +248,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_lepton_pt;
     std::vector<float> m_lepton_phi;
     std::vector<float> m_lepton_eta;
+    std::vector<float> m_lepton_caloCluster_eta;
     std::vector<float> m_lepton_m;
     std::vector<float> m_lepton_trkd0sig;
     std::vector<float> m_lepton_trkz0sintheta;
@@ -308,6 +310,7 @@ class HTopMultilepTree : public HelpTreeBase
     /* lepton TAG variables */
     std::vector<float> m_lepton_tag_pt;
     std::vector<float> m_lepton_tag_eta;
+    std::vector<float> m_lepton_tag_caloCluster_eta;
     std::vector<float> m_lepton_tag_trkd0sig;
     std::vector<float> m_lepton_tag_trkz0sintheta;
     std::vector<int>   m_lepton_tag_flavour;
@@ -329,6 +332,7 @@ class HTopMultilepTree : public HelpTreeBase
     /* lepton PROBE variables */
     std::vector<float> m_lepton_probe_pt;
     std::vector<float> m_lepton_probe_eta;
+    std::vector<float> m_lepton_probe_caloCluster_eta;
     std::vector<float> m_lepton_probe_trkd0sig;
     std::vector<float> m_lepton_probe_trkz0sintheta;
     std::vector<int>   m_lepton_probe_flavour;

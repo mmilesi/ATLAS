@@ -273,6 +273,7 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_pt",          		       &m_lepton_pt);
   m_tree->Branch("lep_phi",         		       &m_lepton_phi);
   m_tree->Branch("lep_eta",         		       &m_lepton_eta);
+  m_tree->Branch("lep_caloCluster_eta",                &m_lepton_caloCluster_eta);
   m_tree->Branch("lep_m",           		       &m_lepton_m);
   m_tree->Branch("lep_trkd0sig",                       &m_lepton_trkd0sig);
   m_tree->Branch("lep_trkz0sintheta",                  &m_lepton_trkz0sintheta);
@@ -333,6 +334,7 @@ void HTopMultilepTree::AddLeptons()
   // lepton TAG variables
   m_tree->Branch("lep_tag_pt",	                       &m_lepton_tag_pt);
   m_tree->Branch("lep_tag_eta",	                       &m_lepton_tag_eta);
+  m_tree->Branch("lep_tag_caloCluster_eta",            &m_lepton_tag_caloCluster_eta);
   m_tree->Branch("lep_tag_trkd0sig",                   &m_lepton_tag_trkd0sig);
   m_tree->Branch("lep_tag_trkz0sintheta",              &m_lepton_tag_trkz0sintheta);
   m_tree->Branch("lep_tag_flavour",	               &m_lepton_tag_flavour);
@@ -354,6 +356,7 @@ void HTopMultilepTree::AddLeptons()
   // lepton PROBE variables
   m_tree->Branch("lep_probe_pt",	               &m_lepton_probe_pt);
   m_tree->Branch("lep_probe_eta",	               &m_lepton_probe_eta);
+  m_tree->Branch("lep_probe_caloCluster_eta",            &m_lepton_probe_caloCluster_eta);
   m_tree->Branch("lep_probe_trkd0sig",                 &m_lepton_probe_trkd0sig);
   m_tree->Branch("lep_probe_trkz0sintheta",            &m_lepton_probe_trkz0sintheta);
   m_tree->Branch("lep_probe_flavour",	               &m_lepton_probe_flavour);
@@ -568,6 +571,7 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_pt.clear();
   m_lepton_phi.clear();
   m_lepton_eta.clear();
+  m_lepton_caloCluster_eta.clear();
   m_lepton_m.clear();
   m_lepton_trkd0sig.clear();
   m_lepton_trkz0sintheta.clear();
@@ -625,6 +629,7 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_3lepOtherSS_isMedium.clear();
   m_lepton_tag_pt.clear();
   m_lepton_tag_eta.clear();
+  m_lepton_tag_caloCluster_eta.clear();
   m_lepton_tag_trkd0sig.clear();
   m_lepton_tag_trkz0sintheta.clear();
   m_lepton_tag_flavour.clear();
@@ -645,6 +650,7 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_tag_ancestorTruthStatus.clear();
   m_lepton_probe_pt.clear();
   m_lepton_probe_eta.clear();
+  m_lepton_probe_caloCluster_eta.clear();
   m_lepton_probe_trkd0sig.clear();
   m_lepton_probe_trkz0sintheta.clear();
   m_lepton_probe_flavour.clear();
@@ -1148,10 +1154,14 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
 
       int lep_flav(0);
       float lep_charge( -999.0 );
+      float calo_eta = lep_itr->eta();
       if ( lep_itr->type() == xAOD::Type::Electron ) {
         lep_flav = 11;
 	const xAOD::TrackParticle* trk = dynamic_cast<const xAOD::Electron*>(lep_itr)->trackParticle();
         if ( trk ) { lep_charge = trk->charge() / fabs(trk->charge()); }
+	const xAOD::CaloCluster* caloclus = dynamic_cast<const xAOD::Electron*>(lep_itr)->caloCluster();
+	if ( caloclus ) { calo_eta = caloclus->etaBE(2); }
+	
       }
       else if ( lep_itr->type() == xAOD::Type::Muon ) {
         lep_flav = 13;
@@ -1160,6 +1170,7 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
       }
       m_lepton_flavour.push_back( lep_flav );
       m_lepton_charge.push_back( lep_charge );
+      m_lepton_caloCluster_eta.push_back( calo_eta );
 
       if (  isTrigMatchedLepAcc.isAvailable( *lep_itr ) )  {  m_lepton_isTrigMatched.push_back( isTrigMatchedLepAcc( *lep_itr ) ); }
       else {  m_lepton_isTrigMatched.push_back(-1); }
@@ -1253,6 +1264,7 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
 
 	  m_lepton_tag_pt.push_back(  lep_itr->pt() / m_units );
     	  m_lepton_tag_eta.push_back(  lep_itr->eta() );
+	  m_lepton_tag_caloCluster_eta.push_back( calo_eta );
 	  m_lepton_tag_trkd0sig.push_back( d0_significance );
 	  m_lepton_tag_trkz0sintheta.push_back( z0sintheta );
     	  m_lepton_tag_flavour.push_back( lep_flav );
@@ -1292,6 +1304,7 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
 
 	  m_lepton_probe_pt.push_back(  lep_itr->pt() / m_units );
     	  m_lepton_probe_eta.push_back(  lep_itr->eta() );
+	  m_lepton_probe_caloCluster_eta.push_back( calo_eta );
 	  m_lepton_probe_trkd0sig.push_back( d0_significance );
 	  m_lepton_probe_trkz0sintheta.push_back( z0sintheta );
     	  m_lepton_probe_flavour.push_back( lep_flav );
