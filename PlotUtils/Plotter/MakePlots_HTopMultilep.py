@@ -222,12 +222,7 @@ vardb.registerCut( Cut('DummyCut',    '( 1 )') )
 vardb.registerCut( Cut('IsMC',        '( isMC == 1 )') )
 # To ask for an event be passing an OR of triggers
 #
-#gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/containsAny.cxx+")
-#from ROOT import containsAny
-
 #vardb.registerCut( Cut('TrigDec',     '( passHLT == 1 && ( Sum$( ( isMC == 1 && passedTriggers == \"HLT_e24_lhmedium_L1EM18VH\" ) + ( isMC == 0 && passedTriggers == \"HLT_e24_lhmedium_L1EM20VH\" ) + ( passedTriggers == \"HLT_e60_lhmedium\" ) + ( passedTriggers == \"HLT_e120_lhloose\" ) + ( passedTriggers == \"HLT_mu20_iloose_L1MU15\" ) + ( passedTriggers == \"HLT_mu50\" ) ) > 0 ) )') )
-# the following does not work b/c TTreeFormula does not accept strings as arguments
-#vardb.registerCut( Cut('TrigDec',    '( passHLT == 1 && ( containsAny(passedTriggers,\"HLT_e24_lhmedium_L1EM18VH,HLT_e24_lhmedium_L1EM20VH,HLT_e60_lhmedium,HLT_e120_lhloose,HLT_mu20_iloose_L1MU15,HLT_mu50\") ) )') )
 #
 # To ask for an event be passing any of the saved triggers
 #
@@ -452,11 +447,13 @@ if doMMRatesLHFit:
 
 if doMMClosureTest:
     print ''
-    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
+    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
+    vardb.registerVar( Variable(shortname = 'NJets4j5j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 4, minval = 1.5, maxval = 5.5) )
+    vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 3, minval = 1.5, maxval = 4.5) )
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = -0.5, maxval = 3.5) )
-    vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
-    vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 15, minval = 25.0, maxval = 175.0,) )
-    vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
+    #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 15, minval = 25.0, maxval = 175.0,) )
+    #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
 
 if doZSSpeakCR:
     print ''
@@ -955,19 +952,19 @@ if doMMClosureTest:
         # MuMu region
         #
         vardb.registerCategory( MyCategory('MuMuSS_SR_HighJet_DataDriven_Closure',   cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_MuMu_Event',  '2Lep_NJet_SR']) ) )
-        #vardb.registerCategory( MyCategory('MuMuSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_MuMu_Event',  '2Lep_NJet_CR']) ) )
+        vardb.registerCategory( MyCategory('MuMuSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_MuMu_Event',  '2Lep_NJet_CR']) ) )
         #vardb.registerCategory( MyCategory('MuMuSS_SR_AllJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_MuMu_Event']) ) )
         #
 	# OF region
 	#
 	vardb.registerCategory( MyCategory('OFSS_SR_HighJet_DataDriven_Closure',     cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_OF_Event', '2Lep_ElEtaCut',  '2Lep_NJet_SR']) ) )
-	#vardb.registerCategory( MyCategory('OFSS_SR_LowJet_DataDriven_Closure',      cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_OF_Event', '2Lep_ElEtaCut',  '2Lep_NJet_CR']) ) )
+	vardb.registerCategory( MyCategory('OFSS_SR_LowJet_DataDriven_Closure',      cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_OF_Event', '2Lep_ElEtaCut',  '2Lep_NJet_CR']) ) )
 	#vardb.registerCategory( MyCategory('OFSS_SR_AllJet_DataDriven_Closure',      cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_OF_Event', '2Lep_ElEtaCut']) ) )
 	#
 	# ElEl region
 	#
 	vardb.registerCategory( MyCategory('ElElSS_SR_HighJet_DataDriven_Closure',   cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_ElEl_Event', '2Lep_ElEtaCut', '2Lep_NJet_SR']) ) )
-	#vardb.registerCategory( MyCategory('ElElSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_ElEl_Event', '2Lep_ElEtaCut', '2Lep_NJet_CR']) ) )
+	vardb.registerCategory( MyCategory('ElElSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_ElEl_Event', '2Lep_ElEtaCut', '2Lep_NJet_CR']) ) )
         #vardb.registerCategory( MyCategory('ElElSS_SR_AllJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch', 'TrigDec', '2Lep_NBJet', '2Lep_NLep', 'TauVeto', '2Lep_SS', '2Lep_ElEl_Event', '2Lep_ElEtaCut']) ) )
 
     elif ( args.fakeMethod == 'ABCD' ):
@@ -1116,9 +1113,9 @@ samplenames = { 'Observed':'observed',
 		'FakesFF':'fakesbkg',
 		'FakesMM':'fakesbkg',
 		'FakesABCD':'fakesbkg',
-                'FakesClosureMM':'fakesbgk',
-                'FakesClosureABCD':'fakesbgk',
-                'FakesClosureDataABCD':'fakesbgk',
+                'FakesClosureMM':'fakesbkg',
+                'FakesClosureABCD':'fakesbkg',
+                'FakesClosureDataABCD':'fakesbkg',
 	      }
 #
 # Override colours!
@@ -1171,7 +1168,7 @@ if ( doSR or doLowNJetCR ):
 
 	    #plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
     	    #ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
-	    
+
 	    plotbackgrounds	= ['Prompt','FakesMM']
     	    ttH2015.backgrounds = ['Prompt','FakesMM']
 
@@ -1285,7 +1282,7 @@ if doMMClosureRates:
 if doMMClosureTest:
 
     if doMM:
-        ttH2015.signals     = ['FakesClosureABCD']
+        ttH2015.signals     = []#['FakesClosureABCD']
         ttH2015.observed    = ['TTBarClosure'] # truth cuts done internally in TTBarClosure class
         plotbackgrounds	    = ['FakesClosureMM']
         ttH2015.backgrounds = ['FakesClosureMM'] # truth cuts done internally in FakesClosureMM class
@@ -1363,12 +1360,12 @@ for category in vardb.categorylist:
 
     # MMClosureTest: do not look at ABCD fakes, unless in SR
     #
-    if doMMClosureTest:
-       if doMM or doFF:
-          if not ( "2Lep_NJet_SR" in category.cut.cutname ):
-	     ttH2015.signals = []
-	  elif ( ( "2Lep_NJet_SR" in category.cut.cutname ) and not ttH2015.signals ):
-             ttH2015.signals = ['FakesClosureABCD']
+    #if doMMClosureTest:
+    #   if doMM or doFF:
+    #      if not ( "2Lep_NJet_SR" in category.cut.cutname ):
+    #	     ttH2015.signals = []
+    #	  elif ( ( "2Lep_NJet_SR" in category.cut.cutname ) and not ttH2015.signals ):
+    #         ttH2015.signals = ['FakesClosureABCD']
 
     # NB: *must* initialise this to 1.0 !!
     #
@@ -1635,7 +1632,7 @@ for category in vardb.categorylist:
                 value = histograms[samp].IntegralAndError(1,histograms[samp].GetNbinsX(),err)
                 print ("\t\t{0}: {1} +- {2}".format( histname[samp], value, err ))
                 outfile.write('yields %s: %f +- %f \n' %(histname[samp], value, err))
-                if ( 'NJets' in  var.shortname ):
+                if ( var.shortname == 'NJets' ):
                     for bin in range(1,histograms[samp].GetNbinsX()):
                         err_bin=Double(0)
                         value_bin=0
