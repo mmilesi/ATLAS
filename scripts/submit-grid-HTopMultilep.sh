@@ -2,12 +2,11 @@
 
 username=mmilesi
 
-prodtag=027_TruthTP_Retry2_DxAOD
-#028_TruthTP_DxAOD
-#025a_TruthTP_DxAOD
-#CFChallenge_v04_DxAOD
-#024a_DxAOD
-#CFChallenge_v03_DxAOD
+prodtag=029_NoLepIP_HIGG8D1
+#029_NoLepIso_TruthTP_HIGG8D1
+#029_NoLepIso_HIGG8D1
+#029_TruthTP_HIGG8D1
+#029_HIGG8D1
 
 infilepath="HTopMultilepAnalysis/doc/list-grid-DxAOD-2015-13TeV.txt"
 

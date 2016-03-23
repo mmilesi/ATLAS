@@ -777,21 +777,10 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   std::string old_eventNumber_name("eventNumber");
   std::string old_nlep_name("nlep");
   std::string old_isSS01_name("isSS01");
-
-  std::string old_isTT_name("isTT");
-  std::string old_isTL_name("isTL");
-  std::string old_isLT_name("isLT");
-  std::string old_isLL_name("isLL");
-
-  //std::string old_isTT_name("is_T_T");
-  //std::string old_isTL_name("is_T_AntiT");
-  //std::string old_isLT_name("is_AntiT_T");
-  //std::string old_isLL_name("is_AntiT_AntiT");
-
-  //std::string old_isTM_name("isTM");
-  //std::string old_isMT_name("isMT");
-  //std::string old_isMM_name("isMM");
-
+  std::string old_isTT_name("is_T_T");
+  std::string old_isTL_name("is_T_AntiT");
+  std::string old_isLT_name("is_AntiT_T");
+  std::string old_isLL_name("is_AntiT_AntiT");
   std::string old_lep_pt_name("lep_pt");
   std::string old_lep_eta_name("lep_eta");
   std::string old_lep_flavour_name("lep_flavour");
@@ -894,10 +883,13 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   //std::string RR_dir("GOOD_STUFF/OutputPlots_MMClosureRates_v023_TTbar");
   //std::string RR_dir("GOOD_STUFF/OutputPlots_MMRates_v021_Madgraph_Expected");
   //std::string RR_dir("OutputPlots_MMClosureRates_v025");
-  std::string RR_dir("OutputPlots_MMClosureRates_v028");
+  //std::string RR_dir("OutputPlots_MMClosureRates_v028");
   //std::string RR_dir("OutputPlots_MMClosureRates_HighNJet_v028");
   //std::string RR_dir("OutputPlots_MMClosureRates_v027");
-
+  
+  //std::string RR_dir("OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV_AllElEtaCut");
+  //std::string RR_dir("OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV_AllElEtaCut");
+  std::string RR_dir("OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV_AllElEtaCut");
 
   // when using ch-flip rate as RR (for electrons)
   //std::string RR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_ChFlipBkgRates_13F");

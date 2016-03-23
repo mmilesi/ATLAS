@@ -1173,11 +1173,8 @@ class Background:
         nom, nomlist    = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
         up, uplist      = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection='UP', overflowbins=overflowbins)
         down, downlist  = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection='DOWN', overflowbins=overflowbins)
-        obs, obslist    = self.sumhist(var, processes=self.observed,      cut=cut, eventweight=1.0,         category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
-        signalweight = eventweight
-	if ( "FakesClosureABCD" in self.signals ):
-	   signalweight = 1.0
-	sig, siglist    = self.sumhist(var, processes=self.signals,       cut=cut, eventweight=signalweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
+        obs, obslist    = self.sumhist(var, processes=self.observed,      cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
+	sig, siglist    = self.sumhist(var, processes=self.signals,       cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
 
         legs = [
             [nom, 'Nominal', "F"],
@@ -1387,7 +1384,8 @@ class Background:
         down.Draw("HIST SAME")
         nom.Draw("HIST SAME")
 	nom_clone.Draw("E2 SAME")
-        datagr.Draw("PE SAME")
+        if obs:
+           datagr.Draw("PE SAME")
 
 	if ( "FakesClosureABCD" in self.signals ):
 	   if sig:

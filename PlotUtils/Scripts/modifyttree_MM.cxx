@@ -776,10 +776,10 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
   std::string old_eventNumber_name("eventNumber");
   std::string old_nlep_name("nlep");
   std::string old_isSS01_name("isSS01");
-  std::string old_isTT_name("isTT");
-  std::string old_isTL_name("isTL");
-  std::string old_isLT_name("isLT");
-  std::string old_isLL_name("isLL");
+  std::string old_isTT_name("is_T_T");
+  std::string old_isTL_name("is_T_AntiT");
+  std::string old_isLT_name("is_AntiT_T");
+  std::string old_isLL_name("is_AntiT_AntiT");
   std::string old_MMWeight_name("MMWeight");
   std::string old_lep_pt_name("lep_pt");
   std::string old_lep_eta_name("lep_eta");
@@ -861,7 +861,11 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
   //std::string RR_dir("OutputPlots_MMRates_v028_FINAL");
   //std::string RR_dir("OutputPlots_MMRates_v027_20GeVpT");
   //std::string RR_dir("OutputPlots_MMRates_v028_10GeVpT_DataDrivenQMisID");
-  std::string RR_dir("OutputPlots_MMRates_v027_10GeVpT_DataDrivenQMisID");
+  //std::string RR_dir("OutputPlots_MMRates_v027_10GeVpT_DataDrivenQMisID");
+
+  //std::string RR_dir("OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut");
+  std::string RR_dir("OutputPlots_MMRates_v029_Baseline_DDQMisID_Mllgt40GeV_AllElEtaCut");
+  //std::string RR_dir("OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut");
 
   // when using ch-flip rate as RR (for electrons)
   //std::string RR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_ChFlipBkgRates_13F");

@@ -17,10 +17,20 @@ gROOT.SetBatch(True)
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_TTbar_MMClosure_TruthTP/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_TTbar_MMClosure_TruthTP_WEIGHTED/'
 
-oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_TTbar_MMClosure_TruthTP/'
+#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_TTbar_MMClosure_TruthTP/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_TTbar_MMClosure_TruthTP_WEIGHTED/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_TTbar_MMClosure_TruthTP_WEIGHTED_RatesHighNJet/'
-newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_TTbar_MMClosure_TruthTP_WEIGHTED_new/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_TTbar_MMClosure_TruthTP_WEIGHTED_new/'
+
+#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_TTbar_MMClosure_TruthTP/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_TTbar_MMClosure_TruthTP_WEIGHTED/'
+
+#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_TTbar_MMClosure_TruthTP/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_TTbar_MMClosure_TruthTP_WEIGHTED/'
+
+oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPIP/Merged_Melb15_ttH_029_NoLepIP_DxAOD_TTbar_MMClosure_TruthTP/'
+newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPIP/Merged_Melb15_ttH_029_NoLepIP_DxAOD_TTbar_MMClosure_TruthTP_WEIGHTED/'
+
 
 treename = 'physics'
 nentries = 'ALL' #ALL
