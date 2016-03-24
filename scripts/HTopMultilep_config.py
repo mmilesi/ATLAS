@@ -183,7 +183,7 @@ ElectronSelectorDict = { "m_name"                      : "electronSelect_selecti
 		       }
 
 TauSelectorDict = { "m_name"                      : "tauSelect_selection",
-		    "m_debug"			  :  False,
+		    "m_debug"			  :  True,
                     "m_inContainerName" 	  : "TauJets",
                     "m_outContainerName"	  : "Taus_Selected",
                     "m_inputAlgoSystNames"	  : "",
