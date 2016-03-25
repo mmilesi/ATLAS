@@ -183,7 +183,7 @@ ElectronSelectorDict = { "m_name"                      : "electronSelect_selecti
 		       }
 
 TauSelectorDict = { "m_name"                      : "tauSelect_selection",
-		    "m_debug"			  :  True,
+		    "m_debug"			  :  False,
                     "m_inContainerName" 	  : "TauJets",
                     "m_outContainerName"	  : "Taus_Selected",
                     "m_inputAlgoSystNames"	  : "",
@@ -191,6 +191,7 @@ TauSelectorDict = { "m_name"                      : "tauSelect_selection",
                     "m_createSelectedContainer"   : True,
 		    "m_decorateSelectedObjects"   : True,
                     "m_minPtDAOD"		  : 15e3,
+		    "m_setTauOverlappingEleLLHDecor" : True,
                     "m_ConfigPath"		  : "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15.conf",
 		    #"m_EleOLRFilePath" 	   : "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/eveto_cutvals.root"
 		  }
