@@ -39,7 +39,9 @@ class TTHBackgrounds2015(Background):
     observed    = ['Observed']
     luminosity  = 1.0
     lumi_units  = 'fb-1'
-    channel     = 'TwoLepSS' # can be one of ['TwoLepSS' 'TwoLepCR', 'ThreeLep', 'FourLep']
+    norm_factor = 1.0           # Might be needed to correct units for Xsec weight 
+    rescaleXsecAndLumi = False  # Set to "True" if you don't want to take into account the Xsec*lumi weight
+    channel     = 'TwoLepSS'    # Can be one of ['TwoLepSS' 'TwoLepCR', 'ThreeLep', 'FourLep']
     eventweight = 1.0
     #eventweight = 'weight_pileup*weight_muon_trig*weight_electron_trig'
     #eventweight = 'evtsel_weight*evtsel_weight_el*evtsel_weight_mu*evtsel_bjet_weight*evtsel_weight_lep_trigger*weight_CF'
@@ -225,7 +227,7 @@ class TTHBackgrounds2015(Background):
                 ('ttH', 'ttH_allhad'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000. # the division by 1000. is used to have the correct cross section
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor 
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -262,7 +264,7 @@ class TTHBackgrounds2015(Background):
 		#('tops', 'Sherpa_ttW'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -303,7 +305,7 @@ class TTHBackgrounds2015(Background):
                 #('tops', 'Sherpa_ttll'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -344,7 +346,7 @@ class TTHBackgrounds2015(Background):
 		           #('DYZ+jets', 'ee'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
                 sp = sp*0.94
             return sp
@@ -387,7 +389,7 @@ class TTHBackgrounds2015(Background):
 		           #('DYZ+jets', 'mumu'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
                 sp = sp*0.94
             return sp
@@ -429,7 +431,7 @@ class TTHBackgrounds2015(Background):
 		           #('DYZ+jets', 'tautau'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
                 sp = sp*0.94
             return sp
@@ -489,7 +491,7 @@ class TTHBackgrounds2015(Background):
 		           ('Z+jetsCVetoBVeto', '*'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
                 sp = sp*0.94
             return sp
@@ -527,7 +529,7 @@ class TTHBackgrounds2015(Background):
 		           ('Z+jetsBFilter', '*'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
                 sp = sp*1.5
             return sp
@@ -570,7 +572,7 @@ class TTHBackgrounds2015(Background):
 		           #('DYZ+jets', '*'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
                 sp = sp*0.94
             return sp
@@ -618,7 +620,7 @@ class TTHBackgrounds2015(Background):
                 ('W+jetsCVetoBVeto', 'enu'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -658,7 +660,7 @@ class TTHBackgrounds2015(Background):
                 ('W+jetsCVetoBVeto', 'munu'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -698,7 +700,7 @@ class TTHBackgrounds2015(Background):
                 ('W+jetsCVetoBVeto', 'taunu'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -760,7 +762,7 @@ class TTHBackgrounds2015(Background):
                 ('tops', 'ttWW'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -798,7 +800,7 @@ class TTHBackgrounds2015(Background):
                 #('tops', 'ttbar_dilep'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -838,7 +840,7 @@ class TTHBackgrounds2015(Background):
                 #('tops', 'ttbar_dilep'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -886,7 +888,7 @@ class TTHBackgrounds2015(Background):
                 ('tops', 'ttWW'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -927,7 +929,7 @@ class TTHBackgrounds2015(Background):
                 ('Diboson', '*'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -965,7 +967,7 @@ class TTHBackgrounds2015(Background):
                 ('Diboson', '*'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -1006,7 +1008,7 @@ class TTHBackgrounds2015(Background):
                     ('HtoZZ', '125'),
                 ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -1094,7 +1096,7 @@ class TTHBackgrounds2015(Background):
                 ('Z+jetsBFilter', '*'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -1695,7 +1697,7 @@ class TTHBackgrounds2015(Background):
 		    #('tops', 'ttbar_dilep'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -1749,7 +1751,7 @@ class TTHBackgrounds2015(Background):
 		    ('tops', 'ttbar_nonallhad'),
                 ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            return self.subprocess(trees=trees) / 1000
+            return self.subprocess(trees=trees) * self.parent.norm_factor
 
         def calcTheta(self, sp_num, sp_denom, stream=None, options={}):
 
@@ -1933,7 +1935,7 @@ class TTHBackgrounds2015(Background):
 		    ('tops', 'ttbar_nonallhad'),
                 ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            return self.subprocess(trees=trees) / 1000
+            return self.subprocess(trees=trees) * self.parent.norm_factor
 
         def __call__(self, treename='physics', category=None, options={}):
 
@@ -2007,7 +2009,7 @@ class TTHBackgrounds2015(Background):
                 ('W+jetsCVetoBVeto', '*'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -2054,7 +2056,7 @@ class TTHBackgrounds2015(Background):
                     ('Prompt', 'WWjj'),
                 ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -2092,7 +2094,7 @@ class TTHBackgrounds2015(Background):
                     ('Prompt', 'DPIZZ'),
                 ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) / 1000.
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):

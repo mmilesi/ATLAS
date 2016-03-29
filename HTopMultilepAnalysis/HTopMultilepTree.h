@@ -98,6 +98,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<float> m_weight_lepton_iso_HTop;
     std::vector<float> m_weight_lepton_ID_HTop;
     std::vector<float> m_weight_lepton_TTVA_HTop;
+    std::vector<float> m_weight_jet_JVT_HTop;
 
     /* jet variables */
     std::vector<float> m_jet_m;

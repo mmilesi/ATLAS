@@ -660,6 +660,10 @@ class Process:
             if tree.GetTitle().startswith('$ISMC$') or tree.GetTitle().startswith('$ISEMBED$'):
                 weight *= self.parent.luminosity
 		
+		if self.parent.rescaleXsecAndLumi:
+		    weight /= tree.GetWeight()
+		    weight /= self.parent.luminosity
+		    
             s = SubProcess(tree=tree, basecut=basecut, baseweight=weight, eventweight=eventweight)
             if sp: sp = sp + s
             else: sp = s
@@ -672,6 +676,7 @@ class Background:
     observed = []
     luminosity = 1.0
     eventweight = '1.0'
+    rescaleXsecAndLumi = False
     style = {}
 
     def __init__(self, inputs, vardb):

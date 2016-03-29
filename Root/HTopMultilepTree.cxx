@@ -85,7 +85,8 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
     m_tree->Branch("weight_lepton_reco_HTop", &m_weight_lepton_reco_HTop);
     m_tree->Branch("weight_lepton_iso_HTop",  &m_weight_lepton_iso_HTop);
     m_tree->Branch("weight_lepton_ID_HTop",   &m_weight_lepton_ID_HTop);
-    m_tree->Branch("weight_lepton_TTVA_HTop",   &m_weight_lepton_TTVA_HTop);
+    m_tree->Branch("weight_lepton_TTVA_HTop", &m_weight_lepton_TTVA_HTop);
+    m_tree->Branch("weight_jet_JVT_HTop",     &m_weight_jet_JVT_HTop);
   }
 
 }
@@ -408,6 +409,7 @@ void HTopMultilepTree::ClearEventUser()
     m_weight_lepton_iso_HTop.clear();
     m_weight_lepton_ID_HTop.clear();
     m_weight_lepton_TTVA_HTop.clear();
+    m_weight_jet_JVT_HTop.clear(); 
   }
 }
 
@@ -746,12 +748,14 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
     static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepIsoSF_GLOBAL("lepIsoEffSF_GLOBAL_HTop");
     static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepIDSF_GLOBAL("lepIDEffSF_GLOBAL_HTop");
     static SG::AuxElement::ConstAccessor< std::vector<float> >  accLepTTVASF_GLOBAL("lepTTVAEffSF_GLOBAL_HTop");
+    static SG::AuxElement::ConstAccessor< std::vector<float> >  accJetJVTSF_GLOBAL("jetJVTEffSF_GLOBAL_HTop");
 
     if ( accLepTrigSF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_trig_HTop = accLepTrigSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_trig_HTop = junk; }
     if ( accLepRecoSF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_reco_HTop = accLepRecoSF_GLOBAL( *eventInfo ); } else { m_weight_lepton_reco_HTop = junk; }
-    if ( accLepIsoSF_GLOBAL.isAvailable( *eventInfo ) )  { m_weight_lepton_iso_HTop = accLepIsoSF_GLOBAL( *eventInfo ); }   else { m_weight_lepton_iso_HTop = junk; }
-    if ( accLepIDSF_GLOBAL.isAvailable( *eventInfo ) )   { m_weight_lepton_ID_HTop = accLepIDSF_GLOBAL( *eventInfo ); }     else { m_weight_lepton_ID_HTop = junk; }
+    if ( accLepIsoSF_GLOBAL.isAvailable( *eventInfo ) )  { m_weight_lepton_iso_HTop = accLepIsoSF_GLOBAL( *eventInfo );   } else { m_weight_lepton_iso_HTop = junk; }
+    if ( accLepIDSF_GLOBAL.isAvailable( *eventInfo ) )   { m_weight_lepton_ID_HTop = accLepIDSF_GLOBAL( *eventInfo );     } else { m_weight_lepton_ID_HTop = junk; }
     if ( accLepTTVASF_GLOBAL.isAvailable( *eventInfo ) ) { m_weight_lepton_TTVA_HTop = accLepTTVASF_GLOBAL( *eventInfo ); } else { m_weight_lepton_TTVA_HTop = junk; }
+    if ( accJetJVTSF_GLOBAL.isAvailable( *eventInfo ) )  { m_weight_jet_JVT_HTop = accJetJVTSF_GLOBAL( *eventInfo );      } else { m_weight_jet_JVT_HTop = junk; }
 
   }
 }

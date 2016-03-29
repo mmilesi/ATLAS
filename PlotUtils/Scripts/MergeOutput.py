@@ -83,7 +83,7 @@ def main():
             weight = None
             try:
                 if options.weight:
-                    weight = float(s['xsection']) * float(s['efficiency']) * float(s['kfactor']) * 1.0e6
+                    weight = float(s['xsection']) * float(s['efficiency']) * float(s['kfactor']) * 1e3 # to get the weight in fb
             except:
                 pass
             mergeOne(inputpath, outputpath, logfile, weight, options.cutflow)
@@ -160,7 +160,7 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
                 if type(obj) == TTree:
                     obj.SetWeight(weight/totalevents)
 
-        print("Applying weight - w = ( xsec*kfactor*filter_eff) / (TOT EVTS W ) = {0}*1e-3/{1} = {2}\n".format(weight,totalevents,(weight/totalevents)*1e-3))
+        print("Applying weight - w = ( xsec[fb]*kfactor*filter_eff) / (TOT EVTS W ) = {0}/{1} = {2} [fb]\n".format(weight,totalevents,(weight/totalevents)))
 
     target.Write()
 

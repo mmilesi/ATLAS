@@ -591,6 +591,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
     EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::ISOLATION ) );
     EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::ID ) );
     EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventLepSF( eventInfo, leptonsSorted, SFType::TTVA ) );
+    EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->computeEventJetSF( eventInfo, signalJets,  SFType::JVT ) );
   }
 
   //--------------------------------
@@ -2249,7 +2250,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepTrigSF( const xAOD::EventI
   // Initialise product of SFs
   // (use a large size just to make sure...)
   //
-  std::vector<float> numerator(10,1.0), denominator(10,1.0);
+  std::vector<float> numerator(7,1.0), denominator(7,1.0);
 
   for ( auto lep_itr : leptons ) {
 
@@ -2261,37 +2262,36 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepTrigSF( const xAOD::EventI
 
     std::string decor_name_SF(""), decor_name_eff("");
 
-    std::vector < float > decor_SF, decor_eff;
+    std::vector < float > decor_SF(7,1.0), decor_eff(7,0.0);
 
     if ( lep_itr->type() == xAOD::Type::Electron ) {
 
       // hard-code this for now...FIXME
       //
       if ( lep_T ) {
-        decor_name_SF  =  "ElectronEfficiencyCorrector_TrigSyst_LHLooseAndBLayer";
-        decor_name_eff =  "ElectronEfficiencyCorrector_TrigMCEffSyst_LHLooseAndBLayer";
+        decor_name_SF  = "ElectronEfficiencyCorrector_TrigSyst_LHTight";
+        decor_name_eff = "ElectronEfficiencyCorrector_TrigMCEffSyst_LHTight";
       } else {
-        decor_name_SF  =  "ElectronEfficiencyCorrector_TrigSyst_LHTight";
-        decor_name_eff =  "ElectronEfficiencyCorrector_TrigMCEffSyst_LHTight";
+        decor_name_SF  = "ElectronEfficiencyCorrector_TrigSyst_LHLooseAndBLayer";     
+        decor_name_eff = "ElectronEfficiencyCorrector_TrigMCEffSyst_LHLooseAndBLayer";
       }
 
     } else if ( lep_itr->type()  == xAOD::Type::Muon ) {
 
       if ( lep_T ) {
-        decor_name_SF  = "MuonEfficiencyCorrector_TrigSyst_RecoLoose_IsoLoose";
-        decor_name_eff = "MuonEfficiencyCorrector_TrigMCEff_RecoLoose_IsoLoose";
-      } else {
         decor_name_SF  = "MuonEfficiencyCorrector_TrigSyst_RecoLoose_IsoFixedCutTightTrackOnly";
         decor_name_eff = "MuonEfficiencyCorrector_TrigMCEff_RecoLoose_IsoFixedCutTightTrackOnly";
+      } else {
+        decor_name_SF  = "MuonEfficiencyCorrector_TrigSyst_RecoLoose_IsoLoose"; 
+        decor_name_eff = "MuonEfficiencyCorrector_TrigMCEff_RecoLoose_IsoLoose";
       }
 
     }
 
-    if ( !lep_itr->isAvailable< std::vector< float > >( decor_name_SF ) )  { Error("computeEventLepTrigSF()", "trigger SF not available for this lepton. Aborting."); return EL::StatusCode::FAILURE; }
-    if ( !lep_itr->isAvailable< std::vector< float > >( decor_name_eff ) ) { Error("computeEventLepTrigSF()", "trigger MC eff. not available for this lepton. Aborting."); return EL::StatusCode::FAILURE; }
+    if ( m_debug ) { Info("computeEventLepTrigSF()", "Reading SF decoration name = %s ", decor_name_SF.c_str() ); }
 
-    decor_SF  = lep_itr->auxdecor< std::vector< float > >( decor_name_SF );
-    decor_eff = lep_itr->auxdecor< std::vector< float > >( decor_name_eff );
+    if ( lep_itr->isAvailable< std::vector< float > >( decor_name_SF ) )  { decor_SF  = lep_itr->auxdecor< std::vector< float > >( decor_name_SF ); }
+    if ( lep_itr->isAvailable< std::vector< float > >( decor_name_eff ) ) { decor_eff = lep_itr->auxdecor< std::vector< float > >( decor_name_eff ); }
 
     // check SF and efficiency vectors have same size
     //
@@ -2322,7 +2322,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepTrigSF( const xAOD::EventI
     }
     // this makes sure numerator has got as much elements as num_factor
     //
-    numerator.resize(num_factor.size());
+    numerator.resize(num_factor.size(),1.0);
 
     // this updates the value of numerator to contain the element-wise product
     // of the previous numerator and the num_factor for *this* lepton
@@ -2346,7 +2346,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepTrigSF( const xAOD::EventI
 
     // this makes sure denominator has got as much elements as denom_factor
     //
-    denominator.resize(denom_factor.size());
+    denominator.resize(denom_factor.size(),1.0);
 
     // check numerator and denominator have same size
     //
@@ -2400,7 +2400,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepSF( const xAOD::EventInfo*
   // Initialise global per-event SF ( will be the product of each object SF)
   // (use a large size just to make sure...)
   //
-  std::vector<float> SF(10,1.0);
+  std::vector<float> SF(7,1.0);
 
   std::string type;
 
@@ -2480,7 +2480,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepSF( const xAOD::EventInfo*
 
     std::string decor_name_SF("");
 
-    std::vector < float > thisLepSF;
+    std::vector < float > thisLepSF(7,1.0);
 
     // NB: a loose lepton could still have tight iso/ tight ID since we use ( iso & (ID) & IP) to discriminate T/L...
     //
@@ -2489,9 +2489,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepSF( const xAOD::EventInfo*
 
     if ( m_debug ) { Info("computeEventLepSF()", "Reading SF decoration name = %s ", decor_name_SF.c_str() ); }
 
-    if ( !lep_itr->isAvailable< std::vector< float > >( decor_name_SF ) )  { Error("computeEventLepSF", "SF %s not available for this lepton. Aborting.", decor_name_SF.c_str() ); return EL::StatusCode::FAILURE; }
-
-    thisLepSF  = lep_itr->auxdecor< std::vector< float > >( decor_name_SF );
+    if ( lep_itr->isAvailable< std::vector< float > >( decor_name_SF ) )  { thisLepSF  = lep_itr->auxdecor< std::vector< float > >( decor_name_SF ); }
 
     if ( m_debug ) {
       unsigned int idx(0);
@@ -2503,7 +2501,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepSF( const xAOD::EventInfo*
 
     // this makes sure the global SF has got as much elements as this per-object SF
     //
-    SF.resize(thisLepSF.size());
+    SF.resize(thisLepSF.size(),1.0);
 
     // this updates the value of the global SF to contain the element-wise product
     // of the previous global SF and the SF for *this* lepton
@@ -2531,4 +2529,83 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepSF( const xAOD::EventInfo*
   }
 
   return EL::StatusCode::SUCCESS;
+}
+
+EL::StatusCode HTopMultilepAnalysis :: computeEventJetSF( const xAOD::EventInfo* eventInfo,
+                                                          const xAOD::JetContainer* jets,
+					                  SFType TYPE
+		                                        )
+{
+  // Initialise global per-event SF ( will be the product of each object SF)
+  // (use a large size just to make sure...)
+  //
+  std::vector<float> SF(7,1.0);
+
+  std::string type;
+  std::string decor_name_SF("JetJvtEfficiency_JVTSyst_JVT_Medium");
+
+  switch ( TYPE )
+    {
+    case SFType::JVT:
+      type = "JVT";
+      break;
+    default:
+      Error ("computeEventJetSF()", "Unsupported SF type. Aborting." );
+      return EL::StatusCode::FAILURE;
+      break;
+    }
+
+  for ( auto jet_itr : *(jets) ) {
+
+    if ( m_debug ) {
+      Info("computeEventJetSF()", "--------------------------------------");
+      Info("computeEventJetSF()", "SF type = %s ", type.c_str() );
+      Info("computeEventJetSF()", "jet pT = %f, |eta| = %.2f ", jet_itr->pt()/1e3, fabs(jet_itr->eta()));
+    }
+
+    std::vector < float > thisJetSF(7,1.0);
+
+    if ( m_debug ) { Info("computeEventJetSF()", "Reading SF decoration name = %s ", decor_name_SF.c_str() ); }
+
+    if ( jet_itr->isAvailable< std::vector< float > >( decor_name_SF ) )  { thisJetSF  = jet_itr->auxdecor< std::vector< float > >( decor_name_SF ); }
+
+    if ( m_debug ) {
+      unsigned int idx(0);
+      for ( const auto &effSF : thisJetSF ) {
+	std::cout << "\t efficiency SF[" << idx << "] = " << effSF  << std::endl;
+	 ++idx;
+      }
+    }
+
+    // this makes sure the global SF has got as much elements as this per-object SF
+    //
+    SF.resize(thisJetSF.size(),1.0);
+
+    // this updates the value of the global SF to contain the element-wise product
+    // of the previous global SF and the SF for *this* jet
+    //
+    std::transform( SF.begin(), SF.end(), thisJetSF.begin(), SF.begin(), std::multiplies<float>() );
+
+  }
+
+  // decorator for event SF
+  //
+  const std::string decor_name = "jet" + type + "EffSF_GLOBAL_HTop";
+  SG::AuxElement::Decorator< std::vector<float> > jetSFDecor_GLOBAL(decor_name);
+  jetSFDecor_GLOBAL( *eventInfo ) = SF;
+
+  if ( m_debug ) {
+    unsigned int idx(0);
+    for ( const auto &effSF : SF ) {
+      Info( "computeEventJetSF()", "===>>>");
+      Info( "computeEventJetSF()", " ");
+      Info( "computeEventJetSF()", "%s SF[%i] = %f", type.c_str(), idx, effSF);
+      ++idx;
+    }
+    Info( "computeEventJetSF()", "--------------------------------------");
+
+  }
+
+  return EL::StatusCode::SUCCESS;
+
 }

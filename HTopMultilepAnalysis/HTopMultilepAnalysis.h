@@ -97,6 +97,7 @@ private:
     ISOLATION  = 1,
     ID         = 2,
     TTVA       = 3,
+    JVT        = 4,
   };
 
   // tools
@@ -156,6 +157,10 @@ public:
                                             const xAOD::IParticleContainer& leptons,
 					    SFType TYPE
 		                          );
+  virtual EL::StatusCode computeEventJetSF( const xAOD::EventInfo* eventInfo,
+                                            const xAOD::JetContainer* jets,
+					    SFType TYPE
+		                           );
 
   virtual EL::StatusCode defineTagAndProbeRFRateVars( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
   virtual EL::StatusCode defineTagAndProbeRFRateVars_MC( const xAOD::EventInfo* eventInfo, const xAOD::IParticleContainer& leptons );
