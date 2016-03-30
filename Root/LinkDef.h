@@ -5,13 +5,13 @@
 #include <HTopMultilepAnalysis/TruthMatchAlgo.h>
 #include <HTopMultilepAnalysis/OverlapRemovalTool_HTopRun1.h>
 #include <HTopMultilepAnalysis/OverlapRemover_HTopRun1.h>
-#ifdef __CINT__
+#include <HTopMultilepAnalysis/HTopMultilepMiniNTupMaker.h>
 
+#ifdef __CINT__
 #pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 #pragma link C++ nestedclass;
-
 #endif
 
 #ifdef __CINT__
@@ -22,4 +22,5 @@
 #pragma link C++ class TruthMatchAlgo+;
 #pragma link C++ class OverlapRemovalTool_HTopRun1+;
 #pragma link C++ class OverlapRemover_HTopRun1+;
+#pragma link C++ class HTopMultilepMiniNTupMaker+;
 #endif

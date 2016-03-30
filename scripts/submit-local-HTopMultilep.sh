@@ -38,6 +38,13 @@ infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.9.8/${inDS}/*
 #inDS="data15_13TeV.00276329.physics_Main.merge.DAOD_HIGG8D1.f620_m1480_p2411/DAOD_HIGG8D1.06323611._000001.pool.root.1"
 #infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.6.3/${inDS}"
 
+# -----------------------------
+# 25ns_v6
+# -----------------------------
+
+inDS="group.ntup.25ns_v6_410000"
+infilepath="/coepp/cephfs/mel/mmilesi/ttH/multileptons_ntuple_run2/25ns_v6/Nominal/410000.root"
+
 # ------------------------------------------------------------------------------------
 
 # tokenize inDS using '.' as separator
