@@ -17,6 +17,7 @@
 #include <EventLoop/Worker.h>
 #include <EventLoop/Algorithm.h>
 #include <EventLoop/Job.h>
+#include <EventLoop/OutputStream.h>
 
 // ROOT include(s):
 #include "TTree.h"
@@ -27,7 +28,7 @@ class HTopMultilepMiniNTupMaker : public xAH::Algorithm
   // that way they can be set directly from CINT and python.
 public:
   
-  std::string m_outputNTupleName;
+  std::string m_outputNTupStreamName;
 
 private:
  
@@ -48,10 +49,12 @@ private:
   Float_t	  m_lep_Eta_0;
   Float_t	  m_lep_Phi_0;
   Float_t	  m_lep_EtaBE2_0;
+  Float_t	  m_lep_Pt_1;
 
   /** Extra branches for output TTree */
 
   Float_t         m_lep_Pt_0_Squared;
+  Float_t         m_lep_Pt_01;
 
 
   unsigned int m_numEvent;  //!

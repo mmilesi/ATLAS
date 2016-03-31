@@ -1,12 +1,15 @@
 #include <HTopMultilepAnalysis/HTopMultilepMiniNTupMaker.h>
 
+// ASG status code check
+#include <AsgTools/MessageCheck.h>
+
 // this is needed to distribute the algorithm to the workers
 ClassImp(HTopMultilepMiniNTupMaker)
 
 HTopMultilepMiniNTupMaker :: HTopMultilepMiniNTupMaker(std::string className) :
-    Algorithm(className)//,
-    //m_inputNTuple(nullptr),
-    //m_outputNTuple(nullptr)
+    Algorithm(className),
+    m_inputNTuple(nullptr),
+    m_outputNTuple(nullptr)
 {
   // Here you put any code for the base initialization of variables,
   // e.g. initialize all pointers to 0.  Note that you should only put
@@ -17,7 +20,7 @@ HTopMultilepMiniNTupMaker :: HTopMultilepMiniNTupMaker(std::string className) :
 
   Info("HTopMultilepMiniNTupMaker()", "Calling constructor");
   
-  m_outputNTupleName = "output";
+  m_outputNTupStreamName = "output";
 }
 
 
@@ -31,7 +34,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setupJob (EL::Job& job)
   // sole advantage of putting it here is that it gets automatically
   // activated/deactivated when you add/remove the algorithm from your
   // job, which may or may not be of value to you.
-  
+ 
+  //ANA_CHECK_SET_TYPE (EL::StatusCode); // set type of return code you are expecting (add to top of each function once)
+
   Info("setupJob()", "Calling setupJob");
 
   return EL::StatusCode::SUCCESS;
@@ -46,6 +51,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: histInitialize ()
   // trees.  This method gets called before any input files are
   // connected.
   
+  //ANA_CHECK_SET_TYPE (EL::StatusCode);
+  
   Info("histInitialize()", "Calling histInitialize");
   
   return EL::StatusCode::SUCCESS;
@@ -57,6 +64,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: fileExecute ()
 {
   // Here you do everything that needs to be done exactly once for every
   // single file, e.g. collect a list of all lumi-blocks processed
+  
+  //ANA_CHECK_SET_TYPE (EL::StatusCode);
   
   Info("fileExecute()", "Calling fileExecute");
 
@@ -70,7 +79,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   // Here you do everything you need to do when we change input files,
   // e.g. resetting branch addresses on trees.  If you are using
   // D3PDReader or a similar service this method is not needed.
-
+  
+  //ANA_CHECK_SET_TYPE (EL::StatusCode);
+  
+  firstFile = firstFile;
+  
   Info("changeInput()", "Calling changeInput");
   
   m_inputNTuple = wk()->tree();
@@ -81,12 +94,14 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
 
   // Re-enable the branches we are going to use
   //
-  m_inputNTuple->SetBranchStatus ("EventNumber", 1);  
+  m_inputNTuple->SetBranchStatus ("EventNumber", 1); 
+  m_inputNTuple->SetBranchStatus ("dilep_type", 1); 
   m_inputNTuple->SetBranchStatus ("lep_Pt_0", 1);
   m_inputNTuple->SetBranchStatus ("lep_E_0", 1);
   m_inputNTuple->SetBranchStatus ("lep_Eta_0", 1);
   m_inputNTuple->SetBranchStatus ("lep_Phi_0", 1);
   m_inputNTuple->SetBranchStatus ("lep_EtaBE2_0", 1);
+  m_inputNTuple->SetBranchStatus ("lep_Pt_1", 1);
   
   // Connect the branches of the input tree to the algorithm members
   //
@@ -96,6 +111,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_Eta_0",    &m_lep_Eta_0);
   m_inputNTuple->SetBranchAddress ("lep_Phi_0",    &m_lep_Phi_0);
   m_inputNTuple->SetBranchAddress ("lep_EtaBE2_0", &m_lep_EtaBE2_0);
+  m_inputNTuple->SetBranchAddress ("lep_Pt_1",     &m_lep_Pt_1);
 
   return EL::StatusCode::SUCCESS;
 }
@@ -113,11 +129,14 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   // you create here won't be available in the output if you have no
   // input events.
 
+  //ANA_CHECK_SET_TYPE (EL::StatusCode);
+  
   Info("initialize()", "Initialising HTopMultilepMiniNTupMaker...");
   
-  m_outputNTuple = EL::getNTupleSvc (wk(), m_outputNTupleName);
+  m_outputNTuple = EL::getNTupleSvc (wk(), m_outputNTupStreamName);
  
   m_outputNTuple->tree()->Branch("lep_Pt_0_Squared",  &m_lep_Pt_0_Squared, "lep_Pt_0_Squared/F");
+  m_outputNTuple->tree()->Branch("lep_Pt_01",         &m_lep_Pt_01, "lep_Pt_01/F");
   
   m_numEvent = 0;
   
@@ -135,6 +154,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   // histograms and trees.  This is where most of your actual analysis
   // code will go.
  
+  //ANA_CHECK_SET_TYPE (EL::StatusCode);
+  
   ++m_numEvent;
   
   if ( m_numEvent == 1 ) { Info("execute()", "Processing input TTree : %s\n", m_inputNTuple->GetName() ); }
@@ -144,9 +165,14 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   m_inputNTuple->GetEntry (wk()->treeEntry());
   
   m_lep_Pt_0_Squared = m_lep_Pt_0 * m_lep_Pt_0;
+  m_lep_Pt_01        = m_lep_Pt_0 + m_lep_Pt_1;
   
-  if ( m_debug ) { Info("execute()", "\t lep_Pt_0_Squared = %.2f", m_lep_Pt_0_Squared ); }
-  
+  if ( m_debug ) { 
+    Info("execute()", "\t lep_Pt_0 = %.2f [GeV]", m_lep_Pt_0/1e3 ); 
+    Info("execute()", "\t lep_Pt_1 = %.2f [GeV]", m_lep_Pt_1/1e3 ); 
+    Info("execute()", "\t lep_Pt_01 = %.2f [GeV]", m_lep_Pt_01/1e3 ); 
+    Info("execute()", "\t lep_Pt_0_Squared = %.2f [GeV]", m_lep_Pt_0_Squared/1e6 ); 
+  }
   
   return EL::StatusCode::SUCCESS;
 }
@@ -158,6 +184,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: postExecute ()
   // Here you do everything that needs to be done after the main event
   // processing.  This is typically very rare, particularly in user
   // code.  It is mainly used in implementing the NTupleSvc.
+  
+  //ANA_CHECK_SET_TYPE (EL::StatusCode);
+  
   return EL::StatusCode::SUCCESS;
 }
 
@@ -174,6 +203,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: finalize ()
   // submission node after all your histogram outputs have been
   // merged.  This is different from histFinalize() in that it only
   // gets called on worker nodes that processed input events.
+  
+  //ANA_CHECK_SET_TYPE (EL::StatusCode);
   
   Info("finalize()", "Finalising HTopMultilepMiniNTupMaker...");
   
@@ -194,5 +225,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: histFinalize ()
   // outputs have been merged.  This is different from finalize() in
   // that it gets called on all worker nodes regardless of whether
   // they processed input events.
+  
+  //ANA_CHECK_SET_TYPE (EL::StatusCode);
+  
   return EL::StatusCode::SUCCESS;
 }
