@@ -43,6 +43,7 @@ private:
   /** Input TTree branches */
   
   ULong64_t       m_EventNumber;
+  UInt_t          m_RunNumber;
   
   Float_t	  m_lep_Pt_0;
   Float_t	  m_lep_E_0;
@@ -55,6 +56,45 @@ private:
 
   Float_t         m_lep_Pt_0_Squared;
   Float_t         m_lep_Pt_01;
+  
+  
+  int m_out_isMC;
+  int m_out_passHLT;
+  
+  int m_out_njets_mv2c20_Fix77;
+  int m_out_ntau;
+  int m_out_nlep;
+  int m_out_njets;
+  int m_out_nel;
+  int m_out_nmuon;
+  
+  std::vector<float> m_out_lep_pt;
+  std::vector<float> m_out_lep_eta;
+  std::vector<float> m_out_lep_caloCluster_eta;
+  std::vector<float> m_out_lep_phi;
+  std::vector<int> m_out_lep_flavour;
+  std::vector<int> m_out_lep_isTrigMatched;
+  std::vector<int> m_out_lep_isTightSelected;
+  std::vector<int> m_out_lep_truthType;
+  std::vector<int> m_out_lep_truthOrigin;
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
+  m_out_
 
 
   unsigned int m_numEvent;  //!

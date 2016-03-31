@@ -95,6 +95,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   // Re-enable the branches we are going to use
   //
   m_inputNTuple->SetBranchStatus ("EventNumber", 1); 
+  m_inputNTuple->SetBranchStatus ("RunNumber", 1); 
   m_inputNTuple->SetBranchStatus ("dilep_type", 1); 
   m_inputNTuple->SetBranchStatus ("lep_Pt_0", 1);
   m_inputNTuple->SetBranchStatus ("lep_E_0", 1);
@@ -106,6 +107,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   // Connect the branches of the input tree to the algorithm members
   //
   m_inputNTuple->SetBranchAddress ("EventNumber",  &m_EventNumber);
+  m_inputNTuple->SetBranchAddress ("RunNumber",    &m_RunNumber);
   m_inputNTuple->SetBranchAddress ("lep_Pt_0",     &m_lep_Pt_0);
   m_inputNTuple->SetBranchAddress ("lep_E_0",      &m_lep_E_0);
   m_inputNTuple->SetBranchAddress ("lep_Eta_0",    &m_lep_Eta_0);

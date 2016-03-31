@@ -79,11 +79,16 @@ def main():
                 inputpath = inputdir + '/*' + s['ID'] + '*' + s['name'] + '*/*.root*'
             else:
                 inputpath = inputdir + '/*' + s['name'] + '*/*.root*'
-            outputpath = sampledir + '/' + s['name'] + '.root'
+
+            separator = '.'
+            if not s['ID']:
+                separator = ''
+            outputpath = sampledir + '/' + s['ID'] + separator + s['name'] + '.root'
+
             weight = None
             try:
                 if options.weight:
-                    weight = float(s['xsection']) * float(s['efficiency']) * float(s['kfactor']) * 1e3 # to get the weight in fb
+                    weight = float(s['xsection']) * float(s['efficiency']) * float(s['kfactor']) * 1e3 # to get the weight in fb (the Xsec is in pb)
             except:
                 pass
             mergeOne(inputpath, outputpath, logfile, weight, options.cutflow)
@@ -178,9 +183,9 @@ def recursiveMerge(target, infile, path='', cache={'TOTALLUMI':0}, cutflow=True)
         l = infile.GetDirectory(path)
         keys = l.GetListOfKeys()
         cycles = {}
-	
+
         #print("keys in input file: \n {0} \n".format(keys.ls()))
-	
+
         for entry in range(keys.GetEntries()):
             name = keys.At(entry).GetName() + ";" + str(keys.At(entry).GetCycle())
             if path:
