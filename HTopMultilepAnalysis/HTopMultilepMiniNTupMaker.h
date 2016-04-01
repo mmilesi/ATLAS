@@ -27,29 +27,30 @@ class HTopMultilepMiniNTupMaker : public xAH::Algorithm
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.
 public:
-  
+
   std::string m_outputNTupStreamName;
   /** A comma-separated list of input branches to be activated */
   std::string m_inputBranches;
 
 private:
- 
+
   /** Input TTree */
 
   TTree*          m_inputNTuple;
-  
-  /** Output TTree */
-  
+
+  /** Output TTree (svc) */
+
   EL::NTupleSvc*  m_outputNTuple;
 
   /** Input TTree branches whcih need to be used by the algorithm */
-  
+
   ULong64_t       m_EventNumber;
   UInt_t          m_RunNumber;
+  UInt_t          m_mc_channel_number; /** for DATA, mc_channel_number=0 */
 
   Int_t 	  m_dilep_type;
   Int_t 	  m_trilep_type;
-  
+
   Float_t	  m_lep_ID_0;
   Float_t	  m_lep_Pt_0;
   Float_t	  m_lep_E_0;
@@ -83,7 +84,7 @@ private:
   Float_t	  m_lep_SFTTVA_0;
   Float_t	  m_lep_SFObjLoose_0;
   Float_t	  m_lep_SFObjTight_0;
-  
+
   Float_t	  m_lep_ID_1;
   Float_t	  m_lep_Pt_1;
   Float_t	  m_lep_E_1;
@@ -150,28 +151,28 @@ private:
   Float_t	  m_lep_SFReco_2;
   Float_t	  m_lep_SFTTVA_2;
   Float_t	  m_lep_SFObjLoose_2;
-  Float_t	  m_lep_SFObjTight_2;  
-  
+  Float_t	  m_lep_SFObjTight_2;
+
   /** Extra branches to be stored in output TTree */
-  
+
   char      isMC;
 
   char	    m_isSS01;
   char	    m_isSS12;
-  
+
   char	    m_is_T_T;
   char	    m_is_T_AntiT;
   char	    m_is_AntiT_T;
   char	    m_is_AntiT_AntiT;
-  
+
   int       m_nmuons;
   int       m_nelectrons;
   int       m_nleptons;
-  
+
   char	    m_lep_isTightSelected_0;
   char	    m_lep_isTightSelected_1;
   char	    m_lep_isTightSelected_2;
-  
+
   float     m_lep_Tag_Pt;
   float     m_lep_Tag_Eta;
   float     m_lep_Tag_EtaBE2;
@@ -180,7 +181,7 @@ private:
   float	    m_lep_Tag_ID;
   char	    m_lep_Tag_isTrigMatch;
   char	    m_lep_Tag_isTightSelected;
-    
+
   float     m_lep_Probe_Pt;
   float     m_lep_Probe_Eta;
   float     m_lep_Probe_EtaBE2;
@@ -189,18 +190,18 @@ private:
   float	    m_lep_Probe_ID;
   char	    m_lep_Probe_isTrigMatch;
   char	    m_lep_Probe_isTightSelected;
-    
+
   /** Other private members */
-  
+
   unsigned int m_numEvent;  //!
-    
+
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
   // node (done by the //!)
 public:
-  
+
   // this is a standard constructor
-  HTopMultilepMiniNTupMaker (std::string className = "HTopMultilepMiniNTupMaker"); 
+  HTopMultilepMiniNTupMaker (std::string className = "HTopMultilepMiniNTupMaker");
 
   // these are the functions inherited from Algorithm
   virtual EL::StatusCode setupJob (EL::Job& job);
@@ -215,11 +216,11 @@ public:
 
   // this is needed to distribute the algorithm to the workers
   ClassDef(HTopMultilepMiniNTupMaker, 1);
-  
+
 private:
 
   EL::StatusCode enableSelectedBranches ();
-  
+
 };
 
 #endif

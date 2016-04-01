@@ -10,7 +10,7 @@ c = xAH_config()
 # List the branches to be copied over and activated from the input TTree
 #
 eventweight_branches = ["mcWeightOrg","pileupEventWeight_090","MV2c20_77_EventWeight","JVT_EventWeight","lepSFTrigLoose","lepSFTrigTight","lepSFObjLoose","lepSFObjTight","tauSFTight","tauSFLoose"]
-event_branches       = ["EventNumber","RunNumber","passEventCleaning","onelep_type","dilep_type","trilep_type","total_charge","total_leptons","nJets_OR_T","nJets_OR","nJets_OR_T_MV2c20_77","nJets_OR_MV2c20_77","nTaus_OR_Pt25","Mll01","Ptll01","DRll01","Mlll012","Mll02","Ptll02","DRll02","Mll12","Ptll12","DRll12","HT","HT_lep","HT_jets","MET_RefFinal_et","MET_RefFinal_phi","isBlinded"]
+event_branches       = ["EventNumber","RunNumber","mc_channel_number","passEventCleaning","onelep_type","dilep_type","trilep_type","total_charge","total_leptons","nJets_OR_T","nJets_OR","nJets_OR_T_MV2c20_77","nJets_OR_MV2c20_77","nTaus_OR_Pt25","Mll01","Ptll01","DRll01","Mlll012","Mll02","Ptll02","DRll02","Mll12","Ptll12","DRll12","HT","HT_lep","HT_jets","MET_RefFinal_et","MET_RefFinal_phi","isBlinded"]
 trigbits_branches    = ["HLT_e24_lhmedium_L1EM20VH","HLT_e24_lhmedium_L1EM18VH","HLT_e60_lhmedium","HLT_e120_lhloose","HLT_mu20_iloose_L1MU15","HLT_mu50"]
 jet_branches         = ["lead_jetPt","lead_jetEta","lead_jetPhi","sublead_jetPt","sublead_jetEta","sublead_jetPhi"]
 lep_branches         = ["lep_ID_0","lep_Index_0","lep_Pt_0","lep_E_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_sigd0PV_0","lep_Z0SinTheta_0",

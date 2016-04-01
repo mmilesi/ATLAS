@@ -19,7 +19,7 @@ HTopMultilepMiniNTupMaker :: HTopMultilepMiniNTupMaker(std::string className) :
   // initialize().
 
   Info("HTopMultilepMiniNTupMaker()", "Calling constructor");
-  
+
   m_outputNTupStreamName = "output";
   m_inputBranches        = "";
 }
@@ -35,7 +35,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setupJob (EL::Job& job)
   // sole advantage of putting it here is that it gets automatically
   // activated/deactivated when you add/remove the algorithm from your
   // job, which may or may not be of value to you.
- 
+
   //ANA_CHECK_SET_TYPE (EL::StatusCode); // set type of return code you are expecting (add to top of each function once)
 
   Info("setupJob()", "Calling setupJob");
@@ -51,11 +51,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: histInitialize ()
   // beginning on each worker node, e.g. create histograms and output
   // trees.  This method gets called before any input files are
   // connected.
-  
+
   //ANA_CHECK_SET_TYPE (EL::StatusCode);
-  
+
   Info("histInitialize()", "Calling histInitialize");
-  
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -65,9 +65,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: fileExecute ()
 {
   // Here you do everything that needs to be done exactly once for every
   // single file, e.g. collect a list of all lumi-blocks processed
-  
+
   //ANA_CHECK_SET_TYPE (EL::StatusCode);
-  
+
   Info("fileExecute()", "Calling fileExecute");
 
   return EL::StatusCode::SUCCESS;
@@ -80,22 +80,22 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   // Here you do everything you need to do when we change input files,
   // e.g. resetting branch addresses on trees.  If you are using
   // D3PDReader or a similar service this method is not needed.
-  
+
   ANA_CHECK_SET_TYPE (EL::StatusCode);
-  
+
   firstFile = firstFile;
-  
+
   Info("changeInput()", "Calling changeInput");
-  
+
   m_inputNTuple = wk()->tree();
 
   ANA_CHECK( this->enableSelectedBranches() );
-  
+
   // Connect the branches of the input tree to the algorithm members
   //
   m_inputNTuple->SetBranchAddress ("EventNumber",   			      &m_EventNumber);
   m_inputNTuple->SetBranchAddress ("RunNumber",   			      &m_RunNumber);
-
+  m_inputNTuple->SetBranchAddress ("mc_channel_number",                       &m_mc_channel_number);
   m_inputNTuple->SetBranchAddress ("dilep_type",  			      &m_dilep_type);
   m_inputNTuple->SetBranchAddress ("trilep_type",  			      &m_trilep_type);
 
@@ -200,7 +200,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_SFTTVA_2",   			      &m_lep_SFTTVA_2);
   m_inputNTuple->SetBranchAddress ("lep_SFObjLoose_2",   		      &m_lep_SFObjLoose_2);
   m_inputNTuple->SetBranchAddress ("lep_SFObjTight_2",   		      &m_lep_SFObjTight_2);
- 
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -218,29 +218,29 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   // input events.
 
   //ANA_CHECK_SET_TYPE (EL::StatusCode);
-  
+
   Info("initialize()", "Initialising HTopMultilepMiniNTupMaker...");
-  
+
   m_outputNTuple = EL::getNTupleSvc (wk(), m_outputNTupStreamName);
- 
+
   // Set new branches for output TTree
   //
   m_outputNTuple->tree()->Branch("m_isMC",               	&m_isMC, "m_isMC/B");
   m_outputNTuple->tree()->Branch("m_isSS01",               	&m_isSS01, "m_isSS01/B");
   m_outputNTuple->tree()->Branch("m_isSS12",               	&m_isSS12, "m_isSS12/B");
   m_outputNTuple->tree()->Branch("m_is_T_T",               	&m_is_T_T, "m_is_T_T/B");
-  m_outputNTuple->tree()->Branch("m_is_T_AntiT",               	&m_is_T_AntiT, "m_is_T_AntiT/B");  
+  m_outputNTuple->tree()->Branch("m_is_T_AntiT",               	&m_is_T_AntiT, "m_is_T_AntiT/B");
   m_outputNTuple->tree()->Branch("m_is_AntiT_T",               	&m_is_AntiT_T, "m_is_AntiT_T/B");
-  m_outputNTuple->tree()->Branch("m_is_AntiT_AntiT",            &m_is_AntiT_AntiT, "m_is_AntiT_AntiT/B");  
-  
+  m_outputNTuple->tree()->Branch("m_is_AntiT_AntiT",            &m_is_AntiT_AntiT, "m_is_AntiT_AntiT/B");
+
   m_outputNTuple->tree()->Branch("m_nmuons",               	&m_nmuons, "m_nmuons/I");
   m_outputNTuple->tree()->Branch("m_nelectrons",               	&m_nelectrons, "m_nelectrons/I");
   m_outputNTuple->tree()->Branch("m_nleptons",               	&m_nleptons, "m_nleptons/I");
-  
+
   m_outputNTuple->tree()->Branch("m_lep_isTightSelected_0",     &m_lep_isTightSelected_0, "m_lep_isTightSelected_0/B");
   m_outputNTuple->tree()->Branch("m_lep_isTightSelected_1",     &m_lep_isTightSelected_1, "m_lep_isTightSelected_1/B");
   m_outputNTuple->tree()->Branch("m_lep_isTightSelected_2",     &m_lep_isTightSelected_2, "m_lep_isTightSelected_2/B");
-  
+
   m_outputNTuple->tree()->Branch("m_lep_Tag_Pt",               	&m_lep_Tag_Pt		   , "m_lep_Tag_Pt/F");
   m_outputNTuple->tree()->Branch("m_lep_Tag_Eta",               &m_lep_Tag_Eta  	   , "m_lep_Tag_Eta/F");
   m_outputNTuple->tree()->Branch("m_lep_Tag_EtaBE2",            &m_lep_Tag_EtaBE2	   , "m_lep_Tag_EtaBE2/F");
@@ -249,7 +249,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("m_lep_Tag_ID",               	&m_lep_Tag_ID		   , "m_lep_Tag_ID/F");
   m_outputNTuple->tree()->Branch("m_lep_Tag_isTrigMatch",       &m_lep_Tag_isTrigMatch     , "m_lep_Tag_isTrigMatch/B");
   m_outputNTuple->tree()->Branch("m_lep_Tag_isTightSelected",   &m_lep_Tag_isTightSelected , "m_lep_Tag_isTightSelected/B");
-  
+
   m_outputNTuple->tree()->Branch("m_lep_Probe_Pt",                &m_lep_Probe_Pt	   , "m_lep_Probe_Pt/F");
   m_outputNTuple->tree()->Branch("m_lep_Probe_Eta",               &m_lep_Probe_Eta  	   , "m_lep_Probe_Eta/F");
   m_outputNTuple->tree()->Branch("m_lep_Probe_EtaBE2",            &m_lep_Probe_EtaBE2	   , "m_lep_Probe_EtaBE2/F");
@@ -257,14 +257,14 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("m_lep_Probe_Z0SinTheta",        &m_lep_Probe_Z0SinTheta  , "m_lep_Probe_Z0SinTheta/F");
   m_outputNTuple->tree()->Branch("m_lep_Probe_ID",                &m_lep_Probe_ID	   , "m_lep_Probe_ID/F");
   m_outputNTuple->tree()->Branch("m_lep_Probe_isTrigMatch",       &m_lep_Probe_isTrigMatch     , "m_lep_Probe_isTrigMatch/B");
-  m_outputNTuple->tree()->Branch("m_lep_Probe_isTightSelected",   &m_lep_Probe_isTightSelected , "m_lep_Probe_isTightSelected/B");  
-  
+  m_outputNTuple->tree()->Branch("m_lep_Probe_isTightSelected",   &m_lep_Probe_isTightSelected , "m_lep_Probe_isTightSelected/B");
+
   // ---------------------------------------------------------------------------------------------------------------
-  
+
   m_numEvent = 0;
-  
+
   Info("initialize()", "All good!");
-  
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -276,17 +276,17 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   // events, e.g. read input variables, apply cuts, and fill
   // histograms and trees.  This is where most of your actual analysis
   // code will go.
- 
+
   //ANA_CHECK_SET_TYPE (EL::StatusCode);
-  
+
   ++m_numEvent;
-  
+
   if ( m_numEvent == 1 ) { Info("execute()", "Processing input TTree : %s\n", m_inputNTuple->GetName() ); }
- 
+
   if ( m_debug ) { Info("execute()", "===> Event %u - EventNumber = %u ", static_cast<uint32_t>(m_numEvent), static_cast<uint32_t>(m_EventNumber) ); }
- 
+
   m_inputNTuple->GetEntry (wk()->treeEntry());
-  
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -297,9 +297,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: postExecute ()
   // Here you do everything that needs to be done after the main event
   // processing.  This is typically very rare, particularly in user
   // code.  It is mainly used in implementing the NTupleSvc.
-  
+
   //ANA_CHECK_SET_TYPE (EL::StatusCode);
-  
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -316,11 +316,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: finalize ()
   // submission node after all your histogram outputs have been
   // merged.  This is different from histFinalize() in that it only
   // gets called on worker nodes that processed input events.
-  
+
   //ANA_CHECK_SET_TYPE (EL::StatusCode);
-  
+
   Info("finalize()", "Finalising HTopMultilepMiniNTupMaker...");
-  
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -338,18 +338,18 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: histFinalize ()
   // outputs have been merged.  This is different from finalize() in
   // that it gets called on all worker nodes regardless of whether
   // they processed input events.
-  
+
   //ANA_CHECK_SET_TYPE (EL::StatusCode);
-  
+
   return EL::StatusCode::SUCCESS;
 }
 
 EL::StatusCode HTopMultilepMiniNTupMaker :: enableSelectedBranches ()
 {
 
-  if ( m_inputBranches.empty() ) { 
+  if ( m_inputBranches.empty() ) {
     Info("enableSelectedBranches()", "Keeping all input branches enabled...");
-    return EL::StatusCode::SUCCESS; 
+    return EL::StatusCode::SUCCESS;
   }
 
   // Firstly, disable all branches
@@ -357,13 +357,13 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: enableSelectedBranches ()
   m_inputNTuple->SetBranchStatus ("*", 0);
 
   std::vector<std::string> branch_vec;
-  
-  // Parse input list, split by comma, and put into a vector 
+
+  // Parse input list, split by comma, and put into a vector
   //
   std::string token;
   std::istringstream ss( m_inputBranches );
   while ( std::getline(ss, token, ',') ) { branch_vec.push_back(token); }
-  
+
   // Re-enable the branches we are going to use
   //
   for ( const auto& branch : branch_vec ) {
