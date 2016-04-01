@@ -431,7 +431,7 @@ delta_R_lep0lep1 = 'deltaR( lep_eta[0], lep_phi[0], lep_eta[1], lep_phi[1] )'
 
 if doSR or doLowNJetCR:
     print ''
-    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
+    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
     if doSR:
         vardb.registerVar( Variable(shortname = 'NJets4j5j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 4, minval = 1.5, maxval = 5.5) )
     elif doLowNJetCR:
@@ -468,7 +468,7 @@ if doStandardPlots:
     print ''
     #vardb.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = 'jet_pt[0]/1e3', bins = 36, minval = 20.0, maxval = 200.0,) )
     #vardb.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = 'jet_eta[0]', bins = 50, minval = -5.0, maxval = 5.0) )
-    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
+    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = -0.5, maxval = 3.5) )
     #vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'njets+10.0*njets_mv2c20_Fix77', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet')) )
     #
@@ -1018,6 +1018,8 @@ if doMMRatesLHFit:
 
 ttH2015 = TTHBackgrounds2015(inputs, vardb)
 
+ttH2015.norm_factor = 1e-3 # for samples v029-
+
 # ------------------------------------
 # Set the integrated luminosity (fb-1)
 # ------------------------------------
@@ -1369,18 +1371,14 @@ for category in vardb.categorylist:
     # NB: *must* initialise this to 1.0 !!
     #
     lepSF_weight  = '1.0'
-    jetSF_weight  = '1.0'
 
     # ---> apply the lepton SFs to the event here!
     #
     #if not ( args.noWeights or doMMClosureTest or doMMClosureRates ):
     if not ( args.noWeights ):
-
         lepSF_weight = 'weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]'
-        jetSF_weight = 'weight_jet_JVT_HTop[0]'
 
     print ("\tApplying lepton SFs (to MC only) --> {0}\n".format( lepSF_weight ))
-    print ("\tApplying jet SFs (to MC only) --> {0}\n".format( jetSF_weight ))
 
     # ------------------------------
     # Processing different variables
@@ -1389,6 +1387,7 @@ for category in vardb.categorylist:
 
         # NB: *must* initialise this to 1.0 !!
         #
+        jetSF_weight       = '1.0'
         bjetSF_weight      = '1.0'
         combined_SF_weight = '1.0'
 
@@ -1398,11 +1397,14 @@ for category in vardb.categorylist:
         #
         #if not ( args.noWeights or doMMClosureTest or doMMClosureRates ):
         if not ( args.noWeights ):
-            if  ( ( ("BJet") in category.cut.cutname and not doRelaxedBJetCut ) or  ( ("BJetSR") in category.cut.cutname ) ) or ("BJet") in var.shortname:
-
-                bjetSF_weight = 'weight_jet_MV2c20_SFFix77[0]'
-
-                print ("\t\tCategory contains a cut on BJet multiplicity, or plotting variable \'Bjet\' : apply BTagging SF (to MC only) --> {0}\n".format( bjetSF_weight ))
+            
+	    if  ( ( ("NJet") in category.cut.cutname ) or  ( ("SR") in category.cut.cutname ) ):
+                #jetSF_weight = 'weight_jet_JVT_HTop[0]'
+                print ("\t\tCategory contains a cut on Jet multiplicity : applying jet SFs (to MC only) --> {0}\n".format( jetSF_weight ))
+	    
+	    if  ( ( ("BJet") in category.cut.cutname and not doRelaxedBJetCut ) or  ( ("BJetSR") in category.cut.cutname ) ) or ("BJet") in var.shortname:
+                bjetSF_weight = 'weight_jet__MV2c20_SFFix77[0]'
+                print ("\t\tCategory contains a cut on BJet multiplicity, or plotting variable \'Bjet\' : applying BTagging SF (to MC only) --> {0}\n".format( bjetSF_weight ))
 
         combined_SF_weight = str(lepSF_weight) + ' * ' + str(jetSF_weight) + ' * ' + str(bjetSF_weight)
 

@@ -39,14 +39,14 @@ def get_yields(nominal, up=None, down=None):
      else:
        print ("\t\t{0}-th bin: integral = {1} +- {2} (stat)".format( bin, value_nominal, stat_error ))
 
-  integral_stat_error =  Double(0)
+  integral_stat_error = Double(0)
   integral_nominal    = nominal.IntegralAndError(0,nominal.GetNbinsX()+1,integral_stat_error)
 
   print ("\t\t--------------------")
   if ( up and down ):
      list_variations = []
-     list_variations.append(abs( up.Integral() - integral_nominal ))
-     list_variations.append(abs( down.Integral() - integral_nominal ))
+     list_variations.append(abs( up.Integral(0,up.GetNbinsX()+1) - integral_nominal ))
+     list_variations.append(abs( down.Integral(0,down.GetNbinsX()+1) - integral_nominal ))
 
      integral_sys_error  = max(list_variations)
 
@@ -57,47 +57,67 @@ def get_yields(nominal, up=None, down=None):
 
 def main():
 
-  # -----------
-  # DATA-DRIVEN
-  #------------
+  doClosure = True
 
-  #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/"
-  #region    = "SS_LowNJetCR_DataDriven"
-  #var_name  = "NJets2j3j"
+  if not doClosure:
+    
+    # -----------
+    # DATA-DRIVEN
+    #------------  
+    
+    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/"
+    #region    = "SS_LowNJetCR_DataDriven"
+    #var_name  = "NJets2j3j"
 
-  #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/"
-  #region    = "SS_LowNJetCR_DataDriven"
-  #var_name  = "NJets2j3j"
+    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut_EffNoLepIso/"
+    #region    = "SS_LowNJetCR_DataDriven"
+    #var_name  = "NJets2j3j"
 
-  #inputpath = "./OutputPlots_MM_TwoLepSR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/"
-  #region    = "SS_SR_DataDriven"
-  #var_name  = "NJets4j5j"
+    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/"
+    #region    = "SS_LowNJetCR_DataDriven"
+    #var_name  = "NJets2j3j"
 
-  #inputpath = "./OutputPlots_MM_TwoLepSR_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/"
-  #region    = "SS_SR_DataDriven"
-  #var_name  = "NJets4j5j"
+    #inputpath = "./OutputPlots_MM_TwoLepSR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/"
+    #region    = "SS_SR_DataDriven"
+    #var_name  = "NJets4j5j"
+    
+    inputpath = "./OutputPlots_MM_TwoLepSR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut_EffNoLepIso/"
+    region    = "SS_SR_DataDriven"
+    var_name  = "NJets4j5j"  
 
-  # -------------
-  # TTBAR CLOSURE
-  #--------------
-
-  #inputpath = "./OutputPlots_MM_MMClosureTest_v029_Baseline_Mllgt40GeV_AllElEtaCut/"
-  #region    = "SS_SR_HighJet_DataDriven_Closure"
-  #var_name  = "NJets4j5j"
-  ##region    = "SS_SR_LowJet_DataDriven_Closure"
-  ##var_name  = "NJets2j3j"
-
-  inputpath = "./OutputPlots_MM_MMClosureTest_v029_NoLepIso_Mllgt40GeV_AllElEtaCut/"
-  region    = "SS_SR_HighJet_DataDriven_Closure"
-  var_name  = "NJets4j5j"
-  ##region    = "SS_SR_LowJet_DataDriven_Closure"
-  ##var_name  = "NJets2j3j"
-
-  #inputpath = "./OutputPlots_MM_MMClosureTest_v029_NoLepIP_Mllgt40GeV_AllElEtaCut/"
-  #region    = "SS_SR_HighJet_DataDriven_Closure"
-  #var_name  = "NJets4j5j"
-  ##region    = "SS_SR_LowJet_DataDriven_Closure"
-  ##var_name  = "NJets2j3j"
+    #inputpath = "./OutputPlots_MM_TwoLepSR_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/"
+    #region    = "SS_SR_DataDriven"
+    #var_name  = "NJets4j5j"
+  
+  else:
+    
+    # -------------
+    # TTBAR CLOSURE
+    #--------------
+    
+    #inputpath = "./OutputPlots_MM_MMClosureTest_v029_Baseline_Mllgt40GeV_AllElEtaCut/"
+    #region    = "SS_SR_HighJet_DataDriven_Closure"
+    #var_name  = "NJets4j5j"
+    ##region	= "SS_SR_LowJet_DataDriven_Closure"
+    ##var_name  = "NJets2j3j"
+    
+    inputpath = "./OutputPlots_MM_MMClosureTest_v029_Baseline_Mllgt40GeV_AllElEtaCut_EffNoLepIso/"
+    region    = "SS_SR_HighJet_DataDriven_Closure"
+    var_name  = "NJets4j5j"
+    ##region	= "SS_SR_LowJet_DataDriven_Closure"
+    ##var_name  = "NJets2j3j"  
+    
+    #inputpath = "./OutputPlots_MM_MMClosureTest_v029_NoLepIso_Mllgt40GeV_AllElEtaCut/"
+    #region    = "SS_SR_HighJet_DataDriven_Closure"
+    #var_name  = "NJets4j5j"
+    ##region	= "SS_SR_LowJet_DataDriven_Closure"
+    ##var_name  = "NJets2j3j"
+  
+    #inputpath = "./OutputPlots_MM_MMClosureTest_v029_NoLepIP_Mllgt40GeV_AllElEtaCut/"
+    #region    = "SS_SR_HighJet_DataDriven_Closure"
+    #var_name  = "NJets4j5j"
+    ##region	= "SS_SR_LowJet_DataDriven_Closure"
+    ##var_name  = "NJets2j3j"
 
   flavour_list = ["ElEl", "MuMu", "OF"]
 
@@ -117,10 +137,11 @@ def main():
     print ("\n\tFakes: \n")
     get_yields(fakes_nominal,fakes_up,fakes_down)
 
-    ttbar_nominal = myfile.Get("ttbarbkg")
+    if doClosure:
+    	ttbar_nominal = myfile.Get("ttbarbkg")
 
-    print ("\n\tTTbar: \n")
-    get_yields(ttbar_nominal)
+    	print ("\n\tTTbar: \n")
+    	get_yields(ttbar_nominal)
 
     expected_nominal = myfile.Get("expected")
     expected_up	     = myfile.Get("expected_MMfsys_up")
@@ -129,15 +150,16 @@ def main():
     print ("\n\tExpected: \n")
     get_yields(expected_nominal,expected_up,expected_down)
 
-    #observed = myfile.Get("observed")
+    if not doClosure:
+    	observed = myfile.Get("observed")
+        if observed:
+    	   print ("\n\tObserved: \n")
+    	   get_yields(observed)
 
-    #print ("\n\tObserved: \n")
-    #get_yields(observed)
+    	signal = myfile.Get("signal")
 
-    #signal = myfile.Get("signal")
-
-    #print ("\n\tSignal: \n")
-    #get_yields(signal)
+    	print ("\n\tSignal: \n")
+    	get_yields(signal)
 
 # -----------------------------------------------------------------------------------
 
