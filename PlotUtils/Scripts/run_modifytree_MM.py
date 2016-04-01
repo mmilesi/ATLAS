@@ -26,7 +26,8 @@ gROOT.SetBatch(True)
 
 oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED/'
-newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED_DDQMisIDSub/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED_DDQMisIDSub/'
+newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED_EffNoLepIso/'
 
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_DATA/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_DATA_MM_WEIGHTED/'

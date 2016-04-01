@@ -888,8 +888,8 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   //std::string RR_dir("OutputPlots_MMClosureRates_v027");
   
   //std::string RR_dir("OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV_AllElEtaCut");
-  //std::string RR_dir("OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV_AllElEtaCut");
-  std::string RR_dir("OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV_AllElEtaCut");
+  std::string RR_dir("OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV_AllElEtaCut");
+  //std::string RR_dir("OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV_AllElEtaCut");
 
   // when using ch-flip rate as RR (for electrons)
   //std::string RR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_ChFlipBkgRates_13F");
