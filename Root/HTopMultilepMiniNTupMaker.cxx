@@ -21,6 +21,7 @@ HTopMultilepMiniNTupMaker :: HTopMultilepMiniNTupMaker(std::string className) :
   Info("HTopMultilepMiniNTupMaker()", "Calling constructor");
   
   m_outputNTupStreamName = "output";
+  m_inputBranches        = "";
 }
 
 
@@ -80,41 +81,126 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   // e.g. resetting branch addresses on trees.  If you are using
   // D3PDReader or a similar service this method is not needed.
   
-  //ANA_CHECK_SET_TYPE (EL::StatusCode);
+  ANA_CHECK_SET_TYPE (EL::StatusCode);
   
   firstFile = firstFile;
   
   Info("changeInput()", "Calling changeInput");
   
   m_inputNTuple = wk()->tree();
-  
-  // Firstly, disable all branches
-  //
-  m_inputNTuple->SetBranchStatus ("*", 0);
 
-  // Re-enable the branches we are going to use
-  //
-  m_inputNTuple->SetBranchStatus ("EventNumber", 1); 
-  m_inputNTuple->SetBranchStatus ("RunNumber", 1); 
-  m_inputNTuple->SetBranchStatus ("dilep_type", 1); 
-  m_inputNTuple->SetBranchStatus ("lep_Pt_0", 1);
-  m_inputNTuple->SetBranchStatus ("lep_E_0", 1);
-  m_inputNTuple->SetBranchStatus ("lep_Eta_0", 1);
-  m_inputNTuple->SetBranchStatus ("lep_Phi_0", 1);
-  m_inputNTuple->SetBranchStatus ("lep_EtaBE2_0", 1);
-  m_inputNTuple->SetBranchStatus ("lep_Pt_1", 1);
+  ANA_CHECK( this->enableSelectedBranches() );
   
   // Connect the branches of the input tree to the algorithm members
   //
-  m_inputNTuple->SetBranchAddress ("EventNumber",  &m_EventNumber);
-  m_inputNTuple->SetBranchAddress ("RunNumber",    &m_RunNumber);
-  m_inputNTuple->SetBranchAddress ("lep_Pt_0",     &m_lep_Pt_0);
-  m_inputNTuple->SetBranchAddress ("lep_E_0",      &m_lep_E_0);
-  m_inputNTuple->SetBranchAddress ("lep_Eta_0",    &m_lep_Eta_0);
-  m_inputNTuple->SetBranchAddress ("lep_Phi_0",    &m_lep_Phi_0);
-  m_inputNTuple->SetBranchAddress ("lep_EtaBE2_0", &m_lep_EtaBE2_0);
-  m_inputNTuple->SetBranchAddress ("lep_Pt_1",     &m_lep_Pt_1);
+  m_inputNTuple->SetBranchAddress ("EventNumber",   			      &m_EventNumber);
+  m_inputNTuple->SetBranchAddress ("RunNumber",   			      &m_RunNumber);
 
+  m_inputNTuple->SetBranchAddress ("dilep_type",  			      &m_dilep_type);
+  m_inputNTuple->SetBranchAddress ("trilep_type",  			      &m_trilep_type);
+
+  m_inputNTuple->SetBranchAddress ("lep_ID_0",   			      &m_lep_ID_0);
+  m_inputNTuple->SetBranchAddress ("lep_Pt_0",  			      &m_lep_Pt_0);
+  m_inputNTuple->SetBranchAddress ("lep_E_0",   			      &m_lep_E_0);
+  m_inputNTuple->SetBranchAddress ("lep_Eta_0",  			      &m_lep_Eta_0);
+  m_inputNTuple->SetBranchAddress ("lep_Phi_0",   			      &m_lep_Phi_0);
+  m_inputNTuple->SetBranchAddress ("lep_EtaBE2_0",   			      &m_lep_EtaBE2_0);
+  m_inputNTuple->SetBranchAddress ("lep_sigd0PV_0",   			      &m_lep_sigd0PV_0);
+  m_inputNTuple->SetBranchAddress ("lep_Z0SinTheta_0",   		      &m_lep_Z0SinTheta_0);
+  m_inputNTuple->SetBranchAddress ("lep_isTightLH_0",   		      &m_lep_isTightLH_0);
+  m_inputNTuple->SetBranchAddress ("lep_isMediumLH_0",   		      &m_lep_isMediumLH_0);
+  m_inputNTuple->SetBranchAddress ("lep_isLooseLH_0",   		      &m_lep_isLooseLH_0);
+  m_inputNTuple->SetBranchAddress ("lep_isTight_0",   			      &m_lep_isTight_0);
+  m_inputNTuple->SetBranchAddress ("lep_isMedium_0",   			      &m_lep_isMedium_0);
+  m_inputNTuple->SetBranchAddress ("lep_isLoose_0",   			      &m_lep_isLoose_0);
+  m_inputNTuple->SetBranchAddress ("lep_isolationLooseTrackOnly_0",   	      &m_lep_isolationLooseTrackOnly_0);
+  m_inputNTuple->SetBranchAddress ("lep_isolationLoose_0",   		      &m_lep_isolationLoose_0);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTight_0",   	      &m_lep_isolationFixedCutTight_0);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTightTrackOnly_0",   &m_lep_isolationFixedCutTightTrackOnly_0);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutLoose_0",   	      &m_lep_isolationFixedCutLoose_0);
+  m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_0",   		      &m_lep_isTrigMatch_0);
+  m_inputNTuple->SetBranchAddress ("lep_isPrompt_0",   			      &m_lep_isPrompt_0);
+  m_inputNTuple->SetBranchAddress ("lep_isBremsElec_0",   		      &m_lep_isBremsElec_0);
+  m_inputNTuple->SetBranchAddress ("lep_isFakeLep_0",   		      &m_lep_isFakeLep_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFIDLoose_0",   		      &m_lep_SFIDLoose_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFIDTight_0",   		      &m_lep_SFIDTight_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFTrigLoose_0",   		      &m_lep_SFTrigLoose_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFTrigTight_0",   		      &m_lep_SFTrigTight_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFIsoLoose_0",   		      &m_lep_SFIsoLoose_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFIsoTight_0",   		      &m_lep_SFIsoTight_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFReco_0",   			      &m_lep_SFReco_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFTTVA_0",   			      &m_lep_SFTTVA_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFObjLoose_0",   		      &m_lep_SFObjLoose_0);
+  m_inputNTuple->SetBranchAddress ("lep_SFObjTight_0",   		      &m_lep_SFObjTight_0);
+
+  m_inputNTuple->SetBranchAddress ("lep_ID_1",   			      &m_lep_ID_1);
+  m_inputNTuple->SetBranchAddress ("lep_Pt_1",  			      &m_lep_Pt_1);
+  m_inputNTuple->SetBranchAddress ("lep_E_1",   			      &m_lep_E_1);
+  m_inputNTuple->SetBranchAddress ("lep_Eta_1",  			      &m_lep_Eta_1);
+  m_inputNTuple->SetBranchAddress ("lep_Phi_1",   			      &m_lep_Phi_1);
+  m_inputNTuple->SetBranchAddress ("lep_EtaBE2_1",   			      &m_lep_EtaBE2_1);
+  m_inputNTuple->SetBranchAddress ("lep_sigd0PV_1",   			      &m_lep_sigd0PV_1);
+  m_inputNTuple->SetBranchAddress ("lep_Z0SinTheta_1",   		      &m_lep_Z0SinTheta_1);
+  m_inputNTuple->SetBranchAddress ("lep_isTightLH_1",   		      &m_lep_isTightLH_1);
+  m_inputNTuple->SetBranchAddress ("lep_isMediumLH_1",   		      &m_lep_isMediumLH_1);
+  m_inputNTuple->SetBranchAddress ("lep_isLooseLH_1",   		      &m_lep_isLooseLH_1);
+  m_inputNTuple->SetBranchAddress ("lep_isTight_1",   			      &m_lep_isTight_1);
+  m_inputNTuple->SetBranchAddress ("lep_isMedium_1",   			      &m_lep_isMedium_1);
+  m_inputNTuple->SetBranchAddress ("lep_isLoose_1",   			      &m_lep_isLoose_1);
+  m_inputNTuple->SetBranchAddress ("lep_isolationLooseTrackOnly_1",   	      &m_lep_isolationLooseTrackOnly_1);
+  m_inputNTuple->SetBranchAddress ("lep_isolationLoose_1",   		      &m_lep_isolationLoose_1);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTight_1",   	      &m_lep_isolationFixedCutTight_1);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTightTrackOnly_1",   &m_lep_isolationFixedCutTightTrackOnly_1);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutLoose_1",   	      &m_lep_isolationFixedCutLoose_1);
+  m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_1",   		      &m_lep_isTrigMatch_1);
+  m_inputNTuple->SetBranchAddress ("lep_isPrompt_1",   			      &m_lep_isPrompt_1);
+  m_inputNTuple->SetBranchAddress ("lep_isBremsElec_1",   		      &m_lep_isBremsElec_1);
+  m_inputNTuple->SetBranchAddress ("lep_isFakeLep_1",   		      &m_lep_isFakeLep_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFIDLoose_1",   		      &m_lep_SFIDLoose_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFIDTight_1",   		      &m_lep_SFIDTight_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFTrigLoose_1",   		      &m_lep_SFTrigLoose_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFTrigTight_1",   		      &m_lep_SFTrigTight_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFIsoLoose_1",   		      &m_lep_SFIsoLoose_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFIsoTight_1",   		      &m_lep_SFIsoTight_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFReco_1",   			      &m_lep_SFReco_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFTTVA_1",   			      &m_lep_SFTTVA_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFObjLoose_1",   		      &m_lep_SFObjLoose_1);
+  m_inputNTuple->SetBranchAddress ("lep_SFObjTight_1",   		      &m_lep_SFObjTight_1);
+
+  m_inputNTuple->SetBranchAddress ("lep_ID_2",   			      &m_lep_ID_2);
+  m_inputNTuple->SetBranchAddress ("lep_Pt_2",  			      &m_lep_Pt_2);
+  m_inputNTuple->SetBranchAddress ("lep_E_2",   			      &m_lep_E_2);
+  m_inputNTuple->SetBranchAddress ("lep_Eta_2",  			      &m_lep_Eta_2);
+  m_inputNTuple->SetBranchAddress ("lep_Phi_2",   			      &m_lep_Phi_2);
+  m_inputNTuple->SetBranchAddress ("lep_EtaBE2_2",   			      &m_lep_EtaBE2_2);
+  m_inputNTuple->SetBranchAddress ("lep_sigd0PV_2",   			      &m_lep_sigd0PV_2);
+  m_inputNTuple->SetBranchAddress ("lep_Z0SinTheta_2",   		      &m_lep_Z0SinTheta_2);
+  m_inputNTuple->SetBranchAddress ("lep_isTightLH_2",   		      &m_lep_isTightLH_2);
+  m_inputNTuple->SetBranchAddress ("lep_isMediumLH_2",   		      &m_lep_isMediumLH_2);
+  m_inputNTuple->SetBranchAddress ("lep_isLooseLH_2",   		      &m_lep_isLooseLH_2);
+  m_inputNTuple->SetBranchAddress ("lep_isTight_2",   			      &m_lep_isTight_2);
+  m_inputNTuple->SetBranchAddress ("lep_isMedium_2",   			      &m_lep_isMedium_2);
+  m_inputNTuple->SetBranchAddress ("lep_isLoose_2",   			      &m_lep_isLoose_2);
+  m_inputNTuple->SetBranchAddress ("lep_isolationLooseTrackOnly_2",   	      &m_lep_isolationLooseTrackOnly_2);
+  m_inputNTuple->SetBranchAddress ("lep_isolationLoose_2",   		      &m_lep_isolationLoose_2);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTight_2",   	      &m_lep_isolationFixedCutTight_2);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTightTrackOnly_2",   &m_lep_isolationFixedCutTightTrackOnly_2);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutLoose_2",   	      &m_lep_isolationFixedCutLoose_2);
+  m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_2",   		      &m_lep_isTrigMatch_2);
+  m_inputNTuple->SetBranchAddress ("lep_isPrompt_2",   			      &m_lep_isPrompt_2);
+  m_inputNTuple->SetBranchAddress ("lep_isBremsElec_2",   		      &m_lep_isBremsElec_2);
+  m_inputNTuple->SetBranchAddress ("lep_isFakeLep_2",   		      &m_lep_isFakeLep_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFIDLoose_2",   		      &m_lep_SFIDLoose_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFIDTight_2",   		      &m_lep_SFIDTight_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFTrigLoose_2",   		      &m_lep_SFTrigLoose_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFTrigTight_2",   		      &m_lep_SFTrigTight_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFIsoLoose_2",   		      &m_lep_SFIsoLoose_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFIsoTight_2",   		      &m_lep_SFIsoTight_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFReco_2",   			      &m_lep_SFReco_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFTTVA_2",   			      &m_lep_SFTTVA_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFObjLoose_2",   		      &m_lep_SFObjLoose_2);
+  m_inputNTuple->SetBranchAddress ("lep_SFObjTight_2",   		      &m_lep_SFObjTight_2);
+ 
   return EL::StatusCode::SUCCESS;
 }
 
@@ -137,8 +223,43 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   
   m_outputNTuple = EL::getNTupleSvc (wk(), m_outputNTupStreamName);
  
-  m_outputNTuple->tree()->Branch("lep_Pt_0_Squared",  &m_lep_Pt_0_Squared, "lep_Pt_0_Squared/F");
-  m_outputNTuple->tree()->Branch("lep_Pt_01",         &m_lep_Pt_01, "lep_Pt_01/F");
+  // Set new branches for output TTree
+  //
+  m_outputNTuple->tree()->Branch("m_isMC",               	&m_isMC, "m_isMC/B");
+  m_outputNTuple->tree()->Branch("m_isSS01",               	&m_isSS01, "m_isSS01/B");
+  m_outputNTuple->tree()->Branch("m_isSS12",               	&m_isSS12, "m_isSS12/B");
+  m_outputNTuple->tree()->Branch("m_is_T_T",               	&m_is_T_T, "m_is_T_T/B");
+  m_outputNTuple->tree()->Branch("m_is_T_AntiT",               	&m_is_T_AntiT, "m_is_T_AntiT/B");  
+  m_outputNTuple->tree()->Branch("m_is_AntiT_T",               	&m_is_AntiT_T, "m_is_AntiT_T/B");
+  m_outputNTuple->tree()->Branch("m_is_AntiT_AntiT",            &m_is_AntiT_AntiT, "m_is_AntiT_AntiT/B");  
+  
+  m_outputNTuple->tree()->Branch("m_nmuons",               	&m_nmuons, "m_nmuons/I");
+  m_outputNTuple->tree()->Branch("m_nelectrons",               	&m_nelectrons, "m_nelectrons/I");
+  m_outputNTuple->tree()->Branch("m_nleptons",               	&m_nleptons, "m_nleptons/I");
+  
+  m_outputNTuple->tree()->Branch("m_lep_isTightSelected_0",     &m_lep_isTightSelected_0, "m_lep_isTightSelected_0/B");
+  m_outputNTuple->tree()->Branch("m_lep_isTightSelected_1",     &m_lep_isTightSelected_1, "m_lep_isTightSelected_1/B");
+  m_outputNTuple->tree()->Branch("m_lep_isTightSelected_2",     &m_lep_isTightSelected_2, "m_lep_isTightSelected_2/B");
+  
+  m_outputNTuple->tree()->Branch("m_lep_Tag_Pt",               	&m_lep_Tag_Pt		   , "m_lep_Tag_Pt/F");
+  m_outputNTuple->tree()->Branch("m_lep_Tag_Eta",               &m_lep_Tag_Eta  	   , "m_lep_Tag_Eta/F");
+  m_outputNTuple->tree()->Branch("m_lep_Tag_EtaBE2",            &m_lep_Tag_EtaBE2	   , "m_lep_Tag_EtaBE2/F");
+  m_outputNTuple->tree()->Branch("m_lep_Tag_sigd0PV",           &m_lep_Tag_sigd0PV	   , "m_lep_Tag_sigd0PV/F");
+  m_outputNTuple->tree()->Branch("m_lep_Tag_Z0SinTheta",        &m_lep_Tag_Z0SinTheta	   , "m_lep_Tag_Z0SinTheta/F");
+  m_outputNTuple->tree()->Branch("m_lep_Tag_ID",               	&m_lep_Tag_ID		   , "m_lep_Tag_ID/F");
+  m_outputNTuple->tree()->Branch("m_lep_Tag_isTrigMatch",       &m_lep_Tag_isTrigMatch     , "m_lep_Tag_isTrigMatch/B");
+  m_outputNTuple->tree()->Branch("m_lep_Tag_isTightSelected",   &m_lep_Tag_isTightSelected , "m_lep_Tag_isTightSelected/B");
+  
+  m_outputNTuple->tree()->Branch("m_lep_Probe_Pt",                &m_lep_Probe_Pt	   , "m_lep_Probe_Pt/F");
+  m_outputNTuple->tree()->Branch("m_lep_Probe_Eta",               &m_lep_Probe_Eta  	   , "m_lep_Probe_Eta/F");
+  m_outputNTuple->tree()->Branch("m_lep_Probe_EtaBE2",            &m_lep_Probe_EtaBE2	   , "m_lep_Probe_EtaBE2/F");
+  m_outputNTuple->tree()->Branch("m_lep_Probe_sigd0PV",           &m_lep_Probe_sigd0PV	   , "m_lep_Probe_sigd0PV/F");
+  m_outputNTuple->tree()->Branch("m_lep_Probe_Z0SinTheta",        &m_lep_Probe_Z0SinTheta  , "m_lep_Probe_Z0SinTheta/F");
+  m_outputNTuple->tree()->Branch("m_lep_Probe_ID",                &m_lep_Probe_ID	   , "m_lep_Probe_ID/F");
+  m_outputNTuple->tree()->Branch("m_lep_Probe_isTrigMatch",       &m_lep_Probe_isTrigMatch     , "m_lep_Probe_isTrigMatch/B");
+  m_outputNTuple->tree()->Branch("m_lep_Probe_isTightSelected",   &m_lep_Probe_isTightSelected , "m_lep_Probe_isTightSelected/B");  
+  
+  // ---------------------------------------------------------------------------------------------------------------
   
   m_numEvent = 0;
   
@@ -165,16 +286,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   if ( m_debug ) { Info("execute()", "===> Event %u - EventNumber = %u ", static_cast<uint32_t>(m_numEvent), static_cast<uint32_t>(m_EventNumber) ); }
  
   m_inputNTuple->GetEntry (wk()->treeEntry());
-  
-  m_lep_Pt_0_Squared = m_lep_Pt_0 * m_lep_Pt_0;
-  m_lep_Pt_01        = m_lep_Pt_0 + m_lep_Pt_1;
-  
-  if ( m_debug ) { 
-    Info("execute()", "\t lep_Pt_0 = %.2f [GeV]", m_lep_Pt_0/1e3 ); 
-    Info("execute()", "\t lep_Pt_1 = %.2f [GeV]", m_lep_Pt_1/1e3 ); 
-    Info("execute()", "\t lep_Pt_01 = %.2f [GeV]", m_lep_Pt_01/1e3 ); 
-    Info("execute()", "\t lep_Pt_0_Squared = %.2f [GeV]", m_lep_Pt_0_Squared/1e6 ); 
-  }
   
   return EL::StatusCode::SUCCESS;
 }
@@ -231,4 +342,34 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: histFinalize ()
   //ANA_CHECK_SET_TYPE (EL::StatusCode);
   
   return EL::StatusCode::SUCCESS;
+}
+
+EL::StatusCode HTopMultilepMiniNTupMaker :: enableSelectedBranches ()
+{
+
+  if ( m_inputBranches.empty() ) { 
+    Info("enableSelectedBranches()", "Keeping all input branches enabled...");
+    return EL::StatusCode::SUCCESS; 
+  }
+
+  // Firstly, disable all branches
+  //
+  m_inputNTuple->SetBranchStatus ("*", 0);
+
+  std::vector<std::string> branch_vec;
+  
+  // Parse input list, split by comma, and put into a vector 
+  //
+  std::string token;
+  std::istringstream ss( m_inputBranches );
+  while ( std::getline(ss, token, ',') ) { branch_vec.push_back(token); }
+  
+  // Re-enable the branches we are going to use
+  //
+  for ( const auto& branch : branch_vec ) {
+    m_inputNTuple->SetBranchStatus (branch.c_str(), 1);
+  }
+
+  return EL::StatusCode::SUCCESS;
+
 }
