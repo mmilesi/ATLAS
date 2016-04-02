@@ -263,8 +263,8 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(eventInfo, "EventInfo", m_event, m_store, m_verbose), "");
 
   if ( m_debug ) {
-    Info( "execute()", " ******************************** ");
-    Info( "execute()", "eventNumber =  %llu \n", eventInfo->eventNumber() );
+      Info( "execute()", " ******************************** ");
+      Info( "execute()", "checking entry =  %u - eventNumber =  %llu \n", m_eventCounter, eventInfo->eventNumber() );
   }
 
   // retrieve vertices
@@ -282,7 +282,7 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(signalTauJets,  m_inContainerName_Taus, m_event, m_store, m_verbose), "");
   ConstDataVector<xAOD::IParticleContainer>* leptonsCDV(nullptr);
   RETURN_CHECK("HTopMultilepAnalysis::execute()", HelperFunctions::retrieve(leptonsCDV, m_inContainerName_Leptons, m_event, m_store, m_verbose),"");
-  
+
   // Make a sorted version of the containers
   // (this can be on the stack! Will not be pushed to the store...)
   //
@@ -381,18 +381,18 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   }
 
   static SG::AuxElement::Decorator< float >  HTDecor("HT");
-  
+
   // HT: scalar sum of the pT of all particles in the event
   //
-  
+
   ConstDataVector<xAOD::IParticleContainer> allObjectCont(SG::VIEW_ELEMENTS);
-  
+
   allObjectCont.insert( allObjectCont.end(), signalJets->begin(), signalJets->end() );
   allObjectCont.insert( allObjectCont.end(), signalTauJets->begin(), signalTauJets->end() );
   allObjectCont.insert( allObjectCont.end(), leptonsCDV->begin(), leptonsCDV->end() );
-  
+
   HTDecor( *eventInfo ) = this->computeHT( allObjectCont );
-  
+
   //-------------------------------------------
   // definition of "Tight" and "Medium" leptons
   //-------------------------------------------
@@ -2109,8 +2109,9 @@ EL::StatusCode HTopMultilepAnalysis :: QMisIDWeightCalculator (const xAOD::Event
 
     EL_RETURN_CHECK("HTopMultilepAnalysis::QMisIDWeightCalculator()", this->calc_QMisID_weights( weights, elA, elB ) );
 
-    QMisIDWeightDecor( *eventInfo ) = weights;
   }
+  
+  QMisIDWeightDecor( *eventInfo ) = weights;
 
   if ( m_debug ) { Info("QMisIDWeightCalculator()", "QMisID final weight = %f ( up = %f, dn = %f )", QMisIDWeightDecor( *eventInfo ).at(0), QMisIDWeightDecor( *eventInfo ).at(1), QMisIDWeightDecor( *eventInfo ).at(2) ); }
 
@@ -2272,7 +2273,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepTrigSF( const xAOD::EventI
         decor_name_SF  = "ElectronEfficiencyCorrector_TrigSyst_LHTight";
         decor_name_eff = "ElectronEfficiencyCorrector_TrigMCEffSyst_LHTight";
       } else {
-        decor_name_SF  = "ElectronEfficiencyCorrector_TrigSyst_LHLooseAndBLayer";     
+        decor_name_SF  = "ElectronEfficiencyCorrector_TrigSyst_LHLooseAndBLayer";
         decor_name_eff = "ElectronEfficiencyCorrector_TrigMCEffSyst_LHLooseAndBLayer";
       }
 
@@ -2282,7 +2283,7 @@ EL::StatusCode HTopMultilepAnalysis :: computeEventLepTrigSF( const xAOD::EventI
         decor_name_SF  = "MuonEfficiencyCorrector_TrigSyst_RecoLoose_IsoFixedCutTightTrackOnly";
         decor_name_eff = "MuonEfficiencyCorrector_TrigMCEff_RecoLoose_IsoFixedCutTightTrackOnly";
       } else {
-        decor_name_SF  = "MuonEfficiencyCorrector_TrigSyst_RecoLoose_IsoLoose"; 
+        decor_name_SF  = "MuonEfficiencyCorrector_TrigSyst_RecoLoose_IsoLoose";
         decor_name_eff = "MuonEfficiencyCorrector_TrigMCEff_RecoLoose_IsoLoose";
       }
 
