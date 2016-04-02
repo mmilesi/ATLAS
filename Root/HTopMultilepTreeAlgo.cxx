@@ -113,7 +113,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: execute ()
 
     // sort inJets, and pass the reference to FillJets()
     const xAOD::JetContainer inJetsSorted = HelperFunctions::sort_container_pt( inJets );
-    m_HTopTree->FillJets( &inJetsSorted, HelperFunctions::getPrimaryVertexLocation(vertices) );
+    m_HTopTree->FillJets( &inJetsSorted );
 
     //m_HTopTree->FillJets( inJets, HelperFunctions::getPrimaryVertexLocation(vertices) );
   }

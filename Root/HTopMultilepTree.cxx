@@ -564,6 +564,8 @@ void HTopMultilepTree::ClearJetsUser( const std::string jetName )
 
   // jet variables
   m_jet_m.clear();
+  if ( m_debug ) { Info("ClearJetsUser()", "done with clearing"); }
+  
 }
 
 
@@ -675,6 +677,9 @@ void HTopMultilepTree::ClearLeptons()
 
 void HTopMultilepTree::ClearTausUser()
 {
+
+ if ( m_debug ) { Info("ClearTausUser()", "Clearing tau branches"); }
+
   m_tau_isBDTTight.clear();
 }
 
@@ -684,6 +689,8 @@ void HTopMultilepTree::ClearMETUser() {}
 
 void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
 {
+
+  if ( m_debug ) { Info("FillEventUser()", "Filling event"); }
 
   m_is_mc                =  ( eventInfo->eventType( xAOD::EventInfo::IS_SIMULATION ) );
   m_ystar                =  ( eventInfo->isAvailable< float >( "ystar" ) )                      ?  eventInfo->auxdata< float >( "ystar" )                        :   999.0;
@@ -773,6 +780,8 @@ void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet, const std::string jet
 
 void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
 {
+
+  if ( m_debug ) { Info("FillMuonsUser()", "Filling muons"); }
 
   // access this info only to fill tag/probe branches
 
@@ -919,6 +928,8 @@ void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
 
 void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
 {
+
+  if ( m_debug ) { Info("FillElectronsUser()", "Filling electrons"); }
 
   // access this info only to fill tag/probe branches
 
@@ -1102,6 +1113,8 @@ void HTopMultilepTree::FillElectronsUser( const xAOD::Electron* electron )
 void HTopMultilepTree::FillTausUser( const xAOD::TauJet* tau )
 {
 
+  if ( m_debug ) { Info("FillTausUser()", "Filling taus"); }
+
   static SG::AuxElement::Accessor< char > isTauBDTTightAcc("isTauBDTTight");
 
   if ( isTauBDTTightAcc.isAvailable( *tau ) ) { m_tau_isBDTTight.push_back( isTauBDTTightAcc( *tau ) ); }
@@ -1115,6 +1128,8 @@ void HTopMultilepTree::FillMETUser( const xAOD::MissingETContainer* met ) {}
 
 void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
 {
+
+  if ( m_debug ) { Info("FillLeptons()", "Filling leptons"); }
 
   this->ClearLeptons();
 
