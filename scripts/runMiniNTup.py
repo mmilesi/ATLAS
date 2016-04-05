@@ -8,7 +8,7 @@ ROOT.gROOT.Macro('$ROOTCOREDIR/scripts/load_packages.C')
 # create a new sample handler to access and find datasets
 sh = ROOT.SH.SampleHandler()
 
-indirname = "/coepp/cephfs/mel/mmilesi/ttH/multileptons_ntuple_run2/25ns_v6/Nominal/"
+indirname = "/coepp/cephfs/mel/mmilesi/ttH/multileptons_ntuple_run2/25ns_v6/Nominal"
 ROOT.SH.scanDir(sh, indirname)
 
 # specify the name of the input TTree

@@ -7,9 +7,6 @@
 inDS="group.ntup.25ns_v6_410000"
 infilepath="/coepp/cephfs/mel/mmilesi/ttH/multileptons_ntuple_run2/25ns_v6/Nominal/410000/410000.root"
 
-#inDS="group.ntup.25ns_v6_physiscs_Main"
-#infilepath="/coepp/cephfs/mel/mmilesi/ttH/multileptons_ntuple_run2/25ns_v6/Data/00282712/00282712.root"
-
 # ------------------------------------------------------------------------------------
 
 # tokenize inDS using '.' as separator
@@ -19,7 +16,7 @@ tokens=(${inDS//./ })
 configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNtupMaker.py"
 current_time="$(date +'%d-%m-%Y-%T')"
 outdir=output_local_DxAOD-2015-13TeV_${tokens[2]}_${current_time}
-nevents=1000
+nevents=10000
 
 echo ""
 echo "Input file path :"

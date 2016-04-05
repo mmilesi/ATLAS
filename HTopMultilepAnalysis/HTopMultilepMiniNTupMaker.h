@@ -21,22 +21,114 @@
 
 // ROOT include(s):
 #include "TTree.h"
+#include "TFile.h"
+#include "TH1F.h"
+
+class eventObj {
+
+public:
+  eventObj():
+    isMC(0), isSS01(0), isSS12(0),
+    dilep(0), trilep(0),
+    notightlep(0),
+    weight_event(1.0),weight_tag(1.0),weight_probe(1.0)
+  { };
+
+  char isMC;
+  char isSS01;
+  char isSS12;
+  char dilep;
+  char trilep;
+  char notightlep;
+  
+  float weight_event;
+  float weight_tag;
+  float weight_probe;
+  
+};
+
+class leptonObj {
+
+public:
+  leptonObj():
+    pt(-1.0),eta(-999.0),etaBE2(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
+    pid(0),isolated(0),tight(0),trigmatched(0),prompt(0),fake(0),brems(0),tag(0),
+    SFIDLoose(1.0),
+    SFIDTight(1.0),
+    SFTrigLoose(1.0),
+    SFTrigTight(1.0),
+    SFIsoLoose(1.0),
+    SFIsoTight(1.0),
+    SFReco(1.0),
+    SFTTVA(1.0),
+    SFObjLoose(1.0),
+    SFObjTight(1.0)
+  { };
+
+  float pt;
+  float eta;
+  float etaBE2;
+  int ID;
+  int flavour;
+  float charge;
+  float d0sig;
+  float z0sintheta;
+  char pid;
+  char isolated;
+  char tight;
+  char trigmatched;
+  char prompt;
+  char fake;
+  char brems;
+  char tag;
+
+  float SFIDLoose;
+  float SFIDTight;
+  float SFTrigLoose;
+  float SFTrigTight;
+  float SFIsoLoose;
+  float SFIsoTight;
+  float SFReco;
+  float SFTTVA;
+  float SFObjLoose;
+  float SFObjTight;
+
+};
+
 
 class HTopMultilepMiniNTupMaker : public xAH::Algorithm
 {
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.
 public:
+ 
+  /** The name of the output TTree */
+  std::string m_outputNTupName;
 
   std::string m_outputNTupStreamName;
+
   /** A comma-separated list of input branches to be activated */
   std::string m_inputBranches;
+
+  /** Perform event skimming through an EL::AlgSelect svc, or do it manually */
+  bool         m_useAlgSelect;
+
+  /** Add an output stream (aka, directory) for the histogram containing the total number of generated raw/weighted events */
+  bool         m_addStreamEventsHist;
 
 private:
 
   /** Input TTree */
 
   TTree*          m_inputNTuple;
+
+  /** Input TTree with the sum of weights */
+
+  TTree*          m_sumWeightsTree;
+
+  /** Histogram containing the total number of generated raw/weighted events */
+
+  TH1F*           m_sumGenEventsHist;
 
   /** Output TTree (svc) */
 
@@ -46,10 +138,18 @@ private:
 
   ULong64_t       m_EventNumber;
   UInt_t          m_RunNumber;
+  Bool_t          m_passEventCleaning;
   UInt_t          m_mc_channel_number; /** for DATA, mc_channel_number=0 */
+
+  Double_t        m_mcWeightOrg;
+  Double_t	  m_pileupEventWeight_090;
+  Double_t	  m_MV2c20_77_EventWeight;
+  Double_t	  m_JVT_EventWeight;
 
   Int_t 	  m_dilep_type;
   Int_t 	  m_trilep_type;
+  Int_t           m_nJets_OR;
+  Int_t           m_nJets_OR_MV2c20_77;
 
   Float_t	  m_lep_ID_0;
   Float_t	  m_lep_Pt_0;
@@ -153,10 +253,17 @@ private:
   Float_t	  m_lep_SFObjLoose_2;
   Float_t	  m_lep_SFObjTight_2;
 
+  ULong64_t       m_totalEvents;
+  Float_t         m_totalEventsWeighted;
+
   /** Extra branches to be stored in output TTree */
 
-  char      isMC;
+  char      m_isMC;
 
+  float     m_weight_event;
+  float     m_weight_tag;
+  float     m_weight_probe;
+  
   char	    m_isSS01;
   char	    m_isSS12;
 
@@ -191,13 +298,19 @@ private:
   char	    m_lep_Probe_isTrigMatch;
   char	    m_lep_Probe_isTightSelected;
 
-  /** Other private members */
-
-  unsigned int m_numEvent;  //!
-
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
   // node (done by the //!)
+
+  /** Other private members */
+
+  unsigned int m_numEntry;   //!
+  float        m_sumGenEvents;  //!
+  float        m_sumGenEventsWeighted; //!
+
+  std::shared_ptr<eventObj>                 m_event;   //!
+  std::vector< std::shared_ptr<leptonObj> > m_leptons; //!
+
 public:
 
   // this is a standard constructor
@@ -220,7 +333,24 @@ public:
 private:
 
   EL::StatusCode enableSelectedBranches ();
+  EL::StatusCode checkIsTightLep( std::shared_ptr<leptonObj> lep ); 
+  EL::StatusCode decorateEvent ();
+  EL::StatusCode decorateWeights ();
 
+
+  /**
+    * @brief  Set which lepton is tag and which is probe for the r/f efficiency measurement
+    *
+    * The first lepton found that is tight && trigger-matched will be the tag, the other the probe
+    * Note that the lepton container is sorted, so in case both are T & TM, the leading will be the tag and the subleading the probe
+    * If none satisfies the above, choose the leading as tight and the subleading as probe, but flag the event as "bad"
+    *
+    * Use the same logic for OS and SS events
+    *
+  */
+  EL::StatusCode defineTagAndProbe ();
+
+  EL::StatusCode setOutputBranches ();
 };
 
 #endif
