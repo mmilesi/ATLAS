@@ -23,9 +23,13 @@ class Inputs:
 
     def registerTree(self, filegroup, nomtree = 'physics', systrees=[], ismc=True, isembedding=False, isdata=False, group='', subgroup='', sampleid=None):
         
-	#this function add a tree to TChain contained in self.alltrees = {}. In this dictionary each group and subgroup is separated and has it's proper Tchain. This function create the TChain for the group specified if not exist and if already exist add the three founded to this chain. I'm not very sure of the role of the sampleid variable. Can do this for many samples (all those in filegroup) and for many trees (for the nominal and for all those in systrees)
+	# This function add a tree to TChain contained in self.alltrees = {}. 
+	# In this dictionary each group and subgroup is separated and has its proper TChain. 
+	# This function create the TChain for the group specified if not exist and if already exist add the three founded to this chain. 
+	# I'm not very sure of the role of the sampleid variable. Can do this for many samples (all those in filegroup) and for many trees (for the nominal and for all those in systrees)
+	#
         self.nomtree = nomtree
-        self.systrees = systrees #are the names of the tree which contains the samples with shifted systematics
+        self.systrees = systrees # are the names of the tree which contains the samples with shifted systematics
         syslist = []
         for t in systrees:
             syslist.append('SystematicsUP/'+t)
@@ -76,7 +80,7 @@ class Inputs:
 
         if treename.startswith('SystematicsUP/') or treename.startswith('SystematicsDOWN/'):
             if self.getTree(self.nomtree, group, subgroup).GetTitle().startswith('$ISDATA$'):
-                treename = self.nomtree#in case of data the tree to be considered is the nominal
+                treename = self.nomtree #in case of data the tree to be considered is the nominal
 
         try:
             tree = self.alltrees[treename][group][subgroup]
@@ -1469,16 +1473,23 @@ def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', sys
 
     inputs = Inputs()
     for s in samples:
-        sampleid = s['ID']
+        
+	sampleid = s['ID']
         name = s['name']
         category = s['category']
         group = s['group']
         subgroup = s['subgroup']
-        filename = inputdir + '/' + group + '/' + name + '.root'
-        ismc = not category == 'Data' and not group == 'Embedding'
+	
+        separator = '.'
+        if not sampleid:
+          separator = ''
+	
+        filename = inputdir + '/' + group + '/' + sampleid + separator + name + '.root'
+        
+	ismc = not category == 'Data' and not group == 'Embedding'
         isembedding = group == 'Embedding'
         isdata = category == 'Data'
-        inputs.registerTree(filename, nomtree, systrees, ismc, isembedding, isdata, group, subgroup, sampleid)
+        
+	inputs.registerTree(filename, nomtree, systrees, ismc, isembedding, isdata, group, subgroup, sampleid)
+    
     return inputs
-
-
