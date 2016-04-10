@@ -155,8 +155,8 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
         totalevents = None
         for key in cache:
             obj = cache[key]
-            if type(obj) == TH1D and obj.GetName() == 'TotalEventsW': #'EventLoop_EventCount': #'TotalEvents':
-                totalevents = obj.GetBinContent(1)
+            if type(obj) == TH1D and obj.GetName() == 'TotalEventsW':
+                totalevents = obj.GetBinContent(2)
                 break
 
         if totalevents:

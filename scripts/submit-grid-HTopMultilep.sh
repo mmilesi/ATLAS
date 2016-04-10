@@ -2,7 +2,7 @@
 
 username=mmilesi
 
-prodtag=030-02_HIGG8D1
+prodtag=030-06_HIGG8D1
 #029_NoLepIP_HIGG8D1
 #029_NoLepIso_TruthTP_HIGG8D1
 #029_NoLepIso_HIGG8D1

@@ -124,10 +124,17 @@ class DatasetManager:
                 return tags_
         return []
 
-    def getListSamples(self, samplesfile='Files/samples.csv'):
+    def getListSamples(self, samplesfile='Files/samples.csv', genericPath=False):
         samples = []
         h = {}
-        for line in open(filedir+'/../'+samplesfile):
+	
+	filename = None
+	if not genericPath:
+	   filename = filedir+'/../'+samplesfile
+	else:
+	   filename = samplesfile
+        
+	for line in open(filename):
             tokens = line.strip().split(',')
             if not h:
                 for i in range(len(tokens)):
