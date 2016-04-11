@@ -107,7 +107,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
 
   firstFile = firstFile;
 
-  Info("changeInput()", "Calling changeInput");
+  Info("changeInput()", "Calling changeInput. Now reading file : %s", wk()->inputFile()->GetName() );
 
   // Get the pointer to the main input TTree
   //
@@ -266,17 +266,21 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   // Set new branches for output TTree
   //
   m_outputNTuple->tree()->Branch("isMC",               	        &m_isMC, "isMC/B");
-  
+
   m_outputNTuple->tree()->Branch("weight_event", 	    	&m_weight_event, "weight_event/F");
   m_outputNTuple->tree()->Branch("weight_tag",		    	&m_weight_tag,   "weight_tag/F");
   m_outputNTuple->tree()->Branch("weight_probe", 	    	&m_weight_probe, "weight_probe/F");
-   
+
   m_outputNTuple->tree()->Branch("isSS01",               	&m_isSS01, "isSS01/B");
   m_outputNTuple->tree()->Branch("isSS12",               	&m_isSS12, "isSS12/B");
   m_outputNTuple->tree()->Branch("is_T_T",               	&m_is_T_T, "is_T_T/B");
   m_outputNTuple->tree()->Branch("is_T_AntiT",               	&m_is_T_AntiT, "is_T_AntiT/B");
   m_outputNTuple->tree()->Branch("is_AntiT_T",               	&m_is_AntiT_T, "is_AntiT_T/B");
   m_outputNTuple->tree()->Branch("is_AntiT_AntiT",              &m_is_AntiT_AntiT, "is_AntiT_AntiT/B");
+  m_outputNTuple->tree()->Branch("is_Tel_AntiTmu",      	&m_is_Tel_AntiTmu, "is_Tel_AntiTmu/B");
+  m_outputNTuple->tree()->Branch("is_AntiTel_Tmu",      	&m_is_AntiTel_Tmu, "is_AntiTel_Tmu/B");
+  m_outputNTuple->tree()->Branch("is_Tmu_AntiTel",      	&m_is_Tmu_AntiTel, "is_Tmu_AntiTel/B");
+  m_outputNTuple->tree()->Branch("is_AntiTmu_Tel",      	&m_is_AntiTmu_Tel, "is_AntiTmu_Tel/B");  
 
   m_outputNTuple->tree()->Branch("nmuons",               	&m_nmuons, "nmuons/I");
   m_outputNTuple->tree()->Branch("nelectrons",               	&m_nelectrons, "nelectrons/I");
@@ -319,7 +323,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   // ---------------------------------------------------------------------------------------------------------------
 
   m_outputNTuple->tree()->SetName( m_outputNTupName.c_str() );
-  
+
   // ---------------------------------------------------------------------------------------------------------------
 
   Info("initialize()", "All good!");
@@ -361,8 +365,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
     m_outputNTuple->setFilterPassed();
 
-    if ( !m_passEventCleaning )			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
-    if ( m_nJets_OR < 1 ) 			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
+    //if ( !m_passEventCleaning )			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
+    if ( !( m_HLT_mu20_iloose_L1MU15 || m_HLT_mu50 || m_HLT_e24_lhmedium_L1EM18VH || m_HLT_e24_lhmedium_L1EM20VH || m_HLT_e60_lhmedium || m_HLT_e120_lhloose ) ) { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
+    //if ( m_nJets_OR < 1 ) 			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
     if ( !( m_dilep_type > 0 || m_trilep_type > 0 ) ) { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
 
   }
@@ -435,17 +440,17 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
   m_leptons.push_back(lep1);
 
-  if ( m_debug ) { 
-    Info("execute()","lep0 pT = %.2f", lep0.get()->pt/1e3 ); 
-    Info("execute()","lep1 pT = %.2f", lep1.get()->pt/1e3 ); 
-    Info("execute()","lep0 SFTrigTight = %.2f - SFTrigLoose = %.2f - SFObjTight = %.2f - SFObjLoose = %.2f", lep0.get()->SFTrigTight, lep0.get()->SFTrigLoose, lep0.get()->SFObjTight, lep0.get()->SFObjLoose ); 
-    Info("execute()","lep1 SFTrigTight = %.2f - SFTrigLoose = %.2f - SFObjTight = %.2f - SFObjLoose = %.2f", lep1.get()->SFTrigTight, lep1.get()->SFTrigLoose, lep1.get()->SFObjTight, lep1.get()->SFObjLoose );     
+  if ( m_debug ) {
+    Info("execute()","lep0 pT = %.2f", lep0.get()->pt/1e3 );
+    Info("execute()","lep1 pT = %.2f", lep1.get()->pt/1e3 );
+    Info("execute()","lep0 SFTrigTight = %.2f - SFTrigLoose = %.2f - SFObjTight = %.2f - SFObjLoose = %.2f", lep0.get()->SFTrigTight, lep0.get()->SFTrigLoose, lep0.get()->SFObjTight, lep0.get()->SFObjLoose );
+    Info("execute()","lep1 SFTrigTight = %.2f - SFTrigLoose = %.2f - SFObjTight = %.2f - SFObjLoose = %.2f", lep1.get()->SFTrigTight, lep1.get()->SFTrigLoose, lep1.get()->SFObjTight, lep1.get()->SFObjLoose );
   }
 
   if ( m_trilep_type ) {
-  
+
     auto lep2 = std::make_shared<leptonObj>();
-  
+
     lep2.get()->pt	    = m_lep_Pt_2;
     lep2.get()->eta	    = m_lep_Eta_2;
     lep2.get()->etaBE2      = m_lep_EtaBE2_2;
@@ -607,8 +612,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker ::  checkIsTightLep( std::shared_ptr<le
        if ( lep.get()->isolated && fabs(lep.get()->d0sig) < 3.0 && fabs(lep.get()->z0sintheta) < 0.5 ) { isTight = true; }
        break;
      default:
-       Error("checkIsTightLep()", "Unknown lepton flavour. Aborting.");
-       return EL::StatusCode::FAILURE;
        break;
   }
 
@@ -649,46 +652,46 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
   // Compute the event weights
   //
   m_event.get()->weight_event = m_mcWeightOrg * m_pileupEventWeight_090 * m_MV2c20_77_EventWeight * m_JVT_EventWeight;
-  
+
   if ( m_event.get()->dilep ) {
 
     auto lep0 = m_leptons.at(0);
     auto lep1 = m_leptons.at(1);
-    
+
     if ( lep0.get()->tight && lep1.get()->tight ) {
-    
+
       if ( lep0.get()->trigmatched && lep1.get()->trigmatched ) { // I believe this is wrong...
-        
+
         m_event.get()->weight_tag   = lep0.get()->SFObjTight * lep0.get()->SFTrigTight;
         m_event.get()->weight_probe = lep1.get()->SFObjTight;
-      
+
       } else if ( lep0.get()->trigmatched && !lep1.get()->trigmatched ) {
-        
+
         m_event.get()->weight_tag   = lep0.get()->SFObjTight * lep0.get()->SFTrigTight;
         m_event.get()->weight_probe = lep1.get()->SFObjTight;
-      
+
       } else if ( !lep0.get()->trigmatched && lep1.get()->trigmatched ) {
-        
+
         m_event.get()->weight_tag   = lep1.get()->SFObjTight * lep1.get()->SFTrigTight;
         m_event.get()->weight_probe = lep0.get()->SFObjTight;
-      
+
       }
-    
+
     } else if ( lep0.get()->tight && !lep1.get()->tight ) { // I believe this is wrong...what if both are trigger matched?
-         
+
       m_event.get()->weight_tag   = lep0.get()->SFObjTight * lep0.get()->SFTrigTight;
       m_event.get()->weight_probe = lep1.get()->SFObjLoose;
-    
-    
+
+
     } else if ( !lep0.get()->tight && lep1.get()->tight ) { // I believe this is wrong...what if both are trigger matched?
-         
+
       m_event.get()->weight_tag   = lep1.get()->SFObjTight * lep1.get()->SFTrigTight;
       m_event.get()->weight_probe = lep0.get()->SFObjLoose;
-    
-    }    
+
+    }
 
   }
-  
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -737,12 +740,17 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
   m_is_AntiT_T     = ( !m_leptons.at(0).get()->tight &&  m_leptons.at(1).get()->tight );
   m_is_AntiT_AntiT = ( !m_leptons.at(0).get()->tight && !m_leptons.at(1).get()->tight );
 
+  m_is_Tel_AntiTmu = ( ( abs(m_leptons.at(0).get()->ID) == 11 && m_leptons.at(0).get()->tight ) && ( abs(m_leptons.at(1).get()->ID) == 13 && !m_leptons.at(1).get()->tight ) );
+  m_is_Tmu_AntiTel = ( ( abs(m_leptons.at(0).get()->ID) == 13 && m_leptons.at(0).get()->tight ) && ( abs(m_leptons.at(1).get()->ID) == 11 && !m_leptons.at(1).get()->tight ) );
+  m_is_AntiTel_Tmu = ( ( abs(m_leptons.at(0).get()->ID) == 11 && !m_leptons.at(0).get()->tight ) && ( abs(m_leptons.at(1).get()->ID) == 13 && m_leptons.at(1).get()->tight ) );
+  m_is_AntiTmu_Tel = ( ( abs(m_leptons.at(0).get()->ID) == 13 && !m_leptons.at(0).get()->tight ) && ( abs(m_leptons.at(1).get()->ID) == 11 && m_leptons.at(1).get()->tight ) ); 
+
   m_nleptons = m_leptons.size();
 
   m_lep_isTightSelected_0 = m_leptons.at(0).get()->tight;
   m_lep_isTightSelected_1 = m_leptons.at(1).get()->tight;
   m_lep_isTightSelected_2 = ( m_event.get()->trilep ) ? m_leptons.at(2).get()->tight : -1;
-  
+
   m_nmuons     = 0;
   m_nelectrons = 0;
 
@@ -751,7 +759,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
     if ( lep.get()->flavour == 13 ) ++m_nmuons;
     if ( lep.get()->flavour == 11 ) ++m_nelectrons;
 
-    if ( m_event.get()->dilep ) { 
+    if ( m_event.get()->dilep ) {
 
       if ( lep.get()->tag ) {
   	m_lep_Tag_Pt		  = lep.get()->pt;
@@ -772,10 +780,10 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
   	m_lep_Probe_isTrigMatch     = lep.get()->trigmatched;
   	m_lep_Probe_isTightSelected = lep.get()->tight;
       }
-    
+
     }
   }
-  
+
   m_weight_event = m_event.get()->weight_event;
   m_weight_tag   = m_event.get()->weight_tag;
   m_weight_probe = m_event.get()->weight_probe;

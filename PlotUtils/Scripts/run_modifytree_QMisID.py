@@ -22,9 +22,13 @@ gROOT.SetBatch(True)
 oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA/'
 newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
 
+# Are we using group ntuples?
+#
+useGroupNTup = "YES"
+
 # Set only if QMisID weight branch does not exist yet
 #
-addQMisID = False
+addQMisID = True
 
 treename = 'physics'
 nentries = 'ALL' #ALL
@@ -51,7 +55,7 @@ for group in group_list:
         outfile=newpath+group+'/'+sample
 
         if addQMisID:
-	   command_line = 'modifyttree_AddQMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+	   command_line = 'modifyttree_AddQMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\",\"'+useGroupNtup+'\")'
         else:  
 	   command_line = 'modifyttree_QMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
 

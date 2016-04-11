@@ -1,4 +1,4 @@
-from ROOT import TFile, TH1, TH1D, TH1I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed
+from ROOT import TFile, TH1, TH1D, TH1I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
 from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex
 import sys, glob, os, array, inspect, math
 #glob finds all the pathnames matching a specified pattern.glob.glob(pathname) Return a possibly-empty list of path names that match pathname in which unix wildcards can be used
@@ -12,22 +12,27 @@ from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
 class Inputs:
-   
+
     def __init__(self):
-       
+
         self.alltrees = {}
         self.sampleids = {}
         self.nomtree = 'physics'
         self.systrees = []
         self.sysweights = []
 
-    def registerTree(self, filegroup, nomtree = 'physics', systrees=[], ismc=True, isembedding=False, isdata=False, group='', subgroup='', sampleid=None):
-        
-	# This function add a tree to TChain contained in self.alltrees = {}. 
-	# In this dictionary each group and subgroup is separated and has its proper TChain. 
-	# This function create the TChain for the group specified if not exist and if already exist add the three founded to this chain. 
+    def registerTree(self, filegroup, nomtree = 'physics', systrees=[], ismc=True, isembedding=False, isdata=False, sample={}, resetTreeWeight=False):
+
+	# This function add a tree to TChain contained in self.alltrees = {}.
+	# In this dictionary each group and subgroup is separated and has its proper TChain.
+	# This function create the TChain for the group specified if not exist and if already exist add the tree founded to this chain.
 	# I'm not very sure of the role of the sampleid variable. Can do this for many samples (all those in filegroup) and for many trees (for the nominal and for all those in systrees)
 	#
+
+	sampleid = sample["ID"]
+	group    = sample["group"]
+	subgroup = sample["subgroup"]
+
         self.nomtree = nomtree
         self.systrees = systrees # are the names of the tree which contains the samples with shifted systematics
         syslist = []
@@ -49,12 +54,31 @@ class Inputs:
             print "WARNING: file", filegroup, "cannot be found during tree registration"
             return False
 
+        # If not already done, set the Xsec weight to each (MC) TTree
+	#
         for filepath in filelist:
-            #f = TFile.Open(filepath)
-            for treename in treelist:
-                #if not f.Get(treename):
-                #    print "WARNING: tree named", treename, "in file", filepath, "cannot be found"
-                #    continue
+	    f = TFile.Open(filepath,"UPDATE")
+	    for treename in treelist:
+	       t = f.Get(treename)
+               if not t:
+                  print ("WARNING: tree {0} cannot be found during tree registration".format(treename))
+                  return False
+	       if ismc and ( t.GetWeight() == 1.0 or resetTreeWeight ):
+		  print("Weighting tree w/ Xsec weight...")
+		  weight = float(sample['xsection']) * float(sample['efficiency']) * float(sample['kfactor']) * 1e3 # to get the weight in fb (the Xsec is in pb)
+		  h = f.Get("TotalEventsW")
+		  if not h:
+		     print ("WARNING: histogram named TotalEventsW in file {1} couldn't be found!".format(filepath))
+		     return False
+		  weight /= h.GetBinContent(2)
+		  t.SetWeight(weight)
+		  t.Write(t.GetName(),t.kOverwrite)
+	    f.Close()
+
+        # Add the TTrees into a TChain
+	#
+        for filepath in filelist:
+	    for treename in treelist:
                 if not treename in self.alltrees:
                     self.alltrees[treename] = {}
                 processes = self.alltrees[treename]
@@ -68,8 +92,7 @@ class Inputs:
                     processes[group][subgroup].SetTitle(processes[group][subgroup].GetTitle()+'_'+sampleid)
                     if not treename in self.sampleids:
                         self.sampleids[treename] = {}
-                    self.sampleids[treename][sampleid] = (group, subgroup)#seems that using sampleid you can then recover the info about the group and the subgroup
-            #del f
+                    self.sampleids[treename][sampleid] = (group, subgroup) #seems that using sampleid you can then recover the info about the group and the subgroup
 
         return True
 
@@ -87,6 +110,8 @@ class Inputs:
         except:
             tree = None
             print "ERROR: Could not reach tree", treename, group, subgroup
+	       
+	print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
 
     def getTrees(self, treename='physics', grouplist=[]):
@@ -324,7 +349,7 @@ class VariableDB:
         return self.categorydb[name]
 
 class SubProcess:
-    
+
     histcache = {}
     numcache = {}
 
@@ -495,9 +520,9 @@ class SubProcess:
         return h
 
 class OperatorProcess(SubProcess):
-    
+
     def __init__(self, left, operator, right):
-        
+
 	leftname = left.name
         if type(right) is int:
             right = float(right)
@@ -635,9 +660,9 @@ class ScaleFactors(SubProcess):
         return self.number(cut, weight, eventweight, category)
 
 class Process:
-    
+
     name = 'Default'
-      
+
     def __init__(self, inputs, vardb, parent):
         self.inputs = inputs
         self.vardb = vardb
@@ -663,18 +688,18 @@ class Process:
 	        eventweight = '1.0'
             if tree.GetTitle().startswith('$ISMC$') or tree.GetTitle().startswith('$ISEMBED$'):
                 weight *= self.parent.luminosity
-		
+
 		if self.parent.rescaleXsecAndLumi:
 		    weight /= tree.GetWeight()
 		    weight /= self.parent.luminosity
-		    
+
             s = SubProcess(tree=tree, basecut=basecut, baseweight=weight, eventweight=eventweight)
             if sp: sp = sp + s
             else: sp = s
         return sp
 
 class Background:
-   
+
     backgrounds = []
     signals = []
     observed = []
@@ -869,17 +894,17 @@ class Background:
         return hbkg, hobs, hsig
 
     def sumhist(self, var, processes = [], cut = None, eventweight = None, category = None, systematics = None, systematicsdirection = None, scale = 1.0, overflowbins = False, options={}):
-        
+
 	tSum = None
         histlist = []
-	
+
         for name in processes:
             process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection, options=options) * scale
             if eventweight:
 		if ("$ISDATA$") in process.name:
-		  process = process.subprocess(eventweight=1.0) 
+		  process = process.subprocess(eventweight=1.0)
 		else:
-		  process = process.subprocess(eventweight=eventweight) 
+		  process = process.subprocess(eventweight=eventweight)
 
             h = process.hist(var, cut=cut, category=category)
             if overflowbins:
@@ -909,7 +934,7 @@ class Background:
         return tSum, histlist
 
     def plot(self, var, cut = None, eventweight=None, category = None, signal = '125', signalfactor = 1., systematics = None, systematicsdirection = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps'], options = {}, normalise = False, log=False, logx=False):
-        
+
 	if not wait:
             gROOT.SetBatch(True)
         cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
@@ -920,7 +945,7 @@ class Background:
         legs = []
 
         obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
-	
+
 	if obs:
             process = obslist[0][1]
             datagr = None
@@ -980,7 +1005,7 @@ class Background:
 
 	options['hmass'] = signal
         sig, siglist = self.sumhist(var, processes=self.signals, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, scale=signalfactor, options=options)
-        
+
         if sig:
 	    if ( "FakesClosureABCD" in self.signals ):
             	process = siglist[0][1]
@@ -1172,7 +1197,7 @@ class Background:
         return bkg, tSum, obs, sig, stack
 
     def plotSystematics(self, systematics, var = 'MMC', cut = None, eventweight=None, category = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps']):
-        
+
 	if not wait:
             gROOT.SetBatch(True)
         cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
@@ -1468,28 +1493,37 @@ def makeMCErrors(hist):
 
 
 def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', systrees=[]):
-    datasets = DatasetManager.DatasetManager()#the datasat manager is the code that take in care the reading of the sample.csv files.
-    samples = datasets.getListSamples(samplesfile=samplescsv)# it returns a list of dictionaries which contains these characteristic for each sample:ID,category,xsection,kfactor,efficiency,name,group,subgroup
+
+    # The datasat manager is the code that takes in care the reading of the sample.csv files.
+    #
+    datasets = DatasetManager.DatasetManager()
+
+    # This returns a list of dictionaries which contain the features for each sample:
+    # ID,category,xsection,kfactor,efficiency,name,group,subgroup
+    #
+    samples = datasets.getListSamples(samplesfile=samplescsv)
 
     inputs = Inputs()
     for s in samples:
-        
+
 	sampleid = s['ID']
         name = s['name']
         category = s['category']
         group = s['group']
         subgroup = s['subgroup']
-	
+
         separator = '.'
         if not sampleid:
           separator = ''
-	
+
         filename = inputdir + '/' + group + '/' + sampleid + separator + name + '.root'
-        
+
 	ismc = not category == 'Data' and not group == 'Embedding'
         isembedding = group == 'Embedding'
         isdata = category == 'Data'
-        
-	inputs.registerTree(filename, nomtree, systrees, ismc, isembedding, isdata, group, subgroup, sampleid)
-    
+
+	inputs.registerTree(filename, nomtree, systrees, ismc, isembedding, isdata, s)
+
     return inputs
+
+

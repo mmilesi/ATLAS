@@ -150,7 +150,20 @@ private:
   Int_t 	  m_trilep_type;
   Int_t           m_nJets_OR;
   Int_t           m_nJets_OR_MV2c20_77;
-
+  
+  UInt_t          m_HLT_mu20_iloose_L1MU15;
+  Float_t	  m_HLT_mu20_iloose_L1MU15_PS;
+  UInt_t	  m_HLT_mu50;
+  Float_t	  m_HLT_mu50_PS;
+  UInt_t	  m_HLT_e24_lhmedium_L1EM18VH;
+  Float_t	  m_HLT_e24_lhmedium_L1EM18VH_PS;
+  UInt_t	  m_HLT_e24_lhmedium_L1EM20VH;
+  Float_t	  m_HLT_e24_lhmedium_L1EM20VH_PS;
+  UInt_t	  m_HLT_e60_lhmedium;
+  Float_t	  m_HLT_e60_lhmedium_PS;
+  UInt_t	  m_HLT_e120_lhloose;
+  Float_t	  m_HLT_e120_lhloose_PS;
+ 		  
   Float_t	  m_lep_ID_0;
   Float_t	  m_lep_Pt_0;
   Float_t	  m_lep_E_0;
@@ -271,6 +284,10 @@ private:
   char	    m_is_T_AntiT;
   char	    m_is_AntiT_T;
   char	    m_is_AntiT_AntiT;
+  char      m_is_Tel_AntiTmu;
+  char      m_is_Tmu_AntiTel;
+  char      m_is_AntiTel_Tmu;
+  char      m_is_AntiTmu_Tel;  
 
   int       m_nmuons;
   int       m_nelectrons;

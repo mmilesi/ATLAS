@@ -220,8 +220,6 @@ class TTHBackgrounds2015(Background):
 
 	    #hmass = options.get('hmass', '125') #300 is the default value if hmass is not in options, hmass is specified in one option passed to the plot function in the plotting script
             inputgroup = [
-                #('ttH', hmass),
-                #('ttH', '125'),
                 ('ttH', 'ttH_dil'),
                 ('ttH', 'ttH_semilep'),
                 ('ttH', 'ttH_allhad'),
@@ -343,6 +341,8 @@ class TTHBackgrounds2015(Background):
                            ('Z+jetsCVetoBVeto', 'ee'),
 			   ('Z+jetsCFilterBVeto', 'ee'),
                            ('Z+jetsBFilter', 'ee'),
+			   ('Z+jetsLowMllBVeto', 'ee'),
+			   ('ZjetsLowMllBFilter', 'ee'),
 		           #('DYZ+jets', 'ee'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -386,6 +386,8 @@ class TTHBackgrounds2015(Background):
                            ('Z+jetsCVetoBVeto', 'mumu'),
 			   ('Z+jetsCFilterBVeto', 'mumu'),
                            ('Z+jetsBFilter', 'mumu'),
+			   ('Z+jetsLowMllBVeto', 'mumu'),
+			   ('ZjetsLowMllBFilter', 'mumu'),
 		           #('DYZ+jets', 'mumu'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -428,6 +430,8 @@ class TTHBackgrounds2015(Background):
                            ('Z+jetsCVetoBVeto', 'tautau'),
 			   ('Z+jetsCFilterBVeto', 'tautau'),
                            ('Z+jetsBFilter', 'tautau'),
+			   ('Z+jetsLowMllBVeto', 'tautau'),
+			   ('ZjetsLowMllBFilter', 'tautau'),			   
 		           #('DYZ+jets', 'tautau'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -489,6 +493,7 @@ class TTHBackgrounds2015(Background):
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
 		           ('Z+jetsCVetoBVeto', '*'),
+			   ('Z+jetsLowMllBVeto', '*'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -527,6 +532,7 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
 		           ('Z+jetsCFilterBVeto', '*'),
 		           ('Z+jetsBFilter', '*'),
+			   ('ZjetsLowMllBFilter', '*'),			   
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -569,6 +575,8 @@ class TTHBackgrounds2015(Background):
                            ('Z+jetsCVetoBVeto', '*'),
 			   ('Z+jetsCFilterBVeto', '*'),
                            ('Z+jetsBFilter', '*'),
+			   ('Z+jetsLowMllBVeto', '*'),
+			   ('ZjetsLowMllBFilter', '*'),			   
 		           #('DYZ+jets', '*'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -1094,6 +1102,9 @@ class TTHBackgrounds2015(Background):
                 ('Z+jetsCVetoBVeto', '*'),
                 ('Z+jetsCFilterBVeto', '*'),
                 ('Z+jetsBFilter', '*'),
+		('Z+jetsLowMllBVeto', '*'),
+		('ZjetsLowMllBFilter', '*'),			
+		
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
