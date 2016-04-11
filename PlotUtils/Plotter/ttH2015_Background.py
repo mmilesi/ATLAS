@@ -220,8 +220,6 @@ class TTHBackgrounds2015(Background):
 
 	    #hmass = options.get('hmass', '125') #300 is the default value if hmass is not in options, hmass is specified in one option passed to the plot function in the plotting script
             inputgroup = [
-                #('ttH', hmass),
-                #('ttH', '125'),
                 ('ttH', 'ttH_dil'),
                 ('ttH', 'ttH_semilep'),
                 ('ttH', 'ttH_allhad'),

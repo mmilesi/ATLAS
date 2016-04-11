@@ -40,6 +40,8 @@ list_available_flavcomp   = ['OF','SF','INCLUSIVE']
 
 parser.add_argument('--debug', dest='debug', action='store_true', default=False,
                     help='Run in debug mode')
+parser.add_argument('--useGroupNTup', dest='useGroupNTup', action='store_true', default=False,
+                    help='Use group ntuples as input (default=False)')
 parser.add_argument('--channel', dest='channel', action='store', default='TwoLepSR', type=str,
 		    help='The channel chosen ({0})'.format(list_available_channel))
 parser.add_argument('--ratesFromMC', dest='ratesFromMC', action='store_true', default=False,
@@ -218,128 +220,231 @@ doRelaxedBJetCut = False # if true, be inclusive in bjet multiplicity, otherwise
 # General cuts
 # ---------------------
 
-vardb.registerCut( Cut('DummyCut',    '( 1 )') )
-vardb.registerCut( Cut('IsMC',        '( isMC == 1 )') )
-# To ask for an event be passing an OR of triggers
-#
-vardb.registerCut( Cut('TrigDec',     '( Sum$( ( isMC == 1 && passedTriggers == \"HLT_e24_lhmedium_L1EM18VH\" ) + ( isMC == 0 && passedTriggers == \"HLT_e24_lhmedium_L1EM20VH\" ) + ( passedTriggers == \"HLT_e60_lhmedium\" ) + ( passedTriggers == \"HLT_e120_lhloose\" ) + ( passedTriggers == \"HLT_mu20_iloose_L1MU15\" ) + ( passedTriggers == \"HLT_mu50\" ) ) > 0 )') )
-#
-# To ask for an event be passing any of the saved triggers
-#
-#vardb.registerCut( Cut('TrigDec',     '( passHLT == 1 )') )
-vardb.registerCut( Cut('LargeNBJet',  '( njets_mv2c20_Fix77 > 1 )') )
-vardb.registerCut( Cut('VetoLargeNBJet',  '( njets_mv2c20_Fix77 < 4 )') )
-vardb.registerCut( Cut('BJetVeto',    '( njets_mv2c20_Fix77 == 0 )') )
-vardb.registerCut( Cut('OneBJet',     '( njets_mv2c20_Fix77 == 1 )') )
-vardb.registerCut( Cut('TauVeto',     '( ntau == 0 )') )
-vardb.registerCut( Cut('OneTau',      '( ntau == 1 )') )
+if args.useGroupNTup:
+   vardb.registerCut( Cut('DummyCut',    '( 1 )') )
+   vardb.registerCut( Cut('IsMC',        '( isMC == 1 )') )
+   vardb.registerCut( Cut('TrigDec',     '( passEventCleaning == 1 && ( isMC == 1 && HLT_e24_lhmedium_L1EM18VH == 1 ) || ( isMC == 0 && HLT_e24_lhmedium_L1EM20VH == 1 ) || ( HLT_e60_lhmedium == 1 ) || ( HLT_e120_lhloose == 1 ) || ( HLT_mu20_iloose_L1MU15 == 1 ) || ( HLT_mu50 == 1 ) )') )
+   vardb.registerCut( Cut('LargeNBJet',  '( nJets_OR_MV2c20_77 > 1 )') )
+   vardb.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_MV2c20_77 < 4 )') )
+   vardb.registerCut( Cut('BJetVeto',	 '( nJets_OR_MV2c20_77 == 0 )') )
+   vardb.registerCut( Cut('OneBJet',	 '( nJets_OR_MV2c20_77 == 1 )') )
+   vardb.registerCut( Cut('TauVeto',	 '( nTaus_OR_Pt25 == 0 )') )
+   vardb.registerCut( Cut('OneTau',	 '( nTaus_OR_Pt25 == 1 )') )
+else:
+   vardb.registerCut( Cut('DummyCut',    '( 1 )') )
+   vardb.registerCut( Cut('IsMC',        '( isMC == 1 )') )
+   # To ask for an event be passing an OR of triggers
+   #
+   #vardb.registerCut( Cut('TrigDec',     '( Sum$( ( isMC == 1 && passedTriggers == \"HLT_e24_lhmedium_L1EM18VH\" ) + ( isMC == 0 && passedTriggers == \"HLT_e24_lhmedium_L1EM20VH\" ) + ( passedTriggers == \"HLT_e60_lhmedium\" ) + ( passedTriggers == \"HLT_e120_lhloose\" ) + ( passedTriggers == \"HLT_mu20_iloose_L1MU15\" ) + ( passedTriggers == \"HLT_mu50\" ) ) > 0 )') )
+   #
+   # To ask for an event be passing any of the saved triggers
+   #
+   vardb.registerCut( Cut('TrigDec',     '( passHLT == 1 )') )
+   vardb.registerCut( Cut('LargeNBJet',  '( njets_mv2c20_Fix77 > 1 )') )
+   vardb.registerCut( Cut('VetoLargeNBJet',  '( njets_mv2c20_Fix77 < 4 )') )
+   vardb.registerCut( Cut('BJetVeto',	 '( njets_mv2c20_Fix77 == 0 )') )
+   vardb.registerCut( Cut('OneBJet',	 '( njets_mv2c20_Fix77 == 1 )') )
+   vardb.registerCut( Cut('TauVeto',	 '( ntau == 0 )') )
+   vardb.registerCut( Cut('OneTau',	 '( ntau == 1 )') )
 
 # ---------------------
 # 3lep cuts
 # ---------------------
 
-vardb.registerCut( Cut('3Lep_JustNLep',     '( nlep == 3 )') )
-vardb.registerCut( Cut('3Lep_pT',	    '( lep_3lepClosestSS_pt[0] > 20e3 && lep_3lepOtherSS_pt[0] > 20e3 && lep_3lepOS_pt[0] > 10e3 )') )
-vardb.registerCut( Cut('3Lep_NLep',         '( nlep == 3 && ( lep_3lepClosestSS_pt[0] > 20e3 && lep_3lepOtherSS_pt[0] > 20e3 && lep_3lepOS_pt[0] > 10e3 ) )') )
-vardb.registerCut( Cut('3Lep_Charge',       '( TMath::Abs( Sum$(lep_charge) ) == 1 )') )
-vardb.registerCut( Cut('3Lep_TightLeptons', '( lep_3lepClosestSS_isTightSelected[0] == 1 && lep_3lepOtherSS_isTightSelected[0] == 1 && TMath::Abs(lep_3lepOS_trkz0sintheta[0]) < 0.5 && ( ( lep_3lepOS_flavour[0] == 13 && TMath::Abs(lep_3lepOS_trkd0sig[0]) < 3.0 ) || ( lep_3lepOS_flavour[0] == 11 && TMath::Abs(lep_3lepOS_trkd0sig[0]) < 5.0 ) ) )') )
-vardb.registerCut( Cut('3Lep_TrigMatch',    '( ( lep_isTrigMatched[0] == 1 && ( ( lep_flavour[0] == 11 && lep_pt[0] > 25e3 ) || ( lep_flavour[0] == 13 && lep_pt[0] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[1] == 11 && lep_pt[1] > 25e3 ) || ( lep_flavour[1] == 13 && lep_pt[1] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[2] == 11 && lep_pt[2] > 25e3 ) || ( lep_flavour[2] == 13 && lep_pt[2] > 21e3 ) ) ) )') )
-vardb.registerCut( Cut('3Lep_ZVeto',        '( ( isOSPairSF01 == 0 || ( isOSPairSF01 == 1 &&  TMath::Abs( mOSPair01 - 91e3 ) < 10e3 ) ) || ( isOSPairSF02 == 0 || ( isOSPairSF02 == 1 &&  TMath::Abs( mOSPair02 - 91e3 ) < 10e3 ) ) )') )
-vardb.registerCut( Cut('3Lep_MinZCut',      '( ( isOSPairSF01 == 0 || ( isOSPairSF01 == 1 &&  mOSPair01 > 12e3 ) ) || ( isOSPairSF02 == 0 || ( isOSPairSF02 == 1 &&  mOSPair02 > 12e3 ) ) )') )
-vardb.registerCut( Cut('3Lep_NJets',        '( ( njets_mv2c20_Fix77 > 0 && njets > 3 ) || ( njets_mv2c20_Fix77 > 1 && njets == 3) )') )
+if args.useGroupNTup:
+   vardb.registerCut( Cut('3Lep_JustNLep',     '( trilep_type > 0 )') )
+   vardb.registerCut( Cut('3Lep_pT',	       '( lep_3lepClosestSS_pt[0] > 20e3 && lep_3lepOtherSS_pt[0] > 20e3 && lep_3lepOS_pt[0] > 10e3 )') )
+   vardb.registerCut( Cut('3Lep_NLep',         '( nlep == 3 && ( lep_3lepClosestSS_pt[0] > 20e3 && lep_3lepOtherSS_pt[0] > 20e3 && lep_3lepOS_pt[0] > 10e3 ) )') )
+   vardb.registerCut( Cut('3Lep_Charge',       '( TMath::Abs( Sum$(lep_charge) ) == 1 )') )
+   vardb.registerCut( Cut('3Lep_TightLeptons', '( lep_3lepClosestSS_isTightSelected[0] == 1 && lep_3lepOtherSS_isTightSelected[0] == 1 && TMath::Abs(lep_3lepOS_trkz0sintheta[0]) < 0.5 && ( ( lep_3lepOS_flavour[0] == 13 && TMath::Abs(lep_3lepOS_trkd0sig[0]) < 3.0 ) || ( lep_3lepOS_flavour[0] == 11 && TMath::Abs(lep_3lepOS_trkd0sig[0]) < 5.0 ) ) )') )
+   vardb.registerCut( Cut('3Lep_TrigMatch',    '( ( lep_isTrigMatched[0] == 1 && ( ( lep_flavour[0] == 11 && lep_pt[0] > 25e3 ) || ( lep_flavour[0] == 13 && lep_pt[0] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[1] == 11 && lep_pt[1] > 25e3 ) || ( lep_flavour[1] == 13 && lep_pt[1] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[2] == 11 && lep_pt[2] > 25e3 ) || ( lep_flavour[2] == 13 && lep_pt[2] > 21e3 ) ) ) )') )
+   vardb.registerCut( Cut('3Lep_ZVeto',        '( ( isOSPairSF01 == 0 || ( isOSPairSF01 == 1 &&  TMath::Abs( mOSPair01 - 91e3 ) < 10e3 ) ) || ( isOSPairSF02 == 0 || ( isOSPairSF02 == 1 &&  TMath::Abs( mOSPair02 - 91e3 ) < 10e3 ) ) )') )
+   vardb.registerCut( Cut('3Lep_MinZCut',      '( ( isOSPairSF01 == 0 || ( isOSPairSF01 == 1 &&  mOSPair01 > 12e3 ) ) || ( isOSPairSF02 == 0 || ( isOSPairSF02 == 1 &&  mOSPair02 > 12e3 ) ) )') )
+   vardb.registerCut( Cut('3Lep_NJets',        '( ( njets_mv2c20_Fix77 > 0 && njets > 3 ) || ( njets_mv2c20_Fix77 > 1 && njets == 3) )') )
+else:
+   vardb.registerCut( Cut('3Lep_JustNLep',     '( nlep == 3 )') )
+   vardb.registerCut( Cut('3Lep_pT',	       '( lep_3lepClosestSS_pt[0] > 20e3 && lep_3lepOtherSS_pt[0] > 20e3 && lep_3lepOS_pt[0] > 10e3 )') )
+   vardb.registerCut( Cut('3Lep_NLep',         '( nlep == 3 && ( lep_3lepClosestSS_pt[0] > 20e3 && lep_3lepOtherSS_pt[0] > 20e3 && lep_3lepOS_pt[0] > 10e3 ) )') )
+   vardb.registerCut( Cut('3Lep_Charge',       '( TMath::Abs( Sum$(lep_charge) ) == 1 )') )
+   vardb.registerCut( Cut('3Lep_TightLeptons', '( lep_3lepClosestSS_isTightSelected[0] == 1 && lep_3lepOtherSS_isTightSelected[0] == 1 && TMath::Abs(lep_3lepOS_trkz0sintheta[0]) < 0.5 && ( ( lep_3lepOS_flavour[0] == 13 && TMath::Abs(lep_3lepOS_trkd0sig[0]) < 3.0 ) || ( lep_3lepOS_flavour[0] == 11 && TMath::Abs(lep_3lepOS_trkd0sig[0]) < 5.0 ) ) )') )
+   vardb.registerCut( Cut('3Lep_TrigMatch',    '( ( lep_isTrigMatched[0] == 1 && ( ( lep_flavour[0] == 11 && lep_pt[0] > 25e3 ) || ( lep_flavour[0] == 13 && lep_pt[0] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[1] == 11 && lep_pt[1] > 25e3 ) || ( lep_flavour[1] == 13 && lep_pt[1] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[2] == 11 && lep_pt[2] > 25e3 ) || ( lep_flavour[2] == 13 && lep_pt[2] > 21e3 ) ) ) )') )
+   vardb.registerCut( Cut('3Lep_ZVeto',        '( ( isOSPairSF01 == 0 || ( isOSPairSF01 == 1 &&  TMath::Abs( mOSPair01 - 91e3 ) < 10e3 ) ) || ( isOSPairSF02 == 0 || ( isOSPairSF02 == 1 &&  TMath::Abs( mOSPair02 - 91e3 ) < 10e3 ) ) )') )
+   vardb.registerCut( Cut('3Lep_MinZCut',      '( ( isOSPairSF01 == 0 || ( isOSPairSF01 == 1 &&  mOSPair01 > 12e3 ) ) || ( isOSPairSF02 == 0 || ( isOSPairSF02 == 1 &&  mOSPair02 > 12e3 ) ) )') )
+   vardb.registerCut( Cut('3Lep_NJets',        '( ( njets_mv2c20_Fix77 > 0 && njets > 3 ) || ( njets_mv2c20_Fix77 > 1 && njets == 3) )') )
 
 # ---------------------
 # 4lep cuts
 # ---------------------
-
-vardb.registerCut( Cut('4Lep_NJets',      '( njets >= 2 )') )
-vardb.registerCut( Cut('4Lep',        '( nlep == 4 && lep_pt[0] > 25e3 && lep_pt[1] > 15e3 && lep_isTightSelected[0] == 1 && lep_isTightSelected[1] == 1 && lep_isTightSelected[2] == 1 && lep_isTightSelected[3] == 1 && Sum$( lep_charge ) == 0 && ( ( mJPsiCand_ee > 10e3 || mJPsiCand_ee < 0.0 ) && ( mJPsiCand_mm > 10e3 || mJPsiCand_mm < 0.0 ) ) )') )
+if args.useGroupNTup:
+   vardb.registerCut( Cut('4Lep_NJets',  '( njets >= 2 )') )
+   vardb.registerCut( Cut('4Lep',        '( nlep == 4 && lep_pt[0] > 25e3 && lep_pt[1] > 15e3 && lep_isTightSelected[0] == 1 && lep_isTightSelected[1] == 1 && lep_isTightSelected[2] == 1 && lep_isTightSelected[3] == 1 && Sum$( lep_charge ) == 0 && ( ( mJPsiCand_ee > 10e3 || mJPsiCand_ee < 0.0 ) && ( mJPsiCand_mm > 10e3 || mJPsiCand_mm < 0.0 ) ) )') )
+else:
+   vardb.registerCut( Cut('4Lep_NJets',  '( njets >= 2 )') )
+   vardb.registerCut( Cut('4Lep',        '( nlep == 4 && lep_pt[0] > 25e3 && lep_pt[1] > 15e3 && lep_isTightSelected[0] == 1 && lep_isTightSelected[1] == 1 && lep_isTightSelected[2] == 1 && lep_isTightSelected[3] == 1 && Sum$( lep_charge ) == 0 && ( ( mJPsiCand_ee > 10e3 || mJPsiCand_ee < 0.0 ) && ( mJPsiCand_mm > 10e3 || mJPsiCand_mm < 0.0 ) ) )') )
 
 # ---------------------
 # 2Lep SS + 1 tau cuts
 # ---------------------
 
-vardb.registerCut( Cut('2Lep1Tau_NLep',         '( nlep == 2 )') )
-vardb.registerCut( Cut('2Lep1Tau_TightLeptons', '( Sum$( lep_isTightSelected ) == 2 )') )
-vardb.registerCut( Cut('2Lep1Tau_pT',           '( Min$( lep_pt ) > 15e3 )') )
-vardb.registerCut( Cut('2Lep1Tau_TrigMatch',    '( ( lep_isTrigMatched[0] == 1 && lep_pt[0] > 25e3 ) || ( lep_isTrigMatched[1] == 1 && lep_pt[1] > 25e3 ) )') )
-vardb.registerCut( Cut('2Lep1Tau_SS',           '( isSS01 == 1 )') )
-vardb.registerCut( Cut('2Lep1Tau_1Tau',         '( ntau == 1 && ( lep_charge[0] * tau_charge[0] ) < 0 )') )
-vardb.registerCut( Cut('2Lep1Tau_Zsidescut',    '( nel <= 1 || ( nel == 2 && TMath::Abs( mll01 - 91.187e3 ) > 10e3 ) )' )  )
-vardb.registerCut( Cut('2Lep1Tau_NJet_SR',      '( njets >= 4 )') )
-vardb.registerCut( Cut('2Lep1Tau_NJet_CR',      '( njets > 1 && njets < 4 )') )
-vardb.registerCut( Cut('2Lep1Tau_NBJet',        '( njets_mv2c20_Fix77 > 0 )') )
+if args.useGroupNTup:
+   vardb.registerCut( Cut('2Lep1Tau_NLep',	   '( dilep_type > 0 )') )
+   vardb.registerCut( Cut('2Lep1Tau_TightLeptons', '( is_T_T == 1 )') )
+   vardb.registerCut( Cut('2Lep1Tau_pT',	   '( lep_Pt_0 > 15e3 && lep_Pt_1 > 15e3  )') )
+   vardb.registerCut( Cut('2Lep1Tau_TrigMatch',    '( ( lep_isTrigMatch_0 == 1 && lep_Pt_0 > 25e3 ) || ( lep_isTrigMatch_1 == 1 && lep_Pt_1 > 25e3 ) )') )
+   vardb.registerCut( Cut('2Lep1Tau_SS',	   '( isSS01 == 1 )') )
+# FIXME: tau charge   vardb.registerCut( Cut('2Lep1Tau_1Tau',	   '( nTaus_OR_Pt25 == 1 && ( lep_ID_0 * tau_charge[0] ) < 0 )') )
+   vardb.registerCut( Cut('2Lep1Tau_Zsidescut',    '( nelectrons <= 1 || ( nelectrons == 2 && TMath::Abs( Mll01 - 91.187e3 ) > 10e3 ) )' )  )
+   vardb.registerCut( Cut('2Lep1Tau_NJet_SR',	   '( nJets_OR >= 4 )') )
+   vardb.registerCut( Cut('2Lep1Tau_NJet_CR',	   '( nJets_OR > 1 && nJets_OR < 4 )') )
+   vardb.registerCut( Cut('2Lep1Tau_NBJet',	   '( nJets_OR_MV2c20_77 > 0 )') )
+else:
+   vardb.registerCut( Cut('2Lep1Tau_NLep',	   '( nlep == 2 )') )
+   vardb.registerCut( Cut('2Lep1Tau_TightLeptons', '( is_T_T == 1 )') )
+   vardb.registerCut( Cut('2Lep1Tau_pT',	   '( Min$( lep_pt ) > 15e3 )') )
+   vardb.registerCut( Cut('2Lep1Tau_TrigMatch',    '( ( lep_isTrigMatched[0] == 1 && lep_pt[0] > 25e3 ) || ( lep_isTrigMatched[1] == 1 && lep_pt[1] > 25e3 ) )') )
+   vardb.registerCut( Cut('2Lep1Tau_SS',	   '( isSS01 == 1 )') )
+   vardb.registerCut( Cut('2Lep1Tau_1Tau',	   '( ntau == 1 && ( lep_charge[0] * tau_charge[0] ) < 0 )') )
+   vardb.registerCut( Cut('2Lep1Tau_Zsidescut',    '( nel <= 1 || ( nel == 2 && TMath::Abs( mll01 - 91.187e3 ) > 10e3 ) )' )  )
+   vardb.registerCut( Cut('2Lep1Tau_NJet_SR',	   '( njets >= 4 )') )
+   vardb.registerCut( Cut('2Lep1Tau_NJet_CR',	   '( njets > 1 && njets < 4 )') )
+   vardb.registerCut( Cut('2Lep1Tau_NBJet',	   '( njets_mv2c20_Fix77 > 0 )') )
 
 # ---------------------
 # 2Lep SS + 0 tau cuts
 # ---------------------
-vardb.registerCut( Cut('2Lep_TrigMatch',   '( ( lep_isTrigMatched[0] == 1 && ( ( lep_flavour[0] == 11 && lep_pt[0] > 25e3 ) || ( lep_flavour[0] == 13 && lep_pt[0] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[1] == 11 && lep_pt[1] > 25e3 ) || ( lep_flavour[1] == 13 && lep_pt[1] > 21e3 ) ) ) )') )
-vardb.registerCut( Cut('2Lep_TrigMatchDataMC', '( ( lep_isTrigMatched[0] == 1 || lep_isTrigMatched[1] == 1 ) )') )
-if doRelaxedBJetCut:
-    print("\nUsing relaxed nr. bjet cut: INCLUSIVE bjet multiplicity...\n")
-    vardb.registerCut( Cut('2Lep_NBJet',      '( njets_mv2c20_Fix77 >= 0 )') )
+
+if args.useGroupNTup:
+   vardb.registerCut( Cut('2Lep_TrigMatch',   '( ( lep_isTrigMatch_0 == 1 && ( ( TMath::Abs( lep_ID_0 ) == 11 && lep_Pt_0 > 25e3 ) || ( TMath::Abs( lep_ID_0 ) == 13 && lep_Pt_0 > 21e3 ) ) ) || ( lep_isTrigMatch_1 == 1 && ( ( TMath::Abs( lep_ID_1 ) == 11 && lep_Pt_1 > 25e3 ) || ( TMath::Abs( lep_ID_1 ) == 13 && lep_Pt_1 > 21e3 ) ) ) )') )
+   vardb.registerCut( Cut('2Lep_TrigMatchDataMC', '( ( lep_isTrigMatch_0 == 1 || lep_isTrigMatch_1 == 1 ) )') )
+   if doRelaxedBJetCut:
+       print("\nUsing relaxed nr. bjet cut: INCLUSIVE bjet multiplicity...\n")
+       vardb.registerCut( Cut('2Lep_NBJet',	 '( nJets_OR_MV2c20_77 >= 0 )') )
+   else:
+       vardb.registerCut( Cut('2Lep_NBJet',		 '( nJets_OR_MV2c20_77 > 0 )') )
+   vardb.registerCut( Cut('2Lep_NBJet_SR',		 '( nJets_OR_MV2c20_77 > 0 )') )
+   vardb.registerCut( Cut('2Lep_NJet_SR',		 '( nJets_OR > 4 )') ) # use this for Moriond - now does not include the 4j bin anymore
+   vardb.registerCut( Cut('2Lep_NJet_CR',		 '( nJets_OR > 1 && nJets_OR <= 4 )') ) # use this for Moriond - now includes the 4j bin
+   vardb.registerCut( Cut('2Lep_NJet_CR_ttW',		 '( nJets_OR > 1 && nJets_OR < 4 )') )
+   vardb.registerCut( Cut('2Lep_NJet_CR_SStt',  	 '( nJets_OR < 4 )') )
+   vardb.registerCut( Cut('2Lep_SS',			 '( isSS01 == 1 )') )
+   vardb.registerCut( Cut('2Lep_OS',			 '( isSS01 != 1 )') )
+   vardb.registerCut( Cut('2Lep_JustNLep',		 '( nleptons == 2 )') )
+   vardb.registerCut( Cut('2Lep_pT',			 '( lep_Pt_0 > 25e3 && lep_Pt_1 > 25e3 )') )
+   vardb.registerCut( Cut('2Lep_pT_MMRates',		 '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
+   vardb.registerCut( Cut('2Lep_NLep_MMRates',  	 '( nleptons == 2 && ( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 ) )') )
+   vardb.registerCut( Cut('2Lep_NLep',  		 '( nleptons == 2 && ( lep_Pt_0 > 25e3 && lep_Pt_1 > 25e3 ) )') )
+   vardb.registerCut( Cut('2Lep_NLep_Relaxed',  	 '( nleptons == 2 && ( lep_Pt_0 > 25e3 && lep_Pt_1 > 10e3 ) )') )
+   vardb.registerCut( Cut('2Lep_SF_Event',		 '( nmuons == 2 || nelectrons == 2 )') )
+   vardb.registerCut( Cut('2Lep_MuMu_Event',		 '( nmuons == 2 && nelectrons == 0 )') )
+   vardb.registerCut( Cut('2Lep_ElEl_Event',		 '( nelectrons == 2 && nmuons == 0 )') )
+   vardb.registerCut( Cut('2Lep_OF_Event',		 '( nmuons == 1 && nelectrons == 1 )') )
+   vardb.registerCut( Cut('2Lep_MuEl_Event',		 '( nmuons == 1 && nelectrons == 1 && TMath::Abs( lep_ID_0 == 13 ) )') )
+   vardb.registerCut( Cut('2Lep_ElMu_Event',		 '( nmuons == 1 && nelectrons == 1 && TMath::Abs( lep_ID_0 == 11 ) )') )
+
+   gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/largeEtaEvent.cxx+")
+   from ROOT import largeEtaEvent
+
+   vardb.registerCut( Cut('2Lep_ElEtaCut',		 '( largeEtaEvent( nelectrons,lep_ID_0,lep_ID_1,lep_EtaBE2_0,lep_EtaBE2_1 ) == 0 )') )
+   vardb.registerCut( Cut('2Lep_ElTagEtaCut',		 '( ( TMath::Abs( lep_Tag_ID ) == 13 ) || ( TMath::Abs( lep_Tag_ID ) == 11 && TMath::Abs( lep_Tag_EtaBE2 ) < 1.37 ) )') )
+
+   vardb.registerCut( Cut('2Lep_Zsidescut',		 '( ( nmuons == 1 && nelectrons == 1 ) || ( TMath::Abs( Mll01 - 91.187e3 ) > 7.5e3 ) )' ) )   # Use this to require the 2 SF leptons to be outside Z peak
+   vardb.registerCut( Cut('2Lep_Zpeakcut',		 '( ( nmuons == 1 && nelectrons == 1 ) || ( TMath::Abs( Mll01 - 91.187e3 ) < 30e3  ) )' ) )   # Use this to require the 2 SF leptons to be around Z peak
+   vardb.registerCut( Cut('2Lep_Zmincut',		 '( ( nmuons == 1 && nelectrons == 1 ) || ( Mll01  > 40e3 ) )' ) )   # We don't have Sherpa Z+jets w/ low invariant mass (yet...)
+
+   vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_isTightSelected == 1 && lep_Tag_isTrigMatch == 1 && ( ( TMath::Abs( lep_Tag_ID ) == 11 && lep_Tag_Pt > 25e3 ) || ( TMath::Abs( lep_Tag_ID ) == 13 && lep_Tag_Pt > 21e3 ) ) )') )
+   vardb.registerCut( Cut('2Lep_ProbeTight',		   '( lep_Probe_isTightSelected == 1 )') )
+   vardb.registerCut( Cut('2Lep_ProbeAntiTight',	   '( lep_Probe_isTightSelected == 0 )') )
+   vardb.registerCut( Cut('2Lep_ProbeEl',		   '( TMath::Abs( lep_Probe_ID ) == 11 )') )
+   vardb.registerCut( Cut('2Lep_ProbeMu',		   '( TMath::Abs( lep_Probe_ID ) == 13 )') )
+   vardb.registerCut( Cut('2Lep_ElRealFakeRateCR',	   '( TMath::Abs( lep_Probe_ID ) == 11 )') )
+   vardb.registerCut( Cut('2Lep_ElProbeTight',  	   '( TMath::Abs( lep_Probe_ID ) == 11 && lep_Probe_isTightSelected == 1 )') )
+   vardb.registerCut( Cut('2Lep_ElProbeAntiTight',	   '( TMath::Abs( lep_Probe_ID ) == 11 && lep_Probe_isTightSelected == 0 )') )
+   vardb.registerCut( Cut('2Lep_MuRealFakeRateCR',	   '( TMath::Abs( lep_Probe_ID ) == 13 )') )
+   vardb.registerCut( Cut('2Lep_MuProbeTight',  	   '( TMath::Abs( lep_Probe_ID ) == 13 && lep_Probe_isTightSelected == 1 )') )
+   vardb.registerCut( Cut('2Lep_MuProbeAntiTight',	   '( TMath::Abs( lep_Probe_ID ) == 13 && lep_Probe_isTightSelected == 0 )') )
+
+   vardb.registerCut( Cut('TT',      '( is_T_T == 1 )') )
+   vardb.registerCut( Cut('TL',      '( is_T_AntiT == 1 )') )
+   vardb.registerCut( Cut('LT',      '( is_AntiT_T == 1 )') )
+   vardb.registerCut( Cut('TL_LT',   '( is_T_AntiT == 1 || is_AntiT_T == 1 )') )
+   vardb.registerCut( Cut('LL',      '( is_AntiT_AntiT == 1 )') )
+# FIXME   vardb.registerCut( Cut('TelLmu',  '( is_Tel_AntiTmu == 1 )') )
+# FIXME      vardb.registerCut( Cut('LelTmu',  '( is_Lel_Tmu == 1 )') )
+# FIXME      vardb.registerCut( Cut('TmuLel',  '( is_Tmu_AntiTel == 1 )') )
+# FIXME      vardb.registerCut( Cut('LmuTel',  '( is_Lmu_Tel == 1 )') )
+   vardb.registerCut( Cut('TelLmu',  '( ( TMath::Abs( lep_ID_0 ) == 11 && lep_isTightSelected_0 == 1 ) && ( TMath::Abs( lep_ID_1 ) == 13 && lep_isTightSelected_1 == 0 ) )') )
+   vardb.registerCut( Cut('LelTmu',  '( ( TMath::Abs( lep_ID_0 ) == 11 && lep_isTightSelected_0 == 0 ) && ( TMath::Abs( lep_ID_1 ) == 13 && lep_isTightSelected_1 == 1 ) )') )
+   vardb.registerCut( Cut('TmuLel',  '( ( TMath::Abs( lep_ID_0 ) == 13 && lep_isTightSelected_0 == 1 ) && ( TMath::Abs( lep_ID_1 ) == 11 && lep_isTightSelected_1 == 0 ) )') )
+   vardb.registerCut( Cut('LmuTel',  '( ( TMath::Abs( lep_ID_0 ) == 13 && lep_isTightSelected_0 == 0 ) && ( TMath::Abs( lep_ID_1 ) == 11 && lep_isTightSelected_1 == 1 ) )') )
+
 else:
-  vardb.registerCut( Cut('2Lep_NBJet',       	      '( njets_mv2c20_Fix77 > 0 )') )
-vardb.registerCut( Cut('2Lep_NBJet_SR',      	      '( njets_mv2c20_Fix77 > 0 )') )
-vardb.registerCut( Cut('2Lep_NJet_SR',       	      '( njets > 4 )') ) # use this for Moriond - now does not include the 4j bin anymore
-vardb.registerCut( Cut('2Lep_NJet_CR',       	      '( njets > 1 && njets <= 4 )') ) # use this for Moriond - now includes the 4j bin
-vardb.registerCut( Cut('2Lep_NJet_CR_ttW',   	      '( njets > 1 && njets < 4 )') )
-vardb.registerCut( Cut('2Lep_NJet_CR_SStt',  	      '( njets < 4 )') )
-vardb.registerCut( Cut('2Lep_SS',            	      '( isSS01 == 1 )') )
-vardb.registerCut( Cut('2Lep_OS',            	      '( isSS01 != 1 )') )
-vardb.registerCut( Cut('2Lep_JustNLep',  	      '( nlep == 2 )') )
-vardb.registerCut( Cut('2Lep_pT',	 	      '( Min$( lep_pt ) > 25e3 )') )
-vardb.registerCut( Cut('2Lep_pT_MMRates',	      '( Min$( lep_pt ) > 10e3 )') )
-vardb.registerCut( Cut('2Lep_NLep_MMRates',  	      '( nlep == 2 && Min$( lep_pt ) > 10e3 )') )
-vardb.registerCut( Cut('2Lep_NLep',          	      '( nlep == 2 && Min$( lep_pt ) > 25e3 )') )
-vardb.registerCut( Cut('2Lep_NLep_Relaxed',  	      '( nlep == 2 && lep_pt[0] > 25e3 && lep_pt[1] > 10e3 )') )
-vardb.registerCut( Cut('2Lep_SF_Event',      	      '( nmuon == 2 || nel == 2 )') )
-vardb.registerCut( Cut('2Lep_MuMu_Event',    	      '( nmuon == 2 && nel == 0 )') )
-vardb.registerCut( Cut('2Lep_ElEl_Event',    	      '( nel == 2 && nmuon == 0 )') )
-vardb.registerCut( Cut('2Lep_OF_Event',      	      '( nmuon == 1 && nel == 1 )') )
-vardb.registerCut( Cut('2Lep_MuEl_Event',    	      '( nmuon == 1 && nel == 1 && lep_flavour[0] == 13 )') )
-vardb.registerCut( Cut('2Lep_ElMu_Event',    	      '( nmuon == 1 && nel == 1 && lep_flavour[0] == 11 )') )
-vardb.registerCut( Cut('2Lep_ElEtaCut',               '( nel == 0 || ( nel > 0 && Max$( TMath::Abs(el_caloCluster_eta) ) < 1.37 ) )') )
-vardb.registerCut( Cut('2Lep_ElTagEtaCut',            '( ( lep_tag_flavour[0] == 13 ) || ( lep_tag_flavour[0] == 11 && TMath::Abs(lep_tag_caloCluster_eta[0]) < 1.37 ) )') )
+   vardb.registerCut( Cut('2Lep_TrigMatch',   '( ( lep_isTrigMatched[0] == 1 && ( ( lep_flavour[0] == 11 && lep_pt[0] > 25e3 ) || ( lep_flavour[0] == 13 && lep_pt[0] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[1] == 11 && lep_pt[1] > 25e3 ) || ( lep_flavour[1] == 13 && lep_pt[1] > 21e3 ) ) ) )') )
+   vardb.registerCut( Cut('2Lep_TrigMatchDataMC', '( ( lep_isTrigMatched[0] == 1 || lep_isTrigMatched[1] == 1 ) )') )
+   if doRelaxedBJetCut:
+       print("\nUsing relaxed nr. bjet cut: INCLUSIVE bjet multiplicity...\n")
+       vardb.registerCut( Cut('2Lep_NBJet',	 '( njets_mv2c20_Fix77 >= 0 )') )
+   else:
+       vardb.registerCut( Cut('2Lep_NBJet',		 '( njets_mv2c20_Fix77 > 0 )') )
+   vardb.registerCut( Cut('2Lep_NBJet_SR',		 '( njets_mv2c20_Fix77 > 0 )') )
+   vardb.registerCut( Cut('2Lep_NJet_SR',		 '( njets > 4 )') ) # use this for Moriond - now does not include the 4j bin anymore
+   vardb.registerCut( Cut('2Lep_NJet_CR',		 '( njets > 1 && njets <= 4 )') ) # use this for Moriond - now includes the 4j bin
+   vardb.registerCut( Cut('2Lep_NJet_CR_ttW',		 '( njets > 1 && njets < 4 )') )
+   vardb.registerCut( Cut('2Lep_NJet_CR_SStt',  	 '( njets < 4 )') )
+   vardb.registerCut( Cut('2Lep_SS',			 '( isSS01 == 1 )') )
+   vardb.registerCut( Cut('2Lep_OS',			 '( isSS01 != 1 )') )
+   vardb.registerCut( Cut('2Lep_JustNLep',		 '( nlep == 2 )') )
+   vardb.registerCut( Cut('2Lep_pT',			 '( Min$( lep_pt ) > 25e3 )') )
+   vardb.registerCut( Cut('2Lep_pT_MMRates',		 '( Min$( lep_pt ) > 10e3 )') )
+   vardb.registerCut( Cut('2Lep_NLep_MMRates',  	 '( nlep == 2 && Min$( lep_pt ) > 10e3 )') )
+   vardb.registerCut( Cut('2Lep_NLep',  		 '( nlep == 2 && Min$( lep_pt ) > 25e3 )') )
+   vardb.registerCut( Cut('2Lep_NLep_Relaxed',  	 '( nlep == 2 && lep_pt[0] > 25e3 && lep_pt[1] > 10e3 )') )
+   vardb.registerCut( Cut('2Lep_SF_Event',		 '( nmuon == 2 || nel == 2 )') )
+   vardb.registerCut( Cut('2Lep_MuMu_Event',		 '( nmuon == 2 && nel == 0 )') )
+   vardb.registerCut( Cut('2Lep_ElEl_Event',		 '( nel == 2 && nmuon == 0 )') )
+   vardb.registerCut( Cut('2Lep_OF_Event',		 '( nmuon == 1 && nel == 1 )') )
+   vardb.registerCut( Cut('2Lep_MuEl_Event',		 '( nmuon == 1 && nel == 1 && lep_flavour[0] == 13 )') )
+   vardb.registerCut( Cut('2Lep_ElMu_Event',		 '( nmuon == 1 && nel == 1 && lep_flavour[0] == 11 )') )
+   vardb.registerCut( Cut('2Lep_ElEtaCut',		 '( nel == 0 || ( nel > 0 && Max$( TMath::Abs(el_caloCluster_eta) ) < 1.37 ) )') )
+   vardb.registerCut( Cut('2Lep_ElTagEtaCut',		 '( ( lep_tag_flavour[0] == 13 ) || ( lep_tag_flavour[0] == 11 && TMath::Abs(lep_tag_caloCluster_eta[0]) < 1.37 ) )') )
 
-vardb.registerCut( Cut('2Lep_Zsidescut',  	      '( ( nmuon == 1 && nel == 1 ) || ( TMath::Abs( mll01 - 91.187e3 ) > 7.5e3 ) )' ) )   # Use this to require the 2 SF leptons to be outside Z peak
-vardb.registerCut( Cut('2Lep_Zpeakcut',   	      '( ( nmuon == 1 && nel == 1 ) || ( TMath::Abs( mll01 - 91.187e3 ) < 30e3  ) )' ) )   # Use this to require the 2 SF leptons to be around Z peak
-vardb.registerCut( Cut('2Lep_Zmincut',    	      '( ( nmuon == 1 && nel == 1 ) || ( mll01  > 40e3 ) )' ) )   # We don't have Sherpa Z+jets w/ low invariant mass (yet...)
+   vardb.registerCut( Cut('2Lep_Zsidescut',		 '( ( nmuon == 1 && nel == 1 ) || ( TMath::Abs( mll01 - 91.187e3 ) > 7.5e3 ) )' ) )   # Use this to require the 2 SF leptons to be outside Z peak
+   vardb.registerCut( Cut('2Lep_Zpeakcut',		 '( ( nmuon == 1 && nel == 1 ) || ( TMath::Abs( mll01 - 91.187e3 ) < 30e3  ) )' ) )   # Use this to require the 2 SF leptons to be around Z peak
+   vardb.registerCut( Cut('2Lep_Zmincut',		 '( ( nmuon == 1 && nel == 1 ) || ( mll01  > 40e3 ) )' ) )   # We don't have Sherpa Z+jets w/ low invariant mass (yet...)
 
-vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_tag_isTightSelected[0] == 1 && lep_tag_isTrigMatched[0] == 1 && ( ( lep_tag_flavour[0] == 11 && lep_tag_pt[0] > 25e3 ) || ( lep_tag_flavour[0] == 13 && lep_tag_pt[0] > 21e3 ) ) )') )
-vardb.registerCut( Cut('2Lep_ProbeTight',	        '( lep_probe_isTightSelected[0] == 1 )') )
-vardb.registerCut( Cut('2Lep_ProbeAntiTight',	        '( lep_probe_isTightSelected[0] == 0 )') )
-vardb.registerCut( Cut('2Lep_ProbeEl',  	        '( lep_probe_flavour[0] == 11 )') )
-vardb.registerCut( Cut('2Lep_ProbeMu',  	        '( lep_probe_flavour[0] == 13 )') )
-vardb.registerCut( Cut('2Lep_ElRealFakeRateCR',   	'( isProbeElEvent == 1 )') )
-vardb.registerCut( Cut('2Lep_ElProbeTight',	  	'( el_probe_isTightSelected[0] == 1 )') )
-vardb.registerCut( Cut('2Lep_ElProbeAntiTight',   	'( el_probe_isTightSelected[0] == 0 )') )
-vardb.registerCut( Cut('2Lep_MuRealFakeRateCR',   	'( isProbeMuEvent == 1 )') )
-vardb.registerCut( Cut('2Lep_MuProbeTight',	  	'( muon_probe_isTightSelected[0] == 1 )') )
-vardb.registerCut( Cut('2Lep_MuProbeAntiTight',   	'( muon_probe_isTightSelected[0] == 0 )') )
+   vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_tag_isTightSelected[0] == 1 && lep_tag_isTrigMatched[0] == 1 && ( ( lep_tag_flavour[0] == 11 && lep_tag_pt[0] > 25e3 ) || ( lep_tag_flavour[0] == 13 && lep_tag_pt[0] > 21e3 ) ) )') )
+   vardb.registerCut( Cut('2Lep_ProbeTight',		   '( lep_probe_isTightSelected[0] == 1 )') )
+   vardb.registerCut( Cut('2Lep_ProbeAntiTight',	   '( lep_probe_isTightSelected[0] == 0 )') )
+   vardb.registerCut( Cut('2Lep_ProbeEl',		   '( lep_probe_flavour[0] == 11 )') )
+   vardb.registerCut( Cut('2Lep_ProbeMu',		   '( lep_probe_flavour[0] == 13 )') )
+   vardb.registerCut( Cut('2Lep_ElRealFakeRateCR',	   '( isProbeElEvent == 1 )') )
+   vardb.registerCut( Cut('2Lep_ElProbeTight',  	   '( el_probe_isTightSelected[0] == 1 )') )
+   vardb.registerCut( Cut('2Lep_ElProbeAntiTight',	   '( el_probe_isTightSelected[0] == 0 )') )
+   vardb.registerCut( Cut('2Lep_MuRealFakeRateCR',	   '( isProbeMuEvent == 1 )') )
+   vardb.registerCut( Cut('2Lep_MuProbeTight',  	   '( muon_probe_isTightSelected[0] == 1 )') )
+   vardb.registerCut( Cut('2Lep_MuProbeAntiTight',	   '( muon_probe_isTightSelected[0] == 0 )') )
 
-"""
-vardb.registerCut( Cut('TT',      '( Sum$( lep_isTightSelected ) == 2 )') )
-vardb.registerCut( Cut('TL',      '( lep_isTightSelected[0] == 1 && lep_isTightSelected[1] == 0 )') )
-vardb.registerCut( Cut('LT',      '( lep_isTightSelected[0] == 0 && lep_isTightSelected[1] == 1 )') )
-vardb.registerCut( Cut('TL_LT',   '( ( lep_isTightSelected[0] == 1 && lep_isTightSelected[1] == 0 ) || ( lep_isTightSelected[0] == 0 && lep_isTightSelected[1] == 1 ) )') )
-vardb.registerCut( Cut('LL',      '( Sum$( lep_isTightSelected ) == 0 )') )
-vardb.registerCut( Cut('TelLmu',  '( ( lep_flavour[0] == 11 && lep_isTightSelected[0] == 1 ) && ( lep_flavour[1] == 13 && lep_isTightSelected[1] == 0 ) )') )
-vardb.registerCut( Cut('LelTmu',  '( ( lep_flavour[0] == 11 && lep_isTightSelected[0] == 0 ) && ( lep_flavour[1] == 13 && lep_isTightSelected[1] == 1 ) )') )
-vardb.registerCut( Cut('TmuLel',  '( ( lep_flavour[0] == 13 && lep_isTightSelected[0] == 1 ) && ( lep_flavour[1] == 11 && lep_isTightSelected[1] == 0 ) )') )
-vardb.registerCut( Cut('LmuTel',  '( ( lep_flavour[0] == 13 && lep_isTightSelected[0] == 0 ) && ( lep_flavour[1] == 11 && lep_isTightSelected[1] == 1 ) )') )
-"""
-#"""
-vardb.registerCut( Cut('TT',      '( is_T_T == 1 )') )
-vardb.registerCut( Cut('TL',      '( is_T_AntiT == 1 )') )
-vardb.registerCut( Cut('LT',      '( is_AntiT_T == 1 )') )
-vardb.registerCut( Cut('TL_LT',   '( is_T_AntiT == 1 || is_AntiT_T == 1 )') )
-vardb.registerCut( Cut('LL',      '( is_AntiT_AntiT == 1 )') )
-vardb.registerCut( Cut('TelLmu',  '( is_Tel_AntiTmu == 1 )') )
-vardb.registerCut( Cut('LelTmu',  '( is_Lel_Tmu == 1 )') )
-vardb.registerCut( Cut('TmuLel',  '( is_Tmu_AntiTel == 1 )') )
-vardb.registerCut( Cut('LmuTel',  '( is_Lmu_Tel == 1 )') )
-#"""
+   """
+   vardb.registerCut( Cut('TT',      '( Sum$( lep_isTightSelected ) == 2 )') )
+   vardb.registerCut( Cut('TL',      '( lep_isTightSelected[0] == 1 && lep_isTightSelected[1] == 0 )') )
+   vardb.registerCut( Cut('LT',      '( lep_isTightSelected[0] == 0 && lep_isTightSelected[1] == 1 )') )
+   vardb.registerCut( Cut('TL_LT',   '( ( lep_isTightSelected[0] == 1 && lep_isTightSelected[1] == 0 ) || ( lep_isTightSelected[0] == 0 && lep_isTightSelected[1] == 1 ) )') )
+   vardb.registerCut( Cut('LL',      '( Sum$( lep_isTightSelected ) == 0 )') )
+   vardb.registerCut( Cut('TelLmu',  '( ( lep_flavour[0] == 11 && lep_isTightSelected[0] == 1 ) && ( lep_flavour[1] == 13 && lep_isTightSelected[1] == 0 ) )') )
+   vardb.registerCut( Cut('LelTmu',  '( ( lep_flavour[0] == 11 && lep_isTightSelected[0] == 0 ) && ( lep_flavour[1] == 13 && lep_isTightSelected[1] == 1 ) )') )
+   vardb.registerCut( Cut('TmuLel',  '( ( lep_flavour[0] == 13 && lep_isTightSelected[0] == 1 ) && ( lep_flavour[1] == 11 && lep_isTightSelected[1] == 0 ) )') )
+   vardb.registerCut( Cut('LmuTel',  '( ( lep_flavour[0] == 13 && lep_isTightSelected[0] == 0 ) && ( lep_flavour[1] == 11 && lep_isTightSelected[1] == 1 ) )') )
+   """
+   #"""
+   vardb.registerCut( Cut('TT',      '( is_T_T == 1 )') )
+   vardb.registerCut( Cut('TL',      '( is_T_AntiT == 1 )') )
+   vardb.registerCut( Cut('LT',      '( is_AntiT_T == 1 )') )
+   vardb.registerCut( Cut('TL_LT',   '( is_T_AntiT == 1 || is_AntiT_T == 1 )') )
+   vardb.registerCut( Cut('LL',      '( is_AntiT_AntiT == 1 )') )
+   vardb.registerCut( Cut('TelLmu',  '( is_Tel_AntiTmu == 1 )') )
+   vardb.registerCut( Cut('LelTmu',  '( is_Lel_Tmu == 1 )') )
+   vardb.registerCut( Cut('TmuLel',  '( is_Tmu_AntiTel == 1 )') )
+   vardb.registerCut( Cut('LmuTel',  '( is_Lmu_Tel == 1 )') )
+   #"""
 
 # -------------------------------------------------------------------------------
 # the following cuts must be used only on MC :
@@ -367,41 +472,74 @@ vardb.registerCut( Cut('LmuTel',  '( is_Lmu_Tel == 1 )') )
 #
 # -------------------------------------------------------------------------------
 
-# 1.
-# event passes this cut if ALL leptons are prompt (MCTruthClassifier --> Iso), and none is charge flip
-#
-vardb.registerCut( Cut('2Lep_PurePromptEvent', '( isMC==0 || ( isMC==1 && ( lep_truthType[0] == 6 || lep_truthType[0] == 2 ) && ( lep_truthType[1] == 6 || lep_truthType[1] == 2 ) && ( lep_isChFlip[0] == 0 && lep_isChFlip[1] == 0 ) ) )') )
-# 2.
-# event passes this cut if AT LEAST ONE lepton is !prompt (MCTruthClassifier --> !Iso), and none is charge flip
-# (i.e., the !prompt lepton will be ( HF lepton || photon conv || lepton from Dalitz decay || mis-reco jet...)
-# --> USED FOR CLOSURE TEST
-#
-vardb.registerCut( Cut('2Lep_NonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_truthType[0] != 6 && lep_truthType[0] != 2 ) || ( lep_truthType[1] != 6 && lep_truthType[1] != 2 ) ) && ( lep_isChFlip[0] == 0 && lep_isChFlip[1] == 0 ) ) )') )
-#
-# 3.
-# event passes this cut if AT LEAST ONE lepton is charge flip (does not distinguish trident VS charge-misId)
-#
-vardb.registerCut( Cut('2Lep_ChFlipEvent',   '( isMC==0 || ( isMC==1 && ( lep_isChFlip[0] == 1 || lep_isChFlip[1] == 1 ) ) )') )
-#  CHECK: should rather use this ???? vardb.registerCut( Cut('2Lep_ChFlipEvent',   '( isMC==0 || ( isMC==1 && ( ( lep_isChFlip[0] == 1 && lep_isChFlip[1] == 0 ) || ( lep_isChFlip[1] == 1 && lep_isChFlip[0] == 0 ) ) ) )') )
+if args.useGroupNTup:
+   # 1.
+   # event passes this cut if ALL leptons are prompt (MCTruthClassifier --> Iso), and none is charge flip
+   #
+   vardb.registerCut( Cut('2Lep_PurePromptEvent', '( isMC==0 || ( isMC==1 && ( lep_isPrompt_0 == 1 && lep_isPrompt_1 == 1 ) && ( lep_isBremsElec_0 == 0 && lep_isBremsElec_1 == 0 ) ) )') )
+   # 2.
+   # event passes this cut if AT LEAST ONE lepton is !prompt (MCTruthClassifier --> !Iso), and none is charge flip
+   # (i.e., the !prompt lepton will be ( HF lepton || photon conv || lepton from Dalitz decay || mis-reco jet...)
+   # --> USED FOR CLOSURE TEST
+   #
+   vardb.registerCut( Cut('2Lep_NonPromptEvent', '( isMC==0 || ( isMC==1 && ( lep_isFakeLep_0 == 1 || lep_isFakeLep_1 == 1 ) && ( lep_isBremsElec_0 == 0 && lep_isBremsElec_1 == 0 ) ) )') )
+   #
+   # 3.
+   # event passes this cut if AT LEAST ONE lepton is charge flip (does not distinguish trident VS charge-misId)
+   #
+   vardb.registerCut( Cut('2Lep_ChFlipEvent',	'( isMC==0 || ( isMC==1 && ( lep_isBremsElec_0 == 1 || lep_isBremsElec_1 == 1 ) ) )') )
+   #  CHECK: should rather use this ???? vardb.registerCut( Cut('2Lep_ChFlipEvent',   '( isMC==0 || ( isMC==1 && ( ( lep_isBremsElec_0 == 1 && lep_isBremsElec_1 == 0 ) || ( lep_isBremsElec_1 == 1 && lep_isBremsElec_0 == 0 ) ) ) )') )
+   # 3a.
+   # event passes this cut if AT LEAST ONE lepton is (prompt and charge flip) (it will be a charge-misId charge flip)
+   #
+   vardb.registerCut( Cut('2Lep_ChFlipPromptEvent',  '( isMC==0 || ( isMC==1 && ( ( lep_isBremsElec_0 == 1 && lep_isPrompt_0 == 1 ) || ( lep_isBremsElec_1 == 1 && lep_isPrompt_1 == 1 ) ) ) )') )
+   # 3b.
+   # event passes this cut if AT LEAST ONE object is (!prompt and charge flip and from bremsstrahlung) (this will be a trident charge flip)
+   #
+   vardb.registerCut( Cut('2Lep_ChFlipBremEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isBremsElec_0 == 1 && lep_isFakeLep_0 == 1 ) || ( lep_isBremsElec_1 == 1 && lep_isFakeLep_1 == 1 ) ) ) )') )
+   # 3c.
+   # event passes this cut if AT LEAST ONE lepton is (!prompt and charge flip)
+   #
+   vardb.registerCut( Cut('2Lep_ChFlipNonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isBremsElec_0 == 1 && lep_isFakeLep_0 == 1 ) || ( lep_isBremsElec_1 == 1 && lep_isFakeLep_1 == 1 ) ) ) )') )
+   # 4.
+   # event passes this cut if NONE of the leptons is charge flip
+   vardb.registerCut( Cut('2Lep_ChFlipVeto',   '( isMC==0 || ( isMC==1 && ( lep_isBremsElec_0 == 0 && lep_isBremsElec_1 == 0 ) ) )') )
+else:
+   # 1.
+   # event passes this cut if ALL leptons are prompt (MCTruthClassifier --> Iso), and none is charge flip
+   #
+   vardb.registerCut( Cut('2Lep_PurePromptEvent', '( isMC==0 || ( isMC==1 && ( lep_truthType[0] == 6 || lep_truthType[0] == 2 ) && ( lep_truthType[1] == 6 || lep_truthType[1] == 2 ) && ( lep_isChFlip[0] == 0 && lep_isChFlip[1] == 0 ) ) )') )
+   # 2.
+   # event passes this cut if AT LEAST ONE lepton is !prompt (MCTruthClassifier --> !Iso), and none is charge flip
+   # (i.e., the !prompt lepton will be ( HF lepton || photon conv || lepton from Dalitz decay || mis-reco jet...)
+   # --> USED FOR CLOSURE TEST
+   #
+   vardb.registerCut( Cut('2Lep_NonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_truthType[0] != 6 && lep_truthType[0] != 2 ) || ( lep_truthType[1] != 6 && lep_truthType[1] != 2 ) ) && ( lep_isChFlip[0] == 0 && lep_isChFlip[1] == 0 ) ) )') )
+   #
+   # 3.
+   # event passes this cut if AT LEAST ONE lepton is charge flip (does not distinguish trident VS charge-misId)
+   #
+   vardb.registerCut( Cut('2Lep_ChFlipEvent',	'( isMC==0 || ( isMC==1 && ( lep_isChFlip[0] == 1 || lep_isChFlip[1] == 1 ) ) )') )
+   #  CHECK: should rather use this ???? vardb.registerCut( Cut('2Lep_ChFlipEvent',   '( isMC==0 || ( isMC==1 && ( ( lep_isChFlip[0] == 1 && lep_isChFlip[1] == 0 ) || ( lep_isChFlip[1] == 1 && lep_isChFlip[0] == 0 ) ) ) )') )
 
-# WRONG definition in group ntuples:
-#vardb.registerCut( Cut('2Lep_ChFlipEvent',   '( isMC==0 || ( isMC==1 && ( (lep_truthType[0] == 4 && lep_truthOrigin[0] == 5) || ((lep_truthType[1] == 4 && lep_truthOrigin[1] == 5)) ) ) )') )
+   # WRONG definition in group ntuples:
+   #vardb.registerCut( Cut('2Lep_ChFlipEvent',   '( isMC==0 || ( isMC==1 && ( (lep_truthType[0] == 4 && lep_truthOrigin[0] == 5) || ((lep_truthType[1] == 4 && lep_truthOrigin[1] == 5)) ) ) )') )
 
-# 3a.
-# event passes this cut if AT LEAST ONE lepton is (prompt and charge flip) (it will be a charge-misId charge flip)
-#
-vardb.registerCut( Cut('2Lep_ChFlipPromptEvent',  '( isMC==0 || ( isMC==1 && ( ( lep_isChFlip[0] == 1 && ( lep_truthType[0] == 6 || lep_truthType[0] == 2 ) ) || ( lep_isChFlip[1] == 1 && ( lep_truthType[1] == 6 || lep_truthType[1] == 2 ) ) ) ) )') )
-# 3b.
-# event passes this cut if AT LEAST ONE object is (!prompt and charge flip and from bremsstrahlung) (this will be a trident charge flip)
-#
-vardb.registerCut( Cut('2Lep_ChFlipBremEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isChFlip[0] == 1 && lep_isBrem[0] == 1 && ( lep_truthType[0] != 6 && lep_truthType[0] != 2 ) ) || ( lep_isChFlip[1] == 1 && lep_isBrem[1] == 1 && ( lep_truthType[1] != 6 && lep_truthType[1] != 2 ) ) ) ) )') )
-# 3c.
-# event passes this cut if AT LEAST ONE lepton is (!prompt and charge flip)
-#
-vardb.registerCut( Cut('2Lep_ChFlipNonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isChFlip[0] == 1 && ( lep_truthType[0] != 6 && lep_truthType[0] != 2 ) ) || ( lep_isChFlip[1] == 1 && ( lep_truthType[1] != 6 && lep_truthType[1] != 2 ) ) ) ) )') )
-# 4.
-# event passes this cut if NONE of the leptons is charge flip
-vardb.registerCut( Cut('2Lep_ChFlipVeto',   '( isMC==0 || ( isMC==1 && ( lep_isChFlip[0] == 0 && lep_isChFlip[1] == 0 ) ) )') )
+   # 3a.
+   # event passes this cut if AT LEAST ONE lepton is (prompt and charge flip) (it will be a charge-misId charge flip)
+   #
+   vardb.registerCut( Cut('2Lep_ChFlipPromptEvent',  '( isMC==0 || ( isMC==1 && ( ( lep_isChFlip[0] == 1 && ( lep_truthType[0] == 6 || lep_truthType[0] == 2 ) ) || ( lep_isChFlip[1] == 1 && ( lep_truthType[1] == 6 || lep_truthType[1] == 2 ) ) ) ) )') )
+   # 3b.
+   # event passes this cut if AT LEAST ONE object is (!prompt and charge flip and from bremsstrahlung) (this will be a trident charge flip)
+   #
+   vardb.registerCut( Cut('2Lep_ChFlipBremEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isChFlip[0] == 1 && lep_isBrem[0] == 1 && ( lep_truthType[0] != 6 && lep_truthType[0] != 2 ) ) || ( lep_isChFlip[1] == 1 && lep_isBrem[1] == 1 && ( lep_truthType[1] != 6 && lep_truthType[1] != 2 ) ) ) ) )') )
+   # 3c.
+   # event passes this cut if AT LEAST ONE lepton is (!prompt and charge flip)
+   #
+   vardb.registerCut( Cut('2Lep_ChFlipNonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isChFlip[0] == 1 && ( lep_truthType[0] != 6 && lep_truthType[0] != 2 ) ) || ( lep_isChFlip[1] == 1 && ( lep_truthType[1] != 6 && lep_truthType[1] != 2 ) ) ) ) )') )
+   # 4.
+   # event passes this cut if NONE of the leptons is charge flip
+   vardb.registerCut( Cut('2Lep_ChFlipVeto',   '( isMC==0 || ( isMC==1 && ( lep_isChFlip[0] == 0 && lep_isChFlip[1] == 0 ) ) )') )
 
 # ------------------
 # ttW Control Region
@@ -420,86 +558,85 @@ vardb.registerCut( Cut('2Lep_ChFlipVeto',   '( isMC==0 || ( isMC==1 && ( lep_isC
 
 # Reconstructed pT of the Z
 #
-pT_Z = '( TMath::Sqrt( (lep_pt[0]*lep_pt[0]) + (lep_pt[1]*lep_pt[1]) + 2*lep_pt[0]*lep_pt[1]*(TMath::Cos( lep_phi[0] - lep_phi[1] )) ) )/1e3'
+pT_Z = ('( TMath::Sqrt( (lep_pt[0]*lep_pt[0]) + (lep_pt[1]*lep_pt[1]) + 2*lep_pt[0]*lep_pt[1]*(TMath::Cos( lep_phi[0] - lep_phi[1] )) ) )/1e3','( TMath::Sqrt( (lep_Pt_0*lep_Pt_0) + (lep_Pt_1*lep_Pt_1) + 2*lep_Pt_0*lep_Pt_1*(TMath::Cos( lep_Phi_0 - lep_Phi_1 )) ) )/1e3')[bool(args.useGroupNTup)]
 
 # Calculate DeltaR(lep0,lep1) in 2LepSS + 0 tau category
 #
 gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/deltaR.cxx+")
 from ROOT import deltaR
-delta_R_lep0lep1 = 'deltaR( lep_eta[0], lep_phi[0], lep_eta[1], lep_phi[1] )'
+delta_R_lep0lep1 = ('deltaR( lep_eta[0], lep_phi[0], lep_eta[1], lep_phi[1] )','deltaR( lep_Eta_0, lep_Phi_0, lep_Eta_1, lep_Phi_1 )')[bool(args.useGroupNTup)]
 
 
 if doSR or doLowNJetCR:
     print ''
-    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
+    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 10, minval = -0.5, maxval = 9.5) )
     if doSR:
-        vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 4, minval = 1.5, maxval = 5.5) )
+        vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
     elif doLowNJetCR:
-        vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 4, minval = 1.5, maxval = 5.5) )
-    #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = -0.5, maxval = 3.5) )
-    #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 9, minval = 20.0, maxval = 200.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '|#eta^{lead lep}|', ntuplename = 'TMath::Abs(lep_eta[0])', bins = 8, minval = 0.0, maxval = 2.6) )
-    #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
+        vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
+    vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_MV2c20_77')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
+    vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = ('mll01/1e3','Mll01/1e3')[bool(args.useGroupNTup)], bins = 13, minval = 0.0, maxval = 260.0,) )
+    vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = ('lep_pt[0]/1e3','lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 9, minval = 20.0, maxval = 200.0,) )
+    vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '|#eta^{lead lep}|', ntuplename = ('lep_eta[0]','lep_Eta_0')[bool(args.useGroupNTup)], bins = 16, minval = -2.6, maxval = 2.6) )
+    vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
 
 if doMMRates or doMMClosureRates:
     print ''
-    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = 0, maxval = 10) )
-    #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = 0, maxval = 4) )
+    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 10, minval = 0, maxval = 10) )
+    vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_MV2c20_77')[bool(args.useGroupNTup)], bins = 4, minval = 0, maxval = 4) )
 
 if doMMRatesLHFit:
     vardb.registerVar( Variable(shortname = 'LepPt', latexname = 'p_{T}^{lep} [GeV]', ntuplename = 'lep_pt/1e3', bins = 15, minval = 10.0, maxval = 150.0,) )
 
 if doMMClosureTest:
     print ''
-    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
-    vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 4, minval = 1.5, maxval = 5.5) )
-    vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 4, minval = 1.5, maxval = 5.5) )
-    #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = -0.5, maxval = 3.5) )
-    #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 15, minval = 25.0, maxval = 175.0,) )
-    #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
+    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 10, minval = -0.5, maxval = 9.5) )
+    vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
+    vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
+    vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_MV2c20_77')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
+    vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = ('mll01/1e3','Mll01/1e3')[bool(args.useGroupNTup)], bins = 13, minval = 0.0, maxval = 260.0,) )
+    vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = ('lep_pt[0]/1e3','lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 15, minval = 25.0, maxval = 175.0,) )
+    vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
 
 if doZSSpeakCR:
     print ''
-    vardb.registerVar( Variable(shortname = 'Mll01_NarrowPeak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 26, minval = 60.0, maxval = 125.0) )
+    vardb.registerVar( Variable(shortname = 'Mll01_NarrowPeak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = ('mll01/1e3','Mll01/1e3')[bool(args.useGroupNTup)], bins = 26, minval = 60.0, maxval = 125.0) )
 
 if doStandardPlots:
     print ''
-    #vardb.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = 'jet_pt[0]/1e3', bins = 36, minval = 20.0, maxval = 200.0,) )
-    #vardb.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = 'jet_eta[0]', bins = 50, minval = -5.0, maxval = 5.0) )
-    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 10, minval = -0.5, maxval = 9.5) )
-    #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'njets_mv2c20_Fix77', bins = 4, minval = -0.5, maxval = 3.5) )
-    #vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'njets+10.0*njets_mv2c20_Fix77', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet')) )
+    #vardb.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = ('jet_pt[0]/1e3','lead_jetPt')[bool(args.useGroupNTup)], bins = 36, minval = 20.0, maxval = 200.0,) )
+    #vardb.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = ('jet_eta[0]/1e3','lead_jetEta')[bool(args.useGroupNTup)], bins = 50, minval = -5.0, maxval = 5.0) )
+    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 10, minval = -0.5, maxval = 9.5) )
+    #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_MV2c20_77')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
+    #vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = ('njets+10.0*njets_mv2c20_Fix77','nJets_OR+10.0*nJets_OR_MV2c20_77')[bool(args.useGroupNTup)], bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet')) )
     #
     # Inclusive m(ll) plot
     #
-    #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 40, minval = 40.0, maxval = 240.0,) )
+    #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = ('mll01/1e3','Mll01/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 40.0, maxval = 240.0,) )
     #
     # Z peak plot
     #
-    #vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
+    #vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = ('mll01/1e3','Mll01/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 40.0, maxval = 120.0,) )
     #
     #vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
-    #
-    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_eta[0]', bins = 16, minval = -2.6, maxval = 2.6) )
-    #vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_eta[1]', bins = 16, minval = -2.6, maxval = 2.6) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = ('lep_pt[0]/1e3','lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 36, minval = 10.0, maxval = 190.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = ('lep_pt[1]/1e3','lep_Pt_1/1e3')[bool(args.useGroupNTup)], bins = 20, minval = 10.0, maxval = 110.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = ('lep_eta[0]','lep_Eta_0')[bool(args.useGroupNTup)], bins = 16, minval = -2.6, maxval = 2.6) )
+    #vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = ('lep_eta[1]','lep_Eta_1')[bool(args.useGroupNTup)], bins = 16, minval = -2.6, maxval = 2.6) )
     #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
-    #vardb.registerVar( Variable(shortname = 'Mll12', latexname = 'm(l_{1}l_{2}) [GeV]', ntuplename = 'mll12/1e3', bins = 15, minval = 0.0, maxval = 300.0,) )
-    #vardb.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageInteractionsPerCrossing', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
-    #vardb.registerVar( Variable(shortname = 'MET_FinalClus', latexname = 'E_{T}^{miss} (FinalClus) [GeV]', ntuplename = 'metFinalClus/1e3', bins = 45, minval = 0.0, maxval = 180.0,))
-    #vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} (FinalTrk) [GeV]', ntuplename = 'metFinalTrk/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
-    #vardb.registerVar( Variable(shortname = 'MET_SoftClus', latexname = 'E_{T}^{miss} (SoftClus) [GeV]', ntuplename = 'metSoftClus/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
-    #vardb.registerVar( Variable(shortname = 'MET_SoftTrk', latexname = 'E_{T}^{miss} (SoftTrk) [GeV]', ntuplename = 'metSoftTrk/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
-    #vardb.registerVar( Variable(shortname = 'MET_Electrons', latexname = 'E_{T}^{miss} (Electrons) [GeV]', ntuplename = 'metEle/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
-    #vardb.registerVar( Variable(shortname = 'MET_Muons', latexname = 'E_{T}^{miss} (Muons) [GeV]', ntuplename = 'metMuons/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
-    #vardb.registerVar( Variable(shortname = 'MET_Jets', latexname = 'E_{T}^{miss} (Jets) [GeV]', ntuplename = 'metJet/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
+    #vardb.registerVar( Variable(shortname = 'Mll12', latexname = 'm(l_{1}l_{2}) [GeV]', ntuplename = ('mll12/1e3','Mll12/1e3')[bool(args.useGroupNTup)], bins = 15, minval = 0.0, maxval = 300.0,) )
+    ##vardb.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageInteractionsPerCrossing', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
+    ##vardb.registerVar( Variable(shortname = 'MET_FinalClus', latexname = 'E_{T}^{miss} (FinalClus) [GeV]', ntuplename = 'metFinalClus/1e3', bins = 45, minval = 0.0, maxval = 180.0,))
+    #vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} (FinalTrk) [GeV]', ntuplename = ('metFinalTrk/1e3','MET_RefFinl_et/1e3')[bool(args.useGroupNTup)], bins = 45, minval = 0.0, maxval = 180.0,) )
+    ##vardb.registerVar( Variable(shortname = 'MET_SoftClus', latexname = 'E_{T}^{miss} (SoftClus) [GeV]', ntuplename = 'metSoftClus/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
+    ##vardb.registerVar( Variable(shortname = 'MET_SoftTrk', latexname = 'E_{T}^{miss} (SoftTrk) [GeV]', ntuplename = 'metSoftTrk/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
+    ##vardb.registerVar( Variable(shortname = 'MET_Electrons', latexname = 'E_{T}^{miss} (Electrons) [GeV]', ntuplename = 'metEle/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
+    ##vardb.registerVar( Variable(shortname = 'MET_Muons', latexname = 'E_{T}^{miss} (Muons) [GeV]', ntuplename = 'metMuons/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
+    ##vardb.registerVar( Variable(shortname = 'MET_Jets', latexname = 'E_{T}^{miss} (Jets) [GeV]', ntuplename = 'metJet/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
 
     #vardb.registerVar( Variable(shortname = 'MT_Lep0MET', latexname = 'm_{T}(l_{0},MET) [GeV]', ntuplename = 'mT_lep0MET/1e3', bins = 40, minval = 0.0, maxval = 160.0,) )
     #vardb.registerVar( Variable(shortname = 'MT_Lep1MET', latexname = 'm_{T}(l_{1},MET) [GeV]', ntuplename = 'mT_lep1MET/1e3', bins = 40, minval = 0.0, maxval = 160.0,) )
-    #vardb.registerVar( Variable(shortname = 'Tau0Pt', latexname = 'p_{T}^{lead tau} [GeV]', ntuplename = 'tau_pt[0]/1e3', bins = 30, minval = 25.0, maxval = 100.0,) )
+    #vardb.registerVar( Variable(shortname = 'Tau0Pt', latexname = 'p_{T}^{lead tau} [GeV]', ntuplename = ('tau_pt[0]/1e3','tau_pt_0')[bool(args.useGroupNTup)], bins = 30, minval = 25.0, maxval = 100.0,) )
 
     #vardb.registerVar( Variable(shortname = 'El0Pt', latexname = 'p_{T}^{lead e} [GeV]', ntuplename = 'el_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
     #vardb.registerVar( Variable(shortname = 'El1Pt', latexname = 'p_{T}^{2nd lead e} [GeV]', ntuplename = 'el_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
@@ -519,7 +656,6 @@ if doStandardPlots:
     #vardb.registerVar( Variable(shortname = 'El1z0sintheta', latexname = 'z_{0}*sin(#theta) 2nd lead e [mm]', ntuplename = 'el_trkz0sintheta[1]', bins = 20, minval = -1.0, maxval = 1.0,) )
     #vardb.registerVar( Variable(shortname = 'El0isProbe', latexname = 'lead e isProbe', ntuplename = '!el_isTag[0]', bins = 2, minval = -0.5, maxval = 1.5) )
     #vardb.registerVar( Variable(shortname = 'El1isProbe', latexname = '2nd lead e isProbe', ntuplename = '!el_isTag[1]', bins = 2, minval = -0.5, maxval = 1.5) )
-
 
     #vardb.registerVar( Variable(shortname = 'Mu0Pt', latexname = 'p_{T}^{lead #mu} [GeV]', ntuplename = 'muon_pt[0]/1e3', bins = 36, minval = 10.0, maxval = 190.0,) )
     #vardb.registerVar( Variable(shortname = 'Mu1Pt', latexname = 'p_{T}^{2nd lead #mu} [GeV]', ntuplename = 'muon_pt[1]/1e3', bins = 20, minval = 10.0, maxval = 110.0,) )
@@ -750,24 +886,24 @@ if doCFChallenge:
 
     # CF Challenge for MM rates measurement
     #
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TrigDec',		    cut = vardb.getCuts(['TrigDec'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NLep', 		    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_pT',			    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TrigMatch',		    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TauVeto',		   cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NJets',		   cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NBJets',		    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_LepTagTightTrigMatched',   cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS',			    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_Zveto',		    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_Zsidescut'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_Eta',		    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_Zsidescut','2Lep_ElEtaCut'])  ) )
-    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_ProbeT',		    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_ProbeTight'])  ) )
-    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_ProbeAntiT',	    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_ProbeAntiTight'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS',			    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_Zveto',		    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_Eta',		    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElEtaCut'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_ProbeT',		    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_ProbeTight'])  ) )
-    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_ProbeAntiT',	    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_ProbeAntiTight'])  ) )
+    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TrigDec',		  cut = vardb.getCuts(['TrigDec'])  ) )
+    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NLep', 		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep'])  ) )
+    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_pT',			  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates'])  ) )
+    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TrigMatch',		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch'])  ) )
+    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_TauVeto',		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto'])  ) )
+    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NJets',		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR'])  ) )
+    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_NBJets',		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet'])  ) )
+    #vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_LepTagTightTrigMatched', cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS',			  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_Zveto',		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_Zsidescut'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_Eta',		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_Zsidescut','2Lep_ElEtaCut'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_ProbeT',		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_ProbeTight'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_OS_ProbeAntiT',	  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_OS','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_ProbeAntiTight'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS',			  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_Zveto',		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_Eta',		  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElEtaCut'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_ProbeT',		 cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_ProbeTight'])  ) )
+    vardb.registerCategory( MyCategory('CFChallenge_2Lep_MMRates_SS_ProbeAntiT',	 cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','2Lep_pT_MMRates','2Lep_TrigMatch','TauVeto','2Lep_NJet_CR','2Lep_NBJet','2Lep_LepTagTightTrigMatched','2Lep_SS','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_ProbeAntiTight'])  ) )
 
     # 2lepSS + 0tau
     #
@@ -835,17 +971,17 @@ if doMMRates or doMMClosureRates:
     # Special plots for MM real/fake rate CRs
     # ---------------------------------------
 
-    #vardb.registerVar( Variable(shortname = 'ElTagPt', latexname = 'p_{T}^{tag e} [GeV]', ntuplename = 'el_tag_pt[0]/1e3', bins = 40, minval = 10.0, maxval = 210.0,) )
-    #vardb.registerVar( Variable(shortname = 'ElTagEta', latexname = '#eta^{tag e}', ntuplename = 'TMath::Abs( el_tag_eta[0] )',bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
-    vardb.registerVar( Variable(shortname = 'ElProbePt', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'el_probe_pt[0]/1e3', bins = 40, minval = 10.0, maxval = 210.0,) )
-    vardb.registerVar( Variable(shortname = 'ElProbeEta', latexname = '#eta^{probe e}', ntuplename = 'TMath::Abs( el_probe_eta[0] )', bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
-    #vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 8, minval = 2, maxval = 10) )
+    #vardb.registerVar( Variable(shortname = 'ElTagPt', latexname = 'p_{T}^{tag e} [GeV]', ntuplename = ('el_tag_pt[0]/1e3','lep_Tag_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
+    #vardb.registerVar( Variable(shortname = 'ElTagEta', latexname = '#eta^{tag e}', ntuplename = ('TMath::Abs( el_tag_eta[0] )','TMath::Abs( lep_Tag_Eta )')[bool(args.useGroupNTup)],bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
+    vardb.registerVar( Variable(shortname = 'ElProbePt', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = ('el_probe_pt[0]/1e3','lep_Probe_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
+    vardb.registerVar( Variable(shortname = 'ElProbeEta', latexname = '#eta^{probe e}', ntuplename = ('TMath::Abs( el_probe_eta[0] )','TMath::Abs( lep_Probe_Eta )')[bool(args.useGroupNTup)], bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
+    #vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 8, minval = 2, maxval = 10) )
 
-    #vardb.registerVar( Variable(shortname = 'MuTagPt', latexname = 'p_{T}^{tag #mu} [GeV]', ntuplename = 'muon_tag_pt[0]/1e3', bins = 40, minval = 10.0, maxval = 210.0,) )
-    #vardb.registerVar( Variable(shortname = 'MuTagEta', latexname = '#eta^{tag #mu}', ntuplename = 'TMath::Abs( muon_tag_eta[0] )', bins = 8,  minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
-    vardb.registerVar( Variable(shortname = 'MuProbePt', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'muon_probe_pt[0]/1e3', bins = 40, minval = 10.0, maxval = 210.0) )
-    vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = 'TMath::Abs( muon_probe_eta[0] )', bins = 8, minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
-    #vardb.registerVar( Variable(shortname = 'MuProbeNJets', latexname = 'Jet multiplicity', ntuplename = 'njets', bins = 8, minval = 2, maxval = 10) )
+    #vardb.registerVar( Variable(shortname = 'MuTagPt', latexname = 'p_{T}^{tag #mu} [GeV]', ntuplename = ('muon_tag_pt[0]/1e3','lep_Tag_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
+    #vardb.registerVar( Variable(shortname = 'MuTagEta', latexname = '#eta^{tag #mu}', ntuplename = ('TMath::Abs( muon_tag_eta[0] )','TMath::Abs( lep_Tag_Eta )')[bool(args.useGroupNTup)], bins = 8,  minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
+    vardb.registerVar( Variable(shortname = 'MuProbePt', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = ('muon_probe_pt[0]/1e3','lep_Probe_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0) )
+    vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = ('TMath::Abs( muon_probe_eta[0] )','TMath::Abs( lep_Probe_Eta )')[bool(args.useGroupNTup)], bins = 8, minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
+    #vardb.registerVar( Variable(shortname = 'MuProbeNJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 8, minval = 2, maxval = 10) )
 
     # -----------------------------------------------------------------------------------------------------------------
     # MC Prompt/ch-flip subtraction in Fake SS CR: make sure you only plot:
@@ -1037,11 +1173,11 @@ if doMMClosureTest or doMMClosureRates:
 
 # MC generator event weight
 #
-weight_generator = 'mcEventWeight'
+weight_generator = ('mcEventWeight','mcWeightOrg')[bool(args.useGroupNTup)]
 
 # PRW weight
 #
-weight_pileup = 'weight_pileup'
+weight_pileup = ('weight_pileup','pileupEventWeight_090')[bool(args.useGroupNTup)]
 
 #if ( args.noWeights or doMMClosureTest or doMMClosureRates ):
 if ( args.noWeights ):
@@ -1374,7 +1510,11 @@ for category in vardb.categorylist:
     # ---> apply the lepton SFs to the event here!
     #
     if not ( args.noWeights ):
-        lepSF_weight = 'weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]'
+
+	if ( ("ProbeTight") in category.cut.cutname or ("ProbeAntiTight") in category.cut.cutname ):
+	   lepSF_weight = ('weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]','weight_tag * weight_probe')[bool(args.useGroupNTup)]
+	else:
+	   lepSF_weight = ('weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]','weight_tag')[bool(args.useGroupNTup)]
 
     print ("\tApplying lepton SFs (to MC only) --> {0}\n".format( lepSF_weight ))
 
@@ -1396,11 +1536,11 @@ for category in vardb.categorylist:
         if not ( args.noWeights ):
 
 	    if  ( ( ("NJet") in category.cut.cutname ) or  ( ("SR") in category.cut.cutname ) ) or ("NJet") in var.shortname:
-                jetSF_weight = 'weight_jet_JVT_HTop[0]'
+                jetSF_weight = ('weight_jet_JVT_HTop[0]','JVT_EventWeight')[bool(args.useGroupNTup)]
                 print ("\t\tCategory contains a cut on Jet multiplicity, or plotting variable \'Njet\' : applying jet SFs (to MC only) --> {0}\n".format( jetSF_weight ))
 
 	    if  ( ( ("BJet") in category.cut.cutname and not doRelaxedBJetCut ) or  ( ("SR") in category.cut.cutname ) ) or ("BJet") in var.shortname:
-                bjetSF_weight = 'weight_jet_MV2c20_SFFix77[0]'
+                bjetSF_weight = ('weight_jet_MV2c20_SFFix77[0]','MV2c20_77_EventWeight')[bool(args.useGroupNTup)]
                 print ("\t\tCategory contains a cut on BJet multiplicity, or plotting variable \'Bjet\' : applying BTagging SF (to MC only) --> {0}\n".format( bjetSF_weight ))
 
         combined_SF_weight = str(lepSF_weight) + ' * ' + str(jetSF_weight) + ' * ' + str(bjetSF_weight)

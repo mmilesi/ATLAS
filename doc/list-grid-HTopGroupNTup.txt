@@ -20,7 +20,6 @@ user.dhohn.410000.PowhegPythiaEvtGen.DAOD_HIGG8D1.e3698_s2608_s2183_r7267_r6282_
 # ~~~~ single t (background) ~~~ #
 # ~~~~ ttWW (background) ~~~~ #
 # ~~~~ bulk MC submission ~~~~ #
-#mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2501/
 #
 # ********** #
 #    data    #

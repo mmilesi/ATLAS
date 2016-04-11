@@ -1,4 +1,4 @@
-from ROOT import TFile, TH1, TH1D, TH1I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed
+from ROOT import TFile, TH1, TH1D, TH1I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
 from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex
 import sys, glob, os, array, inspect, math
 #glob finds all the pathnames matching a specified pattern.glob.glob(pathname) Return a possibly-empty list of path names that match pathname in which unix wildcards can be used
@@ -21,7 +21,7 @@ class Inputs:
         self.systrees = []
         self.sysweights = []
 
-    def registerTree(self, filegroup, nomtree = 'physics', systrees=[], ismc=True, isembedding=False, isdata=False, sample={}):
+    def registerTree(self, filegroup, nomtree = 'physics', systrees=[], ismc=True, isembedding=False, isdata=False, sample={}, resetTreeWeight=False):
 
 	# This function add a tree to TChain contained in self.alltrees = {}.
 	# In this dictionary each group and subgroup is separated and has its proper TChain.
@@ -54,25 +54,31 @@ class Inputs:
             print "WARNING: file", filegroup, "cannot be found during tree registration"
             return False
 
+        # If not already done, set the Xsec weight to each (MC) TTree
+	#
         for filepath in filelist:
-
-	    f = TFile.Open(filepath)
-
+	    f = TFile.Open(filepath,"UPDATE")
 	    for treename in treelist:
+	       t = f.Get(treename)
+               if not t:
+                  print ("WARNING: tree {0} cannot be found during tree registration".format(treename))
+                  return False
+	       if ismc and ( t.GetWeight() == 1.0 or resetTreeWeight ):
+		  print("Weighting tree w/ Xsec weight...")
+		  weight = float(sample['xsection']) * float(sample['efficiency']) * float(sample['kfactor']) * 1e3 # to get the weight in fb (the Xsec is in pb)
+		  h = f.Get("TotalEventsW")
+		  if not h:
+		     print ("WARNING: histogram named TotalEventsW in file {1} couldn't be found!".format(filepath))
+		     return False
+		  weight /= h.GetBinContent(2)
+		  t.SetWeight(weight)
+		  t.Write(t.GetName(),t.kOverwrite)
+	    f.Close()
 
-		t = f.Get(treename)
-		if not t:
-                    print ("ERROR: tree named {0} in file {1} couldn't be found!".format(treename,filepath))
-
-		if ismc and t.GetWeight() == 1.0:
-                    print("Weighting tree w/ Xsec weight...")
-                    weight = float(sample['xsection']) * float(sample['efficiency']) * float(sample['kfactor']) * 1e3 # to get the weight in fb (the Xsec is in pb)
-		    h = f.Get("TotalEventsW")
-		    if not h:
-                       print ("ERROR: histogram named TotalEventsW in file {1} couldn't be found!".format(filepath))
-		    weight /= h.GetBinContent(2)
-		    t.SetWeight(weight)
-
+        # Add the TTrees into a TChain
+	#
+        for filepath in filelist:
+	    for treename in treelist:
                 if not treename in self.alltrees:
                     self.alltrees[treename] = {}
                 processes = self.alltrees[treename]
@@ -87,8 +93,6 @@ class Inputs:
                     if not treename in self.sampleids:
                         self.sampleids[treename] = {}
                     self.sampleids[treename][sampleid] = (group, subgroup) #seems that using sampleid you can then recover the info about the group and the subgroup
-
-	    f.Close()
 
         return True
 
@@ -106,9 +110,8 @@ class Inputs:
         except:
             tree = None
             print "ERROR: Could not reach tree", treename, group, subgroup
-
-	print("Tree: {0} - Xsec weight = {1}".format(treename,tree.GetWeight()))
-
+	       
+	print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
 
     def getTrees(self, treename='physics', grouplist=[]):

@@ -208,7 +208,7 @@ void QMisIDWeightCalculator (std::vector<float>* weights,
 /
 ****************** */
 
-void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NENTRIES = "ALL", std::string treename= "physics", std::string newfilename = "output.root")
+void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NENTRIES = "ALL", std::string treename= "physics", std::string newfilename = "output.root",std::string useGroupNTup = "")
 {
   
   // This script loads a tree, clones it, removes a branch and substitutes it with another.
@@ -233,25 +233,64 @@ void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NEN
 
   // TO BE MODIFIED ACCORDINGLY TO YOUR NEEDS (name and type of the variables)
   //
-  std::string old_eventNumber_name("eventNumber");
-  std::string old_nel_name("nel");
-  std::string old_el_pt_name("el_pt");
-  std::string old_el_eta_name("el_caloCluster_eta");
-  std::string old_el_isT_name("el_isTightSelected");
+  std::string old_eventNumber_name = ( useGroupNTup.empty() ) ? "eventNumber" : "EventNumber";
+  std::string old_nel_name         = ( useGroupNTup.empty() ) ? "nel" : "nelectrons";
+  std::string old_el_pt_name(""); 
+  std::string old_el_eta_name("");
+  std::string old_el_isT_name("");
+  
+  std::string old_lep0_pt_name(""); 
+  std::string old_lep1_pt_name(""); 
+  std::string old_lep0_eta_name("");
+  std::string old_lep1_eta_name("");
+  std::string old_lep0_isT_name("");
+  std::string old_lep1_isT_name("");
+  
+  if ( useGroupNTup.empty() ) {
+    std::string old_el_pt_name   = "el_pt";
+    std::string old_el_eta_name  = "el_caloCluster_eta";
+    std::string old_el_isT_name  = "el_isTightSelected";
+  } else {
+  
+    old_lep0_ID_name  = "lep_ID_0"; 
+    old_lep1_ID_name  = "lep_ID_1";   
+    old_lep0_pt_name  = "lep_Pt_0"; 
+    old_lep1_pt_name  = "lep_Pt_1"; 
+    old_lep0_eta_name = "lep_EtaBE2_0";
+    old_lep1_eta_name = "lep_EtaBE2_1";
+    old_lep0_isT_name = "lep_isTightSelected_0";
+    old_lep1_isT_name = "lep_isTightSelected_1";
+  }
 
   Long64_t               eventNumber_old; eventNumber_old = -1;
   Int_t                  nel_old;        nel_old = -1;
   std::vector<float>*    el_pt_old;      el_pt_old = 0;
   std::vector<float>*    el_eta_old;     el_eta_old = 0;
   std::vector<int>*      el_isT_old;     el_isT_old = 0;
+  Float_t lep0_ID_old;  lep0_ID_old = 0.0; 
+  Float_t lep1_ID_old; 	lep1_ID_old = 0.0;   
+  Float_t lep0_pt_old;  lep0_pt_old = -1.0; 
+  Float_t lep1_pt_old; 	lep1_pt_old = -1.0; 
+  Float_t lep0_eta_old;	lep0_eta_old = -999.0;
+  Float_t lep1_eta_old;	lep1_eta_old = -999.0;
+  Char_t  lep0_isT_old;	lep0_isT_old = 0;
+  Char_t  lep1_isT_old;	lep1_isT_old = 0;
 
   // List of old branches
   //
-  TBranch        *b_eventNumber = 0;       //!
-  TBranch	 *b_nel_old    = 0;        //!
-  TBranch	 *b_el_pt_old = 0;         //!
-  TBranch	 *b_el_eta_old = 0;        //!
-  TBranch        *b_el_isT_old = 0;        //!
+  TBranch        *b_eventNumber = 0;  //!
+  TBranch	 *b_nel_old    = 0;   //!
+  TBranch	 *b_el_pt_old = 0;    //!
+  TBranch	 *b_el_eta_old = 0;   //!
+  TBranch        *b_el_isT_old = 0;   //!
+  TBranch        *b_lep0_ID_old = 0;    //!
+  TBranch        *b_lep1_ID_old = 0;    //!
+  TBranch        *b_lep0_pt_old = 0;    //!
+  TBranch        *b_lep1_pt_old = 0;    //!
+  TBranch        *b_lep0_eta_old = 0;   //!
+  TBranch        *b_lep1_eta_old = 0;   //!
+  TBranch        *b_lep0_isT_old = 0;   //!
+  TBranch        *b_lep1_isT_old = 0;   //!
 
   // Before cloning input TTree, tell ROOT to process all the old branches,
   //
@@ -266,10 +305,22 @@ void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NEN
   //
   oldtree->SetBranchAddress(old_eventNumber_name.c_str(), &eventNumber_old, &b_eventNumber);
   oldtree->SetBranchAddress(old_nel_name.c_str(), &nel_old, &b_nel_old);
-  oldtree->SetBranchAddress(old_el_pt_name.c_str(), &el_pt_old, &b_el_pt_old);
-  oldtree->SetBranchAddress(old_el_eta_name.c_str(), &el_eta_old, &b_el_eta_old);
-  oldtree->SetBranchAddress(old_el_isT_name.c_str(), &el_isT_old, &b_el_isT_old);
-
+  
+  if ( useGroupNTup.empty() ) {
+    oldtree->SetBranchAddress(old_el_pt_name.c_str(),  &el_pt_old,  &b_el_pt_old);
+    oldtree->SetBranchAddress(old_el_eta_name.c_str(), &el_eta_old, &b_el_eta_old);
+    oldtree->SetBranchAddress(old_el_isT_name.c_str(), &el_isT_old, &b_el_isT_old);
+  } else {
+    oldtree->SetBranchAddress(old_lep0_ID_name.c_str(), &lep0_ID_old , &b_lep0_ID_old);
+    oldtree->SetBranchAddress(old_lep1_ID_name.c_str(), &lep1_ID_old , &b_lep1_ID_old);
+    oldtree->SetBranchAddress(old_lep0_pt_name.c_str(), &lep0_pt_old , &b_lep0_pt_old);
+    oldtree->SetBranchAddress(old_lep1_pt_name.c_str(), &lep1_pt_old , &b_lep1_pt_old);
+    oldtree->SetBranchAddress(old_lep0_eta_name.c_str(), &lep0_eta_old, &b_lep0_eta_old);
+    oldtree->SetBranchAddress(old_lep1_eta_name.c_str(), &lep1_eta_old, &b_lep1_eta_old);
+    oldtree->SetBranchAddress(old_lep0_isT_name.c_str(), &lep0_isT_old, &b_lep0_isT_old);
+    oldtree->SetBranchAddress(old_lep1_isT_name.c_str(), &lep1_isT_old, &b_lep1_isT_old);  
+  }
+  
   // Set the "new" branches in the output TTree
   //
   std::vector<float>  QMisIDWeight_new; 
@@ -314,15 +365,37 @@ void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NEN
     bool  elA_isT(false),elB_isT(false);
 
     if ( nel_old > 0 ) {
-      elA_eta = el_eta_old->at(0);
-      elA_pt  = el_pt_old->at(0) / 1e3;
-      elA_isT = el_isT_old->at(0);
+      
+      if ( useGroupNTup.empty() ) {
+        elA_eta = el_eta_old->at(0);
+        elA_pt  = el_pt_old->at(0) / 1e3;
+        elA_isT = el_isT_old->at(0);
+      } else {
+	if ( abs(lep0_ID_old) == 11 ) {
+	  elA_eta = lep0_eta_old;
+          elA_pt  = lep0_pt_old/ 1e3;
+          elA_isT = lep0_isT_old;
+	} else if ( abs(lep0_ID_old) == 13 && abs(lep1_ID_old) == 11 ) {
+	  elA_eta = lep1_eta_old;
+          elA_pt  = lep1_pt_old/ 1e3;
+          elA_isT = lep1_isT_old;
+	}
+      }
+      
       if ( g_debug ) { Info("modifytree()","\t elA - pT = %.2f, eta = %.2f, isT = %i ", elA_pt/1e3, elA_eta, elA_isT ); }
     }
     if ( nel_old > 1 ) {
-      elB_eta = el_eta_old->at(1);
-      elB_pt  = el_pt_old->at(1) / 1e3;
-      elB_isT = el_isT_old->at(1);
+      
+      if ( useGroupNTup.empty() ) {
+        elB_eta = el_eta_old->at(1);
+        elB_pt  = el_pt_old->at(1) / 1e3;
+        elB_isT = el_isT_old->at(1);
+      } else {
+        elB_eta = lep1_eta_old;
+        elB_pt  = lep1_pt_old/ 1e3;
+        elB_isT = lep1_isT_old;
+      }
+      
       if ( g_debug ) { Info("modifytree()","\t elB - pT = %.2f, eta = %.2f, isT = %i ", elB_pt/1e3, elB_eta, elB_isT ); }
     } 
     

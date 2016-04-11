@@ -284,6 +284,10 @@ private:
   char	    m_is_T_AntiT;
   char	    m_is_AntiT_T;
   char	    m_is_AntiT_AntiT;
+  char      m_is_Tel_AntiTmu;
+  char      m_is_Tmu_AntiTel;
+  char      m_is_AntiTel_Tmu;
+  char      m_is_AntiTmu_Tel;  
 
   int       m_nmuons;
   int       m_nelectrons;

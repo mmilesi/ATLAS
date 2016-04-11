@@ -24,7 +24,7 @@ lep_branches         = ["lep_ID_0","lep_Index_0","lep_Pt_0","lep_E_0","lep_Eta_0
                         "lep_isTightLH_2","lep_isMediumLH_2","lep_isLooseLH_2","lep_isTight_2","lep_isMedium_2","lep_isLoose_2","lep_isolationLooseTrackOnly_2","lep_isolationLoose_2","lep_isolationFixedCutTight_2","lep_isolationFixedCutTightTrackOnly_2","lep_isolationFixedCutLoose_2",
                         "lep_isTrigMatch_2","lep_isPrompt_2","lep_isBremsElec_2","lep_isFakeLep_2",
                         "lep_SFIDLoose_2","lep_SFIDTight_2","lep_SFTrigLoose_2","lep_SFTrigTight_2","lep_SFIsoLoose_2","lep_SFIsoTight_2","lep_SFReco_2","lep_SFTTVA_2","lep_SFObjLoose_2","lep_SFObjTight_2"]
-tau_branches         = ["tau_pt_0","tau_eta_0","tau_phi_0","tau_BDTJetScore_0","tau_JetBDTSigLoose_0","tau_JetBDTSigMedium_0","tau_JetBDTSigTight_0","tau_numTrack_0","tau_SFTight_0","tau_SFLoose_0"]
+tau_branches         = ["tau_pt_0","tau_eta_0","tau_phi_0","tau_charge_0","tau_BDTJetScore_0","tau_JetBDTSigLoose_0","tau_JetBDTSigMedium_0","tau_JetBDTSigTight_0","tau_numTrack_0","tau_SFTight_0","tau_SFLoose_0"]
 
 branches_to_copy = eventweight_branches + event_branches + trigbits_branches + jet_branches + lep_branches + tau_branches
 
