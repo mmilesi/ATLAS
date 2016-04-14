@@ -342,7 +342,7 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsCFilterBVeto', 'ee'),
                            ('Z+jetsBFilter', 'ee'),
 			   ('Z+jetsLowMllBVeto', 'ee'),
-			   ('ZjetsLowMllBFilter', 'ee'),
+			   ('Z+jetsLowMllBFilter', 'ee'),
 		           #('DYZ+jets', 'ee'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -387,7 +387,7 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsCFilterBVeto', 'mumu'),
                            ('Z+jetsBFilter', 'mumu'),
 			   ('Z+jetsLowMllBVeto', 'mumu'),
-			   ('ZjetsLowMllBFilter', 'mumu'),
+			   ('Z+jetsLowMllBFilter', 'mumu'),
 		           #('DYZ+jets', 'mumu'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -431,7 +431,7 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsCFilterBVeto', 'tautau'),
                            ('Z+jetsBFilter', 'tautau'),
 			   ('Z+jetsLowMllBVeto', 'tautau'),
-			   ('ZjetsLowMllBFilter', 'tautau'),			   
+			   ('Z+jetsLowMllBFilter', 'tautau'),			   
 		           #('DYZ+jets', 'tautau'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -532,7 +532,7 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
 		           ('Z+jetsCFilterBVeto', '*'),
 		           ('Z+jetsBFilter', '*'),
-			   ('ZjetsLowMllBFilter', '*'),			   
+			   ('Z+jetsLowMllBFilter', '*'),			   
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -576,7 +576,7 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsCFilterBVeto', '*'),
                            ('Z+jetsBFilter', '*'),
 			   ('Z+jetsLowMllBVeto', '*'),
-			   ('ZjetsLowMllBFilter', '*'),			   
+			   ('Z+jetsLowMllBFilter', '*'),			   
 		           #('DYZ+jets', '*'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)

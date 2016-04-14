@@ -19,16 +19,21 @@ gROOT.SetBatch(True)
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v028/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v028/Merged_Melb15_ttH_028_DxAOD_DATA_QMisID_WEIGHTED/'
 
-oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA/'
-newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
+#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA/'
+#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
+
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_Data_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_Data_QMisID_WEIGHTED/"
+oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v030/Merged_Melb15_ttH_030_DxAOD_p2559_Data_Original/"
+newpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v030/Merged_Melb15_ttH_030_DxAOD_p2559_Data_QMisID_WEIGHTED/"
 
 # Are we using group ntuples?
 #
-useGroupNTup = "YES"
+useGroupNTup = '' #'YES'
 
 # Set only if QMisID weight branch does not exist yet
 #
-addQMisID = True
+addQMisID = False
 
 treename = 'physics'
 nentries = 'ALL' #ALL
@@ -38,7 +43,7 @@ if not os.path.exists(newpath):
 
 if addQMisID:
   gROOT.LoadMacro("modifyttree_AddQMisID.cxx+g")
-else: 
+else:
   gROOT.LoadMacro("modifyttree_QMisID.cxx+g")
 
 group_list = os.listdir(oldpath)
@@ -50,13 +55,15 @@ for group in group_list:
         os.makedirs(newpath+group)
     sample_list = os.listdir(oldpath+group+'/')
     for sample in sample_list:
+	if "hist-" in sample:
+	   continue
         print group+'/'+sample
         infile=oldpath+group+'/'+sample
         outfile=newpath+group+'/'+sample
 
         if addQMisID:
-	   command_line = 'modifyttree_AddQMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\",\"'+useGroupNtup+'\")'
-        else:  
+	   command_line = 'modifyttree_AddQMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\",\"'+useGroupNTup+'\")'
+        else:
 	   command_line = 'modifyttree_QMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
 
         print command_line
