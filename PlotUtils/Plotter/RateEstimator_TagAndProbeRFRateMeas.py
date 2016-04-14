@@ -60,6 +60,13 @@ if not args.inputDir.endswith("/"):
 #        channels[h] + lep_types[i] + CR + leptons[j] + selections[k] + leptons[l] + variables[m]
 # ---------------------------------------------------------------------------------
 
+if args.rebinEta or args.rebinPt or args.doAvg:
+   print("\n******************************************************************************************************\n\nWill perform histogram rebinning...")
+   print("\nWARNING!\n(From TH1 docs) If ngroup is not an exact divider of the number of bins, the top limit of the rebinned histogram is reduced to the upper edge of the last bin that can make a complete group.") 
+   print("The remaining bins are added to the overflow bin. Statistics will be recomputed from the new bin contents.\n")
+   print("If rebinning to one single bin, this might lead to an \"empty\" histogram (as everything will end up in the overflow bin)")
+   print("\n******************************************************************************************************\n")
+   
 # -------------------------------------------------------
 # for each channel, store which leptons can be associated
 # -------------------------------------------------------
@@ -206,23 +213,21 @@ for iLep in list_lep:
 
                   if args.doAvg:
 
-                     nBIN = 1
-                     if iVar == "ProbePt":
-                        xbins = [10,200]
-                     elif iVar == "ProbeEta":
-                        if iLep == "El":
-                           xbins = [0.0,2.6]
-                        elif iLep == "Mu":
-                           xbins == [0.0,2.5]
-                     elif iVar == "ProbeNJets":
-                        xbins = [2,10]
+		     nBIN = htmp.GetNbinsX()
+		     xbins  = [htmp.GetBinLowEdge(1),htmp.GetBinLowEdge(htmp.GetNbinsX()+1)]
                      vxbins = array.array("d", xbins)
                      print "\t\t\t\t\t vxbins: ",vxbins
-                     # the rebinning method automatically creates a new histogram
-                     #
-                     hists[histname]  = htmp.Rebin( nBIN, histname, vxbins )
+		     hists[histname]  = htmp.Rebin( nBIN, histname )
+		     
+		  if ( args.rebinEta or args.rebinPt or args.doAvg) and args.debug:
+		     print("\t\t\t\t\t Integral BEFORE rebinning: {0}".format(htmp.Integral(0,htmp.GetNbinsX()+1)))
+		     print("\t\t\t\t\t Integral AFTER rebinning: {0}".format(hists[histname].Integral(0,hists[histname].GetNbinsX()+1))) 
+		  
+		  # -------------------------------------------------------------------
+		  # compute the yield for this histogram, considering also the overflow
+		  # -------------------------------------------------------------------
 
-		  yields[histname] = hists[histname].Integral()
+		  yields[histname] = hists[histname].Integral(0,hists[histname].GetNbinsX()+1)
 
 	      # -------------------------------------------------
               # subtract prompt bkg from data in fakes histograms
@@ -239,28 +244,36 @@ for iLep in list_lep:
 
 		     print "\t\t\t\t subtracting prompt/ch-flip MC to data in Fake CR..."
 
-		     hists[name].Add( hists[ iLep + "_" + iVar + "_" + iType + "_" + iSel + "_" + list_prediction[0] ], -1 )
+                     hist_sub = hists[ iLep + "_" + iVar + "_" + iType + "_" + iSel + "_" + list_prediction[0] ]
+		     
+		     if args.debug:
+		        print "\t\t\t\t Integral before sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1), " - hist name: ", hists[name].GetName()
+		     
+		     hists[name].Add( hist_sub, -1 )
+		     
+		     if args.debug:
+		        print "\t\t\t\t Integral after sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1)
 
-		 # ------------------------------------------------------------
+		 # ----------------------------------------------------------------------
 		 # set bin content to zero if subtraction gives negative yields
 		 #
-		 # compute the yield for this histogram
-		 # ------------------------------------------------------------
+		 # re-compute the yield for this histogram, considering also the overflow
+		 # ----------------------------------------------------------------------
 
 		 for iBin in range( 0, hists[name].GetNbinsX()+2):
 
 		     if hists[name].GetBinContent( iBin ) < 0:
                         hists[name].SetBinContent( iBin, 0 )
 
-                 yields[name] = hists[name].Integral()
+                 yields[name] = hists[name].Integral(0,hists[histname].GetNbinsX()+1)
 
-	  # -----------------
+	  # ------------------
 	  # compute the rate:
 	  # T / !T
 	  #
 	  # and the efficiency:
 	  # T / ( !T + T )
-	  # -----------------
+	  # ------------------
 
 	  histname =  iLep + "_" + iVar +"_"+ iType
 
@@ -276,6 +289,10 @@ for iLep in list_lep:
 
           hists[histname + "_Rate_" + append_str]  = hists[histname + "_T_" + append_str].Clone(histname + "_Rate_" + append_str)
           hists[histname + "_Rate_" + append_str].Divide(hists[histname+"_L_" + append_str])
+	  
+	  print "numerator T: ",  yields[histname + "_T_" + append_str]
+	  print "denominator L: ",  yields[histname + "_L_" + append_str]
+	  
           yields[histname + "_Rate_" + append_str] = yields[histname + "_T_" + append_str] / yields[histname + "_L_" + append_str]
 
           # For efficiency, make sure the errors are computed correctly

@@ -633,11 +633,17 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 
 void execute() {
 
-  pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","Data");
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","Data");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV/","Baseline - MC t#bar{t}");
+  
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_NoZminCut/","Data");
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","MC t#bar{t}");
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_ZminCut/","Data");
+  pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_ZminCut/","MC t#bar{t}");
 
-  PlotRateEff(my_pair);
-
+  //PlotRateEff(my_pair);
+  PlotRateEff(my_pair,"MC");
+  
 }
 
 void execute_DiffSamples() {
@@ -670,14 +676,19 @@ void execute_DataVSMC() {
 
   vector<pair<string,string> > vec;
 
-  vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","Baseline - Data"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV_AllElEtaCut/","Baseline - MC t#bar{t}"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","Baseline - Data"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV_AllElEtaCut/","Baseline - MC t#bar{t}"));
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/","No Isolation - Data"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV_AllElEtaCut/","No Isolation - MC t#bar{t}"));
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIP_MCQMisID_Mllgt40GeV_AllElEtaCut/","Relaxed IP - Data"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV_AllElEtaCut/","Relaxed IP - MC t#bar{t}"));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_NoZminCut/","Moriond sel. - Data"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","Moriond sel. - MC t#bar{t}"));
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_ZminCut/","Moriond sel. - Data"));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_ZminCut/","Moriond sel. - MC t#bar{t}"));  
 
   PlotRateEff_DataVSMC(vec);
 

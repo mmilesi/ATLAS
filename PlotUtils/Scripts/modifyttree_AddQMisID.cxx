@@ -238,7 +238,8 @@ void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NEN
   std::string old_el_pt_name(""); 
   std::string old_el_eta_name("");
   std::string old_el_isT_name("");
-  
+  std::string old_lep0_ID_name("");
+  std::string old_lep1_ID_name("");
   std::string old_lep0_pt_name(""); 
   std::string old_lep1_pt_name(""); 
   std::string old_lep0_eta_name("");
@@ -262,11 +263,11 @@ void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NEN
     old_lep1_isT_name = "lep_isTightSelected_1";
   }
 
-  Long64_t               eventNumber_old; eventNumber_old = -1;
-  Int_t                  nel_old;        nel_old = -1;
-  std::vector<float>*    el_pt_old;      el_pt_old = 0;
-  std::vector<float>*    el_eta_old;     el_eta_old = 0;
-  std::vector<int>*      el_isT_old;     el_isT_old = 0;
+  ULong64_t             eventNumber_old; eventNumber_old = -1;
+  Int_t                 nel_old;        nel_old = -1;
+  std::vector<float>*   el_pt_old;      el_pt_old = 0;
+  std::vector<float>*   el_eta_old;     el_eta_old = 0;
+  std::vector<int>*     el_isT_old;     el_isT_old = 0;
   Float_t lep0_ID_old;  lep0_ID_old = 0.0; 
   Float_t lep1_ID_old; 	lep1_ID_old = 0.0;   
   Float_t lep0_pt_old;  lep0_pt_old = -1.0; 
@@ -329,8 +330,11 @@ void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NEN
   // read QMisID rates from ROOT histograms
   //
   std::string path("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/");
-  std::string filename_AntiT("QMisIDRates_Data_Loose.root");
-  std::string filename_T("QMisIDRates_Data_nominal_v4.root");
+  
+  //std::string filename_AntiT("QMisIDRates_Data_Loose.root");
+  //std::string filename_T("QMisIDRates_Data_nominal_v4.root");
+  std::string filename_AntiT("QMisIDRates_Data_antiTantiT_v030.root");
+  std::string filename_T("QMisIDRates_Data_Nominal2_v030.root");
 
   Info("modifytree()","Reading QMisID rates from ROOT file(s)..");
   getRates(path,filename_T,filename_AntiT);
@@ -382,7 +386,7 @@ void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NEN
 	}
       }
       
-      if ( g_debug ) { Info("modifytree()","\t elA - pT = %.2f, eta = %.2f, isT = %i ", elA_pt/1e3, elA_eta, elA_isT ); }
+      if ( g_debug ) { Info("modifytree()","\t elA - pT = %.2f, eta = %.2f, isT = %i ", elA_pt, elA_eta, elA_isT ); }
     }
     if ( nel_old > 1 ) {
       
@@ -396,7 +400,7 @@ void modifyttree_AddQMisID(std::string filename = "input.root", std::string  NEN
         elB_isT = lep1_isT_old;
       }
       
-      if ( g_debug ) { Info("modifytree()","\t elB - pT = %.2f, eta = %.2f, isT = %i ", elB_pt/1e3, elB_eta, elB_isT ); }
+      if ( g_debug ) { Info("modifytree()","\t elB - pT = %.2f, eta = %.2f, isT = %i ", elB_pt, elB_eta, elB_isT ); }
     } 
     
     QMisIDWeightCalculator( &QMisIDWeight_new, elA_eta, elA_pt, elA_isT, elB_eta, elB_pt, elB_isT );
