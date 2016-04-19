@@ -473,13 +473,13 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  variables.push_back("Eta");
+  //variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
   vector<string> Rates;
   Rates.push_back("Real");
-  Rates.push_back("Fake");
+  //Rates.push_back("Fake");
 
   // loop over variables
   //
@@ -531,7 +531,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 	cout << "\t\tFile : " << filename  << endl;
         cout << "-------------------------------" << endl;
 
-       // loop over Rate types
+        // loop over Rate types
         //
         for( unsigned int iRate(0); iRate < Rates.size() ; ++iRate ) {
 
@@ -558,7 +558,8 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 	  // For Efficiency hist
 	  //
 	  if ( RATE_OR_EFF == "Efficiency" ) {
-	    h->GetYaxis()->SetRangeUser(0.0,1.0);
+	    //h->GetYaxis()->SetRangeUser(0.0,1.0);
+	    h->GetYaxis()->SetRangeUser(0.5,1.0);
 	  }
 
 	  string title("");
@@ -577,8 +578,11 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
               h->SetMarkerStyle(kFullCircle);
 	     break;
 	    case 1:
-	      h->SetLineStyle(3);
-              h->SetMarkerStyle(kCircle);
+	      //h->SetLineStyle(3);
+              //h->SetMarkerStyle(kCircle);
+	      // TEMP:
+	      h->SetLineStyle(1);
+              h->SetMarkerStyle(kFullCircle);	      
 	      break;
 	    case 2:
 	      h->SetLineStyle(6);
@@ -635,28 +639,30 @@ void execute() {
 
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV/","Data");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV/","Baseline - MC t#bar{t}");
-  
+
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_NoZminCut/","Data");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","MC t#bar{t}");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_ZminCut/","Data");
-  pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_ZminCut/","MC t#bar{t}");
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_ZminCut/","MC t#bar{t}");
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Data");
+  pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","MC t#bar{t}");
 
   //PlotRateEff(my_pair);
   PlotRateEff(my_pair,"MC");
-  
+
 }
 
 void execute_DiffSamples() {
 
   vector<pair<string,string> > vec;
-  
+
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","Baseline"));
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/","No Isolation"));
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIP_MCQMisID_Mllgt40GeV_AllElEtaCut/","Relaxed IP"));
 
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV_AllElEtaCut/","t#bar{t} -Baseline"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV_AllElEtaCut/","t#bar{t} - No Isolation"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV_AllElEtaCut/","t#bar{t} - Relaxed IP"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV_AllElEtaCut/","t#bar{t} -Baseline"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV_AllElEtaCut/","t#bar{t} - No Isolation"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV_AllElEtaCut/","t#bar{t} - Relaxed IP"));
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_ElTagEtaCut/","|#eta_{e}| < 1.37 on tag only"));
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","|#eta_{e}| < 1.37 on all"));
@@ -668,7 +674,13 @@ void execute_DiffSamples() {
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","MC QMisID"));
   //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_DDQMisID_Mllgt40GeV_AllElEtaCut/","DD QMisID"));
 
-  PlotRateEff_DiffSamples(vec, "MC");
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_NoZminCut/","Data - Group NTup v7"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Data - Melb NTup v30"));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","MC t#bar{t} - Group NTup v7"));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","MC t#bar{t} - Melb NTup v30"));
+
+  //PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","root");
+  PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","root");
 
 }
 
@@ -687,10 +699,19 @@ void execute_DataVSMC() {
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_NoZminCut/","Moriond sel. - Data"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","Moriond sel. - MC t#bar{t}"));
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_ZminCut/","Moriond sel. - Data"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_ZminCut/","Moriond sel. - MC t#bar{t}"));  
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_ZminCut/","Moriond sel. - Data"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_ZminCut/","Moriond sel. - MC t#bar{t}"));
+  
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Moriond sel. - Data"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","Moriond sel. - MC t#bar{t} - TRUTH"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut_NoTruth/","Moriond sel. - MC t#bar{t}"));  
+  
+  vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR/","Moriond sel. - Data"));
+  vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR_RealCRProbeNonPromptOrChFlip/","Moriond sel. - Data (sub. !prompt, QMisID)"));
+  vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR/","Moriond sel. - MC t#bar{t} - prompt probe"));
+  //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR_NoTruth/","Moriond sel. - MC t#bar{t}"));  
 
-  PlotRateEff_DataVSMC(vec);
+  PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","root");
 
 }
 

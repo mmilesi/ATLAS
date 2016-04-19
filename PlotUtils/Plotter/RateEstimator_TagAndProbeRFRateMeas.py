@@ -78,8 +78,8 @@ dict_channels_lep = {
 		    }
 
 list_lep         = dict_channels_lep[args.flavourComp]
-list_types       = ["Fake","Real"]
-list_variables   = ["ProbeEta","ProbePt"] #,"ProbeNJets"]
+list_types       = ["Real"]#["Fake","Real"]
+list_variables   = ["ProbePt"] #["ProbeEta","ProbePt"] #,"ProbeNJets"]
 list_selections  = ["T","L"]
 list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                               # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
@@ -240,9 +240,12 @@ for iLep in list_lep:
 
 		 name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1]
 
-		 if ( iType == "Fake" ):
+		 #if ( iType == "Fake" ):
+		 if ( iType == "Fake" or iType == "Real" ):
 
+		     #print "\t\t\t\t subtracting prompt/ch-flip MC to data in Fake CR..."
 		     print "\t\t\t\t subtracting prompt/ch-flip MC to data in Fake CR..."
+		     print "\t\t\t\t subtracting !prompt/ch-flip MC to data in Real CR..."
 
                      hist_sub = hists[ iLep + "_" + iVar + "_" + iType + "_" + iSel + "_" + list_prediction[0] ]
 		     

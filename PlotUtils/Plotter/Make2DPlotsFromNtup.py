@@ -9,7 +9,7 @@ from array import array
 from ROOT import gROOT, gDirectory, gStyle, TH1D, TH2D, TFile, TCanvas, TColor, TLegend, TLatex
 
 gROOT.Reset()
-gROOT.LoadMacro("Plotter/AtlasStyle.C")
+gROOT.LoadMacro("AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
@@ -42,7 +42,7 @@ def set_fancy_2D_style():
   TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
   gStyle.SetNumberContours(ncontours)
 
-def plot_2D():
+def plot_2D_FakeCR():
   
   myfile = TFile("/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_021_DxAOD/tops/PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.root")
   mytree = gDirectory.Get("physics")
@@ -254,12 +254,174 @@ def plot_2D():
      leg_ATLAS.DrawLatex(0.2,0.75,"#bf{#it{ATLAS}} Work In Progress")
      leg_lumi.DrawLatex(0.2,0.7,"#sqrt{s} = 13 TeV, #int L dt = 3.3 fb^{-1}")
 
-     c.SaveAs(hist.GetName()+".png")
+     c.SaveAs(hist.GetName() + ".png")
 
+# ------------------------------------------------------------------
+
+def plot_2D_RealCR():
+  
+  myfile = TFile("/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v030/Merged_Melb15_ttH_030_DxAOD_p2559/tops/410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.root")
+  mytree = gDirectory.Get("physics")
+  mytree_weight = "3.209 * mcEventWeight * weight_pileup * weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet_JVT_HTop[0] * weight_jet_MV2c20_SFFix77[0]"  
+  
+  trig_dec          = "( passHLT == 1 )"
+  trigmatching      = "( ( lep_isTrigMatched[0] == 1 && ( ( lep_flavour[0] == 11 && lep_pt[0] > 25e3 ) || ( lep_flavour[0] == 13 && lep_pt[0] > 21e3 ) ) ) || ( lep_isTrigMatched[1] == 1 && ( ( lep_flavour[1] == 11 && lep_pt[1] > 25e3 ) || ( lep_flavour[1] == 13 && lep_pt[1] > 21e3 ) ) ) )"
+  lep_tag_trigmatch = "( lep_tag_isTightSelected[0] == 1 && lep_tag_isTrigMatched[0] == 1 && ( ( lep_tag_flavour[0] == 11 && lep_tag_pt[0] > 25e3 ) || ( lep_tag_flavour[0] == 13 && lep_tag_pt[0] > 21e3 ) ) )"
+  el_tag_eta        = "( nel == 0 || ( nel > 0 && Max$( TMath::Abs(el_caloCluster_eta) ) < 1.37 ) )"
+  nbjets            = "( njets_mv2c20_Fix77 > 0 )"
+  njets             = "( njets > 1 && njets <= 4 )"
+  nleptons          = "( nlep == 2 && Min$( lep_pt ) > 10e3 )"
+  flavour_cut       = "( nmuon == 1 && nel == 1 )"
+  opposite_sign     = "( isSS01 != 1 )"
+  tau_veto          = "( ntau == 0 )"
+  zpeak_cut         = "( ( nmuon == 1 && nel == 1 ) || ( TMath::Abs( mll01 - 91.187e3 ) > 7.5e3 ) )"
+  truth_cut         = "( isMC==0 || ( isMC==1 && ( ( lep_probe_truthType[0] != 6 && lep_probe_truthType[0] != 2 ) || ( lep_probe_isChFlip[0] != 0 ) ) ) )"
+  
+  hist_list = []
+
+  basecut =  "(" + trig_dec + " && " + trigmatching + " && " + lep_tag_trigmatch + " && " + el_tag_eta + " && " + njets + " && " + nbjets + " && " + nleptons + " && " + flavour_cut + " && " + opposite_sign + " && " + tau_veto + " && "  + zpeak_cut + " && " + truth_cut + " && " 
+  
+  # ------------
+  #    Muons
+  # ------------
+   
+  sel_REAL_MU_PROBE_T = basecut + "( ( isProbeMuEvent == 1 ) && ( muon_probe_isTightSelected[0] == 1 ) ) )"
+  sel_REAL_MU_PROBE_L = basecut + "( ( isProbeMuEvent == 1 ) && ( muon_probe_isTightSelected[0] == 0 ) ) )"
+  
+  print "sel_REAL_MU_PROBE_T: \n", sel_REAL_MU_PROBE_T
+  print "sel_REAL_MU_PROBE_L: \n", sel_REAL_MU_PROBE_L
+  
+  h_REAL_MU_PROBE_T_type_VS_origin = TH2D("REAL_MU_PROBE_T_type_VS_origin", "REAL_MU_PROBE_T_type_VS_origin", 10, 0.0, 10.0, 40, 0.0, 40.0)
+  hist_list.append(h_REAL_MU_PROBE_T_type_VS_origin)
+  h_REAL_MU_PROBE_T_type_VS_origin.GetXaxis().SetTitle("Probe lep (T) truthType")
+  h_REAL_MU_PROBE_T_type_VS_origin.GetYaxis().SetTitle("Probe lep (T) truthOrigin")
+  h_REAL_MU_PROBE_L_type_VS_origin = TH2D("REAL_MU_PROBE_L_type_VS_origin", "REAL_MU_PROBE_L_type_VS_origin", 10, 0.0, 10.0, 40, 0.0, 40.0)
+  hist_list.append(h_REAL_MU_PROBE_L_type_VS_origin)
+  h_REAL_MU_PROBE_L_type_VS_origin.GetXaxis().SetTitle("Probe lep (L!T) truthType")
+  h_REAL_MU_PROBE_L_type_VS_origin.GetYaxis().SetTitle("Probe lep (L!T) truthOrigin")
+  
+  mytree.Project("REAL_MU_PROBE_T_type_VS_origin", "lep_probe_truthOrigin:lep_probe_truthType", "%s * (%s)" %(mytree_weight, sel_REAL_MU_PROBE_T), "text" )
+  mytree.Project("REAL_MU_PROBE_L_type_VS_origin", "lep_probe_truthOrigin:lep_probe_truthType", "%s * (%s)" %(mytree_weight, sel_REAL_MU_PROBE_L), "text" )
+
+  # Normalise to unit
+  h_REAL_MU_PROBE_T_type_VS_origin.Scale(1.0/h_REAL_MU_PROBE_T_type_VS_origin.Integral())
+  h_REAL_MU_PROBE_L_type_VS_origin.Scale(1.0/h_REAL_MU_PROBE_L_type_VS_origin.Integral())
+
+  # -----------------------------------------
+
+  h_REAL_MU_TAG_T_type_VS_origin = TH2D("REAL_MU_TAG_T_type_VS_origin", "REAL_MU_TAG_T_type_VS_origin", 10, 0.0, 10.0, 40, 0.0, 40.0)
+  hist_list.append(h_REAL_MU_TAG_T_type_VS_origin)
+  h_REAL_MU_TAG_T_type_VS_origin.GetXaxis().SetTitle("Tag lep ( Probe (T) ) truthType")
+  h_REAL_MU_TAG_T_type_VS_origin.GetYaxis().SetTitle("Tag lep ( Probe (T) ) truthOrigin")
+  h_REAL_MU_TAG_L_type_VS_origin = TH2D("REAL_MU_TAG_L_type_VS_origin", "REAL_MU_TAG_L_type_VS_origin", 10, 0.0, 10.0, 40, 0.0, 40.0)
+  hist_list.append(h_REAL_MU_TAG_L_type_VS_origin)
+  h_REAL_MU_TAG_L_type_VS_origin.GetXaxis().SetTitle("Tag lep ( Probe (L!T) ) truthType")
+  h_REAL_MU_TAG_L_type_VS_origin.GetYaxis().SetTitle("Tag lep ( Probe (L!T) ) truthOrigin")
+  
+  mytree.Project("REAL_MU_TAG_T_type_VS_origin", "lep_tag_truthOrigin:lep_tag_truthType", "%s * (%s)" %(mytree_weight, sel_REAL_MU_PROBE_T), "text" )
+  mytree.Project("REAL_MU_TAG_L_type_VS_origin", "lep_tag_truthOrigin:lep_tag_truthType", "%s * (%s)" %(mytree_weight, sel_REAL_MU_PROBE_L), "text" )
+
+  # Normalise to unit
+  if h_REAL_MU_TAG_T_type_VS_origin.Integral() > 0:
+    h_REAL_MU_TAG_T_type_VS_origin.Scale(1.0/h_REAL_MU_TAG_T_type_VS_origin.Integral())
+  if h_REAL_MU_TAG_L_type_VS_origin.Integral() > 0:
+    h_REAL_MU_TAG_L_type_VS_origin.Scale(1.0/h_REAL_MU_TAG_L_type_VS_origin.Integral())
+
+  # ------------
+  #  Electrons
+  # ------------
+  
+  sel_REAL_EL_PROBE_T = basecut + "( ( isProbeElEvent == 1 ) && ( el_probe_isTightSelected[0] == 1 ) ) )"
+  sel_REAL_EL_PROBE_L = basecut + "( ( isProbeElEvent == 1 ) && ( el_probe_isTightSelected[0] == 0 ) ) )"
+  
+  print "sel_REAL_EL_PROBE_T: \n", sel_REAL_EL_PROBE_T
+  print "sel_REAL_EL_PROBE_L: \n", sel_REAL_EL_PROBE_L
+  
+  h_REAL_EL_PROBE_T_type_VS_origin = TH2D("REAL_EL_PROBE_T_type_VS_origin", "REAL_EL_PROBE_T_type_VS_origin", 10, 0.0, 10.0, 40, 0.0, 40.0)
+  hist_list.append(h_REAL_EL_PROBE_T_type_VS_origin)
+  h_REAL_EL_PROBE_T_type_VS_origin.GetXaxis().SetTitle("Probe lep (T) truthType")
+  h_REAL_EL_PROBE_T_type_VS_origin.GetYaxis().SetTitle("Probe lep (T) truthOrigin")  
+  h_REAL_EL_PROBE_L_type_VS_origin = TH2D("REAL_EL_PROBE_L_type_VS_origin", "REAL_EL_PROBE_L_type_VS_origin", 10, 0.0, 10.0, 40, 0.0, 40.0)
+  hist_list.append(h_REAL_EL_PROBE_L_type_VS_origin)
+  h_REAL_EL_PROBE_L_type_VS_origin.GetXaxis().SetTitle("Probe lep (L!T) truthType")
+  h_REAL_EL_PROBE_L_type_VS_origin.GetYaxis().SetTitle("Probe lep (L!T) truthOrigin")  
+  
+  h_REAL_EL_PROBE_T_isChFlip = TH1D("REAL_EL_PROBE_T_isChFlip", "REAL_EL_PROBE_T_isChFlip", 2, -0.5, 1.5)
+  hist_list.append(h_REAL_EL_PROBE_T_isChFlip)
+  h_REAL_EL_PROBE_T_isChFlip.GetXaxis().SetTitle("Probe lep (T) isChFlip")
+  h_REAL_EL_PROBE_L_isChFlip = TH1D("REAL_EL_PROBE_L_isChFlip", "REAL_EL_PROBE_L_isChFlip", 2, -0.5, 1.5)
+  hist_list.append(h_REAL_EL_PROBE_L_isChFlip)
+  h_REAL_EL_PROBE_L_isChFlip.GetXaxis().SetTitle("Probe lep (L!T) isChFlip")
+  
+  mytree.Project("REAL_EL_PROBE_T_type_VS_origin", "lep_probe_truthOrigin:lep_probe_truthType", "%s * (%s)" %(mytree_weight, sel_REAL_EL_PROBE_T), "text" )
+  mytree.Project("REAL_EL_PROBE_L_type_VS_origin", "lep_probe_truthOrigin:lep_probe_truthType", "%s * (%s)" %(mytree_weight, sel_REAL_EL_PROBE_L), "text" )
+  mytree.Project("REAL_EL_PROBE_T_isChFlip", "lep_probe_isChFlip", "%s * (%s)" %(mytree_weight, sel_REAL_EL_PROBE_T), "text" )
+  mytree.Project("REAL_EL_PROBE_L_isChFlip", "lep_probe_isChFlip", "%s * (%s)" %(mytree_weight, sel_REAL_EL_PROBE_L), "text" )
+
+  # Normalise to unit
+  h_REAL_EL_PROBE_T_type_VS_origin.Scale(1/h_REAL_EL_PROBE_T_type_VS_origin.Integral())
+  h_REAL_EL_PROBE_L_type_VS_origin.Scale(1/h_REAL_EL_PROBE_L_type_VS_origin.Integral())
+
+  if h_REAL_EL_PROBE_T_isChFlip.Integral() > 0 :
+    h_REAL_EL_PROBE_T_isChFlip.Scale(1.0/h_REAL_EL_PROBE_T_isChFlip.Integral())
+  if h_REAL_EL_PROBE_L_isChFlip.Integral() > 0 :
+    h_REAL_EL_PROBE_L_isChFlip.Scale(1.0/h_REAL_EL_PROBE_L_isChFlip.Integral())
+
+  # -----------------------------------------
+
+  h_REAL_EL_TAG_T_type_VS_origin = TH2D("REAL_EL_TAG_T_type_VS_origin", "REAL_EL_TAG_T_type_VS_origin", 10, 0.0, 10.0, 40, 0.0, 40.0)
+  hist_list.append(h_REAL_EL_TAG_T_type_VS_origin)
+  h_REAL_EL_TAG_T_type_VS_origin.GetXaxis().SetTitle("Tag lep ( Probe (T) ) truthType")
+  h_REAL_EL_TAG_T_type_VS_origin.GetYaxis().SetTitle("Tag lep ( Probe (T) ) truthOrigin")
+  h_REAL_EL_TAG_L_type_VS_origin = TH2D("REAL_EL_TAG_L_type_VS_origin", "REAL_EL_TAG_L_type_VS_origin", 10, 0.0, 10.0, 40, 0.0, 40.0)
+  hist_list.append(h_REAL_EL_TAG_L_type_VS_origin)
+  h_REAL_EL_TAG_L_type_VS_origin.GetXaxis().SetTitle("Tag lep ( Probe (L!T) ) truthType")
+  h_REAL_EL_TAG_L_type_VS_origin.GetYaxis().SetTitle("Tag lep ( Probe (L!T) ) truthOrigin")
+  
+  mytree.Project("REAL_EL_TAG_T_type_VS_origin", "lep_tag_truthOrigin:lep_tag_truthType", "%s * (%s)" %(mytree_weight, sel_REAL_EL_PROBE_T), "text" )
+  mytree.Project("REAL_EL_TAG_L_type_VS_origin", "lep_tag_truthOrigin:lep_tag_truthType", "%s * (%s)" %(mytree_weight, sel_REAL_EL_PROBE_L), "text" )
+
+  # Normalise to unit
+  if h_REAL_EL_TAG_T_type_VS_origin.Integral() >0 :
+    h_REAL_EL_TAG_T_type_VS_origin.Scale(1.0/h_REAL_EL_TAG_T_type_VS_origin.Integral())
+  if h_REAL_EL_TAG_L_type_VS_origin.Integral() >0 :
+    h_REAL_EL_TAG_L_type_VS_origin.Scale(1.0/h_REAL_EL_TAG_L_type_VS_origin.Integral())
+
+  # ------------------------------------------------------------------
+  
+  set_fancy_2D_style()
+  
+  gStyle.SetPaintTextFormat("2.1f")
+  
+  for hist in hist_list:
+     
+     c = TCanvas("c1","Temp",50,50,700,900)
+
+     legend = TLegend(0.2,0.8,0.7,0.85); # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+     legend.SetHeader("2 Lep OS Real CR")
+     legend.SetBorderSize(0)  # no border
+     legend.SetFillColor(0)   # Legend background should be white
+     legend.SetTextSize(0.04) # Increase entry font size! 
+     legend.SetTextFont(42)   # Helvetica 
+     leg_ATLAS = TLatex()
+     leg_lumi  = TLatex()
+     leg_ATLAS.SetTextSize(0.03)
+     leg_ATLAS.SetNDC()
+     leg_lumi.SetTextSize(0.03)
+     leg_lumi.SetNDC()
+      
+     hist.Draw("colz text")       
+     
+     legend.Draw()
+     leg_ATLAS.DrawLatex(0.2,0.75,"#bf{#it{ATLAS}} Work In Progress")
+     leg_lumi.DrawLatex(0.2,0.7,"#sqrt{s} = 13 TeV, #int L dt = 3.3 fb^{-1}")
+
+     c.SaveAs(hist.GetName() + ".png")
 
 # -----------------------------------------------------------------------------------
-    
-plot_2D()  
+
+plot_2D_RealCR()  
+#plot_2D_FakeCR()  
   
   
   

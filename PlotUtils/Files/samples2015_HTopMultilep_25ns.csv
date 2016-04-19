@@ -314,6 +314,7 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 407161,Background,0.0011933,0.28704,1.0,Sherpa_CT10_Ztautau_LO_Pt1000_E_CMS_CFilterBVeto,Z+jetsCFilterBVeto,tautau
 407162,Background,0.0011847,0.1642,1.0,Sherpa_CT10_Ztautau_LO_Pt1000_E_CMS_BFilter,Z+jetsBFilter,tautau
 410000,Background,696.12,1.1949,0.543,PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad,tops,ttbar_nonallhad
+410007,Background,696.21,1.1947,0.457,PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_allhad,tops,ttbar_allhad
 410009,Background,696.12,1.1949,0.1053,PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_dil,tops,ttbar_dilep
 410011,Background,43.739,1.0,1.0094,PowhegPythiaEvtGen_P2012_singletop_tchan_lept_top,tops,singlet
 410012,Background,25.778,1.0,1.0193,PowhegPythiaEvtGen_P2012_singletop_tchan_lept_antitop,tops,singlet

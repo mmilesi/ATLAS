@@ -305,7 +305,10 @@ private:
   float	    m_lep_Tag_ID;
   char	    m_lep_Tag_isTrigMatch;
   char	    m_lep_Tag_isTightSelected;
-
+  char	    m_lep_Tag_isPrompt;
+  char	    m_lep_Tag_isBremsElec;
+  char	    m_lep_Tag_isFakeLep;
+  
   float     m_lep_Probe_Pt;
   float     m_lep_Probe_Eta;
   float     m_lep_Probe_EtaBE2;
@@ -314,6 +317,13 @@ private:
   float	    m_lep_Probe_ID;
   char	    m_lep_Probe_isTrigMatch;
   char	    m_lep_Probe_isTightSelected;
+  char	    m_lep_Probe_isPrompt;
+  char	    m_lep_Probe_isBremsElec;
+  char	    m_lep_Probe_isFakeLep;
+  
+  std::vector<float> m_lep_Pt;
+  std::vector<float> m_lep_Eta;
+  std::vector<float> m_lep_EtaBE2;
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
@@ -368,6 +378,9 @@ private:
   EL::StatusCode defineTagAndProbe ();
 
   EL::StatusCode setOutputBranches ();
+
+  EL::StatusCode clearBranches ();
+
 };
 
 #endif

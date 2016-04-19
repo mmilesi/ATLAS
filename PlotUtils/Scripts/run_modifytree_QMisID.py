@@ -22,18 +22,18 @@ gROOT.SetBatch(True)
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
 
-#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_Data_Original/"
-#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_Data_QMisID_WEIGHTED/"
-oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v030/Merged_Melb15_ttH_030_DxAOD_p2559_Data_Original/"
-newpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v030/Merged_Melb15_ttH_030_DxAOD_p2559_Data_QMisID_WEIGHTED/"
+oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_Data_Original/"
+newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_Data_QMisID_WEIGHTED/"
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v030/Merged_Melb15_ttH_030_DxAOD_p2559_Data_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v030/Merged_Melb15_ttH_030_DxAOD_p2559_Data_QMisID_WEIGHTED/"
 
 # Are we using group ntuples?
 #
-useGroupNTup = '' #'YES'
+useGroupNTup = 'YES' #'YES'
 
 # Set only if QMisID weight branch does not exist yet
 #
-addQMisID = False
+addQMisID = True
 
 treename = 'physics'
 nentries = 'ALL' #ALL

@@ -44,18 +44,20 @@ bool g_verbose(false);
 bool g_doRebinning(true);
 int g_nBINS = 1;//6;
 //double g_BINS[7] = {10.0,15.0,20.0,25.0,35.0,50.0,150.0};
-double g_BINS[2] = {10.0,150.0};
+//double g_BINS[2] = {10.0,150.0};
+double g_BINS[2] = {10.0,210.0};
 
 bool g_useUOflow(false);
 
 std::vector<TH1D*> g_histograms_pt;
 
-std::vector<std::string> g_charge = {"OS","SS"};
-std::vector<std::string> g_flavour = {"ElEl","MuMu"};
+std::vector<std::string> g_charge = {"OS"/*,"SS"*/};
+std::vector<std::string> g_flavour = {"ElEl"/*,"MuMu"*/};
 std::vector<std::string> g_obs_selection = {"TT","TL","LL"};
-std::vector<std::string> g_true_selection = {"RR","RF"/*,"FF"*/};
-std::vector<std::string> g_efficiencies = {"r_eff_el","r_eff_mu","f_eff_el","f_eff_mu"};
+std::vector<std::string> g_true_selection = {"RR",/*"RF","FF"*/};
+std::vector<std::string> g_efficiencies = {"r_eff_el",/*"r_eff_mu","f_eff_el","f_eff_mu"*/};
 
+std::vector<double> g_param_init_guess;
 std::vector<std::string> g_param_names;
 
 // ------------------------------------
@@ -131,7 +133,7 @@ void getHists(const std::string& input_path, int& nbins ) {
 // Define expected events with the matrix equation
 // -------------------------------------------------
 
-double getExpected( const std::string& obs_selection, const double& r,  const double& f, const double& RR, const double& RF, const double& FF = 0.0 ) {
+double getExpected( const std::string& obs_selection, const double& r = 0.0,  const double& f = 0.0, const double& RR = 0.0, const double& RF = 0.0, const double& FF = 0.0 ) {
 
   double exp(-1.0);
 
@@ -187,6 +189,12 @@ void getParamIndex( const std::string& input_string, const int& ibin,  int& idx,
   // Get corresponding index in list of parameters
   //
   auto it = std::find( g_param_names.begin(), g_param_names.end(), search_string );
+  
+  if ( it == g_param_names.end() ) {
+    if ( g_verbose ) { Info("getParamIndex()","Parameter with name:\t %s was not found!", search_string.c_str() ); }
+    return;
+  }
+  
   idx = std::distance(g_param_names.begin(),it);
 
   if ( g_verbose ) { Info("getParamIndex()","Index of parameter with name:\t %s --> %i", search_string.c_str(), idx ); }
@@ -205,7 +213,7 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
    int idx_RR(-1);
    int idx_RF(-1);
    int idx_FR(-1);
-   //int idx_FF(-1);
+   int idx_FF(-1);
    int idx_reff(-1);
    int idx_feff(-1);
 
@@ -235,12 +243,17 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
        //
        getParamIndex( this_hist_name, bin_idx, idx_RR, "RR" );
        getParamIndex( this_hist_name, bin_idx, idx_RF, "RF" );
-       //getParamIndex( this_hist_name, bin_idx, idx_FF, "FF" );
-
+       getParamIndex( this_hist_name, bin_idx, idx_FF, "FF" );
        getParamIndex( this_hist_name, bin_idx, idx_reff, "r_eff" );
        getParamIndex( this_hist_name, bin_idx, idx_feff, "f_eff" );
-
-       exp = getExpected(obs_selection, par[idx_reff], par[idx_feff], par[idx_RR], par[idx_RF] /*, par[idx_FF] */ );
+       
+       double exp_reff = ( idx_reff != -1 ) ? par[idx_reff] : 0.0;
+       double exp_feff = ( idx_feff != -1 ) ? par[idx_feff] : 0.0;
+       double exp_RR   = ( idx_RR != -1 ) ? par[idx_RR] : 0.0;
+       double exp_RF   = ( idx_RF != -1 ) ? par[idx_RF] : 0.0;
+       double exp_FF   = ( idx_FF != -1 ) ? par[idx_FF] : 0.0;
+       
+       exp = getExpected( obs_selection, exp_reff, exp_feff, exp_RR, exp_RF, exp_FF );
 
        likelihood += ( obs * log( exp ) - ( exp ) );
      }
@@ -249,6 +262,35 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
 
    result = likelihood;
 }
+
+// -----------------------------------------
+// Find initial guesses for parameters
+// Use inputs from tag-and-probe measurement
+// -----------------------------------------
+
+void getEducatedGuess() {
+
+    double r =  0.65;
+    double f = 0.172;
+
+    g_param_init_guess.push_back(r);
+   
+    double nTT(0.0), nTL(0.0), nLL(0.0);
+    for ( auto hist : g_histograms_pt ) {
+
+      // Do we want overflow?
+      //    
+      if ( strncmp( hist->GetName(), "OS_ElEl_TT", 20 ) ) { nTT = hist->Integral(); }
+      if ( strncmp( hist->GetName(), "OS_ElEl_TL", 20 ) ) { nTL = hist->Integral(); }
+      if ( strncmp( hist->GetName(), "OS_ElEl_LL", 20 ) ) { nLL = hist->Integral(); }
+      
+    }
+
+    double nRR = ( 1 - f )*( 1 -f )* nTT + 2.0 * ( f - 1 ) * f * nTL + f * f * nLL;  
+    g_param_init_guess.push_back(nRR);
+   
+}
+
 
 // ------------------------------------------------------
 // Set the free parameteres to the TMinuit object,
@@ -269,17 +311,10 @@ void setParameters( TMinuit *myFitter, const int& nbins ) {
    int ierflg(0);
 
    for ( int ibin(0); ibin < nbins; ++ibin ) {
-
-     std::string r_eff_el_pt = "r_eff_el_pT_" + std::to_string(ibin);
-     std::string r_eff_mu_pt = "r_eff_mu_pT_" + std::to_string(ibin);
-     std::string f_eff_el_pt = "f_eff_el_pT_" + std::to_string(ibin);
-     std::string f_eff_mu_pt = "f_eff_mu_pT_" + std::to_string(ibin);
-
-     g_param_names.push_back(r_eff_el_pt);
-     g_param_names.push_back(r_eff_mu_pt);
-     g_param_names.push_back(f_eff_el_pt);
-     g_param_names.push_back(f_eff_mu_pt);
-
+     for ( const auto& eff : g_efficiencies ) {
+       std::string param_name = eff  + "_pT_" + std::to_string(ibin);
+       g_param_names.push_back(param_name);
+     }
    }
 
    for ( const auto& ch : g_charge ) {
@@ -299,9 +334,27 @@ void setParameters( TMinuit *myFitter, const int& nbins ) {
    
      bool isEff = ( par.find("r_eff_") != std::string::npos || par.find("f_eff_") != std::string::npos );
      
-     start = isEff ? 0.001 : 1.001;
+     //start = isEff ? 0.001 : 1.001;
+     //up    = isEff ? 0.999 : 1e4;
+     //dn    = 0.0;
+     
+     start = g_param_init_guess.at(ipar);
      up    = isEff ? 0.999 : 1e4;
-     dn    = 0.0;
+     dn    = 0.0;     
+
+/*
+Efficiencies/Rates for FF amd Matrix Method 
+
+El_ProbePt_Fake_Efficiency_observed_graph 
+{ Bin nr: 0, efficiency = 0.172 + 0.015 - 0.014 }; 
+El_ProbePt_Real_Efficiency_observed_graph 
+{ Bin nr: 0, efficiency = 0.65 + 0.003 - 0.003 }; 
+
+Mu_ProbePt_Fake_Efficiency_observed_graph 
+{ Bin nr: 0, efficiency = 0.111 + 0.01 - 0.009 }; 
+Mu_ProbePt_Real_Efficiency_observed_graph 
+{ Bin nr: 0, efficiency = 0.867 + 0.002 - 0.002 }; 
+*/
      
      myFitter->mnparm( ipar, par.c_str(), start, step, dn, up, ierflg );
      ++ipar;
@@ -325,9 +378,19 @@ void fitEff( std::string input_path = "" ) {
    int NCOMP   = g_true_selection.size();
    int NEFF    = g_efficiencies.size();
    
+   Info("fitEff()","");
+   std::cout << "Number of pT bins = "<<  nbins << std::endl;
+   std::cout << "Number of flavour bins = "<<  NFLAV << std::endl;
+   std::cout << "Number of charge bins = "<<  NCHARGE << std::endl;
+   std::cout << "Number of RR, RF... bins = "<<  NCOMP << std::endl;
+   std::cout << "Number of efficiency bins = "<<  NEFF << std::endl;
+   
    // Total number of parameters to be estimated in the fit
    //
-   const int NPAR = (nbins * NFLAV * NCHARGE * NCOMP) + (nbins * NEFF);
+   // 1st factor in sum: YIELDS
+   // 2nd factor in sum: EFFICIENCIES
+   //
+   const int NPAR = (nbins * NFLAV * NCHARGE * NCOMP) + (nbins * NEFF); 
 
    Info("fitEff()","\n\n Number of free parameters in fit ===> %i\n\n", NPAR);
   
@@ -341,6 +404,8 @@ void fitEff( std::string input_path = "" ) {
    // Set the fitting function
    //
    myFitter->SetFCN(myLikelihood);
+
+   getEducatedGuess(); 
 
    // Set the parameters of the fit
    //
