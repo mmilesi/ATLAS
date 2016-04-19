@@ -298,6 +298,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("lep_Tag_ID",               	&m_lep_Tag_ID, "lep_Tag_ID/F");
   m_outputNTuple->tree()->Branch("lep_Tag_isTrigMatch",         &m_lep_Tag_isTrigMatch, "lep_Tag_isTrigMatch/B");
   m_outputNTuple->tree()->Branch("lep_Tag_isTightSelected",     &m_lep_Tag_isTightSelected, "lep_Tag_isTightSelected/B");
+  m_outputNTuple->tree()->Branch("lep_Tag_isPrompt",		&m_lep_Tag_isPrompt, "lep_Tag_isPrompt/B");
+  m_outputNTuple->tree()->Branch("lep_Tag_isBremsElec",		&m_lep_Tag_isBremsElec, "lep_Tag_isBremsElec/B");
+  m_outputNTuple->tree()->Branch("lep_Tag_isFakeLep",		&m_lep_Tag_isFakeLep, "lep_Tag_isFakeLep/B");
 
   m_outputNTuple->tree()->Branch("lep_Probe_Pt",                &m_lep_Probe_Pt,         "lep_Probe_Pt/F");
   m_outputNTuple->tree()->Branch("lep_Probe_Eta",               &m_lep_Probe_Eta, "lep_Probe_Eta/F");
@@ -307,6 +310,13 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("lep_Probe_ID",                &m_lep_Probe_ID,        "lep_Probe_ID/F");
   m_outputNTuple->tree()->Branch("lep_Probe_isTrigMatch",       &m_lep_Probe_isTrigMatch, "lep_Probe_isTrigMatch/B");
   m_outputNTuple->tree()->Branch("lep_Probe_isTightSelected",   &m_lep_Probe_isTightSelected, "lep_Probe_isTightSelected/B");
+  m_outputNTuple->tree()->Branch("lep_Probe_isPrompt",		&m_lep_Probe_isPrompt, "lep_Probe_isPrompt/B");
+  m_outputNTuple->tree()->Branch("lep_Probe_isBremsElec",       &m_lep_Probe_isBremsElec, "lep_Probe_isBremsElec/B");
+  m_outputNTuple->tree()->Branch("lep_Probe_isFakeLep",		&m_lep_Probe_isFakeLep, "lep_Probe_isFakeLep/B");
+  
+  m_outputNTuple->tree()->Branch("lep_Pt",		   	&m_lep_Pt);
+  m_outputNTuple->tree()->Branch("lep_Eta",		   	&m_lep_Eta);
+  m_outputNTuple->tree()->Branch("lep_EtaBE2",  	   	&m_lep_EtaBE2);
 
   // ---------------------------------------------------------------------------------------------------------------
 
@@ -731,6 +741,10 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 {
 
+  // Clear vector branches from previous event
+  //
+  ANA_CHECK( this->clearBranches() );
+
   m_isMC   = m_event.get()->isMC;
   m_isSS01 = m_event.get()->isSS01;
   m_isSS12 = m_event.get()->isSS12;
@@ -759,6 +773,12 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
     if ( lep.get()->flavour == 13 ) ++m_nmuons;
     if ( lep.get()->flavour == 11 ) ++m_nelectrons;
 
+    // Fill vector branches
+    //
+    m_lep_Pt.push_back(lep.get()->pt);
+    m_lep_Eta.push_back(lep.get()->eta);
+    m_lep_EtaBE2.push_back(lep.get()->etaBE2);
+    
     if ( m_event.get()->dilep ) {
 
       if ( lep.get()->tag ) {
@@ -770,6 +790,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
   	m_lep_Tag_ID		  = lep.get()->ID;
   	m_lep_Tag_isTrigMatch	  = lep.get()->trigmatched;
   	m_lep_Tag_isTightSelected = lep.get()->tight;
+	m_lep_Tag_isPrompt        = lep.get()->prompt;
+	m_lep_Tag_isBremsElec     = lep.get()->fake;
+	m_lep_Tag_isFakeLep       = lep.get()->brems;
       } else {
   	m_lep_Probe_Pt  	    = lep.get()->pt;
   	m_lep_Probe_Eta 	    = lep.get()->eta;
@@ -779,6 +802,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
   	m_lep_Probe_ID  	    = lep.get()->ID;
   	m_lep_Probe_isTrigMatch     = lep.get()->trigmatched;
   	m_lep_Probe_isTightSelected = lep.get()->tight;
+	m_lep_Probe_isPrompt        = lep.get()->prompt;
+	m_lep_Probe_isBremsElec     = lep.get()->fake;
+	m_lep_Probe_isFakeLep       = lep.get()->brems;
       }
 
     }
@@ -788,6 +814,17 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
   m_weight_tag   = m_event.get()->weight_tag;
   m_weight_probe = m_event.get()->weight_probe;
 
+  return EL::StatusCode::SUCCESS;
+
+}
+
+EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ()
+{
+  
+  m_lep_Pt.clear();
+  m_lep_Eta.clear();
+  m_lep_EtaBE2.clear();
+  
   return EL::StatusCode::SUCCESS;
 
 }
