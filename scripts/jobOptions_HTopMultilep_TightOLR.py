@@ -4,7 +4,7 @@ import sys, os
 
 sys.path.insert(0, os.environ['ROOTCOREBIN']+"/user_scripts/HTopMultilepAnalysis/")
 
-from HTopMultilep_config import *
+from HTopMultilep_config_TightOLR import *
 
 c = xAH_config()
 
@@ -18,7 +18,9 @@ c.setalg("MuonCalibrator", MuonCalibratorDict)
 c.setalg("ElectronCalibrator", ElectronCalibratorDict)
 c.setalg("JetSelector", JetSelectorDict)
 c.setalg("MuonSelector", MuonSelectorDict)
+c.setalg("MuonSelector", MuonSelectorTightDict)
 c.setalg("ElectronSelector", ElectronSelectorDict)
+c.setalg("ElectronSelector", ElectronSelectorTightDict)
 c.setalg("TauSelector", TauSelectorDict)
 c.setalg("METConstructor", METConstructorDict)
 c.setalg("OverlapRemover_HTopRun1", OverlapRemoverDict)

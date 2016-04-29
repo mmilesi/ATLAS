@@ -123,10 +123,11 @@ void PlotRateEff( pair<string,string>& SAMPLE,
 
       TLegend *legend = new TLegend(0.68,0.6,0.925,0.8); // (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
       legend->AddEntry((TObject*)0, "", ""); // add an empty line
-      legend->SetBorderSize(0);  // no border
-      legend->SetFillColor(0);   // Legend background should be white
+      legend->SetBorderSize(0);   // no border
+      //legend->SetFillColor(0);   // Legend background should be white
+      legend->SetFillStyle(0);    // Legend transparent background     
       legend->SetTextSize(0.035); // Increase entry font size!
-      legend->SetTextFont(42);   // Helvetica
+      legend->SetTextFont(42);    // Helvetica
 
       TLatex* leg_ATLAS  = new TLatex();
       TLatex* leg_lumi   = new TLatex();
@@ -268,12 +269,12 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  variables.push_back("Eta");
+  //variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
   vector<string> Rates;
-  Rates.push_back("Real");
+  //Rates.push_back("Real");
   Rates.push_back("Fake");
 
   string data_type("");
@@ -308,12 +309,14 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
       canvas->SetFrameFillStyle(0);
       canvas->SetFrameBorderMode(0);
 
-      TLegend *legend = new TLegend(0.68,0.6,0.925,0.8); // (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+      //TLegend *legend = new TLegend(0.68,0.6,0.925,0.8); // (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+      TLegend *legend = new TLegend(0.45,0.5,0.925,0.8); // (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )      
       legend->AddEntry((TObject*)0, "", ""); // add an empty line
-      legend->SetBorderSize(0);  // no border
-      legend->SetFillColor(0);   // Legend background should be white
+      legend->SetBorderSize(0);   // no border
+      //legend->SetFillColor(0);  // Legend background should be white
+      legend->SetFillStyle(0);    // Legend transparent background     
       legend->SetTextSize(0.035); // Increase entry font size!
-      legend->SetTextFont(42);   // Helvetica
+      legend->SetTextFont(42);    // Helvetica
 
       TLatex* leg_ATLAS  = new TLatex();
       TLatex* leg_lumi   = new TLatex();
@@ -511,10 +514,11 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 
       TLegend *legend = new TLegend(0.6,0.6,0.89,0.8); // (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
       legend->AddEntry((TObject*)0, "", ""); // add an empty line
-      legend->SetBorderSize(0);  // no border
-      legend->SetFillColor(0);   // Legend background should be white
+      legend->SetBorderSize(0);   // no border
+      //legend->SetFillColor(0);   // Legend background should be white
+      legend->SetFillStyle(0);    // Legend transparent background     
       legend->SetTextSize(0.035); // Increase entry font size!
-      legend->SetTextFont(42);   // Helvetica
+      legend->SetTextFont(42);    // Helvetica
 
       TLatex* leg_ATLAS  = new TLatex();
       TLatex* leg_lumi   = new TLatex();
@@ -578,11 +582,11 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
               h->SetMarkerStyle(kFullCircle);
 	     break;
 	    case 1:
-	      //h->SetLineStyle(3);
-              //h->SetMarkerStyle(kCircle);
+	      h->SetLineStyle(3);
+              h->SetMarkerStyle(kCircle);
 	      // TEMP:
-	      h->SetLineStyle(1);
-              h->SetMarkerStyle(kFullCircle);	      
+	      //h->SetLineStyle(1);
+              //h->SetMarkerStyle(kFullCircle);
 	      break;
 	    case 2:
 	      h->SetLineStyle(6);
@@ -645,7 +649,9 @@ void execute() {
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_ZminCut/","Data");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_ZminCut/","MC t#bar{t}");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Data");
-  pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","MC t#bar{t}");
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","MC t#bar{t}");
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_MCQMisID_NoZminCut_DataOnly/","Data - No sub.");
+  pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoTruth/","MC t#bar{t} - No sub.");  
 
   //PlotRateEff(my_pair);
   PlotRateEff(my_pair,"MC");
@@ -676,11 +682,29 @@ void execute_DiffSamples() {
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_NoZminCut/","Data - Group NTup v7"));
   //vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Data - Melb NTup v30"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","MC t#bar{t} - Group NTup v7"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","MC t#bar{t} - Melb NTup v30"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","MC t#bar{t} - Group NTup v7"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","MC t#bar{t} - Melb NTup v30"));
 
-  //PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","root");
-  PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","root");
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - OF+SF - No sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - OF+SF - Prompt & QMisID Sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - OF - No sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - OF - Prompt & QMisID Sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - SF - No sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - SF - Prompt & QMisID Sub."));
+
+  //vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Data - OLR on loose"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v031_DDQmisID/","Data - OLR on tight"));
+  
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - OF+SF - No sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID_BabarSub/Rates_NoSub/","Data - Babar sel. - No sub."));
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - OF+SF - Prompt & QMisID Sub."));
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID_BabarSub/Rates_Sub/","Data - Babar sel. - Prompt & QMisID Sub."));
+
+  PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
+  //PlotRateEff_DiffSamples(vec,"Data","OF","Efficiency","png");
+  //PlotRateEff_DiffSamples(vec,"Data","MuMu","Efficiency","png");
+  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","root");
 
 }
 
@@ -701,17 +725,20 @@ void execute_DataVSMC() {
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","Moriond sel. - MC t#bar{t}"));
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_ZminCut/","Moriond sel. - Data"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_ZminCut/","Moriond sel. - MC t#bar{t}"));
-  
+
   //vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Moriond sel. - Data"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","Moriond sel. - MC t#bar{t} - TRUTH"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut_NoTruth/","Moriond sel. - MC t#bar{t}"));  
-  
-  vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR/","Moriond sel. - Data"));
-  vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR_RealCRProbeNonPromptOrChFlip/","Moriond sel. - Data (sub. !prompt, QMisID)"));
-  vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR/","Moriond sel. - MC t#bar{t} - prompt probe"));
-  //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR_NoTruth/","Moriond sel. - MC t#bar{t}"));  
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut_NoTruth/","Moriond sel. - MC t#bar{t}"));
 
-  PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","root");
+  //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR/","Moriond sel. - Data"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR_RealCRProbeNonPromptOrChFlip/","Moriond sel. - Data (sub. !prompt, QMisID)"));
+  //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR/","Moriond sel. - MC t#bar{t} - prompt probe"));
+  //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR_NoTruth/","Moriond sel. - MC t#bar{t}"));
+
+  vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Moriond sel. - Data - OF+SF"));
+  vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR/","Moriond sel. - Data - OF"));
+
+  PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
 
 }
 

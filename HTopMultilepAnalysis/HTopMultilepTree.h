@@ -32,11 +32,11 @@ class HTopMultilepTree : public HelpTreeBase
     unsigned int        m_nBjets_MV2c20_Fix70;
     int  	  	m_isSS01;
     int  	  	m_isSS12;
-    
+
     std::vector<double> m_MMWeight;
     std::vector<double> m_FFWeight;
     std::vector<float>  m_QMisIDWeight;
-    
+
     float  		m_mll01;
     float  		m_mll02;
     float  		m_mll12;
@@ -51,7 +51,7 @@ class HTopMultilepTree : public HelpTreeBase
     float               m_mT_lep1MET;
 
     float               m_HT;
-    
+
     int  		m_is_T_T;
     int  		m_is_T_AntiT;
     int  		m_is_AntiT_T;
@@ -258,6 +258,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_isTrigMatched;
     std::vector<int>   m_lepton_isTight;
     std::vector<int>   m_lepton_isMedium;
+    std::vector<int>   m_lepton_overlaps;
     std::vector<int>   m_lepton_isOS;
     std::vector<int>   m_lepton_isClosestSS;
     std::vector<int>   m_lepton_isTag;
@@ -319,6 +320,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_tag_isTrigMatched;
     std::vector<int>   m_lepton_tag_isTight;
     std::vector<int>   m_lepton_tag_isMedium;
+    std::vector<int>   m_lepton_tag_overlaps;
     std::vector<int>   m_lepton_tag_isTruthMatched;
     std::vector<int>   m_lepton_tag_isChFlip;
     std::vector<int>   m_lepton_tag_isBrem;
@@ -341,6 +343,7 @@ class HTopMultilepTree : public HelpTreeBase
     std::vector<int>   m_lepton_probe_isTrigMatched;
     std::vector<int>   m_lepton_probe_isTight;
     std::vector<int>   m_lepton_probe_isMedium;
+    std::vector<int>   m_lepton_probe_overlaps;
     std::vector<int>   m_lepton_probe_isTruthMatched;
     std::vector<int>   m_lepton_probe_isChFlip;
     std::vector<int>   m_lepton_probe_isBrem;

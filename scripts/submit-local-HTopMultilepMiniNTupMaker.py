@@ -164,9 +164,9 @@ infilelist = [
 
 # -------------------------------------------------------------------------------------------------------
 
-configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNtupMaker.py"
+configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py"
 treename   = "nominal"
-nevents    = 1000
+nevents    = 0
 
 motherdir = os.path.abspath(os.path.curdir) + "/25ns_v7"
 if not os.path.exists(motherdir):

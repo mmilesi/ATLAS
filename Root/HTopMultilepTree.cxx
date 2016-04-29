@@ -20,7 +20,7 @@ void HTopMultilepTree::AddEventUser(const std::string detailStrUser)
   m_tree->Branch("categoryFlag",      &m_categoryFlag, "categoryFlag/i");
   m_tree->Branch("isSS01",            &m_isSS01, "isSS01/I");
   m_tree->Branch("isSS12",            &m_isSS12, "isSS12/I");
-  
+
   m_tree->Branch("MMWeight",          &m_MMWeight);
   m_tree->Branch("FFWeight",          &m_FFWeight);
   m_tree->Branch("QMisIDWeight",      &m_QMisIDWeight);
@@ -283,6 +283,7 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_isTrigMatched",                  &m_lepton_isTrigMatched);
   m_tree->Branch("lep_isTightSelected",                &m_lepton_isTight);
   m_tree->Branch("lep_isMediumSelected",               &m_lepton_isMedium);
+  m_tree->Branch("lep_overlaps",                       &m_lepton_overlaps);
   m_tree->Branch("lep_isTag",                          &m_lepton_isTag);
   m_tree->Branch("lep_isOS",	                       &m_lepton_isOS);
   m_tree->Branch("lep_isClosestSS",                    &m_lepton_isClosestSS);
@@ -343,6 +344,7 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_tag_isTrigMatched",              &m_lepton_tag_isTrigMatched);
   m_tree->Branch("lep_tag_isTightSelected",            &m_lepton_tag_isTight);
   m_tree->Branch("lep_tag_isMediumSelected",           &m_lepton_tag_isMedium);
+  m_tree->Branch("lep_tag_overlaps",                   &m_lepton_tag_overlaps);
   m_tree->Branch("lep_tag_isTruthMatchedToLepton",     &m_lepton_tag_isTruthMatched);
   m_tree->Branch("lep_tag_isChFlip",	               &m_lepton_tag_isChFlip);
   m_tree->Branch("lep_tag_isBrem",	               &m_lepton_tag_isBrem);
@@ -365,6 +367,7 @@ void HTopMultilepTree::AddLeptons()
   m_tree->Branch("lep_probe_isTrigMatched",            &m_lepton_probe_isTrigMatched);
   m_tree->Branch("lep_probe_isTightSelected",          &m_lepton_probe_isTight);
   m_tree->Branch("lep_probe_isMediumSelected",         &m_lepton_probe_isMedium);
+  m_tree->Branch("lep_probe_overlaps",                 &m_lepton_probe_overlaps);
   m_tree->Branch("lep_probe_isTruthMatchedToLepton",   &m_lepton_probe_isTruthMatched);
   m_tree->Branch("lep_probe_isChFlip",	               &m_lepton_probe_isChFlip);
   m_tree->Branch("lep_probe_isBrem",	               &m_lepton_probe_isBrem);
@@ -401,7 +404,7 @@ void HTopMultilepTree::ClearEventUser()
 {
   m_MMWeight.clear();
   m_FFWeight.clear();
-  m_QMisIDWeight.clear();  
+  m_QMisIDWeight.clear();
   if ( m_isMC ) {
     m_weight_lepton_trig_HTop.clear();
     m_weight_lepton_trig_HTop.clear();
@@ -409,7 +412,7 @@ void HTopMultilepTree::ClearEventUser()
     m_weight_lepton_iso_HTop.clear();
     m_weight_lepton_ID_HTop.clear();
     m_weight_lepton_TTVA_HTop.clear();
-    m_weight_jet_JVT_HTop.clear(); 
+    m_weight_jet_JVT_HTop.clear();
   }
 }
 
@@ -565,7 +568,7 @@ void HTopMultilepTree::ClearJetsUser( const std::string jetName )
   // jet variables
   m_jet_m.clear();
   if ( m_debug ) { Info("ClearJetsUser()", "done with clearing"); }
-  
+
 }
 
 
@@ -584,6 +587,7 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_isTrigMatched.clear();
   m_lepton_isMedium.clear();
   m_lepton_isTight.clear();
+  m_lepton_overlaps.clear();
   m_lepton_isOS.clear();
   m_lepton_isClosestSS.clear();
   m_lepton_isTag.clear();
@@ -641,6 +645,7 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_tag_isTrigMatched.clear();
   m_lepton_tag_isMedium.clear();
   m_lepton_tag_isTight.clear();
+  m_lepton_tag_overlaps.clear();
   m_lepton_tag_isTruthMatched.clear();
   m_lepton_tag_isChFlip.clear();
   m_lepton_tag_isBrem.clear();
@@ -662,6 +667,7 @@ void HTopMultilepTree::ClearLeptons()
   m_lepton_probe_isTrigMatched.clear();
   m_lepton_probe_isMedium.clear();
   m_lepton_probe_isTight.clear();
+  m_lepton_probe_overlaps.clear();
   m_lepton_probe_isTruthMatched.clear();
   m_lepton_probe_isChFlip.clear();
   m_lepton_probe_isBrem.clear();
@@ -697,11 +703,11 @@ void HTopMultilepTree::FillEventUser( const xAOD::EventInfo* eventInfo )
   m_categoryFlag         =  ( eventInfo->isAvailable< unsigned int >( "categoryFlag" ) )        ?  eventInfo->auxdata< unsigned int >( "categoryFlag" )          :   -1;
   m_isSS01   	         =  ( eventInfo->isAvailable< char >( "isSS01" ) )		        ?  eventInfo->auxdata< char >( "isSS01" )		         :   -1;
   m_isSS12   	         =  ( eventInfo->isAvailable< char >( "isSS12" ) )		        ?  eventInfo->auxdata< char >( "isSS12" )		     	 :   -1;
-  
+
   m_MMWeight 	         =  ( eventInfo->isAvailable< std::vector<double> >( "MMWeight" ) )     ?  eventInfo->auxdata< std::vector<double> >( "MMWeight" )  	 :  std::vector<double>( 5, 1.0 );
   m_FFWeight 	         =  ( eventInfo->isAvailable< std::vector<double> >( "FFWeight" ) )     ?  eventInfo->auxdata< std::vector<double> >( "FFWeight" )  	 :  std::vector<double>( 5, 1.0 );
   m_QMisIDWeight 	 =  ( eventInfo->isAvailable< std::vector<float> >( "QMisIDWeight" ) )  ?  eventInfo->auxdata< std::vector<float> >( "QMisIDWeight" )    :  std::vector<float>( 3, 1.0 );
-  
+
   m_mll01    	         =  ( eventInfo->isAvailable< float >( "mll01" ) )		        ?  ( eventInfo->auxdata< float >( "mll01" ) / m_units )    	 : -1.0;
   m_mll02    	         =  ( eventInfo->isAvailable< float >( "mll02" ) )		        ?  ( eventInfo->auxdata< float >( "mll02" ) / m_units )    	 : -1.0;
   m_mll12    	         =  ( eventInfo->isAvailable< float >( "mll12" ) )		        ?  ( eventInfo->auxdata< float >( "mll12" ) / m_units )    	 : -1.0;
@@ -1144,7 +1150,7 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
   static SG::AuxElement::Accessor< char > isOSlepAcc("isOSlep");
   static SG::AuxElement::Accessor< char > isClosestSSlepAcc("isClosestSSlep");
   static SG::AuxElement::Accessor< char > isTagAcc("isTag");
-
+  static SG::AuxElement::ConstAccessor< char > overlapsAcc("overlaps");
   static SG::AuxElement::Accessor< char > isTruthMatchedAcc("isTruthMatched");
   static SG::AuxElement::Accessor< char > isChFlipAcc("isChFlip");
   static SG::AuxElement::Accessor< char > isBremAcc("isBrem");
@@ -1180,7 +1186,7 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
         if ( trk ) { lep_charge = trk->charge() / fabs(trk->charge()); }
 	const xAOD::CaloCluster* caloclus = dynamic_cast<const xAOD::Electron*>(lep_itr)->caloCluster();
 	if ( caloclus ) { calo_eta = caloclus->etaBE(2); }
-	
+
       }
       else if ( lep_itr->type() == xAOD::Type::Muon ) {
         lep_flav = 13;
@@ -1197,6 +1203,8 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
       else {  m_lepton_isTight.push_back(-1); }
       if (  isMediumAcc.isAvailable( *lep_itr ) )        {  m_lepton_isMedium.push_back( isMediumAcc( *lep_itr ) ); }
       else {  m_lepton_isMedium.push_back(-1); }
+      if (  overlapsAcc.isAvailable( *lep_itr ) )        {  m_lepton_overlaps.push_back( overlapsAcc( *lep_itr ) ); }
+      else {  m_lepton_overlaps.push_back(-1); }
       if (  isOSlepAcc.isAvailable( *lep_itr ) )        { m_lepton_isOS.push_back( isOSlepAcc( *lep_itr ) ); }
       else  { m_lepton_isOS.push_back(-1); }
       if (  isClosestSSlepAcc.isAvailable( *lep_itr ) ) { m_lepton_isClosestSS.push_back( isClosestSSlepAcc( *lep_itr ) ); }
@@ -1295,6 +1303,8 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
     	  else { m_lepton_tag_isTight .push_back(  -1 ); }
 	  if ( isMediumAcc.isAvailable( *lep_itr ) )		    { m_lepton_tag_isMedium.push_back(  isMediumAcc( *lep_itr ) ); }
     	  else { m_lepton_tag_isMedium .push_back(  -1 ); }
+	  if (  overlapsAcc.isAvailable( *lep_itr ) )               {  m_lepton_tag_overlaps.push_back( overlapsAcc( *lep_itr ) ); }
+	  else {  m_lepton_tag_overlaps.push_back(-1); }
     	  if ( isTruthMatchedAcc.isAvailable( *lep_itr ) )	    { m_lepton_tag_isTruthMatched.push_back( isTruthMatchedAcc( *lep_itr ) ); }
     	  else {  m_lepton_tag_isTruthMatched .push_back( -1 ); }
     	  if ( isChFlipAcc.isAvailable( *lep_itr ) )		    { m_lepton_tag_isChFlip.push_back(  isChFlipAcc( *lep_itr ) ); }
@@ -1335,6 +1345,8 @@ void HTopMultilepTree::FillLeptons( const xAOD::IParticleContainer* leptons )
     	  else { m_lepton_probe_isTight.push_back(  -1 ); }
     	  if ( isMediumAcc.isAvailable( *lep_itr ) )		    { m_lepton_probe_isMedium.push_back(  isMediumAcc( *lep_itr ) ); }
     	  else { m_lepton_probe_isMedium.push_back(  -1 ); }
+	  if (  overlapsAcc.isAvailable( *lep_itr ) )               {  m_lepton_probe_overlaps.push_back( overlapsAcc( *lep_itr ) ); }
+	  else {  m_lepton_probe_overlaps.push_back(-1); }
     	  if ( isTruthMatchedAcc.isAvailable( *lep_itr ) )	    { m_lepton_probe_isTruthMatched.push_back( isTruthMatchedAcc( *lep_itr ) ); }
     	  else {  m_lepton_probe_isTruthMatched.push_back( -1 ); }
     	  if ( isChFlipAcc.isAvailable( *lep_itr ) )		    { m_lepton_probe_isChFlip.push_back(  isChFlipAcc( *lep_itr ) ); }

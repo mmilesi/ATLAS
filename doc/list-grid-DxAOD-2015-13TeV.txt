@@ -36,11 +36,12 @@
 #
 # ---------------------------------------
 # ~~~~ ttH125 (signal) ~~~~ #
-#mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2559/
+mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2559/
 # ~~~~ ttbar (background) ~~~~ #
-#mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r7267_r6282_p2559/
+mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r7267_r6282_p2559/
+#mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r7326_r6282_p2559/
 # ~~~~ Z+jets (background) ~~~ #
-mc15_13TeV.361397.Sherpa_CT10_Zmumu_Pt0_70_CFilterBVeto.merge.DAOD_HIGG8D1.e3651_s2586_s2174_r7267_r6282_p2480/
+#mc15_13TeV.361397.Sherpa_CT10_Zmumu_Pt0_70_CFilterBVeto.merge.DAOD_HIGG8D1.e3651_s2586_s2174_r7267_r6282_p2480/
 # ~~~~ bulk MC submission ~~~~ #
 #mc15_13TeV.*.merge.DAOD_HIGG8D1.*_r6282_p2559/
 # ---------------------------------------
