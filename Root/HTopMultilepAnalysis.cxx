@@ -74,6 +74,8 @@ HTopMultilepAnalysis :: HTopMultilepAnalysis () :
 
   m_useCutFlow                = true;
 
+  m_useOLRDecision            = false;
+  
   m_inContainerName_Muons     = "";
   m_inContainerName_Electrons = "";
   m_inContainerName_Leptons   = "";
@@ -396,191 +398,25 @@ EL::StatusCode HTopMultilepAnalysis :: execute ()
   //-------------------------------------------
   // definition of "Tight" and "Medium" leptons
   //-------------------------------------------
+   
+  EL_RETURN_CHECK("HTopMultilepAnalysis::execute()", this->selectTightLeptons( signalElectrons, signalMuons ) );
 
-  static SG::AuxElement::Decorator< char > isTightDecor("isTight");
-  static SG::AuxElement::Decorator< char > isMediumDecor("isMedium");
-
-  static SG::AuxElement::Accessor< char >  TightElectronIsoAcc(m_TightElectronIso_WP);
-  static SG::AuxElement::Accessor< char >  TightElectronIDAcc(m_TightElectronPID_WP);
-  static SG::AuxElement::Accessor< char >  TightMuonIsoAcc(m_TightMuonIso_WP);
-  static SG::AuxElement::Accessor< float > d0SigAcc ("d0sig");
-  static SG::AuxElement::Accessor< float > z0sinthetaAcc ("z0sintheta");
-
-  // -----------------------
-  //        electrons
-  // -----------------------
-
-  // first: isolation
-  // second: Electron ID
-  //
-  std::pair<std::string,std::string> tightness_def_el = std::make_pair(m_TightElectronIso_WP,m_TightElectronPID_WP);
-
-  for ( auto el_itr : *(signalElectrons) ) {
-
-    // set default decoration
-    //
-    isTightDecor( *el_itr ) = 0;
-    isMediumDecor( *el_itr ) = 0;
-
-    if ( !d0SigAcc.isAvailable( *el_itr ) ) {
-      Error("execute()", "'d0sig' attribute is not available for this electron. Aborting " );
-      return EL::StatusCode::FAILURE;
+  /*
+  static SG::AuxElement::ConstAccessor< char > isTightAcc("isTight");
+  for ( auto lep_itr : leptonsSorted  ) {
+  
+    if ( !isTightAcc.isAvailable( *lep_itr ) ) { continue; }
+  
+    if ( overlapsAcc.isAvailable( *lep_itr ) ) {
+      Info("execute()", "\tOverlaps? %i - Lepton isTight? %i - Lep pT = %.2f", overlapsAcc( *lep_itr ), isTightAcc( *lep_itr ), lep_itr->pt()/1e3 );
+    } else {
+      Info("execute()", "\tOverlaps decorator unavailable. Lepton isTight? %i - Lep pT = %.2f", isTightAcc( *lep_itr ), lep_itr->pt()/1e3 );
     }
-
-    if ( !z0sinthetaAcc.isAvailable( *el_itr ) ) {
-      Error("execute()", "'z0sintheta' attribute is not available for this electron. Aborting " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    // preliminary: tighten impact parameter cuts
-    //
-    if ( fabs( d0SigAcc( *el_itr ) ) < m_TightElectronD0sig_cut && fabs( z0sinthetaAcc( *el_itr ) ) < m_TightElectronTrkz0sinTheta_cut ) {
-
-      // if using isolation...
-      //
-      if ( !tightness_def_el.first.empty() ) {
-
-	if ( !TightElectronIsoAcc.isAvailable( *el_itr ) ) {
-	  Error("execute()", "'%s' attribute is not available for this electron. Aborting ", m_TightElectronIso_WP.c_str() );
-	  return EL::StatusCode::FAILURE;
-	}
-
-	// if using *also* Electron ID...
-	//
-	if ( !tightness_def_el.second.empty() ) {
-
-	  if ( !TightElectronIDAcc.isAvailable( *el_itr ) ) {
-	    Error("execute()", "'%s' attribute is not available for this electron. Aborting ", m_TightElectronPID_WP.c_str() );
-	    return EL::StatusCode::FAILURE;
-	  }
-
-	  // "Tight"  ---> IP + ID + iso
-	  // "Medium" ---> IP + ID (any iso)
-	  //
-	  if ( ( TightElectronIsoAcc( *el_itr ) == 1 ) && ( TightElectronIDAcc( *el_itr ) == 1 ) ) { isTightDecor( *el_itr ) = 1; }
-	  if ( ( TightElectronIDAcc( *el_itr ) == 1 )  )                                           { isMediumDecor( *el_itr ) = 1; }
-
-	} else {
-
-	  // "Tight"  ---> IP + iso (any ID)
-	  // "Medium" ---> IP (any iso, ID)
-	  //
-	  if ( TightElectronIsoAcc( *el_itr ) == 1 ) { isTightDecor( *el_itr ) = 1; }
-	  isMediumDecor( *el_itr ) = 1;
-
-	}
-
-      }
-      // if not using isolation, but using Electron ID...
-      //
-      else if ( !tightness_def_el.second.empty() ) {
-
-	if ( !TightElectronIDAcc.isAvailable( *el_itr ) ) {
-	  Error("execute()", "'%s' attribute is not available for this electron. Aborting ", m_TightElectronPID_WP.c_str() );
-	  return EL::StatusCode::FAILURE;
-	}
-
-	// "Tight"  ---> IP + ID (any iso)
-	// "Medium" ---> IP (any ID, iso)
-	//
-	if ( TightElectronIDAcc( *el_itr ) == 1 ) { isTightDecor( *el_itr ) = 1; }
-	isMediumDecor( *el_itr ) = 1;
-
-      }
-      // if using neither isolation, nor Electron ID..
-      //
-      else {
-	Error("execute()", "Need at least isolation or ElectronID requirement to define 'Tight' electrons. Aborting" );
-	return EL::StatusCode::FAILURE;
-      }
-    }
+  
   }
-
-  // -----------------------
-  //          muons
-  // -----------------------
-
-  // first: isolation
-  // second: d0sig
-  //
-  std::pair<std::string,float> tightness_def_mu = std::make_pair(m_TightMuonIso_WP,m_TightMuonD0sig_cut);
-
-  for ( auto mu_itr : *(signalMuons) ) {
-
-    // set default decoration
-    //
-    isTightDecor( *mu_itr ) =  0;
-    isMediumDecor( *mu_itr ) =  0;
-
-    if ( !z0sinthetaAcc.isAvailable( *mu_itr ) ) {
-      Error("execute()", "'z0sintheta' attribute is not available for this muon. Aborting " );
-      return EL::StatusCode::FAILURE;
-    }
-
-    // preliminary: tighten impact parameter cuts
-    //
-    if ( fabs( z0sinthetaAcc( *mu_itr ) ) < m_TightMuonTrkz0sinTheta_cut ) {
-
-      // if using isolation...
-      //
-      if ( !tightness_def_mu.first.empty() ) {
-
-	if ( !TightMuonIsoAcc.isAvailable( *mu_itr ) ) {
-	  Error("execute()", "'%s' attribute is not available for this muon. Aborting ", m_TightMuonIso_WP.c_str() );
-	  return EL::StatusCode::FAILURE;
-	}
-
-	// if using *also* d0sig...
-	//
-	if ( tightness_def_mu.second > 0.0 ) {
-
-	  if ( !d0SigAcc.isAvailable( *mu_itr ) ) {
-	    Error("execute()", "'d0sig' attribute is not available for this muon. Aborting " );
-	    return EL::StatusCode::FAILURE;
-	  }
-
-	  // "Tight"  ---> z0 + iso + d0sig
-	  // "Medium" ---> z0 + d0sig (any iso)
-	  //
-	  if ( ( TightMuonIsoAcc( *mu_itr ) == 1 ) && ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) ) { isTightDecor( *mu_itr ) = 1; }
-	  if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second )                                            { isMediumDecor( *mu_itr ) = 1; }
-
-	} else {
-
-	  // "Tight"  ---> z0 + iso (any d0sig)
-	  // "Medium" ---> z0 (any iso, d0sig)
-	  //
-	  if ( TightMuonIsoAcc( *mu_itr ) == 1 ) { isTightDecor( *mu_itr ) = 1; }
-	  isMediumDecor( *mu_itr ) = 1;
-
-	}
-
-      }
-      // if not using isolation, but using d0sig...
-      //
-      else if ( tightness_def_mu.second > 0.0 ) {
-
-	if ( !d0SigAcc.isAvailable( *mu_itr ) ) {
-	  Error("execute()", "'d0sig' attribute is not available for this muon. Aborting " );
-	  return EL::StatusCode::FAILURE;
-	}
-
-	// "Tight"  ---> z0 + d0sig (any iso)
-	// "Medium" ---> z0 (any d0sig, iso)
-	//
-	if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) { isTightDecor( *mu_itr ) = 1; }
-	isMediumDecor( *mu_itr ) = 1;
-
-      }
-      // if using neither isolation, nor d0sig..
-      //
-      else {
-	Error("execute()", "Need at least isolation or d0sig requirement to define 'Tight' muons. Aborting" );
-	return EL::StatusCode::FAILURE;
-      }
-    }
-  }
-
+  std::cout << " " << std::endl;
+  */
+  
   //-------------------------------------------
   // calculate lepton SFs for the event
   //-------------------------------------------
@@ -940,6 +776,191 @@ EL::StatusCode HTopMultilepAnalysis :: readFakeRates ( const std::string& input_
 
   return EL::StatusCode::SUCCESS;
 
+}
+
+
+//*********************************************
+//
+// Select tight leptons based on configuration
+//
+//
+EL::StatusCode HTopMultilepAnalysis :: selectTightLeptons( const xAOD::ElectronContainer* electrons, const xAOD::MuonContainer* muons )
+{
+
+  static SG::AuxElement::Decorator< char > isTightDecor("isTight");
+  static SG::AuxElement::Decorator< char > isMediumDecor("isMedium");
+
+  static SG::AuxElement::Accessor< char >  TightElectronIsoAcc(m_TightElectronIso_WP);
+  static SG::AuxElement::Accessor< char >  TightElectronIDAcc(m_TightElectronPID_WP);
+  static SG::AuxElement::Accessor< char >  TightMuonIsoAcc(m_TightMuonIso_WP);
+  static SG::AuxElement::Accessor< float > d0SigAcc ("d0sig");
+  static SG::AuxElement::Accessor< float > z0sinthetaAcc ("z0sintheta");
+
+  static SG::AuxElement::ConstAccessor< char > overlapsAcc("overlaps");
+
+  // -----------------------
+  //        electrons
+  // -----------------------
+
+  // first: isolation
+  // second: Electron ID
+  //
+  std::pair<std::string,std::string> tightness_def_el = std::make_pair(m_TightElectronIso_WP,m_TightElectronPID_WP);
+
+  for ( auto el_itr : *(electrons) ) {
+
+    // set default decorations
+    //
+    isTightDecor( *el_itr ) = 0;
+    isMediumDecor( *el_itr ) = 0;
+
+    HTOP_RETURN_CHECK( "HTopMultilepAnalysis::selectTightLeptons()", d0SigAcc.isAvailable(*el_itr), "'d0sig' attribute is not available for this electron. Aborting");
+    HTOP_RETURN_CHECK( "HTopMultilepAnalysis::selectTightLeptons()", z0sinthetaAcc.isAvailable(*el_itr), "'z0sintheta' attribute is not available for this electron. Aborting");
+
+    // preliminary: tighten impact parameter cuts
+    //
+    if ( fabs( d0SigAcc( *el_itr ) ) < m_TightElectronD0sig_cut && fabs( z0sinthetaAcc( *el_itr ) ) < m_TightElectronTrkz0sinTheta_cut ) {
+
+      // if using isolation...
+      //
+      if ( !tightness_def_el.first.empty() ) {
+
+        HTOP_RETURN_CHECK( "HTopMultilepAnalysis::selectTightLeptons()", TightElectronIsoAcc.isAvailable(*el_itr), "m_TightElectronIso_WP attribute is not available for this electron. Aborting");
+
+	// if using *also* Electron ID...
+	//
+	if ( !tightness_def_el.second.empty() ) {
+
+          HTOP_RETURN_CHECK( "HTopMultilepAnalysis::selectTightLeptons()", TightElectronIDAcc.isAvailable(*el_itr), "m_TightElectronPID_WP attribute is not available for this electron. Aborting");
+
+	  // "Tight"  ---> IP + ID + iso
+	  // "Medium" ---> IP + ID (any iso)
+	  //
+	  if ( ( TightElectronIsoAcc( *el_itr ) == 1 ) && ( TightElectronIDAcc( *el_itr ) == 1 ) ) {
+	    isTightDecor( *el_itr ) = ( m_useOLRDecision && overlapsAcc.isAvailable( *el_itr ) ) ? !overlapsAcc( *el_itr ) : 1;
+	  }
+	  if ( ( TightElectronIDAcc( *el_itr ) == 1 )  ) { isMediumDecor( *el_itr ) = 1; }
+
+	} else {
+
+	  // "Tight"  ---> IP + iso (any ID)
+	  // "Medium" ---> IP (any iso, ID)
+	  //
+	  if ( TightElectronIsoAcc( *el_itr ) == 1 ) {
+	    isTightDecor( *el_itr ) = ( m_useOLRDecision && overlapsAcc.isAvailable( *el_itr ) ) ? !overlapsAcc( *el_itr ) : 1;
+	  }
+	  isMediumDecor( *el_itr ) = 1;
+
+	}
+
+      }
+      // if not using isolation, but using Electron ID...
+      //
+      else if ( !tightness_def_el.second.empty() ) {
+
+        HTOP_RETURN_CHECK( "HTopMultilepAnalysis::selectTightLeptons()", TightElectronIDAcc.isAvailable(*el_itr), "m_TightElectronPID_WP attribute is not available for this electron. Aborting");
+
+	// "Tight"  ---> IP + ID (any iso)
+	// "Medium" ---> IP (any ID, iso)
+	//
+	if ( TightElectronIDAcc( *el_itr ) == 1 ) {
+	    isTightDecor( *el_itr ) = ( m_useOLRDecision && overlapsAcc.isAvailable( *el_itr ) ) ? !overlapsAcc( *el_itr ) : 1;
+	}
+	isMediumDecor( *el_itr ) = 1;
+
+      }
+      // if using neither isolation, nor Electron ID..
+      //
+      else {
+	Error("selectTightLeptons()", "Need at least isolation or ElectronID requirement to define 'Tight' electrons. Aborting" );
+	return EL::StatusCode::FAILURE;
+      }
+    }
+  }
+
+  // -----------------------
+  //          muons
+  // -----------------------
+
+  // first: isolation
+  // second: d0sig
+  //
+  std::pair<std::string,float> tightness_def_mu = std::make_pair(m_TightMuonIso_WP,m_TightMuonD0sig_cut);
+
+  for ( auto mu_itr : *(muons) ) {
+
+    // set default decorations
+    //
+    isTightDecor( *mu_itr ) =  0;
+    isMediumDecor( *mu_itr ) =  0;
+
+    HTOP_RETURN_CHECK( "HTopMultilepAnalysis::selectTightLeptons()", z0sinthetaAcc.isAvailable(*mu_itr), "'z0sintheta' attribute is not available for this muon. Aborting");
+
+    // preliminary: tighten impact parameter cuts
+    //
+    if ( fabs( z0sinthetaAcc( *mu_itr ) ) < m_TightMuonTrkz0sinTheta_cut ) {
+
+      // if using isolation...
+      //
+      if ( !tightness_def_mu.first.empty() ) {
+
+	HTOP_RETURN_CHECK( "HTopMultilepAnalysis::selectTightLeptons()", TightMuonIsoAcc.isAvailable(*mu_itr), "m_TightMuonIso_WP attribute is not available for this muon. Aborting");
+
+	// if using *also* d0sig...
+	//
+	if ( tightness_def_mu.second > 0.0 ) {
+
+          HTOP_RETURN_CHECK( "HTopMultilepAnalysis::selectTightLeptons()", d0SigAcc.isAvailable(*mu_itr), "'d0sig' attribute is not available for this muon. Aborting");
+
+	  // "Tight"  ---> z0 + iso + d0sig
+	  // "Medium" ---> z0 + d0sig (any iso)
+	  //
+	  if ( ( TightMuonIsoAcc( *mu_itr ) == 1 ) && ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) ) {
+	    isTightDecor( *mu_itr ) = ( m_useOLRDecision && overlapsAcc.isAvailable( *mu_itr ) ) ? !overlapsAcc( *mu_itr ) : 1;
+	  }
+	  if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) { isMediumDecor( *mu_itr ) = 1; }
+
+	} else {
+
+	  // "Tight"  ---> z0 + iso (any d0sig)
+	  // "Medium" ---> z0 (any iso, d0sig)
+	  //
+	  if ( TightMuonIsoAcc( *mu_itr ) == 1 ) {
+	    isTightDecor( *mu_itr ) = ( m_useOLRDecision && overlapsAcc.isAvailable( *mu_itr ) ) ? !overlapsAcc( *mu_itr ) : 1;
+	  }
+	  isMediumDecor( *mu_itr ) = 1;
+
+	}
+
+      }
+      // if not using isolation, but using d0sig...
+      //
+      else if ( tightness_def_mu.second > 0.0 ) {
+
+	HTOP_RETURN_CHECK( "HTopMultilepAnalysis::selectTightLeptons()", d0SigAcc.isAvailable(*mu_itr), "'d0sig' attribute is not available for this muon. Aborting");
+
+	// "Tight"  ---> z0 + d0sig (any iso)
+	// "Medium" ---> z0 (any d0sig, iso)
+	//
+	if ( fabs( d0SigAcc( *mu_itr ) ) < tightness_def_mu.second ) {
+	  if ( overlapsAcc.isAvailable( *mu_itr ) ) {
+	    isTightDecor( *mu_itr ) = !overlapsAcc( *mu_itr );
+	  }
+	}
+	isMediumDecor( *mu_itr ) = 1;
+
+      }
+      // if using neither isolation, nor d0sig..
+      //
+      else {
+	Error("selectTightLeptons()", "Need at least isolation or d0sig requirement to define 'Tight' muons. Aborting" );
+	return EL::StatusCode::FAILURE;
+      }
+    }
+  }
+  
+  return EL::StatusCode::SUCCESS;
+  
 }
 
 //***************************************************
@@ -2110,7 +2131,7 @@ EL::StatusCode HTopMultilepAnalysis :: QMisIDWeightCalculator (const xAOD::Event
     EL_RETURN_CHECK("HTopMultilepAnalysis::QMisIDWeightCalculator()", this->calc_QMisID_weights( weights, elA, elB ) );
 
   }
-  
+
   QMisIDWeightDecor( *eventInfo ) = weights;
 
   if ( m_debug ) { Info("QMisIDWeightCalculator()", "QMisID final weight = %f ( up = %f, dn = %f )", QMisIDWeightDecor( *eventInfo ).at(0), QMisIDWeightDecor( *eventInfo ).at(1), QMisIDWeightDecor( *eventInfo ).at(2) ); }

@@ -45,6 +45,8 @@ infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.9.8/${inDS}/*
 tokens=(${inDS//./ })
 
 configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep.py"
+#configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep_TightOLR.py"
+
 current_time="$(date +'%d-%m-%Y-%T')"
 outdir=output_local_DxAOD-2015-13TeV_${tokens[2]}_${current_time}
 nevents=1000

@@ -18,6 +18,10 @@
 #include "xAODRootAccess/TStore.h"
 #include "AthContainers/ConstDataVector.h"
 
+// EDM include(s):
+#include "xAODMuon/MuonContainer.h"
+#include "xAODEgamma/ElectronContainer.h"
+
 // ROOT include(s):
 #include "TH1D.h"
 
@@ -27,6 +31,7 @@
 // algorithm wrapper
 #include "xAODAnaHelpers/Algorithm.h"
 #include "xAODAnaHelpers/JetHists.h"
+
 
 class HTopMultilepAnalysis : public xAH::Algorithm
 {
@@ -53,6 +58,9 @@ public:
   bool m_useCutFlow;
 
   /* to define "Tight" leptons */
+
+  bool m_useOLRDecision;
+
   std::string m_TightElectronPID_WP;
   std::string m_TightElectronIso_WP;
   float       m_TightElectronD0sig_cut;
@@ -143,6 +151,8 @@ public:
 
   EL::StatusCode readQMisIDRates ( const std::string& input_path );
   EL::StatusCode readFakeRates ( const std::string& input_path );
+
+  EL::StatusCode selectTightLeptons( const xAOD::ElectronContainer* electrons, const xAOD::MuonContainer* muons );
 
   inline  float computeHT( ConstDataVector<xAOD::IParticleContainer>& objects ) {
     float HT(0.0);

@@ -1,3 +1,10 @@
+/**
+ + * @file   HTopMultilepEventSelector.h
+ + * @Author Marco Milesi <marco.milesi@cern.ch>
+ + * @brief  Module which performs an event selection for HTopMultilepAnalysis.
+ + *
+ + */
+
 #ifndef HTopMultilepAnalysis_HTopMultilepEventSelector_H
 #define HTopMultilepAnalysis_HTopMultilepEventSelector_H
 

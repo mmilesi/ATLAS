@@ -791,8 +791,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
   	m_lep_Tag_isTrigMatch	  = lep.get()->trigmatched;
   	m_lep_Tag_isTightSelected = lep.get()->tight;
 	m_lep_Tag_isPrompt        = lep.get()->prompt;
-	m_lep_Tag_isBremsElec     = lep.get()->fake;
-	m_lep_Tag_isFakeLep       = lep.get()->brems;
+	m_lep_Tag_isBremsElec     = lep.get()->brems;
+	m_lep_Tag_isFakeLep       = lep.get()->fake;
       } else {
   	m_lep_Probe_Pt  	    = lep.get()->pt;
   	m_lep_Probe_Eta 	    = lep.get()->eta;
@@ -803,8 +803,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
   	m_lep_Probe_isTrigMatch     = lep.get()->trigmatched;
   	m_lep_Probe_isTightSelected = lep.get()->tight;
 	m_lep_Probe_isPrompt        = lep.get()->prompt;
-	m_lep_Probe_isBremsElec     = lep.get()->fake;
-	m_lep_Probe_isFakeLep       = lep.get()->brems;
+	m_lep_Probe_isBremsElec     = lep.get()->brems;
+	m_lep_Probe_isFakeLep       = lep.get()->fake;
       }
 
     }
