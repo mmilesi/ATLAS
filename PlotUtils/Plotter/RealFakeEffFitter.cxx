@@ -34,9 +34,10 @@ Use clever choice for initial parameters of the fit:
 #include "TLatex.h"
 #include "TEfficiency.h"
 #include "TGraphAsymmErrors.h"
-#include "AtlasStyle.C"
 #include "TLine.h"
 
+// temp: count how many times likelihood is called
+unsigned int g_count(0);
 
 bool g_debug(true);
 bool g_verbose(false);
@@ -54,7 +55,7 @@ std::vector<TH1D*> g_histograms_pt;
 std::vector<std::string> g_charge = {"OS"/*,"SS"*/};
 std::vector<std::string> g_flavour = {"ElEl"/*,"MuMu"*/};
 std::vector<std::string> g_obs_selection = {"TT","TL","LL"};
-std::vector<std::string> g_true_selection = {"RR",/*"RF","FF"*/};
+std::vector<std::string> g_true_selection = {"RR"/*,"RF","FF"*/};
 std::vector<std::string> g_efficiencies = {"r_eff_el",/*"r_eff_mu","f_eff_el","f_eff_mu"*/};
 
 std::vector<double> g_param_init_guess;
@@ -98,7 +99,7 @@ void getHists(const std::string& input_path, int& nbins ) {
         if  ( ch == "SS" ) {
           TH1D *hist_to_sub = get_object<TH1D>( *file, "expected" );
 	  hist->Add(hist_to_sub, -1.0);
-          for ( int ibin(0); ibin < nbins; ++ibin ) {
+          for ( int ibin(0); ibin < hist->GetNbinsX()+2; ++ibin ) {
             if ( hist->GetBinContent(ibin) < 0 ) { hist->SetBinContent(ibin,0.0); }
 	  }
 	}
@@ -108,19 +109,19 @@ void getHists(const std::string& input_path, int& nbins ) {
 	if ( g_debug ) { Info("getHists()","Saving histogram w/ name:\t %s", new_name.c_str() ); }
 
 	hist->SetName(new_name.c_str());
-	  
+
 	hist->SetDirectory(0);
-	
+
 	if ( g_doRebinning ) {
 	  if ( g_debug ) { Info("getHists()","Rebinning histograms..."); }
 	  TH1D* htemp = dynamic_cast<TH1D*>( hist->Clone() );
 	  hist = dynamic_cast<TH1D*>( htemp->Rebin( g_nBINS, new_name.c_str(), g_BINS) );
 	}
-	
+
 	if ( nbins == -1 ) { nbins = ( g_useUOflow ) ? hist->GetNbinsX()+2 : hist->GetNbinsX(); }
 	
-	g_histograms_pt.push_back(hist); 
-	
+	g_histograms_pt.push_back(hist);
+
       }
 
     }
@@ -138,19 +139,19 @@ double getExpected( const std::string& obs_selection, const double& r = 0.0,  co
   double exp(-1.0);
 
   if ( obs_selection == "TT" ) {
-    
+
     if ( g_verbose ) { Info("getExpected()","Adding term in likelihood for observed selection:\t %s", obs_selection.c_str() ); }
-    
+
     exp = r * r * RR + 2.0 * r * f * RF + f * f * FF;
 
   } else if ( obs_selection == "TL" ) {
-    
+
     if ( g_verbose ) { Info("getExpected()","Adding term in likelihood for observed selection:\t %s", obs_selection.c_str() ); }
 
     exp = 2.0 * r * ( 1 - r ) * RR + 2.0 * ( r * ( 1 - f) + ( 1 - r ) * f ) * RF + 2.0 * f * ( 1 - f ) * FF;
 
   } else if  ( obs_selection == "LL" ) {
-    
+
     if ( g_verbose ) { Info("getExpected()","Adding term in likelihood for observed selection:\t %s", obs_selection.c_str() ); }
 
     exp = ( 1 -r ) * ( 1 -r ) * RR + 2.0 * ( 1 -r ) * ( 1 - f ) * RF + ( 1 - f ) * ( 1 - f ) * FF;
@@ -164,7 +165,7 @@ double getExpected( const std::string& obs_selection, const double& r = 0.0,  co
 void getParamIndex( const std::string& input_string, const int& ibin,  int& idx, const std::string& param_id = "" ) {
 
   std::string search_string("");
-  
+
   if ( param_id == "r_eff" || param_id == "f_eff" ) {
 
     if ( input_string.find("ElEl") != std::string::npos ) {
@@ -174,9 +175,9 @@ void getParamIndex( const std::string& input_string, const int& ibin,  int& idx,
     }
 
   } else {
-    
+
     search_string = input_string;
-    
+
     // Replace the last two characters of the input string
     //
     search_string.replace( search_string.end()-2, search_string.end(), param_id);
@@ -189,12 +190,12 @@ void getParamIndex( const std::string& input_string, const int& ibin,  int& idx,
   // Get corresponding index in list of parameters
   //
   auto it = std::find( g_param_names.begin(), g_param_names.end(), search_string );
-  
+
   if ( it == g_param_names.end() ) {
     if ( g_verbose ) { Info("getParamIndex()","Parameter with name:\t %s was not found!", search_string.c_str() ); }
     return;
   }
-  
+
   idx = std::distance(g_param_names.begin(),it);
 
   if ( g_verbose ) { Info("getParamIndex()","Index of parameter with name:\t %s --> %i", search_string.c_str(), idx ); }
@@ -206,7 +207,11 @@ void getParamIndex( const std::string& input_string, const int& ibin,  int& idx,
 // -------------------------------------------------
 
 void myLikelihood( int& nDim, double* gout, double& result, double par[], int flg ) {
+   
+   if ( g_verbose ) { std::cout << "" << std::endl; }
 
+   ++g_count;
+   
    double likelihood(-999.0);
    double obs(-1.0);
 
@@ -219,6 +224,8 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
 
    double exp(-1);
 
+   unsigned int iblock(0);
+   
    for ( auto hist : g_histograms_pt ) {
 
      if ( g_verbose ) { Info("myLikelihood()","Getting observed yield from histogram:\t %s", hist->GetName() ); }
@@ -234,10 +241,8 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
      for ( ; ibin < nbins; ++ibin ) {
 
        obs = hist->GetBinContent(ibin);
-       
+
        int bin_idx = ( g_useUOflow ) ? ibin : ibin - 1;
-              
-       if ( g_verbose ) { Info("myLikelihood()","\t bin %i (pT = [%.2f,%.2f]) - yield = %f.", bin_idx, hist->GetBinLowEdge(ibin), hist->GetBinLowEdge(ibin+1), obs ); }
 
        // Need to find correspondent set of parameters
        //
@@ -246,19 +251,40 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
        getParamIndex( this_hist_name, bin_idx, idx_FF, "FF" );
        getParamIndex( this_hist_name, bin_idx, idx_reff, "r_eff" );
        getParamIndex( this_hist_name, bin_idx, idx_feff, "f_eff" );
-       
+
        double exp_reff = ( idx_reff != -1 ) ? par[idx_reff] : 0.0;
        double exp_feff = ( idx_feff != -1 ) ? par[idx_feff] : 0.0;
        double exp_RR   = ( idx_RR != -1 ) ? par[idx_RR] : 0.0;
        double exp_RF   = ( idx_RF != -1 ) ? par[idx_RF] : 0.0;
        double exp_FF   = ( idx_FF != -1 ) ? par[idx_FF] : 0.0;
        
-       exp = getExpected( obs_selection, exp_reff, exp_feff, exp_RR, exp_RF, exp_FF );
 
+       exp = getExpected( obs_selection, exp_reff, exp_feff, exp_RR, exp_RF, exp_FF );
+      
        likelihood += ( obs * log( exp ) - ( exp ) );
+
+       if ( g_verbose ) { 
+         Info("myLikelihood()","\t Building blocks of the likelihood :" ); 
+	 Info("myLikelihood()","\t bin %i (pT = [%.2f,%.2f]) - yield = %f.", bin_idx, hist->GetBinLowEdge(ibin), hist->GetBinLowEdge(ibin+1), obs );
+         std::cout << "------------------" << std::endl;
+         std::cout << "exp_reff : " << exp_reff << std::endl;
+         std::cout << "exp_feff : " << exp_feff << std::endl;
+         std::cout << "exp_RR : "   << exp_RR   << std::endl;
+         std::cout << "exp_RF : "   << exp_RF   << std::endl;
+         std::cout << "exp_FF : "   << exp_FF   << std::endl;
+         std::cout << "------------------" << std::endl;
+	 std::cout << "exp ===> "   << exp      << std::endl;
+         std::cout << "obs ===> "   << obs      << std::endl;
+         std::cout << "likelihood[" << iblock << "] ===> " << likelihood << std::endl;
+       }
+       
+       ++iblock;
+
      }
 
    }
+   
+   if ( g_verbose ) { Info("myLikelihood()","Final likelihood: ===> L = %.2f", likelihood ); }
 
    result = likelihood;
 }
@@ -270,25 +296,50 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
 
 void getEducatedGuess() {
 
-    double r =  0.65;
-    double f = 0.172;
+/*
+Efficiencies/Rates for FF amd Matrix Method
+
+El_ProbePt_Fake_Efficiency_observed_graph
+{ Bin nr: 0, efficiency = 0.172 + 0.015 - 0.014 };
+El_ProbePt_Real_Efficiency_observed_graph
+{ Bin nr: 0, efficiency = 0.65 + 0.003 - 0.003 };
+
+Mu_ProbePt_Fake_Efficiency_observed_graph
+{ Bin nr: 0, efficiency = 0.111 + 0.01 - 0.009 };
+Mu_ProbePt_Real_Efficiency_observed_graph
+{ Bin nr: 0, efficiency = 0.867 + 0.002 - 0.002 };
+*/
+
+    double r =  0.65; // hardcoded --> average r eff
+    double f = 0.172; // hardcoded --> average f eff
 
     g_param_init_guess.push_back(r);
-   
+
     double nTT(0.0), nTL(0.0), nLL(0.0);
+    
+    if ( g_debug ) { Info("getEducatedGuess()","Reading observed histograms:"); }  
+    
     for ( auto hist : g_histograms_pt ) {
 
+      if ( g_debug ) { std::cout << "\t" << hist->GetName() << " - Integral: " << hist->Integral() << std::endl; }
+      
       // Do we want overflow?
-      //    
-      if ( strncmp( hist->GetName(), "OS_ElEl_TT", 20 ) ) { nTT = hist->Integral(); }
-      if ( strncmp( hist->GetName(), "OS_ElEl_TL", 20 ) ) { nTL = hist->Integral(); }
-      if ( strncmp( hist->GetName(), "OS_ElEl_LL", 20 ) ) { nLL = hist->Integral(); }
+      //
+      if      ( strcmp( hist->GetName(), "OS_ElEl_TT" ) == 0 ) { nTT = hist->Integral(); }
+      else if ( strcmp( hist->GetName(), "OS_ElEl_TL" ) == 0 ) { nTL = hist->Integral(); }
+      else if ( strcmp( hist->GetName(), "OS_ElEl_LL" ) == 0 ) { nLL = hist->Integral(); }
       
     }
 
-    double nRR = ( 1 - f )*( 1 -f )* nTT + 2.0 * ( f - 1 ) * f * nTL + f * f * nLL;  
+    if ( g_debug ) { Info("getEducatedGuess()","nTT = %.2f - nTL = %.2f - nLL = %.2f", nTT, nTL, nLL); }  
+
+    double alpha = ( r - f ) * ( r - f );
+    double nRR = ( 1.0 / alpha ) * ( ( 1 - f )*( 1 -f )* nTT + 2.0 * ( f - 1 ) * f * nTL + f * f * nLL );
+    
+    if ( g_debug ) { Info("getEducatedGuess()","nRR = %.2f ", nRR ); }  
+    
     g_param_init_guess.push_back(nRR);
-   
+
 }
 
 
@@ -331,31 +382,14 @@ void setParameters( TMinuit *myFitter, const int& nbins ) {
    if ( g_debug ) { Info("setParameters()","Adding parameters to fit function..."); }
    int ipar(0);
    for ( auto& par : g_param_names ) {
-   
+
      bool isEff = ( par.find("r_eff_") != std::string::npos || par.find("f_eff_") != std::string::npos );
-     
-     //start = isEff ? 0.001 : 1.001;
-     //up    = isEff ? 0.999 : 1e4;
-     //dn    = 0.0;
-     
+
      start = g_param_init_guess.at(ipar);
-     up    = isEff ? 0.999 : 1e4;
-     dn    = 0.0;     
+     step  = isEff ? 1e-6 : 1e-3;
+     up    = isEff ? 0.999 : 1e5;
+     dn    = 0.0;
 
-/*
-Efficiencies/Rates for FF amd Matrix Method 
-
-El_ProbePt_Fake_Efficiency_observed_graph 
-{ Bin nr: 0, efficiency = 0.172 + 0.015 - 0.014 }; 
-El_ProbePt_Real_Efficiency_observed_graph 
-{ Bin nr: 0, efficiency = 0.65 + 0.003 - 0.003 }; 
-
-Mu_ProbePt_Fake_Efficiency_observed_graph 
-{ Bin nr: 0, efficiency = 0.111 + 0.01 - 0.009 }; 
-Mu_ProbePt_Real_Efficiency_observed_graph 
-{ Bin nr: 0, efficiency = 0.867 + 0.002 - 0.002 }; 
-*/
-     
      myFitter->mnparm( ipar, par.c_str(), start, step, dn, up, ierflg );
      ++ipar;
    }
@@ -368,7 +402,7 @@ void fitEff( std::string input_path = "" ) {
 
    // Read the input histograms, and set the number of bins
    //
-   int nbins(-1);   
+   int nbins(-1);
    getHists( input_path, nbins );
 
    // Set the number of parameteres of the fit
@@ -377,23 +411,23 @@ void fitEff( std::string input_path = "" ) {
    int NCHARGE = g_charge.size();
    int NCOMP   = g_true_selection.size();
    int NEFF    = g_efficiencies.size();
-   
+
    Info("fitEff()","");
    std::cout << "Number of pT bins = "<<  nbins << std::endl;
    std::cout << "Number of flavour bins = "<<  NFLAV << std::endl;
    std::cout << "Number of charge bins = "<<  NCHARGE << std::endl;
    std::cout << "Number of RR, RF... bins = "<<  NCOMP << std::endl;
    std::cout << "Number of efficiency bins = "<<  NEFF << std::endl;
-   
+
    // Total number of parameters to be estimated in the fit
    //
    // 1st factor in sum: YIELDS
    // 2nd factor in sum: EFFICIENCIES
    //
-   const int NPAR = (nbins * NFLAV * NCHARGE * NCOMP) + (nbins * NEFF); 
+   const int NPAR = (nbins * NFLAV * NCHARGE * NCOMP) + (nbins * NEFF);
 
    Info("fitEff()","\n\n Number of free parameters in fit ===> %i\n\n", NPAR);
-  
+
    double arglist[NPAR];
    int ierflg = 0;
 
@@ -405,7 +439,7 @@ void fitEff( std::string input_path = "" ) {
    //
    myFitter->SetFCN(myLikelihood);
 
-   getEducatedGuess(); 
+   getEducatedGuess();
 
    // Set the parameters of the fit
    //
@@ -414,8 +448,13 @@ void fitEff( std::string input_path = "" ) {
    //arglist[0] = 1;
    //myFitter->mnexcm("SET ERR",arglist,1,ierflg);
 
-   arglist[0] = 100; // maximum number of iterations
+
+   arglist[0] = 1;//100; // maximum number of iterations
    myFitter->mnexcm("MIGRAD",arglist,0,ierflg);
+
+   std::cout << "\n\n" << std::endl;
+   Info("fitEff()","Likelhood function has been called %u times", g_count );
+   std::cout << "\n\n" << std::endl;
 
    if ( !myFitter->fCstatu.Contains("CONVERGED") ) {
      Error("fitEff()","No convergence at fitting! Minuit return string: %s", myFitter->fCstatu.Data() );
@@ -439,22 +478,22 @@ void fitEff( std::string input_path = "" ) {
 
    Info("fitEff()","************************************************" );
    Info("fitEff()","" );
-   
+
    switch (icstat) {
     case 0 : Error("fitEff()","No covariance matrix was calculated!Exiting..." );
              exit(-1);
              break;       // and exits the switch
     case 1 : Warning("fitEff()","An approximated covariance matrix was calculated!Not accurate..." );
-             break; 
+             break;
     case 2 : Warning("fitEff()","Full covariance matrix was calculated, but forced to be positive-definite..." );
-             break; 
+             break;
     case 3 : Info("fitEff()","Full covariance matrix was calculated :)" );
-             break; 
+             break;
    }
 
    Info("fitEff()","Minimum of function = %f", best_min );
-   Info("fitEff()","Estimated vert. distance to min. = %f", est_vdist ); 
-   Info("fitEff()","Value of UP defining parameter unc. = %f", err_def ); 
+   Info("fitEff()","Estimated vert. distance to min. = %f", est_vdist );
+   Info("fitEff()","Value of UP defining parameter unc. = %f", err_def );
    Info("fitEff()","Number of variable parameters = %i", nvpar );
    Info("fitEff()","Highest number of parameters defined by user = %i", nparx );
    Info("fitEff()","" );
