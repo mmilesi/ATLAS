@@ -62,11 +62,11 @@ if not args.inputDir.endswith("/"):
 
 if args.rebinEta or args.rebinPt or args.doAvg:
    print("\n******************************************************************************************************\n\nWill perform histogram rebinning...")
-   print("\nWARNING!\n(From TH1 docs) If ngroup is not an exact divider of the number of bins, the top limit of the rebinned histogram is reduced to the upper edge of the last bin that can make a complete group.") 
+   print("\nWARNING!\n(From TH1 docs) If ngroup is not an exact divider of the number of bins, the top limit of the rebinned histogram is reduced to the upper edge of the last bin that can make a complete group.")
    print("The remaining bins are added to the overflow bin. Statistics will be recomputed from the new bin contents.\n")
    print("If rebinning to one single bin, this might lead to an \"empty\" histogram (as everything will end up in the overflow bin)")
    print("\n******************************************************************************************************\n")
-   
+
 # -------------------------------------------------------
 # for each channel, store which leptons can be associated
 # -------------------------------------------------------
@@ -78,7 +78,7 @@ dict_channels_lep = {
 		    }
 
 list_lep         = dict_channels_lep[args.flavourComp]
-list_types       = ["Fake"]#,"Real"]
+list_types       = ["Real","Fake"]
 list_variables   = ["ProbePt"]#["ProbeEta","ProbePt"] #,"ProbeNJets"]
 list_selections  = ["T","L"]
 list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
@@ -192,18 +192,31 @@ for iLep in list_lep:
 		       if iType == "Fake":
 
                           if iLep == "Mu":
-                             nBIN  = 6
-                             xbins = [10,15,20,25,35,50,200]
+                             
+			     # standard binning
+			     #
+			     #nBIN  = 6
+                             #xbins = [10,15,20,25,35,50,200]
+			     
+                             nBIN = 5
+			     xbins = [10,15,20,25,40,200]
+				     
 			  elif iLep == "El":
-                             nBIN  = 6
-                             xbins = [10,15,20,25,40,60,200]
+
+			     # standard binning
+			     #                             
+			     #nBIN  = 6
+                             #xbins = [10,15,20,25,40,60,200]
+			     
+                             nBIN  = 5
+                             xbins = [10,15,20,25,40,200]
 
                        elif iType == "Real":
 
-                  	  #nBIN  = 12
-                  	  #xbins = [25,30,35,40,45,50,60,70,80,90,100,150,200]
-			  nBIN  = 7
-                  	  xbins = [10,15,20,25,30,40,60,200]
+			  #nBIN  = 7
+                  	  #xbins = [10,15,20,25,30,40,60,200]
+			  nBIN  = 5
+                  	  xbins = [10,15,20,25,40,200]
 
                        vxbins = array.array("d", xbins)
 		       print "\t\t\t\t\t vxbins: ",vxbins
@@ -218,11 +231,11 @@ for iLep in list_lep:
                      vxbins = array.array("d", xbins)
                      print "\t\t\t\t\t vxbins: ",vxbins
 		     hists[histname]  = htmp.Rebin( nBIN, histname )
-		     
+
 		  if ( args.rebinEta or args.rebinPt or args.doAvg) and args.debug:
 		     print("\t\t\t\t\t Integral BEFORE rebinning: {0}".format(htmp.Integral(0,htmp.GetNbinsX()+1)))
-		     print("\t\t\t\t\t Integral AFTER rebinning: {0}".format(hists[histname].Integral(0,hists[histname].GetNbinsX()+1))) 
-		  
+		     print("\t\t\t\t\t Integral AFTER rebinning: {0}".format(hists[histname].Integral(0,hists[histname].GetNbinsX()+1)))
+
 		  # -------------------------------------------------------------------
 		  # compute the yield for this histogram, considering also the overflow
 		  # -------------------------------------------------------------------
@@ -238,24 +251,40 @@ for iLep in list_lep:
 		 if ( args.usePrediction == "MC" ):
 		     sys.exit("trying to subtract MC when using --usePrediction=", args.usePrediction ," option. Please use DATA instead, or switch off prompt background subtraction")
 
-		 name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1]
+		 name = None
 
-		 #if ( iType == "Fake" ):
-		 if ( iType == "Fake" or iType == "Real" ):
-
-		     #print "\t\t\t\t subtracting prompt/ch-flip MC to data in Fake CR..."
-		     print "\t\t\t\t subtracting prompt/ch-flip MC to data in Fake CR..."
-		     print "\t\t\t\t subtracting !prompt/ch-flip MC to data in Real CR..."
-
-                     hist_sub = hists[ iLep + "_" + iVar + "_" + iType + "_" + iSel + "_" + list_prediction[0] ]
+		 if ( iType == "Fake" ):
 		     
+		     name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1] # --> "observed"
+
+		     print "\t\t\t\t subtracting events w/ prompt/ch-flip probe lepton to data in Fake CR..."
+
+                     hist_sub = hists[ iLep + "_" + iVar + "_" + iType + "_" + iSel + "_" + list_prediction[0] ] # --> "expected"
+
 		     if args.debug:
 		        print "\t\t\t\t Integral before sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1), " - hist name: ", hists[name].GetName()
-		     
+
 		     hists[name].Add( hist_sub, -1 )
-		     
+
 		     if args.debug:
 		        print "\t\t\t\t Integral after sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1)
+
+		 elif ( iType == "Real" ):
+		    
+		     name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1] # --> "observed"
+
+		     print "\t\t\t\t subtracting events w/ !prompt/ch-flip probe lepton to data in Real CR..."
+
+                     hist_sub = hists[ iLep + "_" + iVar + "_" + iType + "_" + iSel + "_" + list_prediction[0] ] # --> "expected"
+
+		     if args.debug:
+		        print "\t\t\t\t Integral before sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1), " - hist name: ", hists[name].GetName()
+
+		     hists[name].Add( hist_sub, -1 )
+
+		     if args.debug:
+		        print "\t\t\t\t Integral after sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1)
+
 
 		 # ----------------------------------------------------------------------
 		 # set bin content to zero if subtraction gives negative yields
@@ -289,7 +318,7 @@ for iLep in list_lep:
 	  append_str = "observed"
           if ( args.usePrediction == "MC" ):
 	      append_str = "expected"
-	  
+
 	  print "Numerator T: tot. yield = ",  yields[histname + "_T_" + append_str]
           for bin in range(1,hists[histname + "_T_" + append_str].GetNbinsX()+1):
              print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hists[histname + "_T_" + append_str].GetBinLowEdge(bin),hists[histname + "_T_" + append_str].GetBinLowEdge(bin+1),hists[histname + "_T_" + append_str].GetBinContent(bin)))
@@ -299,7 +328,7 @@ for iLep in list_lep:
 
           hists[histname + "_Rate_" + append_str]  = hists[histname + "_T_" + append_str].Clone(histname + "_Rate_" + append_str)
           hists[histname + "_Rate_" + append_str].Divide(hists[histname + "_L_" + append_str])
-	  
+
           yields[histname + "_Rate_" + append_str] = yields[histname + "_T_" + append_str] / yields[histname + "_L_" + append_str]
 
           # For efficiency, make sure the errors are computed correctly
@@ -318,7 +347,7 @@ for iLep in list_lep:
           g_efficiency.Divide(hist_pass,hist_tot,"cl=0.683 b(1,1) mode")
           graphs[histname + "_Efficiency_" + append_str + "_graph"] = g_efficiency
 
-	  print "Denominator L+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1) 
+	  print "Denominator L+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
           for bin in range(1,hist_tot.GetNbinsX()+1):
              print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hist_tot.GetBinLowEdge(bin),hist_tot.GetBinLowEdge(bin+1),hist_tot.GetBinContent(bin)))
 

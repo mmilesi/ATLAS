@@ -2,8 +2,8 @@
 
 username=mmilesi
 
-prodtag=031-02_OLROnLoose_HIGG8D1
-#prodtag=031-02_OLROnTight_HIGG8D1
+#prodtag=031-02_OLROnLoose
+prodtag=031-02_OLROnTight
 #031-01bis_TruthTP_HIGG8D1
 #030-06_HIGG8D1
 #029_NoLepIP_HIGG8D1
@@ -14,8 +14,8 @@ prodtag=031-02_OLROnLoose_HIGG8D1
 
 infilepath="HTopMultilepAnalysis/doc/list-grid-DxAOD-2015-13TeV.txt"
 
-configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep.py"
-#configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep_TightOLR.py"
+#configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep.py"
+configpath="$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilep_TightOLR.py"
 
 current_time="$(date +'%d-%m-%Y-%T')"
 outdir=output_grid_DxAOD-2015-13TeV_${current_time}
@@ -23,7 +23,7 @@ outdir=output_grid_DxAOD-2015-13TeV_${current_time}
 #inSE=INFN-T1_DATADISK,MWT2_DATADISK
 
 destSE=AUSTRALIA-ATLAS_LOCALGROUPDISK
-exclSE=ANALY_IHEP,ANALY_JINR,ANALY_IHEP_GLEXEC,ANALY_RRC-KI-HPC,ANALY_RRC-KI-T1,IHEP_MCORE,IHEP_PROD,RRC-KI-HPC2,RRC-KI-T1,RRC-KI-T1_MCORE,RRC-KI-T1_TEST,ANALY_LAPP
+exclSE=ANALY_IHEP,ANALY_JINR,ANALY_IHEP_GLEXEC,ANALY_RRC-KI-HPC,ANALY_RRC-KI-T1,IHEP_MCORE,IHEP_PROD,RRC-KI-HPC2,RRC-KI-T1,RRC-KI-T1_MCORE,RRC-KI-T1_TEST,ANALY_LAPP,ANALY_INFN-NAPOLI,ANALY_INFN-FRASCATI,ANALY_SFU
 
 gridDSname="user.${username}.HTopMultilep.${prodtag}.%in:name[2]%.%in:name[3]%"
 

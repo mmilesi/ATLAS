@@ -274,7 +274,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
   //variables.push_back("NJets");
 
   vector<string> Rates;
-  //Rates.push_back("Real");
+  Rates.push_back("Real");
   Rates.push_back("Fake");
 
   string data_type("");
@@ -358,6 +358,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 	  //
 	  if ( RATE_OR_EFF == "Efficiency" ) {
 	    h->GetYaxis()->SetRangeUser(0.0,1.0);
+	    //h->GetYaxis()->SetRangeUser(0.4,1.0);
 	  }
 
 	  string title("");
@@ -562,8 +563,8 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 	  // For Efficiency hist
 	  //
 	  if ( RATE_OR_EFF == "Efficiency" ) {
-	    //h->GetYaxis()->SetRangeUser(0.0,1.0);
-	    h->GetYaxis()->SetRangeUser(0.5,1.0);
+	    h->GetYaxis()->SetRangeUser(0.0,1.0);
+	    //h->GetYaxis()->SetRangeUser(0.5,1.0);
 	  }
 
 	  string title("");
@@ -698,13 +699,21 @@ void execute_DiffSamples() {
   
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - OF+SF - No sub."));
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID_BabarSub/Rates_NoSub/","Data - Babar sel. - No sub."));
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - OF+SF - Prompt & QMisID Sub."));
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID_BabarSub/Rates_Sub/","Data - Babar sel. - Prompt & QMisID Sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - OF+SF - Prompt & QMisID Sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID_BabarSub/Rates_Sub/","Data - Babar sel. - Prompt & QMisID Sub."));
+
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_OFplusSF_TTBar/","t#bar{t} - OF + SF"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_OFplusSF_Zjets/","Z/#gamma* + jets - OF + SF"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_OFplusSF_AllMC/","All MC - OF + SF"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_ZjetsCR_Zjets/","Z/#gamma* + jets - Z CR"));
+  
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_NoSub/","Data - No sub."));
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_ProbeSub/","Data - (!Prompt & QMisID) Sub."));
 
   PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
   //PlotRateEff_DiffSamples(vec,"Data","OF","Efficiency","png");
   //PlotRateEff_DiffSamples(vec,"Data","MuMu","Efficiency","png");
-  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","root");
+  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","png");
 
 }
 

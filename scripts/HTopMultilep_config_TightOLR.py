@@ -437,10 +437,10 @@ HTopMultilepAnalysisDict = { "m_name"                      : "multilep_analysis"
                              "m_TightElectronD0sig_cut"         : 5.0,
                              "m_TightElectronTrkz0sinTheta_cut" : 0.5,
 			     "m_TightMuonIso_WP"	    : "isIsolated_FixedCutTightTrackOnly",
-   			     "m_TightMuonD0sig_cut"	    : 3.0,  
+   			     "m_TightMuonD0sig_cut"	    : 3.0,
 			     "m_TightMuonTrkz0sinTheta_cut" : 0.5,
                              "m_ConfigPathTightTaus"       : "$ROOTCOREBIN/data/HTopMultilepAnalysis/Taus/recommended_selection_mc15_final_sel.conf",
-		             "m_useMCForTagAndProbe"       : True,
+		             "m_useMCForTagAndProbe"       : False,
                            }
 
 HTopMultilepTreeAlgoDict = { "m_name"                  : "physics",
