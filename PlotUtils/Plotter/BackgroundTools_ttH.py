@@ -1,7 +1,9 @@
-from ROOT import TFile, TH1, TH1D, TH1I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
-from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex
+from ROOT import TFile, TH1, TH1D, TH1I, TH2D, TH2F, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
+from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
 import sys, glob, os, array, inspect, math
 #glob finds all the pathnames matching a specified pattern.glob.glob(pathname) Return a possibly-empty list of path names that match pathname in which unix wildcards can be used
+
+from array import array
 
 sys.path.append(os.path.abspath(os.path.curdir))#add to the search path for the modules the directory where this script is launched
 from Core import NTupleTools, DatasetManager, listifyInputFiles
@@ -153,12 +155,20 @@ class Inputs:
 class Variable:
     def __init__(self, **kw):
         self.latexname          = kw.get('latexname',   "Variable_{Plot}^{Name} [Units]")
+        self.latexnameX         = kw.get('latexnameX',  self.latexname)
+        self.latexnameY         = kw.get('latexnameY',  self.latexname)
         self.plainname          = kw.get('plainname',   self.latexname)
         self.shortname          = kw.get('shortname',   self.plainname)
         self.ntuplename         = kw.get('ntuplename',  "evtsel_name_of_variable")
         self.bins               = kw.get('bins',        40)
+        self.binsX              = kw.get('binsX',	self.bins)
+        self.binsY              = kw.get('binsY',	self.bins)
         self.minval             = kw.get('minval',      0.)
         self.maxval             = kw.get('maxval',      400.)
+        self.minvalX            = kw.get('minvalX',	self.minval)
+        self.maxvalX            = kw.get('maxvalX',	self.maxval)
+        self.minvalY            = kw.get('minvalY',	self.minval)
+        self.maxvalY            = kw.get('maxvalY',	self.maxval)
         self.typeval            = kw.get('typeval',     TH1D)
         self.manualbins         = kw.get('manualbins',  None)
         self.logaxis            = kw.get('logaxis',     False)
@@ -176,8 +186,8 @@ class Variable:
 
     def ytitle(self, manualbins=None):
         if (manualbins and type(manualbins) is list) or self.typeval is TH1I:
-            return 'Events'
-        else:
+            return 'Events'	
+	else:
             if manualbins:
                 bins, minval, maxval = manualbins
             else:
@@ -193,28 +203,36 @@ class Variable:
             name = self.plainname
         if title is None:
             title = self.latexname
-
-        if category and category.overridebins and self.shortname in category.overridebins:
-            manualbins = category.overridebins[self.shortname]
-            if type(manualbins) is list:
-                binarray = array.array('d', manualbins)
+	    
+        if self.typeval is TH2D or self.typeval is TH2F:
+	    h = self.typeval(name, title, self.binsX, self.minvalX, self.maxvalX, self.binsY, self.minvalY, self.maxvalY)
+            h.GetXaxis().SetTitle(self.latexnameX)
+            h.GetYaxis().SetTitle(self.latexnameY)  
+	    #set_fancy_2D_style()
+        else :
+            #gStyle.Clear()
+	    if category and category.overridebins and self.shortname in category.overridebins:
+            	manualbins = category.overridebins[self.shortname]
+            	if type(manualbins) is list:
+            	    binarray = array.array('d', manualbins)
+            	else:
+            	    binarray = None
             else:
-                binarray = None
-        else:
-            manualbins = self.manualbins
-            binarray = self.binarray
+            	manualbins = self.manualbins
+            	binarray = self.binarray
 
-        if manualbins:
-            if type(manualbins) is list:
-                h = self.typeval(name, title, len(self.manualbins)-1, self.binarray)
+            if manualbins:
+            	if type(manualbins) is list:
+            	    h = self.typeval(name, title, len(self.manualbins)-1, self.binarray)
+            	else:
+            	    h = self.typeval(name, title, manualbins[0], manualbins[1], manualbins[2])
             else:
-                h = self.typeval(name, title, manualbins[0], manualbins[1], manualbins[2])
-        else:
-            h = self.typeval(name, title, self.bins, self.minval, self.maxval)
-        h.SetXTitle(self.latexname)
-        h.SetYTitle(self.ytitle(manualbins=manualbins))
+            	h = self.typeval(name, title, self.bins, self.minval, self.maxval)
+            h.SetXTitle(self.latexname)
+            h.SetYTitle(self.ytitle(manualbins=manualbins))
         h.Sumw2()
         return h
+
 
 class Cut:
     def __init__(self, cutname, cutstr, cutlist=None):
@@ -517,6 +535,9 @@ class SubProcess:
         h.SetName(self.histcache[cachename].GetName()+str(weight))
         h.SetTitle(self.histcache[cachename].GetTitle()+str(weight))
         h.__imul__(self.baseweight * weight)
+	
+	#print("\nHistogram name: {0}\nHistogram integral: {1}\nHistogram type: {2}\n N bins X: {3} - N bins Y: {4}".format(h.GetName(),h.Integral(),type(h), h.GetNbinsX(), h.GetNbinsY()))
+	
         return h
 
 class OperatorProcess(SubProcess):
@@ -946,35 +967,37 @@ class Background:
 
         obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
 
-	if obs:
-            process = obslist[0][1]
-            datagr = None
-	    if not ( ("$ISDATA$") in process.name ):
-		#
-		# the two lines below are actually equivalent...
-		#
-		#datagr = makeMCErrors(obs)
-		datagr = TH1D(obs)
-	    else :
-	        datagr = makePoissonErrors(obs)
-            datagr.SetMarkerSize(1.2)
-            datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
-            datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
-            legs.append([datagr, process.latexname, "p"])
+	if obs: 
+	    if not ( var.typeval is TH2D or var.typeval is TH2F ):
+            	process = obslist[0][1]
+            	datagr = None
+	    	if not ( ("$ISDATA$") in process.name ):
+	    	    #
+	    	    # the two lines below are actually equivalent...
+	    	    #
+	    	    #datagr = makeMCErrors(obs)
+	    	    datagr = TH1D(obs)
+	    	else :
+	    	    datagr = makePoissonErrors(obs)
+            	datagr.SetMarkerSize(1.2)
+            	datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
+            	datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
+            	legs.append([datagr, process.latexname, "p"])
 
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
 
         if obs and bkglist and normalise:
-            num_data = obs.GetEntries()
-            num_mc = 0.0
-            for b, bname in bkglist:
-                for i in range(b.GetNbinsX()+2):
-                    num_mc += b.GetBinContent(i)
-            if num_mc:
-                normratio = num_data / num_mc
-                for b, bname in bkglist:
-                    b *= normratio
-                tSum *= normratio
+            if not ( var.typeval is TH2D or var.typeval is TH2F ):
+	    	num_data = obs.GetEntries()
+            	num_mc = 0.0
+            	for b, bname in bkglist:
+            	    for i in range(b.GetNbinsX()+2):
+            		num_mc += b.GetBinContent(i)
+            	if num_mc:
+            	    normratio = num_data / num_mc
+            	    for b, bname in bkglist:
+            		b *= normratio
+            	    tSum *= normratio
 
         bkg = {}
 	if bkglist:
@@ -1029,7 +1052,7 @@ class Background:
                 legs.append([sig, h_name, 'f'])
 
 
-        if showratio and obs and bkg:
+        if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F ):
             pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
             pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
             pad1.SetBottomMargin(0.02)
@@ -1045,7 +1068,7 @@ class Background:
             pad1.Draw()
             pad2.Draw()
 
-        if showratio and obs and bkg:
+        if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F ):
             if var.typeval is TH1D:
                 ratiomc = tSum.Clone("RatioMC")
                 ratiodata = obs.Clone("RatioData")
@@ -1125,63 +1148,68 @@ class Background:
 
         # trick to rescale:
 	if stack:
-	   ymax_new = stack.GetMaximum()
-	   if obs and obs.GetMaximum() > ymax_new:
-	       ymax_new = obs.GetMaximum()
-	   if stack and stack.GetMaximum() > ymax_new:
-	       ymax_new = stack.GetMaximum()
-	   if showratio and bkg and obs:
-	       stack.SetMaximum(ymax_new*(2.-lower+0.075))
-	       if log is True or (var.logaxis and log is None):
-	   	   stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
-	   else:
-	       stack.SetMaximum(ymax_new*(2.-lower+0.15))
-	   stack.Draw('HIST')
-	   #if ymax:
-	   #	dummy = stack.GetHists().At(0)
-	   #	dummy.GetYaxis().SetRangeUser(ymin, ymax)
-	   #	dummy.GetXaxis().SetTitle(xTitle)
-	   #	dummy.GetYaxis().SetTitle(yTitle)
-	   #	dummy.GetYaxis().SetTitleOffset(1.7)
-	   #	dummy.Draw()
-	   #	stack.Draw("HIST,same")
-	   #stack.GetHistogram().GetXaxis().SetNdivisions(8)
-	   if showratio and obs and bkg:
-	       stack.GetHistogram().GetXaxis().SetLabelOffset(999)
-	       stack.GetHistogram().GetXaxis().SetLabelSize(0)
-	       stack.GetHistogram().GetYaxis().SetTitleSize(stack.GetHistogram().GetYaxis().GetTitleSize() * 1.2)
-	       stack.GetHistogram().GetYaxis().SetTitleOffset(1.20)
-	       #ratiomc.GetXaxis().SetNdivisions(8)
-	       ratiomc.GetXaxis().SetTitleSize(ratiomc.GetXaxis().GetTitleSize() * 1.2)
-	       ratiomc.GetYaxis().SetTitleSize(ratiomc.GetYaxis().GetTitleSize() * 1.2)
-	   else:
-	       stack.GetHistogram().GetXaxis().SetLabelSize(stack.GetHistogram().GetXaxis().GetLabelSize() * 0.75)
-	       stack.GetHistogram().GetYaxis().SetLabelSize(stack.GetHistogram().GetYaxis().GetLabelSize() * 0.75)
-	       if var.typeval is TH1I:
-	   	   stack.GetHistogram().GetXaxis().SetNdivisions(tSum.GetNbinsX())
-	   	   stack.GetHistogram().GetXaxis().CenterLabels(True)
+	   if not ( var.typeval is TH2D or var.typeval is TH2F ):
+	      ymax_new = stack.GetMaximum()
+	      if obs and obs.GetMaximum() > ymax_new:
+	          ymax_new = obs.GetMaximum()
+	      if stack and stack.GetMaximum() > ymax_new:
+	          ymax_new = stack.GetMaximum()
+	      if showratio and bkg and obs:
+	          stack.SetMaximum(ymax_new*(2.-lower+0.075))
+	          if log is True or (var.logaxis and log is None):
+	              stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
+	      else:
+	          stack.SetMaximum(ymax_new*(2.-lower+0.15))
+	      stack.Draw('HIST')
+	      #if ymax:
+	      #    dummy = stack.GetHists().At(0)
+	      #    dummy.GetYaxis().SetRangeUser(ymin, ymax)
+	      #    dummy.GetXaxis().SetTitle(xTitle)
+	      #    dummy.GetYaxis().SetTitle(yTitle)
+	      #    dummy.GetYaxis().SetTitleOffset(1.7)
+	      #    dummy.Draw()
+	      #    stack.Draw("HIST,same")
+	      #stack.GetHistogram().GetXaxis().SetNdivisions(8)
+	      if showratio and obs and bkg:
+	          stack.GetHistogram().GetXaxis().SetLabelOffset(999)
+	          stack.GetHistogram().GetXaxis().SetLabelSize(0)
+	          stack.GetHistogram().GetYaxis().SetTitleSize(stack.GetHistogram().GetYaxis().GetTitleSize() * 1.2)
+	          stack.GetHistogram().GetYaxis().SetTitleOffset(1.20)
+	          #ratiomc.GetXaxis().SetNdivisions(8)
+	          ratiomc.GetXaxis().SetTitleSize(ratiomc.GetXaxis().GetTitleSize() * 1.2)
+	          ratiomc.GetYaxis().SetTitleSize(ratiomc.GetYaxis().GetTitleSize() * 1.2)
+	      else:
+	          stack.GetHistogram().GetXaxis().SetLabelSize(stack.GetHistogram().GetXaxis().GetLabelSize() * 0.75)
+	          stack.GetHistogram().GetYaxis().SetLabelSize(stack.GetHistogram().GetYaxis().GetLabelSize() * 0.75)
+	          if var.typeval is TH1I:
+	              stack.GetHistogram().GetXaxis().SetNdivisions(tSum.GetNbinsX())
+	              stack.GetHistogram().GetXaxis().CenterLabels(True)
+	   else: 
+	      stack.Draw('lego1')
 
         if bkg:
-            tSum.Draw("E2 SAME")
+            if not ( var.typeval is TH2D or var.typeval is TH2F ):
+	       tSum.Draw("E2 SAME")
 
 	if ( "FakesClosureABCD" in self.signals ):
 	   if sig:
 	      sig.Draw("PE SAME")
 
         if obs:
-            if stack:
-               datagr.Draw("PE SAME")
-               #obs.Draw("SAME")
-            else:
-	       if logx:
-	           gPad.SetLogx()
-	       if log:
-	           gPad.SetLogy()
-               datagr.GetXaxis().SetTitle(var.latexname)
-	       binwidth = (var.maxval - var.minval) / var.bins
-	       ytitle = 'Events / %.2g GeV' % (binwidth)
-	       datagr.GetYaxis().SetTitle(ytitle)
-               datagr.Draw('AP')
+	   if not ( var.typeval is TH2D or var.typeval is TH2F ):
+              if stack:
+                 datagr.Draw("PE SAME")
+                 #obs.Draw("SAME")
+              else:
+	         if logx:
+	             gPad.SetLogx()
+	         if log:
+	             gPad.SetLogy()
+                 datagr.GetXaxis().SetTitle(var.latexname)
+	         binwidth = (var.maxval - var.minval) / var.bins
+	         ytitle = 'Events / %.2g GeV' % (binwidth)
+	         datagr.GetYaxis().SetTitle(ytitle)
+                 datagr.Draw('AP')
 
         lower, labels = self.labels(legs, showratio and obs and bkg)
         #gPad.RedrawAxis()
@@ -1526,4 +1554,27 @@ def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', sys
 
     return inputs
 
+def set_fancy_2D_style():
 
+    icol = 0
+    gStyle.SetFrameBorderMode(icol);
+    gStyle.SetFrameFillColor(icol);
+    gStyle.SetCanvasBorderMode(icol);
+    gStyle.SetCanvasColor(icol);
+    gStyle.SetPadBorderMode(icol);
+    gStyle.SetPadColor(icol);
+    gStyle.SetStatColor(icol);
+    gStyle.SetOptTitle(0);
+    gStyle.SetOptStat(0);
+    gStyle.SetOptFit(0);
+
+    ncontours=999
+
+    s = array('d', [0.00, 0.34, 0.61, 0.84, 1.00])
+    r = array('d', [0.00, 0.00, 0.87, 1.00, 0.51])
+    g = array('d', [0.00, 0.81, 1.00, 0.20, 0.00])
+    b = array('d', [0.51, 1.00, 0.12, 0.00, 0.00])
+
+    npoints = len(s)
+    TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
+    gStyle.SetNumberContours(ncontours)

@@ -78,7 +78,7 @@ dict_channels_lep = {
 		    }
 
 list_lep         = dict_channels_lep[args.flavourComp]
-list_types       = ["Real"] # ["Fake"]
+list_types       = ["Real","Fake"]
 list_variables   = ["ProbePt"]#["ProbeEta","ProbePt"] #,"ProbeNJets"]
 list_selections  = ["T","L"]
 list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
@@ -192,18 +192,31 @@ for iLep in list_lep:
 		       if iType == "Fake":
 
                           if iLep == "Mu":
-                             nBIN  = 6
-                             xbins = [10,15,20,25,35,50,200]
+                             
+			     # standard binning
+			     #
+			     #nBIN  = 6
+                             #xbins = [10,15,20,25,35,50,200]
+			     
+                             nBIN = 5
+			     xbins = [10,15,20,25,40,200]
+				     
 			  elif iLep == "El":
-                             nBIN  = 6
-                             xbins = [10,15,20,25,40,60,200]
+
+			     # standard binning
+			     #                             
+			     #nBIN  = 6
+                             #xbins = [10,15,20,25,40,60,200]
+			     
+                             nBIN  = 5
+                             xbins = [10,15,20,25,40,200]
 
                        elif iType == "Real":
 
-                  	  #nBIN  = 12
-                  	  #xbins = [25,30,35,40,45,50,60,70,80,90,100,150,200]
-			  nBIN  = 7
-                  	  xbins = [10,15,20,25,30,40,60,200]
+			  #nBIN  = 7
+                  	  #xbins = [10,15,20,25,30,40,60,200]
+			  nBIN  = 5
+                  	  xbins = [10,15,20,25,40,200]
 
                        vxbins = array.array("d", xbins)
 		       print "\t\t\t\t\t vxbins: ",vxbins
@@ -238,16 +251,15 @@ for iLep in list_lep:
 		 if ( args.usePrediction == "MC" ):
 		     sys.exit("trying to subtract MC when using --usePrediction=", args.usePrediction ," option. Please use DATA instead, or switch off prompt background subtraction")
 
-		 name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1]
+		 name = None
 
-		 #if ( iType == "Fake" ):
-		 if ( iType == "Fake" or iType == "Real" ):
+		 if ( iType == "Fake" ):
+		     
+		     name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1] # --> "observed"
 
-		     #print "\t\t\t\t subtracting prompt/ch-flip MC to data in Fake CR..."
-		     print "\t\t\t\t subtracting prompt/ch-flip MC to data in Fake CR..."
-		     print "\t\t\t\t subtracting !prompt/ch-flip MC to data in Real CR..."
+		     print "\t\t\t\t subtracting events w/ prompt/ch-flip probe lepton to data in Fake CR..."
 
-                     hist_sub = hists[ iLep + "_" + iVar + "_" + iType + "_" + iSel + "_" + list_prediction[0] ]
+                     hist_sub = hists[ iLep + "_" + iVar + "_" + iType + "_" + iSel + "_" + list_prediction[0] ] # --> "expected"
 
 		     if args.debug:
 		        print "\t\t\t\t Integral before sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1), " - hist name: ", hists[name].GetName()
@@ -256,6 +268,23 @@ for iLep in list_lep:
 
 		     if args.debug:
 		        print "\t\t\t\t Integral after sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1)
+
+		 elif ( iType == "Real" ):
+		    
+		     name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1] # --> "observed"
+
+		     print "\t\t\t\t subtracting events w/ !prompt/ch-flip probe lepton to data in Real CR..."
+
+                     hist_sub = hists[ iLep + "_" + iVar + "_" + iType + "_" + iSel + "_" + list_prediction[0] ] # --> "expected"
+
+		     if args.debug:
+		        print "\t\t\t\t Integral before sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1), " - hist name: ", hists[name].GetName()
+
+		     hists[name].Add( hist_sub, -1 )
+
+		     if args.debug:
+		        print "\t\t\t\t Integral after sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1)
+
 
 		 # ----------------------------------------------------------------------
 		 # set bin content to zero if subtraction gives negative yields

@@ -1,33 +1,32 @@
-ROOTCFLAGS    = $(shell root-config --cflags)
-ROOTLIBS      = $(shell root-config --libs)
-ROOTGLIBS     = $(shell root-config --glibs)
+#DEST	=   RealFakeEffFitter
+#OBJS1	=   RealFakeEffFitter.o
+DEST	=   RealFakeEffFitter_Class
+OBJS1	=   RealFakeEffFitter_Class.o
 
-CXX           = g++ 
-CXXFLAGS      =-I$(ROOTSYS)/include -O -Wall -fPIC -I$(PWD) 
+ROOTCFLAGS   := $(shell root-config --cflags)
+ROOTLIBS     := $(shell root-config --libs)
+ROOTGLIBS    := $(shell root-config --glibs)
+
+# set the compiler options
+CXX           = g++
+CXXFLAGS      = -g -Wall -Wextra -O2
+                                   #-g compile with debug information
+                                   #-O optimize (-O2 is higher grade of optimalization)
+                                   #-Wall and -Wextra show warnings for everything
+
+# set the linker options
 LD            = g++
-LDFLAGS       = -g
-SOFLAGS       = -shared
+LDFLAGS       = -O2
 
+#######################
+CXXFLAGS   = $(ROOTCFLAGS)
+LIBS       = $(ROOTLIBS) -L $(ROOTSYS)/lib -lMinuit
+GLIBS      = $(ROOTGLIBS)
 
-CXXFLAGS     += $(ROOTCFLAGS)
-LIBS          = $(ROOTLIBS) -lMinuit 
-GLIBS         = $(ROOTGLIBS)
+all: $(DEST)
 
+$(DEST): $(OBJS1)
+	@$(LD) $(CXXFLAGS) $(LIBS) -o $(DEST) $(OBJS1)
 
-#program_C_SRCS 	= $(wildcard *.c)
-program_C_SRCS 	= 
-program_C_OBJS 	= ${program_C_SRCS:.c=.o}
-
-OBJS	= RealFakeEffFitter.o
-
-RealFakeEffFitter: $(OBJS)
-	$(CXX) $(program_C_SRCS) -o   $@ $(OBJS) $(CXXFLAGS) $(LIBS)
-	#$(CXX) -c $(program_C_SRCS) $(CXXFLAGS) $(LIBS)
-
-# suffix rule
-.cc.o:
-	#$(CXX) -c $(program_C_SRCS) $(CXXFLAGS) $(GDBFLAGS) $(LIBS) $<
-	$(CXX) -c $(CXXFLAGS) $(GDBFLAGS) $(LIBS) $<
-# clean
 clean:
-	rm -f *~ *.o *.o~ core
+	@rm -rf $(DEST) $(OBJS1)
