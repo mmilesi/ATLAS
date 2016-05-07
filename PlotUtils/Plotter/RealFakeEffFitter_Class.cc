@@ -35,7 +35,7 @@
 /**
   Define global likelihood function to be minimised
 */
-extern void myLikelihood( int& nDim, double* gout, double& result, double par[], int flg );
+//extern void myLikelihood( int& nDim, double* gout, double& result, double par[], int flg );
 bool g_verbose(false);
 int g_nPtBins_Squared;
 
@@ -49,25 +49,142 @@ std::vector<int> g_f_idxs;
 std::vector<int> g_RR_idxs;
 std::vector<int> g_FR_idxs;
 std::vector<int> g_RF_idxs;
-std::vector<int> g_FF_idxs;
+//std::vector<int> g_FF_idxs;
 std::vector<int> g_r1_idxs;  // x-coordinate  (--> leading pT axis) of the leading lepton in the (x_i,y_j) bin
 std::vector<int> g_r2_idxs;  // y-coordinate  (--> subleading pT axis) of the subleading lepton in the (x_i,y_j) bin
 std::vector<int> g_f1_idxs;  // x-coordinate  (--> leading pT axis) of the leading lepton in the (x_i,y_j) bin
 std::vector<int> g_f2_idxs;  // y-coordinate  (--> subleading pT axis) of the subleading lepton in the (x_i,y_j) bin};
+
+std::vector<double> g_fitted_r1_el; // fitted r value for leading e in every 2D bin
+std::vector<double> g_fitted_r2_el; // fitted r value for subleading e in every 2D bin
+std::vector<double> g_fitted_r1_mu; // fitted r value for leading mu in every 2D bin
+std::vector<double> g_fitted_r2_mu; // fitted r value for subleading mu in every 2D bin
 
 std::vector<double> g_TT_resized;
 std::vector<double> g_TL_resized;
 std::vector<double> g_LT_resized;
 std::vector<double> g_LL_resized;
 
+bool g_elec(false);
+bool g_muon(false);
+
 bool g_reff(false);
 bool g_feff(false);
 bool g_RR(false);
 bool g_RF(false);
 bool g_FR(false);
-bool g_FF(false);
+//bool g_FF(false);
 
-// -------------------------------------------------------------------------------------
+/**
+  Define global likelihood function to be minimised
+*/
+void myLikelihood( int& nDim, double* gout, double& result, double par[], int flg ) {
+
+   if ( g_verbose ) { std::cout << "" << std::endl; }
+
+   double likelihood_TT(0.0), likelihood_TL(0.0), likelihood_LT(0.0), likelihood_LL(0.0);
+   double likelihood(0.0);
+   double obs_TT(-1.0), obs_TL(-1.0), obs_LT(-1.0), obs_LL(-1.0);
+   double exp_TT(-1.0), exp_TL(-1.0), exp_LT(-1.0), exp_LL(-1.0);
+
+   double r1(0.0), r2(0.0), f1(0.0), f2(0.0);
+   double RR(0.0), RF(0.0), FR(0.0), FF(0.0);
+
+   // Compute the likelihood by summing TL,LT.. sub-blocks in every bin of the (linearised) 2D pT histogram
+   //
+   for ( int ibin = 0; ibin < g_nPtBins_Squared; ++ibin  ) {
+
+     // Read the likelihood parameters from the TMinuit par[] vector
+     //
+
+     double fitted_r1(0.0), fitted_r2(0.0);
+     if ( g_elec && g_feff ) { fitted_r1 = g_fitted_r1_el.at(ibin); fitted_r2 = g_fitted_r2_el.at(ibin); }
+     if ( g_muon && g_feff ) { fitted_r1 = g_fitted_r1_mu.at(ibin); fitted_r2 = g_fitted_r2_mu.at(ibin); }
+
+     // This assumes real efficiencies are fitted first
+     // When fitting fake efficiencies, the previously fitted values for r are used
+
+     r1 = ( g_reff )  ? par[ g_r1_idxs.at(ibin) ] : fitted_r1;
+     r2 = ( g_reff )  ? par[ g_r2_idxs.at(ibin) ] : fitted_r2;
+     f1 = ( g_feff )  ? par[ g_f1_idxs.at(ibin) ] : 0.0;
+     f2 = ( g_feff )  ? par[ g_f2_idxs.at(ibin) ] : 0.0;
+     RR = (  g_RR  )  ? par[ g_RR_idxs.at(ibin) ] : 0.0;
+     RF = (  g_RF  )  ? par[ g_RF_idxs.at(ibin) ] : 0.0;
+     FR = (  g_FR  )  ? par[ g_FR_idxs.at(ibin) ] : 0.0;
+     //FF = (  g_FF  )  ? par[ g_FF_idxs.at(ibin) ] : 0.0; // can we set this to 0 by brute force?
+     FF = 0.0;
+
+     if ( g_verbose ) {
+       std::cout << "" << std::endl;
+       Info("myLikelihood()","Ingredients of likelihood - global bin (%i):", ibin );
+       std::cout << "\tr1 = " << r1 << std::endl;
+       std::cout << "\tr2 = " << r2 << std::endl;
+       std::cout << "\tf1 = " << f1 << std::endl;
+       std::cout << "\tf2 = " << f2 << std::endl;
+       std::cout << "\tRR = " << RR << std::endl;
+       std::cout << "\tRF = " << RF << std::endl;
+       std::cout << "\tFR = " << FR << std::endl;
+       std::cout << "\tFF = " << FF << std::endl;
+       std::cout << "" << std::endl;
+     }
+
+     // TT block
+     //
+     obs_TT  = g_TT_resized.at(ibin);
+     exp_TT  = r1 * r2 * RR + r1 * f2 * RF + r2 * f1 * FR + f1 * f2 * FF;
+     if ( g_verbose ) {
+       std::cout << "" << std::endl;
+       Info("myLikelihood()","Adding term in likelihood for observed selection: TT in global bin (%i)", ibin );
+       std::cout << "\tobs_TT = " << obs_TT << " - exp_TT = " << exp_TT << " - likelihood block = " << ( obs_TT * log( exp_TT ) - ( exp_TT ) ) << std::endl;
+       std::cout << "" << std::endl;
+     }
+     likelihood_TT = ( obs_TT * log( exp_TT ) - ( exp_TT ) );
+
+     // TL block
+     //
+     obs_TL  = g_TL_resized.at(ibin);
+     exp_TL  = r1 * ( 1 - r2 ) * RR + r1 * ( 1 - f2 ) * RF + f1 * ( 1 - r2 ) * FR + f1 * ( 1 - f2 ) * FF;
+     if ( g_verbose ) {
+       std::cout << "" << std::endl;
+       Info("myLikelihood()","Adding term in likelihood for observed selection: TL in global bin (%i)", ibin );
+       std::cout << "\tobs_TL = " << obs_TL << " - exp_TL = " << exp_TL << " - likelihood block = " << ( obs_TL * log( exp_TL ) - ( exp_TL ) ) << std::endl;
+       std::cout << "" << std::endl;
+     }
+     likelihood_TL = ( obs_TL * log( exp_TL ) - ( exp_TL ) );
+
+     // LT block
+     //
+     obs_LT  = g_LT_resized.at(ibin);
+     exp_LT  = r2 * ( 1 - r1 ) * RR + f2 * ( 1 - r1 ) * RF + r2 * ( 1 - f1 ) * FR + f2 * ( 1 - f1 ) * FF;
+     if ( g_verbose ) {
+       std::cout << "" << std::endl;
+       Info("myLikelihood()","Adding term in likelihood for observed selection: LT in global bin (%i)", ibin );
+       std::cout << "\tobs_LT = " << obs_LT << " - exp_LT = " << exp_LT << " - likelihood block = " << ( obs_LT * log( exp_LT ) - ( exp_LT ) ) << std::endl;
+       std::cout << "" << std::endl;
+     }
+     likelihood_LT = ( obs_LT * log( exp_LT ) - ( exp_LT ) );
+
+     // LL block
+     //
+     obs_LL  = g_LL_resized.at(ibin);
+     exp_LL  = ( 1 - r1 ) * ( 1 - r2 ) * RR + ( 1 - r1 ) * ( 1 - f2 ) * RF + ( 1 - f1 ) * ( 1 - r2 ) * FR + ( 1 - f1 ) * ( 1 - f2 ) * FF;
+     if ( g_verbose ) {
+       std::cout << "" << std::endl;
+       Info("myLikelihood()","Adding term in likelihood for observed selection: LL in global bin (%i)", ibin );
+       std::cout << "\tobs_LL = " << obs_LL << " - exp_LL = " << exp_LL << " - likelihood block = " << ( obs_LL * log( exp_LL ) - ( exp_LL ) ) << std::endl;
+       std::cout << "" << std::endl;
+     }
+     likelihood_LL = ( obs_LL * log( exp_LL ) - ( exp_LL ) );
+
+     if ( g_verbose ) { Info("myLikelihood()","Total likelihood block L(%i) = %2f.", ibin, ( likelihood_TT + likelihood_TL + likelihood_LT + likelihood_LL ) ); }
+
+     likelihood += ( likelihood_TT + likelihood_TL + likelihood_LT + likelihood_LL );
+   }
+
+   if ( g_verbose ) { Info("myLikelihood()","===> Final likelihood - 2 * log(L) = %2f.", - 2.0 * likelihood ); }
+
+   result = - 2.0 * likelihood;
+}
 
 /**
   Function to get histograms from file
@@ -107,6 +224,8 @@ void printErrorContainer( std::vector<std::tuple<double,double,double> >& contai
   }
   std::cout << "" << std::endl;
 }
+
+// -------------------------------------------------------------------------------------
 
 /**
   The main class for the fit
@@ -204,7 +323,7 @@ class LHFitter {
     std::vector<double> m_RR_init;
     std::vector<double> m_RF_init;
     std::vector<double> m_FR_init;
-    std::vector<double> m_FF_init;
+    //std::vector<double> m_FF_init;
 
     /**
       Final parameter values
@@ -214,7 +333,7 @@ class LHFitter {
     std::vector<double> m_RR_vals;
     std::vector<double> m_RF_vals;
     std::vector<double> m_FR_vals;
-    std::vector<double> m_FF_vals;
+    //std::vector<double> m_FF_vals;
 
     /**
       Final parameter asymmetric errors
@@ -231,7 +350,7 @@ class LHFitter {
     std::vector<std::tuple<double,double,double> > m_RR_errs;
     std::vector<std::tuple<double,double,double> > m_RF_errs;
     std::vector<std::tuple<double,double,double> > m_FR_errs;
-    std::vector<std::tuple<double,double,double> > m_FF_errs;
+    //std::vector<std::tuple<double,double,double> > m_FF_errs;
 
     std::string m_input_path_TP;
     std::string m_input_path_yields;
@@ -295,6 +414,10 @@ LHFitter :: LHFitter( kFlavour FLAVOUR, kEfficiency EFFICIENCY ) :
 {
   m_flavour = FLAVOUR;
   m_efficiency = EFFICIENCY;
+
+  g_elec = ( m_flavour == kFlavour::ELEC );
+  g_muon = ( m_flavour == kFlavour::MUON );
+
 }
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -320,23 +443,32 @@ void LHFitter :: resetGlobFlags(){
   g_RR_idxs.clear();
   g_FR_idxs.clear();
   g_RF_idxs.clear();
-  g_FF_idxs.clear();
+  //g_FF_idxs.clear();
   g_r1_idxs.clear();
   g_r2_idxs.clear();
   g_f1_idxs.clear();
   g_f2_idxs.clear();
+
+  // these should not be reset...
+  //g_fitted_r1_el.clear();
+  //g_fitted_r2_el.clear();
+  //g_fitted_r1_mu.clear();
+  //g_fitted_r2_mu.clear();
 
   g_TT_resized.clear();
   g_TL_resized.clear();
   g_LT_resized.clear();
   g_LL_resized.clear();
 
+  //g_elec = false;
+  //g_muon = false;
+
   g_reff = false;
   g_feff = false;
   g_RR   = false;
   g_RF   = false;
   g_FR   = false;
-  g_FF   = false;
+  //g_FF   = false;
 
 }
 
@@ -512,28 +644,28 @@ void LHFitter :: getHists() {
     if ( strcmp( hist->GetName(), TT_name.c_str() ) == 0 ) {
       for ( int ibiny(0); ibiny <= m_nPtBins_Linear; ++ibiny ) {
         for ( int ibinx(0); ibinx <= m_nPtBins_Linear; ++ibinx ) {
-          if ( m_debug ) { std::cout << "(" << ibinx << "," << ibiny << ") - global bin: " << hist->GetBin(ibinx,ibiny) << std::endl; }
+          if ( m_verbose ) { std::cout << "(" << ibinx << "," << ibiny << ") - global bin: " << hist->GetBin(ibinx,ibiny) << std::endl; }
           m_TT.at( hist->GetBin(ibinx,ibiny) )  = hist->GetBinContent( hist->GetBin(ibinx,ibiny) );
         }
       }
     } else if ( strcmp( hist->GetName(), TL_name.c_str() ) == 0 ) {
       for ( int ibiny(0); ibiny <= m_nPtBins_Linear; ++ibiny ) {
         for ( int ibinx(0); ibinx <= m_nPtBins_Linear; ++ibinx ) {
-          if ( m_debug ) { std::cout << "(" << ibinx << "," << ibiny << ") - global bin: " << hist->GetBin(ibinx,ibiny) << std::endl; }
+          if ( m_verbose ) { std::cout << "(" << ibinx << "," << ibiny << ") - global bin: " << hist->GetBin(ibinx,ibiny) << std::endl; }
           m_TL.at( hist->GetBin(ibinx,ibiny) )  = hist->GetBinContent( hist->GetBin(ibinx,ibiny) );
         }
       }
     } else if ( strcmp( hist->GetName(), LT_name.c_str() ) == 0 ) {
       for ( int ibiny(0); ibiny <= m_nPtBins_Linear; ++ibiny ) {
         for ( int ibinx(0); ibinx <= m_nPtBins_Linear; ++ibinx ) {
-          if ( m_debug ) { std::cout << "(" << ibinx << "," << ibiny << ") - global bin: " << hist->GetBin(ibinx,ibiny) << std::endl; }
+          if ( m_verbose ) { std::cout << "(" << ibinx << "," << ibiny << ") - global bin: " << hist->GetBin(ibinx,ibiny) << std::endl; }
           m_LT.at( hist->GetBin(ibinx,ibiny) )  = hist->GetBinContent( hist->GetBin(ibinx,ibiny) );
         }
       }
     } else if ( strcmp( hist->GetName(), LL_name.c_str() ) == 0 ) {
       for ( int ibiny(0); ibiny <= m_nPtBins_Linear; ++ibiny ) {
         for ( int ibinx(0); ibinx <= m_nPtBins_Linear; ++ibinx ) {
-          if ( m_debug ) { std::cout << "(" << ibinx << "," << ibiny << ") - global bin: " << hist->GetBin(ibinx,ibiny) << std::endl; }
+          if ( m_verbose ) { std::cout << "(" << ibinx << "," << ibiny << ") - global bin: " << hist->GetBin(ibinx,ibiny) << std::endl; }
           m_LL.at( hist->GetBin(ibinx,ibiny) )  = hist->GetBinContent( hist->GetBin(ibinx,ibiny) );
         }
       }
@@ -576,9 +708,9 @@ void LHFitter :: getEducatedGuess( ) {
 
   double RR_default(1e-3), RF_default(1e-3), FR_default(1e-3), FF_default(1e-3);
 
-  if ( m_flavour == kFlavour::MUON ) {
+  if ( m_flavour == kFlavour::MUON || m_efficiency == kEfficiency::FAKE ) {
     std::cout << "" << std::endl;
-    Info("getEducatedGuess()","Measuring MUON efficiency! ===> using average f as input..." );
+    Info("getEducatedGuess()","===> using average f as input..." );
     Info("getEducatedGuess()","<f> = %.2f", m_f_init_avg );
   }
 
@@ -586,12 +718,12 @@ void LHFitter :: getEducatedGuess( ) {
   for ( int ibiny(1); ibiny <= m_nPtBins_Linear; ++ibiny ) {
 
     r2 = m_r_init.at(ibiny-1);
-    f2 = ( m_flavour == kFlavour::MUON ) ? m_f_init_avg : m_f_init.at(ibiny-1);
+    f2 = ( m_flavour == kFlavour::MUON || m_efficiency == kEfficiency::FAKE ) ? m_f_init_avg : m_f_init.at(ibiny-1);
 
     for ( int ibinx(1); ibinx <= m_nPtBins_Linear; ++ibinx ) {
 
       r1 = m_r_init.at(ibinx-1);
-      f1 = ( m_flavour == kFlavour::MUON ) ? m_f_init_avg : m_f_init.at(ibinx-1);
+      f1 = ( m_flavour == kFlavour::MUON || m_efficiency == kEfficiency::FAKE ) ? m_f_init_avg : m_f_init.at(ibinx-1);
 
       // Skip the above-diagonal elements
       //
@@ -619,10 +751,15 @@ void LHFitter :: getEducatedGuess( ) {
 
       double alpha = ( r1 - f1 ) * ( r2 - f2 );
 
-      m_RR_init.push_back( ( 1.0 / alpha ) * ( ( 1 - f1 ) * ( 1 - f2 ) * nTT + ( f1 - 1 ) * f2 * nTL + ( f2 - 1 ) * f1 * nLT + f1 * f2 * nLL ) );
-      m_RF_init.push_back( ( 1.0 / alpha ) * ( ( f1 - 1 ) * ( 1 - r2 ) * nTT + ( 1 - f1 ) * r2 * nTL + ( 1 - r2 ) * f1 * nLT - f1 * r2 * nLL ) );
-      m_FR_init.push_back( ( 1.0 / alpha ) * ( ( r1 - 1 ) * ( 1 - f2 ) * nTT + ( 1 - r1 ) * f2 * nTL + ( 1 - f2 ) * r1 * nLT - r1 * f2 * nLL ) );
-      m_FF_init.push_back( ( 1.0 / alpha ) * ( ( 1 - r1 ) * ( 1 - r2 ) * nTT + ( r1 - 1 ) * r2 * nTL + ( r2 - 1 ) * r1 * nLT + r1 * r2 * nLL ) );
+      double RR = ( 1.0 / alpha ) * ( ( 1 - f1 ) * ( 1 - f2 ) * nTT + ( f1 - 1 ) * f2 * nTL + ( f2 - 1 ) * f1 * nLT + f1 * f2 * nLL );
+      double RF = ( 1.0 / alpha ) * ( ( f1 - 1 ) * ( 1 - r2 ) * nTT + ( 1 - f1 ) * r2 * nTL + ( 1 - r2 ) * f1 * nLT - f1 * r2 * nLL );
+      double FR = ( 1.0 / alpha ) * ( ( r1 - 1 ) * ( 1 - f2 ) * nTT + ( 1 - r1 ) * f2 * nTL + ( 1 - f2 ) * r1 * nLT - r1 * f2 * nLL );
+      //double FF = ( 1.0 / alpha ) * ( ( 1 - r1 ) * ( 1 - r2 ) * nTT + ( r1 - 1 ) * r2 * nTL + ( r2 - 1 ) * r1 * nLT + r1 * r2 * nLL );
+
+      if ( RR >= 0.0 ) { m_RR_init.push_back( RR ); } else { m_RR_init.push_back( 1.0 ); }
+      if ( RF >= 0.0 ) { m_RF_init.push_back( RF ); } else { m_RF_init.push_back( 1.0 ); }
+      if ( FR >= 0.0 ) { m_FR_init.push_back( FR ); } else { m_FR_init.push_back( 1.0 ); }
+      //if ( FF >= 0.0 ) { m_FF_init.push_back( FF ); } else { m_FF_init.push_back( 1.0 ); }
 
       // Copy only relevant bins for observed yields into these containers
       // (will be the ones used in the likelihood)
@@ -655,28 +792,40 @@ void LHFitter :: setup() {
   m_RR_init.reserve(m_nPtBins_Squared);
   m_RF_init.reserve(m_nPtBins_Squared);
   m_FR_init.reserve(m_nPtBins_Squared);
-  m_FF_init.reserve(m_nPtBins_Squared);
+  //m_FF_init.reserve(m_nPtBins_Squared);
 
-
-  if ( m_debug ) {
+  if ( m_verbose ) {
      printContainer( m_TT, "Printing content of TT:" );
      printContainer( m_TL, "Printing content of TL:" );
      printContainer( m_LT, "Printing content of LT:" );
      printContainer( m_LL, "Printing content of LL:" );
   }
 
+  std::string eff_type("");
+  std::string flavour("");
+
   // Set the number of parameteres of the fit
   //
-  int NFLAV   = 1;
-  int NCOMP   = 0;
-  if      ( m_efficiency == kEfficiency::REAL ) NCOMP = 1; // RR only
-  else if ( m_efficiency == kEfficiency::REAL ) NCOMP = 3; // RF, FR, FF
+  int NFLAV(1);
+  int NCOMP(0);
+  if ( m_efficiency == kEfficiency::REAL ) {
+    NCOMP = 1; // RR only
+    eff_type = "REAL";
+  }
+  if ( m_efficiency == kEfficiency::FAKE ) {
+    NCOMP = 2; // 3; // RF, FR, FF
+    eff_type = "FAKE";
+  }
 
-  Info("setup()","");
-  std::cout << "Number of pT bins = "<<  m_nPtBins_Linear << std::endl;
+  if ( m_flavour == kFlavour::ELEC ) { flavour = "ELECTRON"; }
+  if ( m_flavour == kFlavour::MUON ) { flavour = "MUON"; }
+
+  Info("setup()","Fitting %s efficiency for %s \n", eff_type.c_str(), flavour.c_str() );
+  std::cout << "Number of 1D pT bins = "<<  m_nPtBins_Linear << std::endl;
+  std::cout << "Number of effective 2D pT bins = "<<  m_nPtBins_Squared << std::endl;
   std::cout << "----------------------------"<<  std::endl;
   std::cout << "Number of flavour bins = "<<  NFLAV << std::endl;
-  std::cout << "Number of RR, RF... bins = "<<  NCOMP << std::endl;
+  std::cout << "Number of RR, RF, FR, FF bins = "<<  NCOMP << std::endl;
 
   // Total number of parameters to be estimated in the fit
   //
@@ -688,7 +837,9 @@ void LHFitter :: setup() {
 
   m_NPAR = NPAR_YIELDS + NPAR_EFF;
 
-  Info("setup()","\n\n Number of free parameters in fit ===> %i (efficiencies) + %i (yields) = %i\n\n", NPAR_EFF, NPAR_YIELDS, m_NPAR);
+  const int m_NOBS = m_obs_selection.size() * m_nPtBins_Squared;
+
+  Info("setup()","\n\n Number of observables in fit ===> %i \n Number of free parameters in fit ===> %i (efficiencies) + %i (yields) = %i\n\n", m_NOBS, NPAR_EFF, NPAR_YIELDS, m_NPAR);
 
   int ierflg(0);
 
@@ -698,7 +849,7 @@ void LHFitter :: setup() {
 
   // Set the fitting function
   //
-  m_myFitter->SetFCN( myLikelihood );
+  m_myFitter->SetFCN(myLikelihood);
 
   // Get an educated guess for the initial parameters, from the tag-and-probe measurement:
   //
@@ -714,7 +865,7 @@ void LHFitter :: setup() {
      if ( m_efficiency == kEfficiency::REAL ) printContainer( m_RR_init,"Printing content of RR_init:" );
      if ( m_efficiency == kEfficiency::FAKE ) printContainer( m_RF_init,"Printing content of RF_init:" );
      if ( m_efficiency == kEfficiency::FAKE ) printContainer( m_FR_init,"Printing content of FR_init:" );
-     if ( m_efficiency == kEfficiency::FAKE ) printContainer( m_FF_init,"Printing content of FF_init:" );
+     //if ( m_efficiency == kEfficiency::FAKE ) printContainer( m_FF_init,"Printing content of FF_init:" );
      printContainer( g_TT_resized, "Printing content of TT (resized):" );
      printContainer( g_TL_resized, "Printing content of TL (resized):" );
      printContainer( g_LT_resized, "Printing content of LT (resized):" );
@@ -863,6 +1014,7 @@ void LHFitter :: setup() {
   // Set parameters for FF
   // ---------------------
 
+  /*
   if ( m_efficiency == kEfficiency::FAKE ) {
 
     g_FF = true;
@@ -877,6 +1029,7 @@ void LHFitter :: setup() {
     //
     offset += m_nPtBins_Squared;
   }
+  */
 
   // Set default values for final parameter/error vectors
   //
@@ -893,11 +1046,11 @@ void LHFitter :: setup() {
     m_RR_vals.push_back(0.0);
     m_RF_vals.push_back(0.0);
     m_FR_vals.push_back(0.0);
-    m_FF_vals.push_back(0.0);
+    //m_FF_vals.push_back(0.0);
     m_RR_errs.push_back(std::make_tuple( 0.0, 0.0, 0.0 ));
     m_RF_errs.push_back(std::make_tuple( 0.0, 0.0, 0.0 ));
     m_FR_errs.push_back(std::make_tuple( 0.0, 0.0, 0.0 ));
-    m_FF_errs.push_back(std::make_tuple( 0.0, 0.0, 0.0 ));
+    //m_FF_errs.push_back(std::make_tuple( 0.0, 0.0, 0.0 ));
     ++idx2;
   }
 
@@ -911,7 +1064,7 @@ void LHFitter :: setup() {
     if ( m_efficiency == kEfficiency::REAL )  printContainer( g_RR_idxs, "Printing content of RR_idxs:" );
     if ( m_efficiency == kEfficiency::FAKE )  printContainer( g_RF_idxs, "Printing content of RF_idxs:" );
     if ( m_efficiency == kEfficiency::FAKE )  printContainer( g_FR_idxs, "Printing content of FR_idxs:" );
-    if ( m_efficiency == kEfficiency::FAKE )  printContainer( g_FF_idxs, "Printing content of FF_idxs:" );
+    //if ( m_efficiency == kEfficiency::FAKE )  printContainer( g_FF_idxs, "Printing content of FF_idxs:" );
   }
 
 }
@@ -936,6 +1089,21 @@ void LHFitter :: getParametersAndErrors() {
        m_myFitter->GetParameter( param_idx, m_r_vals.at(idx), std::get<2>(m_r_errs.at(idx)) );
        m_myFitter->mnerrs( param_idx, std::get<0>(m_r_errs.at(idx)), std::get<1>(m_r_errs.at(idx)), std::get<2>(m_r_errs.at(idx)), globcc );
     }
+
+    for ( int ibiny(1); ibiny <= m_nPtBins_Linear; ++ibiny ) {
+      for ( int ibinx(1); ibinx <= m_nPtBins_Linear; ++ibinx ) {
+        if ( ibiny > ibinx ) { continue; }
+	if ( m_flavour == kFlavour::ELEC ) {
+          g_fitted_r1_el.push_back( m_r_vals.at(ibinx-1) );
+          g_fitted_r2_el.push_back( m_r_vals.at(ibiny-1) );
+	}
+	if ( m_flavour == kFlavour::MUON ) {
+          g_fitted_r1_mu.push_back( m_r_vals.at(ibinx-1) );
+          g_fitted_r2_mu.push_back( m_r_vals.at(ibiny-1) );
+	}
+      }
+    }
+
     // Set the offset for total parameter index
     //
     offset += m_nPtBins_Linear;
@@ -1009,6 +1177,7 @@ void LHFitter :: getParametersAndErrors() {
   // Get errors for FF
   // ---------------------
 
+  /*
   if ( m_efficiency == kEfficiency::FAKE ) {
 
     for ( auto idx(0); idx < m_FF_errs.size(); ++idx ) {
@@ -1020,7 +1189,7 @@ void LHFitter :: getParametersAndErrors() {
     //
     offset += m_nPtBins_Squared;
   }
-
+  */
 }
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -1099,107 +1268,6 @@ void  LHFitter :: saveEfficiencies() {
 
 // ----------------------------------------------------------------------------------------------------------------------
 
-void myLikelihood( int& nDim, double* gout, double& result, double par[], int flg ) {
-
-   if ( g_verbose ) { std::cout << "" << std::endl; }
-
-   double likelihood_TT(0.0), likelihood_TL(0.0), likelihood_LT(0.0), likelihood_LL(0.0);
-   double likelihood(0.0);
-   double obs_TT(-1.0), obs_TL(-1.0), obs_LT(-1.0), obs_LL(-1.0);
-   double exp_TT(-1.0), exp_TL(-1.0), exp_LT(-1.0), exp_LL(-1.0);
-
-   double r1(0.0), r2(0.0), f1(0.0), f2(0.0);
-   double RR(0.0), RF(0.0), FR(0.0), FF(0.0);
-
-   // Compute the likelihood by summing TL,LT.. sub-blocks in every bin of the (linearised) 2D pT histogram
-   //
-   for ( int ibin = 0; ibin < g_nPtBins_Squared; ++ibin  ) {
-
-     //. Read the likelihood parameters from the TMinuit par[] vector
-     //
-     r1 = ( g_reff )  ? par[ g_r1_idxs.at(ibin) ] : 0.0;
-     r2 = ( g_reff )  ? par[ g_r2_idxs.at(ibin) ] : 0.0;
-     f1 = ( g_feff )  ? par[ g_f1_idxs.at(ibin) ] : 0.0;
-     f2 = ( g_feff )  ? par[ g_f2_idxs.at(ibin) ] : 0.0;
-     RR = (  g_RR  )  ? par[ g_RR_idxs.at(ibin) ] : 0.0;
-     RF = (  g_RF  )  ? par[ g_RF_idxs.at(ibin) ] : 0.0;
-     FR = (  g_FR  )  ? par[ g_FR_idxs.at(ibin) ] : 0.0;
-     FF = (  g_FF  )  ? par[ g_FF_idxs.at(ibin) ] : 0.0; // can we set this to 0 by brute force?
-
-     if ( g_verbose ) {
-       std::cout << "" << std::endl;
-       Info("myLikelihood()","Ingredients of likelihood - global bin (%i):", ibin );
-       std::cout << "\tr1 = " << r1 << std::endl;
-       std::cout << "\tr2 = " << r2 << std::endl;
-       std::cout << "\tf1 = " << f1 << std::endl;
-       std::cout << "\tf2 = " << f2 << std::endl;
-       std::cout << "\tRR = " << RR << std::endl;
-       std::cout << "\tRF = " << RF << std::endl;
-       std::cout << "\tFR = " << FR << std::endl;
-       std::cout << "\tFF = " << FF << std::endl;
-       std::cout << "" << std::endl;
-     }
-
-     // TT block
-     //
-     obs_TT  = g_TT_resized.at(ibin);
-     exp_TT  = r1 * r2 * RR + r1 * f2 * RF + r2 * f1 * FR + f1 * f2 * FF;
-     if ( g_verbose ) {
-       std::cout << "" << std::endl;
-       Info("myLikelihood()","Adding term in likelihood for observed selection: TT in global bin (%i)", ibin );
-       std::cout << "\tobs_TT = " << obs_TT << " - exp_TT = " << exp_TT << " - likelihood block = " << ( obs_TT * log( exp_TT ) - ( exp_TT ) ) << std::endl;
-       std::cout << "" << std::endl;
-     }
-     likelihood_TT = ( obs_TT * log( exp_TT ) - ( exp_TT ) );
-
-     // TL block
-     //
-     obs_TL  = g_TL_resized.at(ibin);
-     exp_TL  = r1 * ( 1 - r2 ) * RR + r1 * ( 1 - f2 ) * RF + f1 * ( 1 - r2 ) * FR + f1 * ( 1 - f2 ) * FF;
-     if ( g_verbose ) {
-       std::cout << "" << std::endl;
-       Info("myLikelihood()","Adding term in likelihood for observed selection: TL in global bin (%i)", ibin );
-       std::cout << "\tobs_TL = " << obs_TL << " - exp_TL = " << exp_TL << " - likelihood block = " << ( obs_TL * log( exp_TL ) - ( exp_TL ) ) << std::endl;
-       std::cout << "" << std::endl;
-     }
-     likelihood_TL = ( obs_TL * log( exp_TL ) - ( exp_TL ) );
-
-     // LT block
-     //
-     obs_LT  = g_LT_resized.at(ibin);
-     exp_LT  = r2 * ( 1 - r1 ) * RR + f2 * ( 1 - r1 ) * RF + r2 * ( 1 - f1 ) * FR + f2 * ( 1 - f1 ) * FF;
-     if ( g_verbose ) {
-       std::cout << "" << std::endl;
-       Info("myLikelihood()","Adding term in likelihood for observed selection: LT in global bin (%i)", ibin );
-       std::cout << "\tobs_LT = " << obs_LT << " - exp_LT = " << exp_LT << " - likelihood block = " << ( obs_LT * log( exp_LT ) - ( exp_LT ) ) << std::endl;
-       std::cout << "" << std::endl;
-     }
-     likelihood_LT = ( obs_LT * log( exp_LT ) - ( exp_LT ) );
-
-     // LL block
-     //
-     obs_LL  = g_LL_resized.at(ibin);
-     exp_LL  = ( 1 - r1 ) * ( 1 - r2 ) * RR + ( 1 - r1 ) * ( 1 - f2 ) * RF + ( 1 - f1 ) * ( 1 - r2 ) * FR + ( 1 - f1 ) * ( 1 - f2 ) * FF;
-     if ( g_verbose ) {
-       std::cout << "" << std::endl;
-       Info("myLikelihood()","Adding term in likelihood for observed selection: LL in global bin (%i)", ibin );
-       std::cout << "\tobs_LL = " << obs_LL << " - exp_LL = " << exp_LL << " - likelihood block = " << ( obs_LL * log( exp_LL ) - ( exp_LL ) ) << std::endl;
-       std::cout << "" << std::endl;
-     }
-     likelihood_LL = ( obs_LL * log( exp_LL ) - ( exp_LL ) );
-
-     if ( g_verbose ) { Info("myLikelihood()","Total likelihood block L(%i) = %2f.", ibin, ( likelihood_TT + likelihood_TL + likelihood_LT + likelihood_LL ) ); }
-
-     likelihood += ( likelihood_TT + likelihood_TL + likelihood_LT + likelihood_LL );
-   }
-
-   if ( g_verbose ) { Info("myLikelihood()","===> Final likelihood - 2 * log(L) = %2f.", - 2.0 * likelihood ); }
-
-   result = - 2.0 * likelihood;
-}
-
-// ----------------------------------------------------------------------------------------------------------------------
-
 void LHFitter :: fit() {
 
   double arglist[m_NPAR];
@@ -1212,7 +1280,7 @@ void LHFitter :: fit() {
 
   if ( !m_myFitter->fCstatu.Contains("CONVERGED") ) {
     Error("fit()","No convergence at fitting! Minuit return string: %s", m_myFitter->fCstatu.Data() );
-    exit(-1);;
+    //exit(-1);
   }
 
   arglist[0] = 0.0;
@@ -1235,6 +1303,14 @@ void LHFitter :: fit() {
     printErrorContainer( m_r_errs, "Printing content of r_errs (POST-FIT):" );
     printContainer( m_RR_vals, "Printing content of RR_vals (POST-FIT):" );
     printErrorContainer( m_RR_errs, "Printing content of RR_errs (POST-FIT):" );
+    if ( m_flavour == kFlavour::ELEC ) {
+      printContainer( g_fitted_r1_el, "Printing content of g_fitted_r1_el (POST-FIT):" );
+      printContainer( g_fitted_r2_el, "Printing content of g_fitted_r2_el (POST-FIT):" );
+    }
+    if ( m_flavour == kFlavour::MUON ) {
+      printContainer( g_fitted_r1_mu, "Printing content of g_fitted_r1_mu (POST-FIT):" );
+      printContainer( g_fitted_r2_mu, "Printing content of g_fitted_r2_mu (POST-FIT):" );
+    }
   }
 
   this->saveEfficiencies();
@@ -1304,7 +1380,7 @@ int main( int argc, char **argv ) {
     // real efficiency - e
 
     LHFitter real_e( LHFitter::kFlavour::ELEC, LHFitter::kEfficiency::REAL );
-    real_e.m_debug = true;
+    //real_e.m_debug = true;
     real_e.setTagAndProbePath("../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput/");
     real_e.setInputHistPath("../OutputPlots_MMRates_LHFit_2DPt/");
     real_e.initialise();
@@ -1313,13 +1389,32 @@ int main( int argc, char **argv ) {
     // real efficiency - mu
 
     LHFitter real_mu( LHFitter::kFlavour::MUON, LHFitter::kEfficiency::REAL );
-    real_mu.m_debug = true;
+    //real_mu.m_debug = true;
     real_mu.setTagAndProbePath("../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput/");
     real_mu.setInputHistPath("../OutputPlots_MMRates_LHFit_2DPt/");
     real_mu.initialise();
     real_mu.fit();
 
-    //fitEff(input);
+    // fake efficiency - e
+
+    LHFitter fake_e( LHFitter::kFlavour::ELEC, LHFitter::kEfficiency::FAKE );
+    fake_e.m_debug = true;
+    fake_e.setTagAndProbePath("../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput/");
+    fake_e.setInputHistPath("../OutputPlots_MMRates_LHFit_2DPt/");
+    fake_e.initialise();
+    //std::cout << "g_elec ?" << g_elec << std::endl;
+    //std::cout << "Printing g_fitted_r1_el..." << std::endl;
+    //for ( auto itr : g_fitted_r1_el ) { std::cout << itr << std::endl; }
+    fake_e.fit();
+
+    // fake efficiency - mu
+
+    LHFitter fake_mu( LHFitter::kFlavour::MUON, LHFitter::kEfficiency::FAKE );
+    fake_mu.m_debug = true;
+    fake_mu.setTagAndProbePath("../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput/");
+    fake_mu.setInputHistPath("../OutputPlots_MMRates_LHFit_2DPt/");
+    fake_mu.initialise();
+    fake_mu.fit();
 
     std::cout << "end" << std::endl;
     return 0;
