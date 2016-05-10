@@ -198,8 +198,11 @@ for iLep in list_lep:
 			     #nBIN  = 6
                              #xbins = [10,15,20,25,35,50,200]
 			     
-                             nBIN = 5
-			     xbins = [10,15,20,25,40,200]
+                             #nBIN = 5
+			     #xbins = [10,15,20,25,40,200]
+			     
+                             nBIN = 2
+			     xbins = [10,50,90]
 				     
 			  elif iLep == "El":
 
@@ -208,15 +211,24 @@ for iLep in list_lep:
 			     #nBIN  = 6
                              #xbins = [10,15,20,25,40,60,200]
 			     
-                             nBIN  = 5
-                             xbins = [10,15,20,25,40,200]
+                             #nBIN  = 5
+                             #xbins = [10,15,20,25,40,200]
+
+                             nBIN = 2
+			     xbins = [10,50,90]
 
                        elif iType == "Real":
 
+			  # standard binning
+			  # 
 			  #nBIN  = 7
                   	  #xbins = [10,15,20,25,30,40,60,200]
-			  nBIN  = 5
-                  	  xbins = [10,15,20,25,40,200]
+			  
+			  #nBIN  = 5
+                  	  #xbins = [10,15,20,25,40,200]
+
+                          nBIN = 2
+			  xbins = [10,60,110]
 
                        vxbins = array.array("d", xbins)
 		       print "\t\t\t\t\t vxbins: ",vxbins
