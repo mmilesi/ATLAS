@@ -13,10 +13,6 @@ class HTopMultilepTreeAlgo : public TreeAlgo
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.
 
-private:
-  HTopMultilepTree* m_HTopTree; //!
-//  std::map<std::string, HelpTreeBase*> m_trees;            //!
-
 public:
 
   // additional data members which are not already in xAH::TreeAlgo.h
@@ -24,16 +20,16 @@ public:
 
   // this is a standard constructor
   HTopMultilepTreeAlgo () :
-    TreeAlgo(),
-    m_HTopTree(nullptr)
-    {};
+    TreeAlgo()
+  {
+    Info("HTopMultilepTreeAlgo::HTopMultilepTreeAlgo()","Forcing energy/momentum units to MeV...");
+    m_units = 1e0;
+  };
 
   // these are the functions inherited from Algorithm
 
-  // overload only the ones that somehow differ from the original methods in TreeAlgo (e.g., the ones manipulating m_helpTree)
-  virtual EL::StatusCode histInitialize ();
+  // overload only the ones that somehow differ from the original methods in TreeAlgo
   virtual EL::StatusCode execute ();
-  virtual EL::StatusCode finalize ();
 
   // these are the functions not inherited from Algorithm
 

@@ -22,7 +22,8 @@
 
 inDS="mc15_13TeV.410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.merge.DAOD_HIGG8D1.e3698_s2608_s2183_r7267_r6282_p2559"
 #inDS="mc15_13TeV.341270.aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep.merge.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2559"
-infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.9.8/${inDS}/*root*"
+#infilepath="/data/mmilesi/HTopMultileptonsTestSamples/HIGG8D1_20.1.9.8/${inDS}/*root*"
+infilepath="/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/HIGG8D1_20.1.9.8/${inDS}/*root*"
 
 # -----------------------
 # 20.1.9.8 - 25 ns - data
