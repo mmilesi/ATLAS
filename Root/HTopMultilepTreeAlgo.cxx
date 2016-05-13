@@ -22,12 +22,12 @@
 // this is needed to distribute the algorithm to the workers
 ClassImp(HTopMultilepTreeAlgo)
 
-EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
+EL::StatusCode HTopMultilepTreeAlgo :: histInitialize ()
 {
 
   TTree * outTree = new TTree(m_name.c_str(),m_name.c_str());
   if ( !outTree ) {
-    Error("treeInitialize()","Failed to instantiate output tree!");
+    Error("histInitialize()","Failed to instantiate output tree!");
     return EL::StatusCode::FAILURE;
   }
 
@@ -57,7 +57,7 @@ EL::StatusCode HTopMultilepTreeAlgo :: treeInitialize ()
   if ( !m_METContainerName.empty() )     { m_HTopTree->AddMET	     (m_METDetailStr);     }
   if ( !m_lepContainerName.empty() )     { m_HTopTree->AddLeptons    ();		   }
 
-  Info("treeInitialize()", "Successfully initialized output tree");
+  Info("histInitialize()", "Successfully initialized output tree");
 
   return EL::StatusCode::SUCCESS;
 }

@@ -15,6 +15,7 @@ class HTopMultilepTreeAlgo : public TreeAlgo
 
 private:
   HTopMultilepTree* m_HTopTree; //!
+//  std::map<std::string, HelpTreeBase*> m_trees;            //!
 
 public:
 
@@ -30,7 +31,7 @@ public:
   // these are the functions inherited from Algorithm
 
   // overload only the ones that somehow differ from the original methods in TreeAlgo (e.g., the ones manipulating m_helpTree)
-  virtual EL::StatusCode treeInitialize ();
+  virtual EL::StatusCode histInitialize ();
   virtual EL::StatusCode execute ();
   virtual EL::StatusCode finalize ();
 
