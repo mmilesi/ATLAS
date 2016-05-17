@@ -58,11 +58,12 @@ def plot2Dhist():
   observed_sel = ["TT","TL","LT","LL"]
   charges      = ["OS","SS"]
   flavours     = ["ElEl","MuMu"]
-  
-  input_path = "../OutputPlots_MMRates_LHFit_2DPt/"
- 
+
+  #input_path = "../OutputPlots_MMRates_LHFit_2DPt/"
+  input_path = "../OutputPlots_MMRates_LHFit_2DPt_NominalBinning/"
+
   set_fancy_2D_style()
-  
+
   for ch in charges:
     for flav in flavours:
       for sl in observed_sel:
@@ -96,7 +97,7 @@ def plot2Dhist():
         legend.Draw()
         leg_ATLAS.DrawLatex(0.2,0.75,"#bf{#it{ATLAS}} Work In Progress")
         leg_lumi.DrawLatex(0.2,0.7,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}")
-    
+
         canvasname = ch + "_" + flav + "_" + sl + "_observed"
         c.SaveAs(canvasname + ".png")
 
@@ -105,17 +106,21 @@ def plot2Dhist():
 # ---------------
 
 def plotter_r():
-  
-  file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput_6x6bins/Rates.root"
+
+  #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput_6x6bins/Rates.root"
+
+  #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_NoSub_LHInput/Rates.root"
+  file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+
   file_TP = TFile(file_TP_path)
-  
+
   hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Real_Efficiency_observed") )[bool(args.flavour == "mu")]
-  
+
   print("Reading histogram {0} from file {1}".format(hist_TP.GetName(), file_TP_path))
 
   hist_TP.SetLineWidth(2)
   hist_TP.SetMarkerSize(1.0)
- 
+
   hist_TP.GetYaxis().SetTitle("efficiency")
 
   hist_TP.GetXaxis().SetTitleOffset(1.0)
@@ -125,14 +130,20 @@ def plotter_r():
   hist_TP.GetYaxis().SetRangeUser(0.4,1.0)
 
   # -------------------------------------------
-  
-  file_LH_path = ( "../OutputPlots_MMRates_LHFit_2DPt/6x6bins/LH_efficiencies_real_el.root", "../OutputPlots_MMRates_LHFit_2DPt/6x6bins/LH_efficiencies_real_mu.root" )[bool(args.flavour == "mu")]
+
+  #LH_init_path = "../OutputPlots_MMRates_LHFit_2DPt/6x6bins/"
+
+  #LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_NoSub/"
+  LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub/"
+
+  file_LH_path = ( LH_init_path + "LH_efficiencies_real_el.root", LH_init_path + "LH_efficiencies_real_mu.root" )[bool(args.flavour == "mu")]
+
   file_LH = TFile(file_LH_path)
 
   hist_LH = file_LH.Get("r_hist")
-  
+
   print("Reading histogram {0} from file {1}".format(hist_LH.GetName(), file_LH_path))
-  
+
   hist_LH.SetLineWidth(2)
   hist_LH.SetMarkerSize(1.0)
 
@@ -148,14 +159,14 @@ def plotter_r():
 
   hist_TP.SetLineColor(kRed)
   hist_TP.SetMarkerColor(kRed)
-  
+
   hist_LH.SetLineColor(kBlue)
   hist_LH.SetMarkerColor(kBlue)
 
   # -------------------------------------------
 
   c = TCanvas("c1","Temp",50,50,1000,900)
-     
+
   legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
   legend.SetHeader("#epsilon_{real}")
   legend.SetBorderSize(0)  # no border
@@ -171,10 +182,10 @@ def plotter_r():
 
   hist_TP.Draw("E0")
   hist_LH.Draw("E0,SAME")
-	  
+
   legend.AddEntry(hist_TP, "Tag & Probe", "P")
   legend.AddEntry(hist_LH, "Likelihood", "P")
-     
+
   legend.Draw()
   leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
   leg_lumi.DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}")
@@ -188,16 +199,20 @@ def plotter_r():
 
 def plotter_f():
 
-  file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput_3x3bins/Rates.root"
+  #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput_3x3bins/Rates.root"
+
+  #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_NoSub_LHInput/Rates.root"
+  file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+
   file_TP = TFile(file_TP_path)
-  
+
   hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_observed") )[bool(args.flavour == "mu")]
 
   print("Reading histogram {0} from file {1}".format(hist_TP.GetName(), file_TP_path))
-  
+
   hist_TP.SetLineWidth(2)
   hist_TP.SetMarkerSize(1.0)
- 
+
   hist_TP.GetYaxis().SetTitle("efficiency")
 
   hist_TP.GetXaxis().SetTitleOffset(1.0)
@@ -208,14 +223,20 @@ def plotter_f():
 
   # -------------------------------------------
 
-  file_LH_path = ( "../OutputPlots_MMRates_LHFit_2DPt/3x3bins/LH_efficiencies_fake_el.root", "../OutputPlots_MMRates_LHFit_2DPt/3x3bins/LH_efficiencies_fake_mu.root" )[bool(args.flavour == "mu")]
+  #LH_init_path = "../OutputPlots_MMRates_LHFit_2DPt/3x3bins/"
+
+  #LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_NoSub/"
+  LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub/"
+
+  file_LH_path = ( LH_init_path + "LH_efficiencies_fake_el.root", LH_init_path + "LH_efficiencies_fake_mu.root" )[bool(args.flavour == "mu")]
+
   file_LH = TFile(file_LH_path)
 
   hist_LH = file_LH.Get("f_hist")
-  
+
   print("Reading histogram {0} from file {1}".format(hist_LH.GetName(), file_LH_path))
-  
-  
+
+
   hist_LH.SetLineWidth(2)
   hist_LH.SetMarkerSize(1.0)
 
@@ -231,14 +252,14 @@ def plotter_f():
 
   hist_TP.SetLineColor(kRed)
   hist_TP.SetMarkerColor(kRed)
-  
+
   hist_LH.SetLineColor(kBlue)
   hist_LH.SetMarkerColor(kBlue)
 
   # -------------------------------------------
 
   c = TCanvas("c1","Temp",50,50,1000,900)
-     
+
   legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
   legend.SetHeader("#epsilon_{fake}")
   legend.SetBorderSize(0)  # no border
@@ -254,10 +275,10 @@ def plotter_f():
 
   hist_TP.Draw("E0")
   hist_LH.Draw("E0,SAME")
-	  
+
   legend.AddEntry(hist_TP, "Tag & Probe", "P")
   legend.AddEntry(hist_LH, "Likelihood", "P")
-     
+
   legend.Draw()
   leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
   leg_lumi.DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}")
@@ -268,7 +289,6 @@ def plotter_f():
 
 # ----------------
 
-#plotter_r()
-#plotter_f()
-
-plot2Dhist()
+plotter_r()
+plotter_f()
+#plot2Dhist()

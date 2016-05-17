@@ -34,7 +34,7 @@ parser.add_argument("--usePrediction", metavar="DATA_TYPE", dest="usePrediction"
 parser.add_argument("--debug", dest="debug", action="store_true",
 		    help="run in debug mode")
 parser.add_argument("--doBkgSub", dest="doBkgSub", action="store_true",
-		    help="subtract prompt MC in fake region (only if using DATA)")
+		    help="subtract MC to data (only if using DATA)")
 parser.add_argument("--rebinEta", dest="rebinEta", action="store_true",default=False,
 		    help="do rebinning in eta")
 parser.add_argument("--rebinPt", dest="rebinPt", action="store_true",default=False,
@@ -79,7 +79,7 @@ dict_channels_lep = {
 
 list_lep         = dict_channels_lep[args.flavourComp]
 list_types       = ["Real","Fake"]
-list_variables   = ["ProbePt"]#["ProbeEta","ProbePt"] #,"ProbeNJets"]
+list_variables   = ["ProbePt"] #["ProbeEta","ProbeNJets"]
 list_selections  = ["T","L"]
 list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                               # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
@@ -192,43 +192,43 @@ for iLep in list_lep:
 		       if iType == "Fake":
 
                           if iLep == "Mu":
-                             
-			     # standard binning
+
+			     # nominal binning
 			     #
-			     #nBIN  = 6
-                             #xbins = [10,15,20,25,35,50,200]
-			     
+			     nBIN  = 5
+                             xbins = [10,15,20,25,35,200] # merged bin [50,200]
+
                              #nBIN = 5
 			     #xbins = [10,15,20,25,40,200]
-			     
-                             nBIN = 2
-			     xbins = [10,50,90]
-				     
+
+                             #nBIN = 2
+			     #xbins = [10,50,90]
+
 			  elif iLep == "El":
 
 			     # standard binning
-			     #                             
-			     #nBIN  = 6
-                             #xbins = [10,15,20,25,40,60,200]
-			     
+			     #
+			     nBIN  = 5
+                             xbins = [10,15,20,25,40,200] # merged bin [60,200]
+
                              #nBIN  = 5
                              #xbins = [10,15,20,25,40,200]
 
-                             nBIN = 2
-			     xbins = [10,50,90]
+                             #nBIN = 2
+			     #xbins = [10,50,90]
 
                        elif iType == "Real":
 
 			  # standard binning
-			  # 
-			  #nBIN  = 7
-                  	  #xbins = [10,15,20,25,30,40,60,200]
-			  
+			  #
+			  nBIN  = 7
+                  	  xbins = [10,15,20,25,30,40,60,200]
+
 			  #nBIN  = 5
                   	  #xbins = [10,15,20,25,40,200]
 
-                          nBIN = 2
-			  xbins = [10,60,110]
+                          #nBIN = 2
+			  #xbins = [10,60,110]
 
                        vxbins = array.array("d", xbins)
 		       print "\t\t\t\t\t vxbins: ",vxbins
@@ -266,7 +266,7 @@ for iLep in list_lep:
 		 name = None
 
 		 if ( iType == "Fake" ):
-		     
+
 		     name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1] # --> "observed"
 
 		     print "\t\t\t\t subtracting events w/ prompt/ch-flip probe lepton to data in Fake CR..."
@@ -282,7 +282,7 @@ for iLep in list_lep:
 		        print "\t\t\t\t Integral after sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1)
 
 		 elif ( iType == "Real" ):
-		    
+
 		     name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1] # --> "observed"
 
 		     print "\t\t\t\t subtracting events w/ !prompt/ch-flip probe lepton to data in Real CR..."
