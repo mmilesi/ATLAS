@@ -81,7 +81,7 @@ void PlotRateEff( pair<string,string>& SAMPLE,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  variables.push_back("Eta");
+  //variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
@@ -125,7 +125,7 @@ void PlotRateEff( pair<string,string>& SAMPLE,
       legend->AddEntry((TObject*)0, "", ""); // add an empty line
       legend->SetBorderSize(0);   // no border
       //legend->SetFillColor(0);   // Legend background should be white
-      legend->SetFillStyle(0);    // Legend transparent background     
+      legend->SetFillStyle(0);    // Legend transparent background
       legend->SetTextSize(0.035); // Increase entry font size!
       legend->SetTextFont(42);    // Helvetica
 
@@ -310,11 +310,11 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
       canvas->SetFrameBorderMode(0);
 
       //TLegend *legend = new TLegend(0.68,0.6,0.925,0.8); // (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
-      TLegend *legend = new TLegend(0.45,0.5,0.925,0.8); // (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )      
+      TLegend *legend = new TLegend(0.45,0.5,0.925,0.8); // (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
       legend->AddEntry((TObject*)0, "", ""); // add an empty line
       legend->SetBorderSize(0);   // no border
       //legend->SetFillColor(0);  // Legend background should be white
-      legend->SetFillStyle(0);    // Legend transparent background     
+      legend->SetFillStyle(0);    // Legend transparent background
       legend->SetTextSize(0.035); // Increase entry font size!
       legend->SetTextFont(42);    // Helvetica
 
@@ -517,7 +517,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
       legend->AddEntry((TObject*)0, "", ""); // add an empty line
       legend->SetBorderSize(0);   // no border
       //legend->SetFillColor(0);   // Legend background should be white
-      legend->SetFillStyle(0);    // Legend transparent background     
+      legend->SetFillStyle(0);    // Legend transparent background
       legend->SetTextSize(0.035); // Increase entry font size!
       legend->SetTextFont(42);    // Helvetica
 
@@ -652,10 +652,12 @@ void execute() {
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Data");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","MC t#bar{t}");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_MCQMisID_NoZminCut_DataOnly/","Data - No sub.");
-  pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoTruth/","MC t#bar{t} - No sub.");  
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoTruth/","MC t#bar{t} - No sub.");
+  pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","Data - bkg sub.");
 
   //PlotRateEff(my_pair);
-  PlotRateEff(my_pair,"MC");
+  //PlotRateEff(my_pair,"MC");
+  PlotRateEff(my_pair,"Data","Inclusive","Efficiency","png");
 
 }
 
@@ -696,7 +698,7 @@ void execute_DiffSamples() {
 
   //vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Data - OLR on loose"));
   //vec.push_back(make_pair("../OutputPlots_MMRates_v031_DDQmisID/","Data - OLR on tight"));
-  
+
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - OF+SF - No sub."));
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID_BabarSub/Rates_NoSub/","Data - Babar sel. - No sub."));
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - OF+SF - Prompt & QMisID Sub."));
@@ -706,7 +708,7 @@ void execute_DiffSamples() {
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_OFplusSF_Zjets/","Z/#gamma* + jets - OF + SF"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_OFplusSF_AllMC/","All MC - OF + SF"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_ZjetsCR_Zjets/","Z/#gamma* + jets - Z CR"));
-  
+
   vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_NoSub/","Data - No sub."));
   vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_ProbeSub/","Data - (!Prompt & QMisID) Sub."));
 

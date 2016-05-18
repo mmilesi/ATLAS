@@ -60,7 +60,7 @@ def plot2Dhist():
   flavours     = ["ElEl","MuMu"]
 
   #input_path = "../OutputPlots_MMRates_LHFit_2DPt/"
-  input_path = "../OutputPlots_MMRates_LHFit_2DPt_NominalBinning/"
+  input_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/"
 
   set_fancy_2D_style()
 
@@ -289,6 +289,6 @@ def plotter_f():
 
 # ----------------
 
-plotter_r()
-plotter_f()
-#plot2Dhist()
+#plotter_r()
+#plotter_f()
+plot2Dhist()

@@ -55,7 +55,7 @@ parser.add_argument('--outdirname', dest='outdirname', action='store', default='
 parser.add_argument('--fakeMethod', dest='fakeMethod', action='store', default='MC', type=str,
 		    help='The fake estimation method chosen ({0})'.format(list_available_fakemethod))
 parser.add_argument('--lepFlavComp', dest='lepFlavComp', action='store', default=None, type=str,
-                    help='Flavour composition of the dilepton pair used for efficiency measurement. Use w/ option --channel=MMRates,MMClosureRates. Default is \'INCLUSIVE\' ({0})'.format(list_available_flavcomp))
+                    help='Flavour composition of the dilepton pair used for efficiency measurement. Use w/ option --channel=MMRates,MMClosureRates. Default is None ({0})'.format(list_available_flavcomp))
 parser.add_argument('--doLogScaleX', dest='doLogScaleX', action='store_true',
                     help='Use log scale on the X axis')
 parser.add_argument('--doLogScaleY', dest='doLogScaleY', action='store_true',
@@ -1202,19 +1202,27 @@ if doMMClosureTest:
 
 if doMMRatesLHFit:
 
-   truth_sub_SS = vardb.getCut('2Lep_PurePromptEvent')     # Subtract events w/ both prompt leptons, and no QMisID. This assumes QMisID will be estimated from data on top of this
-   truth_sub_OS = ( vardb.getCut('2Lep_NonPromptEvent') )  # Subtract events w/ at least one non-prompt, and no QMisID. This assumes no QMisID electrons in OS region
+   # For measurement in data: do subtraction
+   #
+   #truth_sub_OS = ( vardb.getCut('2Lep_NonPromptEvent') )  # Subtract events w/ at least one non-prompt, and no QMisID. This assumes no QMisID electrons in OS region
+   #truth_sub_SS = ( vardb.getCut('2Lep_PurePromptEvent') ) # Subtract events w/ both prompt leptons, and no QMisID. This assumes QMisID will be estimated from data on top of this
+
+   # For closure rates
+   #
+   # This is not really a subtraction --> it's really a truth selection
+   truth_sub_OS = ( vardb.getCut('2Lep_PurePromptEvent') ) # both leptons be real
+   truth_sub_SS = ( vardb.getCut('2Lep_NonPromptEvent') )  # at least one lepton is fake, and none is charge flip
 
    # Real CR - SF
    #
    if ( args.lepFlavComp == "SF" or args.lepFlavComp == "INCLUSIVE" ):
        print ""
-       """
+       #"""
        vardb.registerCategory( MyCategory('OS_ElEl_TT',	cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElEl_Event','TT','2Lep_ElEtaCut','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ) ) )
        vardb.registerCategory( MyCategory('OS_ElEl_TL',	cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElEl_Event','TL','2Lep_ElEtaCut','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ) ) )
        vardb.registerCategory( MyCategory('OS_ElEl_LT',	cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElEl_Event','LT','2Lep_ElEtaCut','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ) ) )
        vardb.registerCategory( MyCategory('OS_ElEl_LL',	cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElEl_Event','LL','2Lep_ElEtaCut','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ) ) )
-       """
+       #"""
        #"""
        vardb.registerCategory( MyCategory('OS_MuMu_TT',	cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuMu_Event','TT','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ) ) )
        vardb.registerCategory( MyCategory('OS_MuMu_TL',	cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuMu_Event','TL','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ) ) )
@@ -1242,12 +1250,12 @@ if doMMRatesLHFit:
    # """
    if ( args.lepFlavComp == "SF" or args.lepFlavComp == "INCLUSIVE" ):
        print ""
-       """
+       #"""
        vardb.registerCategory( MyCategory('SS_ElEl_TT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElEl_Event','TT','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_Zmincut']) & truth_sub_SS ) ) )
        vardb.registerCategory( MyCategory('SS_ElEl_TL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElEl_Event','TL','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_Zmincut']) & truth_sub_SS ) ) )
        vardb.registerCategory( MyCategory('SS_ElEl_LT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElEl_Event','LT','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_Zmincut']) & truth_sub_SS ) ) )
        vardb.registerCategory( MyCategory('SS_ElEl_LL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElEl_Event','LL','2Lep_Zsidescut','2Lep_ElEtaCut','2Lep_Zmincut']) & truth_sub_SS ) ) )
-       """
+       #"""
        #"""
        vardb.registerCategory( MyCategory('SS_MuMu_TT',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuMu_Event','TT','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
        vardb.registerCategory( MyCategory('SS_MuMu_TL',    cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuMu_Event','TL','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
@@ -1506,7 +1514,7 @@ if doMMRates:
        ttH2015.backgrounds  = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Top'] #,'Wjets'
 
 if doMMRatesLHFit:
-
+    """
     ttH2015.signals     = ['TTBarH']
     ttH2015.observed    = ['Observed']
     plotbackgrounds	= ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Top'] # ,'Wjets'
@@ -1518,6 +1526,11 @@ if doMMRatesLHFit:
     else:
       plotbackgrounds.append('ChargeFlip')
       ttH2015.backgrounds.append('ChargeFlip')
+    """
+    ttH2015.signals	= []
+    ttH2015.observed    = []
+    plotbackgrounds     = ['TTBar']
+    ttH2015.backgrounds = ['TTBar']
 
     #ttH2015.signals     = []
     #ttH2015.observed    = ['Observed']
@@ -1549,11 +1562,11 @@ if doMMClosureRates:
 
       ttH2015.signals	  = []
       ttH2015.observed    = []
-      #plotbackgrounds     = ['TTBar']
-      #ttH2015.backgrounds = ['TTBar']
+      plotbackgrounds     = ['TTBar']
+      ttH2015.backgrounds = ['TTBar']
 
-      plotbackgrounds	 = ['Zjets']
-      ttH2015.backgrounds = ['Zjets']
+      #plotbackgrounds	 = ['Zjets']
+      #ttH2015.backgrounds = ['Zjets']
 
       #plotbackgrounds	 = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Top']
       #ttH2015.backgrounds = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Top']
