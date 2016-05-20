@@ -57,7 +57,7 @@ TH1D* get_hist( TFile& file, const std::string& name ) {
 /
 ********************************************** */
 
-void read_rates(const std::string rr_dir, const std::string fr_dir = "")
+void read_rates(const std::string rr_dir, const std::string fr_dir )
 {
 
   std::string glob_path("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/");
@@ -223,22 +223,22 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
 
   // eta hist has same binning for r/f
   //
-  g_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX();
-  g_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX();
+  g_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX()+1;
+  g_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX()+1;
 
   // pt hist has two different binning for r/f
   //
-  g_n_el_bins_pt_rr =  hist_el_pt_rr->GetNbinsX();
-  g_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX();
-  g_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX();
-  g_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX();
+  g_n_el_bins_pt_rr =  hist_el_pt_rr->GetNbinsX()+1;
+  g_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX()+1;
+  g_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX()+1;
+  g_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX()+1;
 
-  // normalistaion factor is the same for eta and pt r/f histograms: use eta
+  // normalisation factor is the same for eta and pt r/f histograms: use eta
   //
-  g_el_rr_tot = ( hist_el_eta_r_T->Integral() ) / ( hist_el_eta_r_L->Integral() );
-  g_el_fr_tot = ( hist_el_eta_f_T->Integral() ) / ( hist_el_eta_f_L->Integral() );
-  g_mu_rr_tot = ( hist_mu_eta_r_T->Integral() ) / ( hist_mu_eta_r_L->Integral() );
-  g_mu_fr_tot = ( hist_mu_eta_f_T->Integral() ) / ( hist_mu_eta_f_L->Integral() );
+  g_el_rr_tot = ( hist_el_eta_r_T->Integral(1,hist_el_eta_r_T->GetNbinsX()+1) ) / ( hist_el_eta_r_L->Integral(1,hist_el_eta_r_L->GetNbinsX()+1) );
+  g_el_fr_tot = ( hist_el_eta_f_T->Integral(1,hist_el_eta_f_T->GetNbinsX()+1) ) / ( hist_el_eta_f_L->Integral(1,hist_el_eta_f_L->GetNbinsX()+1) );
+  g_mu_rr_tot = ( hist_mu_eta_r_T->Integral(1,hist_mu_eta_r_T->GetNbinsX()+1) ) / ( hist_mu_eta_r_L->Integral(1,hist_mu_eta_r_L->GetNbinsX()+1) );
+  g_mu_fr_tot = ( hist_mu_eta_f_T->Integral(1,hist_mu_eta_f_T->GetNbinsX()+1) ) / ( hist_mu_eta_f_L->Integral(1,hist_mu_eta_f_L->GetNbinsX()+1) );
 
 }
 
@@ -406,7 +406,7 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
   } // close loop on eta bins
 
-  // Now converting rates to the factors for the MM/FF
+  // Now converting rates to the efficiencies for the MM/FF
   //
   if ( g_verbose ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
@@ -418,181 +418,6 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
   return weights;
 }
-//*/
-/* ********************************************************
-/
-/ Function to calculate r/f weights and their unceratinties
-/ (DIFFERENT TREATMENT FOR OVERFLOW BIN)
-/
-******************************************************** */
-/*
-std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
-				   float pt,
-				   float eta,
-				   bool isFakeLep,
-				   int n_bins_eta,
-				   int n_bins_pt_fr,
-				   int n_bins_pt_rr,
-				   double fr_tot,
-				   double rr_tot
-				  )
-{
-
-  // Read the real/fake rates from input histograms
-  //
-  // Will eventually convert these to real/fake FACTORS
-
-  // As a first thing, convert pT in GeV!
-  //
-  pt = pt/1e3;
-
-  std::vector<double> weights(3,0.0); //initialized with zeroes
-
-  weights.at(0) = 1.0;
-  double error(0.0);
-
-  TH1D* h_eta_rr = histograms.find("eta_rr")->second;
-  TH1D* h_eta_fr = histograms.find("eta_fr")->second;
-  TH1D* h_pt_rr  = histograms.find("pt_rr")->second;
-  TH1D* h_pt_fr  = histograms.find("pt_fr")->second;
-
-  // loop over number of eta bins
-  // do not consider underflow, i.e. 0th bin
-  //
-  // NB: this works assuming the binning for h_eta_rr and h_eta_fr is the same
-  //
-  bool isEtaPastBinOverFlow(false);
-  for ( int e = 1; e <= n_bins_eta; e++ ) {
-
-    // if next bin is the overflow bin, and eta under question
-    // is >= lower edge of o.f. bin, switch on a flag
-    //
-    if ( h_eta_rr->IsBinOverflow(e+1) && fabs(eta) >= h_eta_rr->GetXaxis()->GetBinLowEdge(e+1) ) {
-      isEtaPastBinOverFlow = true;
-    }
-
-    // check whether the eta under question is in *this* eta range
-    //
-    if ( ( ( fabs(eta) >= h_eta_rr->GetXaxis()->GetBinLowEdge(e) ) && ( fabs(eta) < h_eta_rr->GetXaxis()->GetBinLowEdge(e+1) ) ) || isEtaPastBinOverFlow ) {
-
-      // case 1) : lepton is fake: choose correct pt histogram
-      //
-      if ( isFakeLep ) {
-
-	// loop over number of pt bins
-        // do not consider underflow, i.e. 0th bin
-        //
-	bool isPtPastBinOverFlow(false);
-        for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
-
-	  // if next bin is the overflow bin, and pt under question
-	  // is >= lower edge of o.f. bin, switch on a flag
-	  //
-	  if ( h_pt_fr->IsBinOverflow(p+1) && pt >= h_pt_fr->GetXaxis()->GetBinLowEdge(p+1) ) {
-	    isPtPastBinOverFlow = true;
-	  }
-
-	  if ( ( ( pt >= h_pt_fr->GetXaxis()->GetBinLowEdge(p) ) && ( pt < h_pt_fr->GetXaxis()->GetBinLowEdge(p+1) ) ) || isPtPastBinOverFlow ) {
-
-	    // combine eta and pt rates
-	    // (NB: if eta/pt under question are >= o.f. bin, apply the rate of the last bin before o.f.)
-	    //
-	    double fr_pt  = ( !isPtPastBinOverFlow )  ? h_pt_fr->GetBinContent(p)  : h_pt_fr->GetBinContent(n_bins_pt_fr);
-	    double fr_eta = ( !isEtaPastBinOverFlow ) ? h_eta_fr->GetBinContent(e) : h_eta_fr->GetBinContent(n_bins_eta);
-
-	    double fr_pt_err  = ( !isPtPastBinOverFlow )  ? h_pt_fr->GetBinError(p)  : h_pt_fr->GetBinError(n_bins_pt_fr);
-	    double fr_eta_err = ( !isEtaPastBinOverFlow ) ? h_eta_fr->GetBinError(e) : h_eta_fr->GetBinError(n_bins_eta);
-
-	    // nominal
-	    //
-	    weights.at(0) = ( fr_pt * fr_eta ) / fr_tot;
-
-	    // (assuming  fr_pt,fr_eta are independent) this is the error on the product
-	    // ( the constant factor at denominator will be put back later in the def of weight...
-	    //
-	    error  = sqrt( (fr_eta*fr_pt_err)*(fr_eta*fr_pt_err) + (fr_pt*fr_eta_err)*(fr_pt*fr_eta_err) );
-
-	    // up syst
-	    //
-	    weights.at(1) = ( (fr_pt * fr_eta) + error ) / fr_tot;
-
-	    // down syst
-	    //
-	    if ( (fr_pt * fr_eta) - error > 0 ) { weights.at(2) = ( (fr_pt * fr_eta) - error ) / fr_tot;}
-	    else                                { weights.at(2) = 0.0; }
-
-	  }
-
-	} // close loop on pT bins: fake lepton
-
-	// lepton is real: choose correct pt histogram
-	//
-      } else {
-
-	// loop over number of pt bins
-        // do not consider underflow, i.e. 0th bin
-        //
-	bool isPtPastBinOverFlow(false);
-        for ( int p = 1; p <= n_bins_pt_rr; p++ ) {
-
-	  // if next bin is the overflow bin, and pt under question
-	  // is >= lower edge of o.f. bin, switch on a flag
-	  //
-	  if ( h_pt_rr->IsBinOverflow(p+1) && pt >= h_pt_rr->GetXaxis()->GetBinLowEdge(p+1) ) {
-	    isPtPastBinOverFlow = true;
-	  }
-
-	  if ( ( ( pt >= h_pt_rr->GetXaxis()->GetBinLowEdge(p) ) && ( pt < h_pt_rr->GetXaxis()->GetBinLowEdge(p+1) ) ) || isPtPastBinOverFlow ) {
-
-	    // combine eta and pt rates
-	    // (NB: if eta/pt under question are >= o.f. bin, apply the rate of the last bin before o.f.)
-	    //
-	    double rr_pt  = ( !isPtPastBinOverFlow )  ? h_pt_rr->GetBinContent(p)  : h_pt_rr->GetBinContent(n_bins_pt_rr);
-	    double rr_eta = ( !isEtaPastBinOverFlow ) ? h_eta_rr->GetBinContent(e) : h_eta_rr->GetBinContent(n_bins_eta);
-
-	    double rr_pt_err  = ( !isPtPastBinOverFlow )  ? h_pt_rr->GetBinError(p)  : h_pt_rr->GetBinError(n_bins_pt_rr);
-	    double rr_eta_err = ( !isEtaPastBinOverFlow ) ? h_eta_rr->GetBinError(e) : h_eta_rr->GetBinError(n_bins_eta);
-
-	    // nominal
-	    //
-	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
-
-	    // (assuming  rr_pt,rr_eta are independent) this is the error on the product
-	    // ( the constant factor at denominator will be put back in the def of weight...
-	    //
-	    error  = sqrt( (rr_eta*rr_pt_err)*(rr_eta*rr_pt_err) + (rr_pt*rr_eta_err)*(rr_pt*rr_eta_err) );
-
-	    // up syst
-	    //
-	    weights.at(1) = ( (rr_pt * rr_eta) + error ) / rr_tot;
-
-	    // down syst
-	    //
-	    if ( (rr_pt * rr_eta) - error > 0 ) { weights.at(2) = ( (rr_pt * rr_eta) - error ) / rr_tot; }
-	    else                                { weights.at(2) = 0.0; }
-
-	  }
-        } // close loop on pT bins: real lepton
-
-      } // close check isFakeLep
-
-    } // close check on eta bin
-
-  } // close loop on eta bins
-
-  // Now converting rates to the factors for the MM/FF
-  //
-  if ( g_debug ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
-
-  weights.at(0) = scaleRateToEfficiency(weights.at(0));
-  weights.at(1) = scaleRateToEfficiency(weights.at(1));
-  weights.at(2) = scaleRateToEfficiency(weights.at(2));
-
-  if ( g_debug ) { Info("calc_weights()", "MM/FF factor = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
-
-  return weights;
-}
-*/
 
 /* ***************************************************************************************
 /
@@ -622,7 +447,7 @@ double calc_final_event_weight( std::string region, double f1, double f2, double
 /
 ******************************************** */
 
-void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you are going to modify it! */
+void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you are going to modify it! */
      		   Int_t	        isTT,
      		   Int_t	        isTL,
      		   Int_t	        isLT,
@@ -695,7 +520,7 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
 
   // update branch for nominal MM weight
   //
-  MMW_new->at(0) = mm_weight;
+  MMW_out->at(0) = mm_weight;
 
   if ( g_debug ) { Info("recomputeMMW()", "MM final weight = %f ", mm_weight ); }
 
@@ -715,15 +540,15 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
 
     // rup syst
     //
-    MMW_new->at(1) = ( calc_final_event_weight( region, f1.at(0), f2.at(0), r1up, r2up ) / mm_weight );
+    MMW_out->at(1) = ( calc_final_event_weight( region, f1.at(0), f2.at(0), r1up, r2up ) / mm_weight );
     // fdn syst
     //
-    MMW_new->at(4) = ( calc_final_event_weight( region, f1dn, f2dn, r1.at(0), r2.at(0) ) / mm_weight );
+    MMW_out->at(4) = ( calc_final_event_weight( region, f1dn, f2dn, r1.at(0), r2.at(0) ) / mm_weight );
 
     if ( (r1dn > f1.at(0)) && (r2dn > f2.at(0)) ) {
       // rdn syst
       //
-      MMW_new->at(2) = ( calc_final_event_weight(region, f1.at(0), f2.at(0), r1dn, r2dn) / mm_weight );
+      MMW_out->at(2) = ( calc_final_event_weight(region, f1.at(0), f2.at(0), r1dn, r2dn) / mm_weight );
     } else {
       if ( g_debug ) {
          Warning("recomputeMMW()", "Warning! Systematic MMWeight_rdn cannot be calculated because : \n r1dn = %f , r2dn = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", r1dn, r2dn,  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
@@ -733,7 +558,7 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
     if ( (r1.at(0) > f1up) && (r2.at(0) > f2up) ) {
       // fup syst
       //
-      MMW_new->at(3) = ( calc_final_event_weight(region, f1up, f2up, r1.at(0),  r2.at(0)) / mm_weight );
+      MMW_out->at(3) = ( calc_final_event_weight(region, f1up, f2up, r1.at(0),  r2.at(0)) / mm_weight );
     } else {
       if ( g_debug ) {
          Warning("recomputeMMW()", "Warning! Systematic MMWeight_fup cannot be calculated because : \n r1dn = %f , r2dn = %f , f1 = %f , f2 = %f \n ,given that pt1 = %f , eta1 = %f , pt2 = %f , eta2 = %f ", r1dn, r2dn,  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
@@ -747,24 +572,25 @@ void recomputeMMW( std::vector<double>* MMW_new,  /* pass it by pointer, as you 
 /
 / The 'main' function
 /
+/ This script loads a tree, clones it, removes a branch and substitutes it with another.
+/ The branch can also have the same name and in this way you can change for example the type of the variable or the content.
+/
 ****************** */
 
-void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES = "ALL", std::string treename= "physics", std::string newfilename = "output.root")
+void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES = "ALL", std::string treename= "physics", std::string outfilename = "output.root", std::string RR_dir = "", std::string FR_dir = "")
 {
-  // This script loads a tree, clones it, removes a branch and substitutes it with another.
-  // The branch can also have the same name and in this way you can change for example the type of the variable or the content.
 
-  Info("modifytree()","Starting off...");
+  Info("modifytree_MM()","Starting off...");
 
-  //Get old file, old tree and set top branch address
+  //Get in file, in tree and set top branch address
   //
-  TFile *oldfile = new TFile(filename.c_str());
-  TTree *oldtree = (TTree*)oldfile->Get(treename.c_str());
+  TFile *infile = new TFile(filename.c_str());
+  TTree *intree = (TTree*)infile->Get(treename.c_str());
 
   Long64_t nentries;
 
   if ( NENTRIES == "ALL" ) {
-     nentries = oldtree->GetEntries();
+     nentries = intree->GetEntries();
   } else {
      std::stringstream ss; ss << NENTRIES;
      int n_e;              ss >> n_e;
@@ -773,107 +599,91 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
 
   // TO BE MODIFIED ACCORDINGLY TO YOUR NEEDS (name and type of the variables)
   //
-  std::string old_eventNumber_name("eventNumber");
-  std::string old_nlep_name("nlep");
-  std::string old_isSS01_name("isSS01");
-  std::string old_isTT_name("is_T_T");
-  std::string old_isTL_name("is_T_AntiT");
-  std::string old_isLT_name("is_AntiT_T");
-  std::string old_isLL_name("is_AntiT_AntiT");
-  std::string old_MMWeight_name("MMWeight");
-  std::string old_lep_pt_name("lep_pt");
-  std::string old_lep_eta_name("lep_eta");
-  std::string old_lep_flavour_name("lep_flavour");
-  std::string old_lep_isT_name("lep_isTightSelected");
+  std::string in_eventNumber_name("eventNumber");
+  std::string in_nlep_name("nlep");
+  std::string in_isSS01_name("isSS01");
+  std::string in_isTT_name("is_T_T");
+  std::string in_isTL_name("is_T_AntiT");
+  std::string in_isLT_name("is_AntiT_T");
+  std::string in_isLL_name("is_AntiT_AntiT");
+  std::string in_MMWeight_name("MMWeight");
+  std::string in_lep_pt_name("lep_pt");
+  std::string in_lep_eta_name("lep_caloCluster_eta");
+  std::string in_lep_flavour_name("lep_flavour");
+  std::string in_lep_isT_name("lep_isTightSelected");
 
-  Long64_t               eventNumber_old; eventNumber_old = -1;
-  Int_t                  nlep_old;        nlep_old = -1;
-  Int_t                  isSS01_old;      isSS01_old = -1;
-  Int_t 	         isTT_old;        isTT_old = -1;
-  Int_t 	         isTL_old;        isTL_old = -1;
-  Int_t 	         isLT_old;        isLT_old = -1;
-  Int_t 	         isLL_old;        isLL_old = -1;
-  std::vector<double>*   MMWeight_old;    MMWeight_old = 0;
-  std::vector<float>*    lep_pt_old;      lep_pt_old = 0;
-  std::vector<float>*    lep_eta_old;     lep_eta_old = 0;
-  std::vector<int>*      lep_flavour_old; lep_flavour_old = 0;
-  std::vector<int>*      lep_isT_old;     lep_isT_old = 0;
+  Long64_t               eventNumber_in; eventNumber_in = -1;
+  Int_t                  nlep_in;        nlep_in = -1;
+  Int_t                  isSS01_in;      isSS01_in = -1;
+  Int_t 	         isTT_in;        isTT_in = -1;
+  Int_t 	         isTL_in;        isTL_in = -1;
+  Int_t 	         isLT_in;        isLT_in = -1;
+  Int_t 	         isLL_in;        isLL_in = -1;
+  std::vector<double>*   MMWeight_in;    MMWeight_in = 0;
+  std::vector<float>*    lep_pt_in;      lep_pt_in = 0;
+  std::vector<float>*    lep_eta_in;     lep_eta_in = 0;
+  std::vector<int>*      lep_flavour_in; lep_flavour_in = 0;
+  std::vector<int>*      lep_isT_in;     lep_isT_in = 0;
 
-  // List of old branches
+  // List of in branches
   //
   TBranch        *b_eventNumber = 0;      //!
-  TBranch	 *b_nlep_old    = 0;      //!
-  TBranch        *b_isSS01_old = 0;       //!
-  TBranch	 *b_isTT = 0;    	  //!
-  TBranch	 *b_isTL = 0;    	  //!
-  TBranch	 *b_isLT = 0;    	  //!
-  TBranch	 *b_isLL = 0;    	  //!
-  TBranch        *b_MMWeight_old = 0;     //!
-  TBranch	 *b_lep_pt_old = 0;       //!
-  TBranch	 *b_lep_eta_old = 0;      //!
-  TBranch	 *b_lep_flavour_old = 0;  //!
-  TBranch        *b_lep_isT_old = 0;      //!
+  TBranch	 *b_nlep    = 0;          //!
+  TBranch        *b_isSS01 = 0;           //!
+  TBranch	 *b_is_T_T = 0;    	  //!
+  TBranch	 *b_is_T_AntiT = 0;    	  //!
+  TBranch	 *b_is_AntiT_T = 0;    	  //!
+  TBranch	 *b_is_AntiT_AntiT = 0;   //!
+  TBranch        *b_MMWeight = 0;         //!
+  TBranch	 *b_lep_pt = 0;           //!
+  TBranch	 *b_lep_eta = 0;          //!
+  TBranch	 *b_lep_flavour = 0;      //!
+  TBranch        *b_lep_isTightSelected = 0;   //!
 
-  // Before cloning input TTree, tell ROOT to process all the old branches,
+  // Before cloning input TTree, tell ROOT to process all the in branches,
   // except for the one you want to change
   //
-  oldtree->SetBranchStatus("*",1);
-  oldtree->SetBranchStatus(old_MMWeight_name.c_str(),0);
+  intree->SetBranchStatus("*",1);
+  intree->SetBranchStatus(in_MMWeight_name.c_str(),0);
 
-  std::string new_MMWeight_name("MMWeight");
-  std::vector<double>*   MMWeight_new;  MMWeight_new = 0;
+  std::string out_MMWeight_name("MMWeight");
+  std::vector<double>*   MMWeight_out;  MMWeight_out = 0;
 
-  // Create a new file + a clone of old tree in new file
+  // Create a new file + a clone of in tree in new file
   //
-  TFile *newfile = new TFile(newfilename.c_str(),"RECREATE");
-  TTree *newtree = oldtree->CloneTree(0); //clone only the structure
+  TFile *outfile = new TFile(outfilename.c_str(),"RECREATE");
+  TTree *outtree = intree->CloneTree(0); //clone only the structure
 
   // MUST re-activate the branch(es) previously deactivated before calling SetBranchAddress()!!
   //
-  oldtree->SetBranchStatus(old_MMWeight_name.c_str(),1);
+  intree->SetBranchStatus(in_MMWeight_name.c_str(),1);
 
   // Get branches from input TTree
   //
-  oldtree->SetBranchAddress(old_eventNumber_name.c_str(), &eventNumber_old, &b_eventNumber);
-  oldtree->SetBranchAddress(old_nlep_name.c_str(), &nlep_old, &b_nlep_old);
-  oldtree->SetBranchAddress(old_isSS01_name.c_str(), &isSS01_old, &b_isSS01_old);
-  oldtree->SetBranchAddress(old_isTT_name.c_str(), &isTT_old, &b_isTT);
-  oldtree->SetBranchAddress(old_isTL_name.c_str(), &isTL_old, &b_isTL);
-  oldtree->SetBranchAddress(old_isLT_name.c_str(), &isLT_old, &b_isLT);
-  oldtree->SetBranchAddress(old_isLL_name.c_str(), &isLL_old, &b_isLL);
-  oldtree->SetBranchAddress(old_MMWeight_name.c_str(), &MMWeight_old, &b_MMWeight_old);
-  oldtree->SetBranchAddress(old_lep_pt_name.c_str(), &lep_pt_old, &b_lep_pt_old);
-  oldtree->SetBranchAddress(old_lep_eta_name.c_str(), &lep_eta_old, &b_lep_eta_old);
-  oldtree->SetBranchAddress(old_lep_flavour_name.c_str(), &lep_flavour_old, &b_lep_flavour_old);
-  oldtree->SetBranchAddress(old_lep_isT_name.c_str(), &lep_isT_old, &b_lep_isT_old);
+  intree->SetBranchAddress(in_eventNumber_name.c_str(), &eventNumber_in, &b_eventNumber);
+  intree->SetBranchAddress(in_nlep_name.c_str(), &nlep_in, &b_nlep);
+  intree->SetBranchAddress(in_isSS01_name.c_str(), &isSS01_in, &b_isSS01);
+  intree->SetBranchAddress(in_isTT_name.c_str(), &isTT_in, &b_is_T_T);
+  intree->SetBranchAddress(in_isTL_name.c_str(), &isTL_in, &b_is_T_AntiT);
+  intree->SetBranchAddress(in_isLT_name.c_str(), &isLT_in, &b_is_AntiT_T);
+  intree->SetBranchAddress(in_isLL_name.c_str(), &isLL_in, &b_is_AntiT_AntiT);
+  intree->SetBranchAddress(in_MMWeight_name.c_str(), &MMWeight_in, &b_MMWeight);
+  intree->SetBranchAddress(in_lep_pt_name.c_str(), &lep_pt_in, &b_lep_pt);
+  intree->SetBranchAddress(in_lep_eta_name.c_str(), &lep_eta_in, &b_lep_eta);
+  intree->SetBranchAddress(in_lep_flavour_name.c_str(), &lep_flavour_in, &b_lep_flavour);
+  intree->SetBranchAddress(in_lep_isT_name.c_str(), &lep_isT_in, &b_lep_isTightSelected);
 
-  //Info("modifytree()", "--> lep_pt before SetBranchAddress() %p\n", oldtree->GetBranch(old_lep_pt_name.c_str())->GetAddress());
-  //Info("modifytree()", "--> lep_pt after SetBranchAddress() %p\n", oldtree->GetBranch(old_lep_pt_name.c_str())->GetAddress());
+  //Info("modifytree()", "--> lep_pt before SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_name.c_str())->GetAddress());
+  //Info("modifytree()", "--> lep_pt after SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_name.c_str())->GetAddress());
 
   // Set the "new" branches in the output TTree
   //
-  newtree->Branch(new_MMWeight_name.c_str(), &MMWeight_new);
+  outtree->Branch(out_MMWeight_name.c_str(), &MMWeight_out);
 
   // read r/f rates from ROOT histograms
   //
-  //std::string RR_dir("GOOD_STUFF/OutputPlots_MMRates_v021_Madgraph_Observed");
-  //std::string RR_dir("OutputPlots_MMRates_v025");
-  //std::string RR_dir("OutputPlots_MMRates_v028_FINAL");
-  //std::string RR_dir("OutputPlots_MMRates_v027_20GeVpT");
-  //std::string RR_dir("OutputPlots_MMRates_v028_10GeVpT_DataDrivenQMisID");
-  //std::string RR_dir("OutputPlots_MMRates_v027_10GeVpT_DataDrivenQMisID");
-
-  //std::string RR_dir("OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut");
-  //std::string RR_dir("OutputPlots_MMRates_v029_Baseline_DDQMisID_Mllgt40GeV_AllElEtaCut");
-  std::string RR_dir("OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut");
-
-  // when using ch-flip rate as RR (for electrons)
-  //std::string RR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_ChFlipBkgRates_13F");
-  //std::string FR_dir("PLOTS/PLOTS_013/TEST_13F_2/OutputPlots_NonPromptBkgRates_13F");
-
   Info("modifytree()","Reading r/f rates from ROOT file(s)..");
-  read_rates(RR_dir);
-  //read_rates(RR_dir,FR_dir); // pass also FR_dir if different than RR_dir
+  read_rates(RR_dir,FR_dir);
 
   // Loop over entries in TTree
   //
@@ -889,56 +699,56 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
     // Now, in the input tree, reset to 1 the status of the branches you
     // deactivated before cloning
     //
-    if ( !oldtree->GetBranchStatus(old_MMWeight_name.c_str()) ) {
-      oldtree->SetBranchStatus(old_MMWeight_name.c_str(),1);
+    if ( !intree->GetBranchStatus(in_MMWeight_name.c_str()) ) {
+      intree->SetBranchStatus(in_MMWeight_name.c_str(),1);
     }
 
-    oldtree->GetEntry(i);
+    intree->GetEntry(i);
 
-    if ( g_debug ) { Info("modifytree()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_old); }
+    if ( g_debug ) { Info("modifytree()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
 
     // A security check...
     //
-    if ( !MMWeight_old ) {
-      Info("modifytree()","\t --> MMWeight_old is NULL!! Skipping event...  \n");
+    if ( !MMWeight_in ) {
+      Info("modifytree()","\t --> MMWeight_in is NULL!! Skipping event...  \n");
       ++count_bad;
       continue;
     }
 
-    // To start off, copy the old branch into the new
+    // To start off, copy the in branch into the new
     // (then it will be overridden , if necessary)
     //
-    *MMWeight_new = *MMWeight_old;
+    *MMWeight_out = *MMWeight_in;
 
     // and now, recompute the MM weights!
     // Do it only for 2lepSS events
     //
-    if ( nlep_old == 2 && isSS01_old == 1 ) {
+    if ( nlep_in == 2 && isSS01_in == 1 ) {
 
       if ( g_debug ) {
-        int idx_old(0);
-        for ( const auto& itr : *MMWeight_old ) {
-    	  Info("modifytree()","\t\t OLD MMWeight[%i] = %f", idx_old, itr );
-    	  ++idx_old;
+        int idx_in(0);
+        for ( const auto& itr : *MMWeight_in ) {
+    	  Info("modifytree()","\t\t IN MMWeight[%i] = %f", idx_in, itr );
+    	  ++idx_in;
         }
       }
 
       // Just recompute MMWeight w/ new rates
       //
-      //recomputeMMW( MMWeight_new, isTT_old, isTL_old, isLT_old, isLL_old, *lep_pt_old, *lep_eta_old, *lep_flavour_old );
+      //recomputeMMW( MMWeight_out, isTT_in, isTL_in, isLT_in, isLL_in, *lep_pt_in, *lep_eta_in, *lep_flavour_in );
 
-      bool TT =  ( lep_isT_old->at(0) == 1 && lep_isT_old->at(1) == 1 );
-      bool TL =  ( lep_isT_old->at(0) == 1 && lep_isT_old->at(1) == 0 );
-      bool LT =  ( lep_isT_old->at(0) == 0 && lep_isT_old->at(1) == 1 );
-      bool LL =  ( lep_isT_old->at(0) == 0 && lep_isT_old->at(1) == 0 );
+      bool TT =  ( lep_isT_in->at(0) == 1 && lep_isT_in->at(1) == 1 );
+      bool TL =  ( lep_isT_in->at(0) == 1 && lep_isT_in->at(1) == 0 );
+      bool LT =  ( lep_isT_in->at(0) == 0 && lep_isT_in->at(1) == 1 );
+      bool LL =  ( lep_isT_in->at(0) == 0 && lep_isT_in->at(1) == 0 );
 
-      recomputeMMW( MMWeight_new, TT, TL, LT, LL, *lep_pt_old, *lep_eta_old, *lep_flavour_old );
+      recomputeMMW( MMWeight_out, TT, TL, LT, LL, *lep_pt_in, *lep_eta_in, *lep_flavour_in );
 
       if ( g_debug ) {
-        int idx_new(0);
-        for ( const auto& itr : *MMWeight_new ) {
-    	  Info("modifytree()","\t\t NEW MMWeight[%i] = %f", idx_new, itr );
-    	  ++idx_new;
+        int idx_out(0);
+        for ( const auto& itr : *MMWeight_out ) {
+    	  Info("modifytree()","\t\t OUT MMWeight[%i] = %f", idx_out, itr );
+    	  ++idx_out;
         }
       }
 
@@ -946,24 +756,223 @@ void modifyttree_MM(std::string filename = "input.root", std::string  NENTRIES =
 
     }
 
-    // to avoid overriding new branch (old has same name) ?
-    oldtree->SetBranchStatus(old_MMWeight_name.c_str(),0);
+    // to avoid overriding new branch (in has same name) ?
+    intree->SetBranchStatus(in_MMWeight_name.c_str(),0);
 
-    newtree->Fill();
+    outtree->Fill();
 
   }
 
   Info("modifytree()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
 
-  newfile->Write();
-  newfile->Close();
+  outfile->Write();
+  outfile->Close();
 
   // Since we passed the address of a local variable we need
   // to remove it.
-  oldtree->ResetBranchAddresses();
+  intree->ResetBranchAddresses();
 
-  delete oldfile;
-  delete newfile;
+  delete infile;
+  delete outfile;
+
+  // //delete a branch:
+  // TFile f("myfile.root","update");
+  // TTree *T = (TTree*)f.Get("treename");
+  // TBranch *b = T->GetBranch("name of branch to delete");
+  // T->GetListOfBranches()->Remove(b);
+  // TLeaf* l= T->GetLeaf("name of branch to delete");
+  // T->GetListOfLeaves()->Remove(l)
+  // T->Write();
+
+}
+
+/* ******************
+/
+/ The 'main' function
+/
+/ This script loads a tree, clones it, and adds in a new branch.
+/
+****************** */
+
+void modifyttree_AddMM(std::string filename = "input.root", std::string  NENTRIES = "ALL", std::string treename= "physics", std::string outfilename = "output.root", std::string RR_dir = "", std::string FR_dir = "")
+{
+
+  Info("modifytree_AddMM()","Starting off...");
+
+  //Get in file, in tree and set top branch address
+  //
+  TFile *infile = new TFile(filename.c_str());
+  TTree *intree = (TTree*)infile->Get(treename.c_str());
+
+  Long64_t nentries;
+
+  if ( NENTRIES == "ALL" ) {
+     nentries = intree->GetEntries();
+  } else {
+     std::stringstream ss; ss << NENTRIES;
+     int n_e;              ss >> n_e;
+     nentries = n_e;
+  }
+
+  // TO BE MODIFIED ACCORDINGLY TO YOUR NEEDS (name and type of the variables)
+  //
+  std::string in_eventNumber_name("EventNumber");
+  std::string in_nlep_name("nleptons");
+  std::string in_isSS01_name("isSS01");
+  std::string in_isTT_name("is_T_T");
+  std::string in_isTL_name("is_T_AntiT");
+  std::string in_isLT_name("is_AntiT_T");
+  std::string in_isLL_name("is_AntiT_AntiT");
+  std::string in_lep_pt_0_name("lep_Pt_0");
+  std::string in_lep_pt_1_name("lep_Pt_1");
+  std::string in_lep_eta_0_name("lep_EtaBE2_0");
+  std::string in_lep_eta_1_name("lep_EtaBE2_1");
+  std::string in_lep_flavour_0_name("lep_ID_0");
+  std::string in_lep_flavour_1_name("lep_ID_1");
+  std::string in_lep_isT_0_name("lep_isTightSelected_0");
+  std::string in_lep_isT_1_name("lep_isTightSelected_1");
+
+  Long64_t               eventNumber_in; eventNumber_in = -1;
+  Int_t                  nlep_in;        nlep_in = -1;
+  Int_t                  isSS01_in;      isSS01_in = -1;
+  Int_t 	         isTT_in;        isTT_in = -1;
+  Int_t 	         isTL_in;        isTL_in = -1;
+  Int_t 	         isLT_in;        isLT_in = -1;
+  Int_t 	         isLL_in;        isLL_in = -1;
+  float    lep_pt_0_in;      lep_pt_0_in = 0;
+  float    lep_pt_1_in;      lep_pt_1_in = 0;
+  float    lep_eta_0_in;     lep_eta_0_in = 0;
+  float    lep_eta_1_in;     lep_eta_1_in = 0;
+  int      lep_flavour_0_in; lep_flavour_0_in = 0;
+  int      lep_flavour_1_in; lep_flavour_1_in = 0;
+  int      lep_isT_0_in;     lep_isT_0_in = 0;
+  int      lep_isT_1_in;     lep_isT_1_in = 0;
+
+  // List of input branches
+  //
+  TBranch        *b_EventNumber = 0;      //!
+  TBranch	 *b_dilep_type  = 0;      //!
+  TBranch        *b_isSS01      = 0;      //!
+  TBranch	 *b_is_T_T = 0;    	  //!
+  TBranch	 *b_is_T_AntiT = 0;    	  //!
+  TBranch	 *b_is_AntiT_T = 0;    	  //!
+  TBranch	 *b_is_AntiT_AntiT = 0;   //!
+  TBranch	 *b_lep_Pt_0 = 0;         //!
+  TBranch	 *b_lep_Pt_1 = 0;         //!
+  TBranch	 *b_lep_EtaBE2_0 = 0;     //!
+  TBranch	 *b_lep_EtaBE2_1 = 0;     //!
+  TBranch	 *b_lep_ID_0 = 0;         //!
+  TBranch	 *b_lep_ID_1 = 0;         //!
+  TBranch        *b_lep_isTightSelected_0 = 0;  //!
+  TBranch        *b_lep_isTightSelected_1 = 0;  //!
+
+  // Before cloning input TTree, tell ROOT to process all the input branches
+  //
+  intree->SetBranchStatus("*",1);
+
+  // Create a new file + a clone of input tree in new file
+  //
+  TFile *outfile = new TFile(outfilename.c_str(),"RECREATE");
+  TTree *outtree = intree->CloneTree(0); //clone only the structure
+
+  // Get branches from input TTree
+  //
+  intree->SetBranchAddress(in_eventNumber_name.c_str(), &eventNumber_in, &EventNumber);
+  intree->SetBranchAddress(in_nlep_name.c_str(), &nlep_in, &b_nleptons);
+  intree->SetBranchAddress(in_isSS01_name.c_str(), &isSS01_in, &b_isSS01);
+  intree->SetBranchAddress(in_isTT_name.c_str(), &isTT_in, &b_is_T_T);
+  intree->SetBranchAddress(in_isTL_name.c_str(), &isTL_in, &b_is_T_AntiT);
+  intree->SetBranchAddress(in_isLT_name.c_str(), &isLT_in, &b_is_AntiT_T);
+  intree->SetBranchAddress(in_isLL_name.c_str(), &isLL_in, &b_is_AntiT_AntiT);
+  intree->SetBranchAddress(in_lep_pt_0_name.c_str(), &lep_pt_0_in, &b_lep_Pt_0);
+  intree->SetBranchAddress(in_lep_pt_1_name.c_str(), &lep_pt_1_in, &b_lep_Pt_1);
+  intree->SetBranchAddress(in_lep_eta_0_name.c_str(), &lep_eta_0_in, &b_lep_EtaBE2_0);
+  intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_EtaBE2_1);
+  intree->SetBranchAddress(in_lep_flavour_0_name.c_str(), &lep_flavour_0_in, &b_lep_ID_0);
+  intree->SetBranchAddress(in_lep_flavour_1_name.c_str(), &lep_flavour_1_in, &b_lep_ID_1);
+  intree->SetBranchAddress(in_lep_isT_0_name.c_str(), &lep_isT_0_in, &b_lep_isTightSelected_0);
+  intree->SetBranchAddress(in_lep_isT_1_name.c_str(), &lep_isT_1_in, &b_lep_isTightSelected_1);
+
+  // Set the "new" branches in the output TTree
+  //
+  std::vector<float>  MMWeight_out;
+  outtree->Branch("MMWeight", &MMWeight_out);
+
+  // read r/f rates from ROOT histograms
+  //
+  Info("modifytree()","Reading r/f rates from ROOT file(s)..");
+  read_rates(RR_dir,FR_dir);
+
+  // Loop over entries in TTree
+  //
+  Info("modifytree()","Begin loop on input tree entries...\n");
+  int count_bad(0);
+  Long64_t i = 0;
+  for ( ; i < nentries; i++ ) {
+
+    // Print out every N events to see where we are
+    //
+    if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree()","\t Processed %lld entries",i); }
+
+    intree->GetEntry(i);
+
+    if ( g_debug ) { Info("modifytree()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
+
+    MMWeight_out.assign(5,1.0);
+
+    if ( g_debug ) {
+      int idx(0);
+      for ( const auto& itr : MMWeight_out ) {
+        Info("modifytree()","\t\t Default MMWeight[%i] = %f", idx, itr );
+        ++idx;
+      }
+    }
+
+    // and now, recompute the MM weights!
+    // Do it only for 2lepSS events
+    //
+    if ( nlep_in == 2 && isSS01_in == 1 ) {
+
+      bool TT =  ( isTT_in );
+      bool TL =  ( isTL_in );
+      bool LT =  ( isLT_in );
+      bool LL =  ( isLL_in );
+
+      // Do this to avoid changing the signature of the function
+      //
+      std::vector<float> lep_pt_vec      = { lep_pt_0_in, lep_pt_1_in };
+      std::vector<float> lep_eta_vec     = { lep_eta_0_in, lep_eta_1_in };
+      std::vector<float> lep_flavour_vec = { fabs(lep_flavour_0_in), fabs(lep_flavour_1_in) };
+
+      recomputeMMW( &MMWeight_out, TT, TL, LT, LL, lep_pt_vec, lep_eta_vec, lep_flavour_vec );
+
+      if ( g_debug ) {
+        int idx_out(0);
+        for ( const auto& itr : *MMWeight_out ) {
+    	  Info("modifytree()","\t\t OUT MMWeight[%i] = %f", idx_out, itr );
+    	  ++idx_out;
+        }
+      }
+
+      if ( g_debug ) { Info("modifytree()","\n\n"); }
+
+    }
+
+    outtree->Fill();
+
+  }
+
+  Info("modifytree()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
+
+  outfile->Write();
+  outfile->Close();
+
+  // Since we passed the address of a local variable we need
+  // to remove it.
+  intree->ResetBranchAddresses();
+
+  delete infile;
+  delete outfile;
 
   // //delete a branch:
   // TFile f("myfile.root","update");

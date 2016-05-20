@@ -14,26 +14,18 @@ from ROOT import gROOT
 
 gROOT.SetBatch(True)
 
-#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED_FIXED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED_DataDrivenQMisID/'
-
-#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_AVGEFF_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_WEIGHTED_DataDrivenQMisID/'
-
-oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED_DDQMisIDSub/'
-newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED_EffNoLepIso/'
-
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_DATA/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_DATA_MM_WEIGHTED/'
 
+oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_Original/"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_MM_WEIGHTED/"
+
+# Set only if MM weight branch does not exist yet
+#
+addMM = True
+
 treename = 'physics'
-nentries = 'ALL' #ALL
+nentries = '100' #ALL
 
 if not os.path.exists(newpath):
     os.makedirs(newpath)
@@ -41,6 +33,7 @@ if not os.path.exists(newpath):
 gROOT.LoadMacro("modifyttree_MM.cxx+g")
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
+
 for group in group_list:
     if not os.path.isdir(oldpath+group):
         continue
@@ -52,16 +45,12 @@ for group in group_list:
         infile=oldpath+group+'/'+sample
         outfile=newpath+group+'/'+sample
 
-        command_line = 'modifyttree_MM(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+        command_line = None
+        if addMM:
+            command_line = 'modifyttree_AddMM(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+        else:
+            command_line = 'modifyttree_MM(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+
         print command_line
         gROOT.ProcessLine(command_line);
 
-        #command_line = 'root -l -q \"modifyttree_MM.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")\"'
-        #print command_line
-        #args = shlex.split(command_line)
-        #print args
-        #subprocess.call(args)
-        #subprocess.call(['root', '-l', '-q', '"modifyttree_MM.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")"'])
-        #f = TFile.Open(path+group+'/'+sample)
-        #h_tot = f.Get('TotalEvents')
-        #t = f.Get('physics')

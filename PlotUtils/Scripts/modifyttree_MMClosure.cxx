@@ -223,22 +223,22 @@ void read_rates(const std::string rr_dir, const std::string fr_dir = "")
 
   // eta hist has same binning for r/f
   //
-  g_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX();
-  g_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX();
+  g_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX()+1;
+  g_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX()+1;
 
   // pt hist has two different binning for r/f
   //
-  g_n_el_bins_pt_rr =  hist_el_pt_rr->GetNbinsX();
-  g_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX();
-  g_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX();
-  g_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX();
+  g_n_el_bins_pt_rr =  hist_el_pt_rr->GetNbinsX()+1;
+  g_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX()+1;
+  g_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX()+1;
+  g_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX()+1;
 
-  // normalistaion factor is the same for eta and pt r/f histograms: use eta
+  // normalisation factor is the same for eta and pt r/f histograms: use eta
   //
-  g_el_rr_tot = ( hist_el_eta_r_T->Integral() ) / ( hist_el_eta_r_L->Integral() );
-  g_el_fr_tot = ( hist_el_eta_f_T->Integral() ) / ( hist_el_eta_f_L->Integral() );
-  g_mu_rr_tot = ( hist_mu_eta_r_T->Integral() ) / ( hist_mu_eta_r_L->Integral() );
-  g_mu_fr_tot = ( hist_mu_eta_f_T->Integral() ) / ( hist_mu_eta_f_L->Integral() );
+  g_el_rr_tot = ( hist_el_eta_r_T->Integral(1,hist_el_eta_r_T->GetNbinsX()+1) ) / ( hist_el_eta_r_L->Integral(1,hist_el_eta_r_L->GetNbinsX()+1) );
+  g_el_fr_tot = ( hist_el_eta_f_T->Integral(1,hist_el_eta_f_T->GetNbinsX()+1) ) / ( hist_el_eta_f_L->Integral(1,hist_el_eta_f_L->GetNbinsX()+1) );
+  g_mu_rr_tot = ( hist_mu_eta_r_T->Integral(1,hist_mu_eta_r_T->GetNbinsX()+1) ) / ( hist_mu_eta_r_L->Integral(1,hist_mu_eta_r_L->GetNbinsX()+1) );
+  g_mu_fr_tot = ( hist_mu_eta_f_T->Integral(1,hist_mu_eta_f_T->GetNbinsX()+1) ) / ( hist_mu_eta_f_L->Integral(1,hist_mu_eta_f_L->GetNbinsX()+1) );
 
 }
 
@@ -407,7 +407,7 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
   } // close loop on eta bins
 
-  // Now converting rates to the factors for the MM/FF
+  // Now converting rates to the efficiencies for the MM/FF
   //
   if ( g_verbose ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
@@ -419,181 +419,7 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
   return weights;
 }
-//*/
-/* ********************************************************
-/
-/ Function to calculate r/f weights and their unceratinties
-/ (DIFFERENT TREATMENT FOR OVERFLOW BIN)
-/
-******************************************************** */
-/*
-std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
-				   float pt,
-				   float eta,
-				   bool isFakeLep,
-				   int n_bins_eta,
-				   int n_bins_pt_fr,
-				   int n_bins_pt_rr,
-				   double fr_tot,
-				   double rr_tot
-				  )
-{
 
-  // Read the real/fake rates from input histograms
-  //
-  // Will eventually convert these to real/fake FACTORS
-
-  // As a first thing, convert pT in GeV!
-  //
-  pt = pt/1e3;
-
-  std::vector<double> weights(3,0.0); //initialized with zeroes
-
-  weights.at(0) = 1.0;
-  double error(0.0);
-
-  TH1D* h_eta_rr = histograms.find("eta_rr")->second;
-  TH1D* h_eta_fr = histograms.find("eta_fr")->second;
-  TH1D* h_pt_rr  = histograms.find("pt_rr")->second;
-  TH1D* h_pt_fr  = histograms.find("pt_fr")->second;
-
-  // loop over number of eta bins
-  // do not consider underflow, i.e. 0th bin
-  //
-  // NB: this works assuming the binning for h_eta_rr and h_eta_fr is the same
-  //
-  bool isEtaPastBinOverFlow(false);
-  for ( int e = 1; e <= n_bins_eta; e++ ) {
-
-    // if next bin is the overflow bin, and eta under question
-    // is >= lower edge of o.f. bin, switch on a flag
-    //
-    if ( h_eta_rr->IsBinOverflow(e+1) && fabs(eta) >= h_eta_rr->GetXaxis()->GetBinLowEdge(e+1) ) {
-      isEtaPastBinOverFlow = true;
-    }
-
-    // check whether the eta under question is in *this* eta range
-    //
-    if ( ( ( fabs(eta) >= h_eta_rr->GetXaxis()->GetBinLowEdge(e) ) && ( fabs(eta) < h_eta_rr->GetXaxis()->GetBinLowEdge(e+1) ) ) || isEtaPastBinOverFlow ) {
-
-      // case 1) : lepton is fake: choose correct pt histogram
-      //
-      if ( isFakeLep ) {
-
-	// loop over number of pt bins
-        // do not consider underflow, i.e. 0th bin
-        //
-	bool isPtPastBinOverFlow(false);
-        for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
-
-	  // if next bin is the overflow bin, and pt under question
-	  // is >= lower edge of o.f. bin, switch on a flag
-	  //
-	  if ( h_pt_fr->IsBinOverflow(p+1) && pt >= h_pt_fr->GetXaxis()->GetBinLowEdge(p+1) ) {
-	    isPtPastBinOverFlow = true;
-	  }
-
-	  if ( ( ( pt >= h_pt_fr->GetXaxis()->GetBinLowEdge(p) ) && ( pt < h_pt_fr->GetXaxis()->GetBinLowEdge(p+1) ) ) || isPtPastBinOverFlow ) {
-
-	    // combine eta and pt rates
-	    // (NB: if eta/pt under question are >= o.f. bin, apply the rate of the last bin before o.f.)
-	    //
-	    double fr_pt  = ( !isPtPastBinOverFlow )  ? h_pt_fr->GetBinContent(p)  : h_pt_fr->GetBinContent(n_bins_pt_fr);
-	    double fr_eta = ( !isEtaPastBinOverFlow ) ? h_eta_fr->GetBinContent(e) : h_eta_fr->GetBinContent(n_bins_eta);
-
-	    double fr_pt_err  = ( !isPtPastBinOverFlow )  ? h_pt_fr->GetBinError(p)  : h_pt_fr->GetBinError(n_bins_pt_fr);
-	    double fr_eta_err = ( !isEtaPastBinOverFlow ) ? h_eta_fr->GetBinError(e) : h_eta_fr->GetBinError(n_bins_eta);
-
-	    // nominal
-	    //
-	    weights.at(0) = ( fr_pt * fr_eta ) / fr_tot;
-
-	    // (assuming  fr_pt,fr_eta are independent) this is the error on the product
-	    // ( the constant factor at denominator will be put back later in the def of weight...
-	    //
-	    error  = sqrt( (fr_eta*fr_pt_err)*(fr_eta*fr_pt_err) + (fr_pt*fr_eta_err)*(fr_pt*fr_eta_err) );
-
-	    // up syst
-	    //
-	    weights.at(1) = ( (fr_pt * fr_eta) + error ) / fr_tot;
-
-	    // down syst
-	    //
-	    if ( (fr_pt * fr_eta) - error > 0 ) { weights.at(2) = ( (fr_pt * fr_eta) - error ) / fr_tot;}
-	    else                                { weights.at(2) = 0.0; }
-
-	  }
-
-	} // close loop on pT bins: fake lepton
-
-	// lepton is real: choose correct pt histogram
-	//
-      } else {
-
-	// loop over number of pt bins
-        // do not consider underflow, i.e. 0th bin
-        //
-	bool isPtPastBinOverFlow(false);
-        for ( int p = 1; p <= n_bins_pt_rr; p++ ) {
-
-	  // if next bin is the overflow bin, and pt under question
-	  // is >= lower edge of o.f. bin, switch on a flag
-	  //
-	  if ( h_pt_rr->IsBinOverflow(p+1) && pt >= h_pt_rr->GetXaxis()->GetBinLowEdge(p+1) ) {
-	    isPtPastBinOverFlow = true;
-	  }
-
-	  if ( ( ( pt >= h_pt_rr->GetXaxis()->GetBinLowEdge(p) ) && ( pt < h_pt_rr->GetXaxis()->GetBinLowEdge(p+1) ) ) || isPtPastBinOverFlow ) {
-
-	    // combine eta and pt rates
-	    // (NB: if eta/pt under question are >= o.f. bin, apply the rate of the last bin before o.f.)
-	    //
-	    double rr_pt  = ( !isPtPastBinOverFlow )  ? h_pt_rr->GetBinContent(p)  : h_pt_rr->GetBinContent(n_bins_pt_rr);
-	    double rr_eta = ( !isEtaPastBinOverFlow ) ? h_eta_rr->GetBinContent(e) : h_eta_rr->GetBinContent(n_bins_eta);
-
-	    double rr_pt_err  = ( !isPtPastBinOverFlow )  ? h_pt_rr->GetBinError(p)  : h_pt_rr->GetBinError(n_bins_pt_rr);
-	    double rr_eta_err = ( !isEtaPastBinOverFlow ) ? h_eta_rr->GetBinError(e) : h_eta_rr->GetBinError(n_bins_eta);
-
-	    // nominal
-	    //
-	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
-
-	    // (assuming  rr_pt,rr_eta are independent) this is the error on the product
-	    // ( the constant factor at denominator will be put back in the def of weight...
-	    //
-	    error  = sqrt( (rr_eta*rr_pt_err)*(rr_eta*rr_pt_err) + (rr_pt*rr_eta_err)*(rr_pt*rr_eta_err) );
-
-	    // up syst
-	    //
-	    weights.at(1) = ( (rr_pt * rr_eta) + error ) / rr_tot;
-
-	    // down syst
-	    //
-	    if ( (rr_pt * rr_eta) - error > 0 ) { weights.at(2) = ( (rr_pt * rr_eta) - error ) / rr_tot; }
-	    else                                { weights.at(2) = 0.0; }
-
-	  }
-        } // close loop on pT bins: real lepton
-
-      } // close check isFakeLep
-
-    } // close check on eta bin
-
-  } // close loop on eta bins
-
-  // Now converting rates to the factors for the MM/FF
-  //
-  if ( g_verbose ) { Info("calc_weights()", "Rates = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
-
-  weights.at(0) = scaleRateToEfficiency(weights.at(0));
-  weights.at(1) = scaleRateToEfficiency(weights.at(1));
-  weights.at(2) = scaleRateToEfficiency(weights.at(2));
-
-  if ( g_verbose ) { Info("calc_weights()", "MM/FF efficiency = %f ( up = %f , dn = %f )", weights.at(0), weights.at(1), weights.at(2) ); }
-
-  return weights;
-}
-*/
 
 /* ***************************************************************************************
 /
@@ -886,7 +712,7 @@ void modifyttree_MMClosure(std::string filename = "input.root", std::string  NEN
   //std::string RR_dir("OutputPlots_MMClosureRates_v028");
   //std::string RR_dir("OutputPlots_MMClosureRates_HighNJet_v028");
   //std::string RR_dir("OutputPlots_MMClosureRates_v027");
-  
+
   //std::string RR_dir("OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV_AllElEtaCut");
   std::string RR_dir("OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV_AllElEtaCut");
   //std::string RR_dir("OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV_AllElEtaCut");
