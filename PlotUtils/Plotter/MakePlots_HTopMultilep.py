@@ -588,16 +588,16 @@ delta_R_lep0lep1 = ('deltaR( lep_eta[0], lep_phi[0], lep_eta[1], lep_phi[1] )','
 
 if doSR or doLowNJetCR:
     print ''
-    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 10, minval = -0.5, maxval = 9.5) )
+    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 10, minval = -0.5, maxval = 9.5) )
     if doSR:
         vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
     elif doLowNJetCR:
         vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
-    vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_MV2c20_77')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
-    vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = ('mll01/1e3','Mll01/1e3')[bool(args.useGroupNTup)], bins = 13, minval = 0.0, maxval = 260.0,) )
-    vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = ('lep_pt[0]/1e3','lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 9, minval = 20.0, maxval = 200.0,) )
-    vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '|#eta^{lead lep}|', ntuplename = ('lep_eta[0]','lep_Eta_0')[bool(args.useGroupNTup)], bins = 16, minval = -2.6, maxval = 2.6) )
-    vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
+    #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_MV2c20_77')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
+    #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = ('mll01/1e3','Mll01/1e3')[bool(args.useGroupNTup)], bins = 13, minval = 0.0, maxval = 260.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = ('lep_pt[0]/1e3','lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 9, minval = 20.0, maxval = 200.0,) )
+    #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '|#eta^{lead lep}|', ntuplename = ('lep_eta[0]','lep_Eta_0')[bool(args.useGroupNTup)], bins = 16, minval = -2.6, maxval = 2.6) )
+    #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
 
 if doMMRates or doMMClosureRates:
     print ''
@@ -613,13 +613,13 @@ if doMMRatesLHFit:
 
 if doMMClosureTest:
     print ''
-    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 10, minval = -0.5, maxval = 9.5) )
+    #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 10, minval = -0.5, maxval = 9.5) )
     vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
     vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
-    vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_MV2c20_77')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
-    vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = ('mll01/1e3','Mll01/1e3')[bool(args.useGroupNTup)], bins = 13, minval = 0.0, maxval = 260.0,) )
+    #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_MV2c20_77')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
+    #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = ('mll01/1e3','Mll01/1e3')[bool(args.useGroupNTup)], bins = 13, minval = 0.0, maxval = 260.0,) )
     vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = ('lep_pt[0]/1e3','lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 15, minval = 25.0, maxval = 175.0,) )
-    vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
+    #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
 
 if doZSSpeakCR:
     print ''
@@ -1009,13 +1009,19 @@ if doMMRates or doMMClosureRates:
     #vardb.registerVar( Variable(shortname = 'ElTagPt', latexname = 'p_{T}^{tag e} [GeV]', ntuplename = ('el_tag_pt[0]/1e3','lep_Tag_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
     #vardb.registerVar( Variable(shortname = 'ElTagEta', latexname = '#eta^{tag e}', ntuplename = ('TMath::Abs( el_tag_eta[0] )','TMath::Abs( lep_Tag_Eta )')[bool(args.useGroupNTup)],bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
     #vardb.registerVar( Variable(shortname = 'ElProbePt', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = ('el_probe_pt[0]/1e3','lep_Probe_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
-    vardb.registerVar( Variable(shortname = 'ElProbeEta', latexname = '#eta^{probe e}', ntuplename = ('TMath::Abs( el_probe_caloCluster_eta[0] )','TMath::Abs( lep_Probe_EtaBE2 )')[bool(args.useGroupNTup)], bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
+    #vardb.registerVar( Variable(shortname = 'ElProbeEta', latexname = '#eta^{probe e}', ntuplename = ('TMath::Abs( el_probe_caloCluster_eta[0] )','TMath::Abs( lep_Probe_EtaBE2 )')[bool(args.useGroupNTup)], bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6 ]) )
+
+    vardb.registerVar( Variable(shortname = 'ElProbeEta', latexname = '#eta^{probe e}', ntuplename = ('TMath::Abs( el_probe_caloCluster_eta[0] )','TMath::Abs( lep_Probe_EtaBE2 )')[bool(args.useGroupNTup)], bins = 26, minval = 0.0,  maxval = 2.6) )
+
     #vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 8, minval = 2, maxval = 10) )
 
     #vardb.registerVar( Variable(shortname = 'MuTagPt', latexname = 'p_{T}^{tag #mu} [GeV]', ntuplename = ('muon_tag_pt[0]/1e3','lep_Tag_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
     #vardb.registerVar( Variable(shortname = 'MuTagEta', latexname = '#eta^{tag #mu}', ntuplename = ('TMath::Abs( muon_tag_eta[0] )','TMath::Abs( lep_Tag_Eta )')[bool(args.useGroupNTup)], bins = 8,  minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
     #vardb.registerVar( Variable(shortname = 'MuProbePt', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = ('muon_probe_pt[0]/1e3','lep_Probe_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0) )
-    vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = ('TMath::Abs( muon_probe_eta[0] )','TMath::Abs( lep_Probe_Eta )')[bool(args.useGroupNTup)], bins = 8, minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
+    #vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = ('TMath::Abs( muon_probe_eta[0] )','TMath::Abs( lep_Probe_Eta )')[bool(args.useGroupNTup)], bins = 8, minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
+
+    vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = ('TMath::Abs( muon_probe_eta[0] )','TMath::Abs( lep_Probe_Eta )')[bool(args.useGroupNTup)], bins = 25, minval = 0.0, maxval = 2.5) )
+
     #vardb.registerVar( Variable(shortname = 'MuProbeNJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR')[bool(args.useGroupNTup)], bins = 8, minval = 2, maxval = 10) )
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -1431,11 +1437,11 @@ if ( doSR or doLowNJetCR ):
             # ---> all the MC backgrounds use a truth req. of only prompt leptons in the event (and ch-flip veto) to avoid double counting with
             #      data-driven charge flip and fakes estimate
 
-	    #plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
-    	    #ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
+	    plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
+    	    ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
 
-	    plotbackgrounds	= ['Prompt','FakesMM']
-    	    ttH2015.backgrounds = ['Prompt','FakesMM']
+	    #plotbackgrounds	= ['Prompt','FakesMM']
+    	    #ttH2015.backgrounds = ['Prompt','FakesMM']
 
 	    if args.useMCChFlip:
 	      plotbackgrounds.append('ChargeFlipMC')
@@ -1561,13 +1567,8 @@ if doMMClosureRates:
       ttH2015.observed    = []
       plotbackgrounds     = ['TTBar']
       ttH2015.backgrounds = ['TTBar']
-
       #plotbackgrounds	 = ['Zjets']
       #ttH2015.backgrounds = ['Zjets']
-
-      #plotbackgrounds	 = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Top']
-      #ttH2015.backgrounds = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Top']
-
 
 if doMMClosureTest:
 

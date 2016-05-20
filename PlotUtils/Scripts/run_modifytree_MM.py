@@ -17,15 +17,16 @@ gROOT.SetBatch(True)
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_DATA/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_DATA_MM_WEIGHTED/'
 
-oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_Original/"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_MM_WEIGHTED/"
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_MM_WEIGHTED/"
+#rr_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput"
 
-# Set only if MM weight branch does not exist yet
-#
-addMM = True
+oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_410000_Original/"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_410000_MM_WEIGHTED/"
+rr_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput"
 
-treename = 'physics'
-nentries = '100' #ALL
+addMM    = 'YES' # Set to 'YES' if MM weight branch does not exist yet
+nentries = 'ALL' #ALL
 
 if not os.path.exists(newpath):
     os.makedirs(newpath)
@@ -33,6 +34,8 @@ if not os.path.exists(newpath):
 gROOT.LoadMacro("modifyttree_MM.cxx+g")
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
+
+do_closure = None
 
 for group in group_list:
     if not os.path.isdir(oldpath+group):
@@ -45,11 +48,10 @@ for group in group_list:
         infile=oldpath+group+'/'+sample
         outfile=newpath+group+'/'+sample
 
-        command_line = None
-        if addMM:
-            command_line = 'modifyttree_AddMM(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
-        else:
-            command_line = 'modifyttree_MM(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+        if "physics_Main" in sample: do_closure = "NO"
+        else:                        do_closure = "YES"
+
+        command_line = 'modifyttree_MM(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
 
         print command_line
         gROOT.ProcessLine(command_line);

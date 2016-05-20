@@ -112,7 +112,7 @@ class Inputs:
         except:
             tree = None
             print "ERROR: Could not reach tree", treename, group, subgroup
-	       
+
 	print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
 
@@ -186,7 +186,7 @@ class Variable:
 
     def ytitle(self, manualbins=None):
         if (manualbins and type(manualbins) is list) or self.typeval is TH1I:
-            return 'Events'	
+            return 'Events'
 	else:
             if manualbins:
                 bins, minval, maxval = manualbins
@@ -203,14 +203,12 @@ class Variable:
             name = self.plainname
         if title is None:
             title = self.latexname
-	    
+
         if self.typeval is TH2D or self.typeval is TH2F:
 	    h = self.typeval(name, title, self.binsX, self.minvalX, self.maxvalX, self.binsY, self.minvalY, self.maxvalY)
             h.GetXaxis().SetTitle(self.latexnameX)
-            h.GetYaxis().SetTitle(self.latexnameY)  
-	    #set_fancy_2D_style()
+            h.GetYaxis().SetTitle(self.latexnameY)
         else :
-            #gStyle.Clear()
 	    if category and category.overridebins and self.shortname in category.overridebins:
             	manualbins = category.overridebins[self.shortname]
             	if type(manualbins) is list:
@@ -535,9 +533,9 @@ class SubProcess:
         h.SetName(self.histcache[cachename].GetName()+str(weight))
         h.SetTitle(self.histcache[cachename].GetTitle()+str(weight))
         h.__imul__(self.baseweight * weight)
-	
+
 	#print("\nHistogram name: {0}\nHistogram integral: {1}\nHistogram type: {2}\n N bins X: {3} - N bins Y: {4}".format(h.GetName(),h.Integral(),type(h), h.GetNbinsX(), h.GetNbinsY()))
-	
+
         return h
 
 class OperatorProcess(SubProcess):
@@ -967,7 +965,7 @@ class Background:
 
         obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
 
-	if obs: 
+	if obs:
 	    if not ( var.typeval is TH2D or var.typeval is TH2F ):
             	process = obslist[0][1]
             	datagr = None
@@ -1184,7 +1182,7 @@ class Background:
 	          if var.typeval is TH1I:
 	              stack.GetHistogram().GetXaxis().SetNdivisions(tSum.GetNbinsX())
 	              stack.GetHistogram().GetXaxis().CenterLabels(True)
-	   else: 
+	   else:
 	      stack.Draw('lego1')
 
         if bkg:

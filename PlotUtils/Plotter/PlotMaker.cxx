@@ -81,7 +81,7 @@ void PlotRateEff( pair<string,string>& SAMPLE,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  //variables.push_back("Eta");
+  variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
@@ -477,13 +477,13 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  //variables.push_back("Eta");
+  variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
   vector<string> Rates;
   Rates.push_back("Real");
-  //Rates.push_back("Fake");
+  Rates.push_back("Fake");
 
   // loop over variables
   //
@@ -653,11 +653,12 @@ void execute() {
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","MC t#bar{t}");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_MCQMisID_NoZminCut_DataOnly/","Data - No sub.");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoTruth/","MC t#bar{t} - No sub.");
-  pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","Data - bkg sub.");
 
-  //PlotRateEff(my_pair);
-  //PlotRateEff(my_pair,"MC");
+  pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","Data - bkg sub.");
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","MC t#bar{t}");
+
   PlotRateEff(my_pair,"Data","Inclusive","Efficiency","png");
+  //PlotRateEff(my_pair,"MC","Inclusive","Efficiency","png");
 
 }
 
@@ -746,8 +747,11 @@ void execute_DataVSMC() {
   //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR/","Moriond sel. - MC t#bar{t} - prompt probe"));
   //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR_NoTruth/","Moriond sel. - MC t#bar{t}"));
 
-  vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Moriond sel. - Data - OF+SF"));
-  vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR/","Moriond sel. - Data - OF"));
+  //vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Moriond sel. - Data - OF+SF"));
+  //vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR/","Moriond sel. - Data - OF"));
+
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","Data - bkg sub."));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","MC t#bar{t}"));
 
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
 

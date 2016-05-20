@@ -107,14 +107,18 @@ def plot2Dhist():
 
 def plotter_r():
 
-  #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput_6x6bins/Rates.root"
-
   #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_NoSub_LHInput/Rates.root"
-  file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+  #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+
+  # CLOSURE
+  file_TP_path = "../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
 
   file_TP = TFile(file_TP_path)
 
-  hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Real_Efficiency_observed") )[bool(args.flavour == "mu")]
+  #hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Real_Efficiency_observed") )[bool(args.flavour == "mu")]
+
+  # CLOSURE
+  hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_expected"), file_TP.Get("Mu_ProbePt_Real_Efficiency_expected") )[bool(args.flavour == "mu")]
 
   print("Reading histogram {0} from file {1}".format(hist_TP.GetName(), file_TP_path))
 
@@ -131,10 +135,11 @@ def plotter_r():
 
   # -------------------------------------------
 
-  #LH_init_path = "../OutputPlots_MMRates_LHFit_2DPt/6x6bins/"
-
   #LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_NoSub/"
-  LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub/"
+  #LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub/"
+
+  # CLOSURE
+  LH_init_path = "../OutputPlots_MMClosureRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub/"
 
   file_LH_path = ( LH_init_path + "LH_efficiencies_real_el.root", LH_init_path + "LH_efficiencies_real_mu.root" )[bool(args.flavour == "mu")]
 
@@ -199,14 +204,18 @@ def plotter_r():
 
 def plotter_f():
 
-  #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput_3x3bins/Rates.root"
-
   #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_NoSub_LHInput/Rates.root"
-  file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+  #file_TP_path = "../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+
+  # CLOSURE
+  file_TP_path = "../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
 
   file_TP = TFile(file_TP_path)
 
-  hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_observed") )[bool(args.flavour == "mu")]
+  #hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_observed") )[bool(args.flavour == "mu")]
+
+  # CLOSURE
+  hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_expected"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_expected") )[bool(args.flavour == "mu")]
 
   print("Reading histogram {0} from file {1}".format(hist_TP.GetName(), file_TP_path))
 
@@ -223,10 +232,11 @@ def plotter_f():
 
   # -------------------------------------------
 
-  #LH_init_path = "../OutputPlots_MMRates_LHFit_2DPt/3x3bins/"
-
   #LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_NoSub/"
-  LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub/"
+  #LH_init_path = "../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub/"
+
+  # CLOSURE
+  LH_init_path = "../OutputPlots_MMClosureRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub/"
 
   file_LH_path = ( LH_init_path + "LH_efficiencies_fake_el.root", LH_init_path + "LH_efficiencies_fake_mu.root" )[bool(args.flavour == "mu")]
 
@@ -289,6 +299,6 @@ def plotter_f():
 
 # ----------------
 
-#plotter_r()
-#plotter_f()
-plot2Dhist()
+plotter_r()
+plotter_f()
+#plot2Dhist()

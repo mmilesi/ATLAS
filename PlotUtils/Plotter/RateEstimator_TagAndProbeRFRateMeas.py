@@ -79,7 +79,7 @@ dict_channels_lep = {
 
 list_lep         = dict_channels_lep[args.flavourComp]
 list_types       = ["Real","Fake"]
-list_variables   = ["ProbePt"] #["ProbeEta","ProbeNJets"]
+list_variables   = ["ProbePt","ProbeEta"] #"ProbeNJets"]
 list_selections  = ["T","L"]
 list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                               # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
@@ -163,8 +163,7 @@ for iLep in list_lep:
 
                   if iVar == "ProbeEta":
 
-		     # rebin in eta ONLY for rates in data
-		     if ( args.usePrediction == "DATA" ) and args.rebinEta:
+		     if args.rebinEta:
 
 		       if iLep == "Mu":
                   	 nBIN  = 5

@@ -535,7 +535,17 @@ class LHFitter {
       }
     };
 
+    static void useMC() {
+      Info("useMC()","Fitting efficiencies on MC...");
+      s_useMC = true;
+    };
+
   private :
+
+    /**
+      Set this flag when doing closure on MC
+    */
+    static bool s_useMC;
 
     /**
       Upper/lower limits for fit parameters and step size
@@ -728,6 +738,8 @@ class LHFitter {
     void  saveEfficiencies();
 
 };
+
+bool   LHFitter::s_useMC = false;
 
 double LHFitter::s_step_eff    = 1e-3;
 double LHFitter::s_up_eff      = 1.0;
@@ -1603,10 +1615,12 @@ void LHFitter :: readTagAndProbeEff() {
   std::string filename_rmu(""), filename_rmu_avg("");
   std::string filename_fmu(""), filename_fmu_avg("");
 
-  filename_rel = filename_rel_avg = "El_ProbePt_Real_Efficiency_observed";
-  filename_fel = filename_fel_avg = "El_ProbePt_Fake_Efficiency_observed";
-  filename_rmu = filename_rmu_avg = "Mu_ProbePt_Real_Efficiency_observed";
-  filename_fmu = filename_fmu_avg = "Mu_ProbePt_Fake_Efficiency_observed";
+  std::string eff_type = ( !s_useMC ) ? "observed" : "expected";
+
+  filename_rel = filename_rel_avg = "El_ProbePt_Real_Efficiency_" + eff_type;
+  filename_fel = filename_fel_avg = "El_ProbePt_Fake_Efficiency_" + eff_type;
+  filename_rmu = filename_rmu_avg = "Mu_ProbePt_Real_Efficiency_" + eff_type;
+  filename_fmu = filename_fmu_avg = "Mu_ProbePt_Fake_Efficiency_" + eff_type;
 
   TH1D *releff = get_object<TH1D>( *file, filename_rel );
   TH1D *feleff = get_object<TH1D>( *file, filename_fel );
@@ -1679,12 +1693,14 @@ void LHFitter :: getHists() {
 	      exit(-1);
 	  }
 
-	  TH2D *hist = get_object<TH2D>( *file, "observed" );
+	  std::string eff_type = ( !s_useMC ) ? "observed" : "expected";
+
+	  TH2D *hist = get_object<TH2D>( *file, eff_type.c_str() );
 
 	  // -) Do ( !prompt & charge flip ) subtraction in OS
 	  // -) Do ( prompt & charge flip ) subtraction in SS
 	  //
-	  if  ( m_doSubtraction ) {
+	  if  ( !s_useMC && m_doSubtraction ) {
 
 	      Info("getHists()", "Subtracting bkgs to data...");
 
@@ -2411,11 +2427,14 @@ int main( int argc, char **argv ) {
 
     // ----------------------------------------------------
 
-    //const std::string tp_path("../OutputPlots_MMRates_25ns_v7_FinalSelection_LHComparison/Rates_NoSub_LHInput_6x6bins/");
-    //const std::string input_path("../OutputPlots_MMRates_LHFit_2DPt/");
+    // DO THE FIT ON DATA
+    //const std::string tp_path("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/");
+    //const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
 
-    const std::string tp_path("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_NoSub_LHInput/");
-    const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
+    // DO THE FIT ON TTBAR MC
+    const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/");
+    const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
+    LHFitter::useMC();
 
     // real efficiency - e
 
