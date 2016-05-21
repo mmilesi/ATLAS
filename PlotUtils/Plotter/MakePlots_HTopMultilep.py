@@ -1666,10 +1666,13 @@ for category in vardb.categorylist:
     #
     if not ( args.noWeights ):
 
+      if doMMRates or doMMClosureRates :
 	if ( ("ProbeTight") in category.cut.cutname or ("ProbeAntiTight") in category.cut.cutname ):
 	   lepSF_weight = ('weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]','weight_tag * weight_probe')[bool(args.useGroupNTup)]
 	else:
 	   lepSF_weight = ('weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]','weight_tag')[bool(args.useGroupNTup)]
+      else :
+        lepSF_weight = ('weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0]','weight_tag * weight_probe')[bool(args.useGroupNTup)]
 
     print ("\tApplying lepton SFs (to MC only) --> {0}\n".format( lepSF_weight ))
 
