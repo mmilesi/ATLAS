@@ -463,7 +463,8 @@ class LHFitter {
     enum kFlavour {
       ELEC  = 0,
       MUON  = 1,
-      INCLUSIVE = 2,
+      OPPOSITE_FLAV = 2,
+      INCLUSIVE = 3,
     };
 
     enum kEfficiency {
@@ -771,6 +772,7 @@ LHFitter :: LHFitter( kFlavour FLAVOUR, kEfficiency EFFICIENCY ) :
   if ( m_efficiency == kEfficiency::FAKE ) { m_efficiency_str = "FAKE"; }
   if ( m_flavour == kFlavour::ELEC ) { m_flavour_str = "ELECTRON"; }
   if ( m_flavour == kFlavour::MUON ) { m_flavour_str = "MUON"; }
+  if ( m_flavour == kFlavour::OPPOSITE_FLAV ) { m_flavour_str = "OPPOSITE_FLAV"; }
   if ( m_flavour == kFlavour::INCLUSIVE ) { m_flavour_str = "INCLUSIVE"; }
 
   Info("LHFitter()","Creating class instance to fit %s efficiency for %s... \n", m_efficiency_str.c_str(), m_flavour_str.c_str() );
@@ -821,25 +823,29 @@ void LHFitter :: initialise() {
   //m_FelFmu_init.reserve(m_nPtBins_Squared);
 
   if ( m_verbose ) {
-     printContainer( m_TelTel, "Printing content of TelTel:" );
-     printContainer( m_TelLel, "Printing content of TelLel:" );
-     printContainer( m_LelTel, "Printing content of LelTel:" );
-     printContainer( m_LelLel, "Printing content of LelLel:" );
+    if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+      printContainer( m_TelTel, "Printing content of TelTel:" );
+      printContainer( m_TelLel, "Printing content of TelLel:" );
+      printContainer( m_LelTel, "Printing content of LelTel:" );
+      printContainer( m_LelLel, "Printing content of LelLel:" );
+    }
+    if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+      printContainer( m_TmuTmu, "Printing content of TmuTmu:" );
+      printContainer( m_TmuLmu, "Printing content of TmuLmu:" );
+      printContainer( m_LmuTmu, "Printing content of LmuTmu:" );
+      printContainer( m_LmuLmu, "Printing content of LmuLmu:" );
+    }
+    if ( m_flavour == kFlavour::INCLUSIVE ) {
+      printContainer( m_TmuTel, "Printing content of TmuTel:" );
+      printContainer( m_TmuLel, "Printing content of TmuLel:" );
+      printContainer( m_LmuTel, "Printing content of LmuTel:" );
+      printContainer( m_LmuLel, "Printing content of LmuLel:" );
 
-     printContainer( m_TmuTmu, "Printing content of TmuTmu:" );
-     printContainer( m_TmuLmu, "Printing content of TmuLmu:" );
-     printContainer( m_LmuTmu, "Printing content of LmuTmu:" );
-     printContainer( m_LmuLmu, "Printing content of LmuLmu:" );
-
-     printContainer( m_TmuTel, "Printing content of TmuTel:" );
-     printContainer( m_TmuLel, "Printing content of TmuLel:" );
-     printContainer( m_LmuTel, "Printing content of LmuTel:" );
-     printContainer( m_LmuLel, "Printing content of LmuLel:" );
-
-     printContainer( m_TelTmu, "Printing content of TelTmu:" );
-     printContainer( m_TelLmu, "Printing content of TelLmu:" );
-     printContainer( m_LelTmu, "Printing content of LelTmu:" );
-     printContainer( m_LelLmu, "Printing content of LelLmu:" );
+      printContainer( m_TelTmu, "Printing content of TelTmu:" );
+      printContainer( m_TelLmu, "Printing content of TelLmu:" );
+      printContainer( m_LelTmu, "Printing content of LelTmu:" );
+      printContainer( m_LelLmu, "Printing content of LelLmu:" );
+    }
   }
 
   std::string eff_type("");
@@ -868,6 +874,7 @@ void LHFitter :: initialise() {
   std::cout << " Number of 1D pT bins (including O/Flow) = "<<  m_nPtBins_Linear << std::endl;
   std::cout << " Number of effective 2D pT bins (including O/Flow) = "<<  m_nPtBins_Squared << std::endl;
   std::cout << " ----------------------------"<<  std::endl;
+  std::cout << " Flavour composition: " << m_flavour_str << std::endl;
   std::cout << " Number of flavour bins = "<<  NFLAV << std::endl;
   std::cout << " Number of RR, RF, FR, FF bins = "<<  NCOMP << std::endl;
   std::cout << "" << std::endl;
@@ -906,50 +913,59 @@ void LHFitter :: initialise() {
   this->getEducatedGuess();
 
   if ( m_debug ) {
-     printContainer( m_rel_init, "Printing content of rel_init:" );
-     printContainer( m_fel_init, "Printing content of fel_init:" );
-     printContainer( m_rmu_init, "Printing content of rmu_init:" );
-     printContainer( m_fmu_init, "Printing content of fmu_init:" );
+     if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_rel_init, "Printing content of rel_init:" );
+     if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fel_init, "Printing content of fel_init:" );
+     if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_rmu_init, "Printing content of rmu_init:" );
+     if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fmu_init, "Printing content of fmu_init:" );
      if ( m_efficiency == kEfficiency::REAL ) {
-	 printContainer( m_RelRel_init,"Printing content of RelRel_init:" );
-	 printContainer( m_RmuRmu_init,"Printing content of RmuRmu_init:" );
-	 printContainer( m_RmuRel_init,"Printing content of RmuRel_init:" );
-	 printContainer( m_RelRmu_init,"Printing content of RelRmu_init:" );
+	 if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RelRel_init,"Printing content of RelRel_init:" );
+	 if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RmuRmu_init,"Printing content of RmuRmu_init:" );
+	 if ( m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RmuRel_init,"Printing content of RmuRel_init:" );
+	 if ( m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RelRmu_init,"Printing content of RelRmu_init:" );
      }
      if ( m_efficiency == kEfficiency::FAKE ) {
-	 printContainer( m_RelFel_init,"Printing content of RelFel_init:" );
-	 printContainer( m_FelRel_init,"Printing content of FelRel_init:" );
-	 //printContainer( m_FelFel_init,"Printing content of FelFel_init:" );
-	 printContainer( m_RmuFmu_init,"Printing content of RmuFmu_init:" );
-	 printContainer( m_FmuRmu_init,"Printing content of FmuRmu_init:" );
-	 //printContainer( m_FmuFmu_init,"Printing content of FmuFmu_init:" );
-	 printContainer( m_RmuFel_init,"Printing content of RmuFel_init:" );
-	 printContainer( m_FmuRel_init,"Printing content of FmuRel_init:" );
-	 //printContainer( m_FmuFel_init,"Printing content of FmuFel_init:" );
-	 printContainer( m_RelFmu_init,"Printing content of RelFmu_init:" );
-	 printContainer( m_FelRmu_init,"Printing content of FelRmu_init:" );
-	 //printContainer( m_FelFmu_init,"Printing content of FelFmu_init:" );
+	 if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+	   printContainer( m_RelFel_init,"Printing content of RelFel_init:" );
+	   printContainer( m_FelRel_init,"Printing content of FelRel_init:" );
+	   //printContainer( m_FelFel_init,"Printing content of FelFel_init:" );
+	 }
+	 if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+	   printContainer( m_RmuFmu_init,"Printing content of RmuFmu_init:" );
+	   printContainer( m_FmuRmu_init,"Printing content of FmuRmu_init:" );
+	   //printContainer( m_FmuFmu_init,"Printing content of FmuFmu_init:" );
+	 }
+	 if ( m_flavour == kFlavour::INCLUSIVE ) {
+	   printContainer( m_RmuFel_init,"Printing content of RmuFel_init:" );
+	   printContainer( m_FmuRel_init,"Printing content of FmuRel_init:" );
+	   //printContainer( m_FmuFel_init,"Printing content of FmuFel_init:" );
+	   printContainer( m_RelFmu_init,"Printing content of RelFmu_init:" );
+	   printContainer( m_FelRmu_init,"Printing content of FelRmu_init:" );
+	   //printContainer( m_FelFmu_init,"Printing content of FelFmu_init:" );
+	 }
      }
-     printContainer( g_TelTel_resized, "Printing content of TelTel (resized):" );
-     printContainer( g_TelLel_resized, "Printing content of TelLel (resized):" );
-     printContainer( g_LelTel_resized, "Printing content of LelTel (resized):" );
-     printContainer( g_LelLel_resized, "Printing content of LelLel (resized):" );
+     if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+       printContainer( g_TelTel_resized, "Printing content of TelTel (resized):" );
+       printContainer( g_TelLel_resized, "Printing content of TelLel (resized):" );
+       printContainer( g_LelTel_resized, "Printing content of LelTel (resized):" );
+       printContainer( g_LelLel_resized, "Printing content of LelLel (resized):" );
+     }
+     if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+       printContainer( g_TmuTmu_resized, "Printing content of TmuTmu (resized):" );
+       printContainer( g_TmuLmu_resized, "Printing content of TmuLmu (resized):" );
+       printContainer( g_LmuTmu_resized, "Printing content of LmuTmu (resized):" );
+       printContainer( g_LmuLmu_resized, "Printing content of LmuLmu (resized):" );
+     }
+     if ( m_flavour == kFlavour::INCLUSIVE ) {
+       printContainer( g_TmuTel_resized, "Printing content of TmuTel (resized):" );
+       printContainer( g_TmuLel_resized, "Printing content of TmuLel (resized):" );
+       printContainer( g_LmuTel_resized, "Printing content of LmuTel (resized):" );
+       printContainer( g_LmuLel_resized, "Printing content of LmuLel (resized):" );
 
-     printContainer( g_TmuTmu_resized, "Printing content of TmuTmu (resized):" );
-     printContainer( g_TmuLmu_resized, "Printing content of TmuLmu (resized):" );
-     printContainer( g_LmuTmu_resized, "Printing content of LmuTmu (resized):" );
-     printContainer( g_LmuLmu_resized, "Printing content of LmuLmu (resized):" );
-
-     printContainer( g_TmuTel_resized, "Printing content of TmuTel (resized):" );
-     printContainer( g_TmuLel_resized, "Printing content of TmuLel (resized):" );
-     printContainer( g_LmuTel_resized, "Printing content of LmuTel (resized):" );
-     printContainer( g_LmuLel_resized, "Printing content of LmuLel (resized):" );
-
-     printContainer( g_TelTmu_resized, "Printing content of TelTmu (resized):" );
-     printContainer( g_TelLmu_resized, "Printing content of TelLmu (resized):" );
-     printContainer( g_LelTmu_resized, "Printing content of LelTmu (resized):" );
-     printContainer( g_LelLmu_resized, "Printing content of LelLmu (resized):" );
-
+       printContainer( g_TelTmu_resized, "Printing content of TelTmu (resized):" );
+       printContainer( g_TelLmu_resized, "Printing content of TelLmu (resized):" );
+       printContainer( g_LelTmu_resized, "Printing content of LelTmu (resized):" );
+       printContainer( g_LelLmu_resized, "Printing content of LelLmu (resized):" );
+     }
   }
 
   // Set the parameters of the fit into the toatl par[] array of the TMinuit object
@@ -1349,40 +1365,54 @@ void LHFitter :: initialise() {
 
   if ( m_verbose ) {
       if ( m_efficiency == kEfficiency::REAL ) {
-	  printContainer( g_rel_idxs, "Printing content of rel_idxs:" );
-	  printContainer( g_r1el_idxs, "Printing content of r1el_idxs:" );
-	  printContainer( g_r2el_idxs, "Printing content of r2el_idxs:" );
-	  printContainer( g_rmu_idxs, "Printing content of rmu_idxs:" );
-	  printContainer( g_r1mu_idxs, "Printing content of r1mu_idxs:" );
-	  printContainer( g_r2mu_idxs, "Printing content of r2mu_idxs:" );
+	  if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+	    printContainer( g_rel_idxs, "Printing content of rel_idxs:" );
+	    printContainer( g_r1el_idxs, "Printing content of r1el_idxs:" );
+	    printContainer( g_r2el_idxs, "Printing content of r2el_idxs:" );
+	  }
+	  if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+	    printContainer( g_rmu_idxs, "Printing content of rmu_idxs:" );
+	    printContainer( g_r1mu_idxs, "Printing content of r1mu_idxs:" );
+	    printContainer( g_r2mu_idxs, "Printing content of r2mu_idxs:" );
+	  }
       }
       if ( m_efficiency == kEfficiency::FAKE ) {
-	  printContainer( g_fel_idxs, "Printing content of fel_idxs:" );
-	  printContainer( g_f1el_idxs, "Printing content of f1el_idxs:" );
-	  printContainer( g_f2el_idxs, "Printing content of f2el_idxs:" );
-	  printContainer( g_fmu_idxs, "Printing content of fmu_idxs:" );
-	  printContainer( g_f1mu_idxs, "Printing content of f1mu_idxs:" );
-	  printContainer( g_f2mu_idxs, "Printing content of f2mu_idxs:" );
+	  if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+	    printContainer( g_fel_idxs, "Printing content of fel_idxs:" );
+	    printContainer( g_f1el_idxs, "Printing content of f1el_idxs:" );
+	    printContainer( g_f2el_idxs, "Printing content of f2el_idxs:" );
+	  }
+	  if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+	    printContainer( g_fmu_idxs, "Printing content of fmu_idxs:" );
+	    printContainer( g_f1mu_idxs, "Printing content of f1mu_idxs:" );
+	    printContainer( g_f2mu_idxs, "Printing content of f2mu_idxs:" );
+          }
       }
       if ( m_efficiency == kEfficiency::REAL ) {
-	  printContainer( g_RelRel_idxs, "Printing content of RelRel_idxs:" );
-	  printContainer( g_RmuRmu_idxs, "Printing content of RmuRmu_idxs:" );
-	  printContainer( g_RmuRel_idxs, "Printing content of RmuRel_idxs:" );
-	  printContainer( g_RelRmu_idxs, "Printing content of RelRmu_idxs:" );
+	  if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RelRel_idxs, "Printing content of RelRel_idxs:" );
+	  if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RmuRmu_idxs, "Printing content of RmuRmu_idxs:" );
+	  if ( m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RmuRel_idxs, "Printing content of RmuRel_idxs:" );
+	  if ( m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RelRmu_idxs, "Printing content of RelRmu_idxs:" );
       }
       if ( m_efficiency == kEfficiency::FAKE ) {
-	  printContainer( g_RelFel_idxs, "Printing content of RelFel_idxs:" );
-	  printContainer( g_FelRel_idxs, "Printing content of FelRel_idxs:" );
-	  //printContainer( g_FelFel_idxs, "Printing content of FelFel_idxs:" );
-	  printContainer( g_RmuFmu_idxs, "Printing content of RmuFmu_idxs:" );
-	  printContainer( g_FmuRmu_idxs, "Printing content of FmuRmu_idxs:" );
-	  //printContainer( g_FmuFmu_idxs, "Printing content of FmuFmu_idxs:" );
-	  printContainer( g_RmuFel_idxs, "Printing content of RmuFel_idxs:" );
-	  printContainer( g_FmuRel_idxs, "Printing content of FmuRel_idxs:" );
-	  //printContainer( g_FmuFel_idxs, "Printing content of FmuFel_idxs:" );
-	  printContainer( g_RelFmu_idxs, "Printing content of RelFmu_idxs:" );
-	  printContainer( g_FelRmu_idxs, "Printing content of FelRmu_idxs:" );
-	  //printContainer( g_FelFmu_idxs, "Printing content of FelFmu_idxs:" );
+	  if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+	    printContainer( g_RelFel_idxs, "Printing content of RelFel_idxs:" );
+	    printContainer( g_FelRel_idxs, "Printing content of FelRel_idxs:" );
+	    //printContainer( g_FelFel_idxs, "Printing content of FelFel_idxs:" );
+	  }
+	  if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+	    printContainer( g_RmuFmu_idxs, "Printing content of RmuFmu_idxs:" );
+	    printContainer( g_FmuRmu_idxs, "Printing content of FmuRmu_idxs:" );
+	    //printContainer( g_FmuFmu_idxs, "Printing content of FmuFmu_idxs:" );
+	  }
+	  if ( m_flavour == kFlavour::INCLUSIVE ) {
+	    printContainer( g_RmuFel_idxs, "Printing content of RmuFel_idxs:" );
+	    printContainer( g_FmuRel_idxs, "Printing content of FmuRel_idxs:" );
+	    //printContainer( g_FmuFel_idxs, "Printing content of FmuFel_idxs:" );
+	    printContainer( g_RelFmu_idxs, "Printing content of RelFmu_idxs:" );
+	    printContainer( g_FelRmu_idxs, "Printing content of FelRmu_idxs:" );
+	    //printContainer( g_FelFmu_idxs, "Printing content of FelFmu_idxs:" );
+	  }
       }
   }
 
@@ -1409,50 +1439,62 @@ void LHFitter :: fit() {
     //exit(-1);
   }
 
+  std::cout << "" << std::endl;
+  Info("fit()","Estimating errors...\n" );
+
   arglist[0] = 0.0;
   arglist[1] = 1.0;
   m_myFitter->mnexcm("MINOS",arglist,1,ierflg); // calculate MINOS errors for all the parameters
 
   if ( m_verbose ) {
     if ( m_efficiency == kEfficiency::REAL ) {
-      printContainer( m_rel_vals, "Printing content of rel_vals (DEFAULT):" );
-      printErrorContainer( m_rel_errs, "Printing content of rel_errs (DEFAULT):" );
-      printContainer( m_rmu_vals, "Printing content of rmu_vals (DEFAULT):" );
-      printErrorContainer( m_rmu_errs, "Printing content of rmu_errs (DEFAULT):" );
-      printContainer( m_RelRel_vals, "Printing content of RelRel_vals (DEFAULT):" );
-      printErrorContainer( m_RelRel_errs, "Printing content of RelRel_errs (DEFAULT):" );
-      printContainer( m_RmuRmu_vals, "Printing content of RmuRmu_vals (DEFAULT):" );
-      printErrorContainer( m_RmuRmu_errs, "Printing content of RmuRmu_errs (DEFAULT):" );
-      printContainer( m_RmuRel_vals, "Printing content of RmuRel_vals (DEFAULT):" );
-      printErrorContainer( m_RmuRel_errs, "Printing content of RmuRel_errs (DEFAULT):" );
-      printContainer( m_RelRmu_vals, "Printing content of RelRmu_vals (DEFAULT):" );
-      printErrorContainer( m_RelRmu_errs, "Printing content of RelRmu_errs (DEFAULT):" );
+      if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_rel_vals, "Printing content of rel_vals (DEFAULT):" );
+        printErrorContainer( m_rel_errs, "Printing content of rel_errs (DEFAULT):" );
+	printContainer( m_RelRel_vals, "Printing content of RelRel_vals (DEFAULT):" );
+	printErrorContainer( m_RelRel_errs, "Printing content of RelRel_errs (DEFAULT):" );
+      }
+      if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_rmu_vals, "Printing content of rmu_vals (DEFAULT):" );
+	printErrorContainer( m_rmu_errs, "Printing content of rmu_errs (DEFAULT):" );
+	printContainer( m_RmuRmu_vals, "Printing content of RmuRmu_vals (DEFAULT):" );
+	printErrorContainer( m_RmuRmu_errs, "Printing content of RmuRmu_errs (DEFAULT):" );
+      }
+      if ( m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_RmuRel_vals, "Printing content of RmuRel_vals (DEFAULT):" );
+	printErrorContainer( m_RmuRel_errs, "Printing content of RmuRel_errs (DEFAULT):" );
+	printContainer( m_RelRmu_vals, "Printing content of RelRmu_vals (DEFAULT):" );
+	printErrorContainer( m_RelRmu_errs, "Printing content of RelRmu_errs (DEFAULT):" );
+      }
     }
     if ( m_efficiency == kEfficiency::FAKE ) {
-      printContainer( m_fel_vals, "Printing content of fel_vals (DEFAULT):" );
-      printErrorContainer( m_fel_errs, "Printing content of fel_errs (DEFAULT):" );
-      printContainer( m_fmu_vals, "Printing content of fmu_vals (DEFAULT):" );
-      printErrorContainer( m_fmu_errs, "Printing content of fmu_errs (DEFAULT):" );
+      if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_fel_vals, "Printing content of fel_vals (DEFAULT):" );
+	printErrorContainer( m_fel_errs, "Printing content of fel_errs (DEFAULT):" );
+	printContainer( m_RelFel_vals, "Printing content of RelFel_vals (DEFAULT):" );
+	printErrorContainer( m_RelFel_errs, "Printing content of RelFel_errs (DEFAULT):" );
+	printContainer( m_FelRel_vals, "Printing content of FelRel_vals (DEFAULT):" );
+	printErrorContainer( m_FelRel_errs, "Printing content of FelRel_errs (DEFAULT):" );
+      }
+      if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_fmu_vals, "Printing content of fmu_vals (DEFAULT):" );
+	printErrorContainer( m_fmu_errs, "Printing content of fmu_errs (DEFAULT):" );
+	printContainer( m_RmuFmu_vals, "Printing content of RmuFmu_vals (DEFAULT):" );
+	printErrorContainer( m_RmuFmu_errs, "Printing content of RmuFmu_errs (DEFAULT):" );
+	printContainer( m_FmuRmu_vals, "Printing content of FmuRmu_vals (DEFAULT):" );
+	printErrorContainer( m_FmuRmu_errs, "Printing content of FmuRmu_errs (DEFAULT):" );
+      }
+      if ( m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_RmuFel_vals, "Printing content of RmuFel_vals (DEFAULT):" );
+	printErrorContainer( m_RmuFel_errs, "Printing content of RmuFel_errs (DEFAULT):" );
+	printContainer( m_FmuRel_vals, "Printing content of FmuRel_vals (DEFAULT):" );
+	printErrorContainer( m_FmuRel_errs, "Printing content of FmuRel_errs (DEFAULT):" );
 
-      printContainer( m_RelFel_vals, "Printing content of RelFel_vals (DEFAULT):" );
-      printErrorContainer( m_RelFel_errs, "Printing content of RelFel_errs (DEFAULT):" );
-      printContainer( m_FelRel_vals, "Printing content of FelRel_vals (DEFAULT):" );
-      printErrorContainer( m_FelRel_errs, "Printing content of FelRel_errs (DEFAULT):" );
-
-      printContainer( m_RmuFmu_vals, "Printing content of RmuFmu_vals (DEFAULT):" );
-      printErrorContainer( m_RmuFmu_errs, "Printing content of RmuFmu_errs (DEFAULT):" );
-      printContainer( m_FmuRmu_vals, "Printing content of FmuRmu_vals (DEFAULT):" );
-      printErrorContainer( m_FmuRmu_errs, "Printing content of FmuRmu_errs (DEFAULT):" );
-
-      printContainer( m_RmuFel_vals, "Printing content of RmuFel_vals (DEFAULT):" );
-      printErrorContainer( m_RmuFel_errs, "Printing content of RmuFel_errs (DEFAULT):" );
-      printContainer( m_FmuRel_vals, "Printing content of FmuRel_vals (DEFAULT):" );
-      printErrorContainer( m_FmuRel_errs, "Printing content of FmuRel_errs (DEFAULT):" );
-
-      printContainer( m_RelFmu_vals, "Printing content of RelFmu_vals (DEFAULT):" );
-      printErrorContainer( m_RelFmu_errs, "Printing content of RelFmu_errs (DEFAULT):" );
-      printContainer( m_FelRmu_vals, "Printing content of FelRmu_vals (DEFAULT):" );
-      printErrorContainer( m_FelRmu_errs, "Printing content of FelRmu_errs (DEFAULT):" );
+	printContainer( m_RelFmu_vals, "Printing content of RelFmu_vals (DEFAULT):" );
+	printErrorContainer( m_RelFmu_errs, "Printing content of RelFmu_errs (DEFAULT):" );
+	printContainer( m_FelRmu_vals, "Printing content of FelRmu_vals (DEFAULT):" );
+	printErrorContainer( m_FelRmu_errs, "Printing content of FelRmu_errs (DEFAULT):" );
+      }
     }
   }
 
@@ -1462,26 +1504,53 @@ void LHFitter :: fit() {
 
   if ( m_debug ) {
     if ( m_efficiency == kEfficiency::REAL ) {
-      printContainer( m_r_vals, "Printing content of r_vals (POST-FIT):" );
-      printErrorContainer( m_r_errs, "Printing content of r_errs (POST-FIT):" );
-      printContainer( m_RR_vals, "Printing content of RR_vals (POST-FIT):" );
-      printErrorContainer( m_RR_errs, "Printing content of RR_errs (POST-FIT):" );
-      if ( m_flavour == kFlavour::ELEC ) {
-        printContainer( g_fitted_r1_el, "Printing content of g_fitted_r1_el (POST-FIT):" );
-        printContainer( g_fitted_r2_el, "Printing content of g_fitted_r2_el (POST-FIT):" );
+      if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_rel_vals, "Printing content of rel_vals (POST-FIT):" );
+        printErrorContainer( m_rel_errs, "Printing content of rel_errs (POST-FIT):" );
+	printContainer( m_RelRel_vals, "Printing content of RelRel_vals (POST-FIT):" );
+	printErrorContainer( m_RelRel_errs, "Printing content of RelRel_errs (POST-FIT):" );
       }
-      if ( m_flavour == kFlavour::MUON ) {
-        printContainer( g_fitted_r1_mu, "Printing content of g_fitted_r1_mu (POST-FIT):" );
-        printContainer( g_fitted_r2_mu, "Printing content of g_fitted_r2_mu (POST-FIT):" );
+      if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_rmu_vals, "Printing content of rmu_vals (POST-FIT):" );
+	printErrorContainer( m_rmu_errs, "Printing content of rmu_errs (POST-FIT):" );
+	printContainer( m_RmuRmu_vals, "Printing content of RmuRmu_vals (POST-FIT):" );
+	printErrorContainer( m_RmuRmu_errs, "Printing content of RmuRmu_errs (POST-FIT):" );
+      }
+      if ( m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_RmuRel_vals, "Printing content of RmuRel_vals (POST-FIT):" );
+	printErrorContainer( m_RmuRel_errs, "Printing content of RmuRel_errs (POST-FIT):" );
+	printContainer( m_RelRmu_vals, "Printing content of RelRmu_vals (POST-FIT):" );
+	printErrorContainer( m_RelRmu_errs, "Printing content of RelRmu_errs (POST-FIT):" );
       }
     }
     if ( m_efficiency == kEfficiency::FAKE ) {
-      printContainer( m_f_vals, "Printing content of f_vals (POST-FIT):" );
-      printErrorContainer( m_f_errs, "Printing content of f_errs (POST-FIT):" );
-      printContainer( m_RF_vals, "Printing content of RF_vals (POST-FIT):" );
-      printErrorContainer( m_RF_errs, "Printing content of RF_errs (POST-FIT):" );
-      printContainer( m_FR_vals, "Printing content of FR_vals (POST-FIT):" );
-      printErrorContainer( m_FR_errs, "Printing content of FR_errs (POST-FIT):" );
+      if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_fel_vals, "Printing content of fel_vals (POST-FIT):" );
+	printErrorContainer( m_fel_errs, "Printing content of fel_errs (POST-FIT):" );
+	printContainer( m_RelFel_vals, "Printing content of RelFel_vals (POST-FIT):" );
+	printErrorContainer( m_RelFel_errs, "Printing content of RelFel_errs (POST-FIT):" );
+	printContainer( m_FelRel_vals, "Printing content of FelRel_vals (POST-FIT):" );
+	printErrorContainer( m_FelRel_errs, "Printing content of FelRel_errs (POST-FIT):" );
+      }
+      if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_fmu_vals, "Printing content of fmu_vals (POST-FIT):" );
+	printErrorContainer( m_fmu_errs, "Printing content of fmu_errs (POST-FIT):" );
+	printContainer( m_RmuFmu_vals, "Printing content of RmuFmu_vals (POST-FIT):" );
+	printErrorContainer( m_RmuFmu_errs, "Printing content of RmuFmu_errs (POST-FIT):" );
+	printContainer( m_FmuRmu_vals, "Printing content of FmuRmu_vals (POST-FIT):" );
+	printErrorContainer( m_FmuRmu_errs, "Printing content of FmuRmu_errs (POST-FIT):" );
+      }
+      if ( m_flavour == kFlavour::INCLUSIVE ) {
+        printContainer( m_RmuFel_vals, "Printing content of RmuFel_vals (POST-FIT):" );
+	printErrorContainer( m_RmuFel_errs, "Printing content of RmuFel_errs (POST-FIT):" );
+	printContainer( m_FmuRel_vals, "Printing content of FmuRel_vals (POST-FIT):" );
+	printErrorContainer( m_FmuRel_errs, "Printing content of FmuRel_errs (POST-FIT):" );
+
+	printContainer( m_RelFmu_vals, "Printing content of RelFmu_vals (POST-FIT):" );
+	printErrorContainer( m_RelFmu_errs, "Printing content of RelFmu_errs (POST-FIT):" );
+	printContainer( m_FelRmu_vals, "Printing content of FelRmu_vals (POST-FIT):" );
+	printErrorContainer( m_FelRmu_errs, "Printing content of FelRmu_errs (POST-FIT):" );
+      }
     }
   }
 
@@ -1552,18 +1621,32 @@ void LHFitter :: resetGlobFlags(){
   g_fel_idxs.clear();
   g_rmu_idxs.clear();
   g_fmu_idxs.clear();
+
   g_RelRel_idxs.clear();
   g_FelRel_idxs.clear();
   g_RelFel_idxs.clear();
   //g_FelFel_idxs.clear();
-  g_RelRel_idxs.clear();
-  g_FelRel_idxs.clear();
-  g_RelFel_idxs.clear();
-  //g_FelFel_idxs.clear();
+  g_RmuRmu_idxs.clear();
+  g_FmuRmu_idxs.clear();
+  g_RmuFmu_idxs.clear();
+  //g_FmuFmu_idxs.clear();
+  g_RmuRel_idxs.clear();
+  g_FmuRel_idxs.clear();
+  g_RmuFel_idxs.clear();
+  //g_FmuFel_idxs.clear();
+  g_RelRmu_idxs.clear();
+  g_FelRmu_idxs.clear();
+  g_RelFmu_idxs.clear();
+  //g_FelFmu_idxs.clear();
+
   g_r1el_idxs.clear();
   g_r2el_idxs.clear();
   g_f1el_idxs.clear();
   g_f2el_idxs.clear();
+  g_r1mu_idxs.clear();
+  g_r2mu_idxs.clear();
+  g_f1mu_idxs.clear();
+  g_f2mu_idxs.clear();
 
   // these should not be reset...
   //g_fitted_r1_el.clear();
@@ -1571,10 +1654,25 @@ void LHFitter :: resetGlobFlags(){
   //g_fitted_r1_mu.clear();
   //g_fitted_r2_mu.clear();
 
-  g_TT_resized.clear();
-  g_TL_resized.clear();
-  g_LT_resized.clear();
-  g_LL_resized.clear();
+  g_TelTel_resized.clear();
+  g_TelLel_resized.clear();
+  g_LelTel_resized.clear();
+  g_LelLel_resized.clear();
+
+  g_TmuTmu_resized.clear();
+  g_TmuLmu_resized.clear();
+  g_LmuTmu_resized.clear();
+  g_LmuLmu_resized.clear();
+
+  g_TmuTel_resized.clear();
+  g_TmuLel_resized.clear();
+  g_LmuTel_resized.clear();
+  g_LmuLel_resized.clear();
+
+  g_TelTmu_resized.clear();
+  g_TelLmu_resized.clear();
+  g_LelTmu_resized.clear();
+  g_LelLmu_resized.clear();
 
   g_elec = ( m_flavour == kFlavour::ELEC );
   g_muon = ( m_flavour == kFlavour::MUON );
@@ -1669,7 +1767,6 @@ void LHFitter :: getHists() {
   if      ( m_efficiency == kEfficiency::REAL ) charge = "OS";
   else if ( m_efficiency == kEfficiency::FAKE ) charge = "SS";
 
-
   if      ( m_flavour == kFlavour::ELEC ) flavour_comb.push_back("ElEl");
   else if ( m_flavour == kFlavour::MUON ) flavour_comb.push_back("MuMu");
   else if ( m_flavour == kFlavour::INCLUSIVE ) {
@@ -1678,6 +1775,8 @@ void LHFitter :: getHists() {
       flavour_comb.push_back("MuEl");
       flavour_comb.push_back("ElMu");
   }
+
+  std::string eff_type = ( !s_useMC ) ? "observed" : "expected";
 
   for ( const auto& flav : flavour_comb ) {
 
@@ -1692,8 +1791,6 @@ void LHFitter :: getHists() {
 	      SysError("getHists()", "Failed to open ROOT file from path: %s . Aborting", path.c_str() );
 	      exit(-1);
 	  }
-
-	  std::string eff_type = ( !s_useMC ) ? "observed" : "expected";
 
 	  TH2D *hist = get_object<TH2D>( *file, eff_type.c_str() );
 
@@ -2010,7 +2107,6 @@ void LHFitter :: getEducatedGuess( ) {
   while ( m_rmu_init.size() < m_nPtBins_Linear ) { m_rmu_init.push_back( m_rmu_init_avg ); }
   while ( m_fmu_init.size() < m_nPtBins_Linear ) { m_fmu_init.push_back( m_fmu_init_avg ); }
 
-
   std::cout << "" << std::endl;
   Info("getEducatedGuess()","===> Will be using average f to determine initial guesses for RR, RF, FR, FF yields..." );
   Info("getEducatedGuess()","<fel> = %.2f", m_fel_init_avg );
@@ -2073,6 +2169,9 @@ void LHFitter :: getEducatedGuess( ) {
 
       if ( m_verbose ) {
         std::cout << "global bin: " << glob_bin_idx << std::endl;
+
+	std::cout << "" << std::endl;
+
         std::cout << "nTelTel: " << nTelTel << std::endl;
         std::cout << "nTelLel: " << nTelLel << std::endl;
         std::cout << "nLelTel: " << nLelTel << std::endl;
@@ -2148,7 +2247,7 @@ void LHFitter :: getEducatedGuess( ) {
       if ( FelRmu >= 0.0 ) { m_FelRmu_init.push_back( FelRmu ); } else { m_FelRmu_init.push_back( 1.0 ); }
       //if ( FelFmu >= 0.0 ) { m_FelFmu_init.push_back( FelFmu ); } else { m_FelFmu_init.push_back( 1.0 ); }
 
-      // Copy only relevant bins for observed yields into these containers
+      // Copy only the content of effective bins for observed yields into these containers
       // (will be the ones used in the likelihood)
       //
       g_TelTel_resized.push_back( nTelTel );
@@ -2193,29 +2292,58 @@ void LHFitter :: getParametersAndErrors() {
 
   if ( m_efficiency == kEfficiency::REAL ) {
 
-    for ( auto idx(0); idx < m_r_errs.size(); ++idx ) {
-       param_idx = offset + idx;
-       m_myFitter->GetParameter( param_idx, m_r_vals.at(idx), std::get<2>(m_r_errs.at(idx)) );
-       m_myFitter->mnerrs( param_idx, std::get<0>(m_r_errs.at(idx)), std::get<1>(m_r_errs.at(idx)), std::get<2>(m_r_errs.at(idx)), globcc );
-    }
+    if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_rel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+	m_myFitter->GetParameter( param_idx, m_rel_vals.at(idx), std::get<2>(m_rel_errs.at(idx)) );
+	m_myFitter->mnerrs( param_idx, std::get<0>(m_rel_errs.at(idx)), std::get<1>(m_rel_errs.at(idx)), std::get<2>(m_rel_errs.at(idx)), globcc );
+      }
 
-    for ( int ibiny(1); ibiny <= m_nPtBins_Linear; ++ibiny ) {
-      for ( int ibinx(1); ibinx <= m_nPtBins_Linear; ++ibinx ) {
-        if ( ibiny > ibinx ) { continue; }
-	if ( m_flavour == kFlavour::ELEC ) {
-          g_fitted_r1_el.push_back( m_r_vals.at(ibinx-1) );
-          g_fitted_r2_el.push_back( m_r_vals.at(ibiny-1) );
-	}
-	if ( m_flavour == kFlavour::MUON ) {
-          g_fitted_r1_mu.push_back( m_r_vals.at(ibinx-1) );
-          g_fitted_r2_mu.push_back( m_r_vals.at(ibiny-1) );
+      for ( int ibiny(1); ibiny <= m_nPtBins_Linear; ++ibiny ) {
+        for ( int ibinx(1); ibinx <= m_nPtBins_Linear; ++ibinx ) {
+	  if ( ibiny > ibinx ) { continue; }
+	  if ( m_flavour == kFlavour::ELEC ) {
+            g_fitted_r1_el.push_back( m_rel_vals.at(ibinx-1) );
+	    g_fitted_r2_el.push_back( m_rel_vals.at(ibiny-1) );
+	  }
+	  if ( m_flavour == kFlavour::MUON ) {
+            g_fitted_r1_mu.push_back( m_rel_vals.at(ibinx-1) );
+	    g_fitted_r2_mu.push_back( m_rel_vals.at(ibiny-1) );
+	  }
 	}
       }
+
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Linear;
     }
 
-    // Set the offset for total parameter index
-    //
-    offset += m_nPtBins_Linear;
+    if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_rmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+	m_myFitter->GetParameter( param_idx, m_rmu_vals.at(idx), std::get<2>(m_rmu_errs.at(idx)) );
+	m_myFitter->mnerrs( param_idx, std::get<0>(m_rmu_errs.at(idx)), std::get<1>(m_rmu_errs.at(idx)), std::get<2>(m_rmu_errs.at(idx)), globcc );
+      }
+
+      for ( int ibiny(1); ibiny <= m_nPtBins_Linear; ++ibiny ) {
+        for ( int ibinx(1); ibinx <= m_nPtBins_Linear; ++ibinx ) {
+	  if ( ibiny > ibinx ) { continue; }
+	  if ( m_flavour == kFlavour::ELEC ) {
+            g_fitted_r1_mu.push_back( m_rmu_vals.at(ibinx-1) );
+	    g_fitted_r2_mu.push_back( m_rmu_vals.at(ibiny-1) );
+	  }
+	  if ( m_flavour == kFlavour::MUON ) {
+            g_fitted_r1_mu.push_back( m_rmu_vals.at(ibinx-1) );
+	    g_fitted_r2_mu.push_back( m_rmu_vals.at(ibiny-1) );
+	  }
+	}
+      }
+
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Linear;
+    }
+
   }
 
   // --------------------
@@ -2224,14 +2352,28 @@ void LHFitter :: getParametersAndErrors() {
 
   if ( m_efficiency == kEfficiency::FAKE ) {
 
-    for ( auto idx(0); idx < m_f_errs.size(); ++idx ) {
-       param_idx = offset + idx;
-       m_myFitter->GetParameter( param_idx, m_f_vals.at(idx), std::get<2>(m_f_errs.at(idx)) );
-       m_myFitter->mnerrs( param_idx, std::get<0>(m_f_errs.at(idx)), std::get<1>(m_f_errs.at(idx)), std::get<2>(m_f_errs.at(idx)), globcc );
+    if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_fel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_fel_vals.at(idx), std::get<2>(m_fel_errs.at(idx)) );
+	m_myFitter->mnerrs( param_idx, std::get<0>(m_fel_errs.at(idx)), std::get<1>(m_fel_errs.at(idx)), std::get<2>(m_fel_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Linear;
     }
-    // Set the offset for total parameter index
-    //
-    offset += m_nPtBins_Linear;
+
+    if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_fmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_fmu_vals.at(idx), std::get<2>(m_fmu_errs.at(idx)) );
+	m_myFitter->mnerrs( param_idx, std::get<0>(m_fmu_errs.at(idx)), std::get<1>(m_fmu_errs.at(idx)), std::get<2>(m_fmu_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Linear;
+    }
+
   }
 
   // ---------------------
@@ -2240,14 +2382,49 @@ void LHFitter :: getParametersAndErrors() {
 
   if ( m_efficiency == kEfficiency::REAL ) {
 
-    for ( auto idx(0); idx < m_RR_errs.size(); ++idx ) {
-    	param_idx = offset + idx;
-        m_myFitter->GetParameter( param_idx, m_RR_vals.at(idx), std::get<2>(m_RR_errs.at(idx)) );
-        m_myFitter->mnerrs( param_idx, std::get<0>(m_RR_errs.at(idx)), std::get<1>(m_RR_errs.at(idx)), std::get<2>(m_RR_errs.at(idx)), globcc );
+    if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_RelRel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_RelRel_vals.at(idx), std::get<2>(m_RelRel_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_RelRel_errs.at(idx)), std::get<1>(m_RelRel_errs.at(idx)), std::get<2>(m_RelRel_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
     }
-    // Set the offset for total parameter index
-    //
-    offset += m_nPtBins_Squared;
+
+    if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_RmuRmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_RmuRmu_vals.at(idx), std::get<2>(m_RmuRmu_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_RmuRmu_errs.at(idx)), std::get<1>(m_RmuRmu_errs.at(idx)), std::get<2>(m_RmuRmu_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+    }
+
+    if ( m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_RmuRel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_RmuRel_vals.at(idx), std::get<2>(m_RmuRel_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_RmuRel_errs.at(idx)), std::get<1>(m_RmuRel_errs.at(idx)), std::get<2>(m_RmuRel_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+
+      for ( auto idx(0); idx < m_RelRmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_RelRmu_vals.at(idx), std::get<2>(m_RelRmu_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_RelRmu_errs.at(idx)), std::get<1>(m_RelRmu_errs.at(idx)), std::get<2>(m_RelRmu_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+
+    }
+
   }
 
   // ---------------------
@@ -2256,14 +2433,49 @@ void LHFitter :: getParametersAndErrors() {
 
   if ( m_efficiency == kEfficiency::FAKE ) {
 
-    for ( auto idx(0); idx < m_RF_errs.size(); ++idx ) {
-    	param_idx = offset + idx;
-        m_myFitter->GetParameter( param_idx, m_RF_vals.at(idx), std::get<2>(m_RF_errs.at(idx)) );
-        m_myFitter->mnerrs( param_idx, std::get<0>(m_RF_errs.at(idx)), std::get<1>(m_RF_errs.at(idx)), std::get<2>(m_RF_errs.at(idx)), globcc );
+    if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_RelFel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_RelFel_vals.at(idx), std::get<2>(m_RelFel_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_RelFel_errs.at(idx)), std::get<1>(m_RelFel_errs.at(idx)), std::get<2>(m_RelFel_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
     }
-    // Set the offset for total parameter index
-    //
-    offset += m_nPtBins_Squared;
+
+    if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_RmuFmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_RmuFmu_vals.at(idx), std::get<2>(m_RmuFmu_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_RmuFmu_errs.at(idx)), std::get<1>(m_RmuFmu_errs.at(idx)), std::get<2>(m_RmuFmu_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+    }
+
+    if ( m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_RmuFel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_RmuFel_vals.at(idx), std::get<2>(m_RmuFel_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_RmuFel_errs.at(idx)), std::get<1>(m_RmuFel_errs.at(idx)), std::get<2>(m_RmuFel_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+
+      for ( auto idx(0); idx < m_RelFmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_RelFmu_vals.at(idx), std::get<2>(m_RelFmu_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_RelFmu_errs.at(idx)), std::get<1>(m_RelFmu_errs.at(idx)), std::get<2>(m_RelFmu_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+
+    }
+
   }
 
   // ---------------------
@@ -2272,14 +2484,49 @@ void LHFitter :: getParametersAndErrors() {
 
   if ( m_efficiency == kEfficiency::FAKE ) {
 
-    for ( auto idx(0); idx < m_FR_errs.size(); ++idx ) {
-    	param_idx = offset + idx;
-        m_myFitter->GetParameter( param_idx, m_FR_vals.at(idx), std::get<2>(m_FR_errs.at(idx)) );
-        m_myFitter->mnerrs( param_idx, std::get<0>(m_FR_errs.at(idx)), std::get<1>(m_FR_errs.at(idx)), std::get<2>(m_FR_errs.at(idx)), globcc );
+    if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_FelRel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_FelRel_vals.at(idx), std::get<2>(m_FelRel_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_FelRel_errs.at(idx)), std::get<1>(m_FelRel_errs.at(idx)), std::get<2>(m_FelRel_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
     }
-    // Set the offset for total parameter index
-    //
-    offset += m_nPtBins_Squared;
+
+    if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_FmuRmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_FmuRmu_vals.at(idx), std::get<2>(m_FmuRmu_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_FmuRmu_errs.at(idx)), std::get<1>(m_FmuRmu_errs.at(idx)), std::get<2>(m_FmuRmu_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+    }
+
+    if ( m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_FmuRel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_FmuRel_vals.at(idx), std::get<2>(m_FmuRel_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_FmuRel_errs.at(idx)), std::get<1>(m_FmuRel_errs.at(idx)), std::get<2>(m_FmuRel_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+
+      for ( auto idx(0); idx < m_FelRmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_FelRmu_vals.at(idx), std::get<2>(m_FelRmu_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_FelRmu_errs.at(idx)), std::get<1>(m_FelRmu_errs.at(idx)), std::get<2>(m_FelRmu_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+
+    }
+
   }
 
   // ---------------------
@@ -2289,14 +2536,49 @@ void LHFitter :: getParametersAndErrors() {
   /*
   if ( m_efficiency == kEfficiency::FAKE ) {
 
-    for ( auto idx(0); idx < m_FF_errs.size(); ++idx ) {
-    	param_idx = offset + idx;
-        m_myFitter->GetParameter( param_idx, m_FF_vals.at(idx), std::get<2>(m_FF_errs.at(idx)) );
-        m_myFitter->mnerrs( param_idx, std::get<0>(m_FF_errs.at(idx)), std::get<1>(m_FF_errs.at(idx)), std::get<2>(m_FF_errs.at(idx)), globcc );
+    if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_FelFel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_FelFel_vals.at(idx), std::get<2>(m_FelFel_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_FelFel_errs.at(idx)), std::get<1>(m_FelFel_errs.at(idx)), std::get<2>(m_FelFel_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
     }
-    // Set the offset for total parameter index
-    //
-    offset += m_nPtBins_Squared;
+
+    if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_FmuFmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_FmuFmu_vals.at(idx), std::get<2>(m_FmuFmu_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_FmuFmu_errs.at(idx)), std::get<1>(m_FmuFmu_errs.at(idx)), std::get<2>(m_FmuFmu_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+    }
+
+    if ( m_flavour == kFlavour::INCLUSIVE ) {
+      for ( auto idx(0); idx < m_FmuFel_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_FmuFel_vals.at(idx), std::get<2>(m_FmuFel_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_FmuFel_errs.at(idx)), std::get<1>(m_FmuFel_errs.at(idx)), std::get<2>(m_FmuFel_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+
+      for ( auto idx(0); idx < m_FelFmu_errs.size(); ++idx ) {
+        param_idx = offset + idx;
+        m_myFitter->GetParameter( param_idx, m_FelFmu_vals.at(idx), std::get<2>(m_FelFmu_errs.at(idx)) );
+        m_myFitter->mnerrs( param_idx, std::get<0>(m_FelFmu_errs.at(idx)), std::get<1>(m_FelFmu_errs.at(idx)), std::get<2>(m_FelFmu_errs.at(idx)), globcc );
+      }
+      // Set the offset for total parameter index
+      //
+      offset += m_nPtBins_Squared;
+
+    }
+
   }
   */
 }
@@ -2309,95 +2591,123 @@ void  LHFitter :: saveEfficiencies() {
 
   //TH1::ResetBit(TH1::kCanRebin);
 
+  std::vector<std::string> outfilenames;
+
   std::string outfilename("LH_efficiencies");
 
   if      ( m_efficiency == kEfficiency::REAL ) { outfilename += "_real"; }
   else if ( m_efficiency == kEfficiency::FAKE ) { outfilename += "_fake"; }
 
-  if      ( m_flavour == kFlavour::MUON ) { outfilename += "_mu"; }
-  else if ( m_flavour == kFlavour::ELEC ) { outfilename += "_el"; }
+  if ( m_flavour == kFlavour::MUON || m_flavour == kFlavour::INCLUSIVE ) { outfilenames.push_back( outfilename + "_mu" ); }
+  if ( m_flavour == kFlavour::ELEC || m_flavour == kFlavour::INCLUSIVE ) { outfilenames.push_back( outfilename + "_el" ); }
 
-  std::string rootfilename = outfilename + ".root";
-  TFile outfile(rootfilename.c_str(),"RECREATE");
+  std::string xtitle("");
 
-  std::string txtfilename = outfilename + ".txt";
-  std::ofstream outtextfile(txtfilename.c_str(), std::ios::trunc);
-  outtextfile << "Efficiencies for FF amd Matrix Method from LH fit \n";
+  for ( auto& outfilename : outfilenames ) {
 
-  // --------------------
-  // real efficiency
-  // --------------------
+    std::string rootfilename = outfilename + ".root";
+    TFile outfile(rootfilename.c_str(),"RECREATE");
 
-  if ( m_efficiency == kEfficiency::REAL ) {
+    std::string txtfilename = outfilename + ".txt";
+    std::ofstream outtextfile(txtfilename.c_str(), std::ios::trunc);
+    outtextfile << "Efficiencies for FF amd Matrix Method from LH fit \n";
 
-    TH1D *r_hist(nullptr);
-    if ( m_doRebinning && m_useVariableBins ) {
-	r_hist = new TH1D( "r_hist", "real efficiency", m_newNBins, m_newBins );
-    } else {
-      double rmin = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(1);
-      double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
-      r_hist = new TH1D( "r_hist", "real efficiency", m_nPtBins_Linear-1, rmin, rmax );
+    // --------------------
+    // real efficiency
+    // --------------------
+
+    if ( m_efficiency == kEfficiency::REAL ) {
+
+      TH1D *r_hist(nullptr);
+      if ( m_doRebinning && m_useVariableBins ) {
+        r_hist = new TH1D( "r_hist", "real efficiency", m_newNBins, m_newBins );
+      } else {
+        double rmin = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(1);
+	double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
+	r_hist = new TH1D( "r_hist", "real efficiency", m_nPtBins_Linear-1, rmin, rmax );
+      }
+      r_hist->SetCanExtend(TH1::kXaxis);
+
+      r_hist->GetYaxis()->SetTitle("Real efficiency");
+      r_hist->GetYaxis()->SetRangeUser(0.0,1.0);
+
+      if ( outfilename.find("_mu") != string::npos ) { xtitle = "muon pT [GeV]"; }
+      else if ( outfilename.find("_el") != string::npos ) { xtitle = "electron pT [GeV]"; }
+
+      r_hist->GetXaxis()->SetTitle(xtitle.c_str());
+
+      outtextfile << "Real efficiency - " << xtitle << "\n";
+      for ( auto idx(0); idx < m_nPtBins_Linear; ++idx ) {
+
+	double this_r_val;
+	std::tuple<double,double,double> this_r_err;
+	if ( outfilename.find("_mu") != string::npos ) {
+	  this_r_val = m_rmu_vals.at(idx);
+	  this_r_err = m_rmu_errs.at(idx);
+	} else if ( outfilename.find("_el") != string::npos ) {
+	  this_r_val = m_rel_vals.at(idx);
+	  this_r_err = m_rel_errs.at(idx);
+	}
+
+	if ( m_debug ) { std:: cout << "Bin idx " << idx+1 << " central value: " << ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1) << " - value to fill in: " << this_r_val << std::endl; }
+	r_hist->Fill( ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1), this_r_val );
+	r_hist->SetBinError( idx + 1, std::get<2>(this_r_err) );
+	outtextfile << "{ Bin nr: " << idx << ", efficiency = " <<  this_r_val << " + " << std::get<0>(this_r_err) << " - " << fabs( std::get<1>(this_r_err) ) << " ( +- " << std::get<2>(this_r_err) << " ) }\n";
+      }
+
+      r_hist->Write();
     }
-    r_hist->SetCanExtend(TH1::kXaxis);
 
-    r_hist->GetYaxis()->SetTitle("Real efficiency");
-    r_hist->GetYaxis()->SetRangeUser(0.0,1.0);
+    // --------------------
+    // fake efficiency
+    // --------------------
 
-    std::string xtitle("");
-    if ( m_flavour == kFlavour::MUON ) { xtitle += "muon pT [GeV]"; }
-    if ( m_flavour == kFlavour::ELEC ) { xtitle += "electron pT [GeV]"; }
+    if ( m_efficiency == kEfficiency::FAKE ) {
 
-    r_hist->GetXaxis()->SetTitle(xtitle.c_str());
-
-    outtextfile << "Real efficiency - " << xtitle << "\n";
-    for ( auto idx(0); idx < m_nPtBins_Linear; ++idx ) {
-       if ( m_debug ) { std:: cout << "Bin idx " << idx+1 << " central value: " << ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1) << " - value to fill in: " << m_r_vals.at(idx) << std::endl; }
-       r_hist->Fill( ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1), m_r_vals.at(idx) );
-       r_hist->SetBinError( idx + 1, std::get<2>(m_r_errs.at(idx)) );
-       outtextfile << "{ Bin nr: " << idx << ", efficiency = " <<  m_r_vals.at(idx) << " + " << std::get<0>(m_r_errs.at(idx)) << " - " << fabs( std::get<1>(m_r_errs.at(idx)) ) << " ( +- " << std::get<2>(m_r_errs.at(idx)) << " ) }\n";
-    }
-
-    r_hist->Write();
-  }
-
-  // --------------------
-  // fake efficiency
-  // --------------------
-
-  if ( m_efficiency == kEfficiency::FAKE ) {
-
-    TH1D *f_hist(nullptr);
-    if ( m_doRebinning && m_useVariableBins ) {
+      TH1D *f_hist(nullptr);
+      if ( m_doRebinning && m_useVariableBins ) {
 	f_hist = new TH1D( "f_hist", "fake efficiency", m_newNBins, m_newBins );
-    } else {
-      double rmin = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(1);
-      double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
-      f_hist = new TH1D( "f_hist", "fake efficiency", m_nPtBins_Linear-1, rmin, rmax );
+      } else {
+        double rmin = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(1);
+	double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
+	f_hist = new TH1D( "f_hist", "fake efficiency", m_nPtBins_Linear-1, rmin, rmax );
+      }
+      f_hist->SetCanExtend(TH1::kXaxis);
+
+      f_hist->GetYaxis()->SetTitle("Fake efficiency");
+      f_hist->GetYaxis()->SetRangeUser(0.0,1.0);
+
+      if ( outfilename.find("_mu") != string::npos ) { xtitle = "muon pT [GeV]"; }
+      else if ( outfilename.find("_el") != string::npos ) { xtitle = "electron pT [GeV]"; }
+
+      f_hist->GetXaxis()->SetTitle(xtitle.c_str());
+
+      outtextfile << "Fake efficiency - " << xtitle << "\n";
+      for ( auto idx(0); idx < m_nPtBins_Linear; ++idx ) {
+
+	double this_f_val;
+	std::tuple<double,double,double> this_f_err;
+	if ( outfilename.find("_mu") != string::npos ) {
+	  this_f_val = m_rmu_vals.at(idx);
+	  this_f_err = m_rmu_errs.at(idx);
+	} else if ( outfilename.find("_el") != string::npos ) {
+	  this_f_val = m_rel_vals.at(idx);
+	  this_f_err = m_rel_errs.at(idx);
+	}
+
+	if ( m_debug ) { std:: cout << "Bin idx " << idx+1 << " central value: " << ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1) << " - value to fill in: " << this_f_val << std::endl; }
+	f_hist->Fill( ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1), this_f_val );
+	f_hist->SetBinError( idx + 1, std::get<2>(this_f_err) );
+	outtextfile << "{ Bin nr: " << idx << ", efficiency = " <<  this_f_val << " + " << std::get<0>(this_f_err) << " - " << fabs( std::get<1>(this_f_err) ) << " ( +- " << std::get<2>(this_f_err) << " ) }\n";
+      }
+
+      f_hist->Write();
     }
-    f_hist->SetCanExtend(TH1::kXaxis);
 
-    f_hist->GetYaxis()->SetTitle("Fake efficiency");
-    f_hist->GetYaxis()->SetRangeUser(0.0,1.0);
+    outfile.Close();
+    outtextfile.close();
 
-    std::string xtitle("");
-    if ( m_flavour == kFlavour::MUON ) { xtitle += "muon pT [GeV]"; }
-    if ( m_flavour == kFlavour::ELEC ) { xtitle += "electron pT [GeV]"; }
-
-    f_hist->GetXaxis()->SetTitle(xtitle.c_str());
-
-    outtextfile << "Fake efficiency - " << xtitle << "\n";
-    for ( auto idx(0); idx < m_nPtBins_Linear; ++idx ) {
-       if ( m_debug ) { std:: cout << "Bin idx " << idx+1 << " central value: " << ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1) << " - value to fill in: " << m_f_vals.at(idx) << std::endl; }
-       f_hist->Fill( ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1), m_f_vals.at(idx) );
-       f_hist->SetBinError( idx + 1, std::get<2>(m_f_errs.at(idx)) );
-       outtextfile << "{ Bin nr: " << idx << ", efficiency = " <<  m_f_vals.at(idx) << " + " << std::get<0>(m_f_errs.at(idx)) << " - " << fabs( std::get<1>(m_f_errs.at(idx)) ) << " ( +- " << std::get<2>(m_f_errs.at(idx)) << " ) }\n";
-    }
-
-    f_hist->Write();
   }
-
-  outfile.Close();
-  outtextfile.close();
 
 }
 
