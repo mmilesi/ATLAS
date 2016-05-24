@@ -12,11 +12,12 @@ def get_yields(nominal, up=None, down=None):
   #print("\t\tGetNbinsX() = {0}".format(nominal.GetNbinsX()))
   #print("\t\trange(0,GetNbinsX()+1) = {0}".format(range(0,nominal.GetNbinsX()+1)))
 
-  for bin in range(0,nominal.GetNbinsX()+1):
+  # pick also O-Flow bin
+  for bin in range(0,nominal.GetNbinsX()+2):
 
      nextbin = bin
-     if nominal.IsBinOverflow(bin+1):
-       nextbin = bin + 1
+     #if nominal.IsBinOverflow(bin+1):
+     #  nextbin = bin + 1
 
      stat_error    = Double(0)
      value_nominal = nominal.IntegralAndError(bin,nextbin,stat_error)
@@ -35,9 +36,16 @@ def get_yields(nominal, up=None, down=None):
 
        sys_error  = max(list_variations)
 
-       print ("\t\t{0}-th bin: integral = {1} +- {2} (stat) +- {3} (syst)".format( bin, value_nominal, stat_error, sys_error ))
+       if nominal.IsBinOverflow(bin):
+         print ("\t\t{0}-th bin (O-FLOW): integral = {1} +- {2} (stat) +- {3} (syst)".format( bin, value_nominal, stat_error, sys_error ))
+       else:
+         print ("\t\t{0}-th bin: integral = {1} +- {2} (stat) +- {3} (syst)".format( bin, value_nominal, stat_error, sys_error ))
+
      else:
-       print ("\t\t{0}-th bin: integral = {1} +- {2} (stat)".format( bin, value_nominal, stat_error ))
+       if nominal.IsBinOverflow(bin):
+         print ("\t\t{0}-th bin (O-FLOW): integral = {1} +- {2} (stat)".format( bin, value_nominal, stat_error ))
+       else:
+         print ("\t\t{0}-th bin: integral = {1} +- {2} (stat)".format( bin, value_nominal, stat_error ))
 
   integral_stat_error = Double(0)
   integral_nominal    = nominal.IntegralAndError(0,nominal.GetNbinsX()+1,integral_stat_error)
@@ -57,62 +65,46 @@ def get_yields(nominal, up=None, down=None):
 
 def main():
 
-  doClosure = True
+  doClosure = False
 
   if not doClosure:
-    
+
     # -----------
     # DATA-DRIVEN
-    #------------  
-    
-    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/"
-    #region    = "SS_LowNJetCR_DataDriven"
-    #var_name  = "NJets2j3j"
+    #------------
 
-    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut_EffNoLepIso/"
+    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v7_FinalSelection_NominalBinning/"
     #region    = "SS_LowNJetCR_DataDriven"
-    #var_name  = "NJets2j3j"
+    #var_name  = "NJets2j3j4j"
 
-    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/"
-    #region    = "SS_LowNJetCR_DataDriven"
-    #var_name  = "NJets2j3j"
-
-    #inputpath = "./OutputPlots_MM_TwoLepSR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/"
-    #region    = "SS_SR_DataDriven"
-    #var_name  = "NJets4j5j"
-    
-    inputpath = "./OutputPlots_MM_TwoLepSR_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut_EffNoLepIso/"
+    inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v7_FinalSelection_NominalBinning/"
     region    = "SS_SR_DataDriven"
-    var_name  = "NJets4j5j"  
+    var_name  = "NJets5j"
 
-    #inputpath = "./OutputPlots_MM_TwoLepSR_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/"
-    #region    = "SS_SR_DataDriven"
-    #var_name  = "NJets4j5j"
-  
   else:
-    
+
     # -------------
     # TTBAR CLOSURE
     #--------------
-    
+
     #inputpath = "./OutputPlots_MM_MMClosureTest_v029_Baseline_Mllgt40GeV_AllElEtaCut/"
     #region    = "SS_SR_HighJet_DataDriven_Closure"
     #var_name  = "NJets4j5j"
     ##region	= "SS_SR_LowJet_DataDriven_Closure"
     ##var_name  = "NJets2j3j"
-    
+
     inputpath = "./OutputPlots_MM_MMClosureTest_v029_Baseline_Mllgt40GeV_AllElEtaCut_EffNoLepIso/"
     region    = "SS_SR_HighJet_DataDriven_Closure"
     var_name  = "NJets4j5j"
     ##region	= "SS_SR_LowJet_DataDriven_Closure"
-    ##var_name  = "NJets2j3j"  
-    
+    ##var_name  = "NJets2j3j"
+
     #inputpath = "./OutputPlots_MM_MMClosureTest_v029_NoLepIso_Mllgt40GeV_AllElEtaCut/"
     #region    = "SS_SR_HighJet_DataDriven_Closure"
     #var_name  = "NJets4j5j"
     ##region	= "SS_SR_LowJet_DataDriven_Closure"
     ##var_name  = "NJets2j3j"
-  
+
     #inputpath = "./OutputPlots_MM_MMClosureTest_v029_NoLepIP_Mllgt40GeV_AllElEtaCut/"
     #region    = "SS_SR_HighJet_DataDriven_Closure"
     #var_name  = "NJets4j5j"

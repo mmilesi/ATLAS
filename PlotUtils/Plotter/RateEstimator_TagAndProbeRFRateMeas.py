@@ -39,6 +39,8 @@ parser.add_argument("--rebinEta", dest="rebinEta", action="store_true",default=F
 		    help="do rebinning in eta")
 parser.add_argument("--rebinPt", dest="rebinPt", action="store_true",default=False,
 		    help="do rebinning in pT")
+parser.add_argument("--doAvgMuFake", dest="doAvgMuFake", action="store_true",default=False,
+		    help="get average efficiency for muon fakes only")
 parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
 		    help="get average efficiencies/rates (i.e, make 1 bin)")
 parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",
@@ -91,7 +93,7 @@ list_out_samples = ["factor","factorbkgsub","rate","ratebkgsub"]
 # ( prompt subtraction, charge flip subtraction )
 # ----------------------------------------------------------------
 
-from ROOT import gROOT, TH1, TFile, TGraphAsymmErrors, Double
+from ROOT import ROOT, gROOT, TH1, TFile, TGraphAsymmErrors, Double
 
 gROOT.SetBatch(True)
 
@@ -137,6 +139,8 @@ for iLep in list_lep:
               fin.append( TFile(fname) )
 
 	      for iPred in list_prediction:
+
+                  standard_rebin = False
 
                   print "\t\t\t\t checking prediction from: ", iPred
 
@@ -192,16 +196,17 @@ for iLep in list_lep:
 
                           if iLep == "Mu":
 
-			     # nominal binning
-			     #
-			     nBIN  = 5
-                             xbins = [10,15,20,25,35,200] # merged bin [50,200]
-
-                             #nBIN = 5
-			     #xbins = [10,15,20,25,40,200]
-
-                             #nBIN = 2
-			     #xbins = [10,50,90]
+                             if args.doAvgMuFake:
+                                # Make one single bin
+                                #
+                                nBIN = htmp.GetNbinsX()
+                                xbins  = [htmp.GetBinLowEdge(1),htmp.GetBinLowEdge(htmp.GetNbinsX()+1)]
+                                standard_rebin = True
+                             else:
+                                # nominal binning
+                                #
+                                nBIN  = 5
+                                xbins = [10,15,20,25,35,200] # merged bin [50,200]
 
 			  elif iLep == "El":
 
@@ -210,12 +215,6 @@ for iLep in list_lep:
 			     nBIN  = 5
                              xbins = [10,15,20,25,40,200] # merged bin [60,200]
 
-                             #nBIN  = 5
-                             #xbins = [10,15,20,25,40,200]
-
-                             #nBIN = 2
-			     #xbins = [10,50,90]
-
                        elif iType == "Real":
 
 			  # standard binning
@@ -223,17 +222,13 @@ for iLep in list_lep:
 			  nBIN  = 7
                   	  xbins = [10,15,20,25,30,40,60,200]
 
-			  #nBIN  = 5
-                  	  #xbins = [10,15,20,25,40,200]
-
-                          #nBIN = 2
-			  #xbins = [10,60,110]
 
                        vxbins = array.array("d", xbins)
-		       print "\t\t\t\t\t vxbins: ",vxbins
+                       print "\t\t\t\t\t vxbins: ",vxbins
                        # the rebinning method automatically creates a new histogram
                        #
-                       hists[histname]  = htmp.Rebin( nBIN, histname, vxbins )
+                       if not standard_rebin: hists[histname] = htmp.Rebin( nBIN, histname, vxbins )
+                       else :                 hists[histname] = htmp.Rebin( nBIN, histname )
 
                   if args.doAvg:
 

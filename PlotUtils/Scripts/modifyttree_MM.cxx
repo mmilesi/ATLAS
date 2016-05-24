@@ -606,48 +606,63 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
 
   if ( addWeight.compare("NO") == 0 ) {
 
+
+
+
     // TO BE MODIFIED ACCORDINGLY TO YOUR NEEDS (name and type of the variables)
     //
-    std::string in_eventNumber_name("eventNumber");
-    std::string in_nlep_name("nlep");
+    std::string in_eventNumber_name("EventNumber");
+    std::string in_nlep_name("nleptons");
     std::string in_isSS01_name("isSS01");
     std::string in_isTT_name("is_T_T");
     std::string in_isTL_name("is_T_AntiT");
     std::string in_isLT_name("is_AntiT_T");
     std::string in_isLL_name("is_AntiT_AntiT");
+    std::string in_lep_pt_0_name("lep_Pt_0");
+    std::string in_lep_pt_1_name("lep_Pt_1");
+    std::string in_lep_eta_0_name("lep_EtaBE2_0");
+    std::string in_lep_eta_1_name("lep_EtaBE2_1");
+    std::string in_lep_flavour_0_name("lep_ID_0");
+    std::string in_lep_flavour_1_name("lep_ID_1");
+    std::string in_lep_isT_0_name("lep_isTightSelected_0");
+    std::string in_lep_isT_1_name("lep_isTightSelected_1");
     std::string in_MMWeight_name("MMWeight");
-    std::string in_lep_pt_name("lep_pt");
-    std::string in_lep_eta_name("lep_caloCluster_eta");
-    std::string in_lep_flavour_name("lep_flavour");
-    std::string in_lep_isT_name("lep_isTightSelected");
 
-    Long64_t               eventNumber_in; eventNumber_in = -1;
-    Int_t                  nlep_in;        nlep_in = -1;
-    Int_t                  isSS01_in;      isSS01_in = -1;
-    Int_t 	           isTT_in;        isTT_in = -1;
-    Int_t 	           isTL_in;        isTL_in = -1;
-    Int_t 	           isLT_in;        isLT_in = -1;
-    Int_t 	           isLL_in;        isLL_in = -1;
+    ULong64_t  eventNumber_in; eventNumber_in = -1;
+    Int_t      nlep_in;        nlep_in = -1;
+    Char_t     isSS01_in;      isSS01_in = -1;
+    Char_t     isTT_in;        isTT_in = -1;
+    Char_t     isTL_in;        isTL_in = -1;
+    Char_t     isLT_in;        isLT_in = -1;
+    Char_t     isLL_in;        isLL_in = -1;
+    Float_t    lep_pt_0_in;      lep_pt_0_in = 0;
+    Float_t    lep_pt_1_in;      lep_pt_1_in = 0;
+    Float_t    lep_eta_0_in;     lep_eta_0_in = 0;
+    Float_t    lep_eta_1_in;     lep_eta_1_in = 0;
+    Float_t    lep_flavour_0_in; lep_flavour_0_in = 0;
+    Float_t    lep_flavour_1_in; lep_flavour_1_in = 0;
+    Char_t     lep_isT_0_in;     lep_isT_0_in = 0;
+    Char_t     lep_isT_1_in;     lep_isT_1_in = 0;
     std::vector<double>*   MMWeight_in;    MMWeight_in = 0;
-    std::vector<float>*    lep_pt_in;      lep_pt_in = 0;
-    std::vector<float>*    lep_eta_in;     lep_eta_in = 0;
-    std::vector<int>*      lep_flavour_in; lep_flavour_in = 0;
-    std::vector<int>*      lep_isT_in;     lep_isT_in = 0;
 
-    // List of in branches
+    // List of input branches
     //
-    TBranch      *b_eventNumber = 0;      //!
-    TBranch	 *b_nlep    = 0;          //!
-    TBranch      *b_isSS01 = 0;           //!
+    TBranch      *b_EventNumber = 0;      //!
+    TBranch	 *b_nleptons  = 0;        //!
+    TBranch      *b_isSS01      = 0;      //!
     TBranch	 *b_is_T_T = 0;    	  //!
     TBranch	 *b_is_T_AntiT = 0;    	  //!
     TBranch	 *b_is_AntiT_T = 0;    	  //!
     TBranch	 *b_is_AntiT_AntiT = 0;   //!
+    TBranch	 *b_lep_Pt_0 = 0;         //!
+    TBranch	 *b_lep_Pt_1 = 0;         //!
+    TBranch	 *b_lep_EtaBE2_0 = 0;     //!
+    TBranch	 *b_lep_EtaBE2_1 = 0;     //!
+    TBranch	 *b_lep_ID_0 = 0;         //!
+    TBranch	 *b_lep_ID_1 = 0;         //!
+    TBranch      *b_lep_isTightSelected_0 = 0;  //!
+    TBranch      *b_lep_isTightSelected_1 = 0;  //!
     TBranch      *b_MMWeight = 0;         //!
-    TBranch	 *b_lep_pt = 0;           //!
-    TBranch	 *b_lep_eta = 0;          //!
-    TBranch	 *b_lep_flavour = 0;      //!
-    TBranch      *b_lep_isTightSelected = 0;   //!
 
     // Before cloning input TTree, tell ROOT to process all the in branches,
     // except for the one you want to change
@@ -669,21 +684,25 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
 
     // Get branches from input TTree
     //
-    intree->SetBranchAddress(in_eventNumber_name.c_str(), &eventNumber_in, &b_eventNumber);
-    intree->SetBranchAddress(in_nlep_name.c_str(), &nlep_in, &b_nlep);
+    intree->SetBranchAddress(in_eventNumber_name.c_str(), &eventNumber_in, &b_EventNumber);
+    intree->SetBranchAddress(in_nlep_name.c_str(), &nlep_in, &b_nleptons);
     intree->SetBranchAddress(in_isSS01_name.c_str(), &isSS01_in, &b_isSS01);
     intree->SetBranchAddress(in_isTT_name.c_str(), &isTT_in, &b_is_T_T);
     intree->SetBranchAddress(in_isTL_name.c_str(), &isTL_in, &b_is_T_AntiT);
     intree->SetBranchAddress(in_isLT_name.c_str(), &isLT_in, &b_is_AntiT_T);
     intree->SetBranchAddress(in_isLL_name.c_str(), &isLL_in, &b_is_AntiT_AntiT);
+    intree->SetBranchAddress(in_lep_pt_0_name.c_str(), &lep_pt_0_in, &b_lep_Pt_0);
+    intree->SetBranchAddress(in_lep_pt_1_name.c_str(), &lep_pt_1_in, &b_lep_Pt_1);
+    intree->SetBranchAddress(in_lep_eta_0_name.c_str(), &lep_eta_0_in, &b_lep_EtaBE2_0);
+    intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_EtaBE2_1);
+    intree->SetBranchAddress(in_lep_flavour_0_name.c_str(), &lep_flavour_0_in, &b_lep_ID_0);
+    intree->SetBranchAddress(in_lep_flavour_1_name.c_str(), &lep_flavour_1_in, &b_lep_ID_1);
+    intree->SetBranchAddress(in_lep_isT_0_name.c_str(), &lep_isT_0_in, &b_lep_isTightSelected_0);
+    intree->SetBranchAddress(in_lep_isT_1_name.c_str(), &lep_isT_1_in, &b_lep_isTightSelected_1);
     intree->SetBranchAddress(in_MMWeight_name.c_str(), &MMWeight_in, &b_MMWeight);
-    intree->SetBranchAddress(in_lep_pt_name.c_str(), &lep_pt_in, &b_lep_pt);
-    intree->SetBranchAddress(in_lep_eta_name.c_str(), &lep_eta_in, &b_lep_eta);
-    intree->SetBranchAddress(in_lep_flavour_name.c_str(), &lep_flavour_in, &b_lep_flavour);
-    intree->SetBranchAddress(in_lep_isT_name.c_str(), &lep_isT_in, &b_lep_isTightSelected);
 
-    //Info("modifytree_MM()", "--> lep_pt before SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_name.c_str())->GetAddress());
-    //Info("modifytree_MM()", "--> lep_pt after SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_name.c_str())->GetAddress());
+    //Info("modifytree_MM()", "--> lep_pt_0 before SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
+    //Info("modifytree_MM()", "--> lep_pt_0 after SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
 
     // Set the "new" branches in the output TTree
     //
@@ -742,12 +761,18 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
           }
         }
 
-        int TT =  ( lep_isT_in->at(0) == 1 && lep_isT_in->at(1) == 1 );
-        int TL =  ( lep_isT_in->at(0) == 1 && lep_isT_in->at(1) == 0 );
-        int LT =  ( lep_isT_in->at(0) == 0 && lep_isT_in->at(1) == 1 );
-        int LL =  ( lep_isT_in->at(0) == 0 && lep_isT_in->at(1) == 0 );
+        int TT =  ( isTT_in );
+        int TL =  ( isTL_in );
+        int LT =  ( isLT_in );
+        int LL =  ( isLL_in );
 
-        recomputeMMW( MMWeight_out, TT, TL, LT, LL, *lep_pt_in, *lep_eta_in, *lep_flavour_in );
+        // Create these vectors to avoid changing the signature of the function
+        //
+        std::vector<float> lep_pt_vec      = { lep_pt_0_in, lep_pt_1_in };
+        std::vector<float> lep_eta_vec     = { lep_eta_0_in, lep_eta_1_in };
+        std::vector<int> lep_flavour_vec   = { abs(static_cast<int>(lep_flavour_0_in)), abs(static_cast<int>(lep_flavour_1_in)) };
+
+        recomputeMMW( MMWeight_out, TT, TL, LT, LL, lep_pt_vec, lep_eta_vec, lep_flavour_vec );
 
         if ( g_debug ) {
           int idx_out(0);
