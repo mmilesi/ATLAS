@@ -58,6 +58,8 @@ for group in group_list:
         os.makedirs(newpath+group)
     sample_list = os.listdir(oldpath+group+'/')
     for sample in sample_list:
+        if "hist-" in sample:
+            continue
         print group+'/'+sample
         infile=oldpath+group+'/'+sample
         outfile=newpath+group+'/'+sample
