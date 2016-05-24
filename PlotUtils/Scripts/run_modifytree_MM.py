@@ -39,7 +39,7 @@ rr_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HT
 
 # -------------------------------------------------------------------------------------------------------------
 
-addMM    = 'YES' # Set to 'YES' if MM weight branch does not exist yet
+addMM    = 'NO' # Set to 'YES' if MM weight branch does not exist yet
 nentries = 'ALL' #ALL
 
 if not os.path.exists(newpath):

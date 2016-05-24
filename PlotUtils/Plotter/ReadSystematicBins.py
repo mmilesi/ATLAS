@@ -77,7 +77,11 @@ def main():
     #region    = "SS_LowNJetCR_DataDriven"
     #var_name  = "NJets2j3j4j"
 
-    inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v7_FinalSelection_NominalBinning/"
+    #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v7_FinalSelection_NominalBinning/"
+    #region    = "SS_SR_DataDriven"
+    #var_name  = "NJets5j"
+
+    inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v7_FinalSelection_NominalBinning_AvgMuFake/"
     region    = "SS_SR_DataDriven"
     var_name  = "NJets5j"
 

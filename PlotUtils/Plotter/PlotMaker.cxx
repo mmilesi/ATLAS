@@ -655,11 +655,13 @@ void execute() {
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoTruth/","MC t#bar{t} - No sub.");
 
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","Data - bkg sub.");
-  pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_SingleBinMuFake/","Data - bkg sub.");
   //pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","MC t#bar{t}");
 
-  PlotRateEff(my_pair,"Data","Inclusive","Efficiency","png");
-  //PlotRateEff(my_pair,"MC","Inclusive","Efficiency","png");
+  //pair<string,string> my_pair = make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake/","Data - bkg sub.");
+  pair<string,string> my_pair = make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake/","MC t#bar{t}");
+
+  //PlotRateEff(my_pair,"Data","Inclusive","Efficiency","png");
+  PlotRateEff(my_pair,"MC","Inclusive","Efficiency","png");
 
 }
 
@@ -751,8 +753,11 @@ void execute_DataVSMC() {
   //vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Moriond sel. - Data - OF+SF"));
   //vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR/","Moriond sel. - Data - OF"));
 
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","Data - bkg sub."));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","MC t#bar{t}"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","Data - bkg sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","MC t#bar{t}"));
+
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake/","Data - bkg sub."));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake/","MC t#bar{t}"));
 
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
 
