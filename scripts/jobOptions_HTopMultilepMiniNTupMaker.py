@@ -26,7 +26,9 @@ lep_branches         = ["lep_ID_0","lep_Index_0","lep_Pt_0","lep_E_0","lep_Eta_0
                         "lep_SFIDLoose_2","lep_SFIDTight_2","lep_SFTrigLoose_2","lep_SFTrigTight_2","lep_SFIsoLoose_2","lep_SFIsoTight_2","lep_SFReco_2","lep_SFTTVA_2","lep_SFObjLoose_2","lep_SFObjTight_2"]
 tau_branches         = ["tau_pt_0","tau_eta_0","tau_phi_0","tau_charge_0","tau_BDTJetScore_0","tau_JetBDTSigLoose_0","tau_JetBDTSigMedium_0","tau_JetBDTSigTight_0","tau_numTrack_0","tau_SFTight_0","tau_SFLoose_0"]
 
-branches_to_copy = eventweight_branches + event_branches + trigbits_branches + jet_branches + lep_branches + tau_branches
+mc_truth_branches = ["m_truth_m","m_truth_pt","m_truth_eta","m_truth_phi","m_truth_e","m_truth_pdgId","m_truth_status","m_truth_barcode","m_truth_parents","m_truth_children","m_truth_jet_pt","m_truth_jet_eta","m_truth_jet_phi","m_truth_jet_e"]
+
+branches_to_copy = eventweight_branches + event_branches + trigbits_branches + jet_branches + lep_branches + tau_branches + mc_truth_branches
 
 # Trick to pass the list as a comma-separated string to the C++ algorithm
 #
@@ -59,7 +61,8 @@ for branch in branches_to_copy:
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
 #algskim.addCut ("passEventCleaning==1")
 algskim.addCut ("HLT_e24_lhmedium_L1EM20VH||HLT_e24_lhmedium_L1EM18VH||HLT_e60_lhmedium||HLT_e120_lhloose||HLT_mu20_iloose_L1MU15||HLT_mu50")
-#algskim.addCut ("nJets_OR>=1")
+algskim.addCut ("nJets_OR>=1") # temp
+algskim.addCut("nJets_OR_MV2c20_77>=1") # temp
 algskim.addCut ("dilep_type>0||trilep_type>0")
 algskim.histName ("cutflow")
 

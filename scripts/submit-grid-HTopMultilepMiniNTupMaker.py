@@ -6,10 +6,10 @@ import datetime
 current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 
 username   = "mmilesi"
-prodtag    = "v7-MiniNTup-01"
+prodtag    = "v7-MiniNTup-Truth-test"
 infilepath = "HTopMultilepAnalysis/doc/list-grid-HTopGroupNTup.txt"
 treename   = "nominal"
-configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNtupMaker.py"
+configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py"
 outdir     = "output_grid_DxAOD-2015-13TeV_" + str(current_time)
 destSE     = "AUSTRALIA-ATLAS_LOCALGROUPDISK"
 exclSE     = "ANALY_IHEP,ANALY_JINR,ANALY_IHEP_GLEXEC,ANALY_RRC-KI-HPC,ANALY_RRC-KI-T1,IHEP_MCORE,IHEP_PROD,RRC-KI-HPC2,RRC-KI-T1,RRC-KI-T1_MCORE,RRC-KI-T1_TEST"
