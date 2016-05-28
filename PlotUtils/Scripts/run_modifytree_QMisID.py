@@ -14,40 +14,47 @@ from ROOT import gROOT
 
 gROOT.SetBatch(True)
 
+# -------------------------------------------------------------------------------------------------------------
+
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v027/Merged_Melb15_ttH_027_DxAOD_DATA_MM/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v027/Merged_Melb15_ttH_027_DxAOD_DATA_QMisID_WEIGHTED/'
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v028/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v028/Merged_Melb15_ttH_028_DxAOD_DATA_QMisID_WEIGHTED/'
 
+# -------------------------------------------------------------------------------------------------------------
+
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
 
-oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7/25ns_v7_Data_Original/"
-newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7/25ns_v7_Data_QMisID_WEIGHTED/"
+# -------------------------------------------------------------------------------------------------------------
+
 #oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v031/Merged_Melb15_ttH_031-01_DxAOD_p2559_Data_Original/"
 #newpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v031/Merged_Melb15_ttH_031-01_DxAOD_p2559_Data_QMisID_WEIGHTED/"
 
-# Are we using group ntuples?
-#
-useGroupNTup = 'YES' #'YES'
+# -------------------------------------------------------------------------------------------------------------
 
-# Set only if QMisID weight branch does not exist yet
-#
-addQMisID = True
+oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_Original/"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Zjets_QMisID_WEIGHTED_testing/"
 
-treename = 'physics'
-nentries = 'ALL' #ALL
+# path and name of files w/ QMisID rates
+#
+glob_rate_path = "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/"
+filename_T     = "QMisIDRates_Data_Nominal2_v030.root"
+filename_AntiT = "QMisIDRates_Data_antiTantiT_v030.root"
+
+# -------------------------------------------------------------------------------------------------------------
+
+addQMisID    = 'NO' # Set to 'YES' if QMisID weight branch does not exist yet, else use 'NO' ( --> the script will update the existing QMisID weight)
+nentries     = 'ALL' # Set the number of entries. Use 'ALL' to run on all events
+useGroupNTup = 'YES' # Are we using group ntuples?
 
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-if addQMisID:
-  gROOT.LoadMacro("modifyttree_AddQMisID.cxx+g")
-else:
-  gROOT.LoadMacro("modifyttree_QMisID.cxx+g")
-
+gROOT.LoadMacro("modifyttree_QMisID.cxx+g")
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
+
 for group in group_list:
     if not os.path.isdir(oldpath+group):
         continue
@@ -61,20 +68,7 @@ for group in group_list:
         infile=oldpath+group+'/'+sample
         outfile=newpath+group+'/'+sample
 
-        if addQMisID:
-	   command_line = 'modifyttree_AddQMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\",\"'+useGroupNTup+'\")'
-        else:
-	   command_line = 'modifyttree_QMisID(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+        command_line = 'modifyttree_QMisID(\"'+infile+'\",\"'+outfile+'\",\"'+glob_rate_path+'\",\"'+filename_AntiT+'\",\"'+filename_T+'\",\"'+addQMisID+'\",\"'+nentries+'\",\"'+useGroupNTup+'\")'
 
         print command_line
         gROOT.ProcessLine(command_line);
-
-        #command_line = 'root -l -q \"modifyttree_AddQMisID.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")\"'
-        #print command_line
-        #args = shlex.split(command_line)
-        #print args
-        #subprocess.cxxall(args)
-        #subprocess.cxxall(['root', '-l', '-q', '"modifyttree_AddQMisID.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")"'])
-        #f = TFile.Open(path+group+'/'+sample)
-        #h_tot = f.Get('TotalEvents')
-        #t = f.Get('physics')

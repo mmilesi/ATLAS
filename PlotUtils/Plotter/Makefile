@@ -1,7 +1,5 @@
-#DEST	=   RealFakeEffFitter
-#OBJS1	=   RealFakeEffFitter.o
-DEST	=   RealFakeEffFitter_Class
-OBJS1	=   RealFakeEffFitter_Class.o
+DEST	= RealFakeEffFitter   #RealFakeEffFitter_SFonly
+OBJS1	= RealFakeEffFitter.o #RealFakeEffFitter_SFonly.o
 
 ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --libs)

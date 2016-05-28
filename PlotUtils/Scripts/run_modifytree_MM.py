@@ -14,25 +14,32 @@ from ROOT import gROOT
 
 gROOT.SetBatch(True)
 
-#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED_FIXED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_027_DxAOD_DATA_MM_WEIGHTED_DataDrivenQMisID/'
-
-#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_AVGEFF_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_Melb15_ttH_028_DxAOD_DATA_MM_WEIGHTED_DataDrivenQMisID/'
-
-oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED_DDQMisIDSub/'
-newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED_MM_WEIGHTED_EffNoLepIso/'
-
 #oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_DATA/'
 #newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_NOLEPISO/Merged_Melb15_ttH_029_NoLepIso_DxAOD_DATA_MM_WEIGHTED/'
 
-treename = 'physics'
+# -------------------------------------------------------------------------------------------------------------
+
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_MM_WEIGHTED/"
+#rr_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput"
+
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_410000_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_410000_MM_WEIGHTED/"
+#rr_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput"
+
+# -------------------------------------------------------------------------------------------------------------
+
+oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_Original/"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_MM_WEIGHTED_AVGMUFAKE/"
+rr_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake"
+
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_410000_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_410000_MM_WEIGHTED_AVGMUFAKE/"
+#rr_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake"
+
+# -------------------------------------------------------------------------------------------------------------
+
+addMM    = 'NO' # Set to 'YES' if MM weight branch does not exist yet
 nentries = 'ALL' #ALL
 
 if not os.path.exists(newpath):
@@ -41,6 +48,9 @@ if not os.path.exists(newpath):
 gROOT.LoadMacro("modifyttree_MM.cxx+g")
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
+
+do_closure = None
+
 for group in group_list:
     if not os.path.isdir(oldpath+group):
         continue
@@ -48,20 +58,17 @@ for group in group_list:
         os.makedirs(newpath+group)
     sample_list = os.listdir(oldpath+group+'/')
     for sample in sample_list:
+        if "hist-" in sample:
+            continue
         print group+'/'+sample
         infile=oldpath+group+'/'+sample
         outfile=newpath+group+'/'+sample
 
-        command_line = 'modifyttree_MM(\"'+infile+'\",\"'+nentries+'\",\"'+treename+'\",\"'+outfile+'\")'
+        if "physics_Main" in sample: do_closure = "NO"
+        else:                        do_closure = "YES"
+
+        command_line = 'modifyttree_MM(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
+
         print command_line
         gROOT.ProcessLine(command_line);
 
-        #command_line = 'root -l -q \"modifyttree_MM.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")\"'
-        #print command_line
-        #args = shlex.split(command_line)
-        #print args
-        #subprocess.call(args)
-        #subprocess.call(['root', '-l', '-q', '"modifyttree_MM.cxx+g(\"'+infile+'\",\"'+treename+'\",\"'+outfile+'\")"'])
-        #f = TFile.Open(path+group+'/'+sample)
-        #h_tot = f.Get('TotalEvents')
-        #t = f.Get('physics')

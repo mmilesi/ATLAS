@@ -34,11 +34,13 @@ parser.add_argument("--usePrediction", metavar="DATA_TYPE", dest="usePrediction"
 parser.add_argument("--debug", dest="debug", action="store_true",
 		    help="run in debug mode")
 parser.add_argument("--doBkgSub", dest="doBkgSub", action="store_true",
-		    help="subtract prompt MC in fake region (only if using DATA)")
+		    help="subtract MC to data (only if using DATA)")
 parser.add_argument("--rebinEta", dest="rebinEta", action="store_true",default=False,
 		    help="do rebinning in eta")
 parser.add_argument("--rebinPt", dest="rebinPt", action="store_true",default=False,
 		    help="do rebinning in pT")
+parser.add_argument("--doAvgMuFake", dest="doAvgMuFake", action="store_true",default=False,
+		    help="get average efficiency for muon fakes only")
 parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
 		    help="get average efficiencies/rates (i.e, make 1 bin)")
 parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",
@@ -79,7 +81,7 @@ dict_channels_lep = {
 
 list_lep         = dict_channels_lep[args.flavourComp]
 list_types       = ["Real","Fake"]
-list_variables   = ["ProbePt"]#["ProbeEta","ProbePt"] #,"ProbeNJets"]
+list_variables   = ["ProbePt","ProbeEta"] #"ProbeNJets"]
 list_selections  = ["T","L"]
 list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                               # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
@@ -91,7 +93,7 @@ list_out_samples = ["factor","factorbkgsub","rate","ratebkgsub"]
 # ( prompt subtraction, charge flip subtraction )
 # ----------------------------------------------------------------
 
-from ROOT import gROOT, TH1, TFile, TGraphAsymmErrors, Double
+from ROOT import ROOT, gROOT, TH1, TFile, TGraphAsymmErrors, Double
 
 gROOT.SetBatch(True)
 
@@ -138,6 +140,8 @@ for iLep in list_lep:
 
 	      for iPred in list_prediction:
 
+                  standard_rebin = False
+
                   print "\t\t\t\t checking prediction from: ", iPred
 
                   # L[-1] can be used to access the last item in a list
@@ -163,8 +167,7 @@ for iLep in list_lep:
 
                   if iVar == "ProbeEta":
 
-		     # rebin in eta ONLY for rates in data
-		     if ( args.usePrediction == "DATA" ) and args.rebinEta:
+		     if args.rebinEta:
 
 		       if iLep == "Mu":
                   	 nBIN  = 5
@@ -192,37 +195,40 @@ for iLep in list_lep:
 		       if iType == "Fake":
 
                           if iLep == "Mu":
-                             
-			     # standard binning
-			     #
-			     #nBIN  = 6
-                             #xbins = [10,15,20,25,35,50,200]
-			     
-                             nBIN = 5
-			     xbins = [10,15,20,25,40,200]
-				     
+
+                             if args.doAvgMuFake:
+                                # Make one single bin
+                                #
+                                nBIN = htmp.GetNbinsX()
+                                xbins  = [htmp.GetBinLowEdge(1),htmp.GetBinLowEdge(htmp.GetNbinsX()+1)]
+                                standard_rebin = True
+                             else:
+                                # nominal binning
+                                #
+                                nBIN  = 5
+                                xbins = [10,15,20,25,35,200] # merged bin [50,200]
+
 			  elif iLep == "El":
 
 			     # standard binning
-			     #                             
-			     #nBIN  = 6
-                             #xbins = [10,15,20,25,40,60,200]
-			     
-                             nBIN  = 5
-                             xbins = [10,15,20,25,40,200]
+			     #
+			     nBIN  = 5
+                             xbins = [10,15,20,25,40,200] # merged bin [60,200]
 
                        elif iType == "Real":
 
-			  #nBIN  = 7
-                  	  #xbins = [10,15,20,25,30,40,60,200]
-			  nBIN  = 5
-                  	  xbins = [10,15,20,25,40,200]
+			  # standard binning
+			  #
+			  nBIN  = 7
+                  	  xbins = [10,15,20,25,30,40,60,200]
+
 
                        vxbins = array.array("d", xbins)
-		       print "\t\t\t\t\t vxbins: ",vxbins
+                       print "\t\t\t\t\t vxbins: ",vxbins
                        # the rebinning method automatically creates a new histogram
                        #
-                       hists[histname]  = htmp.Rebin( nBIN, histname, vxbins )
+                       if not standard_rebin: hists[histname] = htmp.Rebin( nBIN, histname, vxbins )
+                       else :                 hists[histname] = htmp.Rebin( nBIN, histname )
 
                   if args.doAvg:
 
@@ -254,7 +260,7 @@ for iLep in list_lep:
 		 name = None
 
 		 if ( iType == "Fake" ):
-		     
+
 		     name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1] # --> "observed"
 
 		     print "\t\t\t\t subtracting events w/ prompt/ch-flip probe lepton to data in Fake CR..."
@@ -270,7 +276,7 @@ for iLep in list_lep:
 		        print "\t\t\t\t Integral after sub: ", hists[name].Integral(0,hists[histname].GetNbinsX()+1)
 
 		 elif ( iType == "Real" ):
-		    
+
 		     name = iLep + "_"+ iVar +"_"+ iType + "_" +  iSel + "_" + list_prediction[1] # --> "observed"
 
 		     print "\t\t\t\t subtracting events w/ !prompt/ch-flip probe lepton to data in Real CR..."

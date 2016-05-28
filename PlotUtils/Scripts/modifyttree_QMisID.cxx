@@ -17,7 +17,7 @@
 /
 *************** */
 
-bool g_debug(false);
+bool g_debug(true);
 bool g_verbose(false);
 
 std::map< std::string, TH2D* > g_QMisID_hist_map;
@@ -208,23 +208,32 @@ void QMisIDWeightCalculator (std::vector<float>* weights,
 /
 ****************** */
 
-void modifyttree_QMisID(std::string filename = "input.root", std::string  NENTRIES = "ALL", std::string treename= "physics", std::string newfilename = "output.root")
+void modifyttree_QMisID(std::string filename, std::string outfilename,
+			std::string path, std::string filename_AntiT, std::string filename_T,
+			std::string addWeight,
+			std::string  NENTRIES = "ALL", std::string useGroupNTup = "", std::string treename = "physics" )
 {
 
   // This script loads a tree, clones it, removes a branch and substitutes it with another.
   // The branch can also have the same name and in this way you can change for example the type of the variable or the content.
 
-  Info("modifytree()","Starting off...");
+  Info("modifytree_QMisID()","Starting off...");
 
-  //Get old file, old tree and set top branch address
+  if ( addWeight.compare("NO") == 0 ) {
+    Info("modifytree_QMisID()","Will be UPDATING existing branch!");
+  } else if ( addWeight.compare("YES") == 0 ) {
+    Info("modifytree_QMisID()","Will be ADDING new branch!");
+  }
+
+  //Get in file, in tree and set top branch address
   //
-  TFile *oldfile = new TFile(filename.c_str());
-  TTree *oldtree = dynamic_cast<TTree*>( oldfile->Get(treename.c_str()) );
+  TFile *infile = new TFile(filename.c_str());
+  TTree *intree = dynamic_cast<TTree*>( infile->Get(treename.c_str()) );
 
   Long64_t nentries;
 
   if ( NENTRIES == "ALL" ) {
-     nentries = oldtree->GetEntries();
+     nentries = intree->GetEntries();
   } else {
      std::stringstream ss; ss << NENTRIES;
      int n_e;              ss >> n_e;
@@ -233,169 +242,340 @@ void modifyttree_QMisID(std::string filename = "input.root", std::string  NENTRI
 
   // TO BE MODIFIED ACCORDINGLY TO YOUR NEEDS (name and type of the variables)
   //
-  std::string old_eventNumber_name("eventNumber");
-  std::string old_nel_name("nel");
-  std::string old_QMisIDWeight_name("QMisIDWeight");
-  std::string old_el_pt_name("el_pt");
-  std::string old_el_eta_name("el_caloCluster_eta");
-  std::string old_el_isT_name("el_isTightSelected");
+  std::string in_eventNumber_name = ( useGroupNTup.empty() ) ? "eventNumber" : "EventNumber";
+  std::string in_nel_name         = ( useGroupNTup.empty() ) ? "nel" : "nelectrons";
+  std::string in_el_pt_name("");
+  std::string in_el_eta_name("");
+  std::string in_el_isT_name("");
+  std::string in_lep0_ID_name("");
+  std::string in_lep1_ID_name("");
+  std::string in_lep0_pt_name("");
+  std::string in_lep1_pt_name("");
+  std::string in_lep0_eta_name("");
+  std::string in_lep1_eta_name("");
+  std::string in_lep0_isT_name("");
+  std::string in_lep1_isT_name("");
 
-  Long64_t               eventNumber_old; eventNumber_old = -1;
-  Int_t                  nel_old;        nel_old = -1;
-  std::vector<float>*    QMisIDWeight_old;    QMisIDWeight_old = 0;
-  std::vector<float>*    el_pt_old;      el_pt_old = 0;
-  std::vector<float>*    el_eta_old;     el_eta_old = 0;
-  std::vector<int>*      el_isT_old;     el_isT_old = 0;
+  if ( useGroupNTup.empty() ) {
+  	  std::string in_el_pt_name   = "el_pt";
+  	  std::string in_el_eta_name  = "el_caloCluster_eta";
+  	  std::string in_el_isT_name  = "el_isTightSelected";
+  } else {
 
-  // List of old branches
+  	  in_lep0_ID_name  = "lep_ID_0";
+  	  in_lep1_ID_name  = "lep_ID_1";
+  	  in_lep0_pt_name  = "lep_Pt_0";
+  	  in_lep1_pt_name  = "lep_Pt_1";
+  	  in_lep0_eta_name = "lep_EtaBE2_0";
+  	  in_lep1_eta_name = "lep_EtaBE2_1";
+  	  in_lep0_isT_name = "lep_isTightSelected_0";
+  	  in_lep1_isT_name = "lep_isTightSelected_1";
+  }
+
+  ULong64_t             eventNumber_in; eventNumber_in = -1;
+  Int_t                 nel_in;        nel_in = -1;
+  std::vector<float>*   el_pt_in;      el_pt_in = 0;
+  std::vector<float>*   el_eta_in;     el_eta_in = 0;
+  std::vector<int>*     el_isT_in;     el_isT_in = 0;
+  Float_t lep0_ID_in;  lep0_ID_in = 0.0;
+  Float_t lep1_ID_in; 	lep1_ID_in = 0.0;
+  Float_t lep0_pt_in;  lep0_pt_in = -1.0;
+  Float_t lep1_pt_in; 	lep1_pt_in = -1.0;
+  Float_t lep0_eta_in;	lep0_eta_in = -999.0;
+  Float_t lep1_eta_in;	lep1_eta_in = -999.0;
+  Char_t  lep0_isT_in;	lep0_isT_in = 0;
+  Char_t  lep1_isT_in;	lep1_isT_in = 0;
+
+  // List of in branches
   //
-  TBranch        *b_eventNumber = 0;       //!
-  TBranch	 *b_nel_old    = 0;        //!
-  TBranch        *b_QMisIDWeight_old = 0;  //!
-  TBranch	 *b_el_pt_old = 0;         //!
-  TBranch	 *b_el_eta_old = 0;        //!
-  TBranch        *b_el_isT_old = 0;        //!
+  TBranch        *b_eventNumber = 0;   //!
+  TBranch	 *b_nel_in    = 0;     //!
+  TBranch	 *b_el_pt_in = 0;      //!
+  TBranch	 *b_el_eta_in = 0;     //!
+  TBranch        *b_el_isT_in = 0;     //!
+  TBranch        *b_lep0_ID_in = 0;    //!
+  TBranch        *b_lep1_ID_in = 0;    //!
+  TBranch        *b_lep0_pt_in = 0;    //!
+  TBranch        *b_lep1_pt_in = 0;    //!
+  TBranch        *b_lep0_eta_in = 0;   //!
+  TBranch        *b_lep1_eta_in = 0;   //!
+  TBranch        *b_lep0_isT_in = 0;   //!
+  TBranch        *b_lep1_isT_in = 0;   //!
 
-  // Before cloning input TTree, tell ROOT to process all the old branches,
-  // except for the one you want to change
+  // Here go the variables to be updated
+
+  std::string          in_QMisIDWeight_name("QMisIDWeight");
+  std::vector<float>*  QMisIDWeight_in;    QMisIDWeight_in = 0;
+  TBranch              *b_QMisIDWeight_in = 0;  //!
+
+  // Before cloning input TTree, tell ROOT to process all the in branches...
+  intree->SetBranchStatus("*",1);
+  // ...except for the ones you want to change (provided they exist!)
+  if ( addWeight.compare("NO") == 0 ) {
+      intree->SetBranchStatus(in_QMisIDWeight_name.c_str(),0);
+  }
+
+  // Create a new file + a clone of in tree in new file
   //
-  oldtree->SetBranchStatus("*",1);
-  oldtree->SetBranchStatus(old_QMisIDWeight_name.c_str(),0);
-
-  std::string new_QMisIDWeight_name("QMisIDWeight");
-  std::vector<float>*   QMisIDWeight_new;  QMisIDWeight_new = 0;
-
-  // Create a new file + a clone of old tree in new file
-  //
-  TFile *newfile = new TFile(newfilename.c_str(),"RECREATE");
-  TTree *newtree = oldtree->CloneTree(0); //clone only the structure
+  TFile *outfile = new TFile(outfilename.c_str(),"RECREATE");
+  TTree *outtree = intree->CloneTree(0); //clone only the structure
 
   // MUST re-activate the branch(es) previously deactivated before calling SetBranchAddress()!!
-  //
-  oldtree->SetBranchStatus(old_QMisIDWeight_name.c_str(),1);
+  if ( addWeight.compare("NO") == 0 ) {
+      intree->SetBranchStatus(in_QMisIDWeight_name.c_str(),1);
+  }
 
   // Get branches from input TTree
   //
-  oldtree->SetBranchAddress(old_eventNumber_name.c_str(), &eventNumber_old, &b_eventNumber);
-  oldtree->SetBranchAddress(old_nel_name.c_str(), &nel_old, &b_nel_old);
-  oldtree->SetBranchAddress(old_QMisIDWeight_name.c_str(), &QMisIDWeight_old, &b_QMisIDWeight_old);
-  oldtree->SetBranchAddress(old_el_pt_name.c_str(), &el_pt_old, &b_el_pt_old);
-  oldtree->SetBranchAddress(old_el_eta_name.c_str(), &el_eta_old, &b_el_eta_old);
-  oldtree->SetBranchAddress(old_el_isT_name.c_str(), &el_isT_old, &b_el_isT_old);
+  intree->SetBranchAddress(in_eventNumber_name.c_str(), &eventNumber_in, &b_eventNumber);
+  intree->SetBranchAddress(in_nel_name.c_str(), &nel_in, &b_nel_in);
 
-  // Set the "new" branches in the output TTree
-  //
-  newtree->Branch(new_QMisIDWeight_name.c_str(), &QMisIDWeight_new);
+  if ( useGroupNTup.empty() ) {
+      intree->SetBranchAddress(in_el_pt_name.c_str(),  &el_pt_in,  &b_el_pt_in);
+      intree->SetBranchAddress(in_el_eta_name.c_str(), &el_eta_in, &b_el_eta_in);
+      intree->SetBranchAddress(in_el_isT_name.c_str(), &el_isT_in, &b_el_isT_in);
+      if ( addWeight.compare("NO") == 0 ) {
+	  intree->SetBranchAddress(in_QMisIDWeight_name.c_str(), &QMisIDWeight_in, &b_QMisIDWeight_in);
+      }
+  } else {
+      intree->SetBranchAddress(in_lep0_ID_name.c_str(), &lep0_ID_in , &b_lep0_ID_in);
+      intree->SetBranchAddress(in_lep1_ID_name.c_str(), &lep1_ID_in , &b_lep1_ID_in);
+      intree->SetBranchAddress(in_lep0_pt_name.c_str(), &lep0_pt_in , &b_lep0_pt_in);
+      intree->SetBranchAddress(in_lep1_pt_name.c_str(), &lep1_pt_in , &b_lep1_pt_in);
+      intree->SetBranchAddress(in_lep0_eta_name.c_str(), &lep0_eta_in, &b_lep0_eta_in);
+      intree->SetBranchAddress(in_lep1_eta_name.c_str(), &lep1_eta_in, &b_lep1_eta_in);
+      intree->SetBranchAddress(in_lep0_isT_name.c_str(), &lep0_isT_in, &b_lep0_isT_in);
+      intree->SetBranchAddress(in_lep1_isT_name.c_str(), &lep1_isT_in, &b_lep1_isT_in);
+      if ( addWeight.compare("NO") == 0 ) {
+	  intree->SetBranchAddress(in_QMisIDWeight_name.c_str(), &QMisIDWeight_in, &b_QMisIDWeight_in);
+      }
+  }
 
   // read QMisID rates from ROOT histograms
   //
-  std::string path("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/");
-  //std::string filename_AntiT("QMisIDRates_Data_Loose.root");
-  //std::string filename_T("QMisIDRates_Data_nominal_v4.root");
-  //std::string filename_AntiT("QMisIDRates_TAntiT_ICHEPBaseline.root");
-  //std::string filename_T("QMisIDRates_TT_ICHEPBaseline.root");
-  std::string filename_AntiT("QMisIDRates_Data_antiTantiT_v030.root");
-  std::string filename_T("QMisIDRates_Data_Nominal2_v030.root");
-
-  Info("modifytree()","Reading QMisID rates from ROOT file(s)..");
+  Info("modifytree_QMisID()","Reading QMisID rates from ROOT file(s)..");
   getRates(path,filename_T,filename_AntiT);
 
-  // Loop over entries in TTree
+  // Set the "new" branches in the output TTree
   //
-  Info("modifytree()","Begin loop on input tree entries...\n");
-  int count_bad(0);
-  Long64_t i = 0;
-  for ( ; i < nentries; i++ ) {
+  if ( addWeight.compare("NO") == 0 ) {
 
-    // Print out every N events to see where we are
-    //
-    if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree()","\t Processed %lld entries",i); }
+      std::string          out_QMisIDWeight_name("QMisIDWeight");
+      std::vector<float>*  QMisIDWeight_out;  QMisIDWeight_out = 0;
 
-    // Now, in the input tree, reset to 1 the status of the branches you
-    // deactivated before cloning
-    //
-    if ( !oldtree->GetBranchStatus(old_QMisIDWeight_name.c_str()) ) {
-      oldtree->SetBranchStatus(old_QMisIDWeight_name.c_str(),1);
-    }
+      outtree->Branch(out_QMisIDWeight_name.c_str(), &QMisIDWeight_out);
 
-    oldtree->GetEntry(i);
+      // Loop over entries in TTree
+      //
+      Info("modifytree_QMisID()","Begin loop on input tree entries...\n");
+      int count_bad(0);
+      Long64_t i = 0;
+      for ( ; i < nentries; i++ ) {
 
-    if ( g_debug ) { Info("modifytree()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_old); }
+	  // Print out every N events to see where we are
+	  //
+	  if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree_QMisID()","\t Processed %lld entries",i); }
 
-    // A security check...
-    //
-    if ( !QMisIDWeight_old ) {
-      Info("modifytree()","\t --> QMisIDWeight_old is NULL!! Skipping event...  \n");
-      ++count_bad;
-      continue;
-    }
+	  // Now, in the input tree, reset to 1 the status of the branches you
+	  // deactivated before cloning
+	  //
+	  if ( !intree->GetBranchStatus(in_QMisIDWeight_name.c_str()) ) {
+	      intree->SetBranchStatus(in_QMisIDWeight_name.c_str(),1);
+	  }
 
-    // To start off, copy the old branch into the new
-    // (then it will be overridden , if necessary)
-    //
-    *QMisIDWeight_new = *QMisIDWeight_old;
+	  intree->GetEntry(i);
 
-    if ( g_debug ) {
-      int idx_old(0);
-      for ( const auto& itr : *QMisIDWeight_old ) {
-        Info("modifytree()","\t\t OLD QMisIDWeight[%i] = %f", idx_old, itr );
-        ++idx_old;
+	  if ( g_debug ) { Info("modifytree_QMisID()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
+
+	  // A security check...
+	  //
+	  if ( !QMisIDWeight_in ) {
+	      Info("modifytree_QMisID()","\t --> QMisIDWeight_in is NULL!! Skipping event...  \n");
+	      ++count_bad;
+	      continue;
+	  }
+
+	  // To start off, copy the in branch into the new
+	  // (then it will be overridden , if necessary)
+	  //
+	  *QMisIDWeight_out = *QMisIDWeight_in;
+
+	  if ( g_debug ) {
+	      int idx_in(0);
+	      for ( const auto& itr : *QMisIDWeight_in ) {
+		  Info("modifytree_QMisID()","\t\t IN QMisIDWeight[%i] = %f", idx_in, itr );
+		  ++idx_in;
+	      }
+	  }
+
+	  float elA_eta(-999.0),elB_eta(-999.0);
+	  float elA_pt(-1.0),elB_pt(-1.0);
+	  bool  elA_isT(false),elB_isT(false);
+
+	  if ( nel_in > 0 ) {
+
+	      if ( useGroupNTup.empty() ) {
+		  elA_eta = el_eta_in->at(0);
+		  elA_pt  = el_pt_in->at(0) / 1e3;
+		  elA_isT = el_isT_in->at(0);
+	      } else {
+		  if ( abs(lep0_ID_in) == 11 ) {
+		      elA_eta = lep0_eta_in;
+		      elA_pt  = lep0_pt_in/ 1e3;
+		      elA_isT = lep0_isT_in;
+		  } else if ( abs(lep0_ID_in) == 13 && abs(lep1_ID_in) == 11 ) {
+		      elA_eta = lep1_eta_in;
+		      elA_pt  = lep1_pt_in/ 1e3;
+		      elA_isT = lep1_isT_in;
+		  }
+	      }
+
+	      if ( g_debug ) { Info("modifytree()","\t elA - pT = %.2f, eta = %.2f, isT = %i ", elA_pt, elA_eta, elA_isT ); }
+	  }
+	  if ( nel_in > 1 ) {
+
+	      if ( useGroupNTup.empty() ) {
+		  elB_eta = el_eta_in->at(1);
+		  elB_pt  = el_pt_in->at(1) / 1e3;
+		  elB_isT = el_isT_in->at(1);
+	      } else {
+		  elB_eta = lep1_eta_in;
+		  elB_pt  = lep1_pt_in/ 1e3;
+		  elB_isT = lep1_isT_in;
+	      }
+
+	      if ( g_debug ) { Info("modifytree()","\t elB - pT = %.2f, eta = %.2f, isT = %i ", elB_pt, elB_eta, elB_isT ); }
+	  }
+
+	  QMisIDWeightCalculator( QMisIDWeight_out, elA_eta, elA_pt, elA_isT, elB_eta, elB_pt, elB_isT );
+
+	  if ( g_debug ) {
+	      int idx_out(0);
+	      for ( const auto& itr : *QMisIDWeight_out ) {
+		  Info("modifytree_QMisID()","\t\t OUT QMisIDWeight[%i] = %f", idx_out, itr );
+		  ++idx_out;
+	      }
+	  }
+
+	  if ( g_debug ) { Info("modifytree_QMisID()","\n\n"); }
+
+	  // to avoid overriding new branch (old has same name) ?
+	  intree->SetBranchStatus(in_QMisIDWeight_name.c_str(),0);
+
+	  outtree->Fill();
+
       }
-    }
 
-    float elA_eta(-999.0),elB_eta(-999.0);
-    float elA_pt(-1.0),elB_pt(-1.0);
-    bool  elA_isT(false),elB_isT(false);
+      Info("modifytree_QMisID()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
 
-    if ( nel_old > 0 ) {
-      elA_eta = el_eta_old->at(0);
-      elA_pt  = el_pt_old->at(0) / 1e3;
-      elA_isT = el_isT_old->at(0);
-    }
-    if ( nel_old > 1 ) {
-      elB_eta = el_eta_old->at(1);
-      elB_pt  = el_pt_old->at(1) / 1e3;
-      elB_isT = el_isT_old->at(1);
-    }
+      outfile->Write();
+      outfile->Close();
 
-    QMisIDWeightCalculator( QMisIDWeight_new, elA_eta, elA_pt, elA_isT, elB_eta, elB_pt, elB_isT );
+      // Since we passed the address of a local variable we need
+      // to remove it.
+      intree->ResetBranchAddresses();
 
-    if ( g_debug ) {
-      int idx_new(0);
-      for ( const auto& itr : *QMisIDWeight_new ) {
-        Info("modifytree()","\t\t NEW QMisIDWeight[%i] = %f", idx_new, itr );
-        ++idx_new;
+  } else if ( addWeight.compare("YES") == 0 ) {
+
+      // Create the new branch(es) and connect to the tree
+      //
+      std::vector<float>  QMisIDWeight_out;
+      outtree->Branch("QMisIDWeight", &QMisIDWeight_out);
+
+      // Loop over entries in TTree
+      //
+      Info("modifytree_QMisID()","Begin loop on input tree entries...\n");
+      int count_bad(0);
+      Long64_t i = 0;
+      for ( ; i < nentries; i++ ) {
+
+          // Print out every N events to see where we are
+          //
+	  if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree_QMisID()","\t Processed %lld entries",i); }
+
+	  intree->GetEntry(i);
+
+	  if ( g_debug ) { Info("modifytree_QMisID()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
+
+	  QMisIDWeight_out.assign(3,1.0);
+
+	  if ( g_debug ) {
+	      int idx(0);
+	      for ( const auto& itr : QMisIDWeight_out ) {
+		  Info("modifytree_QMisID()","\t\t Default QMisIDWeight[%i] = %f", idx, itr );
+		  ++idx;
+	      }
+	  }
+
+	  float elA_eta(-999.0),elB_eta(-999.0);
+	  float elA_pt(-1.0),elB_pt(-1.0);
+	  bool  elA_isT(false),elB_isT(false);
+
+	  if ( nel_in > 0 ) {
+
+	      if ( useGroupNTup.empty() ) {
+		  elA_eta = el_eta_in->at(0);
+		  elA_pt  = el_pt_in->at(0) / 1e3;
+		  elA_isT = el_isT_in->at(0);
+	      } else {
+		  if ( abs(lep0_ID_in) == 11 ) {
+		      elA_eta = lep0_eta_in;
+		      elA_pt  = lep0_pt_in/ 1e3;
+		      elA_isT = lep0_isT_in;
+		  } else if ( abs(lep0_ID_in) == 13 && abs(lep1_ID_in) == 11 ) {
+		      elA_eta = lep1_eta_in;
+		      elA_pt  = lep1_pt_in/ 1e3;
+		      elA_isT = lep1_isT_in;
+		  }
+	      }
+
+	      if ( g_debug ) { Info("modifytree_QMisID()","\t elA - pT = %.2f, eta = %.2f, isT = %i ", elA_pt, elA_eta, elA_isT ); }
+	  }
+	  if ( nel_in > 1 ) {
+
+	      if ( useGroupNTup.empty() ) {
+		  elB_eta = el_eta_in->at(1);
+		  elB_pt  = el_pt_in->at(1) / 1e3;
+		  elB_isT = el_isT_in->at(1);
+	      } else {
+		  elB_eta = lep1_eta_in;
+		  elB_pt  = lep1_pt_in/ 1e3;
+		  elB_isT = lep1_isT_in;
+	      }
+
+	      if ( g_debug ) { Info("modifytree_QMisID()","\t elB - pT = %.2f, eta = %.2f, isT = %i ", elB_pt, elB_eta, elB_isT ); }
+	  }
+
+	  QMisIDWeightCalculator( &QMisIDWeight_out, elA_eta, elA_pt, elA_isT, elB_eta, elB_pt, elB_isT );
+
+	  if ( g_debug ) {
+	      int idx_out(0);
+	      for ( const auto& itr : QMisIDWeight_out ) {
+		  Info("modifytree_QMisID()","\t\t OUT QMisIDWeight[%i] = %f", idx_out, itr );
+		  ++idx_out;
+	      }
+	  }
+
+	  if ( g_debug ) { Info("modifytree_QMisID()","\n\n"); }
+
+	  outtree->Fill();
+
+	  QMisIDWeight_out.clear();
+
       }
-    }
 
-    if ( g_debug ) { Info("modifytree()","\n\n"); }
+      Info("modifytree_QMisID()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
 
-    // to avoid overriding new branch (old has same name) ?
-    oldtree->SetBranchStatus(old_QMisIDWeight_name.c_str(),0);
+      outfile->Write();
+      outfile->Close();
 
-    newtree->Fill();
+      // Since we passed the address of a local variable we need
+      // to remove it.
+      intree->ResetBranchAddresses();
 
   }
 
-  Info("modifytree()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
-
-  newfile->Write();
-  newfile->Close();
-
-  // Since we passed the address of a local variable we need
-  // to remove it.
-  oldtree->ResetBranchAddresses();
-
-  delete oldfile;
-  delete newfile;
-
-  // //delete a branch:
-  // TFile f("myfile.root","update");
-  // TTree *T = (TTree*)f.Get("treename");
-  // TBranch *b = T->GetBranch("name of branch to delete");
-  // T->GetListOfBranches()->Remove(b);
-  // TLeaf* l= T->GetLeaf("name of branch to delete");
-  // T->GetListOfLeaves()->Remove(l)
-  // T->Write();
+  delete infile;
+  delete outfile;
 
 }
