@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import glob, os, sys, subprocess
+import glob, os, sys, subprocess, shutil
 
 samplescsv = os.path.abspath(os.path.curdir) + "/HTopMultilepAnalysis/PlotUtils/Files/samples2015_HTopMultilep_25ns.csv"
 
@@ -39,7 +39,7 @@ infilelist = [
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361085/361085.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361086/361086.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361087/361087.root",
-#"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410000/410000.root",
+"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410000/410000.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410007/410007.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410066/410066.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410067/410067.root",
@@ -73,7 +73,7 @@ infilelist = [
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361389/361389.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361392/361392.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361395/361395.root",
-"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361397/361397.root",
+#"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361397/361397.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361398/361398.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361401/361401.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361404/361404.root",
@@ -167,9 +167,11 @@ infilelist = [
 
 configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py"
 treename   = "nominal"
-nevents    = 0
+nevents    = 10000
 
-motherdir = os.path.abspath(os.path.curdir) + "/25ns_v7"
+#motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7"
+motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_MCTruth"
+
 if not os.path.exists(motherdir):
     os.makedirs(motherdir)
 for s in sampledict:
@@ -207,10 +209,10 @@ for infile in infilelist:
           separator = ""
 
 	INTREE  = outputfilepath + "/" + outdir + ".root"
-	INHIST  =  outdir + "/hist-" + outdir + ".root"
+	INHIST  = outdir + "/hist-" + outdir + ".root"
 	if ( outdir == "Data" ):
 	   INTREE  = outputfilepath + "/list-local-HTopGroupNTup.root"
-	   INHIST  =  outdir + "/hist-list-local-HTopGroupNTup.root"
+	   INHIST  = outdir + "/hist-list-local-HTopGroupNTup.root"
 
 	OUTTREE = motherdir + "/" + s["group"] + "/" + s["ID"] + separator + s["name"] + ".root"
 	OUTHIST = motherdir + "/" + s["group"] + "/hist-" + s["ID"] + separator + s["name"] + ".root"
@@ -218,5 +220,6 @@ for infile in infilelist:
 	print("Moving :\n{0}\nto:\n{1}".format(INTREE,OUTTREE))
 	print("Moving :\n{0}\nto:\n{1}".format(INHIST,OUTHIST))
 
-	os.rename(INTREE,OUTTREE)
-	os.rename(INHIST,OUTHIST)
+	shutil.move(INTREE,OUTTREE)
+	shutil.move(INHIST,OUTHIST)
+        shutil.rmtree(os.path.abspath(os.path.curdir) + "/" + outdir)

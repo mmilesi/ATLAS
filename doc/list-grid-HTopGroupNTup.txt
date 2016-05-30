@@ -7,9 +7,9 @@
 #
 # ---------------------------------------
 # ~~~~ ttH125 (signal) ~~~~ #
-#user.dhohn.341270.aMcAtNloHerwigppEvtGen.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2559.29.03.16.Nominal_output.root/
+user.dhohn.341270.aMcAtNloHerwigppEvtGen.DAOD_HIGG8D1.e4277_s2608_s2183_r6869_r6282_p2559.29.03.16.Nominal_output.root/
 # ~~~~ ttbar (background) ~~~~ #
-user.dhohn.410000.PowhegPythiaEvtGen.DAOD_HIGG8D1.e3698_s2608_s2183_r7267_r6282_p2559.29.03.16.Nominal_output.root/
+#user.dhohn.410000.PowhegPythiaEvtGen.DAOD_HIGG8D1.e3698_s2608_s2183_r7267_r6282_p2559.29.03.16.Nominal_output.root/
 # ~~~~ ttW (background) ~~~~ #
 # ~~~~ ttZ(background) ~~~~ #
 # ~~~~ WZ (background) ~~~ #
@@ -17,10 +17,12 @@ user.dhohn.410000.PowhegPythiaEvtGen.DAOD_HIGG8D1.e3698_s2608_s2183_r7267_r6282_
 # ~~~~ Wgamma+jets (background) ~~~ #
 # ~~~~ Zgamma+jets (background) ~~~ #
 # ~~~~ Z+jets (background) ~~~ #
+#user.hpotti.361397.Sherpa.DAOD_HIGG8D1.e3651_s2586_s2174_r7326_r6282_p2559.23.05.16.Nominal_output.root/
 # ~~~~ single t (background) ~~~ #
 # ~~~~ ttWW (background) ~~~~ #
 # ~~~~ bulk MC submission ~~~~ #
 #
+#user.dhohn.*.DAOD_HIGG8D1.*r6282_p2559.29.03.16.Nominal_output.root/
 # ********** #
 #    data    #
 # ********** #
