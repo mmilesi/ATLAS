@@ -82,7 +82,7 @@ dict_channels_lep = {
 list_lep         = dict_channels_lep[args.flavourComp]
 list_types       = ["Real","Fake"]
 list_variables   = ["ProbePt","ProbeEta"] #"ProbeNJets"]
-list_selections  = ["T","L"]
+list_selections  = ["T","AntiT"]
 list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                               # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
 list_out_samples = ["factor","factorbkgsub","rate","ratebkgsub"]
@@ -310,7 +310,7 @@ for iLep in list_lep:
 	  # T / !T
 	  #
 	  # and the efficiency:
-	  # T / ( !T + T )
+	  # T / ( !T + T ) = T / L
 	  # ------------------
 
 	  histname =  iLep + "_" + iVar +"_"+ iType
@@ -328,20 +328,20 @@ for iLep in list_lep:
 	  print "Numerator T: tot. yield = ",  yields[histname + "_T_" + append_str]
           for bin in range(1,hists[histname + "_T_" + append_str].GetNbinsX()+1):
              print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hists[histname + "_T_" + append_str].GetBinLowEdge(bin),hists[histname + "_T_" + append_str].GetBinLowEdge(bin+1),hists[histname + "_T_" + append_str].GetBinContent(bin)))
-	  print "Denominator L: tot. yield = ",  yields[histname + "_L_" + append_str]
-          for bin in range(1,hists[histname + "_L_" + append_str].GetNbinsX()+1):
-             print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hists[histname + "_L_" + append_str].GetBinLowEdge(bin),hists[histname + "_L_" + append_str].GetBinLowEdge(bin+1),hists[histname + "_L_" + append_str].GetBinContent(bin)))
+	  print "Denominator AntiT: tot. yield = ",  yields[histname + "_AntiT_" + append_str]
+          for bin in range(1,hists[histname + "_AntiT_" + append_str].GetNbinsX()+1):
+             print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hists[histname + "_AntiT_" + append_str].GetBinLowEdge(bin),hists[histname + "_AntiT_" + append_str].GetBinLowEdge(bin+1),hists[histname + "_AntiT_" + append_str].GetBinContent(bin)))
 
           hists[histname + "_Rate_" + append_str]  = hists[histname + "_T_" + append_str].Clone(histname + "_Rate_" + append_str)
-          hists[histname + "_Rate_" + append_str].Divide(hists[histname + "_L_" + append_str])
+          hists[histname + "_Rate_" + append_str].Divide(hists[histname + "_AntiT_" + append_str])
 
-          yields[histname + "_Rate_" + append_str] = yields[histname + "_T_" + append_str] / yields[histname + "_L_" + append_str]
+          yields[histname + "_Rate_" + append_str] = yields[histname + "_T_" + append_str] / yields[histname + "_AntiT_" + append_str]
 
           # For efficiency, make sure the errors are computed correctly
           # (NB: in this case, numerator and denominator are not independent sets of events!)
           #
           hist_pass = hists[histname + "_T_" + append_str]
-          hist_tot  = hists[histname + "_T_" + append_str] + hists[histname+"_L_" + append_str]
+          hist_tot  = hists[histname + "_T_" + append_str] + hists[histname + "_AntiT_" + append_str]
           hist_eff  = hist_pass.Clone(histname + "_Efficiency_" + append_str)
           hist_eff.Divide(hist_pass, hist_tot,1.0,1.0,"B")
           hists[histname + "_Efficiency_" + append_str] = hist_eff
@@ -353,10 +353,9 @@ for iLep in list_lep:
           g_efficiency.Divide(hist_pass,hist_tot,"cl=0.683 b(1,1) mode")
           graphs[histname + "_Efficiency_" + append_str + "_graph"] = g_efficiency
 
-	  print "Denominator L+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
+	  print "Denominator AntiT+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
           for bin in range(1,hist_tot.GetNbinsX()+1):
              print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hist_tot.GetBinLowEdge(bin),hist_tot.GetBinLowEdge(bin+1),hist_tot.GetBinContent(bin)))
-
 
           print "\t\t --> RATE hist name: ", histname + "_Rate_" + append_str
           print "\t\t --> EFFICIENCY hist name: ", histname + "_Efficiency_" + append_str
