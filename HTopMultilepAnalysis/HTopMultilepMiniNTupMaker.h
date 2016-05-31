@@ -40,11 +40,11 @@ public:
   char dilep;
   char trilep;
   char notightlep;
-  
+
   float weight_event;
   float weight_tag;
   float weight_probe;
-  
+
 };
 
 class leptonObj {
@@ -80,6 +80,8 @@ public:
   char prompt;
   char fake;
   char brems;
+  char truthType;
+  char truthOrigin;
   char tag;
 
   float SFIDLoose;
@@ -101,7 +103,7 @@ class HTopMultilepMiniNTupMaker : public xAH::Algorithm
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.
 public:
- 
+
   /** The name of the output TTree */
   std::string m_outputNTupName;
 
@@ -150,7 +152,7 @@ private:
   Int_t 	  m_trilep_type;
   Int_t           m_nJets_OR;
   Int_t           m_nJets_OR_MV2c20_77;
-  
+
   UInt_t          m_HLT_mu20_iloose_L1MU15;
   Float_t	  m_HLT_mu20_iloose_L1MU15_PS;
   UInt_t	  m_HLT_mu50;
@@ -163,7 +165,7 @@ private:
   Float_t	  m_HLT_e60_lhmedium_PS;
   UInt_t	  m_HLT_e120_lhloose;
   Float_t	  m_HLT_e120_lhloose_PS;
- 		  
+
   Float_t	  m_lep_ID_0;
   Float_t	  m_lep_Pt_0;
   Float_t	  m_lep_E_0;
@@ -187,6 +189,8 @@ private:
   Char_t	  m_lep_isPrompt_0;
   Char_t	  m_lep_isBremsElec_0;
   Char_t	  m_lep_isFakeLep_0;
+  Char_t	  m_lep_truthType_0;
+  Char_t	  m_lep_truthOrigin_0;
   Float_t	  m_lep_SFIDLoose_0;
   Float_t	  m_lep_SFIDTight_0;
   Float_t	  m_lep_SFTrigLoose_0;
@@ -220,6 +224,8 @@ private:
   Char_t	  m_lep_isTrigMatch_1;
   Char_t	  m_lep_isPrompt_1;
   Char_t	  m_lep_isBremsElec_1;
+  Char_t	  m_lep_truthType_1;
+  Char_t	  m_lep_truthOrigin_1;
   Char_t	  m_lep_isFakeLep_1;
   Float_t	  m_lep_SFIDLoose_1;
   Float_t	  m_lep_SFIDTight_1;
@@ -255,6 +261,8 @@ private:
   Char_t	  m_lep_isPrompt_2;
   Char_t	  m_lep_isBremsElec_2;
   Char_t	  m_lep_isFakeLep_2;
+  Char_t	  m_lep_truthType_2;
+  Char_t	  m_lep_truthOrigin_2;
   Float_t	  m_lep_SFIDLoose_2;
   Float_t	  m_lep_SFIDTight_2;
   Float_t	  m_lep_SFTrigLoose_2;
@@ -276,7 +284,7 @@ private:
   float     m_weight_event;
   float     m_weight_tag;
   float     m_weight_probe;
-  
+
   char	    m_isSS01;
   char	    m_isSS12;
 
@@ -287,7 +295,7 @@ private:
   char      m_is_Tel_AntiTmu;
   char      m_is_Tmu_AntiTel;
   char      m_is_AntiTel_Tmu;
-  char      m_is_AntiTmu_Tel;  
+  char      m_is_AntiTmu_Tel;
 
   int       m_nmuons;
   int       m_nelectrons;
@@ -308,7 +316,9 @@ private:
   char	    m_lep_Tag_isPrompt;
   char	    m_lep_Tag_isBremsElec;
   char	    m_lep_Tag_isFakeLep;
-  
+  char	    m_lep_Tag_truthType;
+  char	    m_lep_Tag_truthOrigin;
+
   float     m_lep_Probe_Pt;
   float     m_lep_Probe_Eta;
   float     m_lep_Probe_EtaBE2;
@@ -320,7 +330,9 @@ private:
   char	    m_lep_Probe_isPrompt;
   char	    m_lep_Probe_isBremsElec;
   char	    m_lep_Probe_isFakeLep;
-  
+  char	    m_lep_Probe_truthType;
+  char	    m_lep_Probe_truthOrigin;
+
   std::vector<float> m_lep_Pt;
   std::vector<float> m_lep_Eta;
   std::vector<float> m_lep_EtaBE2;
@@ -360,10 +372,9 @@ public:
 private:
 
   EL::StatusCode enableSelectedBranches ();
-  EL::StatusCode checkIsTightLep( std::shared_ptr<leptonObj> lep ); 
+  EL::StatusCode checkIsTightLep( std::shared_ptr<leptonObj> lep );
   EL::StatusCode decorateEvent ();
   EL::StatusCode decorateWeights ();
-
 
   /**
     * @brief  Set which lepton is tag and which is probe for the r/f efficiency measurement

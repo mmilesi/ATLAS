@@ -155,6 +155,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_isPrompt_0",   			      &m_lep_isPrompt_0);
   m_inputNTuple->SetBranchAddress ("lep_isBremsElec_0",   		      &m_lep_isBremsElec_0);
   m_inputNTuple->SetBranchAddress ("lep_isFakeLep_0",   		      &m_lep_isFakeLep_0);
+  m_inputNTuple->SetBranchAddress ("lep_truthType_0",   		      &m_lep_truthType_0);
+  m_inputNTuple->SetBranchAddress ("lep_truthOrigin_0",   		      &m_lep_truthOrigin_0);
   m_inputNTuple->SetBranchAddress ("lep_SFIDLoose_0",   		      &m_lep_SFIDLoose_0);
   m_inputNTuple->SetBranchAddress ("lep_SFIDTight_0",   		      &m_lep_SFIDTight_0);
   m_inputNTuple->SetBranchAddress ("lep_SFTrigLoose_0",   		      &m_lep_SFTrigLoose_0);
@@ -188,6 +190,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_1",   		      &m_lep_isTrigMatch_1);
   m_inputNTuple->SetBranchAddress ("lep_isPrompt_1",   			      &m_lep_isPrompt_1);
   m_inputNTuple->SetBranchAddress ("lep_isBremsElec_1",   		      &m_lep_isBremsElec_1);
+  m_inputNTuple->SetBranchAddress ("lep_truthType_1",   		      &m_lep_truthType_1);
+  m_inputNTuple->SetBranchAddress ("lep_truthOrigin_1",   		      &m_lep_truthOrigin_1);
   m_inputNTuple->SetBranchAddress ("lep_isFakeLep_1",   		      &m_lep_isFakeLep_1);
   m_inputNTuple->SetBranchAddress ("lep_SFIDLoose_1",   		      &m_lep_SFIDLoose_1);
   m_inputNTuple->SetBranchAddress ("lep_SFIDTight_1",   		      &m_lep_SFIDTight_1);
@@ -223,6 +227,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_isPrompt_2",   			      &m_lep_isPrompt_2);
   m_inputNTuple->SetBranchAddress ("lep_isBremsElec_2",   		      &m_lep_isBremsElec_2);
   m_inputNTuple->SetBranchAddress ("lep_isFakeLep_2",   		      &m_lep_isFakeLep_2);
+  m_inputNTuple->SetBranchAddress ("lep_truthType_2",   		      &m_lep_truthType_2);
+  m_inputNTuple->SetBranchAddress ("lep_truthOrigin_2",   		      &m_lep_truthOrigin_2);
   m_inputNTuple->SetBranchAddress ("lep_SFIDLoose_2",   		      &m_lep_SFIDLoose_2);
   m_inputNTuple->SetBranchAddress ("lep_SFIDTight_2",   		      &m_lep_SFIDTight_2);
   m_inputNTuple->SetBranchAddress ("lep_SFTrigLoose_2",   		      &m_lep_SFTrigLoose_2);
@@ -280,7 +286,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("is_Tel_AntiTmu",      	&m_is_Tel_AntiTmu, "is_Tel_AntiTmu/B");
   m_outputNTuple->tree()->Branch("is_AntiTel_Tmu",      	&m_is_AntiTel_Tmu, "is_AntiTel_Tmu/B");
   m_outputNTuple->tree()->Branch("is_Tmu_AntiTel",      	&m_is_Tmu_AntiTel, "is_Tmu_AntiTel/B");
-  m_outputNTuple->tree()->Branch("is_AntiTmu_Tel",      	&m_is_AntiTmu_Tel, "is_AntiTmu_Tel/B");  
+  m_outputNTuple->tree()->Branch("is_AntiTmu_Tel",      	&m_is_AntiTmu_Tel, "is_AntiTmu_Tel/B");
 
   m_outputNTuple->tree()->Branch("nmuons",               	&m_nmuons, "nmuons/I");
   m_outputNTuple->tree()->Branch("nelectrons",               	&m_nelectrons, "nelectrons/I");
@@ -301,6 +307,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("lep_Tag_isPrompt",		&m_lep_Tag_isPrompt, "lep_Tag_isPrompt/B");
   m_outputNTuple->tree()->Branch("lep_Tag_isBremsElec",		&m_lep_Tag_isBremsElec, "lep_Tag_isBremsElec/B");
   m_outputNTuple->tree()->Branch("lep_Tag_isFakeLep",		&m_lep_Tag_isFakeLep, "lep_Tag_isFakeLep/B");
+  m_outputNTuple->tree()->Branch("lep_Tag_truthType",		&m_lep_Tag_truthType, "lep_Tag_truthType/B");
+  m_outputNTuple->tree()->Branch("lep_Tag_truthOrigin",		&m_lep_Tag_truthOrigin, "lep_Tag_truthOrigin/B");
 
   m_outputNTuple->tree()->Branch("lep_Probe_Pt",                &m_lep_Probe_Pt,         "lep_Probe_Pt/F");
   m_outputNTuple->tree()->Branch("lep_Probe_Eta",               &m_lep_Probe_Eta, "lep_Probe_Eta/F");
@@ -313,7 +321,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("lep_Probe_isPrompt",		&m_lep_Probe_isPrompt, "lep_Probe_isPrompt/B");
   m_outputNTuple->tree()->Branch("lep_Probe_isBremsElec",       &m_lep_Probe_isBremsElec, "lep_Probe_isBremsElec/B");
   m_outputNTuple->tree()->Branch("lep_Probe_isFakeLep",		&m_lep_Probe_isFakeLep, "lep_Probe_isFakeLep/B");
-  
+  m_outputNTuple->tree()->Branch("lep_Probe_truthType",		&m_lep_Probe_truthType, "lep_Probe_truthType/B");
+  m_outputNTuple->tree()->Branch("lep_Probe_truthOrigin",	&m_lep_Probe_truthOrigin, "lep_Probe_truthOrigin/B");
+
   m_outputNTuple->tree()->Branch("lep_Pt",		   	&m_lep_Pt);
   m_outputNTuple->tree()->Branch("lep_Eta",		   	&m_lep_Eta);
   m_outputNTuple->tree()->Branch("lep_EtaBE2",  	   	&m_lep_EtaBE2);
@@ -404,6 +414,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep0.get()->prompt      = m_lep_isPrompt_0;
   lep0.get()->fake        = m_lep_isFakeLep_0;
   lep0.get()->brems       = m_lep_isBremsElec_0;
+  lep0.get()->truthType   = m_lep_truthType_0;
+  lep0.get()->truthOrigin = m_lep_truthOrigin_0;
   ANA_CHECK( this->checkIsTightLep( lep0 ) );
 
   lep0.get()->SFIDLoose    = m_lep_SFIDLoose_0;
@@ -435,6 +447,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep1.get()->prompt      = m_lep_isPrompt_1;
   lep1.get()->fake        = m_lep_isFakeLep_1;
   lep1.get()->brems       = m_lep_isBremsElec_1;
+  lep1.get()->truthType   = m_lep_truthType_1;
+  lep1.get()->truthOrigin = m_lep_truthOrigin_1;
   ANA_CHECK( this->checkIsTightLep( lep1 ) );
 
   lep1.get()->SFIDLoose    = m_lep_SFIDLoose_1;
@@ -475,6 +489,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
     lep2.get()->prompt      = m_lep_isPrompt_2;
     lep2.get()->fake	    = m_lep_isFakeLep_2;
     lep2.get()->brems       = m_lep_isBremsElec_2;
+    lep2.get()->truthType   = m_lep_truthType_2;
+    lep2.get()->truthOrigin = m_lep_truthOrigin_2;
     ANA_CHECK( this->checkIsTightLep( lep2 ) );
 
     lep2.get()->SFIDLoose    = m_lep_SFIDLoose_2;
@@ -757,7 +773,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
   m_is_Tel_AntiTmu = ( ( abs(m_leptons.at(0).get()->ID) == 11 && m_leptons.at(0).get()->tight ) && ( abs(m_leptons.at(1).get()->ID) == 13 && !m_leptons.at(1).get()->tight ) );
   m_is_Tmu_AntiTel = ( ( abs(m_leptons.at(0).get()->ID) == 13 && m_leptons.at(0).get()->tight ) && ( abs(m_leptons.at(1).get()->ID) == 11 && !m_leptons.at(1).get()->tight ) );
   m_is_AntiTel_Tmu = ( ( abs(m_leptons.at(0).get()->ID) == 11 && !m_leptons.at(0).get()->tight ) && ( abs(m_leptons.at(1).get()->ID) == 13 && m_leptons.at(1).get()->tight ) );
-  m_is_AntiTmu_Tel = ( ( abs(m_leptons.at(0).get()->ID) == 13 && !m_leptons.at(0).get()->tight ) && ( abs(m_leptons.at(1).get()->ID) == 11 && m_leptons.at(1).get()->tight ) ); 
+  m_is_AntiTmu_Tel = ( ( abs(m_leptons.at(0).get()->ID) == 13 && !m_leptons.at(0).get()->tight ) && ( abs(m_leptons.at(1).get()->ID) == 11 && m_leptons.at(1).get()->tight ) );
 
   m_nleptons = m_leptons.size();
 
@@ -778,7 +794,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
     m_lep_Pt.push_back(lep.get()->pt);
     m_lep_Eta.push_back(lep.get()->eta);
     m_lep_EtaBE2.push_back(lep.get()->etaBE2);
-    
+
     if ( m_event.get()->dilep ) {
 
       if ( lep.get()->tag ) {
@@ -793,6 +809,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 	m_lep_Tag_isPrompt        = lep.get()->prompt;
 	m_lep_Tag_isBremsElec     = lep.get()->brems;
 	m_lep_Tag_isFakeLep       = lep.get()->fake;
+	m_lep_Tag_truthType       = lep.get()->truthType;
+	m_lep_Tag_truthOrigin     = lep.get()->truthOrigin;
       } else {
   	m_lep_Probe_Pt  	    = lep.get()->pt;
   	m_lep_Probe_Eta 	    = lep.get()->eta;
@@ -805,6 +823,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 	m_lep_Probe_isPrompt        = lep.get()->prompt;
 	m_lep_Probe_isBremsElec     = lep.get()->brems;
 	m_lep_Probe_isFakeLep       = lep.get()->fake;
+	m_lep_Probe_truthType       = lep.get()->truthType;
+	m_lep_Probe_truthOrigin     = lep.get()->truthOrigin;
       }
 
     }
@@ -820,11 +840,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 
 EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ()
 {
-  
+
   m_lep_Pt.clear();
   m_lep_Eta.clear();
   m_lep_EtaBE2.clear();
-  
+
   return EL::StatusCode::SUCCESS;
 
 }

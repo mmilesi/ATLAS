@@ -39,7 +39,7 @@ infilelist = [
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361085/361085.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361086/361086.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361087/361087.root",
-"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410000/410000.root",
+#"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410000/410000.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410007/410007.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410066/410066.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/410067/410067.root",
@@ -161,6 +161,8 @@ infilelist = [
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361489/361489.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361490/361490.root",
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361491/361491.root",
+#
+"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v13/Nominal/341270/341270.root",
 ]
 
 # -------------------------------------------------------------------------------------------------------
@@ -170,7 +172,8 @@ treename   = "nominal"
 nevents    = 10000
 
 #motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7"
-motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_MCTruth"
+#motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_MCTruth"
+motherdir = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v13_test"
 
 if not os.path.exists(motherdir):
     os.makedirs(motherdir)
