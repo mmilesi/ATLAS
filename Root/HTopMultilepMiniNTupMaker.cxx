@@ -274,6 +274,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("isMC",               	        &m_isMC, "isMC/B");
 
   m_outputNTuple->tree()->Branch("weight_event", 	    	&m_weight_event, "weight_event/F");
+  m_outputNTuple->tree()->Branch("weight_event_trig", 	    	&m_weight_event_trig, "weight_event_trig/F");
+  m_outputNTuple->tree()->Branch("weight_event_lep", 	    	&m_weight_event_lep, "weight_event_lep/F");
   m_outputNTuple->tree()->Branch("weight_tag",		    	&m_weight_tag,   "weight_tag/F");
   m_outputNTuple->tree()->Branch("weight_probe", 	    	&m_weight_probe, "weight_probe/F");
 
@@ -679,6 +681,13 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
   //
   m_event.get()->weight_event = m_mcWeightOrg * m_pileupEventWeight_090 * m_MV2c20_77_EventWeight * m_JVT_EventWeight;
 
+  float weight_lep(1.0);
+  for ( auto lep : m_leptons ) {
+    if ( lep.get()->tight ) weight_lep *= lep.get()->SFObjTight;
+    else                    weight_lep *= lep.get()->SFObjLoose;
+  }
+  m_event.get()->weight_event_lep = weight_lep;
+
   if ( m_event.get()->dilep ) {
 
     auto lep0 = m_leptons.at(0);
@@ -717,6 +726,38 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
     }
 
   }
+
+  // Calculate lepton trigger SF for the event
+  //
+  // The CP tools do not calculate the final event SF. Rather, they give back the SF and MC efficiency *per lepton*.
+  // With such ingredients in hand, the HTop way to compute the event SF is the following:
+  //
+  // eventSF = ( 1 - prod( 1 - SF(i)*eff(i) ) ) / ( 1 - prod ( 1 - eff(i) ) );
+  //
+  // where the productory is over the selected leptons in the event.
+  // The trick at the numerator is just to get the efficiency in data.
+  //
+  // The SF systematics are obtained by coherently varying the SF for each object (i.e. assume full correlation).
+  // The MC efficiency is assumed to have negligible uncertainty.
+
+  float trig_weight_N(0.0), trig_weight_D(0.0);
+  float this_SF(1.0), this_eff(0.0);
+  for ( auto lep : m_leptons ) {
+
+    this_eff = ( lep.get()->tight ) ? lep.get()->EffTrigTight : lep.get()->EffTrigLoose;
+    this_SF  = ( lep.get()->tight ) ? lep.get()->SFTrigTight : lep.get()->SFTrigLoose;
+
+    trig_weight_N *= ( 1.0 - this_SF * this_eff );
+    trig_weight_D *= ( 1.0 - this_eff );
+  }
+
+  // Update numerator and denominator
+  // Make sure the SF in the 0/0 case (i.e, when efficiency=0) will be set equal to 1
+  //
+  trig_weight_N = ( trig_weight_N != 1.0 ) ? trig_weight_N : 0.0;
+  trig_weight_D = ( trig_weight_D != 1.0 ) ? trig_weight_D : 0.0;
+
+  m_event.get()->weight_event_trig = ( 1.0 - trig_weight_N ) / ( 1.0 - trig_weight_D );
 
   return EL::StatusCode::SUCCESS;
 }
@@ -830,9 +871,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
     }
   }
 
-  m_weight_event = m_event.get()->weight_event;
-  m_weight_tag   = m_event.get()->weight_tag;
-  m_weight_probe = m_event.get()->weight_probe;
+  m_weight_event      = m_event.get()->weight_event;
+  m_weight_event_lep  = m_event.get()->weight_event_lep;
+  m_weight_event_trig = m_event.get()->weight_event_trig;
+  m_weight_tag        = m_event.get()->weight_tag;
+  m_weight_probe      = m_event.get()->weight_probe;
 
   return EL::StatusCode::SUCCESS;
 

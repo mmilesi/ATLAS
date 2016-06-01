@@ -31,7 +31,7 @@ public:
     isMC(0), isSS01(0), isSS12(0),
     dilep(0), trilep(0),
     notightlep(0),
-    weight_event(1.0),weight_tag(1.0),weight_probe(1.0)
+	weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
   { };
 
   char isMC;
@@ -42,6 +42,8 @@ public:
   char notightlep;
 
   float weight_event;
+  float weight_event_trig;
+  float weight_event_lep;
   float weight_tag;
   float weight_probe;
 
@@ -57,6 +59,8 @@ public:
     SFIDTight(1.0),
     SFTrigLoose(1.0),
     SFTrigTight(1.0),
+    EffTrigLoose(0.0),
+    EffTrigTight(0.0),
     SFIsoLoose(1.0),
     SFIsoTight(1.0),
     SFReco(1.0),
@@ -88,6 +92,8 @@ public:
   float SFIDTight;
   float SFTrigLoose;
   float SFTrigTight;
+  float EffTrigLoose;
+  float EffTrigTight;
   float SFIsoLoose;
   float SFIsoTight;
   float SFReco;
@@ -195,6 +201,8 @@ private:
   Float_t	  m_lep_SFIDTight_0;
   Float_t	  m_lep_SFTrigLoose_0;
   Float_t	  m_lep_SFTrigTight_0;
+  Float_t         m_lep_EffTrigLoose_0;
+  Float_t         m_lep_EffTrigTight_0;
   Float_t	  m_lep_SFIsoLoose_0;
   Float_t	  m_lep_SFIsoTight_0;
   Float_t	  m_lep_SFReco_0;
@@ -231,6 +239,8 @@ private:
   Float_t	  m_lep_SFIDTight_1;
   Float_t	  m_lep_SFTrigLoose_1;
   Float_t	  m_lep_SFTrigTight_1;
+  Float_t         m_lep_EffTrigLoose_1;
+  Float_t         m_lep_EffTrigTight_1;
   Float_t	  m_lep_SFIsoLoose_1;
   Float_t	  m_lep_SFIsoTight_1;
   Float_t	  m_lep_SFReco_1;
@@ -267,6 +277,8 @@ private:
   Float_t	  m_lep_SFIDTight_2;
   Float_t	  m_lep_SFTrigLoose_2;
   Float_t	  m_lep_SFTrigTight_2;
+  Float_t         m_lep_EffTrigLoose_2;
+  Float_t         m_lep_EffTrigTight_2;
   Float_t	  m_lep_SFIsoLoose_2;
   Float_t	  m_lep_SFIsoTight_2;
   Float_t	  m_lep_SFReco_2;
@@ -282,6 +294,8 @@ private:
   char      m_isMC;
 
   float     m_weight_event;
+  float     m_weight_event_trig;
+  float     m_weight_event_lep;
   float     m_weight_tag;
   float     m_weight_probe;
 
