@@ -309,8 +309,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("lep_Tag_isPrompt",		&m_lep_Tag_isPrompt, "lep_Tag_isPrompt/B");
   m_outputNTuple->tree()->Branch("lep_Tag_isBremsElec",		&m_lep_Tag_isBremsElec, "lep_Tag_isBremsElec/B");
   m_outputNTuple->tree()->Branch("lep_Tag_isFakeLep",		&m_lep_Tag_isFakeLep, "lep_Tag_isFakeLep/B");
-  m_outputNTuple->tree()->Branch("lep_Tag_truthType",		&m_lep_Tag_truthType, "lep_Tag_truthType/B");
-  m_outputNTuple->tree()->Branch("lep_Tag_truthOrigin",		&m_lep_Tag_truthOrigin, "lep_Tag_truthOrigin/B");
+  m_outputNTuple->tree()->Branch("lep_Tag_truthType",		&m_lep_Tag_truthType, "lep_Tag_truthType/I");
+  m_outputNTuple->tree()->Branch("lep_Tag_truthOrigin",		&m_lep_Tag_truthOrigin, "lep_Tag_truthOrigin/I");
 
   m_outputNTuple->tree()->Branch("lep_Probe_Pt",                &m_lep_Probe_Pt,         "lep_Probe_Pt/F");
   m_outputNTuple->tree()->Branch("lep_Probe_Eta",               &m_lep_Probe_Eta, "lep_Probe_Eta/F");
@@ -323,8 +323,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("lep_Probe_isPrompt",		&m_lep_Probe_isPrompt, "lep_Probe_isPrompt/B");
   m_outputNTuple->tree()->Branch("lep_Probe_isBremsElec",       &m_lep_Probe_isBremsElec, "lep_Probe_isBremsElec/B");
   m_outputNTuple->tree()->Branch("lep_Probe_isFakeLep",		&m_lep_Probe_isFakeLep, "lep_Probe_isFakeLep/B");
-  m_outputNTuple->tree()->Branch("lep_Probe_truthType",		&m_lep_Probe_truthType, "lep_Probe_truthType/B");
-  m_outputNTuple->tree()->Branch("lep_Probe_truthOrigin",	&m_lep_Probe_truthOrigin, "lep_Probe_truthOrigin/B");
+  m_outputNTuple->tree()->Branch("lep_Probe_truthType",		&m_lep_Probe_truthType, "lep_Probe_truthType/I");
+  m_outputNTuple->tree()->Branch("lep_Probe_truthOrigin",	&m_lep_Probe_truthOrigin, "lep_Probe_truthOrigin/I");
 
   m_outputNTuple->tree()->Branch("lep_Pt",		   	&m_lep_Pt);
   m_outputNTuple->tree()->Branch("lep_Eta",		   	&m_lep_Eta);
@@ -888,6 +888,28 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ()
   m_lep_Eta.clear();
   m_lep_EtaBE2.clear();
 
+  m_jet_OLR_Pt.clear();
+  m_jet_OLR_Eta.clear();
+  m_jet_OLR_Phi.clear();
+  m_jet_OLR_E.clear();
+  m_jet_OLR_truthMatch_Pt.clear();
+  m_jet_OLR_truthMatch_Eta.clear();
+  m_jet_OLR_truthMatch_Phi.clear();
+  m_jet_OLR_truthMatch_E.clear();
+  m_jet_OLR_truthMatch_isBJet.clear();
+  m_jet_OLR_truthMatch_isCJet.clear();
+  m_jet_OLR_truthMatch_isLFJet.clear();
+
   return EL::StatusCode::SUCCESS;
 
 }
+
+EL::StatusCode HTopMultilepMiniNTupMaker :: jetTruthMatching ()
+{
+
+
+
+  return EL::StatusCode::SUCCESS;
+
+}
+

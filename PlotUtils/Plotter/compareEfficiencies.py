@@ -296,6 +296,7 @@ def plotter_r_flavours():
 
   #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_NoSub_LHInput/Rates.root"
   file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+  
   # CLOSURE
   #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
 
@@ -442,7 +443,10 @@ def plotter_r_flavours():
 def plotter_f_flavours():
 
   #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_NoSub_LHInput/Rates.root"
-  file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+  #file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+  
+  file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_DDQmisID/Rates.root"
+ 
   # CLOSURE
   #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
 
@@ -592,6 +596,6 @@ def plotter_f_flavours():
 
 #plotter_r()
 #plotter_f()
-plotter_r_flavours()
+#plotter_r_flavours()
 plotter_f_flavours()
 #plot2Dhist()

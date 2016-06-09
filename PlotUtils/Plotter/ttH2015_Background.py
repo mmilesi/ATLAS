@@ -834,7 +834,7 @@ class TTHBackgrounds2015(Background):
 
             return sp
 
-    # the only difference with the above class is
+    # The only difference with the above class is
     # that we plot only events with at least one !prompt lepton, and veto charge flip
     #
     class TTBarClosure(Process):
@@ -1063,11 +1063,11 @@ class TTHBackgrounds2015(Background):
             ttbarz = self.parent.procmap['TTBarZ'](treename, category, options)
 	    return (diboson + top + ttbarw + ttbarz)
 
-    #"""
+    
     class ChargeFlipMC(Process):
 
 	latexname = 'QMisID (MC)'
-        colour = kAzure -4
+        colour = kAzure - 4
 
         def base(self, treename='physics', category=None, options={}):
 
@@ -1082,67 +1082,12 @@ class TTHBackgrounds2015(Background):
             topcf = self.parent.procmap['TopCF'](treename, category, options)
             zjetscf = self.parent.procmap['ZjetsCF'](treename, category, options)
 	    return (dibosoncf + topcf + zjetscf)
-    #"""
-
-    """
-    class ChargeFlipMC(Process):
-
-	latexname = 'QMisID (MC)'
-        colour = kAzure -4
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                ('tops', 'tZ'),
-                ('tops', 'tW'),
-                ('tops', 'singlet'),
-                ('tops', '4top'),
-                ('tops', 'ttWW'),
-                ('tops', 'ttbar_nonallhad'),
-                ('Diboson','*'),
-                ('Z+jetsCVetoBVeto', '*'),
-                ('Z+jetsCFilterBVeto', '*'),
-                ('Z+jetsBFilter', '*'),
-		('Z+jetsLowMllBVeto', '*'),
-		('ZjetsLowMllBFilter', '*'),			
-		
-                         ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) * self.parent.norm_factor
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-
-	    systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
-            TTcut=''
-            weight=1.0
-
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
-                TTcut='TT'
-            if TTcut != '':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
-
-	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
-	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
-
-	    sp = sp.subprocess(cut=truthcut)
-
-	    print("\nChargeFlipMC sp: {0}".format(sp.basecut.cutnamelist))
-
-            return sp
-    """
 
 
     class ChargeFlip(Process):
 
 	latexname = 'QMisID'
-        colour = kAzure -4
+        colour = kAzure - 4
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
@@ -1163,111 +1108,108 @@ class TTHBackgrounds2015(Background):
             sp = self.base(treename, category, options)
 
 	    TTcut  = ''
-	    weight = 'QMisIDWeight[0]'
+	    weight = '0.0'
 
-            if ( self.parent.channel=='TwoLepSS' ) or ( self.parent.channel=='ThreeLep' ):
-                TTcut  = 'TT'
-
-	    # Remove any truth cut
+	    # Categories w/ any of these cuts must get the QMisID weight...
 	    #
-	    basecut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
-
-	    if TTcut != '':
-	        basecut = basecut & self.vardb.getCut(TTcut)
-
-	    # If SS cut in category, need to switch to OS
+            cut_w_el  = ['2Lep_ElEl_Event','2Lep_MuEl_Event','2Lep_ElMu_Event'] 
+            # ... and these must not!
 	    #
-            if ("2Lep_SS") in category.cut.cutname:
-                basecut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-            else:
-                weight = '0.0'
-
-	    # Dimuon events do not have charge flips. At all.
-	    #
-            if ("2Lep_MuMu_Event") in category.cut.cutname:
-		weight = '0.0'
-
-	    sp = sp.subprocess(cut=basecut,eventweight=weight)
-
-	    print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
-
-            return sp
-
-
-    class ChargeFlipInclusiveFlavRates(Process):
-
-	latexname = 'QMisID'
-        colour = kAzure -4
-
-        def base(self, treename='physics', category=None, options={}):
-            inputgroup = [
-                    ('Data', 'physics_Main'),
-                         ]
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees)
-            return sp
-
-        def __call__(self, treename='physics', category=None, options={}):
-
-	    systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-
-	    if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-
-	    sp = self.base(treename, category, options)
+	    cut_wo_el = ['2Lep_MuMu_Event']
 
 	    # Take the category cut
 	    #
 	    basecut = category.cut
 
-	    print("\nChargeFlipInclusiveFlavRates initial cut: {0}".format(basecut.cutnamelist))
+	    print("\nChargeFlip initial cut: {0}".format(basecut.cutnamelist))
 
-	    # Treat differently the cases where e/mu is the probe
-	    # If the probe is a muon, the QMisID weight for the SF region must be set to 0!
-	    #
-	    weight = '0.0'
-            weight_SF = '0.0'
-	    weight_OF = '0.0'
-
-	    if ("2Lep_SS") in category.cut.cutname:
-               basecut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-	       weight  ='QMisIDWeight[0]'
+            if ( self.parent.channel=='TwoLepSS' ) or ( self.parent.channel=='ThreeLep' ):
+              TTcut = 'TT'
 
 	    # Remove any truth cut
 	    #
 	    basecut = basecut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
 
-	    sp_SF = None
-	    sp_OF = None
+	    if TTcut != '':
+	      basecut = basecut & self.vardb.getCut(TTcut)
 
-	    if ( 'ElRealFakeRateCR' ) in category.cut.cutname:
+	    # If SS cut in category, need to switch to OS before applying QMisID weight.
+	    # Otherwise, just forget about QMisID, at all.
+	    #
+            if ("2Lep_SS") in category.cut.cutname:
+              basecut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
+            else:
+	      sp = sp.subprocess(cut=basecut,eventweight=weight)
+	      print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
+              return sp
 
-	       cut_SF = basecut & self.vardb.getCut('2Lep_ElEl_Event')
-	       cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
+            if bool([ cut for cut in cut_w_el if cut in category.cut.cutname ]):
+             
+	      weight = 'QMisIDWeight[0]'
+	      sp = sp.subprocess(cut=basecut,eventweight=weight)
+	      print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
+            
+	    elif bool([ cut for cut in cut_wo_el if cut in category.cut.cutname ]):
+            
+	      weight = '0.0'
+	      sp = sp.subprocess(cut=basecut,eventweight=weight)
+	      print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
+            
+	    else:
 
-	       weight_SF = weight_OF = weight
+              weight_SF = '0.0'
+	      weight_OF = '0.0'
 
-	       sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
-	       sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
+	      sp_SF = None
+	      sp_OF = None
+	      
+	      if ( 'ElRealFakeRateCR' ) in category.cut.cutname:
 
-	    elif ( 'MuRealFakeRateCR' ) in category.cut.cutname:
+	        cut_SF = basecut & self.vardb.getCut('2Lep_ElEl_Event')
+	        cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
 
-	       cut_SF = basecut & self.vardb.getCut('2Lep_MuMu_Event')
-	       cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
+	        weight_SF = weight_OF = 'QMisIDWeight[0]'
 
-	       weight_SF = '0.0' # mu-mu region MUST get zero QMisID weight!
-	       weight_OF = weight
+	        sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
+	        sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
 
-	       sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
-	       sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
+	        print("\nChargeFlip sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
+	        print("\nChargeFlip sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
 
-	    print("\nChargeFlipInclusiveFlavRates sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
-	    print("\nChargeFlipInclusiveFlavRates sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
+	      elif ( 'MuRealFakeRateCR' ) in category.cut.cutname:
 
-	    sp = sp_SF + sp_OF
+	        cut_SF = basecut & self.vardb.getCut('2Lep_MuMu_Event')
+	        cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
+
+	        weight_SF = '0.0' # mu-mu region MUST get zero QMisID weight!
+	        weight_OF = 'QMisIDWeight[0]'
+
+	        sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
+	        sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
+	        
+		print("\nChargeFlip sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
+	        print("\nChargeFlip sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
+	    
+	      else:
+	  
+	        cut_elel = basecut & self.vardb.getCut('2Lep_ElEl_Event')
+	        cut_mumu = basecut & self.vardb.getCut('2Lep_MuMu_Event')
+	        cut_OF   = basecut & self.vardb.getCut('2Lep_OF_Event')
+
+	        weight_mumu = '0.0' # mu-mu region MUST get zero QMisID weight!
+	        weight_elel = weight_OF = 'QMisIDWeight[0]'
+	  
+	        sp_elel = sp.subprocess(cut=cut_elel,eventweight=weight_elel)
+	        sp_mumu = sp.subprocess(cut=cut_mumu,eventweight=weight_mumu)
+		sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
+	        
+		print("\nChargeFlip sp_elel: {0}, weight: {1}".format(sp_elel.basecut.cutnamelist, weight_elel))
+		print("\nChargeFlip sp_mumu: {0}, weight: {1}".format(sp_mumu.basecut.cutnamelist, weight_mumu))
+		print("\nChargeFlip sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
+		
+	        sp_SF = sp_elel + sp_mumu
+	  
+	      sp = sp_SF + sp_OF
 
             return sp
 

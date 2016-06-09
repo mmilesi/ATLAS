@@ -28,18 +28,31 @@ def get_yields(nominal, up=None, down=None):
        dummy_err_down  = Double(0)
        value_down = down.IntegralAndError(bin,nextbin,dummy_err_down)
 
+       delta_up   = value_up - value_nominal
+       delta_down = value_down - value_nominal
+
+       sys_up   = 0.0
+       sys_down = 0.0
+
+       if delta_up >= 0.0:
+         sys_up = abs( delta_up )
+       if delta_down <= 0.0:
+         sys_down = abs( delta_down )
+
        # Take the sys error as max( abs(value(up,down) - value_nominal) )
        #
-       list_variations = []
-       list_variations.append(abs( value_up - value_nominal ))
-       list_variations.append(abs( value_down - value_nominal ))
-
-       sys_error  = max(list_variations)
+       #list_variations = []
+       #list_variations.append(abs( value_up - value_nominal ))
+       #list_variations.append(abs( value_down - value_nominal ))
+       #
+       #sys_error  = max(list_variations)
 
        if nominal.IsBinOverflow(bin):
-         print ("\t\t{0}-th bin (O-FLOW): integral = {1} +- {2} (stat) +- {3} (syst)".format( bin, value_nominal, stat_error, sys_error ))
+         #print ("\t\t{0}-th bin (O-FLOW): integral = {1} +- {2} (stat) +- {3} (syst)".format( bin, value_nominal, stat_error, sys_error ))
+         print ("\t\t{0}-th bin (O-FLOW): integral = {1} +- {2} (stat) (+ {3}, - {4}) (syst)".format( bin, value_nominal, stat_error, sys_up, sys_down ))
        else:
-         print ("\t\t{0}-th bin: integral = {1} +- {2} (stat) +- {3} (syst)".format( bin, value_nominal, stat_error, sys_error ))
+         #print ("\t\t{0}-th bin: integral = {1} +- {2} (stat) +- {3} (syst)".format( bin, value_nominal, stat_error, sys_error ))
+         print ("\t\t{0}-th bin: integral = {1} +- {2} (stat) (+ {3}, - {4}) (syst)".format( bin, value_nominal, stat_error, sys_up, sys_down ))
 
      else:
        if nominal.IsBinOverflow(bin):
@@ -52,15 +65,28 @@ def get_yields(nominal, up=None, down=None):
 
   print ("\t\t--------------------")
   if ( up and down ):
-     list_variations = []
-     list_variations.append(abs( up.Integral(0,up.GetNbinsX()+1) - integral_nominal ))
-     list_variations.append(abs( down.Integral(0,down.GetNbinsX()+1) - integral_nominal ))
 
-     integral_sys_error  = max(list_variations)
+    delta_up   = up.Integral(0,up.GetNbinsX()+1) - integral_nominal
+    delta_down = down.Integral(0,down.GetNbinsX()+1) - integral_nominal
 
-     print ("\t\tIntegral = {0} +- {1} (stat) +- {2} (syst)".format(integral_nominal, integral_stat_error, integral_sys_error ))
+    integral_sys_up   = 0.0
+    integral_sys_down = 0.0
+
+    if delta_up >= 0.0:
+      integral_sys_up = abs( delta_up )
+    if delta_down <= 0.0:
+      integral_sys_down = abs( delta_down )
+
+    #list_variations = []
+    #list_variations.append(abs( up.Integral(0,up.GetNbinsX()+1) - integral_nominal ))
+    #list_variations.append(abs( down.Integral(0,down.GetNbinsX()+1) - integral_nominal ))
+    #
+    #integral_sys_error  = max(list_variations)
+
+    #print ("\t\tIntegral = {0} +- {1} (stat) +- {2} (syst)".format(integral_nominal, integral_stat_error, integral_sys_error ))
+    print ("\t\tIntegral = {0} +- {1} (stat) (+ {2}, - {3}) (syst)".format(integral_nominal, integral_stat_error, integral_sys_up, integral_sys_down ))
   else:
-     print ("\t\tIntegral = {0} +- {1} (stat)".format(integral_nominal, integral_stat_error ))
+    print ("\t\tIntegral = {0} +- {1} (stat)".format(integral_nominal, integral_stat_error ))
 
 
 def main():
@@ -81,7 +107,17 @@ def main():
     #region    = "SS_SR_DataDriven"
     #var_name  = "NJets5j"
 
-    inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v7_FinalSelection_NominalBinning_AvgMuFake/"
+    #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v7_FinalSelection_NominalBinning_AvgMuFake/"
+    #region    = "SS_SR_DataDriven"
+    #var_name  = "NJets5j"
+
+    # -----------------------------------------
+
+    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v7_FinalSelection_DDQmisID/"
+    #region    = "SS_SR_DataDriven"
+    #var_name  = "NJets2j3j4j"
+
+    inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v7_FinalSelection_DDQMisID/"
     region    = "SS_SR_DataDriven"
     var_name  = "NJets5j"
 

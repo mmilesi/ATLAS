@@ -84,8 +84,8 @@ public:
   char prompt;
   char fake;
   char brems;
-  char truthType;
-  char truthOrigin;
+  int  truthType;
+  int  truthOrigin;
   char tag;
 
   float SFIDLoose;
@@ -158,6 +158,8 @@ private:
   Int_t 	  m_trilep_type;
   Int_t           m_nJets_OR;
   Int_t           m_nJets_OR_MV2c20_77;
+  Int_t           m_nJets_OR_T;
+  Int_t           m_nJets_OR_T_MV2c20_77;
 
   UInt_t          m_HLT_mu20_iloose_L1MU15;
   Float_t	  m_HLT_mu20_iloose_L1MU15_PS;
@@ -195,8 +197,8 @@ private:
   Char_t	  m_lep_isPrompt_0;
   Char_t	  m_lep_isBremsElec_0;
   Char_t	  m_lep_isFakeLep_0;
-  Char_t	  m_lep_truthType_0;
-  Char_t	  m_lep_truthOrigin_0;
+  Int_t	          m_lep_truthType_0;
+  Int_t	          m_lep_truthOrigin_0;
   Float_t	  m_lep_SFIDLoose_0;
   Float_t	  m_lep_SFIDTight_0;
   Float_t	  m_lep_SFTrigLoose_0;
@@ -232,9 +234,9 @@ private:
   Char_t	  m_lep_isTrigMatch_1;
   Char_t	  m_lep_isPrompt_1;
   Char_t	  m_lep_isBremsElec_1;
-  Char_t	  m_lep_truthType_1;
-  Char_t	  m_lep_truthOrigin_1;
   Char_t	  m_lep_isFakeLep_1;
+  Int_t	          m_lep_truthType_1;
+  Int_t	          m_lep_truthOrigin_1;
   Float_t	  m_lep_SFIDLoose_1;
   Float_t	  m_lep_SFIDTight_1;
   Float_t	  m_lep_SFTrigLoose_1;
@@ -271,8 +273,8 @@ private:
   Char_t	  m_lep_isPrompt_2;
   Char_t	  m_lep_isBremsElec_2;
   Char_t	  m_lep_isFakeLep_2;
-  Char_t	  m_lep_truthType_2;
-  Char_t	  m_lep_truthOrigin_2;
+  Int_t	          m_lep_truthType_2;
+  Int_t	          m_lep_truthOrigin_2;
   Float_t	  m_lep_SFIDLoose_2;
   Float_t	  m_lep_SFIDTight_2;
   Float_t	  m_lep_SFTrigLoose_2;
@@ -288,6 +290,25 @@ private:
 
   ULong64_t       m_totalEvents;
   Float_t         m_totalEventsWeighted;
+
+  /** Reco jets BEFORE overlap removal */
+
+  vector<float>   *m_jet_pt;
+  vector<float>   *m_jet_eta;
+  vector<float>   *m_jet_phi;
+  vector<float>   *m_jet_E;
+
+  /** Indexes of jets that pass overlap removal */
+
+  vector<short>   *selected_jets;
+  vector<short>   *selected_jets_T;
+
+  /** Truth jets */
+
+  vector<float>   *m_truth_jet_pt;
+  vector<float>   *m_truth_jet_eta;
+  vector<float>   *m_truth_jet_phi;
+  vector<float>   *m_truth_jet_e;
 
   /** Extra branches to be stored in output TTree */
 
@@ -330,8 +351,8 @@ private:
   char	    m_lep_Tag_isPrompt;
   char	    m_lep_Tag_isBremsElec;
   char	    m_lep_Tag_isFakeLep;
-  char	    m_lep_Tag_truthType;
-  char	    m_lep_Tag_truthOrigin;
+  int	    m_lep_Tag_truthType;
+  int	    m_lep_Tag_truthOrigin;
 
   float     m_lep_Probe_Pt;
   float     m_lep_Probe_Eta;
@@ -344,12 +365,26 @@ private:
   char	    m_lep_Probe_isPrompt;
   char	    m_lep_Probe_isBremsElec;
   char	    m_lep_Probe_isFakeLep;
-  char	    m_lep_Probe_truthType;
-  char	    m_lep_Probe_truthOrigin;
+  int	    m_lep_Probe_truthType;
+  int	    m_lep_Probe_truthOrigin;
 
   std::vector<float> m_lep_Pt;
   std::vector<float> m_lep_Eta;
   std::vector<float> m_lep_EtaBE2;
+
+  /** Jets AFTER overlap removal */
+
+  std::vector<float> m_jet_OLR_Pt;
+  std::vector<float> m_jet_OLR_Eta;
+  std::vector<float> m_jet_OLR_Phi;
+  std::vector<float> m_jet_OLR_E;
+  std::vector<float> m_jet_OLR_truthMatch_Pt;
+  std::vector<float> m_jet_OLR_truthMatch_Eta;
+  std::vector<float> m_jet_OLR_truthMatch_Phi;
+  std::vector<float> m_jet_OLR_truthMatch_E;
+  std::vector<char>  m_jet_OLR_truthMatch_isBJet;
+  std::vector<char>  m_jet_OLR_truthMatch_isCJet;
+  std::vector<char>  m_jet_OLR_truthMatch_isLFJet;
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
@@ -405,6 +440,8 @@ private:
   EL::StatusCode setOutputBranches ();
 
   EL::StatusCode clearBranches ();
+
+  EL::StatusCode jetTruthMatching();
 
 };
 

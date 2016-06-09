@@ -5,7 +5,7 @@ import sys, glob, os, array, inspect, math
 
 from array import array
 
-sys.path.append(os.path.abspath(os.path.curdir))#add to the search path for the modules the directory where this script is launched
+sys.path.append(os.path.abspath(os.path.curdir))
 from Core import NTupleTools, DatasetManager, listifyInputFiles
 
 gROOT.Reset()

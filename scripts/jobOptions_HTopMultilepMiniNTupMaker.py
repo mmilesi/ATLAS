@@ -31,9 +31,18 @@ mc_truth_branches   = [] # ["m_truth_m","m_truth_pt","m_truth_eta","m_truth_phi"
 
 branches_to_copy = eventweight_branches + event_branches + trigbits_branches + jet_branches + lep_branches + tau_branches + mc_truth_branches
 
+# ---------------------------
+#
+# Add here branches that are to be used (hence need to be activated), but not copied over
+#
+jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_e"]
+jet_truth_vec_branches = ["m_truth_jet_pt","m_truth_jet_eta","m_truth_jet_phi","m_truth_jet_e"]
+
+branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches
+
 # Trick to pass the list as a comma-separated string to the C++ algorithm
 #
-branches_to_copy_str = ",".join(branches_to_copy)
+branches_to_activate_str = ",".join(branches_to_activate)
 
 # Instantiate the main algorithm
 #
@@ -41,7 +50,7 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
                                   "m_debug"                : False,
 				  "m_outputNTupName"       : "physics",
                                   "m_outputNTupStreamName" : "output",
-				  "m_inputBranches"        : branches_to_copy_str,
+				  "m_inputBranches"        : branches_to_activate_str,
 	                          "m_useAlgSelect"         : True,
 				  "m_addStreamEventsHist"  : False,
                                 }
@@ -61,9 +70,9 @@ for branch in branches_to_copy:
 #
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
 algskim.addCut ("passEventCleaning==1")
-#algskim.addCut ("HLT_e24_lhmedium_L1EM20VH||HLT_e24_lhmedium_L1EM18VH||HLT_e60_lhmedium||HLT_e120_lhloose||HLT_mu20_iloose_L1MU15||HLT_mu50")
-algskim.addCut ("nJets_OR>=1") # temp
-#algskim.addCut("nJets_OR_MV2c20_77>=1") # temp
+algskim.addCut ("HLT_e24_lhmedium_L1EM20VH||HLT_e24_lhmedium_L1EM18VH||HLT_e60_lhmedium||HLT_e120_lhloose||HLT_mu20_iloose_L1MU15||HLT_mu50")
+#algskim.addCut ("nJets_OR_T>=1") # temp
+#algskim.addCut("nJets_OR_T_MV2c20_77>=1") # temp
 algskim.addCut ("dilep_type>0||trilep_type>0")
 algskim.histName ("cutflow")
 
