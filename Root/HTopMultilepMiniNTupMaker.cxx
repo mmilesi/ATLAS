@@ -240,6 +240,21 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_SFObjLoose_2",   		      &m_lep_SFObjLoose_2);
   m_inputNTuple->SetBranchAddress ("lep_SFObjTight_2",   		      &m_lep_SFObjTight_2);
 
+  m_inputNTuple->SetBranchAddress ("m_jet_pt",  &m_jet_pt);
+  m_inputNTuple->SetBranchAddress ("m_jet_eta", &m_jet_eta);
+  m_inputNTuple->SetBranchAddress ("m_jet_phi", &m_jet_phi);
+  m_inputNTuple->SetBranchAddress ("m_jet_E",   &m_jet_E);
+  m_inputNTuple->SetBranchAddress ("m_jet_flavor_truth_label",       &m_jet_flavor_truth_label);
+  m_inputNTuple->SetBranchAddress ("m_jet_flavor_truth_label_ghost", &m_jet_flavor_truth_label_ghost);
+
+  m_inputNTuple->SetBranchAddress ("selected_jets",   &selected_jets);
+  m_inputNTuple->SetBranchAddress ("selected_jets_T", &selected_jets_T);
+
+  m_inputNTuple->SetBranchAddress ("m_truth_jet_pt",  &m_truth_jet_pt);
+  m_inputNTuple->SetBranchAddress ("m_truth_jet_eta", &m_truth_jet_eta);
+  m_inputNTuple->SetBranchAddress ("m_truth_jet_phi", &m_truth_jet_phi);
+  m_inputNTuple->SetBranchAddress ("m_truth_jet_e",   &m_truth_jet_e);
+
   // Get the pointer to the sumWeights TTree
   //
   m_sumWeightsTree = dynamic_cast<TTree*>(wk()->inputFile()->Get("sumWeights"));
@@ -330,6 +345,18 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("lep_Eta",		   	&m_lep_Eta);
   m_outputNTuple->tree()->Branch("lep_EtaBE2",  	   	&m_lep_EtaBE2);
 
+  m_outputNTuple->tree()->Branch("m_jet_OLR_Pt",		   	&m_jet_OLR_Pt);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_Eta",		   	&m_jet_OLR_Eta);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_Phi",  	   	        &m_jet_OLR_Phi);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_E",		   	        &m_jet_OLR_E);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_truthMatch_Pt",		&m_jet_OLR_truthMatch_Pt);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_truthMatch_Eta",  	   	&m_jet_OLR_truthMatch_Eta);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_truthMatch_Phi",		&m_jet_OLR_truthMatch_Phi);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_truthMatch_E",		&m_jet_OLR_truthMatch_E);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_truthMatch_isBJet",  	&m_jet_OLR_truthMatch_isBJet);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_truthMatch_isCJet",		&m_jet_OLR_truthMatch_isCJet);
+  m_outputNTuple->tree()->Branch("m_jet_OLR_truthMatch_isLFJet",	&m_jet_OLR_truthMatch_isLFJet);
+
   // ---------------------------------------------------------------------------------------------------------------
 
   // Initialise counter for input TTree entries
@@ -387,9 +414,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
     m_outputNTuple->setFilterPassed();
 
-    //if ( !m_passEventCleaning )			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
+    if ( !m_passEventCleaning )			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
     if ( !( m_HLT_mu20_iloose_L1MU15 || m_HLT_mu50 || m_HLT_e24_lhmedium_L1EM18VH || m_HLT_e24_lhmedium_L1EM20VH || m_HLT_e60_lhmedium || m_HLT_e120_lhloose ) ) { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
-    //if ( m_nJets_OR < 1 ) 			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
+    //if ( m_nJets_OR_T < 1 ) 			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
     if ( !( m_dilep_type > 0 || m_trilep_type > 0 ) ) { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
 
   }
@@ -907,7 +934,75 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ()
 EL::StatusCode HTopMultilepMiniNTupMaker :: jetTruthMatching ()
 {
 
+  float DRCONE(0.4);
 
+  // Find the truth-matching jet via min(deltaR) matching
+
+  TVector3 truthjet, jet;
+
+  for ( unsigned int j_idx(0); j_idx < selected_jets_T.size(); ++j_idx ) {
+
+    short j = selected_jets_T.at(j_idx);
+    // Read the jet branches from the vector *before* OLR via the index
+    //
+    jet.SetPtEtaPhi( m_jet_pt.at(j), m_jet_eta.at(j), m_jet_phi.at(j) );
+
+    if ( m_debug ) { Info("jetTruthMatching()","reco jet - idx = %i, pT = %.2f, eta = %.2f, phi = %.2f",j, jet.Pt()/1e3, jet.Eta(), jet.Phi() ); }
+
+    m_jet_OLR_Pt.push_back( m_jet_pt.at(j) );
+    m_jet_OLR_Eta.push_back( m_jet_et.at(j) );
+    m_jet_OLR_Phi.push_back( m_jet_phi.at(j) );
+    m_jet_OLR_E.push_back( m_jet_E.at(j) );
+
+    float minDR(999.0), thisDR(999.0);
+    unsigned int bestjet_idx(-1);
+
+    for ( unsigned int tj(0); tj < m_truth_jet_pt.size() ; ++tj ) {
+
+      truthjet.SetPtEtaPhi( m_truth_jet_pt.at(tj), m_truth_jet_eta.at(tj), m_truth_jet_phi.at(tj) );
+
+      thisDR = jet.DeltaR(truthjet);
+
+      if ( m_debug ) { Info("jetTruthMatching()","\ttruth jet - pT = %.2f, eta = %.2f, phi = %.2f, DR = %.2f", truthjet.Pt()/1e3, truthjet.Eta(), truthjet.Phi(), thisDR ); }
+
+      if ( thisDR < DRCONE && thisDR < minDR ) {
+    	minDR = thisDR;
+	best_tj = tj;
+      }
+
+    }
+
+    float match_tj_pt(-1.0), match_tj_eta(-999.0), match_tj_phi(-999.0), match_tj_e(-1.0);
+    char match_tj_isbjet(-1), match_tj_iscjet(-1), match_tj_islfjet(-1);
+
+    if ( best_tj != -1 ) {
+
+      match_tj_pt  =  m_truth_jet_pt.at(best_tj);
+      match_tj_eta =  m_truth_jet_eta.at(best_tj);
+      match_tj_phi =  m_truth_jet_phi.at(best_tj);
+      match_tj_e   =  m_truth_jet_e.at(best_tj);
+
+      // Truth flavour classification already done w/ MCTruthClassifier in DF
+      //
+      match_tj_isbjet = ( m_jet_flavor_truth_label_ghost.at(j) == 5 );
+      match_tj_iscjet = ( m_jet_flavor_truth_label_ghost.at(j) == 4 );
+      match_tj_islfjet = ;
+
+      if ( m_debug ) { Info("jetTruthMatching()","matching truth jet found - idx = %i, pT = %.2f, eta = %.2f, phi = %.2f\nisBJet? = %i\nisCJet? = %i\nisLFJet? = %i", match_tj_pt, match_tj_eta, match_tj_phi, match_tj_isbjet, match_tj_iscjet, match_tj_islfjet); }
+
+    } else {
+      if ( m_debug ) { Info("jetTruthMatching()","matching reco jet NOT found! Setting dummy truth match branches"); }
+    }
+
+    m_jet_OLR_truthMatch_Pt.push_back( match_tj_pt );
+    m_jet_OLR_truthMatch_Eta.push_back( match_tj_eta );
+    m_jet_OLR_truthMatch_Phi.push_back( match_tj_phi );
+    m_jet_OLR_truthMatch_E.push_back( match_tj_e );
+    m_jet_OLR_truthMatch_isBJet.push_back( match_tj_isbjet );
+    m_jet_OLR_truthMatch_isCJet.push_back( match_tj_iscjet );
+    m_jet_OLR_truthMatch_isLFJet.push_back( match_tj_islfjet );
+
+  }
 
   return EL::StatusCode::SUCCESS;
 

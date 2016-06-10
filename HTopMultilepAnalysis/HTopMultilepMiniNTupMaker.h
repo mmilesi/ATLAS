@@ -297,6 +297,8 @@ private:
   vector<float>   *m_jet_eta;
   vector<float>   *m_jet_phi;
   vector<float>   *m_jet_E;
+  vector<int>     *m_jet_flavor_truth_label;
+  vector<int>     *m_jet_flavor_truth_label_ghost;
 
   /** Indexes of jets that pass overlap removal */
 

@@ -33,9 +33,9 @@ branches_to_copy = eventweight_branches + event_branches + trigbits_branches + j
 
 # ---------------------------
 #
-# Add here branches that are to be used (hence need to be activated), but not copied over
+# Add here branches that need to be used (hence activated), but not need to be copied over
 #
-jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_e"]
+jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_e","m_jet_flavor_truth_label","m_jet_flavor_truth_label_ghost"]
 jet_truth_vec_branches = ["m_truth_jet_pt","m_truth_jet_eta","m_truth_jet_phi","m_truth_jet_e"]
 
 branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches

@@ -34,7 +34,7 @@ list_available_channel    = ['TwoLepSR','ThreeLepSR','FourLepSR','MMRates','MMRa
 			     'TwoLepLowNJetCR', 'ThreeLepLowNJetCR',
 			     'WZonCR', 'WZoffCR', 'WZHFonCR', 'WZHFoffCR',
 			     'ttWCR', 'ttZCR','ZSSpeakCR', 'DataMC', 'MMClosureTest',
-			     'MMClosureRates','CutFlowChallenge']
+			     'MMClosureRates','CutFlowChallenge','MMSidebands_HighNJet','MMSidebands_LowNJet']
 list_available_fakemethod = ['MC','MM','FF','ABCD']
 list_available_flavcomp   = ['OF','SF','INCLUSIVE']
 
@@ -124,6 +124,8 @@ doDataMCCR              = bool( args.channel == 'DataMC' )
 doMMClosureTest         = bool( args.channel == 'MMClosureTest' )
 doMMClosureRates        = bool( args.channel == 'MMClosureRates' )
 doCFChallenge           = bool( args.channel == 'CutFlowChallenge' )
+doMMSidebands_HighNJet  = bool( args.channel == 'MMSidebands_HighNJet' )
+doMMSidebands_LowNJet   = bool( args.channel == 'MMSidebands_LowNJet' )
 
 # -----------------------------------------
 # a comprehensive flag for all possible SRs
@@ -135,10 +137,15 @@ doSR = (doTwoLepSR or doThreeLepSR or doFourLepSR)
 # -----------------------------------------
 doLowNJetCR = (doTwoLepLowNJetCR or doThreeLepLowNJetCR)
 
+# -----------------------------------------
+# a comprehensive flag for the MM sidebands
+# -----------------------------------------
+doMMSidebands = ( doMMSidebands_HighNJet or doMMSidebands_LowNJet )
+
 # ------------------------------------------
 # a comprehensive flag for all the other CRs
 # ------------------------------------------
-doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZSSpeakCR or doMMRates or doMMRatesLHFit or doDataMCCR or doMMClosureTest or doMMClosureRates or doCFChallenge)
+doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZSSpeakCR or doMMRates or doMMRatesLHFit or doDataMCCR or doMMClosureTest or doMMClosureRates or doCFChallenge or doMMSidebands )
 
 # ------------------------------------------------
 # make standard plots unless differently specified
@@ -750,6 +757,54 @@ if args.doSyst:
 # Definition of the categories for which one wants produce histograms
 # -------------------------------------------------------------------
 
+# ---------------------------------------------
+# Sidebands (and SR) used for MM fakes estimate
+# ---------------------------------------------
+
+if doMMSidebands:
+
+  if doMMSidebands_HighJet:
+
+    # MuMu region
+    #
+    vardb.registerCategory( MyCategory('MuMuSS_MMSideband_LL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','LL']) ) )
+    vardb.registerCategory( MyCategory('MuMuSS_MMSideband_TL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','TL']) ) )
+    vardb.registerCategory( MyCategory('MuMuSS_MMSideband_LT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','LT']) ) )
+    vardb.registerCategory( MyCategory('MuMuSS_MMSideband_TT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','TT']) ) )
+    # ElEl region
+    #
+    vardb.registerCategory( MyCategory('ElElSS_MMSideband_LL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR','LL']) ) )
+    vardb.registerCategory( MyCategory('ElElSS_MMSideband_TL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','TL']) ) )
+    vardb.registerCategory( MyCategory('ElElSS_MMSideband_LT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','LT']) ) )
+    vardb.registerCategory( MyCategory('ElElSS_MMSideband_TT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','TT']) ) )
+    # OF region
+    #
+    vardb.registerCategory( MyCategory('OFSS_MMSideband_LL',	cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR','LL']) ) )
+    vardb.registerCategory( MyCategory('OFSS_MMSideband_TL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','TL']) ) )
+    vardb.registerCategory( MyCategory('OFSS_MMSideband_LT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','LT']) ) )
+    vardb.registerCategory( MyCategory('OFSS_MMSideband_TT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR','TT']) ) )
+
+  elif doMMSidebands_LowJet:
+
+    # MuMu region
+    #
+    vardb.registerCategory( MyCategory('MuMuSS_MMSideband_LL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','LL']) ) )
+    vardb.registerCategory( MyCategory('MuMuSS_MMSideband_TL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','TL']) ) )
+    vardb.registerCategory( MyCategory('MuMuSS_MMSideband_LT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','LT']) ) )
+    vardb.registerCategory( MyCategory('MuMuSS_MMSideband_TT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','TT']) ) )
+    # ElEl region
+    #
+    vardb.registerCategory( MyCategory('ElElSS_MMSideband_LL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR','LL']) ) )
+    vardb.registerCategory( MyCategory('ElElSS_MMSideband_TL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','TL']) ) )
+    vardb.registerCategory( MyCategory('ElElSS_MMSideband_LT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','LT']) ) )
+    vardb.registerCategory( MyCategory('ElElSS_MMSideband_TT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','TT']) ) )
+    # OF region
+    #
+    vardb.registerCategory( MyCategory('OFSS_MMSideband_LL',	cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR','LL']) ) )
+    vardb.registerCategory( MyCategory('OFSS_MMSideband_TL',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','TL']) ) )
+    vardb.registerCategory( MyCategory('OFSS_MMSideband_LT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','LT']) ) )
+    vardb.registerCategory( MyCategory('OFSS_MMSideband_TT',  cut = vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR','TT']) ) )
+
 # ------------
 # SRs
 # ------------
@@ -902,7 +957,7 @@ if doDataMCCR:
     truth_QMisID_veto = vardb.getCut('2Lep_ChFlipVeto')
     if args.useMCChFlip :
       truth_QMisID_veto = ( vardb.getCut('DummyCut') )  # --> no subtraction whatsoever
-      
+
     # SF region, probe muon
     #
     vardb.registerCategory( MyCategory('DataMC_FakeCR_Mu',   cut = ( vardb.getCuts(['TrigDec','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_QMisID_veto ) ) )
@@ -1305,7 +1360,6 @@ weight_generator = ('mcEventWeight','mcWeightOrg')[bool(args.useGroupNTup)]
 #
 weight_pileup = ('weight_pileup','pileupEventWeight_090')[bool(args.useGroupNTup)]
 
-#if ( args.noWeights or doMMClosureTest or doMMClosureRates ):
 if ( args.noWeights ):
     weight_pileup      = 1.0
     weight_generator   = 1.0
@@ -1346,8 +1400,9 @@ systs = {}
 # List of the backgrounds considered
 # ----------------------------------
 
-samplenames = { 'Observed':'observed',
-                'TTBarH':'signal',
+samplenames = {
+        'Observed':'observed',
+        'TTBarH':'signal',
 		'TTBarW':'ttbarwbkg',
 		'TTBarZ':'ttbarzbkg',
 		'Top':'topbkg',
@@ -1375,10 +1430,10 @@ samplenames = { 'Observed':'observed',
 		'FakesFF':'fakesbkg',
 		'FakesMM':'fakesbkg',
 		'FakesABCD':'fakesbkg',
-                'FakesClosureMM':'fakesbkg',
-                'FakesClosureABCD':'fakesbkg',
-                'FakesClosureDataABCD':'fakesbkg',
-	      }
+        'FakesClosureMM':'fakesbkg',
+        'FakesClosureABCD':'fakesbkg',
+        'FakesClosureDataABCD':'fakesbkg',
+        }
 #
 # Override colours!
 #
@@ -1416,6 +1471,25 @@ colours      = {'Observed':kBlack,
 		'FakesClosureABCD':kCyan-9,
 		'FakesClosureDataABCD': kMagenta-9, # kCyan-9,
               }
+
+
+if doMMSidebands:
+
+    ttH2015.signals     = ['TTBarH']
+    ttH2015.observed    = ['Observed']
+    plotbackgrounds	= ['TTBarW','TTBarZ','Diboson','Top']
+    ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
+
+    #plotbackgrounds	 = ['Prompt']
+    #ttH2015.backgrounds = ['Prompt']
+
+    if args.useMCChFlip:
+	plotbackgrounds.append('ChargeFlipMC')
+	ttH2015.backgrounds.append('ChargeFlipMC')
+    else:
+	plotbackgrounds.append('ChargeFlip')
+	ttH2015.backgrounds.append('ChargeFlip')
+
 
 if ( doSR or doLowNJetCR ):
 
@@ -1502,13 +1576,13 @@ if doMMRates:
     if args.useMCChFlip:
        plotbackgrounds     = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Top']
        ttH2015.backgrounds = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Top']
-    else:    
+    else:
        plotbackgrounds      = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','ChargeFlip','Top'] # ,'Wjets'
        ttH2015.backgrounds  = ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','ChargeFlip','Top'] # ,'Wjets'
-    
+
 
 if doMMRatesLHFit:
-    
+
     ttH2015.signals     = ['TTBarH']
     ttH2015.observed    = ['Observed']
     plotbackgrounds	= ['TTBar','Zjets','TTBarW','TTBarZ','Diboson','Top'] # ,'Wjets'
@@ -1519,7 +1593,7 @@ if doMMRatesLHFit:
       ttH2015.backgrounds.append('ChargeFlipMC')
     else:
       plotbackgrounds.append('ChargeFlip')
-    
+
     #ttH2015.signals	= []
     #ttH2015.observed    = []
     #plotbackgrounds     = ['TTBar']
@@ -1529,20 +1603,20 @@ if doDataMCCR:
 
     ttH2015.signals     = []
     ttH2015.observed    = ['Observed']
-    
+
     # Real OS CR
     #
     #plotbackgrounds     = ['TTBar','Zeejets','Zmumujets','Ztautaujets','TTBarW','TTBarZ','Diboson','Top'] # ,'Wjets']
     #ttH2015.backgrounds = ['TTBar','Zeejets','Zmumujets','Ztautaujets','TTBarW','TTBarZ','Diboson','Top'] # ,'Wjets']
-    
+
     # Fake SS CR
     #
     if args.useMCChFlip :
       plotbackgrounds	  = ['TTBar','Zeejets','Zmumujets','Ztautaujets','TTBarW','TTBarZ','Diboson','Top'] # ,'Wjets']
-      ttH2015.backgrounds = ['TTBar','Zeejets','Zmumujets','Ztautaujets','TTBarW','TTBarZ','Diboson','Top'] # ,'Wjets']    
+      ttH2015.backgrounds = ['TTBar','Zeejets','Zmumujets','Ztautaujets','TTBarW','TTBarZ','Diboson','Top'] # ,'Wjets']
     else:
       plotbackgrounds	  = ['TTBar','TTBarW','TTBarZ','Diboson','Top','ChargeFlip'] # ,'Wjets']
-      ttH2015.backgrounds = ['TTBar','TTBarW','TTBarZ','Diboson','Top','ChargeFlip'] # ,'Wjets']    
+      ttH2015.backgrounds = ['TTBar','TTBarW','TTBarZ','Diboson','Top','ChargeFlip'] # ,'Wjets']
 
 if doZSSpeakCR:
 
