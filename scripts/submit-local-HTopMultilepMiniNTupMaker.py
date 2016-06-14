@@ -169,9 +169,10 @@ infilelist = [
 
 # -------------------------------------------------------------------------------------------------------
 
-configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py"
+#configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py"
+configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker_master.py"
 treename   = "nominal"
-nevents    = 0
+nevents    = 1000
 
 #motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7"
 #motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_MCTruth"

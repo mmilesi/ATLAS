@@ -293,24 +293,24 @@ private:
 
   /** Reco jets BEFORE overlap removal */
 
-  vector<float>   *m_jet_pt;
-  vector<float>   *m_jet_eta;
-  vector<float>   *m_jet_phi;
-  vector<float>   *m_jet_E;
-  vector<int>     *m_jet_flavor_truth_label;
-  vector<int>     *m_jet_flavor_truth_label_ghost;
+  std::vector<float>   *m_jet_pt;
+  std::vector<float>   *m_jet_eta;
+  std::vector<float>   *m_jet_phi;
+  std::vector<float>   *m_jet_E;
+  std::vector<int>     *m_jet_flavor_truth_label;
+  std::vector<int>     *m_jet_flavor_truth_label_ghost;
 
   /** Indexes of jets that pass overlap removal */
 
-  vector<short>   *selected_jets;
-  vector<short>   *selected_jets_T;
+  std::vector<short>   *selected_jets;
+  std::vector<short>   *selected_jets_T;
 
   /** Truth jets */
 
-  vector<float>   *m_truth_jet_pt;
-  vector<float>   *m_truth_jet_eta;
-  vector<float>   *m_truth_jet_phi;
-  vector<float>   *m_truth_jet_e;
+  std::vector<float>   *m_truth_jet_pt;
+  std::vector<float>   *m_truth_jet_eta;
+  std::vector<float>   *m_truth_jet_phi;
+  std::vector<float>   *m_truth_jet_e;
 
   /** Extra branches to be stored in output TTree */
 
@@ -387,6 +387,7 @@ private:
   std::vector<char>  m_jet_OLR_truthMatch_isBJet;
   std::vector<char>  m_jet_OLR_truthMatch_isCJet;
   std::vector<char>  m_jet_OLR_truthMatch_isLFJet;
+  std::vector<char>  m_jet_OLR_truthMatch_isGluonJet;
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
