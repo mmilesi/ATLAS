@@ -54,7 +54,7 @@ class leptonObj {
 public:
   leptonObj():
     pt(-1.0),eta(-999.0),etaBE2(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
-    pid(0),isolated(0),tight(0),trigmatched(0),prompt(0),fake(0),brems(0),tag(0),
+	pid(0),isolated(0),tight(0),trigmatched(0),prompt(0),fake(0),brems(0),qmisid(0),convph(0),tag(0),
     SFIDLoose(1.0),
     SFIDTight(1.0),
     SFTrigLoose(1.0),
@@ -84,6 +84,8 @@ public:
   char prompt;
   char fake;
   char brems;
+  char qmisid;
+  char convph;
   int  truthType;
   int  truthOrigin;
   char tag;
@@ -151,15 +153,13 @@ private:
 
   Double_t        m_mcWeightOrg;
   Double_t	  m_pileupEventWeight_090;
-  Double_t	  m_MV2c20_77_EventWeight;
+  Double_t	  m_MV2c10_70_EventWeight;
   Double_t	  m_JVT_EventWeight;
 
   Int_t 	  m_dilep_type;
   Int_t 	  m_trilep_type;
-  Int_t           m_nJets_OR;
-  Int_t           m_nJets_OR_MV2c20_77;
   Int_t           m_nJets_OR_T;
-  Int_t           m_nJets_OR_T_MV2c20_77;
+  Int_t           m_nJets_OR_T_MV2c10_70;
 
   UInt_t          m_HLT_mu20_iloose_L1MU15;
   Float_t	  m_HLT_mu20_iloose_L1MU15_PS;
@@ -195,8 +195,10 @@ private:
   Int_t 	  m_lep_isolationFixedCutLoose_0;
   Char_t	  m_lep_isTrigMatch_0;
   Char_t	  m_lep_isPrompt_0;
-  Char_t	  m_lep_isBremsElec_0;
+  Char_t	  m_lep_isBrems_0;
   Char_t	  m_lep_isFakeLep_0;
+  Char_t	  m_lep_isQMisID_0;
+  Char_t	  m_lep_isConvPh_0;
   Int_t	          m_lep_truthType_0;
   Int_t	          m_lep_truthOrigin_0;
   Float_t	  m_lep_SFIDLoose_0;
@@ -233,8 +235,10 @@ private:
   Int_t 	  m_lep_isolationFixedCutLoose_1;
   Char_t	  m_lep_isTrigMatch_1;
   Char_t	  m_lep_isPrompt_1;
-  Char_t	  m_lep_isBremsElec_1;
+  Char_t	  m_lep_isBrems_1;
   Char_t	  m_lep_isFakeLep_1;
+  Char_t	  m_lep_isQMisID_1;
+  Char_t	  m_lep_isConvPh_1;
   Int_t	          m_lep_truthType_1;
   Int_t	          m_lep_truthOrigin_1;
   Float_t	  m_lep_SFIDLoose_1;
@@ -271,8 +275,10 @@ private:
   Int_t 	  m_lep_isolationFixedCutLoose_2;
   Char_t	  m_lep_isTrigMatch_2;
   Char_t	  m_lep_isPrompt_2;
-  Char_t	  m_lep_isBremsElec_2;
+  Char_t	  m_lep_isBrems_2;
   Char_t	  m_lep_isFakeLep_2;
+  Char_t	  m_lep_isQMisID_2;
+  Char_t	  m_lep_isConvPh_2;
   Int_t	          m_lep_truthType_2;
   Int_t	          m_lep_truthOrigin_2;
   Float_t	  m_lep_SFIDLoose_2;
@@ -293,24 +299,24 @@ private:
 
   /** Reco jets BEFORE overlap removal */
 
-  std::vector<float>   *m_jet_pt;
-  std::vector<float>   *m_jet_eta;
-  std::vector<float>   *m_jet_phi;
-  std::vector<float>   *m_jet_E;
-  std::vector<int>     *m_jet_flavor_truth_label;
-  std::vector<int>     *m_jet_flavor_truth_label_ghost;
+  std::vector<float>   *m_jet_pt;  //!
+  std::vector<float>   *m_jet_eta; //!
+  std::vector<float>   *m_jet_phi; //!
+  std::vector<float>   *m_jet_E;   //!
+  std::vector<int>     *m_jet_flavor_truth_label;       //!
+  std::vector<int>     *m_jet_flavor_truth_label_ghost; //!
 
   /** Indexes of jets that pass overlap removal */
 
-  std::vector<short>   *selected_jets;
-  std::vector<short>   *selected_jets_T;
+  std::vector<short>   *m_selected_jets;   //!
+  std::vector<short>   *m_selected_jets_T; //!
 
   /** Truth jets */
 
-  std::vector<float>   *m_truth_jet_pt;
-  std::vector<float>   *m_truth_jet_eta;
-  std::vector<float>   *m_truth_jet_phi;
-  std::vector<float>   *m_truth_jet_e;
+  std::vector<float>   *m_truth_jet_pt;  //!
+  std::vector<float>   *m_truth_jet_eta; //!
+  std::vector<float>   *m_truth_jet_phi; //!
+  std::vector<float>   *m_truth_jet_e;   //!
 
   /** Extra branches to be stored in output TTree */
 
@@ -351,8 +357,10 @@ private:
   char	    m_lep_Tag_isTrigMatch;
   char	    m_lep_Tag_isTightSelected;
   char	    m_lep_Tag_isPrompt;
-  char	    m_lep_Tag_isBremsElec;
+  char	    m_lep_Tag_isBrems;
   char	    m_lep_Tag_isFakeLep;
+  char	    m_lep_Tag_isQMisID;
+  char      m_lep_Tag_isConvPh;
   int	    m_lep_Tag_truthType;
   int	    m_lep_Tag_truthOrigin;
 
@@ -365,8 +373,10 @@ private:
   char	    m_lep_Probe_isTrigMatch;
   char	    m_lep_Probe_isTightSelected;
   char	    m_lep_Probe_isPrompt;
-  char	    m_lep_Probe_isBremsElec;
+  char	    m_lep_Probe_isBrems;
   char	    m_lep_Probe_isFakeLep;
+  char	    m_lep_Probe_isQMisID;
+  char      m_lep_Probe_isConvPh;
   int	    m_lep_Probe_truthType;
   int	    m_lep_Probe_truthOrigin;
 
@@ -376,18 +386,18 @@ private:
 
   /** Jets AFTER overlap removal */
 
-  std::vector<float> m_jet_OLR_Pt;
-  std::vector<float> m_jet_OLR_Eta;
-  std::vector<float> m_jet_OLR_Phi;
-  std::vector<float> m_jet_OLR_E;
-  std::vector<float> m_jet_OLR_truthMatch_Pt;
-  std::vector<float> m_jet_OLR_truthMatch_Eta;
-  std::vector<float> m_jet_OLR_truthMatch_Phi;
-  std::vector<float> m_jet_OLR_truthMatch_E;
-  std::vector<char>  m_jet_OLR_truthMatch_isBJet;
-  std::vector<char>  m_jet_OLR_truthMatch_isCJet;
-  std::vector<char>  m_jet_OLR_truthMatch_isLFJet;
-  std::vector<char>  m_jet_OLR_truthMatch_isGluonJet;
+  std::vector<float> m_jet_OR_Pt;
+  std::vector<float> m_jet_OR_Eta;
+  std::vector<float> m_jet_OR_Phi;
+  std::vector<float> m_jet_OR_E;
+  std::vector<float> m_jet_OR_truthMatch_Pt;
+  std::vector<float> m_jet_OR_truthMatch_Eta;
+  std::vector<float> m_jet_OR_truthMatch_Phi;
+  std::vector<float> m_jet_OR_truthMatch_E;
+  std::vector<char>  m_jet_OR_truthMatch_isBJet;
+  std::vector<char>  m_jet_OR_truthMatch_isCJet;
+  std::vector<char>  m_jet_OR_truthMatch_isLFJet;
+  std::vector<char>  m_jet_OR_truthMatch_isGluonJet;
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
@@ -442,7 +452,7 @@ private:
 
   EL::StatusCode setOutputBranches ();
 
-  EL::StatusCode clearBranches ();
+  EL::StatusCode clearBranches ( const std::string& type );
 
   EL::StatusCode jetTruthMatching();
 

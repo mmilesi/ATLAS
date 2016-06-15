@@ -10,6 +10,8 @@ from Core import NTupleTools, DatasetManager, listifyInputFiles
 datasets = DatasetManager.DatasetManager()
 sampledict = datasets.getListSamples(samplescsv,genericPath=True)
 
+import normaliseTrees
+
 # -----------------------------
 # 25ns_v7
 # -----------------------------
@@ -163,20 +165,18 @@ infilelist = [
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361491/361491.root",
 #
 #"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v13/Nominal/341270/341270.root",
-"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v13/Nominal/410000/410000.root",
+"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v14/Nominal/341270/341270.root",
+#"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v13/Nominal/410000/410000.root",
 #"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v13/Data/00280614.root",
 ]
 
 # -------------------------------------------------------------------------------------------------------
 
-#configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py"
-configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker_master.py"
+configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py"
 treename   = "nominal"
 nevents    = 1000
 
-#motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7"
-#motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v7_MCTruth"
-motherdir = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v13_test"
+motherdir = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14_test"
 
 if not os.path.exists(motherdir):
     os.makedirs(motherdir)
@@ -229,3 +229,5 @@ for infile in infilelist:
 	shutil.move(INTREE,OUTTREE)
 	shutil.move(INHIST,OUTHIST)
         shutil.rmtree(os.path.abspath(os.path.curdir) + "/" + outdir)
+
+	normaliseTrees.applyWeight(OUTTREE,s,isdata=bool(outdir == "Data" and not s["ID"]))
