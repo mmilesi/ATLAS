@@ -6,7 +6,7 @@ sys.path.insert(0, os.environ['ROOTCOREBIN']+"/user_scripts/HTopMultilepAnalysis
 
 c = xAH_config()
 
-# List the branches to be copied over and activated from the input TTree
+# List the branches to be copied over from the input TTree
 #
 eventweight_branches = ["mcWeightOrg","pileupEventWeight_090",
                         "MV2c10_70_EventWeight","JVT_EventWeight",

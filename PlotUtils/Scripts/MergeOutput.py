@@ -76,7 +76,6 @@ def main():
             if not os.path.isdir(sampledir):
                 os.makedirs(sampledir)
             if not s['category'] == 'Data' and not s['group'] == 'Embedding':
-                #inputpath = inputdir + '/*' + s['ID'] + '*' + s['name'] + '*/*.root*'
                 inputpath = inputdir + '/*' + s['ID'] + '*/*.root*'
             else:
                 inputpath = inputdir + '/*' + s['name'] + '*/*.root*'
@@ -137,7 +136,7 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
         if not f or f.IsZombie():
             errorfiles.append(i)
             continue
-	# take tree in file and add it to TChain
+	# Take tree in file and add it to TChain
 	chain.Add(i)
         print("\nMerging input file: \n{0} \nto target file...".format(i))
         recursiveMerge(target, f, path, cache, cutflow)
@@ -181,68 +180,68 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
     target.Close()
 
 def recursiveMerge(target, infile, path='', cache={'TOTALLUMI':0}, cutflow=True):
-        l = infile.GetDirectory(path)
-        keys = l.GetListOfKeys()
-        cycles = {}
+    l = infile.GetDirectory(path)
+    keys = l.GetListOfKeys()
+    cycles = {}
 
-        #print("keys in input file: \n\n{0}\n\n".format(keys.ls()))
+    #print("keys in input file: \n\n{0}\n\n".format(keys.ls()))
 
-        for entry in range(keys.GetEntries()):
-            name = keys.At(entry).GetName() + ";" + str(keys.At(entry).GetCycle())
-            if path:
-                cachename = path + "/" + name
-            else:
-                cachename = name
-            obj = l.Get(name)
+    for entry in range(keys.GetEntries()):
+    	name = keys.At(entry).GetName() + ";" + str(keys.At(entry).GetCycle())
+    	if path:
+    	    cachename = path + "/" + name
+    	else:
+    	    cachename = name
+    	obj = l.Get(name)
 
-            if type(obj) == TDirectoryFile:
-                #print("TDirectory obj name: {0}".format(obj.GetName()))
-                targetpath = keys.At(entry).GetName()
-                if not target.Get(targetpath):
-                    target.mkdir(targetpath)
-                recursiveMerge(target, infile, path + "/" + obj.GetName(), cache)
-            elif type(obj) == TTree:
-                #print("TTree obj name: {0} - cachename: {1} ".format(obj.GetName(), cachename))
-                cyclename, cyclenumber = cachename.split(';')
-                if cyclename in cycles: continue
-                #print("cyclename: {0} - cyclenumber: {1}".format(cyclename, cyclenumber))
-                cycles[cyclename] = cyclenumber
-                if not cyclename in cache:
-                    #print("adding cyclename {0} to cache (via TTree::CloneTree())".format(cyclename))
-                    target.cd(path)
-                    cache[cyclename] = obj.CloneTree()
-                else:
-                    objcached = cache[cyclename]
-                    col = TObjArray()
-                    col.Add(obj)
-                    #print("merging TTree obj to cached object")
-                    objcached.Merge(col)
-            elif issubclass(obj.__class__, TH1):
-                #print("TH1 obj name: {0}".format(obj.GetName()))
-                if not cutflow and keys.At(entry).GetName() == "CutFlow":
-                    continue
-                if not cachename in cache:
-                    target.cd(path)
-                    cache[cachename] = obj.Clone()
-                else:
-                    objcached = cache[cachename]
-                    col = TObjArray()
-                    col.Add(obj)
-                    objcached.Merge(col)
-            elif type(obj) == TObjString:
-                #print("TObjString obj name: {0}".format(obj.GetName()))
-                if obj:
-                    target.cd(path)
-                    objnew = TObjString(obj.GetString().Data())
-                    objnew.Write(keys.At(entry).GetName())
-                    cache['TOTALLUMI'] += 1
-            elif issubclass(obj.__class__, TList):
-                #print("TList obj name: {0}".format(obj.GetName()))
-                if obj:
-                    target.cd(path)
-                    objnew = TList(obj)
-                    objnew.Write(keys.At(entry).GetName()) # not working...
-            else:
-                print "UNKNOWN OBJECT", name, "OF TYPE", type(obj)
+    	if type(obj) == TDirectoryFile:
+    	    #print("TDirectory obj name: {0}".format(obj.GetName()))
+    	    targetpath = keys.At(entry).GetName()
+    	    if not target.Get(targetpath):
+    		target.mkdir(targetpath)
+    	    recursiveMerge(target, infile, path + "/" + obj.GetName(), cache)
+    	elif type(obj) == TTree:
+    	    #print("TTree obj name: {0} - cachename: {1} ".format(obj.GetName(), cachename))
+    	    cyclename, cyclenumber = cachename.split(';')
+    	    if cyclename in cycles: continue
+    	    #print("cyclename: {0} - cyclenumber: {1}".format(cyclename, cyclenumber))
+    	    cycles[cyclename] = cyclenumber
+    	    if not cyclename in cache:
+    		#print("adding cyclename {0} to cache (via TTree::CloneTree())".format(cyclename))
+    		target.cd(path)
+    		cache[cyclename] = obj.CloneTree()
+    	    else:
+    		objcached = cache[cyclename]
+    		col = TObjArray()
+    		col.Add(obj)
+    		#print("merging TTree obj to cached object")
+    		objcached.Merge(col)
+    	elif issubclass(obj.__class__, TH1):
+    	    #print("TH1 obj name: {0}".format(obj.GetName()))
+    	    if not cutflow and keys.At(entry).GetName() == "CutFlow":
+    		continue
+    	    if not cachename in cache:
+    		target.cd(path)
+    		cache[cachename] = obj.Clone()
+    	    else:
+    		objcached = cache[cachename]
+    		col = TObjArray()
+    		col.Add(obj)
+    		objcached.Merge(col)
+    	elif type(obj) == TObjString:
+    	    #print("TObjString obj name: {0}".format(obj.GetName()))
+    	    if obj:
+    		target.cd(path)
+    		objnew = TObjString(obj.GetString().Data())
+    		objnew.Write(keys.At(entry).GetName())
+    		cache['TOTALLUMI'] += 1
+    	elif issubclass(obj.__class__, TList):
+    	    #print("TList obj name: {0}".format(obj.GetName()))
+    	    if obj:
+    		target.cd(path)
+    		objnew = TList(obj)
+    		objnew.Write(keys.At(entry).GetName()) # not working...
+    	else:
+    	    print "UNKNOWN OBJECT", name, "OF TYPE", type(obj)
 
 main()
