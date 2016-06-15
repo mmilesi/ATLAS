@@ -165,9 +165,11 @@ infilelist = [
 #"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v7/Nominal/361491/361491.root",
 #
 #"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v13/Nominal/341270/341270.root",
-"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v14/Nominal/341270/341270.root",
+#"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v14/Nominal/341270/341270.root",
 #"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v13/Nominal/410000/410000.root",
 #"/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v13/Data/00280614.root",
+#
+"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v14/Nominal/410000/410000.root"
 ]
 
 # -------------------------------------------------------------------------------------------------------
@@ -176,7 +178,8 @@ configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMult
 treename   = "nominal"
 nevents    = 1000
 
-motherdir = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14_test"
+#motherdir = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14_test"
+motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v14"
 
 if not os.path.exists(motherdir):
     os.makedirs(motherdir)

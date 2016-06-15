@@ -13,7 +13,7 @@ Additionally, you can provide a '-w' option to tell the script to use TTree.SetW
 
 from ROOT import gROOT
 gROOT.SetBatch(True) # important to run without popups
-from ROOT import TFile, TH1, TH1D, TList, TObjString, TTree, TChain, TObjArray, TDirectoryFile
+from ROOT import TFile, TH1, TH1F, TH1D, TList, TObjString, TTree, TChain, TObjArray, TDirectoryFile
 import sys, glob, os, optparse
 
 sys.path.append(os.path.abspath(os.path.curdir))
@@ -64,7 +64,7 @@ def main():
             print("ERROR: invalid output directory (set with --outRunDir)")
             return
         elif os.path.isdir(options.outRunDir):
-            print("ERROR: output directory already exists...to avoid inconsistencies, please remove it first")
+            print("ERROR:\noutput directory: \n{0} \nalready exists...to avoid inconsistencies, please remove it first".format(options.outRunDir))
             return
         else:
             outputdir = options.outRunDir
@@ -76,7 +76,8 @@ def main():
             if not os.path.isdir(sampledir):
                 os.makedirs(sampledir)
             if not s['category'] == 'Data' and not s['group'] == 'Embedding':
-                inputpath = inputdir + '/*' + s['ID'] + '*' + s['name'] + '*/*.root*'
+                #inputpath = inputdir + '/*' + s['ID'] + '*' + s['name'] + '*/*.root*'
+                inputpath = inputdir + '/*' + s['ID'] + '*/*.root*'
             else:
                 inputpath = inputdir + '/*' + s['name'] + '*/*.root*'
 
@@ -138,7 +139,7 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
             continue
 	# take tree in file and add it to TChain
 	chain.Add(i)
-        #print("\t Merging input file: \n {0} \n to target file".format(i))
+        print("\nMerging input file: \n{0} \nto target file...".format(i))
         recursiveMerge(target, f, path, cache, cutflow)
         f.Close()
 
@@ -155,7 +156,7 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
         totalevents = None
         for key in cache:
             obj = cache[key]
-            if type(obj) == TH1D and obj.GetName() == 'TotalEventsW':
+            if ( type(obj) == TH1D or type(obj) == TH1F ) and obj.GetName() == 'TotalEventsW':
                 totalevents = obj.GetBinContent(2)
                 break
 
@@ -165,7 +166,7 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
                 if type(obj) == TTree:
                     obj.SetWeight(weight/totalevents)
 
-        print("Applying weight - w = ( xsec[fb]*kfactor*filter_eff) / (TOT EVTS W ) = {0}/{1} = {2} [fb]\n".format(weight,totalevents,(weight/totalevents)))
+            print("Applying weight - w = ( xsec[fb]*kfactor*filter_eff) / (TOT EVTS W ) = {0}/{1} = {2} [fb]\n".format(weight,totalevents,(weight/totalevents)))
 
     target.Write()
 
@@ -174,7 +175,7 @@ def mergeOne(inputpath, outputpath, logfile=None, weight=None, cutflow=True):
 
     merged_tree = target.Get("physics")
 
-    if ( chain.GetEntries() != merged_tree.GetEntries() ):
+    if ( merged_tree and chain.GetEntries() != merged_tree.GetEntries() ):
         print("******** WARNING! ********\n entries in chain: {0} \n entries in merged TTree: {1} \n*************************".format(chain.GetEntries(), merged_tree.GetEntries()))
 
     target.Close()
@@ -184,7 +185,7 @@ def recursiveMerge(target, infile, path='', cache={'TOTALLUMI':0}, cutflow=True)
         keys = l.GetListOfKeys()
         cycles = {}
 
-        #print("keys in input file: \n {0} \n".format(keys.ls()))
+        #print("keys in input file: \n\n{0}\n\n".format(keys.ls()))
 
         for entry in range(keys.GetEntries()):
             name = keys.At(entry).GetName() + ";" + str(keys.At(entry).GetCycle())
