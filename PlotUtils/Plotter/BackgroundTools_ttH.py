@@ -63,7 +63,7 @@ class Inputs:
 	    for treename in treelist:
 	       t = f.Get(treename)
                if not t:
-                  print ("WARNING: tree {0} cannot be found during tree registration".format(treename))
+                  print ("WARNING: tree {0} in file {1} cannot be found during tree registration".format(treename,filepath))
                   return False
 	       if ismc and ( t.GetWeight() == 1.0 or resetTreeWeight ):
 		  print("Weighting tree w/ Xsec weight...")

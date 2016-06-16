@@ -4,7 +4,6 @@ __author__     = "KG, Marco Milesi, Francesco Nuti"
 __email__      = "Kong.Guan.Tan@cern.ch, marco.milesi@cern.ch, francesco.nuti@cern.ch"
 __maintainer__ = "Marco Milesi"
 
-
 import os, sys, math, types
 
 sys.path.append(os.path.abspath(os.path.curdir))
@@ -33,13 +32,13 @@ class MyCategory(Category):
 
 class TTHBackgrounds2015(Background):
 
-    backgrounds = [ 'TTBarW', 'TTBarZ', 'Top', 'TopCF', 'Diboson', 'DibosonCF', 'HtoZZ', 'ZjetsLF', 'Zjets', 'Wjets', 'Prompt', 'ChargeFlipMC', 'ChargeFlip', 'FakesFF', 'FakesMM', 'FakesABCD']
+    backgrounds     = [ 'TTBarW', 'TTBarZ', 'Top', 'TopCF', 'Diboson', 'DibosonCF', 'HtoZZ', 'ZjetsLF', 'Zjets', 'Wjets', 'Prompt', 'ChargeFlipMC', 'ChargeFlip', 'FakesFF', 'FakesMM', 'FakesABCD']
     sub_backgrounds = [ 'TTBarW', 'TTBarZ', 'Top', 'TTBar', 'Diboson', 'Zjets', 'Wjets', 'ChargeFlipMC']
     signals     = ['TTBarH']
     observed    = ['Observed']
     luminosity  = 1.0
     lumi_units  = 'fb-1'
-    norm_factor = 1.0           # Might be needed to correct units for Xsec weight 
+    norm_factor = 1.0           # Might be needed to correct units for Xsec weight
     rescaleXsecAndLumi = False  # Set to "True" if you don't want to take into account the Xsec*lumi weight
     channel     = 'TwoLepSS'    # Can be one of ['TwoLepSS' 'TwoLepCR', 'ThreeLep', 'FourLep']
     eventweight = 1.0
@@ -61,8 +60,6 @@ class TTHBackgrounds2015(Background):
         #'Mu': (999.0, 0.0),
     	'El': (0.163, 0.036), # v027
     	'Mu': (0.159, 0.022), # v027
-	#'El': (0.170, 0.037), # v028	  
-	#'Mu': (0.132, 0.017), # v028 
     }
 
     theta_MC = {
@@ -70,8 +67,6 @@ class TTHBackgrounds2015(Background):
         #'Mu': (999.0, 0.0),
     	'El': (0.194, 0.037), # v027
     	'Mu': (0.153, 0.022), # v027
-	#'El': (0.194, 0.038), # v028 
-	#'Mu': (0.067, 0.008), # v028
     }
 
     def str_to_class(self, field):
@@ -225,7 +220,7 @@ class TTHBackgrounds2015(Background):
                 ('ttH', 'ttH_allhad'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) * self.parent.norm_factor 
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -295,7 +290,7 @@ class TTHBackgrounds2015(Background):
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-		('tops', 'ttZnnqq'),
+		#('tops', 'ttZnnqq'),
                 ('tops', 'ttee'),
                 ('tops', 'ttmumu'),
 		('tops', 'tttautau'),
@@ -431,7 +426,7 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsCFilterBVeto', 'tautau'),
                            ('Z+jetsBFilter', 'tautau'),
 			   ('Z+jetsLowMllBVeto', 'tautau'),
-			   ('Z+jetsLowMllBFilter', 'tautau'),			   
+			   ('Z+jetsLowMllBFilter', 'tautau'),
 		           #('DYZ+jets', 'tautau'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -532,7 +527,7 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
 		           ('Z+jetsCFilterBVeto', '*'),
 		           ('Z+jetsBFilter', '*'),
-			   ('Z+jetsLowMllBFilter', '*'),			   
+			   ('Z+jetsLowMllBFilter', '*'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -576,7 +571,7 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsCFilterBVeto', '*'),
                            ('Z+jetsBFilter', '*'),
 			   ('Z+jetsLowMllBVeto', '*'),
-			   ('Z+jetsLowMllBFilter', '*'),			   
+			   ('Z+jetsLowMllBFilter', '*'),
 		           #('DYZ+jets', '*'),
 		         ]
             trees = self.inputs.getTrees(treename, inputgroup)
@@ -604,7 +599,7 @@ class TTHBackgrounds2015(Background):
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
 
 	    sp = sp.subprocess(cut=truthcut)
 
@@ -756,8 +751,8 @@ class TTHBackgrounds2015(Background):
 
     class Top(Process):
 
-        #latexname = 'tW, tZ, tt#it{l}{l}, ttWW, 4t, single t'
-        latexname = 'rare top'
+        latexname = 'tW, tZ, tWZ, ttWW, 4t, single t'
+        #latexname = 'rare top'
 
         colour = kAzure + 1
 
@@ -768,6 +763,7 @@ class TTHBackgrounds2015(Background):
                 ('tops', 'singlet'),
                 ('tops', '4top'),
                 ('tops', 'ttWW'),
+		('tops', 'tWZDR'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -835,7 +831,7 @@ class TTHBackgrounds2015(Background):
             return sp
 
     # The only difference with the above class is
-    # that we plot only events with at least one !prompt lepton, and veto charge flip
+    # that we plot only events with at least one !prompt lepton, and veto charge flip/photon conv
     #
     class TTBarClosure(Process):
 
@@ -871,7 +867,7 @@ class TTHBackgrounds2015(Background):
             if TTcut is not '':
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-	    # plot only events where at least one lepton is !prompt, and none is charge flip
+	    # plot only events where at least one lepton is !prompt, and none is charge flip/ photon conv.
 	    #
             sp = sp.subprocess(cut=self.vardb.getCut('2Lep_NonPromptEvent'), eventweight=weight)
 
@@ -918,7 +914,7 @@ class TTHBackgrounds2015(Background):
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
 
 	    sp = sp.subprocess(cut=truthcut)
 
@@ -934,7 +930,22 @@ class TTHBackgrounds2015(Background):
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-                ('Diboson', '*'),
+                #('Diboson', '*'),
+                ('Diboson', 'llll'),
+                ('Diboson', 'lllvSFMinus'),
+                ('Diboson', 'lllvOFMinus'),
+                ('Diboson', 'lllvSFPlus'),
+                ('Diboson', 'lllvOFPlus'),
+                ('Diboson', 'llvv'),
+                ('Diboson', 'llvvjj_ss_EW4'),
+                ('Diboson', 'EWllssnunujj'),
+                ('Diboson', 'lllvjj_EW6'),
+                ('Diboson', 'lllljj_EW6'),
+                ('Diboson', 'ggllll'),
+                ('Diboson', 'ggllvv'),
+                ('Diboson', 'WW'),
+                ('Diboson', 'WZ'),
+                ('Diboson', 'ZZ'),     
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -972,8 +983,24 @@ class TTHBackgrounds2015(Background):
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-                ('Diboson', '*'),
+                #('Diboson', '*'),
+                ('Diboson', 'llll'),
+                ('Diboson', 'lllvSFMinus'),
+                ('Diboson', 'lllvOFMinus'),
+                ('Diboson', 'lllvSFPlus'),
+                ('Diboson', 'lllvOFPlus'),
+                ('Diboson', 'llvv'),
+                ('Diboson', 'llvvjj_ss_EW4'),
+                ('Diboson', 'EWllssnunujj'),
+                ('Diboson', 'lllvjj_EW6'),
+                ('Diboson', 'lllljj_EW6'),
+                ('Diboson', 'ggllll'),
+                ('Diboson', 'ggllvv'),
+                ('Diboson', 'WW'),
+                ('Diboson', 'WZ'),
+                ('Diboson', 'ZZ'),     
                          ]
+			 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -997,7 +1024,7 @@ class TTHBackgrounds2015(Background):
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
 
 	    sp = sp.subprocess(cut=truthcut)
 
@@ -1063,7 +1090,7 @@ class TTHBackgrounds2015(Background):
             ttbarz = self.parent.procmap['TTBarZ'](treename, category, options)
 	    return (diboson + top + ttbarw + ttbarz)
 
-    
+
     class ChargeFlipMC(Process):
 
 	latexname = 'QMisID (MC)'
@@ -1112,7 +1139,7 @@ class TTHBackgrounds2015(Background):
 
 	    # Categories w/ any of these cuts must get the QMisID weight...
 	    #
-            cut_w_el  = ['2Lep_ElEl_Event','2Lep_MuEl_Event','2Lep_ElMu_Event'] 
+            cut_w_el  = ['2Lep_ElEl_Event','2Lep_MuEl_Event','2Lep_ElMu_Event']
             # ... and these must not!
 	    #
 	    cut_wo_el = ['2Lep_MuMu_Event']
@@ -1144,17 +1171,17 @@ class TTHBackgrounds2015(Background):
               return sp
 
             if bool([ cut for cut in cut_w_el if cut in category.cut.cutname ]):
-             
+
 	      weight = 'QMisIDWeight[0]'
 	      sp = sp.subprocess(cut=basecut,eventweight=weight)
 	      print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
-            
+
 	    elif bool([ cut for cut in cut_wo_el if cut in category.cut.cutname ]):
-            
+
 	      weight = '0.0'
 	      sp = sp.subprocess(cut=basecut,eventweight=weight)
 	      print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
-            
+
 	    else:
 
               weight_SF = '0.0'
@@ -1162,7 +1189,7 @@ class TTHBackgrounds2015(Background):
 
 	      sp_SF = None
 	      sp_OF = None
-	      
+
 	      if ( 'ElRealFakeRateCR' ) in category.cut.cutname:
 
 	        cut_SF = basecut & self.vardb.getCut('2Lep_ElEl_Event')
@@ -1186,29 +1213,29 @@ class TTHBackgrounds2015(Background):
 
 	        sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
 	        sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
-	        
+
 		print("\nChargeFlip sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
 	        print("\nChargeFlip sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
-	    
+
 	      else:
-	  
+
 	        cut_elel = basecut & self.vardb.getCut('2Lep_ElEl_Event')
 	        cut_mumu = basecut & self.vardb.getCut('2Lep_MuMu_Event')
 	        cut_OF   = basecut & self.vardb.getCut('2Lep_OF_Event')
 
 	        weight_mumu = '0.0' # mu-mu region MUST get zero QMisID weight!
 	        weight_elel = weight_OF = 'QMisIDWeight[0]'
-	  
+
 	        sp_elel = sp.subprocess(cut=cut_elel,eventweight=weight_elel)
 	        sp_mumu = sp.subprocess(cut=cut_mumu,eventweight=weight_mumu)
 		sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
-	        
+
 		print("\nChargeFlip sp_elel: {0}, weight: {1}".format(sp_elel.basecut.cutnamelist, weight_elel))
 		print("\nChargeFlip sp_mumu: {0}, weight: {1}".format(sp_mumu.basecut.cutnamelist, weight_mumu))
 		print("\nChargeFlip sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
-		
+
 	        sp_SF = sp_elel + sp_mumu
-	  
+
 	      sp = sp_SF + sp_OF
 
             return sp
@@ -1308,6 +1335,8 @@ class TTHBackgrounds2015(Background):
 	    # Remove any truth cut
 	    #
 	    basecut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
+
+            # QMisID subtraction? ---> CHECK IN PROGRESS
 
             sp_TT  = sp.subprocess(cut=basecut & self.vardb.getCut(TTcut), eventweight=weight)
             sp_TL  = sp.subprocess(cut=basecut & self.vardb.getCut(TLcut), eventweight=weight)
@@ -1480,8 +1509,8 @@ class TTHBackgrounds2015(Background):
                     sub_sample_D_el = self.parent.procmap[sample].base(treename,category,options)
 
                     if sample == "ChargeFlipMC":
-                        this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
-                        this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipEvent'))
+                        this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
+                        this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
                     if sample == "ChargeFlip":
 		        this_cut_sp_C_el = this_cut_sp_C_el.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
 			this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
@@ -1882,7 +1911,7 @@ class TTHBackgrounds2015(Background):
 
 	latexname = 'Fakes #theta method'
         colour = kCyan - 9
-	
+
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
 		    ('tops', 'ttbar_nonallhad'),
@@ -1947,7 +1976,7 @@ class TTHBackgrounds2015(Background):
             print ("yield: ", sp_final.numberstats())
 
             return sp_final
-    
+
     class FakesMC(Process):
 
 	latexname = 'Fakes (MC)'
@@ -1956,7 +1985,7 @@ class TTHBackgrounds2015(Background):
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
                 ('tops', 'ttbar_nonallhad'),
-                ('Diboson','*'),                
+                ('Diboson','*'),
 		('W+jetsBFilter', '*'),
                 ('W+jetsCFilterBVeto', '*'),
                 ('W+jetsCVetoBVeto', '*'),

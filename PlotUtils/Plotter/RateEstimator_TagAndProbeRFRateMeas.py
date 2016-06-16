@@ -197,11 +197,16 @@ for iLep in list_lep:
                           if iLep == "Mu":
 
                              if args.doAvgMuFake:
-                                # Make one single bin
+                                
+				# Make one single bin
                                 #
-                                nBIN = htmp.GetNbinsX()
-                                xbins  = [htmp.GetBinLowEdge(1),htmp.GetBinLowEdge(htmp.GetNbinsX()+1)]
-                                standard_rebin = True
+                                #nBIN = htmp.GetNbinsX()
+                                #xbins  = [htmp.GetBinLowEdge(1),htmp.GetBinLowEdge(htmp.GetNbinsX()+1)]
+                                #standard_rebin = True
+				
+                                nBIN  = 4
+                                xbins = [10,15,20,25,200]
+				
                              else:
                                 # nominal binning
                                 #
