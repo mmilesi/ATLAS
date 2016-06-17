@@ -489,9 +489,12 @@ for infile in infilelist:
   # Move output file(s) from job directory to the proper one,
   # but first, change the file name to be readable in KG's FW!
   #
+  knownDSID = False
   for s in sampledict:
 
      if outdir == s["ID"] or ( outdir == "Data" and not s["ID"] ):
+
+        knownDSID = True
 	outputfilepath = outdir +"/data-output"
 
         separator = "."
@@ -512,7 +515,11 @@ for infile in infilelist:
 
 	shutil.move(INTREE,OUTTREE)
 	shutil.move(INHIST,OUTHIST)
-        shutil.rmtree(os.path.abspath(os.path.curdir) + "/" + outdir)
 
 	normaliseTrees.applyWeight(OUTTREE,s,isdata=bool(outdir == "Data" and not s["ID"]))
 
+        break
+
+  if not knownDSID:
+    print("Simply removing {0} b/c corresponding DSID is unknown...".format(outdir))
+  shutil.rmtree(os.path.abspath(os.path.curdir) + "/" + outdir)
