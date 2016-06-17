@@ -14,8 +14,8 @@ eventweight_branches = ["mcWeightOrg","pileupEventWeight_090",
 			"lepSFObjLoose","lepSFObjTight",
 			"tauSFTight","tauSFLoose"]
 
-event_branches       = ["EventNumber","RunNumber","mc_channel_number","passEventCleaning",
-                        "onelep_type","dilep_type","trilep_type","total_charge","total_leptons",
+event_branches       = ["EventNumber","RunNumber","RunYear","mc_channel_number","passEventCleaning",
+                        "onelep_type","dilep_type","trilep_type","quadlep_type","total_charge","total_leptons",
                         "isQMisIDEvent","isConvPhEvent",
                         "nJets_OR_T","nJets_OR_T_MV2c10_70",
 			"nTaus_OR_Pt25",
@@ -23,8 +23,24 @@ event_branches       = ["EventNumber","RunNumber","mc_channel_number","passEvent
 			"MET_RefFinal_et","MET_RefFinal_phi",
 			"isBlinded"]
 
-trigbits_branches    = ["HLT_e24_lhmedium_L1EM20VH","HLT_e24_lhmedium_L1EM18VH","HLT_e60_lhmedium","HLT_e120_lhloose","HLT_mu20_iloose_L1MU15","HLT_mu50",
-"HLT_2e12_loose_L12EM10VH","HLT_2e12_lhloose_L12EM10VH","HLT_e17_lhloose_2e9_lhloose","HLT_2mu14","HLT_2mu10","HLT_mu18_mu8noL1","HLT_e17_loose_mu14","HLT_e17_lhloose_mu14","HLT_e7_medium_mu24","HLT_e7_lhmedium_mu24"]
+trigbits_branches    = [ # SLT muon 2015
+                        "HLT_mu20_iloose_L1MU15",
+                        "HLT_mu50",
+                        # SLT electron 2015,2016
+                        "HLT_e24_lhmedium_L1EM20VH",
+                        "HLT_e24_lhmedium_L1EM18VH",
+                        "HLT_e60_lhmedium",
+                        "HLT_e120_lhloose",
+                        # SLT muon 2016
+                        "HLT_mu24_iloose",
+                        "HLT_mu24_ivarloose",
+                        "HLT_mu40",
+                        # DLT - ee
+                        "HLT_2e12_loose_L12EM10VH","HLT_2e12_lhloose_L12EM10VH","HLT_e17_lhloose_2e9_lhloose",
+                        # DLT - mm
+                        "HLT_2mu14","HLT_2mu10","HLT_mu18_mu8noL1",
+                        # DLT - OF
+                        "HLT_e17_loose_mu14","HLT_e17_lhloose_mu14","HLT_e7_medium_mu24","HLT_e7_lhmedium_mu24"]
 
 jet_branches         = ["lead_jetPt","lead_jetEta","lead_jetPhi","sublead_jetPt","sublead_jetEta","sublead_jetPhi"]
 
