@@ -599,7 +599,7 @@ class TTHBackgrounds2015(Background):
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
 
 	    sp = sp.subprocess(cut=truthcut)
 
@@ -914,7 +914,7 @@ class TTHBackgrounds2015(Background):
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
 
 	    sp = sp.subprocess(cut=truthcut)
 
@@ -1024,7 +1024,7 @@ class TTHBackgrounds2015(Background):
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
 
 	    sp = sp.subprocess(cut=truthcut)
 
@@ -1509,8 +1509,8 @@ class TTHBackgrounds2015(Background):
                     sub_sample_D_el = self.parent.procmap[sample].base(treename,category,options)
 
                     if sample == "ChargeFlipMC":
-                        this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
-                        this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipORConvPhEvent'))
+                        this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
+                        this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
                     if sample == "ChargeFlip":
 		        this_cut_sp_C_el = this_cut_sp_C_el.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
 			this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
