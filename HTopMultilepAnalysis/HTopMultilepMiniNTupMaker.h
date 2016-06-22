@@ -144,10 +144,11 @@ private:
 
   EL::NTupleSvc*  m_outputNTuple;
 
-  /** Input TTree branches whcih need to be used by the algorithm */
+  /** Input TTree branches which need to be used by the algorithm */
 
   ULong64_t       m_EventNumber;
   UInt_t          m_RunNumber;
+  Int_t           m_RunYear;
   Bool_t          m_passEventCleaning;
   UInt_t          m_mc_channel_number; /** for DATA, mc_channel_number=0 */
 

@@ -123,6 +123,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   //
   m_inputNTuple->SetBranchAddress ("EventNumber",   			      &m_EventNumber);
   m_inputNTuple->SetBranchAddress ("RunNumber",   			      &m_RunNumber);
+  m_inputNTuple->SetBranchAddress ("RunYear",   			      &m_RunYear);
   m_inputNTuple->SetBranchAddress ("passEventCleaning", 		      &m_passEventCleaning);
   m_inputNTuple->SetBranchAddress ("mc_channel_number",                       &m_mc_channel_number);
 
@@ -455,7 +456,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
     m_outputNTuple->setFilterPassed();
 
     if ( !m_passEventCleaning )			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
-    if ( !( m_HLT_mu20_iloose_L1MU15 || m_HLT_mu50 || m_HLT_e24_lhmedium_L1EM18VH || m_HLT_e24_lhmedium_L1EM20VH || m_HLT_e60_lhmedium || m_HLT_e120_lhloose ) ) { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
+    //if ( !( m_HLT_mu20_iloose_L1MU15 || m_HLT_mu50 || m_HLT_e24_lhmedium_L1EM18VH || m_HLT_e24_lhmedium_L1EM20VH || m_HLT_e60_lhmedium || m_HLT_e120_lhloose ) ) { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
     //if ( m_nJets_OR_T < 1 ) 			      { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
     if ( !( m_dilep_type > 0 || m_trilep_type > 0 ) ) { wk()->skipEvent(); return EL::StatusCode::SUCCESS; }
 
@@ -479,7 +480,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep0.get()->z0sintheta  = m_lep_Z0SinTheta_0;
   lep0.get()->pid         = m_lep_isTightLH_0;
   lep0.get()->isolated    = ( fabs(m_lep_ID_0) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_0 : m_lep_isolationFixedCutTight_0;
-  lep0.get()->trigmatched = m_lep_isTrigMatch_0;
+  lep0.get()->trigmatched = ( fabs(m_lep_ID_0) == 13 ) ? ( m_lep_isTrigMatch_0 && m_lep_Pt_0 > 21e3 ) : ( m_lep_isTrigMatch_0 && m_lep_Pt_0 > 25e3 );  
   lep0.get()->prompt      = m_lep_isPrompt_0;
   lep0.get()->fake        = m_lep_isFakeLep_0;
   lep0.get()->brems       = m_lep_isBrems_0;
@@ -516,7 +517,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep1.get()->z0sintheta  = m_lep_Z0SinTheta_1;
   lep1.get()->pid         = m_lep_isTightLH_1;
   lep1.get()->isolated    = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_1 : m_lep_isolationFixedCutTight_1;
-  lep1.get()->trigmatched = m_lep_isTrigMatch_1;
+  lep1.get()->trigmatched = ( fabs(m_lep_ID_1) == 13 ) ? ( m_lep_isTrigMatch_1 && m_lep_Pt_1 > 21e3 ) : ( m_lep_isTrigMatch_1 && m_lep_Pt_1 > 25e3 );
   lep1.get()->prompt      = m_lep_isPrompt_1;
   lep1.get()->fake        = m_lep_isFakeLep_1;
   lep1.get()->brems       = m_lep_isBrems_1;
@@ -566,7 +567,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
     lep2.get()->z0sintheta  = m_lep_Z0SinTheta_2;
     lep2.get()->pid	    = m_lep_isTightLH_2;
     lep2.get()->isolated    = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_2 : m_lep_isolationFixedCutTight_2;
-    lep2.get()->trigmatched = m_lep_isTrigMatch_2;
+    lep2.get()->trigmatched = ( fabs(m_lep_ID_2) == 13 ) ? ( m_lep_isTrigMatch_2 && m_lep_Pt_2 > 21e3 ) : ( m_lep_isTrigMatch_2 && m_lep_Pt_2 > 25e3 );
     lep2.get()->prompt      = m_lep_isPrompt_2;
     lep2.get()->fake	    = m_lep_isFakeLep_2;
     lep2.get()->brems       = m_lep_isBrems_2;

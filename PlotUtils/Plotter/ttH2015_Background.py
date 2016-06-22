@@ -7,7 +7,9 @@ __maintainer__ = "Marco Milesi"
 import os, sys, math, types
 
 sys.path.append(os.path.abspath(os.path.curdir))
+
 from Plotter.BackgroundTools_ttH import loadSamples, drawText, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
+
 from ROOT import TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kGreen, kAzure, kTeal, kSpring, kOrange, kCyan, TLegend, TLatex, TCanvas, TH1I, TFile
 
 class MyCategory(Category):
@@ -128,7 +130,8 @@ class TTHBackgrounds2015(Background):
             high = math.ceil(len(legs)/2)
             lower = 0.92 - 0.04*high
             leg1 = TLegend(0.45,lower,0.65,0.92)
-            leg2 = TLegend(0.70,lower,0.90,0.92)
+            #leg2 = TLegend(0.70,lower,0.90,0.92)
+            leg2 = TLegend(0.65,lower,0.85,0.92)
         for leg in [leg1, leg2]:
             if not leg: continue
             leg.SetFillColor(0)
@@ -175,7 +178,7 @@ class TTHBackgrounds2015(Background):
 
     class Observed(Process):
 
-        latexname = 'Data 2015'
+        latexname = 'Data'
 
         def base(self, treename='physics', category=None, options={}):
             #Contains the instuction of which tree load and eventually correct the units of the cross-setion (see the division /1000.). Note it is not automatically executed when the class is called. It is executed trought __call__
@@ -751,7 +754,7 @@ class TTHBackgrounds2015(Background):
 
     class Top(Process):
 
-        latexname = 'tW, tZ, tWZ, ttWW, 4t, single t'
+        latexname = 't, tW, tZ, tWZ, ttWW, 4t'
         #latexname = 'rare top'
 
         colour = kAzure + 1
@@ -945,7 +948,7 @@ class TTHBackgrounds2015(Background):
                 ('Diboson', 'ggllvv'),
                 ('Diboson', 'WW'),
                 ('Diboson', 'WZ'),
-                ('Diboson', 'ZZ'),     
+                ('Diboson', 'ZZ'),
                          ]
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -998,9 +1001,9 @@ class TTHBackgrounds2015(Background):
                 ('Diboson', 'ggllvv'),
                 ('Diboson', 'WW'),
                 ('Diboson', 'WZ'),
-                ('Diboson', 'ZZ'),     
+                ('Diboson', 'ZZ'),
                          ]
-			 
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -1240,6 +1243,55 @@ class TTHBackgrounds2015(Background):
 
             return sp
 
+    class ZpeakSidebandBkg(Process):
+
+	latexname = 'Background (from Z sidebands)'
+        colour = kBlue
+
+        def base(self, treename='physics', category=None, options={}):
+            inputgroup = [
+                    ('Data', 'physics_Main'),
+                         ]
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees)
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+
+            weight=1.0
+
+	    if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
+                TTcut  = 'TT'
+                TLcut  = 'TL'
+                LTcut  = 'LT'
+                LLcut  = 'LL'
+                weight = 'MMWeight[0]'
+
+	    # Remove any truth cut
+	    #
+	    basecut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
+
+            # QMisID subtraction? ---> CHECK IN PROGRESS
+
+            sp_TT  = sp.subprocess(cut=basecut & self.vardb.getCut(TTcut), eventweight=weight)
+            sp_TL  = sp.subprocess(cut=basecut & self.vardb.getCut(TLcut), eventweight=weight)
+            sp_LT  = sp.subprocess(cut=basecut & self.vardb.getCut(LTcut), eventweight=weight)
+            sp_LL  = sp.subprocess(cut=basecut & self.vardb.getCut(LLcut), eventweight=weight)
+
+	    print(" ")
+	    print("ZpeakSidebandBkg - TT sp: {0}, weight: {1}".format(sp.basecut.cutnamelist, weight))
+
+	    sp = sp_TT + sp_TL + sp_LT + sp_LL
+
+            return sp
 
     class FakesFF(Process):
 

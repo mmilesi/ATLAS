@@ -8,7 +8,7 @@ c = xAH_config()
 
 # List the branches to be copied over from the input TTree
 #
-eventweight_branches = ["mcWeightOrg","pileupEventWeight_090",
+eventweight_branches = ["mcWeightOrg","SherpaNJetWeight","pileupEventWeight_090",
                         "MV2c10_70_EventWeight","JVT_EventWeight",
 			"lepSFTrigLoose","lepSFTrigTight",
 			"lepSFObjLoose","lepSFObjTight",
@@ -26,21 +26,47 @@ event_branches       = ["EventNumber","RunNumber","RunYear","mc_channel_number",
 trigbits_branches    = [ # SLT muon 2015
                         "HLT_mu20_iloose_L1MU15",
                         "HLT_mu50",
-                        # SLT electron 2015,2016
+                        # SLT electron 2015
                         "HLT_e24_lhmedium_L1EM20VH",
                         "HLT_e24_lhmedium_L1EM18VH",
                         "HLT_e60_lhmedium",
                         "HLT_e120_lhloose",
+                        # SLT electron 2016
+                        "HLT_e24_lhtight_nod0_ivarloose",
+                        "HLT_e60_lhmedium_nod0",
+                        "HLT_e140_lhloose_nod0",
+                        "HLT_e60_medium",
+                        "HLT_e300_etcut",
                         # SLT muon 2016
                         "HLT_mu24_iloose",
                         "HLT_mu24_ivarloose",
                         "HLT_mu40",
-                        # DLT - ee
-                        "HLT_2e12_loose_L12EM10VH","HLT_2e12_lhloose_L12EM10VH","HLT_e17_lhloose_2e9_lhloose",
-                        # DLT - mm
-                        "HLT_2mu14","HLT_2mu10","HLT_mu18_mu8noL1",
-                        # DLT - OF
-                        "HLT_e17_loose_mu14","HLT_e17_lhloose_mu14","HLT_e7_medium_mu24","HLT_e7_lhmedium_mu24"]
+			"HLT_mu24_imedium",
+			"HLT_mu24_ivarmedium",
+                        # DLT - ee - 2015
+                        "HLT_2e12_loose_L12EM10VH",
+                        "HLT_2e12_lhloose_L12EM10VH",
+                        "HLT_e17_lhloose_2e9_lhloose",
+                        # DLT - ee - 2016
+                        "HLT_2e15_lhvloose_nod0_L12EM13VH",
+                        # DLT - mm - 2015
+                        "HLT_2mu14",
+                        "HLT_2mu10",
+                        "HLT_mu18_mu8noL1",
+                        # DLT - mm - 2016
+                        #"HLT_2mu10_nomucomb", --> missing in v14 ntup
+			#"HLT_2mu14_nomucomb", --> missing in v14 ntup
+                        "HLT_mu20_mu8noL1",
+                        # DLT - OF - 2015
+                        "HLT_e17_loose_mu14",
+                        "HLT_e17_lhloose_mu14",
+                        "HLT_e7_medium_mu24",
+                        "HLT_e7_lhmedium_mu24",
+                        # DLT - OF - 2016
+                        #"HLT_e17_lhloose_nod0_mu14", --> missing in v14 ntup
+                        "HLT_e24_lhmedium_nod0_L1EM20VHI_mu8noL1",
+                        #"HLT_e7_lhmedium_nod0_mu24" --> missing in v14 ntup
+                        ]
 
 jet_branches         = ["lead_jetPt","lead_jetEta","lead_jetPhi","sublead_jetPt","sublead_jetEta","sublead_jetPhi"]
 
@@ -68,7 +94,7 @@ lep_branches         = ["lep_ID_0","lep_Index_0","lep_Pt_0","lep_E_0","lep_Eta_0
 
 tau_branches        = ["tau_pt_0","tau_eta_0","tau_phi_0","tau_charge_0","tau_BDTJetScore_0","tau_JetBDTSigLoose_0","tau_JetBDTSigMedium_0","tau_JetBDTSigTight_0","tau_numTrack_0","tau_SFTight_0","tau_SFLoose_0"]
 
-MET_truth_branches   = ["MET_Truth_px","MET_Truth_py","MET_Truth_phi","MET_Truth_sumet"]
+MET_truth_branches  = ["MET_Truth_px","MET_Truth_py","MET_Truth_phi","MET_Truth_sumet"]
 
 mc_truth_branches   = [] # ["m_truth_m","m_truth_pt","m_truth_eta","m_truth_phi","m_truth_e","m_truth_pdgId","m_truth_status","m_truth_barcode","m_truth_parents","m_truth_children"]
 

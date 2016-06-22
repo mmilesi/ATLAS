@@ -23,8 +23,6 @@ bool g_verbose(false);
 std::map< std::string, TH1D* > g_el_hist_map;
 std::map< std::string, TH1D* > g_mu_hist_map;
 
-int g_n_el_bins_eta(0);
-int g_n_mu_bins_eta(0);
 int g_n_el_bins_pt_rr(0);
 int g_n_el_bins_pt_fr(0);
 int g_n_mu_bins_pt_rr(0);
@@ -96,37 +94,25 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
 
   // ELECTRONS
   //
-  std::string histname_el_eta_rr   = ( !CFRateAsRR ) ?  "El_ProbeEta_Real_Rate_" + rate_type : "El_ProbeEta_Fake_Rate_" + rate_type;
   std::string histname_el_pt_rr    = ( !CFRateAsRR ) ?  "El_ProbePt_Real_Rate_" + rate_type : "El_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_el_eta_r_T  = ( !CFRateAsRR ) ?  "El_ProbeEta_Real_T_" + rate_type : "El_ProbeEta_Fake_Rate_" + rate_type;
-  std::string histname_el_eta_r_L  = ( !CFRateAsRR ) ?  "El_ProbeEta_Real_AntiT_" + rate_type : "El_ProbeEta_Fake_Rate_" + rate_type;
   std::string histname_el_pt_r_T   = ( !CFRateAsRR ) ?  "El_ProbePt_Real_T_" + rate_type : "El_ProbePt_Fake_Rate_" + rate_type;
   std::string histname_el_pt_r_L   = ( !CFRateAsRR ) ?  "El_ProbePt_Real_AntiT_" + rate_type : "El_ProbePt_Fake_Rate_" + rate_type;
 
   // get real rate histograms
   //
-  TH1D *hist_el_eta_rr   = get_hist( *file_R_el, histname_el_eta_rr );
   TH1D *hist_el_pt_rr    = get_hist( *file_R_el, histname_el_pt_rr );
-  TH1D *hist_el_eta_r_T  = get_hist( *file_R_el, histname_el_eta_r_T );
-  TH1D *hist_el_eta_r_L  = get_hist( *file_R_el, histname_el_eta_r_L );
   TH1D *hist_el_pt_r_T   = get_hist( *file_R_el, histname_el_pt_r_T );
   TH1D *hist_el_pt_r_L   = get_hist( *file_R_el, histname_el_pt_r_L );
 
   // MUONS
   //
-  std::string histname_mu_eta_rr   = "Mu_ProbeEta_Real_Rate_" + rate_type;
   std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Rate_" + rate_type;
-  std::string histname_mu_eta_r_T  = "Mu_ProbeEta_Real_T_" + rate_type;
-  std::string histname_mu_eta_r_L  = "Mu_ProbeEta_Real_AntiT_" + rate_type;
   std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_" + rate_type;
   std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_AntiT_" + rate_type;
 
   // get real rate histograms
   //
-  TH1D *hist_mu_eta_rr   = get_hist( *file_R_mu, histname_mu_eta_rr );
   TH1D *hist_mu_pt_rr    = get_hist( *file_R_mu, histname_mu_pt_rr );
-  TH1D *hist_mu_eta_r_T  = get_hist( *file_R_mu, histname_mu_eta_r_T );
-  TH1D *hist_mu_eta_r_L  = get_hist( *file_R_mu, histname_mu_eta_r_L );
   TH1D *hist_mu_pt_r_T   = get_hist( *file_R_mu, histname_mu_pt_r_T );
   TH1D *hist_mu_pt_r_L   = get_hist( *file_R_mu, histname_mu_pt_r_L );
 
@@ -160,37 +146,25 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
 
   // ELECTRONS
   //
-  std::string histname_el_eta_fr   = "El_ProbeEta_Fake_Rate_" + rate_type;
   std::string histname_el_pt_fr    = "El_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_el_eta_f_T  = "El_ProbeEta_Fake_T_" + rate_type;
-  std::string histname_el_eta_f_L  = "El_ProbeEta_Fake_AntiT_" + rate_type;
   std::string histname_el_pt_f_T   = "El_ProbePt_Fake_T_" + rate_type;
   std::string histname_el_pt_f_L   = "El_ProbePt_Fake_AntiT_" + rate_type;
 
   // get fake rate histograms
   //
-  TH1D *hist_el_eta_fr   = get_hist( *file_F_el, histname_el_eta_fr );
   TH1D *hist_el_pt_fr    = get_hist( *file_F_el, histname_el_pt_fr );
-  TH1D *hist_el_eta_f_T  = get_hist( *file_F_el, histname_el_eta_f_T );
-  TH1D *hist_el_eta_f_L  = get_hist( *file_F_el, histname_el_eta_f_L );
   TH1D *hist_el_pt_f_T   = get_hist( *file_F_el, histname_el_pt_f_T );
   TH1D *hist_el_pt_f_L   = get_hist( *file_F_el, histname_el_pt_f_L );
 
   // MUONS
   //
-  std::string histname_mu_eta_fr   = "Mu_ProbeEta_Fake_Rate_" + rate_type;
   std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_mu_eta_f_T  = "Mu_ProbeEta_Fake_T_" + rate_type;
-  std::string histname_mu_eta_f_L  = "Mu_ProbeEta_Fake_AntiT_" + rate_type;
   std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_" + rate_type;
   std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_AntiT_" + rate_type;
 
   // get fake rate histograms
   //
-  TH1D *hist_mu_eta_fr   = get_hist( *file_F_mu, histname_mu_eta_fr );
   TH1D *hist_mu_pt_fr    = get_hist( *file_F_mu, histname_mu_pt_fr );
-  TH1D *hist_mu_eta_f_T  = get_hist( *file_F_mu, histname_mu_eta_f_T );
-  TH1D *hist_mu_eta_f_L  = get_hist( *file_F_mu, histname_mu_eta_f_L );
   TH1D *hist_mu_pt_f_T   = get_hist( *file_F_mu, histname_mu_pt_f_T );
   TH1D *hist_mu_pt_f_L   = get_hist( *file_F_mu, histname_mu_pt_f_L );
 
@@ -198,38 +172,21 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
 
   // fill a map for later usage
   //
-  g_el_hist_map["eta_rr"]  = hist_el_eta_rr;
   g_el_hist_map["pt_rr"]   = hist_el_pt_rr;
-  g_el_hist_map["eta_r_T"] = hist_el_eta_r_T;
-  g_el_hist_map["eta_r_L"] = hist_el_eta_r_L;
   g_el_hist_map["pt_r_T"]  = hist_el_pt_r_T;
   g_el_hist_map["pt_r_L"]  = hist_el_pt_r_L;
 
-  g_mu_hist_map["eta_rr"]  = hist_mu_eta_rr;
   g_mu_hist_map["pt_rr"]   = hist_mu_pt_rr;
-  g_mu_hist_map["eta_r_T"] = hist_mu_eta_r_T;
-  g_mu_hist_map["eta_r_L"] = hist_mu_eta_r_L;
   g_mu_hist_map["pt_r_T"]  = hist_mu_pt_r_T;
   g_mu_hist_map["pt_r_L"]  = hist_mu_pt_r_L;
 
-  g_el_hist_map["eta_fr"]  = hist_el_eta_fr;
   g_el_hist_map["pt_fr"]   = hist_el_pt_fr;
-  g_el_hist_map["eta_f_T"] = hist_el_eta_f_T;
-  g_el_hist_map["eta_f_L"] = hist_el_eta_f_L;
   g_el_hist_map["pt_f_T"]  = hist_el_pt_f_T;
   g_el_hist_map["pt_f_L"]  = hist_el_pt_f_L;
 
-  g_mu_hist_map["eta_fr"]  = hist_mu_eta_fr;
   g_mu_hist_map["pt_fr"]   = hist_mu_pt_fr;
-  g_mu_hist_map["eta_f_T"] = hist_mu_eta_f_T;
-  g_mu_hist_map["eta_f_L"] = hist_mu_eta_f_L;
   g_mu_hist_map["pt_f_T"]  = hist_mu_pt_f_T;
   g_mu_hist_map["pt_f_L"]  = hist_mu_pt_f_L;
-
-  // eta hist has same binning for r/f
-  //
-  g_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX()+1;
-  g_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX()+1;
 
   // pt hist has two different binning for r/f
   //
@@ -237,13 +194,6 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
   g_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX()+1;
   g_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX()+1;
   g_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX()+1;
-
-  // normalisation factor is the same for eta and pt r/f histograms: use eta
-  //
-  g_el_rr_tot = ( hist_el_eta_r_T->Integral(1,hist_el_eta_r_T->GetNbinsX()+1) ) / ( hist_el_eta_r_L->Integral(1,hist_el_eta_r_L->GetNbinsX()+1) );
-  g_el_fr_tot = ( hist_el_eta_f_T->Integral(1,hist_el_eta_f_T->GetNbinsX()+1) ) / ( hist_el_eta_f_L->Integral(1,hist_el_eta_f_L->GetNbinsX()+1) );
-  g_mu_rr_tot = ( hist_mu_eta_r_T->Integral(1,hist_mu_eta_r_T->GetNbinsX()+1) ) / ( hist_mu_eta_r_L->Integral(1,hist_mu_eta_r_L->GetNbinsX()+1) );
-  g_mu_fr_tot = ( hist_mu_eta_f_T->Integral(1,hist_mu_eta_f_T->GetNbinsX()+1) ) / ( hist_mu_eta_f_L->Integral(1,hist_mu_eta_f_L->GetNbinsX()+1) );
 
 }
 
@@ -270,13 +220,9 @@ double  scaleRateToEfficiency( double rate )
 ///*
 std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 				   float pt,
-				   float eta,
 				   bool isFakeLep,
-				   int n_bins_eta,
 				   int n_bins_pt_fr,
-				   int n_bins_pt_rr,
-				   double fr_tot,
-				   double rr_tot
+				   int n_bins_pt_rr
 				  )
 {
   // Read the real/fake rates from input histograms
@@ -287,156 +233,105 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
   //
   pt = pt/1e3;
 
-  if ( g_verbose ) { Info("calc_weights()", "lepton pT = %.2f, fabs(eta) = %.2f", pt, fabs(eta) ); }
+  if ( g_verbose ) { Info("calc_weights()", "lepton pT = %.2f", pt ); }
 
   std::vector<double> weights(3,0.0); //initialized with zeroes
 
   weights.at(0) = 1.0;
   double error(0.0);
 
-  // loop over number of eta bins
-  // do not consider underflow, i.e. 0th bin
+  // case 1) : lepton is fake: choose correct pt histogram
   //
-  for ( int e = 1; e <= n_bins_eta; e++ ) {
+  if ( isFakeLep ) {
 
-    // check whether the eta under question is in *this* eta range
-    //
     if ( g_verbose ) {
-      Info("calc_weights()", "\tETA bin %i : lower edge = %.2f, upper edge = %.2f", e, (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e),(histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) );
+       Info("calc_weights()", "\tFake lepton");
     }
-
-    if ( ( fabs(eta) >= (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e) ) && ( fabs(eta) < (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) ) ) {
+    
+    // loop over number of pt bins
+    // do not consider underflow, i.e. 0th bin
+    //
+    for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
 
       if ( g_verbose ) {
-        Info("calc_weights()", "\t\t==> Reading ETA rate in bin [%.2f,%.2f]", (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e), (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) );
+  	Info("calc_weights()", "\t\tbin %i : lower edge = %.2f, upper edge = %.2f", p,(histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
       }
-      
-      // case 1) : lepton is fake: choose correct pt histogram
-      //
-      if ( isFakeLep ) {
 
-        if ( g_verbose ) {
-          Info("calc_weights()", "\t\tFake lepton");
-        } 
-       
-	// loop over number of pt bins
-        // do not consider underflow, i.e. 0th bin
-        //
-        for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
+      if ( ( pt >= (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
 
-  	  if ( g_verbose ) {
-            Info("calc_weights()", "\t\tPT bin %i : lower edge = %.2f, upper edge = %.2f", p,(histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-	  }
+    	double fr_pt  = (histograms.find("pt_fr")->second)->GetBinContent(p);
+    	double fr_pt_err  = (histograms.find("pt_fr")->second)->GetBinError(p);
 
-     	  if ( ( pt >= (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
+  	if ( g_verbose ) {
+    	  Info("calc_weights()", "\t\t==> Reading fake rate in bin [%.2f,%.2f] : fr_pt = %.2f", (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1), fr_pt );
+	}
 
-  	    if ( g_verbose ) {
-    	      Info("calc_weights()", "\t\t\t==> Reading PT fake rate in bin [%.2f,%.2f]", (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-	    }
+    	// nominal
+    	//
+    	weights.at(0) = fr_pt;
+    	error	      = fr_pt_err;
 
-	    // combine eta and pt rates
-	    //
-	    double fr_pt  = (histograms.find("pt_fr")->second)->GetBinContent(p);
-	    double fr_eta = (histograms.find("eta_fr")->second)->GetBinContent(e);
+    	// up syst
+    	//
+    	weights.at(1) = ( fr_pt + error ); 
 
-	    double fr_pt_err  = (histograms.find("pt_fr")->second)->GetBinError(p);
-	    double fr_eta_err = (histograms.find("eta_fr")->second)->GetBinError(e);
+    	// down syst
+    	//
+    	if ( fr_pt - error > 0 ) { weights.at(2) = ( fr_pt - error );}
+    	else		         { weights.at(2) = 0.0; }
 
-            if ( g_verbose ) {
-	       Info("calc_weights()", "\t\t\t ==> fr_pt = %.2f", fr_pt );
-	       Info("calc_weights()", "\t\t\t ==> fr_eta = %.2f", fr_eta );
-	    }
+        break;
+      }
 
-	    // nominal
-	    //
-     	    weights.at(0) = ( fr_pt * fr_eta ) / fr_tot;
+    } // close loop on pT bins: fake lepton
 
-	    // (assuming  fr_pt,fr_eta are independent) this is the error on the product
-	    // ( the constant factor at denominator will be put back later in the def of weight...
-	    //
-	    error	  = sqrt( (fr_eta*fr_pt_err)*(fr_eta*fr_pt_err) + (fr_pt*fr_eta_err)*(fr_pt*fr_eta_err) );
+  // lepton is real: choose correct pt histogram
+  //
+  } else {
 
-	    // up syst
-	    //
-     	    weights.at(1) = ( (fr_pt * fr_eta) + error ) / fr_tot;
+    if ( g_verbose ) {
+       Info("calc_weights()", "Real lepton");
+    }
+    
+    // loop over number of pt bins
+    // do not consider underflow, i.e. 0th bin
+    //
+    for ( int p = 1; p <= n_bins_pt_rr; p++ ) {
 
-     	    // down syst
-     	    //
-	    if ( (fr_pt * fr_eta) - error > 0 ) { weights.at(2) = ( (fr_pt * fr_eta) - error ) / fr_tot;}
-	    else                                { weights.at(2) = 0.0; }
-
-            break;
-	    
-     	  }
-
-	} // close loop on pT bins: fake lepton
-
-      // lepton is real: choose correct pt histogram
-      //
-      }	else {
-
-        if ( g_verbose ) {
-          Info("calc_weights()", "\t\tReal lepton");
-        }
+      if ( g_verbose ) {
+        Info("calc_weights()", "\t\tbin %i : lower edge = %.2f, upper edge = %.2f", p,(histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
+      }
 	
-	// loop over number of pt bins
-        // do not consider underflow, i.e. 0th bin
-        //
-        for ( int p = 1; p <= n_bins_pt_rr; p++ ) {
+      if ( ( pt >= (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
 
-          if ( g_verbose ) {
-            Info("calc_weights()", "\t\tPT bin %i : lower edge = %.2f, upper edge = %.2f", p,(histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-          }
-	  
-     	  if ( ( pt >= (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
+    	double rr_pt  = (histograms.find("pt_rr")->second)->GetBinContent(p);
 
-            if ( g_verbose ) {
-    	      Info("calc_weights()", "\t\t\t==> Reading PT real rate in bin [%.2f,%.2f]", (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-            }
-	    
-	    // combine eta and pt rates
-	    //
-	    double rr_pt  = (histograms.find("pt_rr")->second)->GetBinContent(p);
-	    double rr_eta = (histograms.find("eta_rr")->second)->GetBinContent(e);
+    	double rr_pt_err  = (histograms.find("pt_rr")->second)->GetBinError(p);
 
-	    double rr_pt_err  = (histograms.find("pt_rr")->second)->GetBinError(p);
-	    double rr_eta_err = (histograms.find("eta_rr")->second)->GetBinError(e);
+        if ( g_verbose ) {
+    	  Info("calc_weights()", "\t\t==> Reading real rate in bin [%.2f,%.2f] : rr_pt = %.2f", (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1), rr_pt );
+        }
 
-            if ( g_verbose ) {
-	       Info("calc_weights()", "\t\t\t ==> rr_pt = %.2f", rr_pt );
-	       Info("calc_weights()", "\t\t\t ==> rr_eta = %.2f", rr_eta );
-	    }
+    	// nominal
+    	//
+    	weights.at(0) = rr_pt;
+    	error	      = rr_pt_err;
 
-	    // nominal
-	    //
-	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
+    	// up syst
+    	//
+    	weights.at(1) = ( rr_pt + error );
 
-	    // (assuming  rr_pt,rr_eta are independent) this is the error on the product
-	    // ( the constant factor at denominator will be put back in the def of weight...
-	    //
-	    error	  = sqrt( (rr_eta*rr_pt_err)*(rr_eta*rr_pt_err) + (rr_pt*rr_eta_err)*(rr_pt*rr_eta_err) );
+    	// down syst
+    	//
+    	if ( rr_pt - error > 0 ) { weights.at(2) = ( rr_pt - error ); }
+    	else		         { weights.at(2) = 0.0; }
 
-     	    // up syst
-	    //
-     	    weights.at(1) = ( (rr_pt * rr_eta) + error ) / rr_tot;
+        break;
+	
+      }
+    } // close loop on pT bins: real lepton
 
-	    // down syst
-	    //
-     	    if ( (rr_pt * rr_eta) - error > 0 ) { weights.at(2) = ( (rr_pt * rr_eta) - error ) / rr_tot; }
-	    else                                { weights.at(2) = 0.0; }
-	    
-	    break;
-
-     	  }
-        } // close loop on pT bins: real lepton
-
-      } // close check isFakeLep
-
-      break;
-      
-    } // close check on eta bin
-
-  } // close loop on eta bins
+  } // close check isFakeLep
 
   // Now converting rates to the efficiencies for the MM/FF
   //
@@ -507,19 +402,19 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
   // NB: input lep_* vectors are pT-ordered.
   //
   if ( lep_flavour.at(0) == 11 ) {
-     r1 = calc_weights( g_el_hist_map, lep_pt.at(0), lep_eta.at(0), !isFakeLep, g_n_el_bins_eta, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_el_fr_tot, g_el_rr_tot );
-     f1 = calc_weights( g_el_hist_map, lep_pt.at(0), lep_eta.at(0), isFakeLep,  g_n_el_bins_eta, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_el_fr_tot, g_el_rr_tot );
+     r1 = calc_weights( g_el_hist_map, lep_pt.at(0), !isFakeLep, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
+     f1 = calc_weights( g_el_hist_map, lep_pt.at(0), isFakeLep,  g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
   } else if ( lep_flavour.at(0) == 13 ) {
-     r1 = calc_weights( g_mu_hist_map, lep_pt.at(0), lep_eta.at(0), !isFakeLep, g_n_mu_bins_eta, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_mu_fr_tot, g_mu_rr_tot );
-     f1 = calc_weights( g_mu_hist_map, lep_pt.at(0), lep_eta.at(0), isFakeLep,  g_n_mu_bins_eta, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_mu_fr_tot, g_mu_rr_tot );
+     r1 = calc_weights( g_mu_hist_map, lep_pt.at(0), !isFakeLep, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
+     f1 = calc_weights( g_mu_hist_map, lep_pt.at(0), isFakeLep,  g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
   }
 
   if ( lep_flavour.at(1) == 11 ) {
-     r2 = calc_weights( g_el_hist_map, lep_pt.at(1), lep_eta.at(1), !isFakeLep, g_n_el_bins_eta, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_el_fr_tot, g_el_rr_tot );
-     f2 = calc_weights( g_el_hist_map, lep_pt.at(1), lep_eta.at(1), isFakeLep,  g_n_el_bins_eta, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_el_fr_tot, g_el_rr_tot );
+     r2 = calc_weights( g_el_hist_map, lep_pt.at(1), !isFakeLep, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
+     f2 = calc_weights( g_el_hist_map, lep_pt.at(1), isFakeLep,  g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
   } else if ( lep_flavour.at(1) == 13 ) {
-     r2 = calc_weights( g_mu_hist_map, lep_pt.at(1), lep_eta.at(1), !isFakeLep, g_n_mu_bins_eta, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_mu_fr_tot, g_mu_rr_tot );
-     f2 = calc_weights( g_mu_hist_map, lep_pt.at(1), lep_eta.at(1), isFakeLep,  g_n_mu_bins_eta, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_mu_fr_tot, g_mu_rr_tot );
+     r2 = calc_weights( g_mu_hist_map, lep_pt.at(1), !isFakeLep, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
+     f2 = calc_weights( g_mu_hist_map, lep_pt.at(1), isFakeLep,  g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
   }
 
   if ( g_debug ) {
@@ -606,11 +501,11 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
 /
 ****************** */
 
-void modifyttree_MM(std::string filename, std::string outfilename, std::string addWeight, std::string RR_dir, std::string doClosure,
+void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::string addWeight, std::string RR_dir, std::string doClosure,
 		    std::string  NENTRIES = "ALL", std::string treename = "physics", std::string FR_dir = "")
 {
 
-  Info("modifytree_MM()","Starting off...");
+  Info("modifytree_MM_PtOnly()","Starting off...");
 
   //Get in file, in tree and set top branch address
   //
@@ -733,8 +628,8 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
     intree->SetBranchAddress(in_lep_isT_1_name.c_str(), &lep_isT_1_in, &b_lep_isTightSelected_1);
     intree->SetBranchAddress(in_MMWeight_name.c_str(), &MMWeight_in, &b_MMWeight);
 
-    //Info("modifytree_MM()", "--> lep_pt_0 before SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
-    //Info("modifytree_MM()", "--> lep_pt_0 after SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
+    //Info("modifytree_MM_PtOnly()", "--> lep_pt_0 before SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
+    //Info("modifytree_MM_PtOnly()", "--> lep_pt_0 after SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
 
     // Set the "new" branches in the output TTree
     //
@@ -742,19 +637,19 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
 
     // read r/f rates from ROOT histograms
     //
-    Info("modifytree_MM()","Reading r/f rates from ROOT file(s)..");
+    Info("modifytree_MM_PtOnly()","Reading r/f rates from ROOT file(s)..");
     read_rates(RR_dir,FR_dir);
 
     // Loop over entries in TTree
     //
-    Info("modifytree_MM()","Begin loop on input tree entries...\n");
+    Info("modifytree_MM_PtOnly()","Begin loop on input tree entries...\n");
     int count_bad(0);
     Long64_t i = 0;
     for ( ; i < nentries; i++ ) {
 
       // Print out every N events to see where we are
       //
-      if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree_MM()","\t Processed %lld entries",i); }
+      if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree_MM_PtOnly()","\t Processed %lld entries",i); }
 
       // Now, in the input tree, reset to 1 the status of the branches you
       // deactivated before cloning
@@ -765,12 +660,12 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
 
       intree->GetEntry(i);
 
-      if ( g_debug ) { Info("modifytree_MM()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
+      if ( g_debug ) { Info("modifytree_MM_PtOnly()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
 
       // A security check...
       //
       if ( !MMWeight_in ) {
-        Info("modifytree_MM()","\t --> MMWeight_in is NULL!! Skipping event...  \n");
+        Info("modifytree_MM_PtOnly()","\t --> MMWeight_in is NULL!! Skipping event...  \n");
         ++count_bad;
         continue;
       }
@@ -788,7 +683,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
         if ( g_debug ) {
           int idx_in(0);
           for ( const auto& itr : *MMWeight_in ) {
-      	  Info("modifytree_MM()","\t\t IN MMWeight[%i] = %.2f", idx_in, itr );
+      	  Info("modifytree_MM_PtOnly()","\t\t IN MMWeight[%i] = %f", idx_in, itr );
       	  ++idx_in;
           }
         }
@@ -811,12 +706,12 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
         if ( g_debug ) {
           int idx_out(0);
           for ( const auto& itr : *MMWeight_out ) {
-      	  Info("modifytree_MM()","\t\t OUT MMWeight[%i] = %.2f", idx_out, itr );
+      	  Info("modifytree_MM_PtOnly()","\t\t OUT MMWeight[%i] = %f", idx_out, itr );
       	  ++idx_out;
           }
         }
 
-        if ( g_debug ) { Info("modifytree_MM()","\n\n"); }
+        if ( g_debug ) { Info("modifytree_MM_PtOnly()","\n\n"); }
 
       }
 
@@ -827,7 +722,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
 
     }
 
-    Info("modifytree_MM()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
+    Info("modifytree_MM_PtOnly()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
 
     outfile->Write();
     outfile->Close();
@@ -932,30 +827,30 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
 
     // read r/f rates from ROOT histograms
     //
-    Info("modifytree_MM()","Reading r/f rates from ROOT file(s)..");
+    Info("modifytree_MM_PtOnly()","Reading r/f rates from ROOT file(s)..");
     read_rates(RR_dir,FR_dir);
 
     // Loop over entries in TTree
     //
-    Info("modifytree_MM()","Begin loop on input tree entries...\n");
+    Info("modifytree_MM_PtOnly()","Begin loop on input tree entries...\n");
     int count_bad(0);
     Long64_t i = 0;
     for ( ; i < nentries; i++ ) {
 
       // Print out every N events to see where we are
       //
-      if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree_MM()","\t Processed %lld entries",i); }
+      if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree_MM_PtOnly()","\t Processed %lld entries",i); }
 
       intree->GetEntry(i);
 
-      if ( g_debug ) { Info("modifytree_MM()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
+      if ( g_debug ) { Info("modifytree_MM_PtOnly()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
 
       MMWeight_out.assign(5,1.0);
 
       if ( g_debug ) {
         int idx(0);
         for ( const auto& itr : MMWeight_out ) {
-          Info("modifytree_MM()","\t\t Default MMWeight[%i] = %.2f", idx, itr );
+          Info("modifytree_MM_PtOnly()","\t\t Default MMWeight[%i] = %f", idx, itr );
           ++idx;
         }
       }
@@ -983,12 +878,12 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
         if ( g_debug ) {
           int idx_out(0);
           for ( const auto& itr : MMWeight_out ) {
-	      Info("modifytree_MM()","\t\t OUT MMWeight[%i] = %.2f", idx_out, itr );
+	      Info("modifytree_MM_PtOnly()","\t\t OUT MMWeight[%i] = %f", idx_out, itr );
 	      ++idx_out;
           }
         }
 
-        if ( g_debug ) { Info("modifytree_MM()","\n\n"); }
+        if ( g_debug ) { Info("modifytree_MM_PtOnly()","\n\n"); }
 
       }
 
@@ -996,7 +891,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
 
     }
 
-    Info("modifytree_MM()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
+    Info("modifytree_MM_PtOnly()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
 
     outfile->Write();
     outfile->Close();
@@ -1017,4 +912,3 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
   // T->Write();
 
 }
-
