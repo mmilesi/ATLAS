@@ -110,7 +110,7 @@ class Inputs:
             tree = self.alltrees[treename][group][subgroup]
         except:
             tree = None
-            print "ERROR: Could not reach tree", treename, group, subgroup
+            print("ERROR: Could not reach tree {0} in group {1}, subgroup {2}".format(treename, group, subgroup))
 
 	print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
@@ -1128,7 +1128,9 @@ class Background:
                 ratiomc.GetYaxis().SetRangeUser(showratio[0], showratio[1])
             else:
                 #ratiomc.GetYaxis().SetRangeUser(0.8, 1.2)
-                ratiomc.GetYaxis().SetRangeUser(0.0, 2.0)
+                #ratiomc.GetYaxis().SetRangeUser(0.0, 2.0)
+                ratiomc.GetYaxis().SetRangeUser(0.6, 1.4)
+		
             #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
             pad2.cd()
             #pad2.SetLogy(2)
@@ -1154,7 +1156,9 @@ class Background:
 	      if showratio and bkg and obs:
 	          stack.SetMaximum(ymax_new*(2.-lower+0.075))
 	          if log is True or (var.logaxis and log is None):
-	              stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
+	              #stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
+	              stack.SetMaximum(stack.GetMaximum() * 10**(3))
+		      
 	      else:
 	          stack.SetMaximum(ymax_new*(2.-lower+0.15))
 	      stack.Draw('HIST')

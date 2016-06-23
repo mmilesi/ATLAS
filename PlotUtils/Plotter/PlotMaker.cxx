@@ -765,8 +765,11 @@ void execute_DataVSMC() {
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v14/","Data - w/ sub."));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v14/","MC t#bar{t}"));
   
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v14_2015/","Data - w/ sub."));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v14_2015/","MC t#bar{t}"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v14_2015/","Data - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v14_2015/","MC t#bar{t}"));
+  
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v14_DLT_2015/","Data - w/ sub."));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v14_DLT_2015/","MC t#bar{t}"));
   
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
 

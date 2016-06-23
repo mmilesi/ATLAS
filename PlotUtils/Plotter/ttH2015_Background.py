@@ -50,6 +50,7 @@ class TTHBackgrounds2015(Background):
     #eventweight = 'evtsel_weight*evtsel_weight_el*evtsel_weight_mu*evtsel_bjet_weight*evtsel_weight_lep_trigger*weight_FF*weight_CF'
     useEmbedding    = False
     useZCorrections = False
+    useSherpaNNPDF30NNLO = False
     RQCD = {
         #'El': (1.000, 0.051),
         #'Mu': (1.177, 0.066),
@@ -336,13 +337,23 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
 		           #('Z+jets', 'ee'),
                            #('MadGraphZ+jets', 'ee'),
-                           ('Z+jetsCVetoBVeto', 'ee'),
-			   ('Z+jetsCFilterBVeto', 'ee'),
-                           ('Z+jetsBFilter', 'ee'),
 			   ('Z+jetsLowMllBVeto', 'ee'),
 			   ('Z+jetsLowMllBFilter', 'ee'),
 		           #('DYZ+jets', 'ee'),
 		         ]
+			 
+	    if self.parent.useSherpaNNPDF30NNLO:
+	      # Sherpa NNPDF30NNLO
+	      # 
+	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")	 
+	      inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', 'ee'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', 'ee'), ('Z+jetsBFilter_NNPDF30NNLO', 'ee') ]
+	    else:
+	      # Sherpa CT10
+	      # 		    
+	      inputgroup += [ ('Z+jetsCVetoBVeto', 'ee'), ('Z+jetsCFilterBVeto', 'ee'), ('Z+jetsBFilter', 'ee') ]
+	    
+	    print inputgroup
+	    				 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
@@ -361,6 +372,9 @@ class TTHBackgrounds2015(Background):
             weight= 1.0
             if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
                 TTcut='TT'
+
+            if self.parent.useSherpaNNPDF30NNLO:
+	      weight = 'SherpaNJetWeight'
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -381,13 +395,21 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
 		           #('Z+jets', 'mumu'),
                            #('MadGraphZ+jets', 'mumu'),
-                           ('Z+jetsCVetoBVeto', 'mumu'),
-			   ('Z+jetsCFilterBVeto', 'mumu'),
-                           ('Z+jetsBFilter', 'mumu'),
 			   ('Z+jetsLowMllBVeto', 'mumu'),
 			   ('Z+jetsLowMllBFilter', 'mumu'),
 		           #('DYZ+jets', 'mumu'),
 		         ]
+			 
+	    if self.parent.useSherpaNNPDF30NNLO:
+	      # Sherpa NNPDF30NNLO
+	      # 
+	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")	 
+	      inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', 'mumu'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', 'mumu'), ('Z+jetsBFilter_NNPDF30NNLO', 'mumu') ]
+	    else:
+	      # Sherpa CT10
+	      # 		    
+	      inputgroup += [ ('Z+jetsCVetoBVeto', 'mumu'), ('Z+jetsCFilterBVeto', 'mumu'), ('Z+jetsBFilter', 'mumu') ]
+			 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
@@ -402,10 +424,13 @@ class TTHBackgrounds2015(Background):
                 systname_opts['systematics'] = True
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
-            TTcut=''
-            weight=1.0
+            TTcut= ''
+            weight= 1.0
             if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
                 TTcut='TT'
+
+            if self.parent.useSherpaNNPDF30NNLO:
+	      weight = 'SherpaNJetWeight'
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -414,7 +439,7 @@ class TTHBackgrounds2015(Background):
 
 	    print("\nZmumujets sp: {0}, weight: {1}".format(sp.basecut.cutnamelist, weight))
 
-	    return sp
+            return sp
 
     class Ztautaujets(Process):
 
@@ -425,13 +450,21 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
 		           #('Z+jets', 'tautau'),
                            #('MadGraphZ+jets', 'tautau'),
-                           ('Z+jetsCVetoBVeto', 'tautau'),
-			   ('Z+jetsCFilterBVeto', 'tautau'),
-                           ('Z+jetsBFilter', 'tautau'),
 			   ('Z+jetsLowMllBVeto', 'tautau'),
 			   ('Z+jetsLowMllBFilter', 'tautau'),
 		           #('DYZ+jets', 'tautau'),
 		         ]
+			 
+	    if self.parent.useSherpaNNPDF30NNLO:
+	      # Sherpa NNPDF30NNLO
+	      # 
+	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")	 
+	      inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', 'tautau'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', 'tautau'), ('Z+jetsBFilter_NNPDF30NNLO', 'tautau') ]
+	    else:
+	      # Sherpa CT10
+	      # 		    
+	      inputgroup += [ ('Z+jetsCVetoBVeto', 'tautau'), ('Z+jetsCFilterBVeto', 'tautau'), ('Z+jetsBFilter', 'tautau') ]
+			 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
@@ -446,10 +479,13 @@ class TTHBackgrounds2015(Background):
                 systname_opts['systematics'] = True
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
-            TTcut=''
-            weight=1.0
+            TTcut= ''
+            weight= 1.0
             if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
                 TTcut='TT'
+
+            if self.parent.useSherpaNNPDF30NNLO:
+	      weight = 'SherpaNJetWeight'
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -570,13 +606,21 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
 		           #('Z+jets', '*'),
                            #('MadGraphZ+jets', '*'),
-                           ('Z+jetsCVetoBVeto', '*'),
-			   ('Z+jetsCFilterBVeto', '*'),
-                           ('Z+jetsBFilter', '*'),
 			   ('Z+jetsLowMllBVeto', '*'),
 			   ('Z+jetsLowMllBFilter', '*'),
 		           #('DYZ+jets', '*'),
 		         ]
+			 
+	    if self.parent.useSherpaNNPDF30NNLO:
+	      # Sherpa NNPDF30NNLO
+	      # 
+	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")	 
+	      inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', '*'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', '*'), ('Z+jetsBFilter_NNPDF30NNLO', '*') ]
+	    else:
+	      # Sherpa CT10
+	      # 		    
+	      inputgroup += [ ('Z+jetsCVetoBVeto', '*'), ('Z+jetsCFilterBVeto', '*'), ('Z+jetsBFilter', '*') ]
+			 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
@@ -584,21 +628,21 @@ class TTHBackgrounds2015(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
-
-	    systematics = options.get('systematics', None)
+            systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
             systname_opts = {}
             if systematics and systematics.name == 'SystName':
                 systname_opts['systematics'] = True
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
-            TTcut=''
-            weight=1.0
-
+            TTcut= ''
+            weight= 1.0
+	    
             if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
                 TTcut='TT'
-            if TTcut != '':
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+
+            if self.parent.useSherpaNNPDF30NNLO:
+	      weight = 'SherpaNJetWeight'
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #

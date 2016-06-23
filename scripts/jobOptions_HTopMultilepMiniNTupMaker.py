@@ -64,7 +64,7 @@ trigbits_branches    = [ # SLT muon 2015
                         "HLT_e7_lhmedium_mu24",
                         # DLT - OF - 2016
                         #"HLT_e17_lhloose_nod0_mu14", --> missing in v14 ntup
-                        "HLT_e24_lhmedium_nod0_L1EM20VHI_mu8noL1",
+                        #"HLT_e24_lhmedium_nod0_L1EM20VHI_mu8noL1", --> missing in v14 ntup
                         #"HLT_e7_lhmedium_nod0_mu24" --> missing in v14 ntup
                         ]
 

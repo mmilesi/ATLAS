@@ -216,7 +216,7 @@ for iLep in list_lep:
                                 # nominal binning
                                 #
                                 nBIN  = 5
-                                xbins = [10,15,20,25,35,200] # merged bin [50,200]
+                                xbins = [10,15,20,25,35,200] # merged bin [50,200] - this binning works a bit better for ttbar MC at medium-high pT range
 
 			  elif iLep == "El":
 
