@@ -45,6 +45,9 @@ parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
 		    help="get average efficiencies/rates (i.e, make 1 bin)")
 parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",
 		    help="save only rates")
+parser.add_argument("--useLogPlots", dest="useLogPlots", action="store_true",default=False,
+		    help="Read plots with logarithmic Y scale")		    
+		    
 args = parser.parse_args()
 
 if not args.inputDir.endswith("/"):
@@ -81,7 +84,7 @@ dict_channels_lep = {
 
 list_lep         = dict_channels_lep[args.flavourComp]
 list_types       = ["Real","Fake"]
-list_variables   = ["ProbePt","ProbeEta"] #"ProbeNJets"]
+list_variables   = ["ProbePt"]#,"ProbeEta"] #"ProbeNJets"]
 list_selections  = ["T","AntiT"]
 list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                               # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
@@ -116,6 +119,8 @@ if ( args.flavourComp is not "" ):
    channel_str = args.flavourComp
    print " channel string: ", channel_str
 
+log_plot = ("","_LOGY")[bool(args.useLogPlots)]
+
 for iLep in list_lep:
 
    print "looking at lepton of flavour: " , iLep
@@ -131,9 +136,8 @@ for iLep in list_lep:
           for iSel in list_selections:
 
               print "\t\t\t object  is: ", iSel
-
-              fname = args.inputDir + channel_str + iType + "CR" + iLep + iSel + "/" + channel_str + iType + "CR" + iLep + iSel + "_" + iLep + iVar + ".root"
-              #fname = args.inputDir + channel_str + iType + "CR" + iLep + iSel + "_LOGY/" + channel_str + iType + "CR" + iLep + iSel + "_" + iLep + iVar + ".root"
+	      
+              fname = args.inputDir + channel_str + iType + "CR" + iLep + iSel + log_plot + "/" + channel_str + iType + "CR" + iLep + iSel + "_" + iLep + iVar + ".root"
 
 	      print "\t\t\t input filename: ", fname
 

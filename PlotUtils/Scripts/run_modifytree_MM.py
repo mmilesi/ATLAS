@@ -44,9 +44,15 @@ gROOT.SetBatch(True)
 # -------------------------------------------------------------------------------------------------------------
 
 oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14/25ns_v14_Direct_410000_Original/"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14/25ns_v14_Direct_410000_MM_WEIGHTED_EtaPt/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14/25ns_v14_Direct_410000_MM_WEIGHTED_EtaPt/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14/25ns_v14_Direct_410000_MM_WEIGHTED_Pt/"
-rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v14"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v14"
+
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14/25ns_v14_Direct_410000_MM_WEIGHTED_Pt_2015/"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14/25ns_v14_Direct_410000_MM_WEIGHTED_Pt_2015_ForceFinalRealBin/"
+rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v14_2015"
+
+doMM_PtOnly = True
 
 # -------------------------------------------------------------------------------------------------------------
 
@@ -56,8 +62,10 @@ nentries = 'ALL' #ALL
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
-gROOT.LoadMacro("modifyttree_MM.cxx+g")
-#gROOT.LoadMacro("modifyttree_MM_PtOnly.cxx+g")
+if doMM_PtOnly:
+  gROOT.LoadMacro("modifyttree_MM_PtOnly.cxx+g")
+else:
+  gROOT.LoadMacro("modifyttree_MM.cxx+g")
 
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
@@ -80,8 +88,11 @@ for group in group_list:
         if "physics_Main" in sample: do_closure = "NO"
         else:                        do_closure = "YES"
 
-        command_line = 'modifyttree_MM(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
-        #command_line = 'modifyttree_MM_PtOnly(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
+        command_line = None
+        if doMM_PtOnly:
+	  command_line = 'modifyttree_MM_PtOnly(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
+        else:
+          command_line = 'modifyttree_MM(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
 
         print command_line
         gROOT.ProcessLine(command_line);

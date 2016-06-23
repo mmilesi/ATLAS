@@ -358,11 +358,23 @@ double calc_final_event_weight( std::string region, double f1, double f2, double
    double weight = 1.0;
    double alpha  = 1.0 / ( (r1-f1) * (r2-f2) );
 
+   // TEMP!!
+   //if ( r1 > 0.955 ) r1 = 0.955;
+   //if ( r2 > 0.955 ) r2 = 0.955;
+   
    if      ( region=="TT" ) { weight = 1 - ( r1 * r2 * (1-f1) * (1-f2) * alpha ); }
    else if ( region=="TL" ) { weight = r1 * r2 * f2 * (1-f1) * alpha;  }
    else if ( region=="LT" ) { weight = r1 * r2 * f1 * (1-f2) * alpha;  }
    else if ( region=="LL" ) { weight = -1 * r1 * r2 * f1 * f2 * alpha; }
-
+      
+   // The above formulas are equvalent to the following:
+   //
+   //double weight2 = 1.0;
+   //if	   ( region=="TT" )   { weight2 = alpha * ( r1 * f2 * ( (f1 - 1) * (1 - r2) ) + r2 * f1 * ( (r1 - 1) * (1 - f2) ) + f1 * f2 * ( (1 - r1) * (1 - r2) ) ); }
+   //else if ( region=="TL" ) { weight2 = alpha * ( r1 * f2 * ( (1 - f1) * r2 ) + r2 * f1 * ( (1 - r1) * f2 ) + f1 * f2 * ( (r1 - 1) * r2 ) ); }
+   //else if ( region=="LT" ) { weight2 = alpha * ( r1 * f2 * ( (1 - r2) * f1 ) + r2 * f1 * ( (1 - f2) * r1 ) + f1 * f2 * ( (r2 - 1) * r1 ) ); }
+   //else if ( region=="LL" ) { weight2 = alpha * ( r1 * f2 * ( -1.0 * f1 * r2 ) + r2 * f1 * ( -1.0 * r1 * f2 ) + f1 * f2 * ( r1 * r2 ) ); }   
+   
    if ( g_debug ) { Info("calc_final_event_weight()", "In region %s : \n weight = %.15f , alpha = %.15f ", region.c_str(), weight, alpha); }
 
    return weight;
