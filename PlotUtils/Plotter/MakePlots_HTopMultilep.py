@@ -1465,8 +1465,8 @@ weight_generator = ('mcEventWeight','mcWeightOrg')[bool(args.useGroupNTup)]
 
 # PRW weight
 #
-weight_pileup = ('weight_pileup','pileupEventWeight_090')[bool(args.useGroupNTup)]
-#weight_pileup = 1.0
+#weight_pileup = ('weight_pileup','pileupEventWeight_090')[bool(args.useGroupNTup)]
+weight_pileup = 1.0
 
 if ( args.noWeights ):
     weight_pileup      = 1.0

@@ -295,16 +295,17 @@ def plotter_f():
 def plotter_r_flavours():
 
   #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_NoSub_LHInput/Rates.root"
-  file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+  #file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
   
   # CLOSURE
   #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+  file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v14_DLT_2015/Rates.root"
 
   file_TP = TFile(file_TP_path)
 
-  hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Real_Efficiency_observed") )[bool(args.flavour == "mu")]
+  #hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Real_Efficiency_observed") )[bool(args.flavour == "mu")]
   # CLOSURE
-  #hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_expected"), file_TP.Get("Mu_ProbePt_Real_Efficiency_expected") )[bool(args.flavour == "mu")]
+  hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_expected"), file_TP.Get("Mu_ProbePt_Real_Efficiency_expected") )[bool(args.flavour == "mu")]
 
   print("Reading histogram {0} from file {1}".format(hist_TP.GetName(), file_TP_path))
 
@@ -314,7 +315,7 @@ def plotter_r_flavours():
   hist_TP.GetXaxis().SetTitleOffset(1.0)
   hist_TP.GetYaxis().SetTitleOffset(1.0)
 
-  lepton = ("e","#{mu}")[bool(args.flavour == "mu")]
+  lepton = ("e","#mu")[bool(args.flavour == "mu")]
 
   hist_TP.GetXaxis().SetTitle("p_{T}^{"+ lepton +"} [GeV]")
   hist_TP.GetYaxis().SetTitle("efficiency")
@@ -344,15 +345,17 @@ def plotter_r_flavours():
   leg_lumi.SetNDC()
 
   hist_TP.Draw("E0")
-  legend.AddEntry(hist_TP, "Tag & Probe - of", "P")
+  legend.AddEntry(hist_TP, "Tag & Probe", "P")
 
   # -------------------------------------------
 
-  LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub_DiffFlavours/"
-
+  #LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub_DiffFlavours/"
+  LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_LHFit_25ns_v14_DLT_2015/LHClosureRates_25ns_v14_DLT_2015/"
+  
   hist_LH_list = []
   #flav_comp_list = ["mumu","elel","of","incl"]
-  flav_comp_list = ["of"]
+  #flav_comp_list = ["mumu"]
+  flav_comp_list = ["incl"]
 
   if ( args.flavour == "mu" and "elel" in flav_comp_list ): flav_comp_list.remove("elel")
   if ( args.flavour == "el" and "mumu" in flav_comp_list ): flav_comp_list.remove("mumu")
@@ -445,16 +448,17 @@ def plotter_f_flavours():
   #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_NoSub_LHInput/Rates.root"
   #file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
   
-  file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_DDQmisID/Rates.root"
+  #file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_DDQmisID/Rates.root"
  
   # CLOSURE
   #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
+  file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v14_DLT_2015/Rates.root"
 
   file_TP = TFile(file_TP_path)
 
-  hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_observed") )[bool(args.flavour == "mu")]
+  #hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_observed") )[bool(args.flavour == "mu")]
   # CLOSURE
-  #hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_expected"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_expected") )[bool(args.flavour == "mu")]
+  hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_expected"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_expected") )[bool(args.flavour == "mu")]
 
   print("Reading histogram {0} from file {1}".format(hist_TP.GetName(), file_TP_path))
 
@@ -464,7 +468,7 @@ def plotter_f_flavours():
   hist_TP.GetXaxis().SetTitleOffset(1.0)
   hist_TP.GetYaxis().SetTitleOffset(1.0)
 
-  lepton = ("e","#{mu}")[bool(args.flavour == "mu")]
+  lepton = ("e","#mu")[bool(args.flavour == "mu")]
 
   hist_TP.GetXaxis().SetTitle("p_{T}^{"+ lepton +"} [GeV]")
   hist_TP.GetYaxis().SetTitle("efficiency")
@@ -491,14 +495,16 @@ def plotter_f_flavours():
   leg_lumi.SetNDC()
 
   hist_TP.Draw("E0")
-  legend.AddEntry(hist_TP, "Tag & Probe - incl", "P")
+  legend.AddEntry(hist_TP, "Tag & Probe", "P")
 
   # -------------------------------------------
 
-  LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub_DiffFlavours/"
+  #LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub_DiffFlavours/"
+  LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_LHFit_25ns_v14_DLT_2015/LHClosureRates_25ns_v14_DLT_2015/"
 
   hist_LH_list = []
   #flav_comp_list = ["mumu","elel","of","incl"]
+  #flav_comp_list = ["mumu"]
   flav_comp_list = ["incl"]
 
   if ( args.flavour == "mu" and "elel" in flav_comp_list ): flav_comp_list.remove("elel")
@@ -545,7 +551,7 @@ def plotter_f_flavours():
     shiftedhist.SetLineWidth(2)
     shiftedhist.SetMarkerSize(1.0)
 
-    lepton = ("e","#{mu}")[bool(args.flavour == "mu")]
+    lepton = ("e","#mu")[bool(args.flavour == "mu")]
     shiftedhist.GetXaxis().SetTitle("p_{T}^{"+ lepton +"} [GeV]")
     shiftedhist.GetYaxis().SetTitle("efficiency")
 
@@ -596,6 +602,6 @@ def plotter_f_flavours():
 
 #plotter_r()
 #plotter_f()
-#plotter_r_flavours()
+plotter_r_flavours()
 plotter_f_flavours()
 #plot2Dhist()

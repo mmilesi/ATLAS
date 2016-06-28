@@ -480,12 +480,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep0.get()->z0sintheta  = m_lep_Z0SinTheta_0;
   lep0.get()->pid         = m_lep_isTightLH_0;
   lep0.get()->isolated    = ( fabs(m_lep_ID_0) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_0 : m_lep_isolationFixedCutTight_0;
-  
-  //lep0.get()->trigmatched = ( fabs(m_lep_ID_0) == 13 ) ? ( m_lep_isTrigMatch_0 && m_lep_Pt_0 > 21e3 ) : ( m_lep_isTrigMatch_0 && m_lep_Pt_0 > 25e3 );  
-
+  lep0.get()->trigmatched = m_lep_isTrigMatch_0;  
   // TEMP --> for dilepton triggers, assume they are always matched!
-  lep0.get()->trigmatched = 1;  
-
+  //lep0.get()->trigmatched = 1;  
   lep0.get()->prompt      = m_lep_isPrompt_0;
   lep0.get()->fake        = m_lep_isFakeLep_0;
   lep0.get()->brems       = m_lep_isBrems_0;
@@ -522,12 +519,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep1.get()->z0sintheta  = m_lep_Z0SinTheta_1;
   lep1.get()->pid         = m_lep_isTightLH_1;
   lep1.get()->isolated    = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_1 : m_lep_isolationFixedCutTight_1;
-  
-  //lep1.get()->trigmatched = ( fabs(m_lep_ID_1) == 13 ) ? ( m_lep_isTrigMatch_1 && m_lep_Pt_1 > 21e3 ) : ( m_lep_isTrigMatch_1 && m_lep_Pt_1 > 25e3 );  
-
+  lep1.get()->trigmatched = m_lep_isTrigMatch_1;  
   // TEMP --> for dilepton triggers, assume they are always matched!
-  lep1.get()->trigmatched = 1;  
-
+  //lep1.get()->trigmatched = 1;  
   lep1.get()->prompt      = m_lep_isPrompt_1;
   lep1.get()->fake        = m_lep_isFakeLep_1;
   lep1.get()->brems       = m_lep_isBrems_1;
@@ -577,12 +571,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
     lep2.get()->z0sintheta  = m_lep_Z0SinTheta_2;
     lep2.get()->pid	    = m_lep_isTightLH_2;
     lep2.get()->isolated    = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_2 : m_lep_isolationFixedCutTight_2;
-  
-    //lep2.get()->trigmatched = ( fabs(m_lep_ID_2) == 13 ) ? ( m_lep_isTrigMatch_2 && m_lep_Pt_2 > 21e3 ) : ( m_lep_isTrigMatch_2 && m_lep_Pt_2 > 25e3 );  
-
+    lep2.get()->trigmatched = m_lep_isTrigMatch_2;  
     // TEMP --> for dilepton triggers, assume they are always matched!
-    lep2.get()->trigmatched = 1;  
-
+    //lep2.get()->trigmatched = 1;  
     lep2.get()->prompt      = m_lep_isPrompt_2;
     lep2.get()->fake	    = m_lep_isFakeLep_2;
     lep2.get()->brems       = m_lep_isBrems_2;
