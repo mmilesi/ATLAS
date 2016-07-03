@@ -2849,14 +2849,17 @@ int main( int argc, char **argv ) {
     //const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
     //const std::string tp_path("../OutputPlots_MMRates_25ns_v14_DLT_2015/");
     //const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v14_DLT_2015/");
+    
+    const std::string tp_path("../OutputPlots_MMRates_25ns_v15/");
+    const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v15/");
 
     // DO THE FIT ON TTBAR MC
 
     //const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/");
     //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
-    const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v14_DLT_2015/");
-    const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v14_DLT_2015/");
-    LHFitter::useMC();
+    //const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v14_DLT_2015/");
+    //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v14_DLT_2015/");
+    //LHFitter::useMC();
 
     // -------------
     // FIT SF events
@@ -2926,10 +2929,10 @@ int main( int argc, char **argv ) {
       // REBINNING
       fake_mm.m_doRebinning = true;
       //fake_mm.setBinGrouping(2);
-      //int array_fake_bin_size(5);
-      //double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,200.0}; // mu - DATA
-      int array_fake_bin_size(6);
-      double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,35.0,200.0}; // mu - MC      
+      int array_fake_bin_size(5);
+      double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,200.0}; // mu - DATA
+      //int array_fake_bin_size(6);
+      //double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,35.0,200.0}; // mu - MC      
       fake_mm.setVariableBins( fake_mm_new_bins, array_fake_bin_size-1 );
       fake_mm.initialise();
       fake_mm.fit();

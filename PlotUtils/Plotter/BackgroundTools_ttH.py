@@ -1087,7 +1087,7 @@ class Background:
             ratiomc.GetYaxis().SetTitleOffset(0.35)
             ratiomc.GetXaxis().SetLabelSize(0.15)
             ratiomc.GetYaxis().SetLabelSize(0.12)
-            ratiomc.GetYaxis().SetNdivisions(5)
+            ratiomc.GetYaxis().SetNdivisions(505) #(5)
             ratiomc.SetFillColor(kGray+3)
             ratiomc.SetLineColor(10)
             ratiomc.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
@@ -1129,7 +1129,7 @@ class Background:
             else:
                 #ratiomc.GetYaxis().SetRangeUser(0.8, 1.2)
                 #ratiomc.GetYaxis().SetRangeUser(0.0, 2.0)
-                ratiomc.GetYaxis().SetRangeUser(0.6, 1.4)
+                ratiomc.GetYaxis().SetRangeUser(0.75, 1.25)
 		
             #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
             pad2.cd()
@@ -1157,7 +1157,7 @@ class Background:
 	          stack.SetMaximum(ymax_new*(2.-lower+0.075))
 	          if log is True or (var.logaxis and log is None):
 	              #stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
-	              stack.SetMaximum(stack.GetMaximum() * 10**(3))
+	              stack.SetMaximum(stack.GetMaximum() * 3*10**(2))
 		      
 	      else:
 	          stack.SetMaximum(ymax_new*(2.-lower+0.15))

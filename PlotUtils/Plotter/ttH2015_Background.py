@@ -186,6 +186,9 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
                     ('Data', 'physics_Main'),
                 ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             return self.subprocess(trees=trees)
 
@@ -223,6 +226,9 @@ class TTHBackgrounds2015(Background):
                 ('ttH', 'ttH_semilep'),
                 ('ttH', 'ttH_allhad'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -250,6 +256,47 @@ class TTHBackgrounds2015(Background):
 
             return sp
 
+    class TTBarHDilep(Process):
+
+	latexname = 't#bar{t} H (dilep)'
+        colour = kBlack
+
+        def base(self, treename='physics', category=None, options={}):
+
+	    #hmass = options.get('hmass', '125') #300 is the default value if hmass is not in options, hmass is specified in one option passed to the plot function in the plotting script
+            inputgroup = [
+                ('ttH', 'ttH_dil'),
+                         ]
+
+	    print inputgroup
+
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+            TTcut=''
+            weight=1.0
+            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
+                TTcut='TT'
+
+            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+
+            if TTcut is not '':
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+
+	    print("\nTTBarHDilep sp: {0}, weight: {1}".format(sp.basecut.cutnamelist, weight))
+
+            return sp
+
     class TTBarW(Process):
 
 	latexname = 't#bar{t} W'
@@ -260,6 +307,9 @@ class TTHBackgrounds2015(Background):
 		('tops', 'ttW'),
 		#('tops', 'Sherpa_ttW'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -301,6 +351,9 @@ class TTHBackgrounds2015(Background):
                 #('tops', 'Sherpa_ttZnnqq'),
                 #('tops', 'Sherpa_ttll'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -341,19 +394,19 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsLowMllBFilter', 'ee'),
 		           #('DYZ+jets', 'ee'),
 		         ]
-			 
+
 	    if self.parent.useSherpaNNPDF30NNLO:
 	      # Sherpa NNPDF30NNLO
-	      # 
-	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")	 
+	      #
+	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")
 	      inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', 'ee'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', 'ee'), ('Z+jetsBFilter_NNPDF30NNLO', 'ee') ]
 	    else:
 	      # Sherpa CT10
-	      # 		    
+	      #
 	      inputgroup += [ ('Z+jetsCVetoBVeto', 'ee'), ('Z+jetsCFilterBVeto', 'ee'), ('Z+jetsBFilter', 'ee') ]
-	    
+
 	    print inputgroup
-	    				 
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
@@ -399,17 +452,19 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsLowMllBFilter', 'mumu'),
 		           #('DYZ+jets', 'mumu'),
 		         ]
-			 
+
 	    if self.parent.useSherpaNNPDF30NNLO:
 	      # Sherpa NNPDF30NNLO
-	      # 
-	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")	 
+	      #
+	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")
 	      inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', 'mumu'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', 'mumu'), ('Z+jetsBFilter_NNPDF30NNLO', 'mumu') ]
 	    else:
 	      # Sherpa CT10
-	      # 		    
+	      #
 	      inputgroup += [ ('Z+jetsCVetoBVeto', 'mumu'), ('Z+jetsCFilterBVeto', 'mumu'), ('Z+jetsBFilter', 'mumu') ]
-			 
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
@@ -454,17 +509,19 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsLowMllBFilter', 'tautau'),
 		           #('DYZ+jets', 'tautau'),
 		         ]
-			 
+
 	    if self.parent.useSherpaNNPDF30NNLO:
 	      # Sherpa NNPDF30NNLO
-	      # 
-	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")	 
+	      #
+	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")
 	      inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', 'tautau'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', 'tautau'), ('Z+jetsBFilter_NNPDF30NNLO', 'tautau') ]
 	    else:
 	      # Sherpa CT10
-	      # 		    
+	      #
 	      inputgroup += [ ('Z+jetsCVetoBVeto', 'tautau'), ('Z+jetsCFilterBVeto', 'tautau'), ('Z+jetsBFilter', 'tautau') ]
-			 
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
@@ -599,7 +656,7 @@ class TTHBackgrounds2015(Background):
 
     class ZjetsCF(Process):
 
-	latexname = 'Z/#gamma*+jets (ChFlip only)'
+	latexname = 'Z/#gamma*+jets (QMisID only)'
         colour = kAzure + 10
 
         def base(self, treename='physics', category=None, options={}):
@@ -610,17 +667,19 @@ class TTHBackgrounds2015(Background):
 			   ('Z+jetsLowMllBFilter', '*'),
 		           #('DYZ+jets', '*'),
 		         ]
-			 
+
 	    if self.parent.useSherpaNNPDF30NNLO:
 	      # Sherpa NNPDF30NNLO
-	      # 
-	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")	 
+	      #
+	      print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")
 	      inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', '*'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', '*'), ('Z+jetsBFilter_NNPDF30NNLO', '*') ]
 	    else:
 	      # Sherpa CT10
-	      # 		    
+	      #
 	      inputgroup += [ ('Z+jetsCVetoBVeto', '*'), ('Z+jetsCFilterBVeto', '*'), ('Z+jetsBFilter', '*') ]
-			 
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             if self.parent.useZCorrections:
@@ -637,7 +696,7 @@ class TTHBackgrounds2015(Background):
             sp = self.base(treename, category, options)
             TTcut= ''
             weight= 1.0
-	    
+
             if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
                 TTcut='TT'
 
@@ -646,7 +705,7 @@ class TTHBackgrounds2015(Background):
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
 
 	    sp = sp.subprocess(cut=truthcut)
 
@@ -669,6 +728,9 @@ class TTHBackgrounds2015(Background):
                 ('W+jetsCFilterBVeto', 'enu'),
                 ('W+jetsCVetoBVeto', 'enu'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -709,6 +771,9 @@ class TTHBackgrounds2015(Background):
                 ('W+jetsCFilterBVeto', 'munu'),
                 ('W+jetsCVetoBVeto', 'munu'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -749,6 +814,9 @@ class TTHBackgrounds2015(Background):
                 ('W+jetsCFilterBVeto', 'taunu'),
                 ('W+jetsCVetoBVeto', 'taunu'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -812,6 +880,9 @@ class TTHBackgrounds2015(Background):
                 ('tops', 'ttWW'),
 		('tops', 'tWZDR'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -850,6 +921,9 @@ class TTHBackgrounds2015(Background):
                 ('tops', 'ttbar_nonallhad'),
                 #('tops', 'ttbar_dilep'),
                          ]
+
+	    print inputgroup
+			 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -890,6 +964,9 @@ class TTHBackgrounds2015(Background):
                 ('tops', 'ttbar_nonallhad'),
                 #('tops', 'ttbar_dilep'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -925,7 +1002,7 @@ class TTHBackgrounds2015(Background):
 
     class TopCF(Process):
 
-        latexname = 'tops (ChFlip only)'
+        latexname = 'tops (QMisID only)'
         colour = kAzure - 4
 
         def base(self, treename='physics', category=None, options={}):
@@ -938,6 +1015,9 @@ class TTHBackgrounds2015(Background):
                 ('tops', '4top'),
                 ('tops', 'ttWW'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -961,7 +1041,7 @@ class TTHBackgrounds2015(Background):
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
 
 	    sp = sp.subprocess(cut=truthcut)
 
@@ -994,6 +1074,9 @@ class TTHBackgrounds2015(Background):
                 ('Diboson', 'WZ'),
                 ('Diboson', 'ZZ'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -1025,7 +1108,7 @@ class TTHBackgrounds2015(Background):
 
     class DibosonCF(Process):
 
-        latexname = 'WW, W#gamma, ZZ#rightarrow ll#nu#nu (ChFlip only)'
+        latexname = 'WW, W#gamma, ZZ#rightarrow ll#nu#nu (QMisID only)'
         colour = kAzure - 9
 
         def base(self, treename='physics', category=None, options={}):
@@ -1047,6 +1130,8 @@ class TTHBackgrounds2015(Background):
                 ('Diboson', 'WZ'),
                 ('Diboson', 'ZZ'),
                          ]
+
+	    print inputgroup
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -1071,7 +1156,7 @@ class TTHBackgrounds2015(Background):
 
 	    # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
 	    #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
+            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
 
 	    sp = sp.subprocess(cut=truthcut)
 
@@ -1167,6 +1252,9 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
                     ('Data', 'physics_Main'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
             return sp
@@ -1296,6 +1384,9 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
                     ('Data', 'physics_Main'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
             return sp
@@ -1346,6 +1437,9 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
                     ('Data', 'physics_Main'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
             return sp
@@ -1401,6 +1495,9 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
                     ('Data', 'physics_Main'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
             return sp
@@ -1479,6 +1576,9 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
                     ('Data', 'physics_Main'),
                 ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             return self.subprocess(trees=trees)
 
@@ -1605,8 +1705,8 @@ class TTHBackgrounds2015(Background):
                     sub_sample_D_el = self.parent.procmap[sample].base(treename,category,options)
 
                     if sample == "ChargeFlipMC":
-                        this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
-                        this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_ChFlipPhEvent'))
+                        this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
+                        this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
                     if sample == "ChargeFlip":
 		        this_cut_sp_C_el = this_cut_sp_C_el.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
 			this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
@@ -1774,6 +1874,9 @@ class TTHBackgrounds2015(Background):
 		    ('tops', 'ttbar_nonallhad'),
 		    #('tops', 'ttbar_dilep'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -1828,6 +1931,9 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
 		    ('tops', 'ttbar_nonallhad'),
                 ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             return self.subprocess(trees=trees) * self.parent.norm_factor
 
@@ -2012,6 +2118,9 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
 		    ('tops', 'ttbar_nonallhad'),
                 ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             return self.subprocess(trees=trees) * self.parent.norm_factor
 
@@ -2086,6 +2195,9 @@ class TTHBackgrounds2015(Background):
                 ('W+jetsCFilterBVeto', '*'),
                 ('W+jetsCVetoBVeto', '*'),
                          ]
+
+	    print inputgroup
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
