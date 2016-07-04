@@ -923,7 +923,7 @@ class TTHBackgrounds2015(Background):
                          ]
 
 	    print inputgroup
-			 
+
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
             return sp
@@ -1531,10 +1531,12 @@ class TTHBackgrounds2015(Background):
 
             # QMisID subtraction? ---> CHECK IN PROGRESS
 
-            sp_TT  = sp.subprocess(cut=basecut & self.vardb.getCut(TTcut), eventweight=weight)
-            sp_TL  = sp.subprocess(cut=basecut & self.vardb.getCut(TLcut), eventweight=weight)
-            sp_LT  = sp.subprocess(cut=basecut & self.vardb.getCut(LTcut), eventweight=weight)
-            sp_LL  = sp.subprocess(cut=basecut & self.vardb.getCut(LLcut), eventweight=weight)
+            sp_QMisID = self.parent.procmap["ChargeFlip"].base(treename,category,options)
+
+            sp_TT  = sp.subprocess(cut=basecut & self.vardb.getCut(TTcut), eventweight=weight) - sp_QMisID.subprocess(cut=basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS')) & self.vardb.getCut(TTcut))
+            sp_TL  = sp.subprocess(cut=basecut & self.vardb.getCut(TLcut), eventweight=weight) - sp_QMisID.subprocess(cut=basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS')) & self.vardb.getCut(TLcut))
+            sp_LT  = sp.subprocess(cut=basecut & self.vardb.getCut(LTcut), eventweight=weight) - sp_QMisID.subprocess(cut=basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS')) & self.vardb.getCut(LTcut))
+            sp_LL  = sp.subprocess(cut=basecut & self.vardb.getCut(LLcut), eventweight=weight) - sp_QMisID.subprocess(cut=basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS')) & self.vardb.getCut(LLcut))
 
 	    print(" ")
 	    print("FakesMM - TT sp: {0}, weight: {1}".format(sp_TT.basecut.cutnamelist, weight))
@@ -1549,9 +1551,9 @@ class TTHBackgrounds2015(Background):
 
     class FakesABCD(Process):
 
-        # Consider the following regions:
+    # Consider the following regions:
 	#
-        # Region A: TT, njet >= 4 (SR)
+    # Region A: TT, njet >= 4 (SR)
 	# Region B (in MC): LT,TL njet >= 4
 	# Region C (in DATA): TT, njet = [2,3]
 	# Region D (in DATA): LT,TL  njet = [2,3]
