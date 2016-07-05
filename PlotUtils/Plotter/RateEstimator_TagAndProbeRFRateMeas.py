@@ -20,23 +20,23 @@ TH1.SetDefaultSumw2()
 # -------------------------------
 import argparse
 
-parser = argparse.ArgumentParser(description="Plotting python macro for deriving real/fake lepton efficiencies/rates for MM.")
+parser = argparse.ArgumentParser(description="Plotting python macro for deriving real/fake lepton efficiencies/rates for MM")
 
 #***********************************
 # positional arguments (compulsory!)
 #***********************************
 parser.add_argument("inputDir", metavar="inputDir",type=str,
-                help="path to the directory containing subdirs w/ input files")
+                  help="path to the directory containing subdirs w/ input files")
 #*******************
 # optional arguments
 #*******************
 parser.add_argument("--flavourComp", metavar="FLAVOUR_COMP", dest="flavourComp", default="", type=str,
-                help="Flavour composition of the two leptons in CR (*empty_string*, ElEl, MuMu, OF) - default is *empty_string*")
+                  help="Flavour composition of the two leptons in CR (*empty_string*, ElEl, MuMu, OF) - default is *empty_string*")
 parser.add_argument("--usePrediction", metavar="DATA_TYPE", dest="usePrediction", action="store", default="DATA", type=str,
                   help="use Monte-Carlo (MC) or data (DATA) to derive efficiencies/rates - default is DATA")
-parser.add_argument("--debug", dest="debug", action="store_true",
+parser.add_argument("--debug", dest="debug", action="store_true",default=False,
                   help="run in debug mode")
-parser.add_argument("--doBkgSub", dest="doBkgSub", action="store_true",
+parser.add_argument("--doBkgSub", dest="doBkgSub", action="store_true",default=False,
                   help="subtract MC to data (only if using DATA)")
 parser.add_argument("--rebinEta", dest="rebinEta", action="store_true",default=False,
                   help="do rebinning in eta")
@@ -46,7 +46,7 @@ parser.add_argument("--doAvgMuFake", dest="doAvgMuFake", action="store_true",def
                   help="get average efficiency for muon fakes only")
 parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
                   help="get average efficiencies/rates (i.e, make 1 bin)")
-parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",
+parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",default=False,
                   help="save only rates")
 parser.add_argument("--useLogPlots", dest="useLogPlots", action="store_true",default=False,
                   help="Read plots with logarithmic Y scale")
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     list_variables   = ["ProbePt"] #,"ProbeEta"] #"ProbeNJets"]
     list_selections  = ["T","AntiT"]
     list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
-                                                # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
+                                                  # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
     list_out_samples = ["factor","factorbkgsub","rate","ratebkgsub"]
 
     hists  = {}

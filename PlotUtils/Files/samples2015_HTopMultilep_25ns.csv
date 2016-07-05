@@ -1,6 +1,6 @@
 ID,category,xsection,kfactor,efficiency,name,group,subgroup
 ,Data,,,,physics_Main,Data,physics_Main
-341177,Signal,0.0536,1.0,0.1054,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_dil,ttH,ttH_dil
+341177,Signal,0.0536,1.0,1.0,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_dil,ttH,ttH_dil
 341270,Signal,0.5085,1.0,0.4393,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_semilep,ttH,ttH_semilep
 341271,Signal,0.5085,1.0,0.45517,aMcAtNloHerwigppEvtGen_UEEE5_CTEQ6L1_CT10ME_ttH125_allhad,ttH,ttH_allhad
 342170,Signal,0.0536,1.0,0.0632,aMcAtNloHppEG_UE5_C6L1_CT10ME_ttH125_H2tau_dilep_hist,ttH,ttH_ditau_dil
@@ -159,12 +159,12 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 410075,Background,0.10512,1.33,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttZnnqq_Np2,tops,ttZnnqq
 410080,Background,0.0091622,1.00423479077,1.0,MadGraphPythia8EvtGen_A14NNPDF23_4topSM,tops,4top
 410081,Background,0.0080975,1.22309354739,1.0,MadGraphPythia8EvtGen_A14NNPDF23_ttbarWW,tops,ttWW
-410111,Background,0.0096235,1.0,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttee_Np0,tops,ttee
-410112,Background,0.017344,1.0,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttee_Np1,tops,ttee
-410113,Background,0.0096462,1.0,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttmumu_Np0,tops,ttmumu
-410114,Background,0.017361,1.0,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttmumu_Np1,tops,ttmumu
-410115,Background,0.0098874,1.0,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_tttautau_Np0,tops,tttautau
-410116,Background,0.017790,1.0,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_tttautau_Np1,tops,tttautau
+410111,Background,0.0096235,1.51,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttee_Np0,tops,ttee
+410112,Background,0.017344,1.51,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttee_Np1,tops,ttee
+410113,Background,0.0096462,1.51,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttmumu_Np0,tops,ttmumu
+410114,Background,0.017361,1.51,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttmumu_Np1,tops,ttmumu
+410115,Background,0.0098874,1.51,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_tttautau_Np0,tops,tttautau
+410116,Background,0.017790,1.51,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_tttautau_Np1,tops,tttautau
 410142,Background,0.11309,1.0,1.0,Sherpa_NNPDF30NNLO_ttll_mll5,tops,Sherpa_ttll
 410143,Background,0.6881,1.0,1.0,Sherpa_NNPDF30NNLO_ttZnnqq,tops,Sherpa_ttZnnqq
 410144,Background,0.57729,1.0,1.0,Sherpa_NNPDF30NNLO_ttW,tops,Sherpa_ttW
