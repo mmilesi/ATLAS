@@ -67,8 +67,9 @@ gROOT.SetBatch(True)
 
 #oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_410000_Original/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_410000_MM_WEIGHTED_Pt/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS/"
 #rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v15/Rates_NominalBinning"
-#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_410000_MM_WEIGHTED_Pt/"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v15_NOWEIGHTS"
 
 #oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_410000_Original/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_410000_MM_WEIGHTED_Pt_FinerBinningMuFakeEff/"
@@ -78,9 +79,22 @@ gROOT.SetBatch(True)
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_MM_WEIGHTED_Pt_LH/"
 #rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_LHFit_25ns_v15"
 
+# Scale electron fake efficiency: use WEIGHTED average <eff fake, eff QMisID>
+# --> this setup is incorrect, as the weight is calculated in AntiT region (not L), and the systematic added in quadrature is (eff fake - <eff>)
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl/"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v15"
+
+# Scale electron fake efficiency: use WEIGHTED average <eff fake, eff QMisID>
+# --> this setup is more correct, as the weight is calculated in L region, and the systematic added in quadrature is (eff fake - eff QMisID) -> more conservative
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl_WEIGHTED_AVG/"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_WEIGHTED_AVG"
+
+# Scale electron fake efficiency: use ARITHMETIC average <eff fake, eff QMisID>
 oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_Original/"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl/"
-rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v15"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl_ARITHMETIC_AVG/"
+rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG"
 
 # -------------------------------------------------------------------------------------------------------------
 

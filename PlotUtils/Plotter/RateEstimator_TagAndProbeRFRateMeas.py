@@ -10,11 +10,6 @@ import os, sys, array, math
 
 sys.path.append(os.path.abspath(os.path.curdir))
 
-from ROOT import ROOT, gROOT, TH1, TH1D, TFile, TGraphAsymmErrors, Double
-
-gROOT.SetBatch(True)
-TH1.SetDefaultSumw2()
-
 # -------------------------------
 # Parser for command line options
 # -------------------------------
@@ -31,7 +26,7 @@ parser.add_argument("inputDir", metavar="inputDir",type=str,
 # optional arguments
 #*******************
 parser.add_argument("--flavourComp", metavar="FLAVOUR_COMP", dest="flavourComp", default="", type=str,
-                  help="Flavour composition of the two leptons in CR (*empty_string*, ElEl, MuMu, OF) - default is *empty_string*")
+                  help="flavour composition of the two leptons in CR (*empty_string*, ElEl, MuMu, OF) - default is *empty_string*")
 parser.add_argument("--usePrediction", metavar="DATA_TYPE", dest="usePrediction", action="store", default="DATA", type=str,
                   help="use Monte-Carlo (MC) or data (DATA) to derive efficiencies/rates - default is DATA")
 parser.add_argument("--debug", dest="debug", action="store_true",default=False,
@@ -49,9 +44,16 @@ parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
 parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",default=False,
                   help="save only rates")
 parser.add_argument("--useLogPlots", dest="useLogPlots", action="store_true",default=False,
-                  help="Read plots with logarithmic Y scale")
+                  help="read plots with logarithmic Y scale")
+parser.add_argument("--doArithmeticAvgFake", dest="doArithmeticAvgFake", action="store_true",default=False,
+                  help="Get the actual electron fake efficiency by taking the ARITHMETIC average between fake efficiency and QMisID efficiency. The uncertainty in each bin is 0.5 * |eff_fake - eff_QMisID|")		  
 
 args = parser.parse_args()
+
+from ROOT import ROOT, gROOT, TH1, TH1D, TFile, TGraphAsymmErrors, Double
+
+gROOT.SetBatch(True)
+TH1.SetDefaultSumw2()
 
 def getQMisIDRatesRatio( N, D ):
 
@@ -95,7 +97,7 @@ def getQMisIDRatesRatio( N, D ):
     return ratio
 
 
-def scaleEff( hist_r, hist_f, hist_data, hist_QMisID ):
+def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
 
     file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v15.root")
     file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v15.root")
@@ -103,6 +105,8 @@ def scaleEff( hist_r, hist_f, hist_data, hist_QMisID ):
     hist_N = file_N.Get("LikelihoodPt")
     hist_D = file_D.Get("LikelihoodPt")
 
+    # Get the histofram containing the scaling factors to be applied to real efficiency
+    #
     hist_scales = getQMisIDRatesRatio(hist_N, hist_D)
 
     hist_eff_QMisID   = hist_r.Clone()
@@ -113,6 +117,9 @@ def scaleEff( hist_r, hist_f, hist_data, hist_QMisID ):
         print("Input REAL efficiency hist - GetNbinsX() = {0}".format(hist_r.GetNbinsX()))
 
     for ibinx in range(1,hist_r.GetNbinsX()+1):
+
+        bin_lowedge = hist_r.GetBinLowEdge(ibinx)
+	bin_upedge  = hist_r.GetBinLowEdge(ibinx+1)
 
         eff_r     = hist_r.GetBinContent(ibinx)
         err_eff_r = hist_r.GetBinError(ibinx)
@@ -128,27 +135,39 @@ def scaleEff( hist_r, hist_f, hist_data, hist_QMisID ):
         hist_eff_QMisID.SetBinError(ibinx, err_eff_QMisID)
 
         # Now get the updated FAKE efficiency, by taking the weighted average <input eff fake, QMisID eff>
-        # The weight is the QMisID fraction wrt the total data for each bin
+        # The weight is the QMisID fraction wrt the total (data - prompt) for each bin
         # (The sum of weight is correctly normalised to 1)
         #
-        w = hist_QMisID.GetBinContent(ibinx) / hist_data.GetBinContent(ibinx)
+        #w = hist_QMisID.GetBinContent(ibinx) / hist_data.GetBinContent(ibinx)
+        w = hist_QMisID.GetBinContent(ibinx) / ( hist_data.GetBinContent(ibinx) - hist_prompt.GetBinContent(ibinx) )
 
-        # Deal with the (ill) case where the QMisID yield is higher than data
+	print("bin {} - [{},{}] GeV\n\tQMisID = {} (hname: {})\n\tData = {} (hname: {})\n\tPrompt = {} (hname: {})\n\t===> w = {}".format(ibinx,bin_lowedge,bin_upedge,hist_QMisID.GetBinContent(ibinx),hist_QMisID.GetName(),hist_data.GetBinContent(ibinx),hist_data.GetName(),hist_prompt.GetBinContent(ibinx),hist_prompt.GetName(),w)) 
+	
+        # Deal with the (ill) case where the QMisID yield is higher than the denominator
         #
         if w > 1.0: w = 1.0
 
         eff_f     = hist_f.GetBinContent(ibinx)
         err_eff_f = hist_f.GetBinError(ibinx)
 
-        eff_w   = ( 1.0 - w ) * eff_f + w * eff_QMisID
+        if args.doArithmeticAvgFake:
+	    print("\n\nUSING ARITHMETIC AVERGAGE <eff_fake,eff_QMisID>!!\n\n")
+            w = 0.5 
+	
+        eff_w     = ( 1.0 - w ) * eff_f + w * eff_QMisID
         err_eff_w = ( 1.0 - w + ( 1.0 / scale ) * w ) * err_eff_f
 
         # Add in quadrature the difference w/ nominal fake efficiency as a systematic
         #
-        sys_err_eff_w = abs(eff_f - eff_w)
+        #sys_err_eff_w = abs(eff_f - eff_w) # less conservative
+	sys_err_eff_w = abs(eff_f - eff_QMisID) # more conservative
+	
+	if args.doArithmeticAvgFake:
+	    sys_err_eff_w = abs(eff_f - eff_QMisID) / 2.0
+	
         tot_err_eff_w = math.sqrt( (err_eff_w)*(err_eff_w) + (sys_err_eff_w)*(sys_err_eff_w) )
 
-        print("bin {0} - [{1},{2}] GeV \n\teff_r: {3} +- {4}\n\tscale : {5} +- {6} ({7} %)\n\teff_QMisID: {8} +- {9}\n\teff_f: {10} +- {11}\n\tweighted eff_f: {12} +- {13} ({14})".format(ibinx,hist_r.GetBinLowEdge(ibinx),hist_r.GetBinLowEdge(ibinx+1),eff_r,err_eff_r,scale,err_scale,perc_err_scale,eff_QMisID,err_eff_QMisID,eff_f,err_eff_f,eff_w,err_eff_w,tot_err_eff_w))
+        print("bin {0} - [{1},{2}] GeV \n\teff_r: {3} +- {4}\n\tscale : {5} +- {6} ({7} %)\n\teff_QMisID: {8} +- {9}\n\teff_f: {10} +- {11}\n\tweighted eff_f: {12} +- {13} ({14})".format(ibinx,bin_lowedge,bin_upedge,eff_r,err_eff_r,scale,err_scale,perc_err_scale,eff_QMisID,err_eff_QMisID,eff_f,err_eff_f,eff_w,err_eff_w,tot_err_eff_w))
 
         # If efficiency unphysically > 1, force it to 1
         #
@@ -205,7 +224,7 @@ if __name__ == "__main__":
     list_lep         = dict_channels_lep[args.flavourComp]
     list_types       = ["Real","RealQMisIDBinning","Fake"]
     list_variables   = ["ProbePt"] #,"ProbeEta"] #"ProbeNJets"]
-    list_selections  = ["T","AntiT"]
+    list_selections  = ["L","T","AntiT"]
     list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                                   # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
     list_out_samples = ["factor","factorbkgsub","rate","ratebkgsub"]
@@ -226,6 +245,9 @@ if __name__ == "__main__":
     # For later use
     #
     hist_eff_electron_real = None
+    htmp_QMisID = None
+    htmp_Prompt = None
+    htmp_Data   = None 
 
     for iLep in list_lep:
 
@@ -252,12 +274,26 @@ if __name__ == "__main__":
 
                     fin.append( TFile(fname) )
 
-                    htmp_QMisID = None
-                    if  ( args.usePrediction == "DATA" ) and ( iType == "Fake" ) and ( iLep == "El" ) and ( iVar == "ProbePt" ):
+                    # Get the QMisID, Prompt, and Data histograms for weight calculation in
+		    # the LOOSE region
+		    #
+		    prompt_list = []
+                    if  ( args.usePrediction == "DATA" ) and ( iType == "Fake" ) and ( iLep == "El" ) and ( iVar == "ProbePt" ) and ( iSel == "L" ):
                         htmp_QMisID = fin[-1].Get("chargeflipbkg")
                         if not htmp_QMisID:
                             sys.exit("ERROR: histogram w/ name chargeflipbkg does not exist in input file")
-
+			
+			htmp_Prompt = fin[-1].Get("ttbarzbkg")
+			prompt_list.append( fin[-1].Get("dibosonbkg") )   
+			prompt_list.append( fin[-1].Get("topbkg") )   
+			prompt_list.append( fin[-1].Get("ttbarwbkg") )   
+			prompt_list.append( fin[-1].Get("wjetsbkg") )   
+			prompt_list.append( fin[-1].Get("ttbarbkg") )   
+			prompt_list.append( fin[-1].Get("zjetsbkg") )   
+                        for hist in prompt_list:
+			    htmp_Prompt.Add(hist)
+			htmp_Data = fin[-1].Get("observed")    
+		    
                     for iPred in list_prediction:
 
                         standard_rebin = False
@@ -285,12 +321,15 @@ if __name__ == "__main__":
                         #
                         hists[histname]  = htmp.Clone( histname )
 
-                        # make a clone also of the QMisID histogram (do it only once)
+                        # make a clone also of the QMisID,Data,Prompt histogram (do it only once, for the LOOSE selection)
                         #
-                        histname_QMisID = histname + "_QMisID"
-                        hists[histname_QMisID] = None
-                        if htmp_QMisID and histname_QMisID not in hists:
-                            hists[histname_QMisID]  = htmp_QMisID.Clone( histname_QMisID )
+                        if  ( args.usePrediction == "DATA" ) and ( iType == "Fake" ) and ( iLep == "El" ) and ( iVar == "ProbePt" ) and ( iSel == "L" ):
+			    histname_QMisID = histname + "_QMisID"
+			    histname_Prompt = histname + "_Prompt"
+			    histname_Data   = histname + "_Data"
+			    hists[histname_QMisID]  = htmp_QMisID.Clone( histname_QMisID )
+			    hists[histname_Prompt]  = htmp_Prompt.Clone( histname_Prompt )
+			    hists[histname_Data]    = htmp_Data.Clone( histname_Data )
 
                         if iVar == "ProbeEta":
 
@@ -305,6 +344,8 @@ if __name__ == "__main__":
                                     print "\t\t\t\t\t vxbins: ",vxbins
                                     hists[histname]  = htmp.Rebin( nBIN, histname, vxbins )
                                     if htmp_QMisID : hists[histname_QMisID]  = htmp_QMisID.Rebin( nBIN, histname_QMisID, vxbins )
+                                    if htmp_Prompt : hists[histname_Prompt]  = htmp_Prompt.Rebin( nBIN, histname_Prompt, vxbins )
+                                    if htmp_Data   : hists[histname_Data]    = htmp_Data.Rebin( nBIN, histname_Data, vxbins )
 
                                 elif iLep == "El":
 
@@ -316,6 +357,8 @@ if __name__ == "__main__":
                                     print "\t\t\t\t\t vxbins: ",vxbins
                                     hists[histname]  = htmp.Rebin( nBIN, histname, vxbins )
                                     if htmp_QMisID : hists[histname_QMisID]  = htmp_QMisID.Rebin( nBIN, histname_QMisID, vxbins )
+                                    if htmp_Prompt : hists[histname_Prompt]  = htmp_Prompt.Rebin( nBIN, histname_Prompt, vxbins )
+                                    if htmp_Data   : hists[histname_Data]    = htmp_Data.Rebin( nBIN, histname_Data, vxbins )
 
                         elif iVar == "ProbePt":
 
@@ -369,10 +412,15 @@ if __name__ == "__main__":
                                 #
                                 if not standard_rebin:
                                     hists[histname] = htmp.Rebin( nBIN, histname, vxbins )
-                                    if htmp_QMisID: hists[histname_QMisID]  = htmp_QMisID.Rebin( nBIN, histname_QMisID, vxbins )
+                                    if htmp_QMisID : hists[histname_QMisID]  = htmp_QMisID.Rebin( nBIN, histname_QMisID, vxbins )
+                                    if htmp_Prompt : hists[histname_Prompt]  = htmp_Prompt.Rebin( nBIN, histname_Prompt, vxbins )
+                                    if htmp_Data   : hists[histname_Data]    = htmp_Data.Rebin( nBIN, histname_Data, vxbins )
+
                                 else :
                                     hists[histname] = htmp.Rebin( nBIN, histname )
                                     if htmp_QMisID : hists[histname_QMisID]  = htmp_QMisID.Rebin( nBIN, histname_QMisID )
+                                    if htmp_Prompt : hists[histname_Prompt]  = htmp_Prompt.Rebin( nBIN, histname_Prompt )
+                                    if htmp_Data   : hists[histname_Data]    = htmp_Data.Rebin( nBIN, histname_Data )
 
                         if args.doAvg:
 
@@ -382,7 +430,9 @@ if __name__ == "__main__":
                             print "\t\t\t\t\t vxbins: ",vxbins
                             hists[histname]  = htmp.Rebin( nBIN, histname )
                             if htmp_QMisID : hists[histname_QMisID]  = htmp_QMisID.Rebin( nBIN, histname_QMisID )
-
+                            if htmp_Prompt : hists[histname_Prompt]  = htmp_Prompt.Rebin( nBIN, histname_Prompt )
+                            if htmp_Data   : hists[histname_Data]    = htmp_Data.Rebin( nBIN, histname_Data )
+				    
                         if ( args.rebinEta or args.rebinPt or args.doAvg) and args.debug:
                             print("\t\t\t\t\t Integral BEFORE rebinning: {0}".format(htmp.Integral(0,htmp.GetNbinsX()+1)))
                             print("\t\t\t\t\t Integral AFTER rebinning: {0}".format(hists[histname].Integral(0,hists[histname].GetNbinsX()+1)))
@@ -396,10 +446,6 @@ if __name__ == "__main__":
                     # -------------------------------------------------
                     # subtract prompt bkg from data in fakes histograms
                     # -------------------------------------------------
-
-                    # Before doing this, save a copy of the original histogram (expected/observed)
-                    #
-                    hist_original = hists[histname].Clone( histname )
 
                     if args.doBkgSub :
 
@@ -496,7 +542,11 @@ if __name__ == "__main__":
                 hist_eff  = hist_pass.Clone(histname + "_Efficiency_" + append_str)
                 hist_eff.Divide(hist_pass, hist_tot,1.0,1.0,"B")
 
-                # Cache the electron REAL efficiency (only in DATA, and for pT dependence)
+                print "Denominator AntiT+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
+                for bin in range(1,hist_tot.GetNbinsX()+1):
+                    print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hist_tot.GetBinLowEdge(bin),hist_tot.GetBinLowEdge(bin+1),hist_tot.GetBinContent(bin)))
+
+                # Cache the electron REAL efficiency w/ same binning as fake eff (only in DATA, and for pT dependence)
                 #
                 if ( args.usePrediction == "DATA" ) and ( iType == "RealQMisIDBinning" ) and ( iLep == "El" ) and ( iVar == "ProbePt" ):
                     hist_eff_electron_real = hist_eff
@@ -510,7 +560,7 @@ if __name__ == "__main__":
                     if not hist_eff_electron_real:
                         sys.exit("ERROR: histogram hist_eff_electron_real does not exist")
 
-                    hist_eff_QMisID, hist_eff_fake_scaled = scaleEff( hist_eff_electron_real, hist_eff, hist_original, hists[histname_QMisID] )
+                    hist_eff_QMisID, hist_eff_fake_scaled = scaleEff( hist_eff_electron_real, hist_eff, hists[histname_Data], hists[histname_Prompt], hists[histname_QMisID] )
 
                     eff_QMisID_name         = (histname + "_Efficiency_" + append_str).replace("Fake","QMisID")
                     eff_fake_scaled_name    = (histname + "_Efficiency_" + append_str).replace("Fake","ScaledFake")
@@ -530,9 +580,9 @@ if __name__ == "__main__":
                 g_efficiency.Divide(hist_pass,hist_tot,"cl=0.683 b(1,1) mode")
                 graphs[histname + "_Efficiency_" + append_str + "_graph"] = g_efficiency
 
-                print "Denominator AntiT+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
-                for bin in range(1,hist_tot.GetNbinsX()+1):
-                    print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hist_tot.GetBinLowEdge(bin),hist_tot.GetBinLowEdge(bin+1),hist_tot.GetBinContent(bin)))
+                #print "Denominator AntiT+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
+                #for bin in range(1,hist_tot.GetNbinsX()+1):
+                #    print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hist_tot.GetBinLowEdge(bin),hist_tot.GetBinLowEdge(bin+1),hist_tot.GetBinContent(bin)))
 
                 print "\t\t --> RATE hist name: ", histname + "_Rate_" + append_str
                 print "\t\t --> EFFICIENCY hist name: ", histname + "_Efficiency_" + append_str

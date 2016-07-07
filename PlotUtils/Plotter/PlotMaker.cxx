@@ -275,8 +275,8 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 
   vector<string> Rates;
   Rates.push_back("Real");
-  Rates.push_back("Fake");
-  Rates.push_back("QMisID");
+  //Rates.push_back("Fake");
+  //Rates.push_back("QMisID");
   Rates.push_back("ScaledFake");
 
   string data_type("");
@@ -394,24 +394,19 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 	      break;
 	  }
 
-          switch (iRate) {
-	    case 0:
-              h->SetLineColor(kRed);
-              h->SetMarkerColor(kRed);
-	     break;
-	    case 1:
-              h->SetLineColor(kBlue);
-              h->SetMarkerColor(kBlue);
-	     break;
-	    case 2:
-              h->SetLineColor(kOrange);
-              h->SetMarkerColor(kOrange);
-	     break;
-	    default:
-              h->SetLineColor(kAzure+10);
-              h->SetMarkerColor(kAzure+10);
-	      break;
-	  }
+	  if ( Rates.at(iRate) == "Real" ) {
+            h->SetLineColor(kRed);
+            h->SetMarkerColor(kRed);
+	  } else if ( Rates.at(iRate) == "Fake" ) {
+            h->SetLineColor(kBlue);
+            h->SetMarkerColor(kBlue);
+	  } else if ( Rates.at(iRate) == "QMisID" ) {
+            h->SetLineColor(kOrange+7);
+            h->SetMarkerColor(kOrange+7);
+	  } else if ( Rates.at(iRate) == "ScaledFake" ) {  
+            h->SetLineColor(kAzure+10);
+            h->SetMarkerColor(kAzure+10);
+	  }	  
 
           if ( iRate == 0 && iFile == 0 ) { h->Draw("E0"); } // E0 options draws error bars
 	  else                            { h->Draw("E0,SAME");}
@@ -728,7 +723,10 @@ void execute_DiffSamples() {
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_NoSub/","Data - No sub."));
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_ProbeSub/","Data - (!Prompt & QMisID) Sub."));
 
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/","Data - T&P - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake/","Data - T&P - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_FIXED/","Data - T&P - w/ sub."));
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG/","Data - T&P - w/ sub."));  
+  
   //vec.push_back(make_pair("../OutputPlots_MMRates_LHFit_25ns_v15/","Data - Likelihood - w/ sub."));
 
   PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
@@ -786,8 +784,11 @@ void execute_DataVSMC() {
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v14_DLT_2015/","Data - w/ sub."));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v14_DLT_2015/","MC t#bar{t}"));
 
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/","Data - w/ sub."));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15/","MC t#bar{t}"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/","Data - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15/","MC t#bar{t}"));
+  
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15/Rates_NominalBinning/","MC t#bar{t}"));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15_NOWEIGHTS/","MC t#bar{t} - NO WEIGHTS"));  
 
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
 

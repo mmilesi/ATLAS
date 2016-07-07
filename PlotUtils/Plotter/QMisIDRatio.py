@@ -83,16 +83,18 @@ ratio.Draw()
 
 legend.Draw()
 leg_ATLAS.DrawLatex(0.2,0.75,"#bf{#it{ATLAS}} Work In Progress")
-leg_lumi.DrawLatex(0.2,0.7,"#sqrt{s} = 13 TeV, #int L dt = 3.8 fb^{-1}")
+leg_lumi.DrawLatex(0.2,0.7,"#sqrt{s} = 13 TeV, #int L dt = 6.7 fb^{-1}")
 
 c.SaveAs("QMisID_Pt_rates_ratio_T_L.png")
 
 # -------------------------------------
 
-file_eff = TFile("../OutputPlots_MMRates_25ns_v15/Rates.root")
+#file_eff = TFile("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake/Rates.root")
+file_eff = TFile("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_WEIGHTED_AVG/Rates.root")
+#file_eff = TFile("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG/Rates.root")
 
 hist_F_orig = file_eff.Get("El_ProbePt_Fake_Efficiency_observed")
-hist_R_orig = file_eff.Get("El_ProbePt_Real_Efficiency_observed")
+hist_R_orig = file_eff.Get("El_ProbePt_RealQMisIDBinning_Efficiency_observed")
 
 hist_QMisID = hist_R_orig.Clone()
 
@@ -118,33 +120,29 @@ for ibinx in range(1,hist_QMisID.GetNbinsX()+1):
 
 c2 = TCanvas("c2","Temp",50,50,1000,800)
 
-legend2 = TLegend(0.6,0.5,0.8,0.55); # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+legend2 = TLegend(0.4,0.3,0.5,0.35); # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
 legend2.SetBorderSize(0)  # no border
 legend2.SetFillStyle(0); # Legend transparent background
 legend2.SetTextSize(0.04) # Increase entry font size!
 legend2.SetTextFont(42)   # Helvetica
 
-hist_R_orig.GetYaxis().SetRangeUser(0.0,1.0)
+hist_F_orig.GetYaxis().SetRangeUser(0.0,0.7)
+hist_F_orig.GetYaxis().SetTitle("Efficiency")
 
-hist_R_orig.SetLineColor(kBlack)
-hist_R_orig.SetMarkerColor(kBlack)
-hist_R_orig.Draw()
+hist_F_orig.SetLineColor(kBlue)
+hist_F_orig.SetMarkerColor(kBlue)
+hist_F_orig.Draw()
 
-hist_F_orig.SetLineColor(kOrange+7)
-hist_F_orig.SetMarkerColor(kOrange+7)
-hist_F_orig.Draw("SAME")
-
-hist_QMisID.SetLineColor(kBlue)
-hist_QMisID.SetMarkerColor(kBlue)
+hist_QMisID.SetLineColor(kOrange+7)
+hist_QMisID.SetMarkerColor(kOrange+7)
 hist_QMisID.Draw("SAME")
 
-legend2.AddEntry(hist_R_orig, "#epsilon_{real}", "P")
 legend2.AddEntry(hist_F_orig, "#epsilon_{fake}", "P")
 legend2.AddEntry(hist_QMisID, "#epsilon_{QMisID}", "P")
 
 legend2.Draw()
 leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
-leg_lumi.DrawLatex(0.6,0.3,"#sqrt{s} = 13 TeV, #int L dt = 3.8 fb^{-1}")
+leg_lumi.DrawLatex(0.6,0.3,"#sqrt{s} = 13 TeV, #int L dt = 6.7 fb^{-1}")
 
-c2.SaveAs("RealEff_VS_FakeEff_VS_QMisIDEff.png")
+c2.SaveAs("FakeEff_VS_QMisIDEff.png")
 

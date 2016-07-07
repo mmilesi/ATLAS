@@ -59,12 +59,12 @@ class TTHBackgrounds2015(Background):
     }
 
     theta = {
-        'El': (999.0, 0.0),
-        'Mu': (999.0, 0.0),
+        #'El': (999.0, 0.0),
+        #'Mu': (999.0, 0.0),
         #'El': (0.163, 0.036), # v027
         #'Mu': (0.159, 0.022), # v027
-        #'El': (0.488, 0.092), # v15
-        #'Mu': (0.610, 0.121), # v15
+        'El': (0.390, 0.156), # v15
+        'Mu': (0.602, 0.120), # v15
     }
 
     theta_MC = {
@@ -1531,7 +1531,7 @@ class TTHBackgrounds2015(Background):
             #
             basecut = category.cut.removeCut(self.vardb.getCut('2Lep_PurePromptEvent'))
 
-            # QMisID subtraction? ---> CHECK IN PROGRESS
+            # Subtract QMisID from final MM yield in TT, since MM estimates both
 
 	    QMISID_SUB = True
 
@@ -2219,7 +2219,7 @@ class TTHBackgrounds2015(Background):
             weight=1.0
             #weightMC='weight_lepton_trig_HTop[0] * weight_lepton_reco_HTop[0] * weight_lepton_iso_HTop[0] * weight_lepton_ID_HTop[0] * weight_lepton_TTVA_HTop[0] * weight_jet__MV2c20_SFFix77[0]'
             weightMC = 'weight_event_trig * weight_event_lep * tauSFTight * JVT_EventWeight * MV2c10_70_EventWeight'
-	    
+
             if self.parent.channel=='TwoLepSS':
                 TTCut  = self.vardb.getCut('TT')
                 TLCut  = self.vardb.getCut('TL')
