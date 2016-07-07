@@ -2844,12 +2844,21 @@ int main( int argc, char **argv ) {
     // ----------------------------------------------------
 
     // DO THE FIT ON DATA
-    const std::string tp_path("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/");
-    const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
+
+    //const std::string tp_path("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/");
+    //const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
+    //const std::string tp_path("../OutputPlots_MMRates_25ns_v14_DLT_2015/");
+    //const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v14_DLT_2015/");
+    
+    const std::string tp_path("../OutputPlots_MMRates_25ns_v15/");
+    const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v15/");
 
     // DO THE FIT ON TTBAR MC
+
     //const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/");
     //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
+    //const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v14_DLT_2015/");
+    //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v14_DLT_2015/");
     //LHFitter::useMC();
 
     // -------------
@@ -2868,8 +2877,9 @@ int main( int argc, char **argv ) {
       // REBINNING
       real_ee.m_doRebinning = true;
       //real_ee.setBinGrouping(2);
-      double real_ee_new_bins[8] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0};
-      real_ee.setVariableBins( real_ee_new_bins, 7 );
+      int array_real_bin_size(8);
+      double real_ee_new_bins[array_real_bin_size] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0};
+      real_ee.setVariableBins( real_ee_new_bins, array_real_bin_size-1 );
       real_ee.initialise();
       real_ee.fit();
 
@@ -2883,8 +2893,9 @@ int main( int argc, char **argv ) {
       // REBINNING
       fake_ee.m_doRebinning = true;
       //fake_ee.setBinGrouping(2);
-      double fake_ee_new_bins[6] = {10.0,15.0,20.0,25.0,40.0,200.0};
-      fake_ee.setVariableBins( fake_ee_new_bins, 5 );
+      int array_fake_bin_size(6);
+      double fake_ee_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,40.0,200.0};
+      fake_ee.setVariableBins( fake_ee_new_bins, array_fake_bin_size-1 );
       fake_ee.initialise();
       fake_ee.fit();
 
@@ -2902,8 +2913,9 @@ int main( int argc, char **argv ) {
       // REBINNING
       real_mm.m_doRebinning = true;
       //real_mm.setBinGrouping(2);
-      double real_mm_new_bins[8] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0};
-      real_mm.setVariableBins( real_mm_new_bins, 7 );
+      int array_real_bin_size(8);
+      double real_mm_new_bins[array_real_bin_size] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0}; // mu - DATA, MC
+      real_mm.setVariableBins( real_mm_new_bins, array_real_bin_size-1 );
       real_mm.initialise();
       real_mm.fit();
 
@@ -2917,9 +2929,11 @@ int main( int argc, char **argv ) {
       // REBINNING
       fake_mm.m_doRebinning = true;
       //fake_mm.setBinGrouping(2);
-      //double fake_mm_new_bins[6] = {10.0,15.0,20.0,25.0,40.0,200.0}; // {10.0,15.0,20.0,25.0,35.0,200.0};
-      double fake_mm_new_bins[6] = {10.0,15.0,20.0,25.0,35.0,200.0};
-      fake_mm.setVariableBins( fake_mm_new_bins, 5 );
+      int array_fake_bin_size(5);
+      double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,200.0}; // mu - DATA
+      //int array_fake_bin_size(6);
+      //double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,35.0,200.0}; // mu - MC      
+      fake_mm.setVariableBins( fake_mm_new_bins, array_fake_bin_size-1 );
       fake_mm.initialise();
       fake_mm.fit();
 
@@ -2980,8 +2994,9 @@ int main( int argc, char **argv ) {
       // REBINNING
       real_incl.m_doRebinning = true;
       //real_incl.setBinGrouping(2);
-      double real_incl_new_bins[8] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0};
-      real_incl.setVariableBins( real_incl_new_bins, 7 );
+      int array_real_bin_size(8);
+      double real_incl_new_bins[array_real_bin_size] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0}; // e - DATA, MC
+      real_incl.setVariableBins( real_incl_new_bins, array_real_bin_size-1 );
       real_incl.initialise();
       real_incl.fit();
 
@@ -2993,9 +3008,9 @@ int main( int argc, char **argv ) {
       // REBINNING
       fake_incl.m_doRebinning = true;
       //fake_incl.setBinGrouping(2);
-      //double fake_incl_new_bins[6] = {10.0,15.0,20.0,25.0,40.0,200.0};
-      double fake_incl_new_bins[6] = {10.0,15.0,20.0,25.0,35.0,200.0};
-      fake_incl.setVariableBins( fake_incl_new_bins, 5 );
+      int array_fake_bin_size(6);
+      double fake_incl_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,40.0,200.0}; // e -DATA, MC
+      fake_incl.setVariableBins( fake_incl_new_bins, array_fake_bin_size-1 );
       fake_incl.initialise();
       fake_incl.fit();
 

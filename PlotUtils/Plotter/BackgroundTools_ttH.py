@@ -1,11 +1,10 @@
 from ROOT import TFile, TH1, TH1D, TH1I, TH2D, TH2F, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
 from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
-import sys, glob, os, array, inspect, math
-#glob finds all the pathnames matching a specified pattern.glob.glob(pathname) Return a possibly-empty list of path names that match pathname in which unix wildcards can be used
+import sys, glob, os, array, inspect, math, array
 
-from array import array
+# glob finds all the pathnames matching a specified pattern.glob.glob(pathname) Return a possibly-empty list of path names that match pathname in which unix wildcards can be used
 
-sys.path.append(os.path.abspath(os.path.curdir))#add to the search path for the modules the directory where this script is launched
+sys.path.append(os.path.abspath(os.path.curdir))
 from Core import NTupleTools, DatasetManager, listifyInputFiles
 
 gROOT.Reset()
@@ -63,7 +62,7 @@ class Inputs:
 	    for treename in treelist:
 	       t = f.Get(treename)
                if not t:
-                  print ("WARNING: tree {0} cannot be found during tree registration".format(treename))
+                  print ("WARNING: tree {0} in file {1} cannot be found during tree registration".format(treename,filepath))
                   return False
 	       if ismc and ( t.GetWeight() == 1.0 or resetTreeWeight ):
 		  print("Weighting tree w/ Xsec weight...")
@@ -111,7 +110,7 @@ class Inputs:
             tree = self.alltrees[treename][group][subgroup]
         except:
             tree = None
-            print "ERROR: Could not reach tree", treename, group, subgroup
+            print("ERROR: Could not reach tree {0} in group {1}, subgroup {2}".format(treename, group, subgroup))
 
 	print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
@@ -1088,7 +1087,7 @@ class Background:
             ratiomc.GetYaxis().SetTitleOffset(0.35)
             ratiomc.GetXaxis().SetLabelSize(0.15)
             ratiomc.GetYaxis().SetLabelSize(0.12)
-            ratiomc.GetYaxis().SetNdivisions(5)
+            ratiomc.GetYaxis().SetNdivisions(505) #(5)
             ratiomc.SetFillColor(kGray+3)
             ratiomc.SetLineColor(10)
             ratiomc.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
@@ -1129,7 +1128,9 @@ class Background:
                 ratiomc.GetYaxis().SetRangeUser(showratio[0], showratio[1])
             else:
                 #ratiomc.GetYaxis().SetRangeUser(0.8, 1.2)
-                ratiomc.GetYaxis().SetRangeUser(0.0, 2.0)
+                #ratiomc.GetYaxis().SetRangeUser(0.0, 2.0)
+                ratiomc.GetYaxis().SetRangeUser(0.75, 1.25)
+		
             #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
             pad2.cd()
             #pad2.SetLogy(2)
@@ -1155,7 +1156,9 @@ class Background:
 	      if showratio and bkg and obs:
 	          stack.SetMaximum(ymax_new*(2.-lower+0.075))
 	          if log is True or (var.logaxis and log is None):
-	              stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
+	              #stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
+	              stack.SetMaximum(stack.GetMaximum() * 3*10**(2))
+		      
 	      else:
 	          stack.SetMaximum(ymax_new*(2.-lower+0.15))
 	      stack.Draw('HIST')

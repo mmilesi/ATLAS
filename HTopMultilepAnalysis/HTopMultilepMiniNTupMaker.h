@@ -31,7 +31,7 @@ public:
     isMC(0), isSS01(0), isSS12(0),
     dilep(0), trilep(0),
     notightlep(0),
-    weight_event(1.0),weight_tag(1.0),weight_probe(1.0)
+	weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
   { };
 
   char isMC;
@@ -40,11 +40,13 @@ public:
   char dilep;
   char trilep;
   char notightlep;
-  
+
   float weight_event;
+  float weight_event_trig;
+  float weight_event_lep;
   float weight_tag;
   float weight_probe;
-  
+
 };
 
 class leptonObj {
@@ -52,11 +54,13 @@ class leptonObj {
 public:
   leptonObj():
     pt(-1.0),eta(-999.0),etaBE2(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
-    pid(0),isolated(0),tight(0),trigmatched(0),prompt(0),fake(0),brems(0),tag(0),
+	pid(0),isolated(0),tight(0),trigmatched(0),prompt(0),fake(0),brems(0),qmisid(0),convph(0),tag(0),
     SFIDLoose(1.0),
     SFIDTight(1.0),
     SFTrigLoose(1.0),
     SFTrigTight(1.0),
+    EffTrigLoose(0.0),
+    EffTrigTight(0.0),
     SFIsoLoose(1.0),
     SFIsoTight(1.0),
     SFReco(1.0),
@@ -80,12 +84,18 @@ public:
   char prompt;
   char fake;
   char brems;
+  char qmisid;
+  char convph;
+  int  truthType;
+  int  truthOrigin;
   char tag;
 
   float SFIDLoose;
   float SFIDTight;
   float SFTrigLoose;
   float SFTrigTight;
+  float EffTrigLoose;
+  float EffTrigTight;
   float SFIsoLoose;
   float SFIsoTight;
   float SFReco;
@@ -101,7 +111,7 @@ class HTopMultilepMiniNTupMaker : public xAH::Algorithm
   // put your configuration variables here as public variables.
   // that way they can be set directly from CINT and python.
 public:
- 
+
   /** The name of the output TTree */
   std::string m_outputNTupName;
 
@@ -134,23 +144,24 @@ private:
 
   EL::NTupleSvc*  m_outputNTuple;
 
-  /** Input TTree branches whcih need to be used by the algorithm */
+  /** Input TTree branches which need to be used by the algorithm */
 
   ULong64_t       m_EventNumber;
   UInt_t          m_RunNumber;
+  Int_t           m_RunYear;
   Bool_t          m_passEventCleaning;
   UInt_t          m_mc_channel_number; /** for DATA, mc_channel_number=0 */
 
   Double_t        m_mcWeightOrg;
   Double_t	  m_pileupEventWeight_090;
-  Double_t	  m_MV2c20_77_EventWeight;
+  Double_t	  m_MV2c10_70_EventWeight;
   Double_t	  m_JVT_EventWeight;
 
   Int_t 	  m_dilep_type;
   Int_t 	  m_trilep_type;
-  Int_t           m_nJets_OR;
-  Int_t           m_nJets_OR_MV2c20_77;
-  
+  Int_t           m_nJets_OR_T;
+  Int_t           m_nJets_OR_T_MV2c10_70;
+
   UInt_t          m_HLT_mu20_iloose_L1MU15;
   Float_t	  m_HLT_mu20_iloose_L1MU15_PS;
   UInt_t	  m_HLT_mu50;
@@ -163,7 +174,7 @@ private:
   Float_t	  m_HLT_e60_lhmedium_PS;
   UInt_t	  m_HLT_e120_lhloose;
   Float_t	  m_HLT_e120_lhloose_PS;
- 		  
+
   Float_t	  m_lep_ID_0;
   Float_t	  m_lep_Pt_0;
   Float_t	  m_lep_E_0;
@@ -185,12 +196,18 @@ private:
   Int_t 	  m_lep_isolationFixedCutLoose_0;
   Char_t	  m_lep_isTrigMatch_0;
   Char_t	  m_lep_isPrompt_0;
-  Char_t	  m_lep_isBremsElec_0;
+  Char_t	  m_lep_isBrems_0;
   Char_t	  m_lep_isFakeLep_0;
+  Char_t	  m_lep_isQMisID_0;
+  Char_t	  m_lep_isConvPh_0;
+  Int_t	          m_lep_truthType_0;
+  Int_t	          m_lep_truthOrigin_0;
   Float_t	  m_lep_SFIDLoose_0;
   Float_t	  m_lep_SFIDTight_0;
   Float_t	  m_lep_SFTrigLoose_0;
   Float_t	  m_lep_SFTrigTight_0;
+  Float_t         m_lep_EffTrigLoose_0;
+  Float_t         m_lep_EffTrigTight_0;
   Float_t	  m_lep_SFIsoLoose_0;
   Float_t	  m_lep_SFIsoTight_0;
   Float_t	  m_lep_SFReco_0;
@@ -219,12 +236,18 @@ private:
   Int_t 	  m_lep_isolationFixedCutLoose_1;
   Char_t	  m_lep_isTrigMatch_1;
   Char_t	  m_lep_isPrompt_1;
-  Char_t	  m_lep_isBremsElec_1;
+  Char_t	  m_lep_isBrems_1;
   Char_t	  m_lep_isFakeLep_1;
+  Char_t	  m_lep_isQMisID_1;
+  Char_t	  m_lep_isConvPh_1;
+  Int_t	          m_lep_truthType_1;
+  Int_t	          m_lep_truthOrigin_1;
   Float_t	  m_lep_SFIDLoose_1;
   Float_t	  m_lep_SFIDTight_1;
   Float_t	  m_lep_SFTrigLoose_1;
   Float_t	  m_lep_SFTrigTight_1;
+  Float_t         m_lep_EffTrigLoose_1;
+  Float_t         m_lep_EffTrigTight_1;
   Float_t	  m_lep_SFIsoLoose_1;
   Float_t	  m_lep_SFIsoTight_1;
   Float_t	  m_lep_SFReco_1;
@@ -253,12 +276,18 @@ private:
   Int_t 	  m_lep_isolationFixedCutLoose_2;
   Char_t	  m_lep_isTrigMatch_2;
   Char_t	  m_lep_isPrompt_2;
-  Char_t	  m_lep_isBremsElec_2;
+  Char_t	  m_lep_isBrems_2;
   Char_t	  m_lep_isFakeLep_2;
+  Char_t	  m_lep_isQMisID_2;
+  Char_t	  m_lep_isConvPh_2;
+  Int_t	          m_lep_truthType_2;
+  Int_t	          m_lep_truthOrigin_2;
   Float_t	  m_lep_SFIDLoose_2;
   Float_t	  m_lep_SFIDTight_2;
   Float_t	  m_lep_SFTrigLoose_2;
   Float_t	  m_lep_SFTrigTight_2;
+  Float_t         m_lep_EffTrigLoose_2;
+  Float_t         m_lep_EffTrigTight_2;
   Float_t	  m_lep_SFIsoLoose_2;
   Float_t	  m_lep_SFIsoTight_2;
   Float_t	  m_lep_SFReco_2;
@@ -269,14 +298,37 @@ private:
   ULong64_t       m_totalEvents;
   Float_t         m_totalEventsWeighted;
 
+  /** Reco jets BEFORE overlap removal */
+
+  std::vector<float>   *m_jet_pt;  //!
+  std::vector<float>   *m_jet_eta; //!
+  std::vector<float>   *m_jet_phi; //!
+  std::vector<float>   *m_jet_E;   //!
+  std::vector<int>     *m_jet_flavor_truth_label;       //!
+  std::vector<int>     *m_jet_flavor_truth_label_ghost; //!
+
+  /** Indexes of jets that pass overlap removal */
+
+  std::vector<short>   *m_selected_jets;   //!
+  std::vector<short>   *m_selected_jets_T; //!
+
+  /** Truth jets */
+
+  std::vector<float>   *m_truth_jet_pt;  //!
+  std::vector<float>   *m_truth_jet_eta; //!
+  std::vector<float>   *m_truth_jet_phi; //!
+  std::vector<float>   *m_truth_jet_e;   //!
+
   /** Extra branches to be stored in output TTree */
 
   char      m_isMC;
 
   float     m_weight_event;
+  float     m_weight_event_trig;
+  float     m_weight_event_lep;
   float     m_weight_tag;
   float     m_weight_probe;
-  
+
   char	    m_isSS01;
   char	    m_isSS12;
 
@@ -287,7 +339,7 @@ private:
   char      m_is_Tel_AntiTmu;
   char      m_is_Tmu_AntiTel;
   char      m_is_AntiTel_Tmu;
-  char      m_is_AntiTmu_Tel;  
+  char      m_is_AntiTmu_Tel;
 
   int       m_nmuons;
   int       m_nelectrons;
@@ -306,9 +358,13 @@ private:
   char	    m_lep_Tag_isTrigMatch;
   char	    m_lep_Tag_isTightSelected;
   char	    m_lep_Tag_isPrompt;
-  char	    m_lep_Tag_isBremsElec;
+  char	    m_lep_Tag_isBrems;
   char	    m_lep_Tag_isFakeLep;
-  
+  char	    m_lep_Tag_isQMisID;
+  char      m_lep_Tag_isConvPh;
+  int	    m_lep_Tag_truthType;
+  int	    m_lep_Tag_truthOrigin;
+
   float     m_lep_Probe_Pt;
   float     m_lep_Probe_Eta;
   float     m_lep_Probe_EtaBE2;
@@ -318,12 +374,31 @@ private:
   char	    m_lep_Probe_isTrigMatch;
   char	    m_lep_Probe_isTightSelected;
   char	    m_lep_Probe_isPrompt;
-  char	    m_lep_Probe_isBremsElec;
+  char	    m_lep_Probe_isBrems;
   char	    m_lep_Probe_isFakeLep;
-  
+  char	    m_lep_Probe_isQMisID;
+  char      m_lep_Probe_isConvPh;
+  int	    m_lep_Probe_truthType;
+  int	    m_lep_Probe_truthOrigin;
+
   std::vector<float> m_lep_Pt;
   std::vector<float> m_lep_Eta;
   std::vector<float> m_lep_EtaBE2;
+
+  /** Jets AFTER overlap removal */
+
+  std::vector<float> m_jet_OR_Pt;
+  std::vector<float> m_jet_OR_Eta;
+  std::vector<float> m_jet_OR_Phi;
+  std::vector<float> m_jet_OR_E;
+  std::vector<float> m_jet_OR_truthMatch_Pt;
+  std::vector<float> m_jet_OR_truthMatch_Eta;
+  std::vector<float> m_jet_OR_truthMatch_Phi;
+  std::vector<float> m_jet_OR_truthMatch_E;
+  std::vector<char>  m_jet_OR_truthMatch_isBJet;
+  std::vector<char>  m_jet_OR_truthMatch_isCJet;
+  std::vector<char>  m_jet_OR_truthMatch_isLFJet;
+  std::vector<char>  m_jet_OR_truthMatch_isGluonJet;
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
@@ -360,10 +435,9 @@ public:
 private:
 
   EL::StatusCode enableSelectedBranches ();
-  EL::StatusCode checkIsTightLep( std::shared_ptr<leptonObj> lep ); 
+  EL::StatusCode checkIsTightLep( std::shared_ptr<leptonObj> lep );
   EL::StatusCode decorateEvent ();
   EL::StatusCode decorateWeights ();
-
 
   /**
     * @brief  Set which lepton is tag and which is probe for the r/f efficiency measurement
@@ -379,7 +453,9 @@ private:
 
   EL::StatusCode setOutputBranches ();
 
-  EL::StatusCode clearBranches ();
+  EL::StatusCode clearBranches ( const std::string& type );
+
+  EL::StatusCode jetTruthMatching();
 
 };
 

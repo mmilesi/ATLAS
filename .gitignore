@@ -18,3 +18,6 @@ libs/
 output_*
 *.out
 
+# Backup noise
+*.bak
+

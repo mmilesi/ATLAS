@@ -200,7 +200,7 @@ void PlotRateEff( pair<string,string>& SAMPLE,
       legend->Draw();
 
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}");
+      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 6.7 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
       string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_" + DATA_TYPE + "." + EXTENSION;
@@ -275,7 +275,9 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 
   vector<string> Rates;
   Rates.push_back("Real");
-  Rates.push_back("Fake");
+  //Rates.push_back("Fake");
+  //Rates.push_back("QMisID");
+  Rates.push_back("ScaledFake");
 
   string data_type("");
   if ( DATA_TYPE == "Data" )     { data_type = "observed"; }
@@ -336,6 +338,8 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
         //
         for( unsigned int iRate(0); iRate < Rates.size() ; ++iRate ) {
 
+          if ( lepton_flavours.at(iFlav) == "Mu" && ( Rates.at(iRate) == "QMisID" || Rates.at(iRate) == "ScaledFake" ) ) { continue; }
+
 	  cout << "\t\t\t" << Rates.at(iRate) << " Rate/Efficiency " << endl;
           cout << "-------------------------------" << endl;
 
@@ -390,16 +394,19 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 	      break;
 	  }
 
-          switch (iRate) {
-	    case 0:
-              h->SetLineColor(kRed);
-              h->SetMarkerColor(kRed);
-	     break;
-	    default:
-              h->SetLineColor(kBlue);
-              h->SetMarkerColor(kBlue);
-	      break;
-	  }
+	  if ( Rates.at(iRate) == "Real" ) {
+            h->SetLineColor(kRed);
+            h->SetMarkerColor(kRed);
+	  } else if ( Rates.at(iRate) == "Fake" ) {
+            h->SetLineColor(kBlue);
+            h->SetMarkerColor(kBlue);
+	  } else if ( Rates.at(iRate) == "QMisID" ) {
+            h->SetLineColor(kOrange+7);
+            h->SetMarkerColor(kOrange+7);
+	  } else if ( Rates.at(iRate) == "ScaledFake" ) {  
+            h->SetLineColor(kAzure+10);
+            h->SetMarkerColor(kAzure+10);
+	  }	  
 
           if ( iRate == 0 && iFile == 0 ) { h->Draw("E0"); } // E0 options draws error bars
 	  else                            { h->Draw("E0,SAME");}
@@ -415,7 +422,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
       legend->Draw();
 
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}");
+      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 6.7 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
       string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_" + DATA_TYPE + "." + EXTENSION;
@@ -477,7 +484,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  variables.push_back("Eta");
+  //variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
@@ -623,7 +630,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 
       legend->Draw();
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}");
+      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 6.7 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
       string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_DataVSMC." + EXTENSION;
@@ -713,8 +720,14 @@ void execute_DiffSamples() {
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_OFplusSF_AllMC/","All MC - OF + SF"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_ZjetsCR_Zjets/","Z/#gamma* + jets - Z CR"));
 
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_NoSub/","Data - No sub."));
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_ProbeSub/","Data - (!Prompt & QMisID) Sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_NoSub/","Data - No sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_ProbeSub/","Data - (!Prompt & QMisID) Sub."));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake/","Data - T&P - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_FIXED/","Data - T&P - w/ sub."));
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG/","Data - T&P - w/ sub."));  
+  
+  //vec.push_back(make_pair("../OutputPlots_MMRates_LHFit_25ns_v15/","Data - Likelihood - w/ sub."));
 
   PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
   //PlotRateEff_DiffSamples(vec,"Data","OF","Efficiency","png");
@@ -756,8 +769,26 @@ void execute_DataVSMC() {
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","Data - bkg sub."));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","MC t#bar{t}"));
 
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake/","Data - bkg sub."));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake/","MC t#bar{t}"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake/","Data - bkg sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_AvgMuFake/","MC t#bar{t}"));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_DDQmisID/","Data - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_DDQmisID/","MC t#bar{t}"));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v14/","Data - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v14/","MC t#bar{t}"));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v14_2015/","Data - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v14_2015/","MC t#bar{t}"));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v14_DLT_2015/","Data - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v14_DLT_2015/","MC t#bar{t}"));
+
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/","Data - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15/","MC t#bar{t}"));
+  
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15/Rates_NominalBinning/","MC t#bar{t}"));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15_NOWEIGHTS/","MC t#bar{t} - NO WEIGHTS"));  
 
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
 
