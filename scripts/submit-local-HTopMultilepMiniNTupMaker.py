@@ -14,12 +14,12 @@ import normaliseTrees
 
 infilelist = [
 # ttbar
-"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/410000/410000.root",
+#"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/410000/410000.root",
 # ttH Pythia8
-"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/343365/343365.root",
-"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/343366/343366.root",
-"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/343367/343367.root",
-"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/343436/343436.root",
+#"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/343365/343365.root",
+#"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/343366/343366.root",
+#"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/343367/343367.root",
+#"/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal/343436/343436.root",
 # data
 "HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",
 # ttV NLO

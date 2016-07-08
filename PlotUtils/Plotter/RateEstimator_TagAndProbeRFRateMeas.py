@@ -157,15 +157,18 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
         eff_w     = ( 1.0 - w ) * eff_f + w * eff_QMisID
         err_eff_w = ( 1.0 - w + ( 1.0 / scale ) * w ) * err_eff_f
 
-        # Add in quadrature the difference w/ nominal fake efficiency as a systematic
-        #
         #sys_err_eff_w = abs(eff_f - eff_w) # less conservative
 	sys_err_eff_w = abs(eff_f - eff_QMisID) # more conservative
 	
 	if args.doArithmeticAvgFake:
 	    sys_err_eff_w = abs(eff_f - eff_QMisID) / 2.0
 	
-        tot_err_eff_w = math.sqrt( (err_eff_w)*(err_eff_w) + (sys_err_eff_w)*(sys_err_eff_w) )
+        # This largely overestimates uncertainty
+	#
+	#tot_err_eff_w = math.sqrt( (err_eff_w)*(err_eff_w) + (sys_err_eff_w)*(sys_err_eff_w) )
+	# Do this:
+	#
+	tot_err_eff_w = max(err_eff_w,sys_err_eff_w)
 
         print("bin {0} - [{1},{2}] GeV \n\teff_r: {3} +- {4}\n\tscale : {5} +- {6} ({7} %)\n\teff_QMisID: {8} +- {9}\n\teff_f: {10} +- {11}\n\tweighted eff_f: {12} +- {13} ({14})".format(ibinx,bin_lowedge,bin_upedge,eff_r,err_eff_r,scale,err_scale,perc_err_scale,eff_QMisID,err_eff_QMisID,eff_f,err_eff_f,eff_w,err_eff_w,tot_err_eff_w))
 

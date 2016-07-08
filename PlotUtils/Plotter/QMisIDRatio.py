@@ -83,7 +83,7 @@ ratio.Draw()
 
 legend.Draw()
 leg_ATLAS.DrawLatex(0.2,0.75,"#bf{#it{ATLAS}} Work In Progress")
-leg_lumi.DrawLatex(0.2,0.7,"#sqrt{s} = 13 TeV, #int L dt = 6.7 fb^{-1}")
+leg_lumi.DrawLatex(0.2,0.7,"#sqrt{s} = 13 TeV, #int L dt = 8.3 fb^{-1}")
 
 c.SaveAs("QMisID_Pt_rates_ratio_T_L.png")
 
@@ -142,7 +142,7 @@ legend2.AddEntry(hist_QMisID, "#epsilon_{QMisID}", "P")
 
 legend2.Draw()
 leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
-leg_lumi.DrawLatex(0.6,0.3,"#sqrt{s} = 13 TeV, #int L dt = 6.7 fb^{-1}")
+leg_lumi.DrawLatex(0.6,0.3,"#sqrt{s} = 13 TeV, #int L dt = 8.3 fb^{-1}")
 
 c2.SaveAs("FakeEff_VS_QMisIDEff.png")
 

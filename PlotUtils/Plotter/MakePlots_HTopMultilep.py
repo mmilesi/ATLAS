@@ -853,7 +853,7 @@ if doSR:
             #
             vardb.registerCategory( MyCategory('OFSS_SR_DataDriven',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
         else:
-
+            """
             truth_cut = ( vardb.getCut('DummyCut') )
 
             vardb.registerCategory( MyCategory('MuMuSS_SR',             cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_NJet_SR']) & truth_cut ) )
@@ -867,6 +867,14 @@ if doSR:
             # 2lep+tau region
             #
             #vardb.registerCategory( MyCategory('TwoLepSSTau_SR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep1Tau_NLep','2Lep1Tau_pT','2Lep1Tau_TrigMatch','2Lep1Tau_SS','2Lep1Tau_1Tau','2Lep1Tau_Zsidescut','2Lep1Tau_NJet_SR','2Lep1Tau_NBJet']) ) )
+            """
+
+            # Temp: test prompt cut w/ Tamara
+            #
+            vardb.registerCut( Cut('2Lep_PurePromptEvent_NEW', '( isMC==0 || ( isMC==1 && ( ( lep_isPrompt_0 == 1 || ( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) && ( lep_isPrompt_1 == 1 || ( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) ) && ( isQMisIDEvent == 0 ) ) )') )
+            vardb.registerCategory( MyCategory('ElElSS_2LepSS0Tau_SR_DataDriven_OLDPromptTruth',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
+            vardb.registerCategory( MyCategory('ElElSS_2LepSS0Tau_SR_DataDriven_NEWPromptTruth',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent_NEW','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
+
 
     if doThreeLepSR:
         vardb.registerCategory( MyCategory('ThreeLep_SR',    cut = vardb.getCuts(['TrigDec','BlindingCut','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_TightLeptons','3Lep_ZVeto','3Lep_MinZCut','3Lep_NJets']) ) )
@@ -895,12 +903,14 @@ if doTwoLepLowNJetCR :
         #
         vardb.registerCategory( MyCategory('OFSS_LowNJetCR_DataDriven',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
     else:
-        vardb.registerCategory( MyCategory('MuMuSS_LowNJetCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_NJet_CR']) ) )
+        
+	vardb.registerCategory( MyCategory('MuMuSS_LowNJetCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_NJet_CR']) ) )
         vardb.registerCategory( MyCategory('OFSS_LowNJetCR',         cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
         vardb.registerCategory( MyCategory('ElElSS_LowNJetCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
         # 2lep+tau region
         #
         vardb.registerCategory( MyCategory('TwoLepSSTau_LowNJetCR',  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep1Tau_NLep','2Lep1Tau_pT','2Lep1Tau_TrigMatch','2Lep1Tau_SS','2Lep1Tau_1Tau','2Lep1Tau_Zsidescut','2Lep1Tau_NJet_CR','2Lep1Tau_NBJet']) ) )
+        
 
 if doThreeLepLowNJetCR:
     # take OS pairs
@@ -1033,6 +1043,7 @@ if doCFChallenge:
 
     # 2lepSS + 0tau
     #
+    #"""
     vardb.registerCategory( MyCategory('CFChallenge_2LepSS0Tau_SR_DataDriven_TrigDec',    cut = vardb.getCuts(['TrigDec']) ) )
     vardb.registerCategory( MyCategory('CFChallenge_2LepSS0Tau_SR_DataDriven_NLep',	  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep']) ) )
     vardb.registerCategory( MyCategory('CFChallenge_2LepSS0Tau_SR_DataDriven_TT',	  cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','TT']) ) )
@@ -1043,7 +1054,8 @@ if doCFChallenge:
     vardb.registerCategory( MyCategory('CFChallenge_2LepSS0Tau_SR_DataDriven_TauVeto',    cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','TT','2Lep_TrigMatch','2Lep_SS','2Lep_pT','2Lep_ElEtaCut','TauVeto']) ) )
     vardb.registerCategory( MyCategory('CFChallenge_2LepSS0Tau_SR_DataDriven_NJets',      cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','TT','2Lep_TrigMatch','2Lep_SS','2Lep_pT','2Lep_ElEtaCut','TauVeto','2Lep_NJet_SR']) ) )
     vardb.registerCategory( MyCategory('CFChallenge_2LepSS0Tau_SR_DataDriven_NBJets',     cut = vardb.getCuts(['TrigDec','2Lep_JustNLep','TT','2Lep_TrigMatch','2Lep_SS','2Lep_pT','2Lep_ElEtaCut','TauVeto','2Lep_NJet_SR','2Lep_NBJet_SR']) ) )
-
+    #"""
+    
     # CF w/ Arthur
     #
     """
@@ -1492,20 +1504,23 @@ ttH2015 = TTHBackgrounds2015(inputs, vardb)
 
 #ttH2015.luminosity = 3.209 # GRL v73 - Moriond 2015 GRL
 #ttH2015.luminosity = 3.762 # (2015 +) 2016  - GRL v77 (period A)
-ttH2015.luminosity =  6.691 # (2015 +) 2016 - GRL v79
+#ttH2015.luminosity =  6.691 # (2015 +) 2016 - GRL v79
+ttH2015.luminosity =  8.311 # (2015 +) 2016 - 
 ttH2015.lumi_units = 'fb-1'
 
 # For MM closure
 if doMMClosureTest or doMMClosureRates:
     #ttH2015.luminosity = 3.209
     #ttH2015.luminosity = 3.762
-    ttH2015.luminosity = 6.691
+    #ttH2015.luminosity = 6.691
+    ttH2015.luminosity =  8.311     
 
 if doCFChallenge and "SR" in args.channel:
-    ttH2015.luminosity = 6.691
-
+    #ttH2015.luminosity = 6.691
+    ttH2015.luminosity =  8.311
+    
 # --------------------
-# set the event weight
+# Set the event weight
 # --------------------
 
 # MC generator event weight

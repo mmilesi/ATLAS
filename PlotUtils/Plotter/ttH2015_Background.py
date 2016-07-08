@@ -226,8 +226,11 @@ class TTHBackgrounds2015(Background):
             inputgroup = [
                 ('ttH', 'ttH_dil'),
                 ('ttH', 'ttH_semilep'),
-                ('ttH', 'ttH_allhad'),
-                         ]
+                ('ttH', 'ttH_allhad'),         
+                #('ttH', 'ttH_dil_Pythia8'),
+                #('ttH', 'ttH_semilep_Pythia8'),
+                #('ttH', 'ttH_allhad_Pythia8'), 	 
+                        ]
 
             print inputgroup
 
@@ -268,6 +271,7 @@ class TTHBackgrounds2015(Background):
             #hmass = options.get('hmass', '125') #300 is the default value if hmass is not in options, hmass is specified in one option passed to the plot function in the plotting script
             inputgroup = [
                 ('ttH', 'ttH_dil'),
+                #('ttH', 'ttH_dil_Pythia8'),
                          ]
 
             print inputgroup
@@ -307,6 +311,7 @@ class TTHBackgrounds2015(Background):
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
                 ('tops', 'ttW'),
+		#('tops', 'ttW_aMcAtNlo'),
                 #('tops', 'Sherpa_ttW'),
                          ]
 
@@ -350,6 +355,9 @@ class TTHBackgrounds2015(Background):
                 ('tops', 'ttee'),
                 ('tops', 'ttmumu'),
                 ('tops', 'tttautau'),
+                #('tops', 'ttee_aMcAtNlo'),
+                #('tops', 'ttmumu_aMcAtNlo'),
+                #('tops', 'tttautau_aMcAtNlo'),		
                 #('tops', 'Sherpa_ttZnnqq'),
                 #('tops', 'Sherpa_ttll'),
                          ]
