@@ -147,7 +147,7 @@ algskim.addCut ("passEventCleaning==1")
 #algskim.addCut ("HLT_e24_lhmedium_L1EM20VH||HLT_e24_lhmedium_L1EM18VH||HLT_e60_lhmedium||HLT_e120_lhloose||HLT_mu20_iloose_L1MU15||HLT_mu50")
 #algskim.addCut ("nJets_OR_T>=1")
 #algskim.addCut("nJets_OR_T_MV2c10_70>=1")
-algskim.addCut ("dilep_type>0||trilep_type>0")
+algskim.addCut ("dilep_type>0||trilep_type>0||quadlep_type>0")
 algskim.histName ("cutflow")
 
 # Add the algorithms to the job.
