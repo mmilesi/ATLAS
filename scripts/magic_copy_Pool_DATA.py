@@ -21,12 +21,12 @@ def copy(sample):
 if __name__ == '__main__':
 
     username = "mmilesi"
-    
+
     version     = "25ns_v17"
     sample_type = "Data"
-    
+
     basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/" + sample_type
-    
+
     copylist = [
 276262,
 276329,
@@ -88,6 +88,7 @@ if __name__ == '__main__':
 283780,
 284006,
 284154,
+284213,
 284285,
 284420,
 284427,
@@ -136,7 +137,7 @@ if __name__ == '__main__':
 302380,
 302391,
     ]
-    
+
     cmdlist = []
     for sample in copylist:
         cmd = "cd " + basedir + " && mkdir -p 00" + str(sample) + " && cd $_ && xrdcp root://eospublic.cern.ch//eos/escience/UniTexas/HSG8/multileptons_ntuple_run2/" + version + "/" + sample_type + "/00" + str(sample) + ".root ."
@@ -153,7 +154,7 @@ if __name__ == '__main__':
 	    krb_auth = "kinit " + username + "@CERN.CH"
 	    subprocess.call(krb_auth,shell=True)
         subprocess.call("kinit -R",shell=True)
-	
+
         print("Copying samples: ")
         print("\n".join("{0} - {1}".format(elem[0],elem[1].split()[5]) for elem in enumerate(chunk)))
         p = multiprocessing.Pool(MAX_PARALLEL)
@@ -163,4 +164,4 @@ if __name__ == '__main__':
 
     os.chdir(basedir)
     print("Transfer finished!")
-    
+

@@ -337,6 +337,7 @@
 /coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Data/00283780/00283780.root
 /coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Data/00284006/00284006.root
 /coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Data/00284154/00284154.root
+/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v15/Data/00284213/00284213.root
 /coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Data/00284285/00284285.root
 /coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Data/00284420/00284420.root
 /coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Data/00284427/00284427.root
