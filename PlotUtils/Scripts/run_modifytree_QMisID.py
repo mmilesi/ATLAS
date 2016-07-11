@@ -53,8 +53,11 @@ gROOT.SetBatch(True)
 
 # -------------------------------------------------------------------------------------------------------------
 
-oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_QMisID_WEIGHTED/"
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_QMisID_WEIGHTED/"
+
+oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
+newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_QMisID_WEIGHTED/"
 
 # -------------------------------------------------------------------------------------------------------------
 

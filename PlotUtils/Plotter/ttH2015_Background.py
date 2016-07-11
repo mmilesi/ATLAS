@@ -715,7 +715,10 @@ class TTHBackgrounds2015(Background):
 
             # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
             #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
+            #truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
+            truthcut = category.cut.removeCut(self.vardb.getCut('2Lep_ProbePromptEvent'))
+            truthcut = truthcut.removeCut(self.vardb.getCut('2Lep_QMisIDVeto'))
+            truthcut = truthcut & self.vardb.getCut('2Lep_ProbeQMisIDEvent')
 
             sp = sp.subprocess(cut=truthcut)
 
@@ -963,7 +966,7 @@ class TTHBackgrounds2015(Background):
             return sp
 
     # The only difference with the above class is
-    # that we plot only events with at least one !prompt lepton, and veto charge flip/photon conv
+    # that we plot only events with at least one !prompt lepton, and veto charge flip
     #
     class TTBarClosure(Process):
 
@@ -1002,7 +1005,7 @@ class TTHBackgrounds2015(Background):
             if TTcut is not '':
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            # plot only events where at least one lepton is !prompt, and none is charge flip/ photon conv.
+            # plot only events where at least one lepton is !prompt, and none is charge flip
             #
             sp = sp.subprocess(cut=self.vardb.getCut('2Lep_NonPromptEvent'), eventweight=weight)
 
@@ -1052,7 +1055,10 @@ class TTHBackgrounds2015(Background):
 
             # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
             #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
+            #truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
+            truthcut = category.cut.removeCut(self.vardb.getCut('2Lep_ProbePromptEvent'))
+            truthcut = truthcut.removeCut(self.vardb.getCut('2Lep_QMisIDVeto'))
+            truthcut = truthcut & self.vardb.getCut('2Lep_ProbeQMisIDEvent')
 
             sp = sp.subprocess(cut=truthcut)
 
@@ -1170,7 +1176,10 @@ class TTHBackgrounds2015(Background):
 
             # plot only events where at least one lepton is charge flip. Remove req. where both lep must be prompt
             #
-            truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
+            #truthcut = category.cut.swapCut(self.vardb.getCut('2Lep_PurePromptEvent'),self.vardb.getCut('2Lep_QMisIDEvent'))
+            truthcut = category.cut.removeCut(self.vardb.getCut('2Lep_ProbePromptEvent'))
+            truthcut = truthcut.removeCut(self.vardb.getCut('2Lep_QMisIDVeto'))
+            truthcut = truthcut & self.vardb.getCut('2Lep_ProbeQMisIDEvent')
 
             sp = sp.subprocess(cut=truthcut)
 

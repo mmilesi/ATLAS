@@ -98,10 +98,18 @@ gROOT.SetBatch(True)
 
 # -------------------------------------------------------------------------------------------------------------
 
-oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt/"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_NewTruthMatch/"
-rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_NewTruthMatch/"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch"
+
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_IncludeQMisID/"
+#rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_IncludeQMisID"
+
+oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_NewTruthMatch_2/"
+rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2"
 
 # -------------------------------------------------------------------------------------------------------------
 
