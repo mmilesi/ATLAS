@@ -48,8 +48,13 @@ gROOT.SetBatch(True)
 
 # -------------------------------------------------------------------------------------------------------------
 
-oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_Original/"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_QMisID_WEIGHTED/"
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_QMisID_WEIGHTED/"
+
+# -------------------------------------------------------------------------------------------------------------
+
+oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_QMisID_WEIGHTED/"
 
 # -------------------------------------------------------------------------------------------------------------
 
@@ -63,8 +68,11 @@ glob_rate_path = "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/"
 #filename_T     = "QMisIDRates_Data_2016_T_25ns_v14.root"
 #filename_AntiT = "QMisIDRates_Data_2016_antiT_25ns_v14.root"
 
-filename_T     = "QMisIDRates_Data_2016_T_25ns_v15.root"
-filename_AntiT = "QMisIDRates_Data_2016_antiT_25ns_v15.root"
+#filename_T     = "QMisIDRates_Data_2016_T_25ns_v15.root"
+#filename_AntiT = "QMisIDRates_Data_2016_antiT_25ns_v15.root"
+
+filename_T     = "QMisIDRates_Data_2016_T_25ns_v17.root"
+filename_AntiT = "QMisIDRates_Data_2016_antiT_25ns_v17.root"
 
 # -------------------------------------------------------------------------------------------------------------
 

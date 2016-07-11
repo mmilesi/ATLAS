@@ -59,12 +59,12 @@ class TTHBackgrounds2015(Background):
     }
 
     theta = {
-        #'El': (999.0, 0.0),
-        #'Mu': (999.0, 0.0),
+        'El': (999.0, 0.0),
+        'Mu': (999.0, 0.0),
         #'El': (0.163, 0.036), # v027
         #'Mu': (0.159, 0.022), # v027
-        'El': (0.390, 0.156), # v15
-        'Mu': (0.602, 0.120), # v15
+        #'El': (0.390, 0.156), # v15
+        #'Mu': (0.602, 0.120), # v15
     }
 
     theta_MC = {
@@ -224,12 +224,12 @@ class TTHBackgrounds2015(Background):
 
             #hmass = options.get('hmass', '125') #300 is the default value if hmass is not in options, hmass is specified in one option passed to the plot function in the plotting script
             inputgroup = [
-                ('ttH', 'ttH_dil'),
-                ('ttH', 'ttH_semilep'),
-                ('ttH', 'ttH_allhad'),         
-                #('ttH', 'ttH_dil_Pythia8'),
-                #('ttH', 'ttH_semilep_Pythia8'),
-                #('ttH', 'ttH_allhad_Pythia8'), 	 
+                #('ttH', 'ttH_dil'),
+                #('ttH', 'ttH_semilep'),
+                #('ttH', 'ttH_allhad'),
+                ('ttH', 'ttH_dil_Pythia8'),
+                ('ttH', 'ttH_semilep_Pythia8'),
+                ('ttH', 'ttH_allhad_Pythia8'),
                         ]
 
             print inputgroup
@@ -270,8 +270,8 @@ class TTHBackgrounds2015(Background):
 
             #hmass = options.get('hmass', '125') #300 is the default value if hmass is not in options, hmass is specified in one option passed to the plot function in the plotting script
             inputgroup = [
-                ('ttH', 'ttH_dil'),
-                #('ttH', 'ttH_dil_Pythia8'),
+                #('ttH', 'ttH_dil'),
+                ('ttH', 'ttH_dil_Pythia8'),
                          ]
 
             print inputgroup
@@ -310,8 +310,8 @@ class TTHBackgrounds2015(Background):
 
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
-                ('tops', 'ttW'),
-		#('tops', 'ttW_aMcAtNlo'),
+                #('tops', 'ttW'),
+		('tops', 'ttW_aMcAtNlo'),
                 #('tops', 'Sherpa_ttW'),
                          ]
 
@@ -352,12 +352,12 @@ class TTHBackgrounds2015(Background):
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
                 #('tops', 'ttZnnqq'),
-                ('tops', 'ttee'),
-                ('tops', 'ttmumu'),
-                ('tops', 'tttautau'),
-                #('tops', 'ttee_aMcAtNlo'),
-                #('tops', 'ttmumu_aMcAtNlo'),
-                #('tops', 'tttautau_aMcAtNlo'),		
+                #('tops', 'ttee'),
+                #('tops', 'ttmumu'),
+                #('tops', 'tttautau'),
+                ('tops', 'ttee_aMcAtNlo'),
+                ('tops', 'ttmumu_aMcAtNlo'),
+                ('tops', 'tttautau_aMcAtNlo'),
                 #('tops', 'Sherpa_ttZnnqq'),
                 #('tops', 'Sherpa_ttll'),
                          ]
@@ -876,8 +876,8 @@ class TTHBackgrounds2015(Background):
 
     class Top(Process):
 
-        #latexname = 't, tW, tZ, tWZ, ttWW, 4t'
-        latexname = 'tZ, tWZ, ttWW, 4t'
+        latexname = 't, tW, tZ, tWZ, ttWW, 4t'
+        #latexname = 'tZ, tWZ, ttWW, 4t'
         #latexname = 'rare top'
 
         colour = kAzure + 1
@@ -885,8 +885,8 @@ class TTHBackgrounds2015(Background):
         def base(self, treename='physics', category=None, options={}):
             inputgroup = [
                 ('tops', 'tZ'),
-                #('tops', 'tW'),
-                #('tops', 'singlet'),
+                ('tops', 'tW'),
+                ('tops', 'singlet'),
                 ('tops', '4top'),
                 ('tops', 'ttWW'),
                 ('tops', 'tWZDR'),
@@ -1081,9 +1081,12 @@ class TTHBackgrounds2015(Background):
                 ('Diboson', 'lllljj_EW6'),
                 ('Diboson', 'ggllll'),
                 ('Diboson', 'ggllvv'),
-                ('Diboson', 'WW'),
-                ('Diboson', 'WZ'),
-                ('Diboson', 'ZZ'),
+                #('Diboson', 'WW'),
+                #('Diboson', 'WZ'),
+                #('Diboson', 'ZZ'),
+                ('Diboson', 'WW_SHv21_improved'),
+                ('Diboson', 'WZ_SHv21_improved'),
+                ('Diboson', 'ZZ_SHv21_improved'),
                          ]
 
             print inputgroup

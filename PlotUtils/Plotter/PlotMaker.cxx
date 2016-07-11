@@ -403,10 +403,10 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 	  } else if ( Rates.at(iRate) == "QMisID" ) {
             h->SetLineColor(kOrange+7);
             h->SetMarkerColor(kOrange+7);
-	  } else if ( Rates.at(iRate) == "ScaledFake" ) {  
+	  } else if ( Rates.at(iRate) == "ScaledFake" ) {
             h->SetLineColor(kAzure+10);
             h->SetMarkerColor(kAzure+10);
-	  }	  
+	  }
 
           if ( iRate == 0 && iFile == 0 ) { h->Draw("E0"); } // E0 options draws error bars
 	  else                            { h->Draw("E0,SAME");}
@@ -484,7 +484,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  //variables.push_back("Eta");
+  variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
@@ -725,8 +725,8 @@ void execute_DiffSamples() {
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake/","Data - T&P - w/ sub."));
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_FIXED/","Data - T&P - w/ sub."));
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG/","Data - T&P - w/ sub."));  
-  
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG/","Data - T&P - w/ sub."));
+
   //vec.push_back(make_pair("../OutputPlots_MMRates_LHFit_25ns_v15/","Data - Likelihood - w/ sub."));
 
   PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
@@ -786,9 +786,11 @@ void execute_DataVSMC() {
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/","Data - w/ sub."));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15/","MC t#bar{t}"));
-  
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15/Rates_NominalBinning/","MC t#bar{t}"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15_NOWEIGHTS/","MC t#bar{t} - NO WEIGHTS"));  
+
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15/Rates_NominalBinning/","MC t#bar{t}"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15_NOWEIGHTS/","MC t#bar{t} - NO WEIGHTS"));
+
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch/","MC t#bar{t} - NO WEIGHTS"));
 
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
 
