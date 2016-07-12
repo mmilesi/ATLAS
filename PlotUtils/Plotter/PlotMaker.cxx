@@ -275,8 +275,8 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 
   vector<string> Rates;
   Rates.push_back("Real");
-  //Rates.push_back("Fake");
-  //Rates.push_back("QMisID");
+  Rates.push_back("Fake");
+  Rates.push_back("QMisID");
   Rates.push_back("ScaledFake");
 
   string data_type("");
@@ -339,6 +339,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
         for( unsigned int iRate(0); iRate < Rates.size() ; ++iRate ) {
 
           if ( lepton_flavours.at(iFlav) == "Mu" && ( Rates.at(iRate) == "QMisID" || Rates.at(iRate) == "ScaledFake" ) ) { continue; }
+          //if ( lepton_flavours.at(iFlav) == "El" && ( Rates.at(iRate) == "Fake" ) ) { continue; }
 
 	  cout << "\t\t\t" << Rates.at(iRate) << " Rate/Efficiency " << endl;
           cout << "-------------------------------" << endl;
@@ -484,12 +485,13 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  variables.push_back("Eta");
+  //variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
   vector<string> Rates;
   Rates.push_back("Real");
+  Rates.push_back("ScaledFake");
   Rates.push_back("Fake");
 
   // loop over variables
@@ -553,6 +555,10 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
           TH1D *h(nullptr);
 
           string data_type = ( input_files.at(iFile).second.find("Data") != string::npos ) ? "observed" : "expected";
+
+	  if ( Rates.at(iRate) == "Fake" && input_files.at(iFile).second.find("Data") != string::npos && lepton_flavours.at(iFlav) == "El" ) { continue; }
+	  if ( Rates.at(iRate) == "ScaledFake" && input_files.at(iFile).second.find("Data") == string::npos ) { continue; }
+          if ( Rates.at(iRate) == "ScaledFake" && lepton_flavours.at(iFlav) == "Mu" ) { continue; }
 
 	  string histname = lepton_flavours.at(iFlav) + "_Probe" + variables.at(iVar) + "_" + Rates.at(iRate) + "_" + RATE_OR_EFF  + "_" + data_type;
 
@@ -725,9 +731,11 @@ void execute_DiffSamples() {
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake/","Data - T&P - w/ sub."));
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_FIXED/","Data - T&P - w/ sub."));
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG/","Data - T&P - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG/","Data - T&P - w/ sub."));
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_LHFit_25ns_v15/","Data - Likelihood - w/ sub."));
+
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl/","Data - T&P - w/ sub."));
 
   PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
   //PlotRateEff_DiffSamples(vec,"Data","OF","Efficiency","png");
@@ -790,7 +798,10 @@ void execute_DataVSMC() {
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15/Rates_NominalBinning/","MC t#bar{t}"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v15_NOWEIGHTS/","MC t#bar{t} - NO WEIGHTS"));
 
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch/","MC t#bar{t} - NO WEIGHTS"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch/","MC t#bar{t} - NO WEIGHTS"));
+
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl/","Data - w/ sub."));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2/","MC t#bar{t} - NO WEIGHTS"));
 
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
 

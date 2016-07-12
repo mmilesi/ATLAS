@@ -250,12 +250,6 @@ if args.useGroupNTup:
         #
         vardb.registerCut( Cut('TrigDec',     '( passEventCleaning == 1 && ( ( RunYear == 2015 && ( ( HLT_mu20_iloose_L1MU15 == 1 ) || ( HLT_mu50 == 1 ) || ( HLT_e24_lhmedium_L1EM20VH == 1 ) || ( HLT_e60_lhmedium == 1 ) || ( HLT_e120_lhloose == 1 ) ) ) || ( RunYear == 2016 && ( ( HLT_mu24_ivarmedium == 1 ) || ( HLT_mu50 == 1 ) || ( HLT_e24_lhtight_nod0_ivarloose == 1 ) || ( HLT_e60_lhmedium_nod0 == 1 ) || ( HLT_e140_lhloose_nod0 == 1 ) ) ) ) )' ) )
 
-    #
-    # TEMP! Remove trigger for MC closure
-    #
-    #if doMMClosureRates or doMMClosureTest:
-    #    vardb.GetCut('TrigDec').cutstr = '( 1 )'
-
     vardb.registerCut( Cut('LargeNBJet',  '( nJets_OR_T_MV2c10_70 > 1 )') )
     vardb.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_T_MV2c10_70 < 4 )') )
     vardb.registerCut( Cut('BJetVeto',    '( nJets_OR_T_MV2c10_70 == 0 )') )
@@ -362,11 +356,6 @@ if args.useGroupNTup:
         # This should be just fine
         #
         vardb.registerCut( Cut('2Lep_TrigMatch',       '( ( lep_isTrigMatch_0 == 1 || lep_isTrigMatch_1 == 1 ) )') )
-        #
-        # TEMP! Remove trigger for MC closure
-        #
-        #if doMMClosureRates or doMMClosureTest:
-        #    vardb.GetCut('2Lep_TrigMatch').cutstr = '( 1 )'
 
     if doRelaxedBJetCut:
         print("\nUsing relaxed nr. bjet cut: INCLUSIVE bjet multiplicity...\n")
@@ -712,7 +701,7 @@ if doZSSpeakCR:
 
 if doCFChallenge:
     print ''
-    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 8, minval = 1.5, maxval = 9.5) )
+    vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 10, minval = -0.5, maxval = 9.5) )
 
 if doStandardPlots:
     print ''

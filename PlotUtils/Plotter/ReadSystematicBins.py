@@ -13,7 +13,7 @@ def get_yields(nominal, up=None, down=None):
   #print("\t\trange(0,GetNbinsX()+1) = {0}".format(range(0,nominal.GetNbinsX()+1)))
 
   # pick also O-Flow bin
-  for bin in range(0,nominal.GetNbinsX()+2):
+  for bin in range(0,nominal.GetNbinsX()+1):#+2):
 
      nextbin = bin
      #if nominal.IsBinOverflow(bin+1):
@@ -22,11 +22,21 @@ def get_yields(nominal, up=None, down=None):
      stat_error    = Double(0)
      value_nominal = nominal.IntegralAndError(bin,nextbin,stat_error)
 
+     # if nominal.IsBinOverflow(bin+1):
+     #   value_nominal -= nominal.IntegralAndError(bin+1,nextbin,stat_error)
+
+     bincenter = nominal.GetBinCenter(bin)
+
+
      if ( up and down ):
        dummy_err_up  = Double(0)
        value_up = up.IntegralAndError(bin,nextbin,dummy_err_up)
        dummy_err_down  = Double(0)
        value_down = down.IntegralAndError(bin,nextbin,dummy_err_down)
+
+       # if nominal.IsBinOverflow(bin+1):
+       #   value_up   -= up.IntegralAndError(bin+1,nextbin,dummy_err_up)
+       #   value_down -= down.IntegralAndError(bin+1,nextbin,dummy_err_down)
 
        delta_up   = value_up - value_nominal
        delta_down = value_down - value_nominal
@@ -48,20 +58,21 @@ def get_yields(nominal, up=None, down=None):
        #sys_error  = max(list_variations)
 
        if nominal.IsBinOverflow(bin):
-         #print ("\t\t{0}-th bin (O-FLOW): integral = {1} +- {2} (stat) +- {3} (syst)".format( bin, value_nominal, stat_error, sys_error ))
-         print ("\t\t{0}-th bin (O-FLOW): integral = {1} +- {2} (stat) (+ {3}, - {4}) (syst)".format( bin, value_nominal, stat_error, sys_up, sys_down ))
+         #print ("\t\t{0}-jets bin (O-FLOW): integral = {1} +- {2} (stat) +- {3} (syst)".format( bincenter, value_nominal, stat_error, sys_error ))
+         print ("\t\t{0}-jets bin (O-FLOW): integral = {1} +- {2} (stat) (+ {3}, - {4}) (syst)".format( bincenter, value_nominal, stat_error, sys_up, sys_down ))
        else:
-         #print ("\t\t{0}-th bin: integral = {1} +- {2} (stat) +- {3} (syst)".format( bin, value_nominal, stat_error, sys_error ))
-         print ("\t\t{0}-th bin: integral = {1} +- {2} (stat) (+ {3}, - {4}) (syst)".format( bin, value_nominal, stat_error, sys_up, sys_down ))
+         #print ("\t\t{0}-jets bin: integral = {1} +- {2} (stat) +- {3} (syst)".format( bincenter, value_nominal, stat_error, sys_error ))
+         print ("\t\t{0}-jets bin: integral = {1} +- {2} (stat) (+ {3}, - {4}) (syst)".format( bincenter, value_nominal, stat_error, sys_up, sys_down ))
 
      else:
        if nominal.IsBinOverflow(bin):
-         print ("\t\t{0}-th bin (O-FLOW): integral = {1} +- {2} (stat)".format( bin, value_nominal, stat_error ))
+         print ("\t\t{0}-jets bin (O-FLOW): integral = {1} +- {2} (stat)".format( bincenter, value_nominal, stat_error ))
        else:
-         print ("\t\t{0}-th bin: integral = {1} +- {2} (stat)".format( bin, value_nominal, stat_error ))
+         print ("\t\t{0}-jets bin: integral = {1} +- {2} (stat)".format( bincenter, value_nominal, stat_error ))
 
   integral_stat_error = Double(0)
-  integral_nominal    = nominal.IntegralAndError(0,nominal.GetNbinsX()+1,integral_stat_error)
+  #integral_nominal    = nominal.IntegralAndError(0,nominal.GetNbinsX()+1,integral_stat_error)
+  integral_nominal    = nominal.IntegralAndError(0,nominal.GetNbinsX(),integral_stat_error)
 
   print ("\t\t--------------------")
   if ( up and down ):
@@ -117,9 +128,17 @@ def main():
     #region    = "SS_SR_DataDriven"
     #var_name  = "NJets2j3j4j"
 
-    inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v7_FinalSelection_DDQMisID/"
-    region    = "SS_SR_DataDriven"
-    var_name  = "NJets5j"
+    #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v7_FinalSelection_DDQMisID/"
+    #region    = "SS_SR_DataDriven"
+    #var_name  = "NJets5j"
+
+    #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v17_NewTruthMatch/"
+    #region    = "SS_SR_DataDriven"
+    #var_name  = "NJets5j"
+
+    inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v17_NewTruthMatch/"
+    region    = "SS_LowNJetCR_DataDriven"
+    var_name  = "NJets2j3j4j"
 
   else:
 

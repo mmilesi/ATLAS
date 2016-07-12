@@ -11,8 +11,8 @@ SetAtlasStyle()
 
 gROOT.SetBatch(True)
 
-file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v15.root")
-file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v15.root")
+file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v17.root")
+file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v17.root")
 
 hist_N_orig = file_N.Get("LikelihoodPt")
 hist_D_orig = file_D.Get("LikelihoodPt")
@@ -90,7 +90,7 @@ c.SaveAs("QMisID_Pt_rates_ratio_T_L.png")
 # -------------------------------------
 
 #file_eff = TFile("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake/Rates.root")
-file_eff = TFile("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_WEIGHTED_AVG/Rates.root")
+file_eff = TFile("../OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl/Rates.root")
 #file_eff = TFile("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG/Rates.root")
 
 hist_F_orig = file_eff.Get("El_ProbePt_Fake_Efficiency_observed")
