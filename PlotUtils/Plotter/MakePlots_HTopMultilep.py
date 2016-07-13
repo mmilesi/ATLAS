@@ -237,7 +237,9 @@ if args.useDLT:
     # 2015 DLT triggers - 20.7 samples
     #
     #vardb.registerCut( Cut('TrigDec',     '( passEventCleaning == 1 && RunYear == 2015 && ( HLT_2e12_lhloose_L12EM10VH == 1 ) || ( HLT_2mu10 == 1 ) || ( HLT_e17_loose_mu14 == 1 ) )') )
-    vardb.registerCut( Cut('TrigDec',	  '( passEventCleaning == 1 && ( ( RunYear == 2015 && ( HLT_2e12_lhloose_L12EM10VH == 1 ) || ( HLT_2mu10 == 1 ) || ( HLT_e17_loose_mu14 == 1 ) ) || ( RunYer == 2016 && ( HLT_2e15_lhvloose_nod0_L12EM13VH == 1 ) || ( HLT_2mu14 == 1 ) || ( HLT_e17_lhloose_nod0_mu14 == 1 ) ) ) )') )
+    # 2015 + 2016 triggers - 20.7 samples
+    #
+    vardb.registerCut( Cut('TrigDec',	  '( passEventCleaning == 1 && ( ( RunYear == 2015 && ( HLT_2e12_lhloose_L12EM10VH == 1 ) || ( HLT_2mu10 == 1 ) || ( HLT_e17_loose_mu14 == 1 ) ) || ( RunYear == 2016 && ( HLT_2e15_lhvloose_nod0_L12EM13VH == 1 ) || ( HLT_2mu14 == 1 ) || ( HLT_e17_lhloose_nod0_mu14 == 1 ) ) ) )') )
 
 else:
     #
@@ -298,7 +300,11 @@ vardb.registerCut( Cut('2Lep1Tau_NBJet',	'( nJets_OR_T_MV2c10_70 > 0 )') )
 # ---------------------
 
 if args.useDLT:
+    # 2015 DLT trigger matching
+    #
     #vardb.registerCut( Cut('2Lep_TrigMatch',	    '( ( dilep_type == 1 && HLT_2mu10 == 1 && lep_Pt_0 > 11e3 && lep_Pt_1 > 11e3 ) || ( dilep_type == 2 && HLT_e17_loose_mu14 == 1 && ( ( TMath::Abs( lep_ID_0 ) == 11 && lep_Pt_0 > 19e3 && lep_Pt_1 > 15e3 ) || (  TMath::Abs( lep_ID_0 ) == 13 && lep_Pt_0 > 15e3 && lep_Pt_1 > 19e3 ) ) ) || ( dilep_type == 3 && HLT_2e12_lhloose_L12EM10VH == 1 && lep_Pt_0 > 13e3 && lep_Pt_1 > 13e3 ) )') )
+    # 2015+2016 DLT trigger matching
+    #    
     vardb.registerCut( Cut('2Lep_TrigMatch',	   '( ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_2mu10 == 1 && lep_Pt_0 > 11e3 && lep_Pt_1 > 11e3 ) || ( RunYear == 2016 && HLT_2mu14 == 1 && lep_Pt_0 > 15e3 && lep_Pt_1 > 15e3 ) ) ) || ( dilep_type == 2 && ( ( RunYear == 2015 && HLT_e17_loose_mu14 == 1 ) || ( RunYear == 2016 && HLT_e17_lhloose_nod0_mu14 == 1 ) ) && ( ( TMath::Abs( lep_ID_0 ) == 11 && lep_Pt_0 > 18e3 && lep_Pt_1 > 15e3 ) || (  TMath::Abs( lep_ID_0 ) == 13 && lep_Pt_0 > 15e3 && lep_Pt_1 > 18e3 ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH == 1 && lep_Pt_0 > 13e3 && lep_Pt_1 > 13e3 ) || ( RunYear == 2016 && HLT_2e15_lhvloose_nod0_L12EM13VH == 1 && lep_Pt_0 > 16e3 && lep_Pt_1 > 16e3 ) ) ) )') )
 else:
     # 2015+2016 trigger matching
@@ -1283,10 +1289,10 @@ if doMMSidebands:
 
     truth_cut = vardb.getCut('2Lep_PurePromptEvent')
     if "CLOSURE" in args.channel:
-        #truth_cut = vardb.getCut('2Lep_NonPromptEvent')
+        truth_cut = vardb.getCut('2Lep_NonPromptEvent') # this contains also a QMisID veto
 	
 	# TEMP!
-	truth_cut = vardb.getCut('DummyCut')
+	#truth_cut = vardb.getCut('DummyCut')
 
     if "HIGHNJ" in args.channel:
 
@@ -1397,7 +1403,7 @@ weight_pileup = ('weight_pileup','pileupEventWeight_090')[bool(args.useGroupNTup
 #
 # TEMP!! Closure w/o any correction
 #
-if doMMClosureTest or doMMClosureRates:
+if doMMClosureTest or doMMClosureRates or ( doMMSidebands and "CLOSURE" in args.channel ):
     weight_pileup = '1.0'
 #
 # ---------------------------------------
@@ -1833,7 +1839,7 @@ for category in vardb.categorylist:
         #
         # TEMP!! Closure w/o any correction
 	#
-	if doMMClosureTest or doMMClosureRates:
+	if doMMClosureTest or doMMClosureRates or ( doMMSidebands and "CLOSURE" in args.channel ):
 	    combined_SF_weight = '1.0'
 	#
 	# ---------------------------------------
