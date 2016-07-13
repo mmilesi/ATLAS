@@ -435,7 +435,7 @@ vardb.registerCut( Cut('2Lep_Zmincut_ttW',	  '( Mll01 > 40e3 )'))
 # https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/MCTruthClassifier/trunk/MCTruthClassifier/MCTruthClassifierDefs.h
 #
 # -------------------------------------------------------------------------------
-
+"""
 # 1.
 # Event passes this cut if ALL leptons are prompt (MCTruthClassifier --> Iso), and none is charge flip
 #
@@ -495,7 +495,21 @@ vardb.registerCut( Cut('2Lep_ProbeNonPromptOrQMisIDEvent', '( isMC==0 || ( isMC=
 vardb.registerCut( Cut('2Lep_ProbeNonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_Probe_isPrompt == 0 && !( lep_Probe_isBrems == 1 && lep_Probe_isQMisID == 0 ) ) && lep_Probe_isQMisID == 0 ) ) )') )
 vardb.registerCut( Cut('2Lep_ProbeQMisIDEvent',    '( isMC==0 || ( isMC==1 && ( lep_Probe_isQMisID == 1 ) ) )') )
 vardb.registerCut( Cut('2Lep_ProbeLepFromPhEvent', '( isMC==0 || ( isMC==1 && ( lep_Probe_isConvPh == 1 || lep_Probe_isISRFSRPh_0 == 1 ) ) )') )
+"""
 
+# --------------------------------------------------------------------------------------------------------------------------------------- 
+# ---------------------------------------------------------------------------------------------------------------------------------------
+
+vardb.registerCut( Cut('2Lep_PurePromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) && ( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) ) )') )
+vardb.registerCut( Cut('2Lep_NonPromptEvent',  '( isMC==0 || ( isMC==1 && ( ( !( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) || !( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) && !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) )') )
+vardb.registerCut( Cut('2Lep_QMisIDVeto',      '( isMC==0 || ( isMC==1 && ( !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )') )
+
+vardb.registerCut( Cut('2Lep_ProbePromptEvent',            '( isMC==0 || ( isMC==1 && ( lep_Probe_truthType == 2 || lep_Probe_truthType == 6 ) ) )') )
+vardb.registerCut( Cut('2Lep_ProbeNonPromptOrQMisIDEvent', '( isMC==0 || ( isMC==1 && !( lep_Probe_truthType == 2 || lep_Probe_truthType == 6 ) ) )') )
+vardb.registerCut( Cut('2Lep_ProbeNonPromptEvent',         '( isMC==0 || ( isMC==1 && ( !( lep_Probe_truthType == 2 || lep_Probe_truthType == 6 ) && !( lep_Probe_truthType == 4 && lep_Probe_truthOrigin == 5 ) ) ) )') )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------------------------
 
 # ---------------------------
 # A list of variables to plot
