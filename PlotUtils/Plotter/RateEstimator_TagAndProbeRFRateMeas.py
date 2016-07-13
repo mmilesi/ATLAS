@@ -226,7 +226,7 @@ if __name__ == "__main__":
 
     list_lep         = dict_channels_lep[args.flavourComp]
     list_types       = ["Real","RealQMisIDBinning","Fake"]
-    list_variables   = ["ProbePt","ProbeEta"] #"ProbeNJets"]
+    list_variables   = ["ProbePt"]#,"ProbeEta"] #"ProbeNJets"]
     list_selections  = ["L","T","AntiT"]
     list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                                   # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
@@ -392,15 +392,28 @@ if __name__ == "__main__":
 
                                         # standard binning
                                         #
+                                        #nBIN  = 5
+                                        #xbins = [10,15,20,25,40,200] # merged bin [60,200]
+					
+					# TEMP! ---> test with probe trigger matching
                                         nBIN  = 5
-                                        xbins = [10,15,20,25,40,200] # merged bin [60,200]
+                                        xbins = [10,15,20,25,60,200] # --> follows trigger thresholds
 
                                 elif iType == "Real":
 
                                     # standard binning
                                     #
-                                    nBIN  = 7
-                                    xbins = [10,15,20,25,30,40,60,200]
+                                    #nBIN  = 7
+                                    #xbins = [10,15,20,25,30,40,60,200]
+				    
+				    # TEMP! ---> test with probe trigger matching
+                                    
+				    if iLep == "Mu":
+				        nBIN  = 5
+                                        xbins = [10,15,20,25,50,200] # --> follows trigger thresholds
+				    elif iLep == "El":
+				        nBIN  = 6
+                                        xbins = [10,15,20,25,60,140,200] # --> follows trigger thresholds
 
                                 elif iType == "RealQMisIDBinning":
 

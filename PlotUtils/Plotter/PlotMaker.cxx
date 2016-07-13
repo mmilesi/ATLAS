@@ -339,7 +339,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
         for( unsigned int iRate(0); iRate < Rates.size() ; ++iRate ) {
 
           if ( lepton_flavours.at(iFlav) == "Mu" && ( Rates.at(iRate) == "QMisID" || Rates.at(iRate) == "ScaledFake" ) ) { continue; }
-          //if ( lepton_flavours.at(iFlav) == "El" && ( Rates.at(iRate) == "Fake" ) ) { continue; }
+          if (  DATA_TYPE == "MC" && ( Rates.at(iRate) == "QMisID" || Rates.at(iRate) == "ScaledFake" ) ) { continue; }
 
 	  cout << "\t\t\t" << Rates.at(iRate) << " Rate/Efficiency " << endl;
           cout << "-------------------------------" << endl;
@@ -735,12 +735,15 @@ void execute_DiffSamples() {
 
   //vec.push_back(make_pair("../OutputPlots_MMRates_LHFit_25ns_v15/","Data - Likelihood - w/ sub."));
 
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl/","Data - T&P - w/ sub."));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl/","Data - T&P - w/ sub."));
+  
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2_RebinnedEff/","MC t#bar{t}"));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2_ProbeTrigMatched/","MC t#bar{t} - Probe TM"));
 
-  PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
+  //PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
   //PlotRateEff_DiffSamples(vec,"Data","OF","Efficiency","png");
   //PlotRateEff_DiffSamples(vec,"Data","MuMu","Efficiency","png");
-  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","png");
+  PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","png");
 
 }
 
