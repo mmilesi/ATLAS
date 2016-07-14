@@ -111,27 +111,32 @@ gROOT.SetBatch(True)
 #newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_NewTruthMatch_2/"
 #rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2"
 
-oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
-newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_MoriondTruthMatch/"
-rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_MoriondTruthMatch"
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_MoriondTruthMatch/"
+#rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_MoriondTruthMatch"
 
 #oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
 #newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl_ARITHMETIC_AVG/"
 #rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl"
 
+oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_TriggerMatching/"
+rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/Efficiencies_Probe_TM_NOT_TM"
+
 # -------------------------------------------------------------------------------------------------------------
 
 doMM_PtOnly = True
 addMM    = 'YES' # Set to 'YES' if MM weight branch does not exist yet
-nentries = 'ALL' #ALL
+nentries = '200' #ALL
 
 if not os.path.exists(newpath):
     os.makedirs(newpath)
 
 if doMM_PtOnly:
-  gROOT.LoadMacro("modifyttree_MM_PtOnly.cxx+g")
+    #gROOT.LoadMacro("modifyttree_MM_PtOnly.cxx+g")
+    gROOT.LoadMacro("modifyttree_MM_PtOnly_TrigMatch.cxx+g")
 else:
-  gROOT.LoadMacro("modifyttree_MM.cxx+g")
+    gROOT.LoadMacro("modifyttree_MM.cxx+g")
 
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
@@ -157,6 +162,7 @@ for group in group_list:
         command_line = None
         if doMM_PtOnly:
 	  command_line = 'modifyttree_MM_PtOnly(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
+	  command_line = 'modifyttree_MM_PtOnly_TrigMatch(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
         else:
           command_line = 'modifyttree_MM(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
 
