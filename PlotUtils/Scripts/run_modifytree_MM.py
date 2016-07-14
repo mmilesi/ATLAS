@@ -111,9 +111,13 @@ gROOT.SetBatch(True)
 #newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_NewTruthMatch_2/"
 #rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2"
 
-oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
-newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl_ARITHMETIC_AVG/"
-rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl"
+oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_MoriondTruthMatch/"
+rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_MoriondTruthMatch"
+
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl_ARITHMETIC_AVG/"
+#rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl"
 
 # -------------------------------------------------------------------------------------------------------------
 

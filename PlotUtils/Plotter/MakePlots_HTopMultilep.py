@@ -360,7 +360,8 @@ else:
     # This should be just fine
     #
     vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_isTightSelected == 1 && lep_Tag_isTrigMatch == 1 )') )
-    vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_isTrigMatch == 1 )') )
+    #vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_isTrigMatch == 1 )') )
+    vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( 1 )') )
 
 vardb.registerCut( Cut('2Lep_ProbeTight',		'( lep_Probe_isTightSelected == 1 )') )
 vardb.registerCut( Cut('2Lep_ProbeAntiTight',		'( lep_Probe_isTightSelected == 0 )') )
