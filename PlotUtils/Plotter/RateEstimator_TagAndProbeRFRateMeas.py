@@ -392,28 +392,28 @@ if __name__ == "__main__":
 
                                         # standard binning
                                         #
-                                        nBIN  = 5
-                                        xbins = [10,15,20,25,40,200] # merged bin [60,200]
+                                        #nBIN  = 5
+                                        #xbins = [10,15,20,25,40,200] # merged bin [60,200]
 
 					# TEMP! ---> test with probe trigger matching
-                                        #nBIN  = 5
-                                        #xbins = [10,15,20,25,60,200] # --> follows trigger thresholds
+                                        nBIN  = 5
+                                        xbins = [10,15,20,25,60,200] # --> follows trigger thresholds
 
                                 elif iType == "Real":
 
                                     # standard binning
                                     #
-                                    nBIN  = 7
-                                    xbins = [10,15,20,25,30,40,60,200]
+                                    #nBIN  = 7
+                                    #xbins = [10,15,20,25,30,40,60,200]
 
 				    # TEMP! ---> test with probe trigger matching
                                     #
-				    #if iLep == "Mu":
-				    #    nBIN  = 5
-                                    #    xbins = [10,15,20,25,50,200] # --> follows trigger thresholds
-				    #elif iLep == "El":
-				    #    nBIN  = 6
-                                    #    xbins = [10,15,20,25,60,140,200] # --> follows trigger thresholds
+				    if iLep == "Mu":
+				        nBIN  = 5
+                                        xbins = [10,15,20,25,50,200] # --> follows trigger thresholds
+				    elif iLep == "El":
+				        nBIN  = 6
+                                        xbins = [10,15,20,25,60,140,200] # --> follows trigger thresholds
 
                                 elif iType == "RealQMisIDBinning":
 

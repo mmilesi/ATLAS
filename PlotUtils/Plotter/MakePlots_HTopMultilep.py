@@ -79,7 +79,7 @@ parser.add_argument('--printEventYields', dest='printEventYields', action='store
 parser.add_argument('--useDLT', dest='useDLT', action='store_true', default=False,
                     help='Use dilepton triggers')
 parser.add_argument('--useMoriondTruth', dest='useMoriondTruth', action='store_true', default=False,
-                    help='Use 2016 Moriond-style truth matching (aka, just rely on type/origin info)')		    
+                    help='Use 2016 Moriond-style truth matching (aka, just rely on type/origin info)')
 
 args = parser.parse_args()
 
@@ -438,11 +438,11 @@ vardb.registerCut( Cut('2Lep_Zmincut_ttW',	  '( Mll01 > 40e3 )'))
 # -------------------------------------------------------------------------------
 
 if args.useMoriondTruth:
-    	
+
     vardb.registerCut( Cut('2Lep_PurePromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) && ( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) ) )') )
     vardb.registerCut( Cut('2Lep_NonPromptEvent',  '( isMC==0 || ( isMC==1 && ( ( !( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) || !( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) && !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )') )
     vardb.registerCut( Cut('2Lep_QMisIDVeto',	   '( isMC==0 || ( isMC==1 && ( !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )') )
-    
+
     vardb.registerCut( Cut('2Lep_ProbePromptEvent',	       '( isMC==0 || ( isMC==1 && ( lep_Probe_truthType == 2 || lep_Probe_truthType == 6 ) ) )') )
     vardb.registerCut( Cut('2Lep_ProbeNonPromptOrQMisIDEvent', '( isMC==0 || ( isMC==1 && !( lep_Probe_truthType == 2 || lep_Probe_truthType == 6 ) ) )') )
     vardb.registerCut( Cut('2Lep_ProbeNonPromptEvent',         '( isMC==0 || ( isMC==1 && ( !( lep_Probe_truthType == 2 || lep_Probe_truthType == 6 ) && !( lep_Probe_truthType == 4 && lep_Probe_truthOrigin == 5 ) ) ) )') )
@@ -460,6 +460,12 @@ else:
     #
     #vardb.registerCut( Cut('2Lep_NonPromptEvent', '( isMC==0 || ( isMC==1 && ( isFakeEvent == 1 ) && ( isQMisIDEvent == 0 ) ) )') )
     vardb.registerCut( Cut('2Lep_NonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isPrompt_0 == 0 && !( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) || ( lep_isPrompt_1 == 0 && !( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) ) && ( isQMisIDEvent == 0 ) ) )') )
+    #vardb.registerCut( Cut('2Lep_NonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isPrompt_0 == 0 || lep_isPrompt_1 == 0 ) && ( isQMisIDEvent == 0 ) ) ) )') )
+    #vardb.registerCut( Cut('2Lep_NonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isPrompt_0 == 0 || lep_isPrompt_1 == 0 ) && !( lep_isQMisID_0 == 1 || lep_isQMisID_1 == 1 ) ) ) )') )
+
+    # Ok, this is same as vetoing qmisid moriond style
+    #vardb.registerCut( Cut('2Lep_NonPromptEvent', '( isMC==0 || ( isMC==1 && ( ( lep_isPrompt_0 == 0 || lep_isPrompt_1 == 0 ) && !( lep_isQMisID_0 == 1 || lep_isQMisID_1 == 1 ) && !( lep_isConvPh_0 == 1 || lep_isConvPh_1 == 1 ) ) ) )') )
+
     #
     # 3.
     # Event passes this cut if AT LEAST ONE lepton is charge flip (does not distinguish trident VS charge-misId)
@@ -497,7 +503,7 @@ else:
     vardb.registerCut( Cut('2Lep_QMisIDORLepFromPhEvent', '( isMC==0 || ( isMC==1 && ( isQMisIDEvent == 1 || isLepFromPhEvent == 1 ) ) )') )
     #
     vardb.registerCut( Cut('2Lep_ISRPhEvent',	 '( isMC==0 || ( isMC==1 && ( lep_isISRFSRPh_0 == 1 || lep_isISRFSRPh_1 == 1 ) ) )') )
-    
+
     # Truth requirement only on the probe lepton for T&P
     #
     #vardb.registerCut( Cut('2Lep_ProbePromptEvent',	'( isMC==0 || ( isMC==1 && ( lep_Probe_isPrompt == 1 && lep_Probe_isQMisID == 0 ) ) )') )
@@ -1071,16 +1077,16 @@ if doMMRates or doMMClosureRates:
             print ('*********************************\nMEASURING CHARGE FLIP RATE IN MC\n*********************************')
             truth_sub_SS = ( vardb.getCut('2Lep_ProbeQMisIDEvent') )
 
-    
+
     # DEFAULT: do not apply any trigger matching on the probe
     # (require to pass/not pass TM only optionally)
     #
     probe_TM_cut = vardb.getCut('DummyCut')
     if "PROBE_TM" in args.channel:
-        probe_TM_cut = vardb.getCut('2Lep_LepProbeTrigMatched')   
+        probe_TM_cut = vardb.getCut('2Lep_LepProbeTrigMatched')
     elif "PROBE_NOT_TM" in args.channel:
-        probe_TM_cut = -vardb.getCut('2Lep_LepProbeTrigMatched') 
-    
+        probe_TM_cut = -vardb.getCut('2Lep_LepProbeTrigMatched')
+
     # Electron/muon R/F region(s)
     #
 
@@ -1181,8 +1187,8 @@ if doMMClosureTest:
             vardb.registerCategory( MyCategory('OFSS_SR_HighJet_DataDriven_Closure',     cut = vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
             vardb.registerCategory( MyCategory('ElElSS_SR_HighJet_DataDriven_Closure',   cut = vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_ElEl_Event','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
         elif "LOWNJ" in args.channel:
-            vardb.registerCategory( MyCategory('MuMuSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_MuMu_Event','2Lep_NJet_CR']) ) )
-            vardb.registerCategory( MyCategory('OFSS_SR_LowJet_DataDriven_Closure',      cut = vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
+            #vardb.registerCategory( MyCategory('MuMuSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_MuMu_Event','2Lep_NJet_CR']) ) )
+            #vardb.registerCategory( MyCategory('OFSS_SR_LowJet_DataDriven_Closure',      cut = vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
             vardb.registerCategory( MyCategory('ElElSS_SR_LowJet_DataDriven_Closure',    cut = vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_ElEl_Event','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
 
     elif ( args.fakeMethod == 'ABCD' ):
@@ -1400,7 +1406,7 @@ weight_pileup = ('weight_pileup','pileupEventWeight_090')[bool(args.useGroupNTup
 
 
 if doMMClosureTest or doMMClosureRates or ( doMMSidebands and "CLOSURE" in args.channel ):
-    # Closure w/o any correction 
+    # Closure w/o any correction
     #
     if "NO_CORR" in args.channel:
         weight_pileup = '1.0'
