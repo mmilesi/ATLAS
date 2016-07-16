@@ -276,8 +276,8 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
   vector<string> Rates;
   Rates.push_back("Real");
   Rates.push_back("Fake");
-  Rates.push_back("QMisID");
-  Rates.push_back("ScaledFake");
+  //Rates.push_back("QMisID");
+  //Rates.push_back("ScaledFake");
 
   string data_type("");
   if ( DATA_TYPE == "Data" )     { data_type = "observed"; }
@@ -491,7 +491,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 
   vector<string> Rates;
   Rates.push_back("Real");
-  Rates.push_back("ScaledFake");
+  //Rates.push_back("ScaledFake");
   Rates.push_back("Fake");
 
   // loop over variables
@@ -556,9 +556,9 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 
           string data_type = ( input_files.at(iFile).second.find("Data") != string::npos ) ? "observed" : "expected";
 
-	  if ( Rates.at(iRate) == "Fake" && input_files.at(iFile).second.find("Data") != string::npos && lepton_flavours.at(iFlav) == "El" ) { continue; }
-	  if ( Rates.at(iRate) == "ScaledFake" && input_files.at(iFile).second.find("Data") == string::npos ) { continue; }
-          if ( Rates.at(iRate) == "ScaledFake" && lepton_flavours.at(iFlav) == "Mu" ) { continue; }
+//	  if ( Rates.at(iRate) == "Fake" && input_files.at(iFile).second.find("Data") != string::npos && lepton_flavours.at(iFlav) == "El" ) { continue; }
+//	  if ( Rates.at(iRate) == "ScaledFake" && input_files.at(iFile).second.find("Data") == string::npos ) { continue; }
+//          if ( Rates.at(iRate) == "ScaledFake" && lepton_flavours.at(iFlav) == "Mu" ) { continue; }
 
 	  string histname = lepton_flavours.at(iFlav) + "_Probe" + variables.at(iVar) + "_" + Rates.at(iRate) + "_" + RATE_OR_EFF  + "_" + data_type;
 

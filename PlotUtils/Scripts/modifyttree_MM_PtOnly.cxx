@@ -17,7 +17,7 @@
 /
 *************** */
 
-bool g_debug(false);
+bool g_debug(true);
 bool g_verbose(false);
 
 std::map< std::string, TH1D* > g_el_hist_map;
@@ -144,7 +144,7 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
   } else {
     histname_el_pt_fr    = "El_ProbePt_ScaledFake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
   }
-  
+
   // get fake efficiency histograms
   //
   TH1D *hist_el_pt_fr    = get_hist( *file_F_el, histname_el_pt_fr );
