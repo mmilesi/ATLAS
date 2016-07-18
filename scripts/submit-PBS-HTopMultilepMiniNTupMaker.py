@@ -28,7 +28,7 @@ def create_jobs(sample_list, params, exec_job_script, steer_job_script):
 
         # Add items to parameters dictionary for *this* sample
         #
-        params.update({"sample" : int(sample), "temp_dir" : this_temp_dir, "infile" : this_file, "outdir" : outdir})
+        params.update({"sample" : int(sample), "temp_RC_dir" : this_temp_dir, "infile" : this_file, "outdir" : outdir})
 
 	exec_job_name = "run_xAH_job_{0}.py".format(sample)
         exec_job = open(exec_job_name, "w")
@@ -71,7 +71,8 @@ def runJob(temp_RC_dir,infile,configpath,treename,outdir,nevents):
     setup_cmd = "%s && %s Base,2.3.51" % (setupATLAS,rcSetup)
     subprocess.call(setup_cmd,shell=True)
 
-    xAH_run = "xAH_run.py -vv --files %s --config %s --treeName %s --submitDir %s --nevents %s --force direct" % (infile,configpath,treename,outdir,nevents)
+    cmd = "python %s/RootCoreBin/bin/x86_64-slc6-gcc49-opt/xAH_run.py" % (temp_RC_dir)
+    xAH_run = "%s -vv --files %s --config %s --treeName %s --submitDir %s --nevents %s --force direct" % (cmd,infile,configpath,treename,outdir,nevents)
 
     print("Running job: %s" % (xAH_run))
     subprocess.call(xAH_run,shell=True)
@@ -114,20 +115,22 @@ pwd
 python {name}
 exit 0
     """
-    home_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk"
-    #home_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk"
+
+    #home_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk"
+    home_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk"
 
     samplelist = [
-        "341270",
-        #"343365",
-        #"343366",
-        #"343367",
+        #"341270",
+        "343365",
+        "343366",
+        "343367",
     ]
 
     job_params = {
-        "temp_RC_dir" : string.Template("$TMPDIR/mmilesi").substitute(os.environ),
-	"inputpath"   : "/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v15/Nominal",
-	#"inputpath"   : "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal",
+        #"temp_RC_dir" : string.Template("$TMPDIR/mmilesi").substitute(os.environ),
+        "temp_RC_dir" : "/coepp/cephfs/mel/mmilesi/test_batch",
+	#"inputpath"   : "/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v15/Nominal",
+	"inputpath"   : "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal",
         "configpath"  :  "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py",
         "treename"    :  "nominal",
         "nevents"     :  10000,
