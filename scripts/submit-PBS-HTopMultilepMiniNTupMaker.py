@@ -8,13 +8,10 @@ def copyRootCore(sample_list, params, home_dir):
         tempdir = params["temp_RC_dir"]+"/xAH.{0}".format(sample)
         print("Creating temp directory:\n{0}...".format(tempdir))
 
-        if not os.path.exists(tempdir):
-            os.makedirs(tempdir)
-        else:
+        if os.path.exists(tempdir):
             shutil.rmtree(tempdir)
-            os.makedirs(tempdir)
 
-        copy_cmd  = "rsync -arzSH --exclude='.git/' {0}/RootCoreBin {1}/xAODAnaHelpers {2}/HTopMultilepAnalysis {3}/".format(home_dir,home_dir,home_dir,tempdir)
+	copy_cmd = "rc grid_submit_nobuild {0}".format(tempdir)
         subprocess.call(copy_cmd,shell=True)
 
 def create_jobs(sample_list, params, exec_job_script, steer_job_script):
@@ -57,22 +54,21 @@ if __name__ == '__main__':
 
     exec_job_script = """#!/bin/python
 
-import glob, os, sys, subprocess, shutil, string
+import os, subprocess
 
 def runJob(temp_RC_dir,infile,configpath,treename,outdir,nevents):
 
-    print("cd'ing to temp directory: %s" % (temp_RC_dir))
-    os.chdir(os.path.abspath(temp_RC_dir))
+    print("Setting up RootCore in temp directory: %s" % (temp_RC_dir))
 
     setupATLAS = "source $ATLAS_LOCAL_ROOT_BASE/user/atlasLocalSetup.sh"
-    rcSetup    = "source $ATLAS_LOCAL_RCSETUP_PATH/rcSetup.sh"
 
-    setup_cmd = "%s; %s Base,2.3.51; rc make_par" % (setupATLAS,rcSetup)
+    setup_cmd = "%s; source %s/RootCore/scripts/grid_run_nobuild.sh %s % (setupATLAS,temp_RC_dir,temp_RC_dir)
 
     cmd = "python %s/RootCoreBin/bin/x86_64-slc6-gcc49-opt/xAH_run.py" % (temp_RC_dir)
     xAH_run = "%s; %s -vv --files %s --config %s --treeName %s --submitDir %s --nevents %s --force direct" % (setup_cmd,cmd,infile,configpath,treename,outdir,nevents)
 
-    print("Running job: %s" % (xAH_run))
+    print("Running xAH job: %s" % (xAH_run))
+    
     subprocess.call(xAH_run,shell=True)
 
 if __name__ == '__main__':
