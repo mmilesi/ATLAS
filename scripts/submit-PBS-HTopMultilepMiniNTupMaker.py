@@ -2,11 +2,11 @@
 
 import glob, os, sys, subprocess, shutil, string
 
-def copyRootCore(sample_list, params, home_dir):
+def copy_rootcore(sample_list, params, home_dir):
 
     for sample in sample_list:
         tempdir = params["temp_RC_dir"]+"/xAH.{0}".format(sample)
-        print("Creating temp directory:\n{0}...".format(tempdir))
+        print("Creating temp directory:\n{0},\nand copying RootCore source in it...\n".format(tempdir))
 
         if os.path.exists(tempdir):
             shutil.rmtree(tempdir)
@@ -15,6 +15,8 @@ def copyRootCore(sample_list, params, home_dir):
         subprocess.call(copy_cmd,shell=True)
 
 def create_jobs(sample_list, params, exec_job_script, steer_job_script):
+
+    print("Creating job submission scripts...")
 
     job_list = []
     for sample in sample_list:
@@ -44,11 +46,19 @@ def create_jobs(sample_list, params, exec_job_script, steer_job_script):
 
     return job_list
 
-def submit_jobs(job_list):
+def submit_jobs(job_list, home_dir, sub_dir):
 
-    for job_par in job_list:
-       print("Submitting steering job script: {0} ==> executing script: {1}".format(job_par[0],job_par[1]))
-       subprocess.call("qsub "+job_par[0],shell=True)
+    print("Moving submission scripts to submission node...")
+    for job in job_list:
+        shutil.move(os.path.abspath(home_dir)+"/"+job[0],os.path.abspath(sub_dir)+"/"+job[0])
+        shutil.move(os.path.abspath(home_dir)+"/"+job[1],os.path.abspath(sub_dir)+"/"+job[1])
+   
+    print("Now cd'ing to submission node:\n{0}\n".format(sub_dir))
+    os.chdir(os.path.abspath(sub_dir))
+    
+    for job in job_list:
+        print("Submitting steering job script to PBS node: {0} (==> will be executing script: {1})".format(job[0],job[1]))
+        subprocess.call("qsub "+job[0],shell=True)
 
 if __name__ == '__main__':
 
@@ -62,7 +72,7 @@ def runJob(temp_RC_dir,infile,configpath,treename,outdir,nevents):
 
     setupATLAS = "source $ATLAS_LOCAL_ROOT_BASE/user/atlasLocalSetup.sh"
 
-    setup_cmd = "%s; source %s/RootCore/scripts/grid_run_nobuild.sh %s % (setupATLAS,temp_RC_dir,temp_RC_dir)
+    setup_cmd = "%s; source %s/RootCore/scripts/grid_run_nobuild.sh %s" % (setupATLAS,temp_RC_dir,temp_RC_dir)
 
     cmd = "python %s/RootCoreBin/bin/x86_64-slc6-gcc49-opt/xAH_run.py" % (temp_RC_dir)
     xAH_run = "%s; %s -vv --files %s --config %s --treeName %s --submitDir %s --nevents %s --force direct" % (setup_cmd,cmd,infile,configpath,treename,outdir,nevents)
@@ -101,16 +111,25 @@ cd $PBS_O_WORKDIR
 
 # Run job
 
-echo "Running batch job for sample {sample}:"
-env
+echo "Now into directory:"
 pwd
+echo "Running batch job for sample {sample}:"
+echo "Printing env variables:"
+env
 python {name}
 exit 0
     """
 
+    # The path to the directory where RootCore is originally set, and where the packages reside
+    #
     #home_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk"
     home_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk"
-
+    
+    # The path to the submission node (NB: must NOT be under /home : PBS cannot read/write into it!!)
+    #
+    sub_dir = "/coepp/cephfs/mel/mmilesi/test_batch"
+    #sub_dir = string.Template("$TMPDIR/mmilesi").substitute(os.environ)
+    
     samplelist = [
         #"341270",
         "343365",
@@ -119,8 +138,7 @@ exit 0
     ]
 
     job_params = {
-        #"temp_RC_dir" : string.Template("$TMPDIR/mmilesi").substitute(os.environ),
-        "temp_RC_dir" : "/coepp/cephfs/mel/mmilesi/test_batch",
+        "temp_RC_dir" : sub_dir,
 	#"inputpath"   : "/afs/cern.ch/user/m/mmilesi/work/private/HTopMultileptonsTestSamples/25ns_v15/Nominal",
 	"inputpath"   : "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/Nominal",
         "configpath"  :  "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py",
@@ -128,7 +146,8 @@ exit 0
         "nevents"     :  10000,
     }
 
-    copyRootCore(samplelist,job_params,home_dir)
+    copy_rootcore(samplelist,job_params,home_dir)
 
-    jobs = create_jobs(samplelist,job_params,exec_job_script, steer_job_script)
-    submit_jobs(jobs)
+    jobs = create_jobs(samplelist,job_params,exec_job_script,steer_job_script)
+    
+    submit_jobs(jobs,home_dir,sub_dir)
