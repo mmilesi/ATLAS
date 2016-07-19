@@ -22,17 +22,14 @@ if __name__ == '__main__':
 
     username = "mmilesi"
     
-    version     = "25ns_v17"
+    version     = "25ns_v18"
     sample_type = "Nominal"
     
-    basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v17/" + sample_type
+    basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v18/" + sample_type
     
     copylist = [
 301535,
 301536,
-301887,
-301888,
-301889,
 301890,
 301891,
 301892,
@@ -54,33 +51,41 @@ if __name__ == '__main__':
 301908,
 301909,
 301910,
-304776,
 341177,
 341270,
 341271,
 341988,
 341989,
 341990,
+341991,
+341992,
+341994,
+341995,
+341996,
 341997,
 341998,
 341999,
+342000,
+342001,
+342004,
+342005,
 342170,
 342171,
 342172,
 342284,
 342285,
-343243,
 343266,
 343267,
 343268,
+343269,
+343270,
+343271,
+343272,
+343273,
+343274,
 343365,
 343366,
 343367,
-343436,
-344096,
-344098,
-344133,
-344134,
 361063,
 361064,
 361065,
@@ -116,6 +121,7 @@ if __name__ == '__main__':
 361095,
 361096,
 361097,
+361100,
 361101,
 361102,
 361103,
@@ -151,6 +157,7 @@ if __name__ == '__main__':
 361324,
 361325,
 361326,
+361327,
 361328,
 361329,
 361330,
@@ -177,7 +184,8 @@ if __name__ == '__main__':
 361351,
 361352,
 361353,
-361355,
+361354,
+361356,
 361357,
 361358,
 361359,
@@ -243,7 +251,6 @@ if __name__ == '__main__':
 361419,
 361420,
 361421,
-361422,
 361423,
 361424,
 361425,
@@ -295,7 +302,6 @@ if __name__ == '__main__':
 361504,
 361505,
 361506,
-361507,
 361508,
 361509,
 361510,
@@ -324,7 +330,6 @@ if __name__ == '__main__':
 361632,
 361633,
 361634,
-361635,
 361636,
 361637,
 361638,
@@ -478,6 +483,7 @@ if __name__ == '__main__':
 363483,
 410000,
 410001,
+410002,
 410007,
 410009,
 410011,
@@ -491,7 +497,6 @@ if __name__ == '__main__':
 410049,
 410050,
 410066,
-410067,
 410068,
 410073,
 410074,
@@ -521,29 +526,12 @@ if __name__ == '__main__':
 410220,
     ]
 
-    """
-WARNING! Sample 301904 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 343436 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 344096 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 344098 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 344133 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 344134 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 361073 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 361388 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 361409 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 361435 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 361482 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 410000 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 410121 not copied yet from EOS to Melbourne cloud
-WARNING! Sample 410155 not copied yet from EOS to Melbourne cloud
-    """
-
     cmdlist = []
     for sample in copylist:
         cmd = "cd " + basedir + " && mkdir -p " + str(sample) + " && cd $_ && xrdcp root://eospublic.cern.ch//eos/escience/UniTexas/HSG8/multileptons_ntuple_run2/" + version + "/" + sample_type + "/" + str(sample) + ".root ."
         cmdlist.append(cmd)
 
-    MAX_PARALLEL = 4
+    MAX_PARALLEL = 5
 
     #print listchunks(cmdlist,MAX_PARALLEL)
 
