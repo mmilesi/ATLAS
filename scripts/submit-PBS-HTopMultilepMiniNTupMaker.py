@@ -14,7 +14,7 @@ def copyRootCore(sample_list, params, home_dir):
             shutil.rmtree(tempdir)
             os.makedirs(tempdir)
 
-        copy_cmd  = "cp -r {0}/RootCoreBin {1}/xAODAnaHelpers {2}/HTopMultilepAnalysis {3}/".format(home_dir,home_dir,home_dir,tempdir)
+        copy_cmd  = "rsync -arzSH --exclude='.git/' {0}/RootCoreBin {1}/xAODAnaHelpers {2}/HTopMultilepAnalysis {3}/".format(home_dir,home_dir,home_dir,tempdir)
         subprocess.call(copy_cmd,shell=True)
 
 def create_jobs(sample_list, params, exec_job_script, steer_job_script):
@@ -64,15 +64,13 @@ def runJob(temp_RC_dir,infile,configpath,treename,outdir,nevents):
     print("cd'ing to temp directory: %s" % (temp_RC_dir))
     os.chdir(os.path.abspath(temp_RC_dir))
 
-    setupATLAS = string.Template("source $ATLAS_LOCAL_ROOT_BASE/user/atlasLocalSetup.sh").substitute(os.environ)
-    rcSetup    = string.Template("source $ATLAS_LOCAL_RCSETUP_PATH/rcSetup.sh").substitute(os.environ)
+    setupATLAS = "source $ATLAS_LOCAL_ROOT_BASE/user/atlasLocalSetup.sh"
+    rcSetup    = "source $ATLAS_LOCAL_RCSETUP_PATH/rcSetup.sh"
 
-    print("Setting up RootCore and ASG...")
-    setup_cmd = "%s && %s Base,2.3.51" % (setupATLAS,rcSetup)
-    subprocess.call(setup_cmd,shell=True)
+    setup_cmd = "%s; %s Base,2.3.51; rc make_par" % (setupATLAS,rcSetup)
 
     cmd = "python %s/RootCoreBin/bin/x86_64-slc6-gcc49-opt/xAH_run.py" % (temp_RC_dir)
-    xAH_run = "%s -vv --files %s --config %s --treeName %s --submitDir %s --nevents %s --force direct" % (cmd,infile,configpath,treename,outdir,nevents)
+    xAH_run = "%s; %s -vv --files %s --config %s --treeName %s --submitDir %s --nevents %s --force direct" % (setup_cmd,cmd,infile,configpath,treename,outdir,nevents)
 
     print("Running job: %s" % (xAH_run))
     subprocess.call(xAH_run,shell=True)
@@ -86,9 +84,6 @@ if __name__ == '__main__':
     steer_job_script="""#!/bin/bash
 
 # --- Start PBS Directives ---
-
-# Inherit current user environment
-#PBS -V
 
 # Submit to the long/short queue
 #PBS -q short
@@ -111,6 +106,7 @@ cd $PBS_O_WORKDIR
 # Run job
 
 echo "Running batch job for sample {sample}:"
+env
 pwd
 python {name}
 exit 0
@@ -122,8 +118,8 @@ exit 0
     samplelist = [
         #"341270",
         "343365",
-        "343366",
-        "343367",
+        #"343366",
+        #"343367",
     ]
 
     job_params = {
