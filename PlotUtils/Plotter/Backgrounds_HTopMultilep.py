@@ -1,4 +1,4 @@
-""" ttH2015_Background.py: a set of classes to manage the analysis samples """
+""" Backgrounds_HTopMultilep.py: a set of classes to manage the various processes """
 
 __author__     = "KG, Marco Milesi, Francesco Nuti"
 __email__      = "Kong.Guan.Tan@cern.ch, marco.milesi@cern.ch, francesco.nuti@cern.ch"
@@ -8,7 +8,7 @@ import os, sys, math, types
 
 sys.path.append(os.path.abspath(os.path.curdir))
 
-from Plotter.BackgroundTools_ttH import loadSamples, drawText, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
+from Plotter.BackgroundTools_HTopMultilep import loadSamples, drawText, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
 
 from ROOT import TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kGreen, kAzure, kTeal, kSpring, kOrange, kCyan, TLegend, TLatex, TCanvas, TH1I, TFile
 
@@ -32,7 +32,7 @@ class MyCategory(Category):
             self.jet = self.tokens[1]
             #self.met = self.tokens[2]
 
-class TTHBackgrounds2015(Background):
+class TTHBackgrounds(Background):
 
     backgrounds     = [ 'TTBarW', 'TTBarZ', 'Top', 'TopCF', 'Diboson', 'DibosonCF', 'HtoZZ', 'ZjetsLF', 'Zjets', 'Wjets', 'Prompt', 'ChargeFlipMC', 'ChargeFlip', 'FakesFF', 'FakesMM', 'FakesABCD']
     sub_backgrounds = [ 'TTBarW', 'TTBarZ', 'Top', 'TTBar', 'Diboson', 'Zjets', 'Wjets', 'ChargeFlipMC']
@@ -1712,7 +1712,7 @@ class TTHBackgrounds2015(Background):
             basecut = basecut.removeCut(self.vardb.getCut('2Lep_NJet_SR'))
             basecut = basecut.removeCut(self.vardb.getCut('2Lep_NJet_CR'))
 
-            if TTHBackgrounds2015.theta['El'][0] == 999.0 :
+            if TTHBackgrounds.theta['El'][0] == 999.0 :
 
                 print ("Calculating theta_el from data in regions C,D...")
 
@@ -1791,13 +1791,13 @@ class TTHBackgrounds2015(Background):
 
                 # derive theta factors for el
                 #
-                TTHBackgrounds2015.theta['El'] = self.calcTheta(sp_C_el,sp_D_el,stream='El')
+                TTHBackgrounds.theta['El'] = self.calcTheta(sp_C_el,sp_D_el,stream='El')
 
             else :
-                print ("Reading theta(el) value: {0} +- {1}".format(TTHBackgrounds2015.theta['El'][0], TTHBackgrounds2015.theta['El'][1]))
+                print ("Reading theta(el) value: {0} +- {1}".format(TTHBackgrounds.theta['El'][0], TTHBackgrounds.theta['El'][1]))
 
 
-            if TTHBackgrounds2015.theta['Mu'][0] == 999.0 :
+            if TTHBackgrounds.theta['Mu'][0] == 999.0 :
 
                 print ("Calculating theta_mu from data in regions C,D...")
 
@@ -1870,10 +1870,10 @@ class TTHBackgrounds2015(Background):
 
                 # derive theta factors for mu
                 #
-                TTHBackgrounds2015.theta['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
+                TTHBackgrounds.theta['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
 
             else :
-                print ("Reading theta(mu) value: {0} +- {1}".format(TTHBackgrounds2015.theta['Mu'][0], TTHBackgrounds2015.theta['Mu'][1]))
+                print ("Reading theta(mu) value: {0} +- {1}".format(TTHBackgrounds.theta['Mu'][0], TTHBackgrounds.theta['Mu'][1]))
 
 
             # Define Region B,  depending on which flavour composition we are looking at:
@@ -1912,9 +1912,9 @@ class TTHBackgrounds2015(Background):
                 print ("Region B (mumu,ee), yield: ", sp_B.numberstats() , "\n")
 
                 if ("2Lep_ElEl_Event") in category.cut.cutname:
-                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta['El'])
+                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds.theta['El'])
                 elif ("2Lep_MuMu_Event") in category.cut.cutname:
-                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta['Mu'])
+                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds.theta['Mu'])
             else:
 
                 sp_B_OF_Lel = sp.subprocess(cut=cut_sp_B_OF_Lel, eventweight=weight )
@@ -1947,7 +1947,7 @@ class TTHBackgrounds2015(Background):
 
                 print ("Region B (emu)","\n", "yield (loose el): ", sp_B_OF_Lel.numberstats() , "\n", "yield (loose mu): ", sp_B_OF_Lmu.numberstats(), "\n")
 
-                sp_B = self.applyThetaFactor(sp_B_OF_Lmu,TTHBackgrounds2015.theta['Mu']) + self.applyThetaFactor(sp_B_OF_Lel,TTHBackgrounds2015.theta['El'])
+                sp_B = self.applyThetaFactor(sp_B_OF_Lmu,TTHBackgrounds.theta['Mu']) + self.applyThetaFactor(sp_B_OF_Lel,TTHBackgrounds.theta['El'])
 
             print ("=================>\n")
             print ("Final fakes yield: ", sp_B.numberstats() ,"\n")
@@ -2112,7 +2112,7 @@ class TTHBackgrounds2015(Background):
             #
             basecut = basecut & self.vardb.getCut('2Lep_NonPromptEvent')
 
-            if TTHBackgrounds2015.theta_MC['El'][0] == 999.0 :
+            if TTHBackgrounds.theta_MC['El'][0] == 999.0 :
 
                 print ("Calculating theta_el from TTBar in regions C,D...")
 
@@ -2136,13 +2136,13 @@ class TTHBackgrounds2015(Background):
 
                 # derive theta factors for el
                 #
-                TTHBackgrounds2015.theta_MC['El'] = self.calcTheta(sp_C_el,sp_D_el,stream='El')
+                TTHBackgrounds.theta_MC['El'] = self.calcTheta(sp_C_el,sp_D_el,stream='El')
 
             else :
-                print ("Reading theta(el) value: {0} +- {1}".format(TTHBackgrounds2015.theta_MC['El'][0], TTHBackgrounds2015.theta_MC['El'][1]))
+                print ("Reading theta(el) value: {0} +- {1}".format(TTHBackgrounds.theta_MC['El'][0], TTHBackgrounds.theta_MC['El'][1]))
 
 
-            if TTHBackgrounds2015.theta_MC['Mu'][0] == 999.0 :
+            if TTHBackgrounds.theta_MC['Mu'][0] == 999.0 :
 
                 print ("Calculating theta_mu from TTBar in regions C,D...")
 
@@ -2166,10 +2166,10 @@ class TTHBackgrounds2015(Background):
 
                 # derive theta factors for mu
                 #
-                TTHBackgrounds2015.theta_MC['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
+                TTHBackgrounds.theta_MC['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
 
             else :
-                print ("Reading theta(mu) value: {0} +- {1}".format(TTHBackgrounds2015.theta_MC['Mu'][0], TTHBackgrounds2015.theta_MC['Mu'][1]))
+                print ("Reading theta(mu) value: {0} +- {1}".format(TTHBackgrounds.theta_MC['Mu'][0], TTHBackgrounds.theta_MC['Mu'][1]))
 
 
             # Define Region B,  depending on which flavour composition we are looking at:
@@ -2183,15 +2183,15 @@ class TTHBackgrounds2015(Background):
                 sp_B = self.parent.procmap['TTBarClosure'].base(treename,category,options)
                 sp_B = sp_B.subprocess(cut=cut_sp_B_SF,eventweight=weight)
                 if ("2Lep_ElEl_Event") in category.cut.cutname:
-                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta_MC['El'])
+                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds.theta_MC['El'])
                 elif ("2Lep_MuMu_Event") in category.cut.cutname:
-                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds2015.theta_MC['Mu'])
+                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds.theta_MC['Mu'])
             else:
                 sp_B_Lel = self.parent.procmap['TTBarClosure'].base(treename,category,options)
                 sp_B_Lmu = self.parent.procmap['TTBarClosure'].base(treename,category,options)
                 sp_B_Lel = sp_B_Lel.subprocess(cut=cut_sp_B_OF_Lel, eventweight=weight)
                 sp_B_Lmu = sp_B_Lmu.subprocess(cut=cut_sp_B_OF_Lmu, eventweight=weight)
-                sp_B = self.applyThetaFactor(sp_B_Lmu,TTHBackgrounds2015.theta_MC['Mu']) + self.applyThetaFactor(sp_B_Lel,TTHBackgrounds2015.theta_MC['El'])
+                sp_B = self.applyThetaFactor(sp_B_Lmu,TTHBackgrounds.theta_MC['Mu']) + self.applyThetaFactor(sp_B_Lel,TTHBackgrounds.theta_MC['El'])
 
             print ("=================>\n")
             print ("Region B sp: {0} \n".format(sp_B.basecut.cutnamelist))
@@ -2269,7 +2269,7 @@ class TTHBackgrounds2015(Background):
             #
             sp_Lel = sp.subprocess(cut=cut_sp_OF_Lel, eventweight=weightMC )
             sp_Lmu = sp.subprocess(cut=cut_sp_OF_Lmu, eventweight=weightMC )
-            sp_final = ( sp_Lel * TTHBackgrounds2015.theta['El'][0] ) + ( sp_Lmu * TTHBackgrounds2015.theta['Mu'][0] )
+            sp_final = ( sp_Lel * TTHBackgrounds.theta['El'][0] ) + ( sp_Lmu * TTHBackgrounds.theta['Mu'][0] )
 
             print ("=================>\n")
             print ("Region closure sp: {0}".format(sp_final.basecut.cutnamelist))

@@ -98,12 +98,12 @@ from ROOT import TH1I,TH2D, TH2F, TMath, TFile, TAttFill, TColor, kBlack, kWhite
 # ---------------------------------------------------------------------
 # Importing all the tools and the definitions used to produce the plots
 # ---------------------------------------------------------------------
-from Plotter.BackgroundTools_ttH import loadSamples, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
+from Plotter.BackgroundTools_HTopMultilep import loadSamples, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
 # ---------------------------------------------------------------------------
 # Importing the classes for the different processes.
 # They contains many info on the normalization and treatment of the processes
 # ---------------------------------------------------------------------------
-from Plotter.ttH2015_Background import MyCategory, TTHBackgrounds2015
+from Plotter.Backgrounds_HTopMultilep import MyCategory, TTHBackgrounds
 
 try:
     args.channel in list_available_channel
@@ -1365,34 +1365,34 @@ if doMMSidebands:
         vardb.registerCategory( MyCategory('OFSS_MMSideband_TT',    cut = truth_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','TauVeto','2Lep_MinNJet','TT']) ) )
 
 # ------------------------------------------------------------
-# TTHBackgrounds2015 is the class used to manage each process:
+# TTHBackgrounds is the class used to manage each process:
 #
 #   Pass the input informations and the definitions and it
 #   will perform the background estimation
 # ------------------------------------------------------------
 
-ttH2015 = TTHBackgrounds2015(inputs, vardb)
+ttH = TTHBackgrounds(inputs, vardb)
 
 # ------------------------------------
 # Set the integrated luminosity (fb-1)
 # ------------------------------------
 
-#ttH2015.luminosity = 3.209 # GRL v73 - Moriond 2015 GRL
-#ttH2015.luminosity = 3.762 # (2015 +) 2016  - GRL v77 (period A)
-#ttH2015.luminosity =  6.691 # (2015 +) 2016 - GRL v79
-ttH2015.luminosity =  8.311 # (2015 +) 2016 -
-ttH2015.lumi_units = 'fb-1'
+#ttH.luminosity = 3.209 # GRL v73 - Moriond 2015 GRL
+#ttH.luminosity = 3.762 # (2015 +) 2016  - GRL v77 (period A)
+#ttH.luminosity =  6.691 # (2015 +) 2016 - GRL v79
+ttH.luminosity =  8.311 # (2015 +) 2016 -
+ttH.lumi_units = 'fb-1'
 
 # For MM closure
 if doMMClosureTest or doMMClosureRates:
-    #ttH2015.luminosity = 3.209
-    #ttH2015.luminosity = 3.762
-    #ttH2015.luminosity = 6.691
-    ttH2015.luminosity =  8.311
+    #ttH.luminosity = 3.209
+    #ttH.luminosity = 3.762
+    #ttH.luminosity = 6.691
+    ttH.luminosity =  8.311
 
 if doCFChallenge and "SR" in args.channel:
-    #ttH2015.luminosity = 6.691
-    ttH2015.luminosity =  8.311
+    #ttH.luminosity = 6.691
+    ttH.luminosity =  8.311
 
 # --------------------
 # Set the event weight
@@ -1416,33 +1416,33 @@ if doMMClosureTest or doMMClosureRates or ( doMMSidebands and "CLOSURE" in args.
 if ( args.noWeights ):
     weight_pileup      = 1.0
     weight_generator   = 1.0
-    ttH2015.luminosity = 1.0
-    ttH2015.rescaleXsecAndLumi = True
+    ttH.luminosity = 1.0
+    ttH.rescaleXsecAndLumi = True
 
 weight_glob = str(weight_generator) + ' * ' + str(weight_pileup)
 
 print ("Global event weight (apply to ALL categories to MC only) --> {0}\n".format( weight_glob ) )
 
-ttH2015.eventweight = weight_glob
+ttH.eventweight = weight_glob
 
 # ------------------------------------
 
-ttH2015.useZCorrections = False
+ttH.useZCorrections = False
 
 # ------------------------------------
 
-ttH2015.useSherpaNNPDF30NNLO = True
+ttH.useSherpaNNPDF30NNLO = True
 
 # ------------------------------------
 
 if doTwoLepSR or doTwoLepLowNJetCR or dottWCR or doMMClosureTest:
-    ttH2015.channel = 'TwoLepSS'
+    ttH.channel = 'TwoLepSS'
 elif doThreeLepSR or doThreeLepLowNJetCR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
-    ttH2015.channel = 'ThreeLep'
+    ttH.channel = 'ThreeLep'
 elif doFourLepSR:
-    ttH2015.channel = 'FourLep'
+    ttH.channel = 'FourLep'
 elif doDataMCCR or doZSSpeakCR or doMMRates or doMMRatesLHFit or doMMClosureRates or doCFChallenge or doMMSidebands:
-    ttH2015.channel = 'TwoLepCR'
+    ttH.channel = 'TwoLepCR'
 
 cut = None
 systematics = None
@@ -1536,30 +1536,30 @@ colours = {
 
 if doMMSidebands:
 
-    ttH2015.signals     = ['TTBarH']
-    ttH2015.observed    = ['Observed']
+    ttH.signals     = ['TTBarH']
+    ttH.observed    = ['Observed']
     #plotbackgrounds    = ['TTBarW','TTBarZ','Diboson','Top']
-    #ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
+    #ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
     plotbackgrounds     = ['Prompt']
-    ttH2015.backgrounds = ['Prompt']
+    ttH.backgrounds = ['Prompt']
 
     if args.useMCQMisID:
         plotbackgrounds.append('ChargeFlipMC')
-        ttH2015.backgrounds.append('ChargeFlipMC')
+        ttH.backgrounds.append('ChargeFlipMC')
     else:
         plotbackgrounds.append('ChargeFlip')
-        ttH2015.backgrounds.append('ChargeFlip')
+        ttH.backgrounds.append('ChargeFlip')
 
     if "CLOSURE" in args.channel:
-        ttH2015.signals     = []
-        ttH2015.observed    = ['Observed']
+        ttH.signals     = []
+        ttH.observed    = ['Observed']
         plotbackgrounds     = ['TTBar']
-        ttH2015.backgrounds = ['TTBar']
+        ttH.backgrounds = ['TTBar']
 
 if ( doSR or doLowNJetCR ):
 
-    ttH2015.signals     = ['TTBarH']
-    ttH2015.observed    = ['Observed']
+    ttH.signals     = ['TTBarH']
+    ttH.observed    = ['Observed']
 
     if not doFourLepSR:
 
@@ -1568,175 +1568,175 @@ if ( doSR or doLowNJetCR ):
             #      data-driven charge flip and fakes estimate
 
             plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
-            ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
+            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
             #plotbackgrounds     = ['FakesMM']
-            #ttH2015.backgrounds = ['FakesMM']
-            ttH2015.sub_backgrounds = []
+            #ttH.backgrounds = ['FakesMM']
+            ttH.sub_backgrounds = []
 
             #plotbackgrounds    = ['Prompt','FakesMM']
-            #ttH2015.backgrounds = ['Prompt','FakesMM']
-            #ttH2015.sub_backgrounds = []
+            #ttH.backgrounds = ['Prompt','FakesMM']
+            #ttH.sub_backgrounds = []
 
             if args.useMCQMisID:
                 plotbackgrounds.append('ChargeFlipMC')
-                ttH2015.backgrounds.append('ChargeFlipMC')
-                ttH2015.sub_backgrounds.append('ChargeFlipMC')
+                ttH.backgrounds.append('ChargeFlipMC')
+                ttH.sub_backgrounds.append('ChargeFlipMC')
             else:
                 plotbackgrounds.append('ChargeFlip')
-                ttH2015.backgrounds.append('ChargeFlip')
-                ttH2015.sub_backgrounds.append('ChargeFlip')
+                ttH.backgrounds.append('ChargeFlip')
+                ttH.sub_backgrounds.append('ChargeFlip')
 
         elif doFF:
 
             plotbackgrounds         = ['TTBarW','TTBarZ','Diboson','Top','FakesFF']
-            ttH2015.backgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesFF']
-            ttH2015.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
+            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesFF']
+            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
 
             if args.useMCQMisID:
                 plotbackgrounds.append('ChargeFlipMC')
-                ttH2015.backgrounds.append('ChargeFlipMC')
-                ttH2015.sub_backgrounds.append('ChargeFlipMC')
+                ttH.backgrounds.append('ChargeFlipMC')
+                ttH.sub_backgrounds.append('ChargeFlipMC')
             else:
                 plotbackgrounds.append('ChargeFlip')
-                ttH2015.backgrounds.append('ChargeFlip')
-                ttH2015.sub_backgrounds.append('ChargeFlip')
+                ttH.backgrounds.append('ChargeFlip')
+                ttH.sub_backgrounds.append('ChargeFlip')
 
         elif doABCD:
 
             plotbackgrounds         = ['TTBarW','TTBarZ','Diboson','Top','FakesABCD']
-            ttH2015.backgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesABCD']
-            ttH2015.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
+            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesABCD']
+            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
 
             if doTwoLepLowNJetCR :
                 # Closure in OF, low njet w/ ttbar MC rewweighted by theta factors measured in data
                 plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesClosureDataABCD']
-                ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesClosureDataABCD']
+                ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesClosureDataABCD']
 
             if args.useMCQMisID:
                 plotbackgrounds.append('ChargeFlipMC')
-                ttH2015.backgrounds.append('ChargeFlipMC')
-                ttH2015.sub_backgrounds.append('ChargeFlipMC')
+                ttH.backgrounds.append('ChargeFlipMC')
+                ttH.sub_backgrounds.append('ChargeFlipMC')
             else:
                 plotbackgrounds.append('ChargeFlip')
-                ttH2015.backgrounds.append('ChargeFlip')
-                ttH2015.sub_backgrounds.append('ChargeFlip')
+                ttH.backgrounds.append('ChargeFlip')
+                ttH.sub_backgrounds.append('ChargeFlip')
 
         else:
             # MC based estimate of fakes (and charge flips) - make sure any truth cut is removed!!
             plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
-            ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
+            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
     else:
         # no fakes in 4lep
         plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
-        ttH2015.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
+        ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
 
 if doMMRates:
 
-    ttH2015.signals     = []
-    ttH2015.observed    = ['Observed']
+    ttH.signals     = []
+    ttH.observed    = ['Observed']
     if args.ratesFromMC:
-        ttH2015.observed    = []
+        ttH.observed    = []
 
     plotbackgrounds     = ['TTBar','Top','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
-    ttH2015.backgrounds = ['TTBar','Top','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','Top','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if args.useMCQMisID:
         plotbackgrounds.append('ChargeFlipMC')
-        ttH2015.backgrounds.append('ChargeFlipMC')
+        ttH.backgrounds.append('ChargeFlipMC')
     else:
         plotbackgrounds.append('ChargeFlip')
-        ttH2015.backgrounds.append('ChargeFlip')
+        ttH.backgrounds.append('ChargeFlip')
 
 if doMMRatesLHFit:
 
     print args.channel
 
-    ttH2015.signals     = []
-    ttH2015.observed    = ['Observed']
+    ttH.signals     = []
+    ttH.observed    = ['Observed']
     plotbackgrounds     = ['TTBar','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Top']
-    ttH2015.backgrounds = ['TTBar','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Top']
+    ttH.backgrounds = ['TTBar','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Top']
 
     if args.useMCQMisID:
         plotbackgrounds.append('ChargeFlipMC')
-        ttH2015.backgrounds.append('ChargeFlipMC')
+        ttH.backgrounds.append('ChargeFlipMC')
     else:
         plotbackgrounds.append('ChargeFlip')
 
     if "CLOSURE" in args.channel:
         print args.channel
-        ttH2015.signals     = []
-        ttH2015.observed    = []
+        ttH.signals     = []
+        ttH.observed    = []
         plotbackgrounds     = ['TTBar']
-        ttH2015.backgrounds = ['TTBar']
+        ttH.backgrounds = ['TTBar']
 
 if doDataMCCR:
 
-    ttH2015.signals     = []
-    ttH2015.observed    = ['Observed']
+    ttH.signals     = []
+    ttH.observed    = ['Observed']
 
     plotbackgrounds     = ['TTBar','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson','Top']
-    ttH2015.backgrounds = ['TTBar','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson','Top']
+    ttH.backgrounds = ['TTBar','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson','Top']
 
     if not args.useMCQMisID:
         plotbackgrounds.append('ChargeFlip')
-        ttH2015.backgrounds.append('ChargeFlip')
+        ttH.backgrounds.append('ChargeFlip')
 
 if doZSSpeakCR:
 
-    ttH2015.signals     = ['TTBarH']
-    ttH2015.observed    = ['Observed']
+    ttH.signals     = ['TTBarH']
+    ttH.observed    = ['Observed']
     plotbackgrounds     = ['ChargeFlipMC','FakesMC','Prompt']
-    ttH2015.backgrounds = ['ChargeFlipMC','FakesMC','Prompt']
+    ttH.backgrounds = ['ChargeFlipMC','FakesMC','Prompt']
 
 if doCFChallenge:
 
-    ttH2015.signals     = ['TTBarHDilep']
-    ttH2015.observed    = ['Observed']
+    ttH.signals     = ['TTBarHDilep']
+    ttH.observed    = ['Observed']
     plotbackgrounds     = ['TTBar']
-    ttH2015.backgrounds = ['TTBar']
+    ttH.backgrounds = ['TTBar']
 
 if doMMClosureRates:
 
-    ttH2015.signals     = []
-    ttH2015.observed    = []
+    ttH.signals     = []
+    ttH.observed    = []
     plotbackgrounds     = ['TTBar']
-    ttH2015.backgrounds = ['TTBar']
+    ttH.backgrounds = ['TTBar']
     #plotbackgrounds     = ['Zjets']
-    #ttH2015.backgrounds = ['Zjets']
+    #ttH.backgrounds = ['Zjets']
 
 if doMMClosureTest:
 
     if doMM:
-        ttH2015.signals     = []#['FakesClosureABCD']
-        ttH2015.observed    = ['TTBarClosure'] # truth cuts done internally in TTBarClosure class
+        ttH.signals     = []#['FakesClosureABCD']
+        ttH.observed    = ['TTBarClosure'] # truth cuts done internally in TTBarClosure class
         plotbackgrounds     = ['FakesClosureMM']
-        ttH2015.backgrounds = ['FakesClosureMM'] # truth cuts done internally in FakesClosureMM class
+        ttH.backgrounds = ['FakesClosureMM'] # truth cuts done internally in FakesClosureMM class
     elif doFF:
-        ttH2015.signals     = ['FakesClosureABCD']
-        ttH2015.observed    = ['TTBar']
+        ttH.signals     = ['FakesClosureABCD']
+        ttH.observed    = ['TTBar']
         plotbackgrounds     = ['FakesFF']
-        ttH2015.backgrounds = ['FakesFF']
+        ttH.backgrounds = ['FakesFF']
     elif doABCD:
-        ttH2015.signals     = []
-        ttH2015.observed    = ['TTBarClosure'] # truth cuts done internally in TTBarClosure class
-        #ttH2015.observed    = ['FakesClosureMM'] # truth cuts done internally in TTBarClosure class
+        ttH.signals     = []
+        ttH.observed    = ['TTBarClosure'] # truth cuts done internally in TTBarClosure class
+        #ttH.observed    = ['FakesClosureMM'] # truth cuts done internally in TTBarClosure class
         plotbackgrounds     = ['FakesClosureABCD']
-        ttH2015.backgrounds = ['FakesClosureABCD'] # truth cuts done internally in FakesClosureABCD class
+        ttH.backgrounds = ['FakesClosureABCD'] # truth cuts done internally in FakesClosureABCD class
     else:
-        ttH2015.signals     = []
-        ttH2015.observed    = []
-        #ttH2015.observed    = ['TTBar']
+        ttH.signals     = []
+        ttH.observed    = []
+        #ttH.observed    = ['TTBar']
         plotbackgrounds     = ['TTBar']
-        ttH2015.backgrounds = ['TTBar']
+        ttH.backgrounds = ['TTBar']
 
 if args.noSignal:
-    ttH2015.signals = []
+    ttH.signals = []
 
 doShowRatio = True
 # Make blinded plots in SR unless configured from input
 #
 if ( doSR or ( doMMSidebands and ( "HIGHNJ" in args.channel or "ALLJ" in args.channel ) ) ) and not args.doUnblinding:
-    ttH2015.observed = []
+    ttH.observed = []
     doShowRatio = False
 
 # -------------------------------------------------------
@@ -1746,27 +1746,27 @@ if ( doSR or ( doMMSidebands and ( "HIGHNJ" in args.channel or "ALLJ" in args.ch
 # -------------------------------------------------------
 histname   = {'Expected':'expected'}
 histcolour = {'Expected':kBlack}
-for samp in ttH2015.backgrounds:
+for samp in ttH.backgrounds:
     histname[samp]  = samplenames[samp]
     histcolour[samp] = colours[samp]
     #
     # Will override default colour based on the dictionary provided above
     #
-    ttH2015.str_to_class(samp).colour = colours[samp]
-for samp in ttH2015.observed:
+    ttH.str_to_class(samp).colour = colours[samp]
+for samp in ttH.observed:
     histname[samp]  = samplenames[samp]
     histcolour[samp] = colours[samp]
     #
     # Will override default colour based on the dictionary provided above
     #
-    ttH2015.str_to_class(samp).colour = colours[samp]
-for samp in ttH2015.signals:
+    ttH.str_to_class(samp).colour = colours[samp]
+for samp in ttH.signals:
     histname[samp]  = samplenames[samp]
     histcolour[samp] = colours[samp]
     #
     # Will override default colour based on the dictionary provided above
     #
-    ttH2015.str_to_class(samp).colour = colours[samp]
+    ttH.str_to_class(samp).colour = colours[samp]
 
 print histname
 print histcolour
@@ -1782,16 +1782,16 @@ for category in vardb.categorylist:
         print ("\tdefined by cuts --> {0}\n".format( category.cut.cutname ))
 
     signalfactor = 1.0
-    background = ttH2015
+    background = ttH
 
     # MMClosureTest: do not look at ABCD fakes, unless in SR
     #
     #if doMMClosureTest:
     #   if doMM or doFF:
     #      if not ( "2Lep_NJet_SR" in category.cut.cutname ):
-    #        ttH2015.signals = []
-    #     elif ( ( "2Lep_NJet_SR" in category.cut.cutname ) and not ttH2015.signals ):
-    #         ttH2015.signals = ['FakesClosureABCD']
+    #        ttH.signals = []
+    #     elif ( ( "2Lep_NJet_SR" in category.cut.cutname ) and not ttH.signals ):
+    #         ttH.signals = ['FakesClosureABCD']
 
     # NB: *must* initialise this to 1.0 !!
     #
@@ -2013,7 +2013,7 @@ for category in vardb.categorylist:
                 histograms_syst['Expected_'+syst.name+'_down'].SetNameTitle(histname['Expected']+'_'+syst.name+'_down','')
                 histograms_syst['Expected_'+syst.name+'_down'].SetLineColor(histcolour['Expected'])
                 histograms_syst['Expected_'+syst.name+'_down'].Write()
-                for samp in ttH2015.backgrounds:
+                for samp in ttH.backgrounds:
                     histograms_syst[samp+'_'+syst.name+'_up'] = systlistup[samp]
                     histograms_syst[samp+'_'+syst.name+'_up'].SetNameTitle(histname[samp]+'_'+syst.name+'_up','')
                     histograms_syst[samp+'_'+syst.name+'_up'].SetLineColor(histcolour[samp])
@@ -2049,16 +2049,16 @@ for category in vardb.categorylist:
         mclist, expected, observed, signal, _ = hists[category.name + ' ' + var.shortname]
         histograms = {}
 
-        for samp in ttH2015.observed:
+        for samp in ttH.observed:
             histograms[samp] = observed
-        if ttH2015.backgrounds:
+        if ttH.backgrounds:
             histograms['Expected']=expected
-            for samp in ttH2015.backgrounds:
+            for samp in ttH.backgrounds:
                 histograms[samp] = mclist[samp]
                 #in case you have to add other histograms you maybe prefer to use the method clone:
                 #histograms[samp] = mclist[samp].Clone(histname[samp])
-        if ttH2015.signals:
-            for samp in ttH2015.signals:
+        if ttH.signals:
+            for samp in ttH.signals:
                 histograms[samp] = signal
 
         # Print histograms
