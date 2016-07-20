@@ -7,7 +7,7 @@ from array import array
 from ROOT import gROOT, gDirectory, gStyle, TH1D, TH2D, TF1, TFile, TCanvas, TColor, TLegend, TLatex, TStyle, TPalletteAxis, TPaveText
 
 gROOT.Reset()
-gROOT.LoadMacro("Plotter/AtlasStyle.C")
+gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 

@@ -8,7 +8,7 @@ from array import array
 from ROOT import gROOT, gDirectory, gStyle, TH1D, TFile, TCanvas, TColor, TLegend, TLatex
 
 gROOT.Reset()
-gROOT.LoadMacro("/home/mmilesi/RootUtils/AtlasStyle.C")
+gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
