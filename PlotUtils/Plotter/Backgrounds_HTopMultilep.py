@@ -52,8 +52,6 @@ class TTHBackgrounds(Background):
     useZCorrections = False
     useSherpaNNPDF30NNLO = False
     RQCD = {
-        #'El': (1.000, 0.051),
-        #'Mu': (1.177, 0.066),
         'El': (1.00, 0.05),
         'Mu': (1.11, 0.08),
     }
@@ -61,8 +59,6 @@ class TTHBackgrounds(Background):
     theta = {
         'El': (999.0, 0.0),
         'Mu': (999.0, 0.0),
-        #'El': (0.163, 0.036), # v027
-        #'Mu': (0.159, 0.022), # v027
         #'El': (0.390, 0.156), # v15
         #'Mu': (0.602, 0.120), # v15
     }
@@ -107,13 +103,15 @@ class TTHBackgrounds(Background):
         return self.applyKfactor(sp, category, self.RQCD, options)
 
     def applyTightSF(self, sp):
-        #uses the new scale factors for BDT tight instead of the old BDT medium. ATTENTION the correction is done only with the nominal coefficients. To have the right coefficients for systematics shifted correct the corrections code and produce again the ntuples
+        
+	#uses the new scale factors for BDT tight instead of the old BDT medium. ATTENTION the correction is done only with the nominal coefficients. To have the right coefficients for systematics shifted correct the corrections code and produce again the ntuples
         sp1ploweta = sp.subprocess(cut=self.vardb.getCuts(['TauEta00to15', 'OneProng'])) * 0.941 / 0.992
         sp1phigheta = sp.subprocess(cut=self.vardb.getCuts(['TauEta15to25', 'OneProng'])) * 0.89 / 0.952
         sp3ploweta = sp.subprocess(cut=self.vardb.getCuts(['TauEta00to15', 'ThreeProng'])) * 1.006 / 1.073
         sp3phigheta = sp.subprocess(cut=self.vardb.getCuts(['TauEta15to25', 'ThreeProng'])) * 1.082 / 0.99
         sp_corr=sp1ploweta+sp1phigheta+sp3ploweta+sp3phigheta
-        return sp_corr
+        
+	return sp_corr
 
     def labels(self, legs, showratio):
         scale = 1.

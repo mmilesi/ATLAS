@@ -1380,7 +1380,9 @@ ttH = TTHBackgrounds(inputs, vardb)
 #ttH.luminosity = 3.209 # GRL v73 - Moriond 2015 GRL
 #ttH.luminosity = 3.762 # (2015 +) 2016  - GRL v77 (period A)
 #ttH.luminosity =  6.691 # (2015 +) 2016 - GRL v79
-ttH.luminosity =  8.311 # (2015 +) 2016 -
+#ttH.luminosity =  8.311 # (2015 +) 2016 
+ttH.luminosity = 11.704 # v18
+
 ttH.lumi_units = 'fb-1'
 
 # For MM closure
@@ -1388,11 +1390,13 @@ if doMMClosureTest or doMMClosureRates:
     #ttH.luminosity = 3.209
     #ttH.luminosity = 3.762
     #ttH.luminosity = 6.691
-    ttH.luminosity =  8.311
+    #ttH.luminosity =  8.311
+    ttH.luminosity = 11.704
 
 if doCFChallenge and "SR" in args.channel:
     #ttH.luminosity = 6.691
-    ttH.luminosity =  8.311
+    #ttH.luminosity =  8.311
+    ttH.luminosity = 11.704
 
 # --------------------
 # Set the event weight
@@ -1405,7 +1409,6 @@ weight_generator = ('mcEventWeight','mcWeightOrg')[bool(args.useGroupNTup)]
 # PRW weight
 #
 weight_pileup = ('weight_pileup','pileupEventWeight_090')[bool(args.useGroupNTup)]
-
 
 if doMMClosureTest or doMMClosureRates or ( doMMSidebands and "CLOSURE" in args.channel ):
     # Closure w/o any correction
@@ -1431,7 +1434,7 @@ ttH.useZCorrections = False
 
 # ------------------------------------
 
-ttH.useSherpaNNPDF30NNLO = True
+ttH.useSherpaNNPDF30NNLO = False
 
 # ------------------------------------
 
