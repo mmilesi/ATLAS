@@ -17,7 +17,7 @@
 /
 *************** */
 
-bool g_debug(true);
+bool g_debug(false);
 bool g_verbose(false);
 
 std::map< std::string, TH1D* > g_el_hist_map;

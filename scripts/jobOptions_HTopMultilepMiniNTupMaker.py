@@ -36,7 +36,7 @@ trigbits_branches    = [ # SLT muon 2015
                         "HLT_mu24_ivarloose",
                         "HLT_mu40",
 			"HLT_mu24_imedium",
-			"HLT_mu24_ivarmedium",			
+			"HLT_mu24_ivarmedium",
                         # SLT electron 2016
                         "HLT_e24_lhtight_nod0_ivarloose",
                         "HLT_e60_lhmedium_nod0",
@@ -64,7 +64,7 @@ trigbits_branches    = [ # SLT muon 2015
                         "HLT_e7_medium_mu24",
                         "HLT_e7_lhmedium_mu24",
                         # DLT - OF - 2016
-                        #"HLT_e17_lhloose_nod0_mu14", 
+                        #"HLT_e17_lhloose_nod0_mu14",
                         #"HLT_e24_lhmedium_nod0_L1EM20VHI_mu8noL1", --> missing in v14 ntup
                         #"HLT_e7_lhmedium_nod0_mu24" --> missing in v14 ntup
                         ]
@@ -143,11 +143,11 @@ for branch in branches_to_copy:
 # Instantiate the AlgSelect algorithm to skim the input ntuple
 #
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
-algskim.addCut ("passEventCleaning==1")
-algskim.addCut ("nJets_OR_T>=2")
+algskim.addCut("passEventCleaning==1")
+algskim.addCut("nJets_OR_T>=2")
 algskim.addCut("nJets_OR_T_MV2c10_70>=1")
-algskim.addCut ("dilep_type>0||trilep_type>0||quadlep_type>0")
-algskim.histName ("cutflow")
+algskim.addCut("dilep_type>0||trilep_type>0||quadlep_type>0")
+algskim.histName("cutflow")
 
 # Add the algorithms to the job.
 #
