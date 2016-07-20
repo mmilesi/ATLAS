@@ -93,7 +93,7 @@ gROOT.SetBatch(True)
 # -----------------
 # Some ROOT imports
 # -----------------
-from ROOT import TH1I,TH2D, TH2F, TMath, TFile, TAttFill, TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kAzure, kTeal, kSpring, kOrange, kGreen, kCyan, kViolet, kMagenta, kPink, Double
+from ROOT import TH1I, TH2D, TH2F, TMath, TFile, TAttFill, TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kAzure, kTeal, kSpring, kOrange, kGreen, kCyan, kViolet, kMagenta, kPink, Double
 
 # ---------------------------------------------------------------------
 # Importing all the tools and the definitions used to produce the plots
@@ -533,7 +533,7 @@ if doSR or doLowNJetCR:
     print ''
     #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 10, minval = -0.5, maxval = 9.5) )
     if doSR:
-        vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 4, minval = 3.5, maxval = 7.5) )
+        vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 6, minval = 3.5, maxval = 9.5) )
     elif doLowNJetCR:
         vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_T_MV2c10_70')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
@@ -548,7 +548,7 @@ if doMMSidebands:
     #vardb.registerVar( Variable(shortname = 'MMWeight', latexname = 'MM weight', ntuplename = 'MMWeight[0]', bins = 50, minval = -0.5, maxval = 0.5) )
     #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = ('lep_pt[0]/1e3','lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 9, minval = 25.0, maxval = 205.0,) )
     if "HIGHNJ" in args.channel:
-        vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 4, minval = 3.5, maxval = 7.5) )
+        vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 6, minval = 3.5, maxval = 9.5) )
     elif "LOWNJ" in args.channel:
         vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
     elif "ALLNJ" in args.channel:
@@ -560,9 +560,6 @@ if doMMRates or doMMClosureRates:
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_T_MV2c10_70')[bool(args.useGroupNTup)], bins = 4, minval = 0, maxval = 4) )
 
 if doMMRatesLHFit:
-    #vardb.registerVar( Variable(shortname = 'LepPt', latexname = 'p_{T}^{lep} [GeV]', ntuplename = ('lep_pt/1e3','lep_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = ('lep_pt[0]/1e3','lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 9, minval = 20.0, maxval = 200.0,) )
-    #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = ('lep_pt[1]/1e3','lep_Pt_1/1e3')[bool(args.useGroupNTup)], bins = 20, minval = 10.0, maxval = 110.0,) )
     #vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = ('lep_pt[1]/1e3:lep_pt[0]/1e3','lep_Pt_1/1e3:lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 4, minval = 10.0, maxval = 110.0, typeval = TH2D) )
     vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = ('lep_pt[1]/1e3:lep_pt[0]/1e3','lep_Pt_1/1e3:lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0, typeval = TH2D) )
 
@@ -571,7 +568,7 @@ if doMMClosureTest:
     if "ALLNJ" in args.channel:
         vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 8, minval = 1.5, maxval = 9.5) )
     elif "HIGHNJ" in args.channel:
-        vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 4, minval = 3.5, maxval = 7.5) )
+        vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 6, minval = 3.5, maxval = 9.5) )
     elif "LOWNJ" in args.channel:
         vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_T_MV2c10_70')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
@@ -595,6 +592,7 @@ if doStandardPlots:
     #vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 4, minval = 1.5, maxval = 5.5) )
     #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = ('njets_mv2c20_Fix77','nJets_OR_T_MV2c10_70')[bool(args.useGroupNTup)], bins = 4, minval = -0.5, maxval = 3.5) )
     #vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = ('njets+10.0*njets_mv2c20_Fix77','nJets_OR_T+10.0*nJets_OR_T_MV2c10_70')[bool(args.useGroupNTup)], bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet')) )
+    #vardb.registerVar( Variable(shortname = 'NElectrons', latexname = 'Electron multiplicity', ntuplename = ('nel','nelectrons')[bool(args.useGroupNTup)], bins = 5, minval = -0.5, maxval = 4.5) )
     #
     # Inclusive m(ll) plot
     #
@@ -740,17 +738,11 @@ if doSR:
         # only pure prompt MC (to avoid double counting of fake background events!)
         #
         if ( args.fakeMethod == 'MM' or args.fakeMethod == 'FF' or args.fakeMethod == 'ABCD' ):
-            # MuMu region
-            #
-            vardb.registerCut( Cut('TEMP','( isMC==1 || !(EventNumber==528938509 || EventNumber==2500876453) )') )
-            tempcut = vardb.getCut('TEMP')
-            vardb.registerCategory( MyCategory('MuMuSS_SR_DataDriven',  cut = tempcut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR']) ) )
-            # ElEl region
-            #
-            #vardb.registerCategory( MyCategory('ElElSS_SR_DataDriven',  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
-            # OF region
-            #
-            #vardb.registerCategory( MyCategory('OFSS_SR_DataDriven',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
+
+            vardb.registerCategory( MyCategory('MuMuSS_SR_DataDriven',  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_SR']) ) )
+            vardb.registerCategory( MyCategory('ElElSS_SR_DataDriven',  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
+            vardb.registerCategory( MyCategory('OFSS_SR_DataDriven',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
+
         else:
             """
             truth_cut = ( vardb.getCut('DummyCut') )
@@ -787,20 +779,15 @@ if doSR:
 if doTwoLepLowNJetCR :
 
     if ( args.fakeMethod == 'MM' or args.fakeMethod == 'FF' ):
-        # MuMu region
-        #
+
         vardb.registerCategory( MyCategory('MuMuSS_LowNJetCR_DataDriven',  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_PurePromptEvent','2Lep_NJet_CR']) ) )
-        # OF region
-        #
         vardb.registerCategory( MyCategory('OFSS_LowNJetCR_DataDriven',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
-        # ElEl region
-        #
         vardb.registerCategory( MyCategory('ElElSS_LowNJetCR_DataDriven',  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
 
     elif ( args.fakeMethod == 'ABCD' ):
-        # OF region
-        #
+
         vardb.registerCategory( MyCategory('OFSS_LowNJetCR_DataDriven',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
+    
     else:
 
 	vardb.registerCategory( MyCategory('MuMuSS_LowNJetCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_NJet_CR']) ) )
@@ -860,7 +847,7 @@ if doDataMCCR:
     #
     #vardb.registerCategory( MyCategory('DataMC_OS_ttbar_MuMu',    cut = ( vardb.getCuts(['2Lep_NLep_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_MuMu_Event','TT','4Lep_NJets','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']) ) ) )
     #vardb.registerCategory( MyCategory('DataMC_OS_ttbar_ElEl',    cut = ( vardb.getCuts(['2Lep_NLep_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_ElEl_Event','TT','2Lep_ElEtaCut','4Lep_NJets','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']) ) ) )
-    #vardb.registerCategory( MyCategory('DataMC_OS_ttbar_OF',     cut = ( vardb.getCuts(['2Lep_NLep_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_OF_Event','TT','2Lep_ElEtaCut','4Lep_NJets','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']) ) ) )
+    vardb.registerCategory( MyCategory('DataMC_OS_ttbar_OF',     cut = ( vardb.getCuts(['2Lep_NLep_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_OF_Event','TT','2Lep_ElEtaCut','4Lep_NJets','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']) ) ) )
 
     # ----------------------------------------------------
     # SS ttbar (ee,mumu,emu)
@@ -1295,11 +1282,9 @@ if doMMRatesLHFit:
 
 if doMMSidebands:
 
-    truth_cut = vardb.getCut('2Lep_PurePromptEvent')
-    if "CLOSURE" in args.channel:
-        truth_cut = vardb.getCut('2Lep_NonPromptEvent') # this contains also a QMisID veto
-	# TEMP!
-	#truth_cut = vardb.getCut('DummyCut')
+    # If doing TTBar closure, use a trth cut to require at least 1 fake, and QMisID veto
+    #
+    truth_cut = ( vardb.getCut('2Lep_PurePromptEvent'), vardb.getCut('2Lep_NonPromptEvent') )[bool("CLOSURE" in args.channel)]
 
     if "HIGHNJ" in args.channel:
 
@@ -1380,7 +1365,7 @@ ttH = TTHBackgrounds(inputs, vardb)
 #ttH.luminosity = 3.209 # GRL v73 - Moriond 2015 GRL
 #ttH.luminosity = 3.762 # (2015 +) 2016  - GRL v77 (period A)
 #ttH.luminosity =  6.691 # (2015 +) 2016 - GRL v79
-#ttH.luminosity =  8.311 # (2015 +) 2016 
+#ttH.luminosity =  8.311 # (2015 +) 2016
 ttH.luminosity = 11.704 # v18
 
 ttH.lumi_units = 'fb-1'
@@ -1419,7 +1404,7 @@ if doMMClosureTest or doMMClosureRates or ( doMMSidebands and "CLOSURE" in args.
 if ( args.noWeights ):
     weight_pileup      = 1.0
     weight_generator   = 1.0
-    ttH.luminosity = 1.0
+    ttH.luminosity     = 1.0
     ttH.rescaleXsecAndLumi = True
 
 weight_glob = str(weight_generator) + ' * ' + str(weight_pileup)
@@ -1466,9 +1451,14 @@ samplenames = {
     'Observed':'observed',
     'TTBarH':'signal',
     'TTBarHDilep':'signal',
+    'tHbj':'tHbbkg',
+    'WtH':'WtHbkg',
     'TTBarW':'ttbarwbkg',
     'TTBarZ':'ttbarzbkg',
-    'Top':'topbkg',
+    'SingleTop':'singletopbkg',
+    'RareTop':'raretopbkg',
+    'Triboson':'tribosonbkg',
+    'Rare':'raretopbkg',
     'TTBar':'ttbarbkg',
     'TTBarClosure':'ttbarbkg',
     'TopCF':'topcfbkg',
@@ -1497,23 +1487,28 @@ samplenames = {
     'FakesClosureABCD':'fakesbkg',
     'FakesClosureDataABCD':'fakesbkg',
 }
-#
+
 # Override colours!
 #
 colours = {
     'Observed':kBlack,
-    'TTBarH':kRed, # kBlack,
+    'TTBarH':kRed,
     'TTBarHDilep':kRed,
-    'TTBarW':kYellow-9, # kRed-4,
-    'TTBarZ':kAzure+1,  # kRed-7,
-    'Top':kOrange+6, #kBlue+1,
-    'TTBar': kRed - 4,# kAzure+8,
+    'tHbj':kPink+7,
+    'WtH':kPink-4,
+    'TTBarW':kYellow-9, 
+    'TTBarZ':kAzure+1,  
+    'SingleTop':kOrange+6,
+    'RareTop':kOrange+7,
+    'Triboson':kTeal+10,    
+    'Rare':kGray, 
+    'TTBar': kRed - 4,
     'TTBarClosure':kAzure+8,
     'TopCF':kAzure-4,
-    'Diboson':kGreen-9, # kYellow-9,
+    'Diboson':kGreen-9, 
     'DibosonCF':kOrange-3,
     'HtoZZ':kTeal+9,
-    'Zjets': kCyan -9, # kGreen,
+    'Zjets': kCyan -9, 
     'Zeejets':kAzure+10,
     'Zmumujets':kAzure-3,
     'Ztautaujets':kCyan-7,
@@ -1525,25 +1520,25 @@ colours = {
     'Wmunujets':kGray+1,
     'Wtaunujets':kGray+2,
     'Prompt':kOrange-3,
-    'ChargeFlip':kMagenta+1,# kAzure-4,
-    'ChargeFlipMC':kMagenta+1,#kAzure-4,
+    'ChargeFlip':kMagenta+1,
+    'ChargeFlipMC':kMagenta+1,
     'FakesMC':kMagenta-9,
     'FakesMM':kMagenta-9,
-    'FakesFF':kMagenta-9, #kAzure-9,
-    'FakesMM':kMagenta-9, #kTeal-9,
-    'FakesABCD':kMagenta-9, # kCyan-9,
+    'FakesFF':kMagenta-9,
+    'FakesMM':kMagenta-9,
+    'FakesABCD':kMagenta-9,
     'FakesClosureMM':kTeal+1,
     'FakesClosureABCD':kCyan-9,
-    'FakesClosureDataABCD': kMagenta-9, # kCyan-9,
+    'FakesClosureDataABCD': kMagenta-9,
 }
 
 if doMMSidebands:
 
     ttH.signals     = ['TTBarH']
     ttH.observed    = ['Observed']
-    #plotbackgrounds    = ['TTBarW','TTBarZ','Diboson','Top']
-    #ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
-    plotbackgrounds     = ['Prompt']
+    #plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
+    #ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
+    plotbackgrounds = ['Prompt']
     ttH.backgrounds = ['Prompt']
 
     if args.useMCQMisID:
@@ -1556,7 +1551,7 @@ if doMMSidebands:
     if "CLOSURE" in args.channel:
         ttH.signals     = []
         ttH.observed    = ['Observed']
-        plotbackgrounds     = ['TTBar']
+        plotbackgrounds = ['TTBar']
         ttH.backgrounds = ['TTBar']
 
 if ( doSR or doLowNJetCR ):
@@ -1570,13 +1565,13 @@ if ( doSR or doLowNJetCR ):
             # ---> all the MC backgrounds use a truth req. of only prompt leptons in the event (and ch-flip veto) to avoid double counting with
             #      data-driven charge flip and fakes estimate
 
-            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
-            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesMM']
-            #plotbackgrounds     = ['FakesMM']
+            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMM']
+            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMM']
+            #plotbackgrounds = ['FakesMM']
             #ttH.backgrounds = ['FakesMM']
             ttH.sub_backgrounds = []
 
-            #plotbackgrounds    = ['Prompt','FakesMM']
+            #plotbackgrounds = ['Prompt','FakesMM']
             #ttH.backgrounds = ['Prompt','FakesMM']
             #ttH.sub_backgrounds = []
 
@@ -1591,9 +1586,9 @@ if ( doSR or doLowNJetCR ):
 
         elif doFF:
 
-            plotbackgrounds         = ['TTBarW','TTBarZ','Diboson','Top','FakesFF']
-            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesFF']
-            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
+            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesFF']
+            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesFF']
+            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
 
             if args.useMCQMisID:
                 plotbackgrounds.append('ChargeFlipMC')
@@ -1606,14 +1601,14 @@ if ( doSR or doLowNJetCR ):
 
         elif doABCD:
 
-            plotbackgrounds         = ['TTBarW','TTBarZ','Diboson','Top','FakesABCD']
-            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesABCD']
-            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Top']
+            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesABCD']
+            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesABCD']
+            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
 
             if doTwoLepLowNJetCR :
                 # Closure in OF, low njet w/ ttbar MC rewweighted by theta factors measured in data
-                plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Top','FakesClosureDataABCD']
-                ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Top','FakesClosureDataABCD']
+                plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesClosureDataABCD']
+                ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesClosureDataABCD']
 
             if args.useMCQMisID:
                 plotbackgrounds.append('ChargeFlipMC')
@@ -1626,22 +1621,22 @@ if ( doSR or doLowNJetCR ):
 
         else:
             # MC based estimate of fakes (and charge flips) - make sure any truth cut is removed!!
-            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
-            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
+            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
+            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
     else:
         # no fakes in 4lep
-        plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
-        ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Top','Zjets']
+        plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
+        ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
 
 if doMMRates:
 
     ttH.signals     = []
     ttH.observed    = ['Observed']
     if args.ratesFromMC:
-        ttH.observed    = []
+        ttH.observed = []
 
-    plotbackgrounds     = ['TTBar','Top','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
-    ttH.backgrounds = ['TTBar','Top','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    plotbackgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if args.useMCQMisID:
         plotbackgrounds.append('ChargeFlipMC')
@@ -1656,8 +1651,8 @@ if doMMRatesLHFit:
 
     ttH.signals     = []
     ttH.observed    = ['Observed']
-    plotbackgrounds     = ['TTBar','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Top']
-    ttH.backgrounds = ['TTBar','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Top']
+    plotbackgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if args.useMCQMisID:
         plotbackgrounds.append('ChargeFlipMC')
@@ -1669,7 +1664,7 @@ if doMMRatesLHFit:
         print args.channel
         ttH.signals     = []
         ttH.observed    = []
-        plotbackgrounds     = ['TTBar']
+        plotbackgrounds = ['TTBar']
         ttH.backgrounds = ['TTBar']
 
 if doDataMCCR:
@@ -1677,8 +1672,8 @@ if doDataMCCR:
     ttH.signals     = []
     ttH.observed    = ['Observed']
 
-    plotbackgrounds     = ['TTBar','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson','Top']
-    ttH.backgrounds = ['TTBar','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson','Top']
+    plotbackgrounds = ['TTBar','SingleTop','Rare','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','SingleTop','Rare','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if not args.useMCQMisID:
         plotbackgrounds.append('ChargeFlip')
@@ -1688,23 +1683,23 @@ if doZSSpeakCR:
 
     ttH.signals     = ['TTBarH']
     ttH.observed    = ['Observed']
-    plotbackgrounds     = ['ChargeFlipMC','FakesMC','Prompt']
+    plotbackgrounds = ['ChargeFlipMC','FakesMC','Prompt']
     ttH.backgrounds = ['ChargeFlipMC','FakesMC','Prompt']
 
 if doCFChallenge:
 
     ttH.signals     = ['TTBarHDilep']
     ttH.observed    = ['Observed']
-    plotbackgrounds     = ['TTBar']
+    plotbackgrounds = ['TTBar']
     ttH.backgrounds = ['TTBar']
 
 if doMMClosureRates:
 
     ttH.signals     = []
     ttH.observed    = []
-    plotbackgrounds     = ['TTBar']
+    plotbackgrounds = ['TTBar']
     ttH.backgrounds = ['TTBar']
-    #plotbackgrounds     = ['Zjets']
+    #plotbackgrounds = ['Zjets']
     #ttH.backgrounds = ['Zjets']
 
 if doMMClosureTest:
@@ -1712,24 +1707,24 @@ if doMMClosureTest:
     if doMM:
         ttH.signals     = []#['FakesClosureABCD']
         ttH.observed    = ['TTBarClosure'] # truth cuts done internally in TTBarClosure class
-        plotbackgrounds     = ['FakesClosureMM']
+        plotbackgrounds = ['FakesClosureMM']
         ttH.backgrounds = ['FakesClosureMM'] # truth cuts done internally in FakesClosureMM class
     elif doFF:
         ttH.signals     = ['FakesClosureABCD']
         ttH.observed    = ['TTBar']
-        plotbackgrounds     = ['FakesFF']
+        plotbackgrounds = ['FakesFF']
         ttH.backgrounds = ['FakesFF']
     elif doABCD:
         ttH.signals     = []
         ttH.observed    = ['TTBarClosure'] # truth cuts done internally in TTBarClosure class
-        #ttH.observed    = ['FakesClosureMM'] # truth cuts done internally in TTBarClosure class
-        plotbackgrounds     = ['FakesClosureABCD']
+        #ttH.observed   = ['FakesClosureMM'] # truth cuts done internally in TTBarClosure class
+        plotbackgrounds = ['FakesClosureABCD']
         ttH.backgrounds = ['FakesClosureABCD'] # truth cuts done internally in FakesClosureABCD class
     else:
         ttH.signals     = []
         ttH.observed    = []
-        #ttH.observed    = ['TTBar']
-        plotbackgrounds     = ['TTBar']
+        #ttH.observed   = ['TTBar']
+        plotbackgrounds = ['TTBar']
         ttH.backgrounds = ['TTBar']
 
 if args.noSignal:
@@ -1785,19 +1780,8 @@ for category in vardb.categorylist:
         print ("\tdefined by cuts --> {0}\n".format( category.cut.cutname ))
 
     signalfactor = 1.0
-    background = ttH
+    background   = ttH
 
-    # MMClosureTest: do not look at ABCD fakes, unless in SR
-    #
-    #if doMMClosureTest:
-    #   if doMM or doFF:
-    #      if not ( "2Lep_NJet_SR" in category.cut.cutname ):
-    #        ttH.signals = []
-    #     elif ( ( "2Lep_NJet_SR" in category.cut.cutname ) and not ttH.signals ):
-    #         ttH.signals = ['FakesClosureABCD']
-
-    # NB: *must* initialise this to 1.0 !!
-    #
     lepSF_weight  = '1.0'
 
     # ---> apply the lepton SFs to the event here!
@@ -1852,7 +1836,7 @@ for category in vardb.categorylist:
 
         print ("\t\t----------------------\n\t\tTotal event weight --> {0}\n\t\t----------------------\n".format( weight_glob + ' * ' + combined_SF_weight ) )
 
-        # Get event yields for *this* category. Do it only for the first variable in the list
+        # Get table w/ event yields for *this* category. Do it only for the first variable in the list
         #
         if ( args.printEventYields and idx is 0 ):
 
