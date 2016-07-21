@@ -92,9 +92,37 @@ gROOT.SetBatch(True)
 #rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_WEIGHTED_AVG"
 
 # Scale electron fake efficiency: use ARITHMETIC average <eff fake, eff QMisID>
-oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_Original/"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl_ARITHMETIC_AVG/"
-rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG"
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v15/25ns_v15_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl_ARITHMETIC_AVG/"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG"
+
+# -------------------------------------------------------------------------------------------------------------
+
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_NewTruthMatch/"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch"
+
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_IncludeQMisID/"
+#rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_IncludeQMisID"
+
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_NewTruthMatch_2/"
+#rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2"
+
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_MoriondTruthMatch/"
+#rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_MoriondTruthMatch"
+
+oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
+newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_MM_WEIGHTED_Pt_ScaledFakeEl_ARITHMETIC_AVG/"
+rr_dir  = "/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v17/OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl"
+
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_410000_MM_WEIGHTED_Pt_NOWEIGHTS_TriggerMatchin_test/"
+#rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/Efficiencies_Probe_TM_NOT_TM"
+#rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2"
 
 # -------------------------------------------------------------------------------------------------------------
 
@@ -106,9 +134,10 @@ if not os.path.exists(newpath):
     os.makedirs(newpath)
 
 if doMM_PtOnly:
-  gROOT.LoadMacro("modifyttree_MM_PtOnly.cxx+g")
+    gROOT.LoadMacro("modifyttree_MM_PtOnly.cxx+g")
+    #gROOT.LoadMacro("modifyttree_MM_PtOnly_TrigMatch.cxx+g")
 else:
-  gROOT.LoadMacro("modifyttree_MM.cxx+g")
+    gROOT.LoadMacro("modifyttree_MM.cxx+g")
 
 group_list = os.listdir(oldpath)
 group_list = group_list[:]
@@ -134,6 +163,7 @@ for group in group_list:
         command_line = None
         if doMM_PtOnly:
 	  command_line = 'modifyttree_MM_PtOnly(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
+	  #command_line = 'modifyttree_MM_PtOnly_TrigMatch(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
         else:
           command_line = 'modifyttree_MM(\"'+infile+'\",\"'+outfile+'\",\"'+addMM+'\",\"'+rr_dir+'\",\"'+do_closure+'\",\"'+nentries+'\")'
 

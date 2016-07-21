@@ -17,7 +17,7 @@
 /
 *************** */
 
-bool g_debug(false);
+bool g_debug(true);
 bool g_verbose(false);
 
 std::map< std::string, TH1D* > g_el_hist_map;
@@ -65,135 +65,159 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
 
   // ******************************************************
   //
-  // 1. 'REAL' rate
+  // 1. 'REAL' efficiency
 
-  Info("read_rates()", "REAL rate from directory: %s ", rr_dir.c_str() );
+  Info("read_rates()", "REAL efficiency from directory: %s ", rr_dir.c_str() );
 
-  std::string path_R_el = glob_path + rr_dir + "/Rates.root";// "/AvgRates.root";
-  TFile *file_R_el = TFile::Open(path_R_el.c_str());
-  if ( !file_R_el->IsOpen() ) {
-    SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_el.c_str() );
+  std::string path_R_el_TM = glob_path + rr_dir + "/Rates_Probe_TrigMatched.root";// "/AvgRates.root";
+  TFile *file_R_el_TM = TFile::Open(path_R_el_TM.c_str());
+  if ( !file_R_el_TM->IsOpen() ) {
+    SysError("read_rates()", "Failed to open ROOT file with R efficiency from path: %s . Aborting", path_R_el_TM.c_str() );
     exit(-1);
   } else {
-    Info("read_rates()", "ELECTRON REAL rate: %s ", path_R_el.c_str() );
+    Info("read_rates()", "ELECTRON REAL efficiency (Probe TM): %s ", path_R_el_TM.c_str() );
   }
-  std::string path_R_mu = glob_path + rr_dir + "/Rates.root"; //"/AvgRates.root";
-  TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
-  if ( !file_R_mu->IsOpen() ) {
-    SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_mu.c_str() );
+  std::string path_R_mu_TM = glob_path + rr_dir + "/Rates_Probe_TrigMatched.root"; //"/AvgRates.root";
+  TFile *file_R_mu_TM = TFile::Open(path_R_mu_TM.c_str());
+  if ( !file_R_mu_TM->IsOpen() ) {
+    SysError("read_rates()", "Failed to open ROOT file with R efficiency from path: %s . Aborting", path_R_mu_TM.c_str() );
     exit(-1);
   } else {
-    Info("read_rates()", "MUON REAL rate: %s ", path_R_mu.c_str() );
+    Info("read_rates()", "MUON REAL efficiency (Probe TM): %s ", path_R_mu_TM.c_str() );
+  }
+
+  std::string path_R_el_NO_TM = glob_path + rr_dir + "/Rates_Probe_NOT_TrigMatched.root";// "/AvgRates.root";
+  TFile *file_R_el_NO_TM = TFile::Open(path_R_el_NO_TM.c_str());
+  if ( !file_R_el_NO_TM->IsOpen() ) {
+    SysError("read_rates()", "Failed to open ROOT file with R efficiency from path: %s . Aborting", path_R_el_NO_TM.c_str() );
+    exit(-1);
+  } else {
+    Info("read_rates()", "ELECTRON REAL efficiency (Probe !TM): %s ", path_R_el_NO_TM.c_str() );
+  }
+  std::string path_R_mu_NO_TM = glob_path + rr_dir + "/Rates_Probe_NOT_TrigMatched.root"; //"/AvgRates.root";
+  TFile *file_R_mu_NO_TM = TFile::Open(path_R_mu_NO_TM.c_str());
+  if ( !file_R_mu_NO_TM->IsOpen() ) {
+    SysError("read_rates()", "Failed to open ROOT file with R efficiency from path: %s . Aborting", path_R_mu_NO_TM.c_str() );
+    exit(-1);
+  } else {
+    Info("read_rates()", "MUON REAL efficiency (Probe !TM): %s ", path_R_mu_NO_TM.c_str() );
   }
 
   // special case: use charge flip (i.e. "fake" rate) as real rate (only for electrons)!
   bool CFRateAsRR = ( rr_dir.find("ChFlip") != std::string::npos ) ? true : false;
-  if ( CFRateAsRR ) { Info("read_rates()", "---> For ELECTRONS, will be treating charge flip rate as REAL rate!!"); }
+  if ( CFRateAsRR ) { Info("read_rates()", "---> For ELECTRONS, will be treating charge flip efficiency as REAL efficiency!!"); }
 
   std::string rate_type = ( !g_doClosure ) ? "observed" : "expected";
 
   // ELECTRONS
   //
-  std::string histname_el_pt_rr    = ( !CFRateAsRR ) ?  "El_ProbePt_Real_Rate_" + rate_type : "El_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_el_pt_r_T   = ( !CFRateAsRR ) ?  "El_ProbePt_Real_T_" + rate_type : "El_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_el_pt_r_L   = ( !CFRateAsRR ) ?  "El_ProbePt_Real_AntiT_" + rate_type : "El_ProbePt_Fake_Rate_" + rate_type;
+  std::string histname_el_pt_rr    = ( !CFRateAsRR ) ?  "El_ProbePt_Real_Efficiency_" + rate_type : "El_ProbePt_Fake_Efficiency_" + rate_type;
 
-  // get real rate histograms
+  // get real efficiency histograms
   //
-  TH1D *hist_el_pt_rr    = get_hist( *file_R_el, histname_el_pt_rr );
-  TH1D *hist_el_pt_r_T   = get_hist( *file_R_el, histname_el_pt_r_T );
-  TH1D *hist_el_pt_r_L   = get_hist( *file_R_el, histname_el_pt_r_L );
+  TH1D *hist_el_pt_rr_TM    = get_hist( *file_R_el_TM, histname_el_pt_rr );
+  TH1D *hist_el_pt_rr_NO_TM = get_hist( *file_R_el_NO_TM, histname_el_pt_rr );
 
   // MUONS
   //
-  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Rate_" + rate_type;
-  std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_" + rate_type;
-  std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_AntiT_" + rate_type;
+  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Efficiency_" + rate_type;
 
-  // get real rate histograms
+  // get real efficiency histograms
   //
-  TH1D *hist_mu_pt_rr    = get_hist( *file_R_mu, histname_mu_pt_rr );
-  TH1D *hist_mu_pt_r_T   = get_hist( *file_R_mu, histname_mu_pt_r_T );
-  TH1D *hist_mu_pt_r_L   = get_hist( *file_R_mu, histname_mu_pt_r_L );
+  TH1D *hist_mu_pt_rr_TM    = get_hist( *file_R_mu_TM, histname_mu_pt_rr );
+  TH1D *hist_mu_pt_rr_NO_TM = get_hist( *file_R_mu_NO_TM, histname_mu_pt_rr );
 
-  // 2. FAKE rate
+  // 2. FAKE efficiency
 
   std::string fake_dir(rr_dir);
   if ( !fr_dir.empty() ) {
-     Warning("read_rates()", "FAKE rate is going to be read from %s. Check whether it's really what you want...", fr_dir.c_str());
+     Warning("read_rates()", "FAKE efficiency is going to be read from %s. Check whether it's really what you want...", fr_dir.c_str());
      fake_dir = fr_dir;
   } else {
-     Info("read_rates()", "FAKE rate from same directory" );
+     Info("read_rates()", "FAKE efficiency from same directory" );
   }
 
-  std::string path_F_el = glob_path + fake_dir + "/Rates.root"; // "/AvgRates.root";
-  TFile *file_F_el = TFile::Open(path_F_el.c_str());
-  if ( !file_F_el->IsOpen() ) {
-    SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_el.c_str() );
+  std::string path_F_el_TM = glob_path + fake_dir + "/Rates_Probe_TrigMatched.root"; // "/AvgRates.root";
+  TFile *file_F_el_TM = TFile::Open(path_F_el_TM.c_str());
+  if ( !file_F_el_TM->IsOpen() ) {
+    SysError("read_rates()", "Failed to open ROOT file with F efficiency from path: %s . Aborting", path_F_el_TM.c_str() );
     exit(-1);
   } else {
-    Info("read_rates()", "ELECTRON FAKE rate: %s ", path_F_el.c_str() );
+    Info("read_rates()", "ELECTRON FAKE efficiency (Probe TM): %s ", path_F_el_TM.c_str() );
   }
 
-  std::string path_F_mu = glob_path + fake_dir + "/Rates.root"; // "/AvgRates.root";
-  TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
-  if ( !file_F_mu->IsOpen() ) {
-    SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_mu.c_str() );
+  std::string path_F_mu_TM = glob_path + fake_dir + "/Rates_Probe_TrigMatched.root"; // "/AvgRates.root";
+  TFile *file_F_mu_TM = TFile::Open(path_F_mu_TM.c_str());
+  if ( !file_F_mu_TM->IsOpen() ) {
+    SysError("read_rates()", "Failed to open ROOT file with F efficiency from path: %s . Aborting", path_F_mu_TM.c_str() );
     exit(-1);
   } else {
-    Info("read_rates()", "MUON FAKE rate: %s ", path_F_mu.c_str() );
+    Info("read_rates()", "MUON FAKE efficiency (Probe TM): %s ", path_F_mu_TM.c_str() );
+  }
+
+  std::string path_F_el_NO_TM = glob_path + fake_dir + "/Rates_Probe_NOT_TrigMatched.root"; // "/AvgRates.root";
+  TFile *file_F_el_NO_TM = TFile::Open(path_F_el_NO_TM.c_str());
+  if ( !file_F_el_NO_TM->IsOpen() ) {
+    SysError("read_rates()", "Failed to open ROOT file with F efficiency from path: %s . Aborting", path_F_el_NO_TM.c_str() );
+    exit(-1);
+  } else {
+    Info("read_rates()", "ELECTRON FAKE efficiency (Probe !TM): %s ", path_F_el_NO_TM.c_str() );
+  }
+
+  std::string path_F_mu_NO_TM = glob_path + fake_dir + "/Rates_Probe_NOT_TrigMatched.root"; // "/AvgRates.root";
+  TFile *file_F_mu_NO_TM = TFile::Open(path_F_mu_NO_TM.c_str());
+  if ( !file_F_mu_NO_TM->IsOpen() ) {
+    SysError("read_rates()", "Failed to open ROOT file with F efficiency from path: %s . Aborting", path_F_mu_NO_TM.c_str() );
+    exit(-1);
+  } else {
+    Info("read_rates()", "MUON FAKE efficiency (Probe !TM): %s ", path_F_mu_NO_TM.c_str() );
   }
 
   // ELECTRONS
   //
-  std::string histname_el_pt_fr    = "El_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_el_pt_f_T   = "El_ProbePt_Fake_T_" + rate_type;
-  std::string histname_el_pt_f_L   = "El_ProbePt_Fake_AntiT_" + rate_type;
+  std::string histname_el_pt_fr("");
+  if ( g_doClosure ) {
+    histname_el_pt_fr    = "El_ProbePt_Fake_Efficiency_" + rate_type;
+  } else {
+    histname_el_pt_fr    = "El_ProbePt_ScaledFake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
+  }
 
-  // get fake rate histograms
+  // get fake efficiency histograms
   //
-  TH1D *hist_el_pt_fr    = get_hist( *file_F_el, histname_el_pt_fr );
-  TH1D *hist_el_pt_f_T   = get_hist( *file_F_el, histname_el_pt_f_T );
-  TH1D *hist_el_pt_f_L   = get_hist( *file_F_el, histname_el_pt_f_L );
+  TH1D *hist_el_pt_fr_TM    = get_hist( *file_F_el_TM, histname_el_pt_fr );
+  TH1D *hist_el_pt_fr_NO_TM = get_hist( *file_F_el_NO_TM, histname_el_pt_fr );
 
   // MUONS
   //
-  std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_" + rate_type;
-  std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_AntiT_" + rate_type;
+  std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Efficiency_" + rate_type;
 
-  // get fake rate histograms
+  // get fake efficiency histograms
   //
-  TH1D *hist_mu_pt_fr    = get_hist( *file_F_mu, histname_mu_pt_fr );
-  TH1D *hist_mu_pt_f_T   = get_hist( *file_F_mu, histname_mu_pt_f_T );
-  TH1D *hist_mu_pt_f_L   = get_hist( *file_F_mu, histname_mu_pt_f_L );
+  TH1D *hist_mu_pt_fr_TM    = get_hist( *file_F_mu_TM, histname_mu_pt_fr );
+  TH1D *hist_mu_pt_fr_NO_TM = get_hist( *file_F_mu_NO_TM, histname_mu_pt_fr );
 
   // ***********************************************************************
 
   // fill a map for later usage
   //
-  g_el_hist_map["pt_rr"]   = hist_el_pt_rr;
-  g_el_hist_map["pt_r_T"]  = hist_el_pt_r_T;
-  g_el_hist_map["pt_r_L"]  = hist_el_pt_r_L;
+  g_el_hist_map["pt_rr_TM"]    = hist_el_pt_rr_TM;
+  g_el_hist_map["pt_rr_NO_TM"] = hist_el_pt_rr_NO_TM;
 
-  g_mu_hist_map["pt_rr"]   = hist_mu_pt_rr;
-  g_mu_hist_map["pt_r_T"]  = hist_mu_pt_r_T;
-  g_mu_hist_map["pt_r_L"]  = hist_mu_pt_r_L;
+  g_mu_hist_map["pt_rr_TM"]    = hist_mu_pt_rr_TM;
+  g_mu_hist_map["pt_rr_NO_TM"] = hist_mu_pt_rr_NO_TM;
 
-  g_el_hist_map["pt_fr"]   = hist_el_pt_fr;
-  g_el_hist_map["pt_f_T"]  = hist_el_pt_f_T;
-  g_el_hist_map["pt_f_L"]  = hist_el_pt_f_L;
+  g_el_hist_map["pt_fr_TM"]    = hist_el_pt_fr_TM;
+  g_el_hist_map["pt_fr_NO_TM"] = hist_el_pt_fr_NO_TM;
 
-  g_mu_hist_map["pt_fr"]   = hist_mu_pt_fr;
-  g_mu_hist_map["pt_f_T"]  = hist_mu_pt_f_T;
-  g_mu_hist_map["pt_f_L"]  = hist_mu_pt_f_L;
+  g_mu_hist_map["pt_fr_TM"]    = hist_mu_pt_fr_TM;
+  g_mu_hist_map["pt_fr_NO_TM"] = hist_mu_pt_fr_NO_TM;
 
   // pt hist has two different binning for r/f
   //
-  g_n_el_bins_pt_rr =  hist_el_pt_rr->GetNbinsX()+1;
-  g_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX()+1;
-  g_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX()+1;
-  g_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX()+1;
+  g_n_el_bins_pt_rr =  hist_el_pt_rr_TM->GetNbinsX()+1;
+  g_n_el_bins_pt_fr =  hist_el_pt_fr_TM->GetNbinsX()+1;
+  g_n_mu_bins_pt_rr =  hist_mu_pt_rr_TM->GetNbinsX()+1;
+  g_n_mu_bins_pt_fr =  hist_mu_pt_fr_TM->GetNbinsX()+1;
 
 }
 
@@ -220,6 +244,7 @@ double  scaleRateToEfficiency( double rate )
 ///*
 std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 				   float pt,
+				   char isTrigMatched,
 				   bool isFakeLep,
 				   int n_bins_pt_fr,
 				   int n_bins_pt_rr
@@ -247,40 +272,64 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
     if ( g_verbose ) {
        Info("calc_weights()", "\tFake lepton");
     }
-    
+
     // loop over number of pt bins
     // do not consider underflow, i.e. 0th bin
     //
     for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
 
-      if ( g_verbose ) {
-  	Info("calc_weights()", "\t\tbin %i : lower edge = %.2f, upper edge = %.2f", p,(histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-      }
+      if ( isTrigMatched ) {
+        if ( ( pt >= (histograms.find("pt_fr_TM")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_fr_TM")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
 
-      if ( ( pt >= (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
+     	  double fr_pt  = (histograms.find("pt_fr_TM")->second)->GetBinContent(p);
+     	  double fr_pt_err  = (histograms.find("pt_fr_TM")->second)->GetBinError(p);
 
-    	double fr_pt  = (histograms.find("pt_fr")->second)->GetBinContent(p);
-    	double fr_pt_err  = (histograms.find("pt_fr")->second)->GetBinError(p);
+     	  if ( g_verbose ) {
+     	    Info("calc_weights()", "\t\t==> TM lepton. Reading fake rate in bin [%.2f,%.2f] : fr_pt = %.2f", (histograms.find("pt_fr_TM")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr_TM")->second)->GetXaxis()->GetBinLowEdge(p+1), fr_pt );
+     	  }
 
-  	if ( g_verbose ) {
-    	  Info("calc_weights()", "\t\t==> Reading fake rate in bin [%.2f,%.2f] : fr_pt = %.2f", (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1), fr_pt );
-	}
+     	  // nominal
+     	  //
+     	  weights.at(0) = fr_pt;
+     	  error 	= fr_pt_err;
 
-    	// nominal
-    	//
-    	weights.at(0) = fr_pt;
-    	error	      = fr_pt_err;
+     	  // up syst
+     	  //
+     	  weights.at(1) = ( fr_pt + error );
 
-    	// up syst
-    	//
-    	weights.at(1) = ( fr_pt + error ); 
+     	  // down syst
+     	  //
+     	  if ( fr_pt - error > 0 ) { weights.at(2) = ( fr_pt - error );}
+     	  else  		   { weights.at(2) = 0.0; }
 
-    	// down syst
-    	//
-    	if ( fr_pt - error > 0 ) { weights.at(2) = ( fr_pt - error );}
-    	else		         { weights.at(2) = 0.0; }
+          break;
+        }
+      } else {
+        if ( ( pt >= (histograms.find("pt_fr_NO_TM")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_fr_NO_TM")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
 
-        break;
+     	  double fr_pt  = (histograms.find("pt_fr_NO_TM")->second)->GetBinContent(p);
+     	  double fr_pt_err  = (histograms.find("pt_fr_NO_TM")->second)->GetBinError(p);
+
+     	  if ( g_verbose ) {
+     	    Info("calc_weights()", "\t\t==> !TM lepton. Reading fake rate in bin [%.2f,%.2f] : fr_pt = %.2f", (histograms.find("pt_fr_NO_TM")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr_NO_TM")->second)->GetXaxis()->GetBinLowEdge(p+1), fr_pt );
+     	  }
+
+     	  // nominal
+     	  //
+     	  weights.at(0) = fr_pt;
+     	  error 	= fr_pt_err;
+
+     	  // up syst
+     	  //
+     	  weights.at(1) = ( fr_pt + error );
+
+     	  // down syst
+     	  //
+     	  if ( fr_pt - error > 0 ) { weights.at(2) = ( fr_pt - error );}
+     	  else  		   { weights.at(2) = 0.0; }
+
+          break;
+        }
       }
 
     } // close loop on pT bins: fake lepton
@@ -292,42 +341,67 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
     if ( g_verbose ) {
        Info("calc_weights()", "Real lepton");
     }
-    
+
     // loop over number of pt bins
     // do not consider underflow, i.e. 0th bin
     //
     for ( int p = 1; p <= n_bins_pt_rr; p++ ) {
 
-      if ( g_verbose ) {
-        Info("calc_weights()", "\t\tbin %i : lower edge = %.2f, upper edge = %.2f", p,(histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-      }
-	
-      if ( ( pt >= (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
+      if ( isTrigMatched ) {
+        if ( ( pt >= (histograms.find("pt_rr_TM")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_rr_TM")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
 
-    	double rr_pt  = (histograms.find("pt_rr")->second)->GetBinContent(p);
+      	  double rr_pt  = (histograms.find("pt_rr_TM")->second)->GetBinContent(p);
 
-    	double rr_pt_err  = (histograms.find("pt_rr")->second)->GetBinError(p);
+      	  double rr_pt_err  = (histograms.find("pt_rr_TM")->second)->GetBinError(p);
 
-        if ( g_verbose ) {
-    	  Info("calc_weights()", "\t\t==> Reading real rate in bin [%.2f,%.2f] : rr_pt = %.2f", (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1), rr_pt );
+          if ( g_verbose ) {
+      	    Info("calc_weights()", "\t\t==> TM lepton. Reading real rate in bin [%.2f,%.2f] : rr_pt = %.2f", (histograms.find("pt_rr_TM")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_rr_TM")->second)->GetXaxis()->GetBinLowEdge(p+1), rr_pt );
+          }
+
+      	  // nominal
+      	  //
+      	  weights.at(0) = rr_pt;
+      	  error 	= rr_pt_err;
+
+      	  // up syst
+      	  //
+      	  weights.at(1) = ( rr_pt + error );
+
+      	  // down syst
+      	  //
+      	  if ( rr_pt - error > 0 ) { weights.at(2) = ( rr_pt - error ); }
+      	  else  		   { weights.at(2) = 0.0; }
+
+          break;
+
         }
+      } else {
+        if ( ( pt >= (histograms.find("pt_rr_NO_TM")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_rr_NO_TM")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
 
-    	// nominal
-    	//
-    	weights.at(0) = rr_pt;
-    	error	      = rr_pt_err;
+      	  double rr_pt  = (histograms.find("pt_rr_NO_TM")->second)->GetBinContent(p);
 
-    	// up syst
-    	//
-    	weights.at(1) = ( rr_pt + error );
+      	  double rr_pt_err  = (histograms.find("pt_rr_NO_TM")->second)->GetBinError(p);
 
-    	// down syst
-    	//
-    	if ( rr_pt - error > 0 ) { weights.at(2) = ( rr_pt - error ); }
-    	else		         { weights.at(2) = 0.0; }
+          if ( g_verbose ) {
+      	    Info("calc_weights()", "\t\t==> !TM lepton. Reading real rate in bin [%.2f,%.2f] : rr_pt = %.2f", (histograms.find("pt_rr_NO_TM")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_rr_NO_TM")->second)->GetXaxis()->GetBinLowEdge(p+1), rr_pt );
+          }
 
-        break;
-	
+      	  // nominal
+      	  //
+      	  weights.at(0) = rr_pt;
+      	  error 	= rr_pt_err;
+
+      	  // up syst
+      	  //
+      	  weights.at(1) = ( rr_pt + error );
+
+      	  // down syst
+      	  //
+      	  if ( rr_pt - error > 0 ) { weights.at(2) = ( rr_pt - error ); }
+      	  else  		   { weights.at(2) = 0.0; }
+
+          break;
+        }
       }
     } // close loop on pT bins: real lepton
 
@@ -335,11 +409,13 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 
   // Now converting rates to the efficiencies for the MM/FF
   //
-  if ( g_verbose ) { Info("calc_weights()", "Rates = %.2f ( up = %.2f , dn = %.2f )", weights.at(0), weights.at(1), weights.at(2) ); }
-
-  weights.at(0) = scaleRateToEfficiency(weights.at(0));
-  weights.at(1) = scaleRateToEfficiency(weights.at(1));
-  weights.at(2) = scaleRateToEfficiency(weights.at(2));
+  // --> Not needed anymore: now reading efficiency directly!
+  //
+  //if ( g_verbose ) { Info("calc_weights()", "Rates = %.2f ( up = %.2f , dn = %.2f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  //
+  //weights.at(0) = scaleRateToEfficiency(weights.at(0));
+  //weights.at(1) = scaleRateToEfficiency(weights.at(1));
+  //weights.at(2) = scaleRateToEfficiency(weights.at(2));
 
   if ( g_verbose ) { Info("calc_weights()", "MM/FF efficiencies = %.2f ( up = %.2f , dn = %.2f )", weights.at(0), weights.at(1), weights.at(2) ); }
 
@@ -361,20 +437,20 @@ double calc_final_event_weight( std::string region, double f1, double f2, double
    // TEMP!!
    //if ( r1 > 0.955 ) r1 = 0.955;
    //if ( r2 > 0.955 ) r2 = 0.955;
-   
+
    if      ( region=="TT" ) { weight = 1 - ( r1 * r2 * (1-f1) * (1-f2) * alpha ); }
    else if ( region=="TL" ) { weight = r1 * r2 * f2 * (1-f1) * alpha;  }
    else if ( region=="LT" ) { weight = r1 * r2 * f1 * (1-f2) * alpha;  }
    else if ( region=="LL" ) { weight = -1 * r1 * r2 * f1 * f2 * alpha; }
-      
-   // The above formulas are equvalent to the following:
+
+   // The above formulas are equivalent to the following:
    //
    //double weight2 = 1.0;
    //if	   ( region=="TT" )   { weight2 = alpha * ( r1 * f2 * ( (f1 - 1) * (1 - r2) ) + r2 * f1 * ( (r1 - 1) * (1 - f2) ) + f1 * f2 * ( (1 - r1) * (1 - r2) ) ); }
    //else if ( region=="TL" ) { weight2 = alpha * ( r1 * f2 * ( (1 - f1) * r2 ) + r2 * f1 * ( (1 - r1) * f2 ) + f1 * f2 * ( (r1 - 1) * r2 ) ); }
    //else if ( region=="LT" ) { weight2 = alpha * ( r1 * f2 * ( (1 - r2) * f1 ) + r2 * f1 * ( (1 - f2) * r1 ) + f1 * f2 * ( (r2 - 1) * r1 ) ); }
-   //else if ( region=="LL" ) { weight2 = alpha * ( r1 * f2 * ( -1.0 * f1 * r2 ) + r2 * f1 * ( -1.0 * r1 * f2 ) + f1 * f2 * ( r1 * r2 ) ); }   
-   
+   //else if ( region=="LL" ) { weight2 = alpha * ( r1 * f2 * ( -1.0 * f1 * r2 ) + r2 * f1 * ( -1.0 * r1 * f2 ) + f1 * f2 * ( r1 * r2 ) ); }
+
    if ( g_debug ) { Info("calc_final_event_weight()", "In region %s : \n weight = %.15f , alpha = %.15f ", region.c_str(), weight, alpha); }
 
    return weight;
@@ -393,7 +469,8 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
      		   Int_t	        isLL,
      		   std::vector<float>&  lep_pt,
      		   std::vector<float>&  lep_eta,
-     		   std::vector<int>&    lep_flavour
+     		   std::vector<int>&    lep_flavour,
+		   std::vector<char>&   lep_isTrigMatched
      		 )
 {
 
@@ -414,24 +491,24 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
   // NB: input lep_* vectors are pT-ordered.
   //
   if ( lep_flavour.at(0) == 11 ) {
-     r1 = calc_weights( g_el_hist_map, lep_pt.at(0), !isFakeLep, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
-     f1 = calc_weights( g_el_hist_map, lep_pt.at(0), isFakeLep,  g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
+     r1 = calc_weights( g_el_hist_map, lep_pt.at(0), lep_isTrigMatched.at(0), !isFakeLep, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
+     f1 = calc_weights( g_el_hist_map, lep_pt.at(0), lep_isTrigMatched.at(0), isFakeLep,  g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
   } else if ( lep_flavour.at(0) == 13 ) {
-     r1 = calc_weights( g_mu_hist_map, lep_pt.at(0), !isFakeLep, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
-     f1 = calc_weights( g_mu_hist_map, lep_pt.at(0), isFakeLep,  g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
+     r1 = calc_weights( g_mu_hist_map, lep_pt.at(0), lep_isTrigMatched.at(0), !isFakeLep, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
+     f1 = calc_weights( g_mu_hist_map, lep_pt.at(0), lep_isTrigMatched.at(0), isFakeLep,  g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
   }
 
   if ( lep_flavour.at(1) == 11 ) {
-     r2 = calc_weights( g_el_hist_map, lep_pt.at(1), !isFakeLep, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
-     f2 = calc_weights( g_el_hist_map, lep_pt.at(1), isFakeLep,  g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
+     r2 = calc_weights( g_el_hist_map, lep_pt.at(1), lep_isTrigMatched.at(1), !isFakeLep, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
+     f2 = calc_weights( g_el_hist_map, lep_pt.at(1), lep_isTrigMatched.at(1), isFakeLep,  g_n_el_bins_pt_fr, g_n_el_bins_pt_rr );
   } else if ( lep_flavour.at(1) == 13 ) {
-     r2 = calc_weights( g_mu_hist_map, lep_pt.at(1), !isFakeLep, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
-     f2 = calc_weights( g_mu_hist_map, lep_pt.at(1), isFakeLep,  g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
+     r2 = calc_weights( g_mu_hist_map, lep_pt.at(1), lep_isTrigMatched.at(1), !isFakeLep, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
+     f2 = calc_weights( g_mu_hist_map, lep_pt.at(1), lep_isTrigMatched.at(1), isFakeLep,  g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr );
   }
 
   if ( g_debug ) {
-    Info("recomputeMMW()", "\n Lepton 1 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n ****** \n Nominal real and fake eff.: \n r1 = %.2f , f1 = %.2f ", lep_flavour.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), r1.at(0), f1.at(0) );
-    Info("recomputeMMW()", "\n Lepton 2 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n ****** \n Nominal real and fake eff.: \n r2 = %.2f , f2 = %.2f ", lep_flavour.at(1), lep_pt.at(1)/1e3, lep_eta.at(1), r2.at(0), f2.at(0) );
+    Info("recomputeMMW()", "\n Lepton 1 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n trigMatched? %i \n ****** \n Nominal real and fake eff.: \n r1 = %.2f , f1 = %.2f ", lep_flavour.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_isTrigMatched.at(0), r1.at(0), f1.at(0) );
+    Info("recomputeMMW()", "\n Lepton 2 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n trigMatched? %i \n ****** \n Nominal real and fake eff.: \n r2 = %.2f , f2 = %.2f ", lep_flavour.at(1), lep_pt.at(1)/1e3, lep_eta.at(1), lep_isTrigMatched.at(1), r2.at(0), f2.at(0) );
   }
 
   // ***************************************************************************************************************
@@ -513,11 +590,10 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
 /
 ****************** */
 
-void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::string addWeight, std::string RR_dir, std::string doClosure,
-		    std::string  NENTRIES = "ALL", std::string treename = "physics", std::string FR_dir = "")
+void modifyttree_MM_PtOnly_TrigMatch(std::string filename, std::string outfilename, std::string addWeight, std::string RR_dir, std::string doClosure                                     , std::string  NENTRIES = "ALL", std::string treename = "physics", std::string FR_dir = "")
 {
 
-  Info("modifytree_MM_PtOnly()","Starting off...");
+  Info("modifyttree_MM_PtOnly_TrigMatch()","Starting off...");
 
   //Get in file, in tree and set top branch address
   //
@@ -552,13 +628,15 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
     std::string in_lep_pt_0_name("lep_Pt_0");
     std::string in_lep_pt_1_name("lep_Pt_1");
     std::string in_lep_eta_0_name("lep_Eta_0");
-    std::string in_lep_eta_1_name("lep_Eta_1");    
+    std::string in_lep_eta_1_name("lep_Eta_1");
     std::string in_lep_etaBE2_0_name("lep_EtaBE2_0");
     std::string in_lep_etaBE2_1_name("lep_EtaBE2_1");
     std::string in_lep_flavour_0_name("lep_ID_0");
     std::string in_lep_flavour_1_name("lep_ID_1");
     std::string in_lep_isT_0_name("lep_isTightSelected_0");
     std::string in_lep_isT_1_name("lep_isTightSelected_1");
+    std::string in_lep_isTM_0_name("lep_isTrigMatch_0");
+    std::string in_lep_isTM_1_name("lep_isTrigMatch_1");
     std::string in_MMWeight_name("MMWeight");
 
     ULong64_t  eventNumber_in; eventNumber_in = -1;
@@ -571,13 +649,16 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
     Float_t    lep_pt_0_in;      lep_pt_0_in = 0;
     Float_t    lep_pt_1_in;      lep_pt_1_in = 0;
     Float_t    lep_eta_0_in;	 lep_eta_0_in = 0;
-    Float_t    lep_eta_1_in;	 lep_eta_1_in = 0;    
+    Float_t    lep_eta_1_in;	 lep_eta_1_in = 0;
     Float_t    lep_etaBE2_0_in;  lep_etaBE2_0_in = 0;
     Float_t    lep_etaBE2_1_in;  lep_etaBE2_1_in = 0;
     Float_t    lep_flavour_0_in; lep_flavour_0_in = 0;
     Float_t    lep_flavour_1_in; lep_flavour_1_in = 0;
     Char_t     lep_isT_0_in;     lep_isT_0_in = 0;
     Char_t     lep_isT_1_in;     lep_isT_1_in = 0;
+    Char_t     lep_isTM_0_in;    lep_isTM_0_in = 0;
+    Char_t     lep_isTM_1_in;    lep_isTM_1_in = 0;
+
     std::vector<double>*   MMWeight_in;    MMWeight_in = 0;
 
     // List of input branches
@@ -592,13 +673,15 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
     TBranch	 *b_lep_Pt_0 = 0;         //!
     TBranch	 *b_lep_Pt_1 = 0;         //!
     TBranch	 *b_lep_Eta_0 = 0;        //!
-    TBranch	 *b_lep_Eta_1 = 0;        //!    
+    TBranch	 *b_lep_Eta_1 = 0;        //!
     TBranch	 *b_lep_EtaBE2_0 = 0;     //!
     TBranch	 *b_lep_EtaBE2_1 = 0;     //!
     TBranch	 *b_lep_ID_0 = 0;         //!
     TBranch	 *b_lep_ID_1 = 0;         //!
     TBranch      *b_lep_isTightSelected_0 = 0;  //!
     TBranch      *b_lep_isTightSelected_1 = 0;  //!
+    TBranch      *b_lep_isTrigMatch_0 = 0;  //!
+    TBranch      *b_lep_isTrigMatch_1 = 0;  //!
     TBranch      *b_MMWeight = 0;         //!
 
     // Before cloning input TTree, tell ROOT to process all the in branches,
@@ -631,17 +714,19 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
     intree->SetBranchAddress(in_lep_pt_0_name.c_str(), &lep_pt_0_in, &b_lep_Pt_0);
     intree->SetBranchAddress(in_lep_pt_1_name.c_str(), &lep_pt_1_in, &b_lep_Pt_1);
     intree->SetBranchAddress(in_lep_eta_0_name.c_str(), &lep_eta_0_in, &b_lep_Eta_0);
-    intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_Eta_1);    
+    intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_Eta_1);
     intree->SetBranchAddress(in_lep_etaBE2_0_name.c_str(), &lep_etaBE2_0_in, &b_lep_EtaBE2_0);
     intree->SetBranchAddress(in_lep_etaBE2_1_name.c_str(), &lep_etaBE2_1_in, &b_lep_EtaBE2_1);
     intree->SetBranchAddress(in_lep_flavour_0_name.c_str(), &lep_flavour_0_in, &b_lep_ID_0);
     intree->SetBranchAddress(in_lep_flavour_1_name.c_str(), &lep_flavour_1_in, &b_lep_ID_1);
     intree->SetBranchAddress(in_lep_isT_0_name.c_str(), &lep_isT_0_in, &b_lep_isTightSelected_0);
     intree->SetBranchAddress(in_lep_isT_1_name.c_str(), &lep_isT_1_in, &b_lep_isTightSelected_1);
+    intree->SetBranchAddress(in_lep_isTM_0_name.c_str(), &lep_isTM_0_in, &b_lep_isTrigMatch_0);
+    intree->SetBranchAddress(in_lep_isTM_1_name.c_str(), &lep_isTM_1_in, &b_lep_isTrigMatch_1);
     intree->SetBranchAddress(in_MMWeight_name.c_str(), &MMWeight_in, &b_MMWeight);
 
-    //Info("modifytree_MM_PtOnly()", "--> lep_pt_0 before SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
-    //Info("modifytree_MM_PtOnly()", "--> lep_pt_0 after SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
+    //Info("modifyttree_MM_PtOnly_TrigMatch()", "--> lep_pt_0 before SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
+    //Info("modifyttree_MM_PtOnly_TrigMatch()", "--> lep_pt_0 after SetBranchAddress() %p\n", intree->GetBranch(in_lep_pt_0_name.c_str())->GetAddress());
 
     // Set the "new" branches in the output TTree
     //
@@ -649,19 +734,19 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
 
     // read r/f rates from ROOT histograms
     //
-    Info("modifytree_MM_PtOnly()","Reading r/f rates from ROOT file(s)..");
+    Info("modifyttree_MM_PtOnly_TrigMatch()","Reading r/f rates from ROOT file(s)..");
     read_rates(RR_dir,FR_dir);
 
     // Loop over entries in TTree
     //
-    Info("modifytree_MM_PtOnly()","Begin loop on input tree entries...\n");
+    Info("modifyttree_MM_PtOnly_TrigMatch()","Begin loop on input tree entries...\n");
     int count_bad(0);
     Long64_t i = 0;
     for ( ; i < nentries; i++ ) {
 
       // Print out every N events to see where we are
       //
-      if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree_MM_PtOnly()","\t Processed %lld entries",i); }
+      if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifyttree_MM_PtOnly_TrigMatch()","\t Processed %lld entries",i); }
 
       // Now, in the input tree, reset to 1 the status of the branches you
       // deactivated before cloning
@@ -672,12 +757,12 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
 
       intree->GetEntry(i);
 
-      if ( g_debug ) { Info("modifytree_MM_PtOnly()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
+      if ( g_debug ) { Info("modifyttree_MM_PtOnly_TrigMatch()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
 
       // A security check...
       //
       if ( !MMWeight_in ) {
-        Info("modifytree_MM_PtOnly()","\t --> MMWeight_in is NULL!! Skipping event...  \n");
+        Info("modifyttree_MM_PtOnly_TrigMatch()","\t --> MMWeight_in is NULL!! Skipping event...  \n");
         ++count_bad;
         continue;
       }
@@ -695,7 +780,7 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
         if ( g_debug ) {
           int idx_in(0);
           for ( const auto& itr : *MMWeight_in ) {
-      	  Info("modifytree_MM_PtOnly()","\t\t IN MMWeight[%i] = %f", idx_in, itr );
+      	  Info("modifyttree_MM_PtOnly_TrigMatch()","\t\t IN MMWeight[%i] = %f", idx_in, itr );
       	  ++idx_in;
           }
         }
@@ -709,21 +794,22 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
         //
         std::vector<float> lep_pt_vec      = { lep_pt_0_in, lep_pt_1_in };
         std::vector<int> lep_flavour_vec   = { abs(static_cast<int>(lep_flavour_0_in)), abs(static_cast<int>(lep_flavour_1_in)) };
-        std::vector<float> lep_eta_vec;	
+        std::vector<float> lep_eta_vec;
+	std::vector<char> lep_TM_vec       = { lep_isTM_0_in, lep_isTM_1_in };
 	float eta0 = ( fabs(lep_flavour_0_in) == 13 ) ? lep_eta_0_in : lep_etaBE2_0_in; lep_eta_vec.push_back(eta0);
 	float eta1 = ( fabs(lep_flavour_1_in) == 13 ) ? lep_eta_1_in : lep_etaBE2_1_in; lep_eta_vec.push_back(eta1);
 
-        recomputeMMW( MMWeight_out, TT, TL, LT, LL, lep_pt_vec, lep_eta_vec, lep_flavour_vec );
+        recomputeMMW( MMWeight_out, TT, TL, LT, LL, lep_pt_vec, lep_eta_vec, lep_flavour_vec, lep_TM_vec );
 
         if ( g_debug ) {
           int idx_out(0);
           for ( const auto& itr : *MMWeight_out ) {
-      	  Info("modifytree_MM_PtOnly()","\t\t OUT MMWeight[%i] = %f", idx_out, itr );
+      	  Info("modifyttree_MM_PtOnly_TrigMatch()","\t\t OUT MMWeight[%i] = %f", idx_out, itr );
       	  ++idx_out;
           }
         }
 
-        if ( g_debug ) { Info("modifytree_MM_PtOnly()","\n\n"); }
+        if ( g_debug ) { Info("modifyttree_MM_PtOnly_TrigMatch()","\n\n"); }
 
       }
 
@@ -734,7 +820,7 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
 
     }
 
-    Info("modifytree_MM_PtOnly()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
+    Info("modifyttree_MM_PtOnly_TrigMatch()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
 
     outfile->Write();
     outfile->Close();
@@ -757,13 +843,15 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
     std::string in_lep_pt_0_name("lep_Pt_0");
     std::string in_lep_pt_1_name("lep_Pt_1");
     std::string in_lep_eta_0_name("lep_Eta_0");
-    std::string in_lep_eta_1_name("lep_Eta_1");    
+    std::string in_lep_eta_1_name("lep_Eta_1");
     std::string in_lep_etaBE2_0_name("lep_EtaBE2_0");
     std::string in_lep_etaBE2_1_name("lep_EtaBE2_1");
     std::string in_lep_flavour_0_name("lep_ID_0");
     std::string in_lep_flavour_1_name("lep_ID_1");
     std::string in_lep_isT_0_name("lep_isTightSelected_0");
     std::string in_lep_isT_1_name("lep_isTightSelected_1");
+    std::string in_lep_isTM_0_name("lep_isTrigMatch_0");
+    std::string in_lep_isTM_1_name("lep_isTrigMatch_1");
 
     ULong64_t  eventNumber_in; eventNumber_in = -1;
     Int_t      nlep_in;        nlep_in = -1;
@@ -775,13 +863,15 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
     Float_t    lep_pt_0_in;      lep_pt_0_in = 0;
     Float_t    lep_pt_1_in;      lep_pt_1_in = 0;
     Float_t    lep_eta_0_in;     lep_eta_0_in = 0;
-    Float_t    lep_eta_1_in;     lep_eta_1_in = 0;    
+    Float_t    lep_eta_1_in;     lep_eta_1_in = 0;
     Float_t    lep_etaBE2_0_in;  lep_etaBE2_0_in = 0;
     Float_t    lep_etaBE2_1_in;  lep_etaBE2_1_in = 0;
     Float_t    lep_flavour_0_in; lep_flavour_0_in = 0;
     Float_t    lep_flavour_1_in; lep_flavour_1_in = 0;
     Char_t     lep_isT_0_in;     lep_isT_0_in = 0;
     Char_t     lep_isT_1_in;     lep_isT_1_in = 0;
+    Char_t     lep_isTM_0_in;    lep_isTM_0_in = 0;
+    Char_t     lep_isTM_1_in;    lep_isTM_1_in = 0;
 
     // List of input branches
     //
@@ -795,13 +885,15 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
     TBranch	 *b_lep_Pt_0 = 0;         //!
     TBranch	 *b_lep_Pt_1 = 0;         //!
     TBranch	 *b_lep_Eta_0 = 0;        //!
-    TBranch	 *b_lep_Eta_1 = 0;        //!    
+    TBranch	 *b_lep_Eta_1 = 0;        //!
     TBranch	 *b_lep_EtaBE2_0 = 0;     //!
     TBranch	 *b_lep_EtaBE2_1 = 0;     //!
     TBranch	 *b_lep_ID_0 = 0;         //!
     TBranch	 *b_lep_ID_1 = 0;         //!
     TBranch      *b_lep_isTightSelected_0 = 0;  //!
     TBranch      *b_lep_isTightSelected_1 = 0;  //!
+    TBranch      *b_lep_isTrigMatch_0 = 0;  //!
+    TBranch      *b_lep_isTrigMatch_1 = 0;  //!
 
     // Before cloning input TTree, tell ROOT to process all the input branches
     //
@@ -824,13 +916,15 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
     intree->SetBranchAddress(in_lep_pt_0_name.c_str(), &lep_pt_0_in, &b_lep_Pt_0);
     intree->SetBranchAddress(in_lep_pt_1_name.c_str(), &lep_pt_1_in, &b_lep_Pt_1);
     intree->SetBranchAddress(in_lep_eta_0_name.c_str(), &lep_eta_0_in, &b_lep_Eta_0);
-    intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_Eta_1);    
+    intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_Eta_1);
     intree->SetBranchAddress(in_lep_etaBE2_0_name.c_str(), &lep_etaBE2_0_in, &b_lep_EtaBE2_0);
     intree->SetBranchAddress(in_lep_etaBE2_1_name.c_str(), &lep_etaBE2_1_in, &b_lep_EtaBE2_1);
     intree->SetBranchAddress(in_lep_flavour_0_name.c_str(), &lep_flavour_0_in, &b_lep_ID_0);
     intree->SetBranchAddress(in_lep_flavour_1_name.c_str(), &lep_flavour_1_in, &b_lep_ID_1);
     intree->SetBranchAddress(in_lep_isT_0_name.c_str(), &lep_isT_0_in, &b_lep_isTightSelected_0);
     intree->SetBranchAddress(in_lep_isT_1_name.c_str(), &lep_isT_1_in, &b_lep_isTightSelected_1);
+    intree->SetBranchAddress(in_lep_isTM_0_name.c_str(), &lep_isTM_0_in, &b_lep_isTrigMatch_0);
+    intree->SetBranchAddress(in_lep_isTM_1_name.c_str(), &lep_isTM_1_in, &b_lep_isTrigMatch_1);
 
     // Set the "new" branches in the output TTree
     //
@@ -839,30 +933,30 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
 
     // read r/f rates from ROOT histograms
     //
-    Info("modifytree_MM_PtOnly()","Reading r/f rates from ROOT file(s)..");
+    Info("modifyttree_MM_PtOnly_TrigMatch()","Reading r/f rates from ROOT file(s)..");
     read_rates(RR_dir,FR_dir);
 
     // Loop over entries in TTree
     //
-    Info("modifytree_MM_PtOnly()","Begin loop on input tree entries...\n");
+    Info("modifyttree_MM_PtOnly_TrigMatch()","Begin loop on input tree entries...\n");
     int count_bad(0);
     Long64_t i = 0;
     for ( ; i < nentries; i++ ) {
 
       // Print out every N events to see where we are
       //
-      if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifytree_MM_PtOnly()","\t Processed %lld entries",i); }
+      if ( i > 0 && ( static_cast<int>(i) % 20000 == 0 ) ) { Info("modifyttree_MM_PtOnly_TrigMatch()","\t Processed %lld entries",i); }
 
       intree->GetEntry(i);
 
-      if ( g_debug ) { Info("modifytree_MM_PtOnly()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
+      if ( g_debug ) { Info("modifyttree_MM_PtOnly_TrigMatch()","\t Processing entry: %lld - eventNumber: %lli \n",i, eventNumber_in); }
 
       MMWeight_out.assign(5,1.0);
 
       if ( g_debug ) {
         int idx(0);
         for ( const auto& itr : MMWeight_out ) {
-          Info("modifytree_MM_PtOnly()","\t\t Default MMWeight[%i] = %f", idx, itr );
+          Info("modifyttree_MM_PtOnly_TrigMatch()","\t\t Default MMWeight[%i] = %f", idx, itr );
           ++idx;
         }
       }
@@ -881,21 +975,22 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
         //
         std::vector<float> lep_pt_vec      = { lep_pt_0_in, lep_pt_1_in };
         std::vector<int> lep_flavour_vec   = { abs(static_cast<int>(lep_flavour_0_in)), abs(static_cast<int>(lep_flavour_1_in)) };
-        std::vector<float> lep_eta_vec;	
+        std::vector<float> lep_eta_vec;
+	std::vector<char> lep_TM_vec       = { lep_isTM_0_in, lep_isTM_1_in };
 	float eta0 = ( fabs(lep_flavour_0_in) == 13 ) ? lep_eta_0_in : lep_etaBE2_0_in; lep_eta_vec.push_back(eta0);
 	float eta1 = ( fabs(lep_flavour_1_in) == 13 ) ? lep_eta_1_in : lep_etaBE2_1_in; lep_eta_vec.push_back(eta1);
 
-        recomputeMMW( &MMWeight_out, TT, TL, LT, LL, lep_pt_vec, lep_eta_vec, lep_flavour_vec );
+        recomputeMMW( &MMWeight_out, TT, TL, LT, LL, lep_pt_vec, lep_eta_vec, lep_flavour_vec, lep_TM_vec );
 
         if ( g_debug ) {
           int idx_out(0);
           for ( const auto& itr : MMWeight_out ) {
-	      Info("modifytree_MM_PtOnly()","\t\t OUT MMWeight[%i] = %f", idx_out, itr );
+	      Info("modifyttree_MM_PtOnly_TrigMatch()","\t\t OUT MMWeight[%i] = %f", idx_out, itr );
 	      ++idx_out;
           }
         }
 
-        if ( g_debug ) { Info("modifytree_MM_PtOnly()","\n\n"); }
+        if ( g_debug ) { Info("modifyttree_MM_PtOnly_TrigMatch()","\n\n"); }
 
       }
 
@@ -903,7 +998,7 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
 
     }
 
-    Info("modifytree_MM_PtOnly()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
+    Info("modifyttree_MM_PtOnly_TrigMatch()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
 
     outfile->Write();
     outfile->Close();

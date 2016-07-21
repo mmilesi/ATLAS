@@ -2,6 +2,7 @@
 #include <math.h>
 #include <iostream>
 #include <sstream>
+#include <cmath>
 
 #include "TError.h"
 #include "TFile.h"
@@ -19,6 +20,8 @@
 
 bool g_debug(false);
 bool g_verbose(false);
+
+unsigned int g_count_NaN_Inf(0);
 
 std::map< std::string, TH2D* > g_QMisID_hist_map;
 
@@ -128,6 +131,13 @@ void readRatesAndError( TH2D* rate_map, TH1D* proj_X, TH1D* proj_Y,
 
   r = rate_map->GetBinContent( rate_map->GetBin( xbin_nr, ybin_nr ) );
 
+  if ( std::isnan(r) ) {
+    Warning("readRatesAndError()", "Rate value being read in is nan. Will assign QMisIDWeight = 1");
+  }
+  if ( std::isinf(r) ) {
+    Warning("readRatesAndError()", "Rate value being read in is inf. Will assign QMisIDWeight = 1");
+  }
+
   // Get the UP and DOWN variations
   //
   // QUESTION: Why the hell ROOT has GetBinErrorUp and GetBinErrorLow for TH2 ??
@@ -196,10 +206,18 @@ void QMisIDWeightCalculator (std::vector<float>* weights,
 
   // Finally, store the event weight + variations
   //
-  weights->at(0) = ( rA + rB - 2.0 * rA * rB ) / ( 1.0 - rA - rB + 2.0 * rA * rB ) ;
-  weights->at(1) = ( rA_up + rB_up - 2.0 * rA_up * rB_up ) / ( 1.0 - rA_up - rB_up + 2.0 * rA_up * rB_up );
-  weights->at(2) = ( rA_dn + rB_dn - 2.0 * rA_dn * rB_dn ) / ( 1.0 - rA_dn - rB_dn + 2.0 * rA_dn * rB_dn );
-
+  if ( !( std::isnan(rA) || std::isnan(rA_up) || std::isnan(rA_dn) ) && !( std::isnan(rB) || std::isnan(rB_up) || std::isnan(rB_dn) ) &&
+       !( std::isinf(rA) || std::isinf(rA_up) || std::isinf(rA_dn) ) && !( std::isinf(rB) || std::isinf(rB_up) || std::isinf(rB_dn) )
+      ) {
+    weights->at(0) = ( rA + rB - 2.0 * rA * rB ) / ( 1.0 - rA - rB + 2.0 * rA * rB ) ;
+    weights->at(1) = ( rA_up + rB_up - 2.0 * rA_up * rB_up ) / ( 1.0 - rA_up - rB_up + 2.0 * rA_up * rB_up );
+    weights->at(2) = ( rA_dn + rB_dn - 2.0 * rA_dn * rB_dn ) / ( 1.0 - rA_dn - rB_dn + 2.0 * rA_dn * rB_dn );
+  } else {
+    weights->at(0) = 1.0;
+    weights->at(1) = 0.0;
+    weights->at(2) = 0.0;
+    ++g_count_NaN_Inf;
+  }
 }
 
 /* ******************
@@ -564,7 +582,7 @@ void modifyttree_QMisID(std::string filename, std::string outfilename,
 
       }
 
-      Info("modifytree_QMisID()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n", i, count_bad );
+      Info("modifytree_QMisID()","End of loop!\n ---> total number of processed events: %lld \n ---> number of skipped events: %i \n ---> number of events where NaN/inf rate was read: %u", i, count_bad, g_count_NaN_Inf );
 
       outfile->Write();
       outfile->Close();

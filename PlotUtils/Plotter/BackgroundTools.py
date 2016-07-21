@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.curdir))
 from Core import NTupleTools, DatasetManager, listifyInputFiles
 
 gROOT.Reset()
-gROOT.LoadMacro("Plotter/AtlasStyle.C")
+gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 

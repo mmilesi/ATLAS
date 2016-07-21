@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.curdir))
 from Core import NTupleTools, DatasetManager, listifyInputFiles
 
 gROOT.Reset()
-gROOT.LoadMacro("Plotter/AtlasStyle.C")
+gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
@@ -1130,7 +1130,7 @@ class Background:
                 #ratiomc.GetYaxis().SetRangeUser(0.8, 1.2)
                 #ratiomc.GetYaxis().SetRangeUser(0.0, 2.0)
                 ratiomc.GetYaxis().SetRangeUser(0.75, 1.25)
-		
+
             #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
             pad2.cd()
             #pad2.SetLogy(2)
@@ -1158,7 +1158,7 @@ class Background:
 	          if log is True or (var.logaxis and log is None):
 	              #stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
 	              stack.SetMaximum(stack.GetMaximum() * 3*10**(2))
-		      
+
 	      else:
 	          stack.SetMaximum(ymax_new*(2.-lower+0.15))
 	      stack.Draw('HIST')

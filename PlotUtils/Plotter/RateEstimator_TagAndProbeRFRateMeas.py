@@ -46,7 +46,7 @@ parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true"
 parser.add_argument("--useLogPlots", dest="useLogPlots", action="store_true",default=False,
                   help="read plots with logarithmic Y scale")
 parser.add_argument("--doArithmeticAvgFake", dest="doArithmeticAvgFake", action="store_true",default=False,
-                  help="Get the actual electron fake efficiency by taking the ARITHMETIC average between fake efficiency and QMisID efficiency. The uncertainty in each bin is 0.5 * |eff_fake - eff_QMisID|")		  
+                  help="Get the actual electron fake efficiency by taking the ARITHMETIC average between fake efficiency and QMisID efficiency. The uncertainty in each bin is 0.5 * |eff_fake - eff_QMisID|")
 
 args = parser.parse_args()
 
@@ -99,8 +99,8 @@ def getQMisIDRatesRatio( N, D ):
 
 def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
 
-    file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v15.root")
-    file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v15.root")
+    file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v17.root")
+    file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v17.root")
 
     hist_N = file_N.Get("LikelihoodPt")
     hist_D = file_D.Get("LikelihoodPt")
@@ -141,8 +141,8 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
         #w = hist_QMisID.GetBinContent(ibinx) / hist_data.GetBinContent(ibinx)
         w = hist_QMisID.GetBinContent(ibinx) / ( hist_data.GetBinContent(ibinx) - hist_prompt.GetBinContent(ibinx) )
 
-	print("bin {} - [{},{}] GeV\n\tQMisID = {} (hname: {})\n\tData = {} (hname: {})\n\tPrompt = {} (hname: {})\n\t===> w = {}".format(ibinx,bin_lowedge,bin_upedge,hist_QMisID.GetBinContent(ibinx),hist_QMisID.GetName(),hist_data.GetBinContent(ibinx),hist_data.GetName(),hist_prompt.GetBinContent(ibinx),hist_prompt.GetName(),w)) 
-	
+	print("bin {} - [{},{}] GeV\n\tQMisID = {} (hname: {})\n\tData = {} (hname: {})\n\tPrompt = {} (hname: {})\n\t===> w = {}".format(ibinx,bin_lowedge,bin_upedge,hist_QMisID.GetBinContent(ibinx),hist_QMisID.GetName(),hist_data.GetBinContent(ibinx),hist_data.GetName(),hist_prompt.GetBinContent(ibinx),hist_prompt.GetName(),w))
+
         # Deal with the (ill) case where the QMisID yield is higher than the denominator
         #
         if w > 1.0: w = 1.0
@@ -152,20 +152,23 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
 
         if args.doArithmeticAvgFake:
 	    print("\n\nUSING ARITHMETIC AVERGAGE <eff_fake,eff_QMisID>!!\n\n")
-            w = 0.5 
-	
+            w = 0.5
+
         eff_w     = ( 1.0 - w ) * eff_f + w * eff_QMisID
         err_eff_w = ( 1.0 - w + ( 1.0 / scale ) * w ) * err_eff_f
 
-        # Add in quadrature the difference w/ nominal fake efficiency as a systematic
-        #
         #sys_err_eff_w = abs(eff_f - eff_w) # less conservative
 	sys_err_eff_w = abs(eff_f - eff_QMisID) # more conservative
-	
+
 	if args.doArithmeticAvgFake:
 	    sys_err_eff_w = abs(eff_f - eff_QMisID) / 2.0
-	
-        tot_err_eff_w = math.sqrt( (err_eff_w)*(err_eff_w) + (sys_err_eff_w)*(sys_err_eff_w) )
+
+        # This largely overestimates uncertainty
+	#
+	#tot_err_eff_w = math.sqrt( (err_eff_w)*(err_eff_w) + (sys_err_eff_w)*(sys_err_eff_w) )
+	# Do this:
+	#
+	tot_err_eff_w = max(err_eff_w,sys_err_eff_w)
 
         print("bin {0} - [{1},{2}] GeV \n\teff_r: {3} +- {4}\n\tscale : {5} +- {6} ({7} %)\n\teff_QMisID: {8} +- {9}\n\teff_f: {10} +- {11}\n\tweighted eff_f: {12} +- {13} ({14})".format(ibinx,bin_lowedge,bin_upedge,eff_r,err_eff_r,scale,err_scale,perc_err_scale,eff_QMisID,err_eff_QMisID,eff_f,err_eff_f,eff_w,err_eff_w,tot_err_eff_w))
 
@@ -223,7 +226,7 @@ if __name__ == "__main__":
 
     list_lep         = dict_channels_lep[args.flavourComp]
     list_types       = ["Real","RealQMisIDBinning","Fake"]
-    list_variables   = ["ProbePt"] #,"ProbeEta"] #"ProbeNJets"]
+    list_variables   = ["ProbePt"]#,"ProbeEta"] #"ProbeNJets"]
     list_selections  = ["L","T","AntiT"]
     list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                                   # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
@@ -247,7 +250,7 @@ if __name__ == "__main__":
     hist_eff_electron_real = None
     htmp_QMisID = None
     htmp_Prompt = None
-    htmp_Data   = None 
+    htmp_Data   = None
 
     for iLep in list_lep:
 
@@ -282,18 +285,18 @@ if __name__ == "__main__":
                         htmp_QMisID = fin[-1].Get("chargeflipbkg")
                         if not htmp_QMisID:
                             sys.exit("ERROR: histogram w/ name chargeflipbkg does not exist in input file")
-			
+
 			htmp_Prompt = fin[-1].Get("ttbarzbkg")
-			prompt_list.append( fin[-1].Get("dibosonbkg") )   
-			prompt_list.append( fin[-1].Get("topbkg") )   
-			prompt_list.append( fin[-1].Get("ttbarwbkg") )   
-			prompt_list.append( fin[-1].Get("wjetsbkg") )   
-			prompt_list.append( fin[-1].Get("ttbarbkg") )   
-			prompt_list.append( fin[-1].Get("zjetsbkg") )   
+			prompt_list.append( fin[-1].Get("dibosonbkg") )
+			prompt_list.append( fin[-1].Get("topbkg") )
+			prompt_list.append( fin[-1].Get("ttbarwbkg") )
+			prompt_list.append( fin[-1].Get("wjetsbkg") )
+			prompt_list.append( fin[-1].Get("ttbarbkg") )
+			prompt_list.append( fin[-1].Get("zjetsbkg") )
                         for hist in prompt_list:
 			    htmp_Prompt.Add(hist)
-			htmp_Data = fin[-1].Get("observed")    
-		    
+			htmp_Data = fin[-1].Get("observed")
+
                     for iPred in list_prediction:
 
                         standard_rebin = False
@@ -389,15 +392,28 @@ if __name__ == "__main__":
 
                                         # standard binning
                                         #
+                                        #nBIN  = 5
+                                        #xbins = [10,15,20,25,40,200] # merged bin [60,200]
+
+					# TEMP! ---> test with probe trigger matching
                                         nBIN  = 5
-                                        xbins = [10,15,20,25,40,200] # merged bin [60,200]
+                                        xbins = [10,15,20,25,60,200] # --> follows trigger thresholds
 
                                 elif iType == "Real":
 
                                     # standard binning
                                     #
-                                    nBIN  = 7
-                                    xbins = [10,15,20,25,30,40,60,200]
+                                    #nBIN  = 7
+                                    #xbins = [10,15,20,25,30,40,60,200]
+
+				    # TEMP! ---> test with probe trigger matching
+                                    #
+				    if iLep == "Mu":
+				        nBIN  = 5
+                                        xbins = [10,15,20,25,50,200] # --> follows trigger thresholds
+				    elif iLep == "El":
+				        nBIN  = 6
+                                        xbins = [10,15,20,25,60,140,200] # --> follows trigger thresholds
 
                                 elif iType == "RealQMisIDBinning":
 
@@ -432,7 +448,7 @@ if __name__ == "__main__":
                             if htmp_QMisID : hists[histname_QMisID]  = htmp_QMisID.Rebin( nBIN, histname_QMisID )
                             if htmp_Prompt : hists[histname_Prompt]  = htmp_Prompt.Rebin( nBIN, histname_Prompt )
                             if htmp_Data   : hists[histname_Data]    = htmp_Data.Rebin( nBIN, histname_Data )
-				    
+
                         if ( args.rebinEta or args.rebinPt or args.doAvg) and args.debug:
                             print("\t\t\t\t\t Integral BEFORE rebinning: {0}".format(htmp.Integral(0,htmp.GetNbinsX()+1)))
                             print("\t\t\t\t\t Integral AFTER rebinning: {0}".format(hists[histname].Integral(0,hists[histname].GetNbinsX()+1)))
