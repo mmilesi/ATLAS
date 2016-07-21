@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser(description='Plotting script for the HTopMultil
 #***********************************
 # positional arguments (compulsory!)
 #***********************************
+
 parser.add_argument('inputDir', metavar='inputDir',type=str,
                    help='Path to the directory containing input files')
 parser.add_argument('samplesCSV', metavar='samplesCSV',type=str,
@@ -130,7 +131,7 @@ doMMClosureRates        = bool( 'MMClosureRates' in args.channel )
 doCFChallenge           = bool( 'CutFlowChallenge' in args.channel )
 doMMSidebands           = bool( 'MMSidebands' in args.channel )
 
-print( "\nargs.channel = {}\n".format(args.channel) )
+print( "\nargs.channel = {0}\n".format(args.channel) )
 
 # -----------------------------------------
 # a comprehensive flag for all possible SRs
@@ -229,9 +230,11 @@ doRelaxedBJetCut = False # if true, be inclusive in bjet multiplicity, otherwise
 
 vardb.registerCut( Cut('DummyCut',    '( 1 )') )
 if args.doUnblinding:
-    vardb.registerCut( Cut('BlindingCut', '( isBlinded == 0 )') )
+    vardb.registerCut( Cut('BlindingCut', '( 1 )') )    
 else:
     vardb.registerCut( Cut('BlindingCut', '( 1 )') )
+    #vardb.registerCut( Cut('BlindingCut', '( isBlinded == 0 )') ) # <--- should use this cut for blinded results!
+    
 vardb.registerCut( Cut('IsMC',        '( isMC == 1 )') )
 
 if args.useDLT:
@@ -1365,8 +1368,8 @@ ttH = TTHBackgrounds(inputs, vardb)
 #ttH.luminosity = 3.209 # GRL v73 - Moriond 2015 GRL
 #ttH.luminosity = 3.762 # (2015 +) 2016  - GRL v77 (period A)
 #ttH.luminosity =  6.691 # (2015 +) 2016 - GRL v79
-#ttH.luminosity =  8.311 # (2015 +) 2016
-ttH.luminosity = 11.704 # v18
+ttH.luminosity =  8.311 # v17
+#ttH.luminosity = 11.70448 # v18
 
 ttH.lumi_units = 'fb-1'
 
@@ -1375,13 +1378,13 @@ if doMMClosureTest or doMMClosureRates:
     #ttH.luminosity = 3.209
     #ttH.luminosity = 3.762
     #ttH.luminosity = 6.691
-    #ttH.luminosity =  8.311
-    ttH.luminosity = 11.704
+    ttH.luminosity =  8.311
+    #ttH.luminosity = 11.70448
 
 if doCFChallenge and "SR" in args.channel:
     #ttH.luminosity = 6.691
-    #ttH.luminosity =  8.311
-    ttH.luminosity = 11.704
+    ttH.luminosity =  8.311
+    #ttH.luminosity = 11.70448
 
 # --------------------
 # Set the event weight
@@ -1536,8 +1539,8 @@ if doMMSidebands:
 
     ttH.signals     = ['TTBarH']
     ttH.observed    = ['Observed']
-    #plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
-    #ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
+    #plotbackgrounds = ['TTBarW','TTBarZ','Diboson','RareTop']
+    #ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop']
     plotbackgrounds = ['Prompt']
     ttH.backgrounds = ['Prompt']
 
@@ -1565,8 +1568,8 @@ if ( doSR or doLowNJetCR ):
             # ---> all the MC backgrounds use a truth req. of only prompt leptons in the event (and ch-flip veto) to avoid double counting with
             #      data-driven charge flip and fakes estimate
 
-            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMM']
-            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMM']
+            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','RareTop','FakesMM']
+            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop','FakesMM']
             #plotbackgrounds = ['FakesMM']
             #ttH.backgrounds = ['FakesMM']
             ttH.sub_backgrounds = []
@@ -1586,9 +1589,9 @@ if ( doSR or doLowNJetCR ):
 
         elif doFF:
 
-            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesFF']
-            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesFF']
-            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
+            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','RareTop','FakesFF']
+            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','RareTop','FakesFF']
+            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop']
 
             if args.useMCQMisID:
                 plotbackgrounds.append('ChargeFlipMC')
@@ -1601,14 +1604,14 @@ if ( doSR or doLowNJetCR ):
 
         elif doABCD:
 
-            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesABCD']
-            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesABCD']
-            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
+            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','RareTop','FakesABCD']
+            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','RareTop','FakesABCD']
+            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop']
 
             if doTwoLepLowNJetCR :
                 # Closure in OF, low njet w/ ttbar MC rewweighted by theta factors measured in data
-                plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesClosureDataABCD']
-                ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesClosureDataABCD']
+                plotbackgrounds = ['TTBarW','TTBarZ','Diboson','RareTop','FakesClosureDataABCD']
+                ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop','FakesClosureDataABCD']
 
             if args.useMCQMisID:
                 plotbackgrounds.append('ChargeFlipMC')
@@ -1621,12 +1624,12 @@ if ( doSR or doLowNJetCR ):
 
         else:
             # MC based estimate of fakes (and charge flips) - make sure any truth cut is removed!!
-            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
-            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
+            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','RareTop','Zjets']
+            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','RareTop','Zjets']
     else:
         # no fakes in 4lep
-        plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
-        ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
+        plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','RareTop','Zjets']
+        ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','RareTop','Zjets']
 
 if doMMRates:
 
@@ -1635,8 +1638,8 @@ if doMMRates:
     if args.ratesFromMC:
         ttH.observed = []
 
-    plotbackgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
-    ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    plotbackgrounds = ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if args.useMCQMisID:
         plotbackgrounds.append('ChargeFlipMC')
@@ -1651,8 +1654,8 @@ if doMMRatesLHFit:
 
     ttH.signals     = []
     ttH.observed    = ['Observed']
-    plotbackgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
-    ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    plotbackgrounds = ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if args.useMCQMisID:
         plotbackgrounds.append('ChargeFlipMC')
@@ -1672,8 +1675,8 @@ if doDataMCCR:
     ttH.signals     = []
     ttH.observed    = ['Observed']
 
-    plotbackgrounds = ['TTBar','SingleTop','Rare','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
-    ttH.backgrounds = ['TTBar','SingleTop','Rare','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
+    plotbackgrounds = ['TTBar','SingleTop','RareTop','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','SingleTop','RareTop','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if not args.useMCQMisID:
         plotbackgrounds.append('ChargeFlip')

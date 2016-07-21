@@ -1425,26 +1425,28 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
             diboson  = self.parent.procmap['Diboson'].base(treename, category, options)
-            triboson = self.parent.procmap['Triboson'].base(treename, category, options)
+            #triboson = self.parent.procmap['Triboson'].base(treename, category, options)
             rare_top = self.parent.procmap['RareTop'].base(treename, category, options)
             ttbarw   = self.parent.procmap['TTBarW'].base(treename, category, options)
             ttbarz   = self.parent.procmap['TTBarZ'].base(treename, category, options)
-            tHbj     = self.parent.procmap['THbj'].base(treename, category, options)
-            WtH      = self.parent.procmap['WtH'].base(treename, category, options)
+            #tHbj     = self.parent.procmap['THbj'].base(treename, category, options)
+            #WtH      = self.parent.procmap['WtH'].base(treename, category, options)
 	    
-	    return (diboson + + tribson + rare_top + ttbarw + ttbarz + tHbj + WtH)
+	    #return (diboson + triboson + rare_top + ttbarw + ttbarz + tHbj + WtH)
+	    return (diboson + rare_top + ttbarw + ttbarz)
 
         def __call__(self, treename='physics', category=None, options={}):
 
             diboson  = self.parent.procmap['Diboson'](treename, category, options)
-            triboson = self.parent.procmap['Triboson'](treename, category, options)
+            #triboson = self.parent.procmap['Triboson'](treename, category, options)
             rare_top = self.parent.procmap['RareTop'](treename, category, options)
             ttbarw   = self.parent.procmap['TTBarW'](treename, category, options)
             ttbarz   = self.parent.procmap['TTBarZ'](treename, category, options)
-            tHbj     = self.parent.procmap['THbj'](treename, category, options)
-            WtH      = self.parent.procmap['WtH'](treename, category, options)
+            #tHbj     = self.parent.procmap['THbj'](treename, category, options)
+            #WtH      = self.parent.procmap['WtH'](treename, category, options)
 	    
-	    return (diboson + + tribson + rare_top + ttbarw + ttbarz + tHbj + WtH)
+	    #return (diboson + triboson + rare_top + ttbarw + ttbarz + tHbj + WtH)
+	    return (diboson + rare_top + ttbarw + ttbarz)
 
 
     class ChargeFlipMC(Process):
