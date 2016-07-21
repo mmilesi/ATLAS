@@ -1539,8 +1539,8 @@ if doMMSidebands:
 
     ttH.signals     = ['TTBarH']
     ttH.observed    = ['Observed']
-    #plotbackgrounds = ['TTBarW','TTBarZ','Diboson','RareTop']
-    #ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop']
+    #plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
+    #ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
     plotbackgrounds = ['Prompt']
     ttH.backgrounds = ['Prompt']
 
@@ -1568,8 +1568,8 @@ if ( doSR or doLowNJetCR ):
             # ---> all the MC backgrounds use a truth req. of only prompt leptons in the event (and ch-flip veto) to avoid double counting with
             #      data-driven charge flip and fakes estimate
 
-            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','RareTop','FakesMM']
-            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop','FakesMM']
+            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMM']
+            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMM']
             #plotbackgrounds = ['FakesMM']
             #ttH.backgrounds = ['FakesMM']
             ttH.sub_backgrounds = []
@@ -1589,9 +1589,9 @@ if ( doSR or doLowNJetCR ):
 
         elif doFF:
 
-            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','RareTop','FakesFF']
-            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','RareTop','FakesFF']
-            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop']
+            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesFF']
+            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesFF']
+            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
 
             if args.useMCQMisID:
                 plotbackgrounds.append('ChargeFlipMC')
@@ -1604,14 +1604,14 @@ if ( doSR or doLowNJetCR ):
 
         elif doABCD:
 
-            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','RareTop','FakesABCD']
-            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','RareTop','FakesABCD']
-            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop']
+            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesABCD']
+            ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesABCD']
+            ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
 
             if doTwoLepLowNJetCR :
                 # Closure in OF, low njet w/ ttbar MC rewweighted by theta factors measured in data
-                plotbackgrounds = ['TTBarW','TTBarZ','Diboson','RareTop','FakesClosureDataABCD']
-                ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','RareTop','FakesClosureDataABCD']
+                plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesClosureDataABCD']
+                ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesClosureDataABCD']
 
             if args.useMCQMisID:
                 plotbackgrounds.append('ChargeFlipMC')
@@ -1624,12 +1624,12 @@ if ( doSR or doLowNJetCR ):
 
         else:
             # MC based estimate of fakes (and charge flips) - make sure any truth cut is removed!!
-            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','RareTop','Zjets']
-            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','RareTop','Zjets']
+            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
+            ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
     else:
         # no fakes in 4lep
-        plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','RareTop','Zjets']
-        ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','RareTop','Zjets']
+        plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
+        ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
 
 if doMMRates:
 
@@ -1638,8 +1638,8 @@ if doMMRates:
     if args.ratesFromMC:
         ttH.observed = []
 
-    plotbackgrounds = ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
-    ttH.backgrounds = ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    plotbackgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if args.useMCQMisID:
         plotbackgrounds.append('ChargeFlipMC')
@@ -1654,8 +1654,8 @@ if doMMRatesLHFit:
 
     ttH.signals     = []
     ttH.observed    = ['Observed']
-    plotbackgrounds = ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
-    ttH.backgrounds = ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    plotbackgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if args.useMCQMisID:
         plotbackgrounds.append('ChargeFlipMC')
@@ -1675,8 +1675,8 @@ if doDataMCCR:
     ttH.signals     = []
     ttH.observed    = ['Observed']
 
-    plotbackgrounds = ['TTBar','SingleTop','RareTop','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
-    ttH.backgrounds = ['TTBar','SingleTop','RareTop','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
+    plotbackgrounds = ['TTBar','SingleTop','Rare','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
+    ttH.backgrounds = ['TTBar','SingleTop','Rare','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if not args.useMCQMisID:
         plotbackgrounds.append('ChargeFlip')
