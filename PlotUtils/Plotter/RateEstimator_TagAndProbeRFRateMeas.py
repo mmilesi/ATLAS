@@ -20,11 +20,13 @@ parser = argparse.ArgumentParser(description="Plotting python macro for deriving
 #***********************************
 # positional arguments (compulsory!)
 #***********************************
+
 parser.add_argument("inputDir", metavar="inputDir",type=str,
                   help="path to the directory containing subdirs w/ input files")
 #*******************
 # optional arguments
 #*******************
+
 parser.add_argument("--flavourComp", metavar="FLAVOUR_COMP", dest="flavourComp", default="", type=str,
                   help="flavour composition of the two leptons in CR (*empty_string*, ElEl, MuMu, OF) - default is *empty_string*")
 parser.add_argument("--usePrediction", metavar="DATA_TYPE", dest="usePrediction", action="store", default="DATA", type=str,
@@ -288,7 +290,7 @@ if __name__ == "__main__":
 
 			htmp_Prompt = fin[-1].Get("ttbarzbkg")
 			prompt_list.append( fin[-1].Get("dibosonbkg") )
-			prompt_list.append( fin[-1].Get("topbkg") )
+			prompt_list.append( fin[-1].Get("raretopbkg") )
 			prompt_list.append( fin[-1].Get("ttbarwbkg") )
 			prompt_list.append( fin[-1].Get("wjetsbkg") )
 			prompt_list.append( fin[-1].Get("ttbarbkg") )
@@ -403,17 +405,17 @@ if __name__ == "__main__":
 
                                     # standard binning
                                     #
-                                    #nBIN  = 7
-                                    #xbins = [10,15,20,25,30,40,60,200]
+                                    nBIN  = 7
+                                    xbins = [10,15,20,25,30,40,60,200]
 
 				    # TEMP! ---> test with probe trigger matching
                                     #
-				    if iLep == "Mu":
-				        nBIN  = 5
-                                        xbins = [10,15,20,25,50,200] # --> follows trigger thresholds
-				    elif iLep == "El":
-				        nBIN  = 6
-                                        xbins = [10,15,20,25,60,140,200] # --> follows trigger thresholds
+				    #if iLep == "Mu":
+				    #    nBIN  = 5
+                                    #    xbins = [10,15,20,25,50,200] # --> follows trigger thresholds
+				    #elif iLep == "El":
+				    #    nBIN  = 6
+                                    #    xbins = [10,15,20,25,60,140,200] # --> follows trigger thresholds
 
                                 elif iType == "RealQMisIDBinning":
 

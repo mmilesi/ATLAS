@@ -142,7 +142,8 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
   if ( g_doClosure ) {
     histname_el_pt_fr    = "El_ProbePt_Fake_Efficiency_" + rate_type;
   } else {
-    histname_el_pt_fr    = "El_ProbePt_ScaledFake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
+    //histname_el_pt_fr    = "El_ProbePt_ScaledFake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
+    histname_el_pt_fr    = "El_ProbePt_Fake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
   }
 
   // get fake efficiency histograms
