@@ -115,6 +115,7 @@ if __name__ == '__main__':
 300418,
 300487,
 300540,
+300571,
 300600,
 300655,
 300687,
@@ -176,8 +177,8 @@ if __name__ == '__main__':
         print("\n".join("{0} - {1}".format(elem[0],elem[1].split()[5]) for elem in enumerate(chunk)))
         p = multiprocessing.Pool(MAX_PARALLEL)
         p.map(copy,chunk)
-	#p.close()
-        #p.join()
+	p.close()
+        p.join()
 
     os.chdir(basedir)
     print("Transfer finished!")
