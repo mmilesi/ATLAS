@@ -142,8 +142,8 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
   if ( g_doClosure ) {
     histname_el_pt_fr    = "El_ProbePt_Fake_Efficiency_" + rate_type;
   } else {
-    //histname_el_pt_fr    = "El_ProbePt_ScaledFake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
-    histname_el_pt_fr    = "El_ProbePt_Fake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
+    histname_el_pt_fr    = "El_ProbePt_ScaledFake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
+    //histname_el_pt_fr    = "El_ProbePt_Fake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
   }
 
   // get fake efficiency histograms
@@ -176,6 +176,14 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
   g_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX()+1;
   g_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX()+1;
   g_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX()+1;
+
+  std::cout << "\n" << std::endl;
+  Info("read_rates()", "MUON REAL efficiency - histogram name: %s ", histname_mu_pt_rr.c_str() );
+  Info("read_rates()", "MUON FAKE efficiency - histogram name: %s ", histname_mu_pt_fr.c_str() );
+  std::cout << "            --------------------------------------------" << std::endl;
+  Info("read_rates()", "ELECTRON REAL efficiency - histogram name: %s ", histname_el_pt_rr.c_str() );
+  Info("read_rates()", "ELECTRON FAKE efficiency - histogram name: %s ", histname_el_pt_fr.c_str() );
+  std::cout << "\n" << std::endl;
 
 }
 
@@ -674,7 +682,7 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
       // and now, recompute the MM weights!
       // Do it only for 2lepSS events
       //
-      if ( nlep_in == 2 && isSS01_in == 1 ) {
+      if ( nlep_in == 2 /*&& isSS01_in == 1*/ ) {
 
         if ( g_debug ) {
           int idx_in(0);
@@ -854,7 +862,7 @@ void modifyttree_MM_PtOnly(std::string filename, std::string outfilename, std::s
       // and now, recompute the MM weights!
       // Do it only for 2lepSS events
       //
-      if ( nlep_in == 2 && isSS01_in == 1 ) {
+      if ( nlep_in == 2 /*&& isSS01_in == 1*/ ) {
 
         int TT =  ( isTT_in );
         int TL =  ( isTL_in );

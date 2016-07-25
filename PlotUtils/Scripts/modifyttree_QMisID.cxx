@@ -157,7 +157,8 @@ void readRatesAndError( TH2D* rate_map, TH1D* proj_X, TH1D* proj_Y,
 
 void QMisIDWeightCalculator (std::vector<float>* weights,
                              const float& elA_eta, const float& elA_pt, const bool& elA_isT,
-                             const float& elB_eta, const float& elB_pt, const bool& elB_isT )
+                             const float& elB_eta, const float& elB_pt, const bool& elB_isT,
+			     bool mixed_rates )
 {
 
   bool elA = ( fabs(elA_eta) < 2.5 && elA_pt >= 0.0 );
@@ -181,24 +182,51 @@ void QMisIDWeightCalculator (std::vector<float>* weights,
   TH1D* proj_eta_AntiT = twoD_rates_AntiT->ProjectionX("proj_eta_AntiT");
   TH1D* proj_pt_AntiT  = twoD_rates_AntiT->ProjectionY("proj_pt_AntiT");
 
-  // Look at elA first...
-  //
-  if ( elA_isT ) {
-    readRatesAndError(twoD_rates_T, proj_eta_T, proj_pt_T, elA_eta, elA_pt, rA, rA_up, rA_dn);
-  } else {
-    readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elA_eta, elA_pt, rA, rA_up, rA_dn);
-  }
-
-  // .. and now at elB (if any...otherwise rB weights will be zero by default)
-  //
-  if ( elB ) {
-    if ( elB_isT ) {
-      readRatesAndError(twoD_rates_T, proj_eta_T, proj_pt_T, elB_eta, elB_pt, rB, rB_up, rB_dn);
-    } else {
-      readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elB_eta, elB_pt, rB, rB_up, rB_dn);
+  if ( mixed_rates ) {
+    
+    // ee
+    //
+    if ( elB ) {
+      if ( elA_isT && elB_isT ) {
+        readRatesAndError(twoD_rates_T, proj_eta_T, proj_pt_T, elA_eta, elA_pt, rA, rA_up, rA_dn);
+  	readRatesAndError(twoD_rates_T, proj_eta_T, proj_pt_T, elB_eta, elB_pt, rB, rB_up, rB_dn);
+      } else {
+        readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elA_eta, elA_pt, rA, rA_up, rA_dn);
+  	readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elB_eta, elB_pt, rB, rB_up, rB_dn);
+      }
+    } 
+    // OF
+    //
+    else {
+      if ( elA_isT ) {
+        readRatesAndError(twoD_rates_T, proj_eta_T, proj_pt_T, elA_eta, elA_pt, rA, rA_up, rA_dn);
+      } else {
+        readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elA_eta, elA_pt, rA, rA_up, rA_dn);
+      }    
     }
-  }
+  
+  } else {
 
+    // Look at elA first...
+    //
+    if ( elA_isT ) {
+      readRatesAndError(twoD_rates_T, proj_eta_T, proj_pt_T, elA_eta, elA_pt, rA, rA_up, rA_dn);
+    } else {
+      readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elA_eta, elA_pt, rA, rA_up, rA_dn);
+    }
+
+    // .. and now at elB (if any...otherwise rB weights will be zero by default)
+    //
+    if ( elB ) {
+      if ( elB_isT ) {
+  	readRatesAndError(twoD_rates_T, proj_eta_T, proj_pt_T, elB_eta, elB_pt, rB, rB_up, rB_dn);
+      } else {
+  	readRatesAndError(twoD_rates_AntiT, proj_eta_AntiT, proj_pt_AntiT, elB_eta, elB_pt, rB, rB_up, rB_dn);
+      }
+    }
+  
+  }
+  
   if ( g_debug ) {
     Info("QMisIDWeightCalculator()","\t rA = %f ( up = %f, dn = %f )", rA, rA_up, rA_dn );
     Info("QMisIDWeightCalculator()","\t rB = %f ( up = %f, dn = %f )", rB, rB_up, rB_dn );
@@ -229,7 +257,8 @@ void QMisIDWeightCalculator (std::vector<float>* weights,
 void modifyttree_QMisID(std::string filename, std::string outfilename,
 			std::string path, std::string filename_AntiT, std::string filename_T,
 			std::string addWeight,
-			std::string  NENTRIES = "ALL", std::string useGroupNTup = "", std::string treename = "physics" )
+			std::string  NENTRIES = "ALL", std::string useGroupNTup = "", std::string useMixedRates = "", 
+			std::string treename = "physics" )
 {
 
   // This script loads a tree, clones it, removes a branch and substitutes it with another.
@@ -242,6 +271,9 @@ void modifyttree_QMisID(std::string filename, std::string outfilename,
   } else if ( addWeight.compare("YES") == 0 ) {
     Info("modifytree_QMisID()","Will be ADDING new branch!");
   }
+
+  bool mixed_rates = ( useMixedRates.compare("YES") == 0 );
+  if ( mixed_rates ) { Info("modifytree_QMisID()","Rates for !T electrons have been measured in a mixed (T!T || !TT) region..."); }
 
   //Get in file, in tree and set top branch address
   //
@@ -275,19 +307,18 @@ void modifyttree_QMisID(std::string filename, std::string outfilename,
   std::string in_lep1_isT_name("");
 
   if ( useGroupNTup.empty() ) {
-  	  std::string in_el_pt_name   = "el_pt";
-  	  std::string in_el_eta_name  = "el_caloCluster_eta";
-  	  std::string in_el_isT_name  = "el_isTightSelected";
+    std::string in_el_pt_name	= "el_pt";
+    std::string in_el_eta_name  = "el_caloCluster_eta";
+    std::string in_el_isT_name  = "el_isTightSelected";
   } else {
-
-  	  in_lep0_ID_name  = "lep_ID_0";
-  	  in_lep1_ID_name  = "lep_ID_1";
-  	  in_lep0_pt_name  = "lep_Pt_0";
-  	  in_lep1_pt_name  = "lep_Pt_1";
-  	  in_lep0_eta_name = "lep_EtaBE2_0";
-  	  in_lep1_eta_name = "lep_EtaBE2_1";
-  	  in_lep0_isT_name = "lep_isTightSelected_0";
-  	  in_lep1_isT_name = "lep_isTightSelected_1";
+    in_lep0_ID_name  = "lep_ID_0";
+    in_lep1_ID_name  = "lep_ID_1";
+    in_lep0_pt_name  = "lep_Pt_0";
+    in_lep1_pt_name  = "lep_Pt_1";
+    in_lep0_eta_name = "lep_EtaBE2_0";
+    in_lep1_eta_name = "lep_EtaBE2_1";
+    in_lep0_isT_name = "lep_isTightSelected_0";
+    in_lep1_isT_name = "lep_isTightSelected_1";
   }
 
   ULong64_t             eventNumber_in; eventNumber_in = -1;
@@ -465,7 +496,7 @@ void modifyttree_QMisID(std::string filename, std::string outfilename,
 	      if ( g_debug ) { Info("modifytree()","\t elB - pT = %.2f, eta = %.2f, isT = %i ", elB_pt, elB_eta, elB_isT ); }
 	  }
 
-	  QMisIDWeightCalculator( QMisIDWeight_out, elA_eta, elA_pt, elA_isT, elB_eta, elB_pt, elB_isT );
+	  QMisIDWeightCalculator( QMisIDWeight_out, elA_eta, elA_pt, elA_isT, elB_eta, elB_pt, elB_isT, mixed_rates );
 
 	  if ( g_debug ) {
 	      int idx_out(0);
@@ -564,7 +595,7 @@ void modifyttree_QMisID(std::string filename, std::string outfilename,
 	      if ( g_debug ) { Info("modifytree_QMisID()","\t elB - pT = %.2f, eta = %.2f, isT = %i ", elB_pt, elB_eta, elB_isT ); }
 	  }
 
-	  QMisIDWeightCalculator( &QMisIDWeight_out, elA_eta, elA_pt, elA_isT, elB_eta, elB_pt, elB_isT );
+	  QMisIDWeightCalculator( &QMisIDWeight_out, elA_eta, elA_pt, elA_isT, elB_eta, elB_pt, elB_isT, mixed_rates );
 
 	  if ( g_debug ) {
 	      int idx_out(0);

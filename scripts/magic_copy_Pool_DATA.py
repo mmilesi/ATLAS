@@ -22,12 +22,13 @@ if __name__ == '__main__':
 
     username = "mmilesi"
 
-    version     = "25ns_v18"
+    version     = "25ns_v19"
     sample_type = "Data"
 
-    basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v18/" + sample_type
+    basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v19/" + sample_type
 
     copylist = [
+
 276262,
 276329,
 276336,
@@ -54,7 +55,6 @@ if __name__ == '__main__':
 279928,
 279932,
 279984,
-280231,
 280273,
 280319,
 280368,
@@ -115,7 +115,6 @@ if __name__ == '__main__':
 300418,
 300487,
 300540,
-300571,
 300600,
 300655,
 300687,
@@ -138,6 +137,7 @@ if __name__ == '__main__':
 302393,
 302737,
 302831,
+302872,
 302919,
 302925,
 302956,
@@ -149,6 +149,10 @@ if __name__ == '__main__':
 303266,
 303291,
 303304,
+303338,
+303421,
+303499,
+303560,
     ]
 
     cmdlist = []
@@ -172,8 +176,9 @@ if __name__ == '__main__':
         print("\n".join("{0} - {1}".format(elem[0],elem[1].split()[5]) for elem in enumerate(chunk)))
         p = multiprocessing.Pool(MAX_PARALLEL)
         p.map(copy,chunk)
-	p.close()
-        p.join()
+	#p.close()
+        #p.join()
 
     os.chdir(basedir)
     print("Transfer finished!")
+

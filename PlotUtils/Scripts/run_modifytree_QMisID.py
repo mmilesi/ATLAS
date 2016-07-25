@@ -56,10 +56,16 @@ gROOT.SetBatch(True)
 #oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_QMisID_WEIGHTED/"
 
-oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
-newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_QMisID_WEIGHTED/"
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct_Data_QMisID_WEIGHTED/"
 
 # -------------------------------------------------------------------------------------------------------------
+
+oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_Original/"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_QMisID_WEIGHTED/"
+
+# -------------------------------------------------------------------------------------------------------------
+
 
 # path and name of files w/ QMisID rates
 #
@@ -74,14 +80,18 @@ glob_rate_path = "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/"
 #filename_T     = "QMisIDRates_Data_2016_T_25ns_v15.root"
 #filename_AntiT = "QMisIDRates_Data_2016_antiT_25ns_v15.root"
 
-filename_T     = "QMisIDRates_Data_2016_T_25ns_v17.root"
-filename_AntiT = "QMisIDRates_Data_2016_antiT_25ns_v17.root"
+#filename_T     = "QMisIDRates_Data_2016_T_25ns_v17.root"
+#filename_AntiT = "QMisIDRates_Data_2016_antiT_25ns_v17.root"
+
+filename_T     = "QMisIDRates_Data_2016_T_25ns_v18.root"
+filename_AntiT = "QMisIDRates_Data_2016_TanitiT_25ns_v18.root"
 
 # -------------------------------------------------------------------------------------------------------------
 
-addQMisID    = 'YES' # Set to 'YES' if QMisID weight branch does not exist yet, else use 'NO' ( --> the script will update the existing QMisID weight)
-nentries     = 'ALL' # Set the number of entries. Use 'ALL' to run on all events
-useGroupNTup = 'YES' # Are we using group ntuples?
+addQMisID     = 'YES' # Set to 'YES' if QMisID weight branch does not exist yet, else use 'NO' ( --> the script will update the existing QMisID weight)
+nentries      = 'ALL' # Set the number of entries. Use 'ALL' to run on all events
+useGroupNTup  = 'YES' # Are we using group ntuples?
+useMixedRates = 'YES' # Set to 'YES' if the rates for !T electrons were measured in a mixed (T!T || !TT) region
 
 if not os.path.exists(newpath):
     os.makedirs(newpath)
@@ -103,7 +113,7 @@ for group in group_list:
         infile=oldpath+group+'/'+sample
         outfile=newpath+group+'/'+sample
 
-        command_line = 'modifyttree_QMisID(\"'+infile+'\",\"'+outfile+'\",\"'+glob_rate_path+'\",\"'+filename_AntiT+'\",\"'+filename_T+'\",\"'+addQMisID+'\",\"'+nentries+'\",\"'+useGroupNTup+'\")'
+        command_line = 'modifyttree_QMisID(\"'+infile+'\",\"'+outfile+'\",\"'+glob_rate_path+'\",\"'+filename_AntiT+'\",\"'+filename_T+'\",\"'+addQMisID+'\",\"'+nentries+'\",\"'+useGroupNTup+'\",\"'+useMixedRates+'\")'
 
         print command_line
         gROOT.ProcessLine(command_line);

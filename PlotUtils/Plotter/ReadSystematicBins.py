@@ -104,15 +104,21 @@ if __name__ == '__main__':
         # DATA-DRIVEN
         #------------
 
-        if ( "LOWNJ" in args.channel ):
+        if ( "HIGHNJ" in args.channel ):
 
-            inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_MCQMisID/"
+            #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_MCQMisID/"
+            inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_DDQMisID_OS_SS/"
+	    #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_DDQMisID_ScaledFakeEff/"
+	    #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_DDQMisID_ScaledFakeEff_CorrectSys/"
             region    = "SS_SR_DataDriven"
             var_name  = "NJets5j"
 
-        elif ( "HIGHNJ" in args.channel ):
+        elif ( "LOWNJ" in args.channel ):
 
-            inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_MCQMisID/"
+            #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_MCQMisID/"
+            inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_DDQMisID_OS_SS/"
+	    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_DDQMisID_ScaledFakeEff/"
+	    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_DDQMisID_ScaledFakeEff_CorrectSys/"
             region    = "SS_LowNJetCR_DataDriven"
             var_name  = "NJets2j3j4j"
 
