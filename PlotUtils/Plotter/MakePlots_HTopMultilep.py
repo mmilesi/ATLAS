@@ -2062,8 +2062,8 @@ for category in vardb.categorylist:
                 # Include underflow, but do not take overflow! In fact, KG's FW already merges the last bin with the OFlow bin...
                 #
                 value = histograms[samp].IntegralAndError(0,histograms[samp].GetNbinsX(),err)
-                print ("\t\t{0}: {1} +- {2}".format(histname[samp], value, err))
-                outfile.write('yields %s: %f +- %f \n' %(histname[samp], value, err))
+                print ("\t\t{0}: {1:.2f} +- {2:.2f}".format(histname[samp], value, err))
+                outfile.write('yields %s: %.2f +- %.2f \n' %(histname[samp], value, err))
                 if ( 'NJets' in var.shortname ):
                     # Neglect underflow, but not overflow!
                     #
@@ -2083,8 +2083,8 @@ for category in vardb.categorylist:
 			if (histograms[samp].IsBinOverflow(bin+1)):
 			    value_bin -= histograms[samp].GetBinContent(bin+1)
 			    err_bin   = 0
-                        print ("\t\t  {0}-jets bin: {1} +- {2}".format(this_bin, value_bin, err_bin))
-                        outfile.write('  %i-jets bin: %f +- %f \n' %(this_bin, value_bin, err_bin))
+                        print ("\t\t  {0}-jets bin: {1:.2f} +- {2:.2f}".format(this_bin, value_bin, err_bin))
+                        outfile.write('  %i-jets bin: %.2f +- %.2f \n' %(this_bin, value_bin, err_bin))
 
                     # Get integral and error from njets>=5 bins (including OFlow) in one go!
                     # NB: do not take overflow! In fact, KG's FW already merges the last bin with the OFlow bin...
@@ -2092,8 +2092,8 @@ for category in vardb.categorylist:
                     if ( var.shortname == 'NJets' ):
                         err_HJ   = Double(0)
                         value_HJ = histograms[samp].IntegralAndError (6,histograms[samp].GetNbinsX(),err_HJ)
-                        print ("\n\t\t  >=5-jets bin: {0} +- {1}".format(value_HJ, err_HJ))
-                        outfile.write('\n  >=5-jets bin: %f +- %f \n' %(value_HJ, err_HJ))
+                        print ("\n\t\t  >=5-jets bin: {0:.2f} +- {1:.2f}".format(value_HJ, err_HJ))
+                        outfile.write('\n  >=5-jets bin: %.2f +- %.2f \n' %(value_HJ, err_HJ))
             print ("\n\t\tGetEntries:\n")
             print ("\t\tNB 1): this is actually N = GetEntries()-2 \n\t\t       Still not understood why there's such an offset...\n")
             print ("\t\tNB 2): this number does not take into account overflow bin. Better to look at the integral obtained with --noWeights option...\n")

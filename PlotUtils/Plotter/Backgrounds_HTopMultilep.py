@@ -1706,8 +1706,8 @@ class TTHBackgrounds(Background):
             print("{0} - LT cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
             print("{0} - LL cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
 
-	    QMISID_SUB_OS_SS      = False
-	    QMISID_SUB_SCALEDFAKE = True
+	    QMISID_SUB_OS_SS      = True
+	    QMISID_SUB_SCALEDFAKE = False
 
             # Perform SUSY-style QMisID per-event subtraction
 
@@ -1730,25 +1730,29 @@ class TTHBackgrounds(Background):
             	    sp_QMisID_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight=QMisIDweight)
             	    print(" ")
             	    print("Subtracting QMisID TT sp: {0}, weight: {1}".format(sp_QMisID_TT.basecut.cutnamelist, QMisIDweight))
-            	    print(" ")
-            	    print("QMisID - TT : {0}".format(sp_QMisID_TT.numberstats()))
+            	    print("{0} - TT : Fakes (before QMisID subtraction) = {1:.2f}, QMisID = {2:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0],sp_QMisID_TT.numberstats()[0]))
             	    print("Subtracting QMisID TL sp: {0}, weight: {1}".format(sp_QMisID_TL.basecut.cutnamelist, QMisIDweight))
-            	    print(" ")
-            	    print("QMisID - TL : {0}".format(sp_QMisID_TL.numberstats()))
+            	    print("{0} - TL : Fakes (before QMisID subtraction) = {1:.2f}, QMisID = {2:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0],sp_QMisID_TL.numberstats()[0]))
             	    print("Subtracting QMisID TL sp: {0}, weight: {1}".format(sp_QMisID_LT.basecut.cutnamelist, QMisIDweight))
-            	    print(" ")
-            	    print("QMisID - LT : {0}".format(sp_QMisID_LT.numberstats()))
+            	    print("{0} - LT : Fakes (before QMisID subtraction) = {1:.2f}, QMisID = {2:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0],sp_QMisID_LT.numberstats()[0]))
             	    print("Subtracting QMisID LL sp: {0}, weight: {1}".format(sp_QMisID_LL.basecut.cutnamelist, QMisIDweight))
-            	    print(" ")
-            	    print("QMisID - LL : {0}".format(sp_QMisID_LL.numberstats()))
+            	    print("{0} - LL : Fakes (before QMisID subtraction) = {1:.2f}, QMisID = {2:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0],sp_QMisID_LL.numberstats()[0]))
 
                     sp_TT  = sp_TT - sp_QMisID_TT
                     sp_TL  = sp_TL - sp_QMisID_TL
                     sp_LT  = sp_LT - sp_QMisID_LT
                     sp_LL  = sp_LL - sp_QMisID_LL
-
-          
+                    
+		    print(" ")
+              	    print("{0} - TT : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0]))
+            	    print("{0} - TL : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0]))
+            	    print("{0} - LT : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0]))
+            	    print("{0} - LL : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0]))
+        
                 sp = sp_TT + sp_TL + sp_LT + sp_LL
+
+                print(" ")
+            	print("{0} ---> Total Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp.numberstats()[0],sp.numberstats()[1]))
 	    
 	        return sp
 	    
@@ -1770,15 +1774,17 @@ class TTHBackgrounds(Background):
             	    print(" ")
             	    print("QMisID TT sp: {0}, weight: {1}".format(sp_QMisID_TT.basecut.cutnamelist, QMisIDweight))
             	    print(" ")
-            	    print("QMisID - TT : {0}".format(sp_QMisID_TT.numberstats()))
+            	    print("QMisID - TT : {0:.2f} +- {1:.2f}".format(sp_QMisID_TT.numberstats()[0],sp_QMisID_TT.numberstats()[1]))
             
                 sp = sp_TT + sp_TL + sp_LT + sp_LL
             
                 if not ("2Lep_MuMu_Event") in category.cut.cutname:
             	    print(" ")
-            	    print("{0} - FakesMM - before QMisID subtraction : {1}".format(self.__class__.__name__,sp.numberstats()))
+            	    print("{0} - FakesMM - before QMisID subtraction : {1:.2f}".format(self.__class__.__name__,sp.numberstats()))
                     sp = sp - sp_QMisID_TT
-            	    print("{0} - FakesMM - after QMisID subtraction : {1}".format(self.__class__.__name__,sp.numberstats()))
+            	    print("{0} - FakesMM - after QMisID subtraction : {1:.2f}".format(self.__class__.__name__,sp.numberstats()))
+
+            	print("{0} ---> Total Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp.numberstats()[0],sp.numberstats()[1]))
 
                 return sp
 
@@ -1831,7 +1837,7 @@ class TTHBackgrounds(Background):
             theta = (sp_num/sp_denom).numberstats()
 
             print ("***********************************************************************\n")
-            print ("Calculated theta transfer factor for stream {0}: theta = {1} +- {2}".format(stream,theta[0],theta[1]))
+            print ("Calculated theta transfer factor for stream {0}: theta = {1:.3f} +- {2:.3f}".format(stream,theta[0],theta[1]))
             print ("\n***********************************************************************")
 
             return theta
@@ -1869,7 +1875,7 @@ class TTHBackgrounds(Background):
             LelTmuCut =''
             TmuLelCut =''
             LmuTelCut =''
-            weight   = 1.0
+            weight   = '1.0'
             weightMC = 'weight_event_trig * weight_event_lep * tauSFTight * JVT_EventWeight * MV2c10_70_EventWeight'
 
             if ( self.parent.channel=='TwoLepSS' ):
@@ -1961,24 +1967,24 @@ class TTHBackgrounds(Background):
 
                     print ("sub_sample_C_el ={0} ".format(sub_sample_C_el.basecut.cutnamelist))
 
-                    print ("C (el) - yields data: ", sp_C_el.numberstats())
-                    print ("C (el) - yields bkg: ", sub_sample_C_el.numberstats())
+                    print ("C (el) - yields data: {0:.2f}".format(sp_C_el.numberstats()[0]))
+                    print ("C (el) - yields bkg: {0:.2f}".format(sub_sample_C_el.numberstats()[0]))
                     sp_C_el = sp_C_el - sub_sample_C_el
-                    print ("C (el) - yields after sub: ", sp_C_el.numberstats())
+                    print ("C (el) - yields after sub: {0:.2f}".format(sp_C_el.numberstats()[0]))
 
                     # *********************************************
 
                     print ("sub_sample_D_el ={0} ".format(sub_sample_D_el.basecut.cutnamelist))
 
-                    print ("D (el) - yields data: ", sp_D_el.numberstats())
-                    print ("D (el) - yields bkg: ", sub_sample_D_el.numberstats())
+                    print ("D (el) - yields data: {0:.2f}".format(sp_D_el.numberstats()[0]))
+                    print ("D (el) - yields bkg: {0:.2f}".format(sub_sample_D_el.numberstats()[0]))
                     sp_D_el = sp_D_el - sub_sample_D_el
-                    print ("D (el) - yields after sub: ", sp_D_el.numberstats())
+                    print ("D (el) - yields after sub: {0:.2f}".format(sp_D_el.numberstats()[0]))
 
 
                 print ("---------------------------------------------------------------------\n")
-                print ("C (el) - data yields after prompt/ch-flip subtraction: ", sp_C_el.numberstats())
-                print ("D (el) - data yields after prompt/ch-flip subtraction: ", sp_D_el.numberstats())
+                print ("C (el) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_C_el.numberstats()[0]))
+                print ("D (el) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_D_el.numberstats()[0]))
                 print ("\n---------------------------------------------------------------------")
 
                 # derive theta factors for el
@@ -2040,24 +2046,24 @@ class TTHBackgrounds(Background):
 
                     print ("sub_sample_C_mu ={0} ".format(sub_sample_C_mu.basecut.cutnamelist))
 
-                    print ("C (mu) - yields data: ", sp_C_mu.numberstats())
-                    print ("C (mu) - yields bkg: ", sub_sample_C_mu.numberstats())
+                    print ("C (mu) - yields data: {0:.2f}".format(sp_C_mu.numberstats()[0]))
+                    print ("C (mu) - yields bkg: {0:.2f}".format(sub_sample_C_mu.numberstats()[0]))
                     sp_C_mu = sp_C_mu - sub_sample_C_mu
-                    print ("C (mu) - yields after sub: ", sp_C_mu.numberstats())
+                    print ("C (mu) - yields after sub: {0:.2f}".format(sp_C_mu.numberstats()[0]))
 
                     # *********************************************
 
                     print ("sub_sample_D_mu ={0} ".format(sub_sample_D_mu.basecut.cutnamelist))
 
-                    print ("D (mu) - yields data: ", sp_D_mu.numberstats())
-                    print ("D (mu) - yields bkg: ", sub_sample_D_mu.numberstats())
+                    print ("D (mu) - yields data: {0:.2f}".format(sp_D_mu.numberstats()[0]))
+                    print ("D (mu) - yields bkg: {0:.2f}".format(sub_sample_D_mu.numberstats()[0]))
                     sp_D_mu = sp_D_mu - sub_sample_D_mu
-                    print ("D (mu) - yields after sub: ", sp_D_mu.numberstats())
+                    print ("D (mu) - yields after sub: {0:.2f}".format(sp_D_mu.numberstats()[0]))
 
 
                 print ("---------------------------------------------------------------------\n")
-                print ("C (mu) - data yields after prompt/ch-flip subtraction: ", sp_C_mu.numberstats())
-                print ("D (mu) - data yields after prompt/ch-flip subtraction: ", sp_D_mu.numberstats())
+                print ("C (mu) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_C_mu.numberstats()[0]))
+                print ("D (mu) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_D_mu.numberstats()[0]))
                 print ("\n---------------------------------------------------------------------")
 
                 # derive theta factors for mu
@@ -2065,15 +2071,12 @@ class TTHBackgrounds(Background):
                 TTHBackgrounds.theta['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
 
             else :
-                print ("Reading theta(mu) value: {0} +- {1}".format(TTHBackgrounds.theta['Mu'][0], TTHBackgrounds.theta['Mu'][1]))
+                print ("Reading theta(mu) value: {0:.3f} +- {1:.3f}".format(TTHBackgrounds.theta['Mu'][0], TTHBackgrounds.theta['Mu'][1]))
 
 
             # Define Region B,  depending on which flavour composition we are looking at:
 	    # (NB now we must look at the original category cut!)
             #
-            #cut_sp_B_SF     = category.cut.swapCut(self.vardb.getCut('2Lep_NJet_CR'),self.vardb.getCut('2Lep_NJet_SR')) & TL_LT_Cut
-            #cut_sp_B_OF_Lel = category.cut.swapCut(self.vardb.getCut('2Lep_NJet_CR'),self.vardb.getCut('2Lep_NJet_SR')) & (LelTmuCut | TmuLelCut)
-            #cut_sp_B_OF_Lmu = category.cut.swapCut(self.vardb.getCut('2Lep_NJet_CR'),self.vardb.getCut('2Lep_NJet_SR')) & (TelLmuCut | LmuTelCut)
             cut_sp_B_SF     = category.cut & TL_LT_Cut
             cut_sp_B_OF_Lel = category.cut & (LelTmuCut | TmuLelCut)
             cut_sp_B_OF_Lmu = category.cut & (TelLmuCut | LmuTelCut)
@@ -2105,7 +2108,7 @@ class TTHBackgrounds(Background):
 
                     sp_B = sp_B - sub_sample_B
 
-                print ("Region B (mumu,ee), yield: ", sp_B.numberstats() , "\n")
+                print ("Region B (mumu,ee), yield: {0:.2f}\n".format(sp_B.numberstats()[0]))
 
                 if ("2Lep_ElEl_Event") in category.cut.cutname:
                     sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds.theta['El'])
@@ -2141,12 +2144,13 @@ class TTHBackgrounds(Background):
                     sp_B_OF_Lel = sp_B_OF_Lel - sub_sample_B_OF_Lel
                     sp_B_OF_Lmu = sp_B_OF_Lmu - sub_sample_B_OF_Lmu
 
-                print ("Region B (emu)","\n", "yield (loose el): ", sp_B_OF_Lel.numberstats() , "\n", "yield (loose mu): ", sp_B_OF_Lmu.numberstats(), "\n")
+                print ("Region B (emu) \n yield (loose el): {0:.2f}\n yield (loose mu): {1:.2f}\n".format(sp_B_OF_Lel.numberstats()[0],sp_B_OF_Lmu.numberstats()[0]))
 
                 sp_B = self.applyThetaFactor(sp_B_OF_Lmu,TTHBackgrounds.theta['Mu']) + self.applyThetaFactor(sp_B_OF_Lel,TTHBackgrounds.theta['El'])
 
+            print(" ")
             print ("=================>\n")
-            print ("Final fakes yield: ", sp_B.numberstats() ,"\n")
+            print ("Final fakes yield: {0:.2f} +- {1:.2f}\n".format(sp_B.numberstats()[0],sp_B.numberstats()[1]))
 
             return sp_B
 

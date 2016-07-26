@@ -109,7 +109,7 @@ if __name__ == '__main__':
 "343367",
 ## ttW
 "410155",
- ttZ
+## ttZ
 "410218",
 "410219",
 "410220",
@@ -632,7 +632,7 @@ if __name__ == '__main__':
 
     configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py"
     treename   = "nominal"
-    nevents    = 10000
+    nevents    = 0
 
     #motherdir = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v14_testDilepTrig"
     #motherdir = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v17_test"
@@ -641,7 +641,7 @@ if __name__ == '__main__':
     #motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v17/25ns_v17_Direct"
     #motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v18/25ns_v18_Direct"
     #motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v18/25ns_v18_Skim"
-    motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v18/25ns_v19_Skim"
+    motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v19/25ns_v19_Skim"
 
     if not os.path.exists(motherdir):
         os.makedirs(motherdir)
@@ -652,7 +652,7 @@ if __name__ == '__main__':
 
     list_commands = generateCmdList(infilelist)
 
-    MAX_PARALLEL = 4
+    MAX_PARALLEL = 6
 
     print listchunks(list_commands,MAX_PARALLEL)
 
