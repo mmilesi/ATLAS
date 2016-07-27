@@ -20,11 +20,13 @@ parser = argparse.ArgumentParser(description="Plotting python macro for deriving
 #***********************************
 # positional arguments (compulsory!)
 #***********************************
+
 parser.add_argument("inputDir", metavar="inputDir",type=str,
                   help="path to the directory containing subdirs w/ input files")
 #*******************
 # optional arguments
 #*******************
+
 parser.add_argument("--flavourComp", metavar="FLAVOUR_COMP", dest="flavourComp", default="", type=str,
                   help="flavour composition of the two leptons in CR (*empty_string*, ElEl, MuMu, OF) - default is *empty_string*")
 parser.add_argument("--usePrediction", metavar="DATA_TYPE", dest="usePrediction", action="store", default="DATA", type=str,
@@ -32,21 +34,23 @@ parser.add_argument("--usePrediction", metavar="DATA_TYPE", dest="usePrediction"
 parser.add_argument("--debug", dest="debug", action="store_true",default=False,
                   help="run in debug mode")
 parser.add_argument("--doBkgSub", dest="doBkgSub", action="store_true",default=False,
-                  help="subtract MC to data (only if using DATA)")
+                  help="subtract backgrounds to data (only if using DATA)")
 parser.add_argument("--rebinEta", dest="rebinEta", action="store_true",default=False,
                   help="do rebinning in eta")
 parser.add_argument("--rebinPt", dest="rebinPt", action="store_true",default=False,
                   help="do rebinning in pT")
 parser.add_argument("--doAvgMuFake", dest="doAvgMuFake", action="store_true",default=False,
                   help="get average efficiency for muon fakes only")
+parser.add_argument("--doAvgElFake", dest="doAvgElFake", action="store_true",default=False,
+                  help="get average efficiency for electron fakes only")		  
 parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
-                  help="get average efficiencies/rates (i.e, make 1 bin)")
+                  help="get average efficiencies (i.e, make 1 bin)")
 parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",default=False,
                   help="save only rates")
 parser.add_argument("--useLogPlots", dest="useLogPlots", action="store_true",default=False,
                   help="read plots with logarithmic Y scale")
-parser.add_argument("--doArithmeticAvgFake", dest="doArithmeticAvgFake", action="store_true",default=False,
-                  help="Get the actual electron fake efficiency by taking the ARITHMETIC average between fake efficiency and QMisID efficiency. The uncertainty in each bin is 0.5 * |eff_fake - eff_QMisID|")
+parser.add_argument("--doWeightedAvgFake", dest="doWeightedAvgFake", action="store_true",default=False,
+                  help="Get the actual electron fake efficiency by taking a WEIGHTED average between fake efficiency and QMisID efficiency. Default uses an arithmetic average.")
 
 args = parser.parse_args()
 
@@ -99,8 +103,11 @@ def getQMisIDRatesRatio( N, D ):
 
 def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
 
-    file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v17.root")
-    file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v17.root")
+    #file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v17.root")
+    #file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v17.root")
+    
+    file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v18.root")
+    file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v18.root")
 
     hist_N = file_N.Get("LikelihoodPt")
     hist_D = file_D.Get("LikelihoodPt")
@@ -128,7 +135,7 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
         err_scale      = hist_scales.GetBinError(ibinx)
         perc_err_scale = abs(err_scale) * 100 / scale
 
-        eff_QMisID = scale * eff_r
+        eff_QMisID     = scale * eff_r
         err_eff_QMisID = math.sqrt( (eff_r*eff_r) * (err_scale*err_scale) + (scale*scale) * (err_eff_r*err_eff_r) )
 
         hist_eff_QMisID.SetBinContent(ibinx, eff_QMisID)
@@ -150,17 +157,17 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
         eff_f     = hist_f.GetBinContent(ibinx)
         err_eff_f = hist_f.GetBinError(ibinx)
 
-        if args.doArithmeticAvgFake:
+        if not args.doWeightedAvgFake:
 	    print("\n\nUSING ARITHMETIC AVERGAGE <eff_fake,eff_QMisID>!!\n\n")
             w = 0.5
 
         eff_w     = ( 1.0 - w ) * eff_f + w * eff_QMisID
-        err_eff_w = ( 1.0 - w + ( 1.0 / scale ) * w ) * err_eff_f
+        err_eff_w = math.sqrt( math.pow((1.0-w),2.0) * math.pow(err_eff_f,2.0) + math.pow(w,2.0) * math.pow(err_eff_QMisID,2.0) )
 
         #sys_err_eff_w = abs(eff_f - eff_w) # less conservative
 	sys_err_eff_w = abs(eff_f - eff_QMisID) # more conservative
 
-	if args.doArithmeticAvgFake:
+	if not args.doWeightedAvgFake:
 	    sys_err_eff_w = abs(eff_f - eff_QMisID) / 2.0
 
         # This largely overestimates uncertainty
@@ -169,6 +176,8 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
 	# Do this:
 	#
 	tot_err_eff_w = max(err_eff_w,sys_err_eff_w)
+	
+        print("weighted eff_f:\nstat error = {0}\nsyst error = {1}\n==>total error = {2}".format(err_eff_w,sys_err_eff_w,tot_err_eff_w))
 
         print("bin {0} - [{1},{2}] GeV \n\teff_r: {3} +- {4}\n\tscale : {5} +- {6} ({7} %)\n\teff_QMisID: {8} +- {9}\n\teff_f: {10} +- {11}\n\tweighted eff_f: {12} +- {13} ({14})".format(ibinx,bin_lowedge,bin_upedge,eff_r,err_eff_r,scale,err_scale,perc_err_scale,eff_QMisID,err_eff_QMisID,eff_f,err_eff_f,eff_w,err_eff_w,tot_err_eff_w))
 
@@ -226,7 +235,7 @@ if __name__ == "__main__":
 
     list_lep         = dict_channels_lep[args.flavourComp]
     list_types       = ["Real","RealQMisIDBinning","Fake"]
-    list_variables   = ["ProbePt"]#,"ProbeEta"] #"ProbeNJets"]
+    list_variables   = ["ProbePt"] #,"ProbeEta"] #"ProbeNJets"]
     list_selections  = ["L","T","AntiT"]
     list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                                   # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
@@ -288,7 +297,7 @@ if __name__ == "__main__":
 
 			htmp_Prompt = fin[-1].Get("ttbarzbkg")
 			prompt_list.append( fin[-1].Get("dibosonbkg") )
-			prompt_list.append( fin[-1].Get("topbkg") )
+			prompt_list.append( fin[-1].Get("raretopbkg") )
 			prompt_list.append( fin[-1].Get("ttbarwbkg") )
 			prompt_list.append( fin[-1].Get("wjetsbkg") )
 			prompt_list.append( fin[-1].Get("ttbarbkg") )
@@ -373,7 +382,7 @@ if __name__ == "__main__":
 
                                         if args.doAvgMuFake:
 
-                                            # Make one single bin
+                                            # Make one single bin from 25 to 200
                                             #
                                             #nBIN = htmp.GetNbinsX()
                                             #xbins  = [htmp.GetBinLowEdge(1),htmp.GetBinLowEdge(htmp.GetNbinsX()+1)]
@@ -390,37 +399,57 @@ if __name__ == "__main__":
 
                                     elif iLep == "El":
 
-                                        # standard binning
-                                        #
-                                        #nBIN  = 5
-                                        #xbins = [10,15,20,25,40,200] # merged bin [60,200]
+                                        if args.doAvgElFake:
 
-					# TEMP! ---> test with probe trigger matching
-                                        nBIN  = 5
-                                        xbins = [10,15,20,25,60,200] # --> follows trigger thresholds
+                                            # Make one single bin from 25 to 200
+
+                                            nBIN  = 4
+                                            xbins = [10,15,20,25,200]
+                                       
+				        else:
+                                            # nominal binning
+                                            #
+                                            nBIN  = 5
+                                            xbins = [10,15,20,25,40,200] # merged bin [60,200]
+
+					    # TEMP! ---> test with probe trigger matching
+                                            #nBIN  = 5
+                                            #xbins = [10,15,20,25,60,200] # --> follows trigger thresholds
 
                                 elif iType == "Real":
 
                                     # standard binning
                                     #
-                                    #nBIN  = 7
-                                    #xbins = [10,15,20,25,30,40,60,200]
+                                    nBIN  = 7
+                                    xbins = [10,15,20,25,30,40,60,200]
 
 				    # TEMP! ---> test with probe trigger matching
                                     #
-				    if iLep == "Mu":
-				        nBIN  = 5
-                                        xbins = [10,15,20,25,50,200] # --> follows trigger thresholds
-				    elif iLep == "El":
-				        nBIN  = 6
-                                        xbins = [10,15,20,25,60,140,200] # --> follows trigger thresholds
+				    #if iLep == "Mu":
+				    #    nBIN  = 5
+                                    #    xbins = [10,15,20,25,50,200] # --> follows trigger thresholds
+				    #elif iLep == "El":
+				    #    nBIN  = 6
+                                    #    xbins = [10,15,20,25,60,140,200] # --> follows trigger thresholds
 
                                 elif iType == "RealQMisIDBinning":
 
                                     # Need this binning to get the weighted fake eff from QMisID eff.
                                     #
-                                    nBIN  = 5
-                                    xbins = [10,15,20,25,40,200]
+                                    if args.doAvgElFake:
+
+                                    	# Make one single bin from 25 to 200
+                                    	#
+                                    	#nBIN = htmp.GetNbinsX()
+                                    	#xbins  = [htmp.GetBinLowEdge(1),htmp.GetBinLowEdge(htmp.GetNbinsX()+1)]
+                                    	#standard_rebin = True
+
+                                    	nBIN  = 4
+                                    	xbins = [10,15,20,25,200]
+				    
+				    else:
+                                        nBIN  = 5
+                                        xbins = [10,15,20,25,40,200]
 
                                 vxbins = array.array("d", xbins)
                                 print "\t\t\t\t\t vxbins: ",vxbins

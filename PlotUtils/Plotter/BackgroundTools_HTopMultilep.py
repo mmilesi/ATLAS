@@ -97,9 +97,11 @@ class Inputs:
 
         return True
 
+    # Load a tree from the alltrees list
+    #
     def getTree(self, treename='physics', group='', subgroup='', sampleid=None):
-        #load a tree from the alltrees list
-        if sampleid:
+        
+	if sampleid:
             group, subgroup = self.sampleids[self.nomtree][sampleid]
 
         if treename.startswith('SystematicsUP/') or treename.startswith('SystematicsDOWN/'):
@@ -112,12 +114,15 @@ class Inputs:
             tree = None
             print("ERROR: Could not reach tree {0} in group {1}, subgroup {2}".format(treename, group, subgroup))
 
-	print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
+	#print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
 
+    # Group list is a list of tuple with two elements (strings), e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards. 
+    # The entire list of trees is returned, one tree for each tuple.
+    #
     def getTrees(self, treename='physics', grouplist=[]):
-        #group list is a list of tuple with two elements (strings), e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards. Al list of trees is returned, one tree for each tuple
-        newGroupList = []
+        
+	newGroupList = []
         for group, subgroup in grouplist:
             #In case of wildcards the functions getGroupList and/or getSubGroupList are colled to solve the *
             if group == '*' and subgroup == '*':
@@ -450,19 +455,19 @@ class SubProcess:
             #
             # Debug
             #
-            print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * %s * (%s)'% (self.baseweight, self.eventweight, eventweight, cutstr)
+            #print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * %s * (%s)'% (self.baseweight, self.eventweight, eventweight, cutstr)
         elif self.eventweight :
             self.tree.Project('NUM'+cachename, '1.0', '%s * (%s)' % (self.eventweight, cutstr))
             #
             # Debug
             #
-            print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            #print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
         else:
             self.tree.Project('NUM'+cachename, '1.0', '%s' % (cutstr))
             #
             # Debug
             #
-            print '\nOnly baseweight - ROOT cut string: %s * (%s)'% (self.baseweight, cutstr)
+            #print '\nOnly baseweight - ROOT cut string: %s * (%s)'% (self.baseweight, cutstr)
         self.numcache[cachename] = h.GetBinContent(1), h.GetBinError(1)
         del h
 
@@ -520,13 +525,13 @@ class SubProcess:
             #
             # Debug
             #
-            print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            #print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
 	else:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s' % (cutstr))
             #
             # Debug
             #
-            print '\nOnly baseweight - ROOT plotting string: %s * (%s)'% (self.baseweight, cutstr)
+            #print '\nOnly baseweight - ROOT plotting string: %s * (%s)'% (self.baseweight, cutstr)
 
         h = self.histcache[cachename].Clone()
         h.SetName(self.histcache[cachename].GetName()+str(weight))

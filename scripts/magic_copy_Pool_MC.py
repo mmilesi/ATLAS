@@ -21,12 +21,12 @@ def copy(sample):
 if __name__ == '__main__':
 
     username = "mmilesi"
-    
-    version     = "25ns_v18"
+
+    version     = "25ns_v19"
     sample_type = "Nominal"
-    
-    basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v18/" + sample_type
-    
+
+    basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v19/" + sample_type
+
     copylist = [
 301535,
 301536,
@@ -57,18 +57,13 @@ if __name__ == '__main__':
 341988,
 341989,
 341990,
-341991,
 341992,
-341994,
 341995,
-341996,
 341997,
 341998,
 341999,
-342000,
 342001,
 342004,
-342005,
 342170,
 342171,
 342172,
@@ -77,12 +72,6 @@ if __name__ == '__main__':
 343266,
 343267,
 343268,
-343269,
-343270,
-343271,
-343272,
-343273,
-343274,
 343365,
 343366,
 343367,
@@ -185,6 +174,7 @@ if __name__ == '__main__':
 361352,
 361353,
 361354,
+361355,
 361356,
 361357,
 361358,
@@ -255,7 +245,6 @@ if __name__ == '__main__':
 361424,
 361425,
 361426,
-361427,
 361428,
 361429,
 361430,
@@ -297,11 +286,13 @@ if __name__ == '__main__':
 361490,
 361491,
 361500,
+361501,
 361502,
 361503,
 361504,
 361505,
 361506,
+361507,
 361508,
 361509,
 361510,
@@ -320,6 +311,11 @@ if __name__ == '__main__':
 361531,
 361533,
 361534,
+361620,
+361621,
+361622,
+361623,
+361624,
 361625,
 361626,
 361627,
@@ -328,8 +324,8 @@ if __name__ == '__main__':
 361630,
 361631,
 361632,
-361633,
 361634,
+361635,
 361636,
 361637,
 361638,
@@ -339,7 +335,6 @@ if __name__ == '__main__':
 361642,
 363102,
 363103,
-363104,
 363105,
 363106,
 363107,
@@ -400,7 +395,6 @@ if __name__ == '__main__':
 363376,
 363377,
 363378,
-363379,
 363380,
 363381,
 363382,
@@ -437,7 +431,6 @@ if __name__ == '__main__':
 363437,
 363438,
 363439,
-363440,
 363441,
 363442,
 363443,
@@ -485,7 +478,6 @@ if __name__ == '__main__':
 410001,
 410002,
 410007,
-410009,
 410011,
 410012,
 410013,
@@ -497,6 +489,7 @@ if __name__ == '__main__':
 410049,
 410050,
 410066,
+410067,
 410068,
 410073,
 410074,
@@ -509,6 +502,7 @@ if __name__ == '__main__':
 410114,
 410115,
 410116,
+410120,
 410121,
 410142,
 410143,
@@ -524,6 +518,7 @@ if __name__ == '__main__':
 410218,
 410219,
 410220,
+410500,
     ]
 
     cmdlist = []
@@ -531,7 +526,7 @@ if __name__ == '__main__':
         cmd = "cd " + basedir + " && mkdir -p " + str(sample) + " && cd $_ && xrdcp root://eospublic.cern.ch//eos/escience/UniTexas/HSG8/multileptons_ntuple_run2/" + version + "/" + sample_type + "/" + str(sample) + ".root ."
         cmdlist.append(cmd)
 
-    MAX_PARALLEL = 5
+    MAX_PARALLEL = 6
 
     #print listchunks(cmdlist,MAX_PARALLEL)
 
@@ -542,7 +537,7 @@ if __name__ == '__main__':
 	    krb_auth = "kinit " + username + "@CERN.CH"
 	    subprocess.call(krb_auth,shell=True)
         subprocess.call("kinit -R",shell=True)
-	
+
         print("Copying samples: ")
         print("\n".join("{0} - {1}".format(elem[0],elem[1].split()[5]) for elem in enumerate(chunk)))
         p = multiprocessing.Pool(MAX_PARALLEL)
