@@ -62,7 +62,7 @@ class TTHBackgrounds(Background):
         #'El': (0.390, 0.156), # v15
         #'Mu': (0.602, 0.120), # v15
         'El': (0.316, 0.095), # v18
-        'Mu': (0.636, 0.128), # v18    
+        'Mu': (0.636, 0.128), # v18
     }
 
     theta_MC = {
@@ -1173,12 +1173,12 @@ class TTHBackgrounds(Background):
                 ('Diboson', 'lllljj_EW6'),
                 ('Diboson', 'ggllll'),
                 ('Diboson', 'ggllvv'),
-                ('Diboson', 'WW'),
-                ('Diboson', 'WZ'),
-                ('Diboson', 'ZZ'),
-                #('Diboson', 'WW_SHv21_improved'),
-                #('Diboson', 'WZ_SHv21_improved'),
-                #('Diboson', 'ZZ_SHv21_improved'),
+                #('Diboson', 'WW'),
+                #('Diboson', 'WZ'),
+                #('Diboson', 'ZZ'),
+                ('Diboson', 'WW_SHv21_improved'),
+                ('Diboson', 'WZ_SHv21_improved'),
+                ('Diboson', 'ZZ_SHv21_improved'),
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -1232,9 +1232,12 @@ class TTHBackgrounds(Background):
                 ('Diboson', 'lllljj_EW6'),
                 ('Diboson', 'ggllll'),
                 ('Diboson', 'ggllvv'),
-                ('Diboson', 'WW'),
-                ('Diboson', 'WZ'),
-                ('Diboson', 'ZZ'),
+                #('Diboson', 'WW'),
+                #('Diboson', 'WZ'),
+                #('Diboson', 'ZZ'),
+                ('Diboson', 'WW_SHv21_improved'),
+                ('Diboson', 'WZ_SHv21_improved'),
+                ('Diboson', 'ZZ_SHv21_improved'),
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -1712,7 +1715,7 @@ class TTHBackgrounds(Background):
             # Perform SUSY-style QMisID per-event subtraction
 
             if QMISID_SUB_OS_SS:
-	    	
+
 		sublist = [ item for item in self.parent.sub_backgrounds if ( item == "ChargeFlip" or item == "ChargeFlipMC" ) ]
             	sp_QMisID_TT = sp_QMisID_TL = sp_QMisID_LT = sp_QMisID_LL = None
             	for process in sublist:
@@ -1742,20 +1745,20 @@ class TTHBackgrounds(Background):
                     sp_TL  = sp_TL - sp_QMisID_TL
                     sp_LT  = sp_LT - sp_QMisID_LT
                     sp_LL  = sp_LL - sp_QMisID_LL
-                    
+
 		    print(" ")
               	    print("{0} - TT : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0]))
             	    print("{0} - TL : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0]))
             	    print("{0} - LT : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0]))
             	    print("{0} - LL : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0]))
-        
+
                 sp = sp_TT + sp_TL + sp_LT + sp_LL
 
                 print(" ")
             	print("{0} ---> Total Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp.numberstats()[0],sp.numberstats()[1]))
-	    
+
 	        return sp
-	    
+
             # Subtract QMisID from final MM yield in TT, since MM estimates both
 
             if QMISID_SUB_SCALEDFAKE:
@@ -1775,9 +1778,9 @@ class TTHBackgrounds(Background):
             	    print("QMisID TT sp: {0}, weight: {1}".format(sp_QMisID_TT.basecut.cutnamelist, QMisIDweight))
             	    print(" ")
             	    print("QMisID - TT : {0:.2f} +- {1:.2f}".format(sp_QMisID_TT.numberstats()[0],sp_QMisID_TT.numberstats()[1]))
-            
+
                 sp = sp_TT + sp_TL + sp_LT + sp_LL
-            
+
                 if not ("2Lep_MuMu_Event") in category.cut.cutname:
             	    print(" ")
             	    print("{0} - FakesMM - before QMisID subtraction : {1:.2f}".format(self.__class__.__name__,sp.numberstats()))
@@ -1894,9 +1897,9 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             # Cache the category cut in a base cut which can be modified at no risk
-	    # 
+	    #
             basecut = category.cut
-	    
+
             print("base sp: {0}".format(basecut.cutnamelist))
 
             # Remove the cuts defining the flavour composition (this is made just for calculating thetas...)
@@ -2292,7 +2295,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             # Cache the category cut in a base cut which can be modified at no risk
-	    # 
+	    #
             basecut = category.cut
 
             print("base sp: {0}".format(basecut.cutnamelist))
