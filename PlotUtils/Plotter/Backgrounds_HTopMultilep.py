@@ -1025,7 +1025,7 @@ class TTHBackgrounds(Background):
 
     class Rare(Process):
 
-        latexname = 'Rare'
+        latexname = 'Others'
         colour = kGray
 
         def base(self, treename='physics', category=None, options={}):
