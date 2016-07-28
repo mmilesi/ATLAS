@@ -16,23 +16,6 @@ gROOT.SetBatch(True)
 
 # -------------------------------------------------------------------------------------------------------------
 
-#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v027/Merged_Melb15_ttH_027_DxAOD_DATA_MM/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v027/Merged_Melb15_ttH_027_DxAOD_DATA_QMisID_WEIGHTED/'
-#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v028/Merged_Melb15_ttH_028_DxAOD_DATA_MM/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v028/Merged_Melb15_ttH_028_DxAOD_DATA_QMisID_WEIGHTED/'
-
-# -------------------------------------------------------------------------------------------------------------
-
-#oldpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA/'
-#newpath  = '/data/mmilesi/ttH/MergedDatasets/Merged_v029/ICHEP_BASELINE/Merged_Melb15_ttH_029_Baseline_DxAOD_DATA_QMisID_WEIGHTED/'
-
-# -------------------------------------------------------------------------------------------------------------
-
-#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v031/Merged_Melb15_ttH_031-01_DxAOD_p2559_Data_Original/"
-#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MergedDatasets/Merged_v031/Merged_Melb15_ttH_031-01_DxAOD_p2559_Data_QMisID_WEIGHTED/"
-
-# -------------------------------------------------------------------------------------------------------------
-
 #oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Data_Original/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v7/25ns_v7_Zjets_QMisID_WEIGHTED_testing/"
 
@@ -61,18 +44,19 @@ gROOT.SetBatch(True)
 
 # -------------------------------------------------------------------------------------------------------------
 
-oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_Original/"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_QMisID_WEIGHTED/"
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_QMisID_WEIGHTED/"
 
 # -------------------------------------------------------------------------------------------------------------
 
+oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_Data_Original/"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_Data_QMisID_WEIGHTED/"
+
+# -------------------------------------------------------------------------------------------------------------
 
 # path and name of files w/ QMisID rates
 #
 glob_rate_path = "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/"
-
-#filename_T     = "QMisIDRates_Data_Nominal2_v030.root"
-#filename_AntiT = "QMisIDRates_Data_antiTantiT_v030.root"
 
 #filename_T     = "QMisIDRates_Data_2016_T_25ns_v14.root"
 #filename_AntiT = "QMisIDRates_Data_2016_antiT_25ns_v14.root"
@@ -83,8 +67,11 @@ glob_rate_path = "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/"
 #filename_T     = "QMisIDRates_Data_2016_T_25ns_v17.root"
 #filename_AntiT = "QMisIDRates_Data_2016_antiT_25ns_v17.root"
 
-filename_T     = "QMisIDRates_Data_2016_T_25ns_v18.root"
-filename_AntiT = "QMisIDRates_Data_2016_TanitiT_25ns_v18.root"
+#filename_T     = "QMisIDRates_Data_2016_T_25ns_v18.root"
+#filename_AntiT = "QMisIDRates_Data_2016_TanitiT_25ns_v18.root"
+
+filename_T     = "QMisIDRates_Data_2016_T_25ns_v19.root"
+filename_AntiT = "QMisIDRates_Data_2016_TanitiT_25ns_v19.root"
 
 # -------------------------------------------------------------------------------------------------------------
 

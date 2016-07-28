@@ -1709,10 +1709,8 @@ class TTHBackgrounds(Background):
             print("{0} - LT cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
             print("{0} - LL cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
 
-	    QMISID_SUB_OS_SS      = True
-	    QMISID_SUB_SCALEDFAKE = False
-
-            # Perform SUSY-style QMisID per-event subtraction
+	    QMISID_SUB_OS_SS      = True    # Perform SUSY-style QMisID per-event subtraction
+	    QMISID_SUB_SCALEDFAKE = False   # Subtract QMisID from final MM yield in TT when using avg fake efficiency, since in that case MM estimates both
 
             if QMISID_SUB_OS_SS:
 
@@ -1757,9 +1755,7 @@ class TTHBackgrounds(Background):
                 print(" ")
             	print("{0} ---> Total Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp.numberstats()[0],sp.numberstats()[1]))
 
-	        return sp
-
-            # Subtract QMisID from final MM yield in TT, since MM estimates both
+	        return sp            
 
             if QMISID_SUB_SCALEDFAKE:
 	    	sublist = [ item for item in self.parent.sub_backgrounds if ( item == "ChargeFlip" or item == "ChargeFlipMC" ) ]

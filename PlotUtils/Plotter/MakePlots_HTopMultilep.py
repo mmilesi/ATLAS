@@ -1081,14 +1081,14 @@ if doMMRates or doMMClosureRates:
 
     # Real CR: OF only
     #
-    """
+    #"""
     vardb.registerCategory( MyCategory('RealCRMuL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_ElEtaCut','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_ElEtaCut','2Lep_MuProbeAntiTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRMuT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_ElEtaCut','2Lep_MuProbeTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRElL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_ElProbeAntiTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRElT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_ElProbeTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
-    """
+    #"""
 
     # Fake CR: OF+SF for electrons, SF for muons
     #
@@ -1363,7 +1363,8 @@ ttH = TTHBackgrounds(inputs, vardb)
 #ttH.luminosity = 3.762 # (2015 +) 2016  - GRL v77 (period A)
 #ttH.luminosity =  6.691 # (2015 +) 2016 - GRL v79
 #ttH.luminosity =  8.311 # v17
-ttH.luminosity = 11.70448 # v18
+#ttH.luminosity = 11.70448 # v18
+ttH.luminosity = 13.20768 # v19
 
 ttH.lumi_units = 'fb-1'
 
@@ -1373,12 +1374,14 @@ if doMMClosureTest or doMMClosureRates:
     #ttH.luminosity = 3.762
     #ttH.luminosity = 6.691
     #ttH.luminosity =  8.311
-    ttH.luminosity = 11.70448
+    #ttH.luminosity = 11.70448
+    ttH.luminosity = 13.20768 
 
 if doCFChallenge and "SR" in args.channel:
     #ttH.luminosity = 6.691
     #ttH.luminosity =  8.311
-    ttH.luminosity = 11.70448
+    #ttH.luminosity = 11.70448
+    ttH.luminosity = 13.20768
 
 # --------------------
 # Set the event weight

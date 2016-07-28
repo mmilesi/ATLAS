@@ -126,17 +126,27 @@ gROOT.SetBatch(True)
 
 # -------------------------------------------------------------------------------------------------------------
 
-oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_Original/"
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_Original/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_MM_WEIGHTED_Pt_OnlyMuon/"
 #rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v18_MCQMisID"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_MM_WEIGHTED_Pt_ScaledFakeEl/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_MM_WEIGHTED_Pt_ScaledFakeEl/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_MM_WEIGHTED_Pt/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_Data_MM_WEIGHTED_Pt_OS_SS/"
-rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v18_DDQMisID"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v18_DDQMisID"
 
 #oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_410000_Original/"
 #newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v18/25ns_v18_Skim_410000_MM_WEIGHTED_Pt_NoCorrections/"
 #rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_NoCorrections_25ns_v18"
+
+# -------------------------------------------------------------------------------------------------------------
+
+#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_Data_Original/"
+#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_Data_MM_WEIGHTED_Pt_OS_SS/"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v19_DDQMisID"
+
+oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_410000_Original/"
+newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_410000_MM_WEIGHTED_Pt_NoCorrections/"
+rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_NoCorrections_25ns_v19"
 
 # -------------------------------------------------------------------------------------------------------------
 

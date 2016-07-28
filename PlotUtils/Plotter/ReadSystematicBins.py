@@ -107,18 +107,20 @@ if __name__ == '__main__':
         if ( "HIGHNJ" in args.channel ):
 
             #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_MCQMisID/"
-            inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_DDQMisID_OS_SS/"
+            #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_DDQMisID_OS_SS/"
 	    #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_DDQMisID_ScaledFakeEff/"
 	    #inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v18_DDQMisID_ScaledFakeEff_CorrectSys/"
+            inputpath = "./OutputPlots_MM_TwoLepSR_25ns_v19_DDQMisID_OS_SS/"	    
             region    = "SS_SR_DataDriven"
             var_name  = "NJets5j"
 
         elif ( "LOWNJ" in args.channel ):
 
             #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_MCQMisID/"
-            inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_DDQMisID_OS_SS/"
+            #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_DDQMisID_OS_SS/"
 	    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_DDQMisID_ScaledFakeEff/"
 	    #inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v18_DDQMisID_ScaledFakeEff_CorrectSys/"
+            inputpath = "./OutputPlots_MM_TwoLepLowNJetCR_25ns_v19_DDQMisID_OS_SS/"	    
             region    = "SS_LowNJetCR_DataDriven"
             var_name  = "NJets2j3j4j"
 
@@ -130,19 +132,22 @@ if __name__ == '__main__':
 
         if ( "LOWNJ" in args.channel ):
 
-            inputpath = "./OutputPlots_MM_MMClosureTest_25ns_v18_LowNJet_NoCorrections/"
+            #inputpath = "./OutputPlots_MM_MMClosureTest_25ns_v18_LowNJet_NoCorrections/"
+            inputpath = "./OutputPlots_MM_MMClosureTest_25ns_v19_LowNJet_NoCorrections/"
             region    = "SS_SR_LowJet_DataDriven_Closure"
             var_name  = "NJets2j3j4j"
 
         elif ( "HIGHNJ" in args.channel ):
 
-            inputpath = "./OutputPlots_MM_MMClosureTest_25ns_v18_HighNJet_NoCorrections/"
+            #inputpath = "./OutputPlots_MM_MMClosureTest_25ns_v18_HighNJet_NoCorrections/"
+            inputpath = "./OutputPlots_MM_MMClosureTest_25ns_v19_HighNJet_NoCorrections/"
             region    = "SS_SR_HighJet_DataDriven_Closure"
             var_name  = "NJets5j"
 
         elif ( "ALLNJ" in args.channel ):
 
-            inputpath = "./OutputPlots_MM_MMClosureTest_25ns_v18_AllNJet_NoCorrections/"
+            #inputpath = "./OutputPlots_MM_MMClosureTest_25ns_v18_AllNJet_NoCorrections/"
+            inputpath = "./OutputPlots_MM_MMClosureTest_25ns_v19_AllNJet_NoCorrections/"
             region    = "SS_SR_AllJet_DataDriven_Closure"
             var_name  = "NJets"
 
