@@ -201,7 +201,7 @@ void PlotRateEff( pair<string,string>& SAMPLE,
       legend->Draw();
 
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 11.7 fb^{-1}");
+      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 13.2 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
       string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_" + DATA_TYPE + "." + EXTENSION;
@@ -435,7 +435,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
       legend->Draw();
 
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 11.7 fb^{-1}");
+      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 13.2 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
       string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_" + DATA_TYPE + "." + EXTENSION;
@@ -635,7 +635,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 	      break;
 	  }
 
-          h->GetXaxis()->SetRangeUser(25.0,200.0);
+          //h->GetXaxis()->SetRangeUser(25.0,200.0);
 
           if ( iRate == 0 && iFile == 0 ) { h->Draw("E0"); } // E0 options draws error bars
 	  else                            { h->Draw("E0,SAME");}
@@ -650,7 +650,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 
       legend->Draw();
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 11.7 fb^{-1}");
+      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 13.2 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
       string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_DataVSMC." + EXTENSION;
@@ -770,32 +770,6 @@ void execute_DataVSMC() {
 
   vector<pair<string,string> > vec;
 
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","Baseline - Data"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV_AllElEtaCut/","Baseline - MC t#bar{t}"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/","No Isolation - Data"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV_AllElEtaCut/","No Isolation - MC t#bar{t}"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIP_MCQMisID_Mllgt40GeV_AllElEtaCut/","Relaxed IP - Data"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV_AllElEtaCut/","Relaxed IP - MC t#bar{t}"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_NoZminCut/","Moriond sel. - Data"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","Moriond sel. - MC t#bar{t}"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_ZminCut/","Moriond sel. - Data"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_ZminCut/","Moriond sel. - MC t#bar{t}"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Moriond sel. - Data"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","Moriond sel. - MC t#bar{t} - TRUTH"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut_NoTruth/","Moriond sel. - MC t#bar{t}"));
-
-  //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR/","Moriond sel. - Data"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR_RealCRProbeNonPromptOrChFlip/","Moriond sel. - Data (sub. !prompt, QMisID)"));
-  //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR/","Moriond sel. - MC t#bar{t} - prompt probe"));
-  //vec.push_back(make_pair("../PLOTS_v030_25ns_v7/OutputPlots_MMClosureRates_v030_NoZminCut_TopEnrichedRealCR_NoTruth/","Moriond sel. - MC t#bar{t}"));
-
-  //vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Moriond sel. - Data - OF+SF"));
-  //vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut_TopEnrichedRealCR/","Moriond sel. - Data - OF"));
-
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","Data - bkg sub."));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/","MC t#bar{t}"));
 
@@ -826,11 +800,15 @@ void execute_DataVSMC() {
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2/","MC t#bar{t} - NO WEIGHTS"));
   
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v18_MCQMisID/","Data - w/ sub (MC QMisID)"));
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v18_DDQMisID/","Data - w/ sub (DD QMisID)"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v18/","t#bar{t} - no corrections"));
- 
-  //PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v18_DDQMisID/","Data - w/ sub (DD QMisID)"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v18/","t#bar{t} - no corrections"));
+  
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v19_DDQMisID/","Data"));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v19/","t#bar{t}"));
+  
+  PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","eps");
-
+  PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","root");
+  
 }
 

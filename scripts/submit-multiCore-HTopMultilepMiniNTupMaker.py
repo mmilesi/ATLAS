@@ -100,7 +100,7 @@ if __name__ == '__main__':
 
     infilelist = [
 ## data
-#"HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",
+"HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",
 ## ttbar noallhad
 "410000",
 ## ttH
@@ -139,6 +139,13 @@ if __name__ == '__main__':
 "361085",
 "361086",
 "361087",
+"361091",
+"361092",
+"361093",
+"361094",
+"361095",
+"361096",
+"361097",
 ## tHbj
 "341989",
 "341992",
@@ -394,13 +401,6 @@ if __name__ == '__main__':
 #"361088",
 #"361089",
 #"361090",
-#"361091",
-#"361092",
-#"361093",
-#"361094",
-#"361095",
-#"361096",
-#"361097",
 #"361100",
 #"361101",
 #"361102",
@@ -652,7 +652,7 @@ if __name__ == '__main__':
 
     list_commands = generateCmdList(infilelist)
 
-    MAX_PARALLEL = 6
+    MAX_PARALLEL = 7
 
     print listchunks(list_commands,MAX_PARALLEL)
 
