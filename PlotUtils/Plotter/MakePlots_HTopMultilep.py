@@ -99,7 +99,7 @@ from ROOT import TH1I, TH2D, TH2F, TMath, TFile, TAttFill, TColor, kBlack, kWhit
 # ---------------------------------------------------------------------
 # Importing all the tools and the definitions used to produce the plots
 # ---------------------------------------------------------------------
-from Plotter.BackgroundTools_HTopMultilep import loadSamples, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
+from Plotter.BackgroundTools import loadSamples, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
 # ---------------------------------------------------------------------------
 # Importing the classes for the different processes.
 # They contains many info on the normalization and treatment of the processes
@@ -1375,7 +1375,7 @@ if doMMClosureTest or doMMClosureRates:
     #ttH.luminosity = 6.691
     #ttH.luminosity =  8.311
     #ttH.luminosity = 11.70448
-    ttH.luminosity = 13.20768 
+    ttH.luminosity = 13.20768
 
 if doCFChallenge and "SR" in args.channel:
     #ttH.luminosity = 6.691

@@ -24,21 +24,25 @@ triglist = ",".join(all_triggers)
 
 path_ext = "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/"
 
-PRW_files = ["tthML.PURWTconfig.341177.root","tthML.PURWTconfig.341270.root","tthML.PURWTconfig.341271.root","tthML.PURWTconfig.341997.root","tthML.PURWTconfig.341998.root","tthML.PURWTconfig.341999.root","tthML.PURWTconfig.342000.root","tthML.PURWTconfig.342001.root","tthML.PURWTconfig.342002.root","tthML.PURWTconfig.342003.root","tthML.PURWTconfig.342004.root","tthML.PURWTconfig.342005.root","tthML.PURWTconfig.342170.root","tthML.PURWTconfig.342171.root","tthML.PURWTconfig.342172.root","tthML.PURWTconfig.361073.root","tthML.PURWTconfig.361079.root","tthML.PURWTconfig.361085.root","tthML.PURWTconfig.361087.root","tthML.PURWTconfig.410009.mc15b.root","tthML.PURWTconfig.410080.root","tthML.PURWTconfig.410081.root"]
+PRW_files      = ["merged_prw_mc15c.root"]
+LumiCalc_files = ["ilumicalc_histograms_None_276262-284484_OflLumi-13TeV-005.root","ilumicalc_histograms_None_297730-303560_OflLumi-13TeV-005.root"]
 
 for idx,file in enumerate(PRW_files):
      PRW_files[idx] = ''.join((path_ext,file))
+for idx,file in enumerate(LumiCalc_files):
+     LumiCalc_files[idx] = ''.join((path_ext,file))     
 
-PRW_config = ','.join(PRW_files)
+PRW_config      = ','.join(PRW_files)
+LumiCalc_config = ','.join(LumiCalc_files)
 
 BasicEventSelectionDict = { "m_name"		      : "baseEventSel",
 		            "m_debug"		      : False,
                             "m_applyGRLCut"	      : True,
-			    "m_GRLxml"  	      : ''.join((path_ext,"data15_13TeV.periodAllYear_DetStatus-v73-pro19-08_DQDefects-00-01-02_PHYS_StandardGRL_All_Good_25ns.xml")),
+			    "m_GRLxml"  	      : ''.join((path_ext,"data16_13TeV.periodAllYear_DetStatus-v80-pro20-08_DQDefects-00-02-02_PHYS_StandardGRL_All_Good_25ns_TriggerMenu1e34only.xml")),
                             "m_doPUreweighting"       : True,
-			    "m_lumiCalcFileNames"     : ''.join((path_ext,"ilumicalc_histograms_HLT_mu20_iloose_L1MU15_276262-284484.root")),
+			    "m_lumiCalcFileNames"     : LumiCalc_config,
 			    "m_PRWFileNames"	      : PRW_config,
-			    "m_PU_default_channel"    : 410009,
+			    "m_PU_default_channel"    : 363372,
 			    "m_applyPrimaryVertexCut" : False,
                             "m_vertexContainerName"   : "PrimaryVertices",
                             "m_PVNTrack"	      : 3,
@@ -84,7 +88,6 @@ MuonCalibratorDict = { "m_name"                : "muonCalib",
                        "m_outContainerName"    : "Muons_Calib",
 		       "m_inputAlgoSystNames"  : "",
                        "m_outputAlgoSystNames" : "MuonCalibrator_Syst",
-		       "m_release"             : "Recs2016_01_19",
 	               "m_systName"            : "",
 	               "m_systVal"             : 0.0,
                      }
@@ -95,8 +98,8 @@ ElectronCalibratorDict = { "m_name"                : "electronCalib",
                     	   "m_outContainerName"    : "Electrons_Calib",
 		    	   "m_inputAlgoSystNames"  : "",
                     	   "m_outputAlgoSystNames" : "ElectronCalibrator_Syst",
-   			   "m_esModel" 		   : "es2015PRE",
-   			   "m_decorrelationModel"  : "FULL_ETACORRELATED_v1",
+   			   "m_esModel" 		   : "es2016PRE",
+   			   "m_decorrelationModel"  : "1NPCOR_PLUS_UNCOR",
 	            	   "m_systName" 	   : "",
 	            	   "m_systVal"  	   : 0.0,
                          }
@@ -115,13 +118,14 @@ JetSelectorDict = { "m_name"                    :  "jetSelect_selection",
                     "m_pT_min"                  :  25e3,
                     "m_eta_max"                 :  2.5,
                     "m_doJVT"                   :  True,
-                    "m_pt_max_JVT"              :  60e3,
+                    "m_pt_max_JVT"              :  50e3,
                     "m_eta_max_JVT"             :  2.4,
                     #"m_JVTCut"                  :  0.59,
                     "m_WorkingPointJVT"         :  "Medium",
                     "m_systNameJVT"             :  "",
                     "m_doBTagCut"               :  False,
-                    "m_operatingPt"             :  "FixedCutBEff_77",
+		    "m_taggerName"              :  "MV2c10",
+                    "m_operatingPt"             :  "FixedCutBEff_70",
                   }
 
 MuonSelectorDict = { "m_name"                      : "muonSelect_selection",
@@ -141,13 +145,13 @@ MuonSelectorDict = { "m_name"                      : "muonSelect_selection",
                      "m_d0sig_max"	     	   : 10.0,
                      "m_z0sintheta_max"      	   : 2.0,
                      "m_MinIsoWPCut"         	   : "Loose",
-		     "m_IsoWPList"           	   : "Loose,GradientLoose,Gradient,FixedCutLoose,FixedCutTightTrackOnly,UserDefinedCut",
+		     "m_IsoWPList"           	   : "Loose,GradientLoose,Gradient,FixedCutLoose,FixedCutTightTrackOnly",
                      "m_CaloIsoEff"		   : "0.1*x",
                      "m_TrackIsoEff"		   : "0.1*x",
                      "m_CaloBasedIsoType"	   : "topoetcone20",
                      "m_TrackBasedIsoType"	   : "ptvarcone30",
                      "m_singleMuTrigChains"	   : "HLT_mu20_iloose_L1MU15,HLT_mu50",
-                     "m_diMuTrigChains"		   : "",
+                     "m_diMuTrigChains"		   : "HLT_2mu14,HLT_mu18_mu8noL1",
 		   }
 
 ElectronSelectorDict = { "m_name"                      : "electronSelect_selection",
@@ -175,12 +179,13 @@ ElectronSelectorDict = { "m_name"                      : "electronSelect_selecti
                          "m_CutBasedOperatingPoint"    : "IsEMLoose",
                          "m_CutBasedConfigYear"	       : "",
                          "m_MinIsoWPCut"	       : "Loose",
-                         "m_IsoWPList"  	       : "Loose,GradientLoose,Gradient,FixedCutLoose,FixedCutTight,FixedCutTightTrackOnly,UserDefinedCut",
+                         "m_IsoWPList"  	       : "Loose,GradientLoose,Gradient,FixedCutLoose,FixedCutTight,FixedCutTightTrackOnly",
                          "m_CaloIsoEff"  	       : "0.05*x",
                          "m_TrackIsoEff"  	       : "0.05*x",
                          "m_CaloBasedIsoType"  	       : "topoetcone20",
                          "m_TrackBasedIsoType"         : "ptvarcone20",
-                         "m_ElTrigChains"  	       : "HLT_e24_lhmedium_L1EM20VH,HLT_e24_lhmedium_L1EM18VH,HLT_e60_lhmedium,HLT_e120_lhloose",
+                         "m_singleElTrigChains"        : "HLT_e24_lhmedium_L1EM20VH,HLT_e24_lhmedium_L1EM18VH,HLT_e60_lhmedium,HLT_e120_lhloose",
+                         "m_diElTrigChains"            : "HLT_2e12_lhloose_L12EM10VH,HLT_2e15_lhvloose_nod0_L12EM13VH",
 		       }
 
 TauSelectorDict = { "m_name"                      : "tauSelect_selection",
@@ -237,10 +242,10 @@ OverlapRemoverDict = { "m_name"                       : "overlap_removal_HTop",
 BJetEfficiencyCorrectorDict = { "m_name"                : "bjetEffCor_BTag_MV2c20_Fix77",
 		                "m_debug"		: False,
                         	"m_inContainerName"	: "AntiKt4EMTopoJets_OR",
-         	        	"m_corrFileName"        : "$ROOTCOREBIN/data/xAODAnaHelpers/2016-Winter-13TeV-MC15-CDI-February14_v2.root",
+         	        	"m_corrFileName"        : "$ROOTCOREBIN/data/xAODAnaHelpers/2016-20_7-13TeV-MC15-CDI-July12_v1.root",
          	        	"m_jetAuthor"           : "AntiKt4EMTopoJets",
-         	        	"m_taggerName"          : "MV2c20",
-         	        	"m_operatingPt"         : "FixedCutBEff_77",
+         	        	"m_taggerName"          : "MV2c10",
+         	        	"m_operatingPt"         : "FixedCutBEff_70",
 		        	"m_useDevelopmentFile"  : False,
          	        	"m_coneFlavourLabel"    : True,
          	        	"m_systName"            : "",
@@ -254,20 +259,19 @@ MuonEfficiencyCorrectorDict = { "m_name"                  : "muonEfficiencyCorre
                                 "m_systNameIso"           : "",
                                 "m_systNameTrig"          : "",
                                 "m_systNameTTVA"          : "",
-                                "m_runNumber"             : 276329,
+                                "m_runNumber"             : 296939,
                                 "m_useRandomRunNumber"    : True,
                                 "m_outputSystNamesReco"   : "MuonEfficiencyCorrector_RecoSyst",
                                 "m_outputSystNamesIso"    : "MuonEfficiencyCorrector_IsoSyst",
                                 "m_outputSystNamesTrig"   : "MuonEfficiencyCorrector_TrigSyst",
                                 "m_outputSystNamesTTVA"   : "MuonEfficiencyCorrector_TTVASyst",
-                                "m_calibRelease"          : "Data15_allPeriods_260116",
+                                "m_calibRelease"          : "160624_ICHEP",
                                 "m_WorkingPointReco"      : "Loose",
                                 "m_WorkingPointIso"       : "Loose",
                                 "m_WorkingPointRecoTrig"  : "Loose",
                                 "m_WorkingPointIsoTrig"   : "Loose",
                                 "m_WorkingPointTTVA"      : "TTVA",
-                                "m_SingleMuTrig"	  : "HLT_mu20_iloose_L1MU15_OR_HLT_mu50",
-                                "m_DiMuTrig"	          : "",
+                                "m_SingleMuTrig"	  : "HLT_mu26_ivarmedium_OR_HLT_mu50",
                               }
 
 MuonEfficiencyCorrectorTightDict = { "m_name"                  : "muonEfficiencyCorrectorTight",
@@ -278,21 +282,23 @@ MuonEfficiencyCorrectorTightDict = { "m_name"                  : "muonEfficiency
                                      "m_systNameIso"           : "",
                                      "m_systNameTrig"          : "",
                                      "m_systNameTTVA"          : "",
-                                     "m_runNumber"             : 276329,
+                                     "m_runNumber"             : 296939,
                                      "m_useRandomRunNumber"    : True,
                                      "m_outputSystNamesReco"   : "MuonEfficiencyCorrector_RecoSyst",
                                      "m_outputSystNamesIso"    : "MuonEfficiencyCorrector_IsoSyst",
                                      "m_outputSystNamesTrig"   : "MuonEfficiencyCorrector_TrigSyst",
                                      "m_outputSystNamesTTVA"   : "MuonEfficiencyCorrector_TTVASyst",
-                                     "m_calibRelease"          : "Data15_allPeriods_260116",
+                                     "m_calibRelease"          : "160624_ICHEP",
                                      "m_WorkingPointReco"      : "Loose",
                                      "m_WorkingPointIso"       : "FixedCutTightTrackOnly",
                                      "m_WorkingPointRecoTrig"  : "Loose",
                                      "m_WorkingPointIsoTrig"   : "FixedCutTightTrackOnly",
                                      "m_WorkingPointTTVA"      : "TTVA",
-                                     "m_SingleMuTrig"	       : "HLT_mu20_iloose_L1MU15_OR_HLT_mu50",
-                                     "m_DiMuTrig"	       : "",
+                                     "m_SingleMuTrig"	       : "HLT_mu26_ivarmedium_OR_HLT_mu50",
                                    }
+
+path_el_eff = "ElectronEfficiencyCorrection/2015_2016/rel20.7/ICHEP_June2016_v3/"
+trigger_el_eff = "SINGLE_E_2015_e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose_2016_e24_lhtight_nod0_ivarloose_OR_e60_lhmedium_nod0_OR_e140_lhloose_nod0"
 
 ElectronEfficiencyCorrectorDict = { "m_name"                  : "electronEfficiencyCorrectorTight",
                                     "m_debug"		      : False,
@@ -305,15 +311,15 @@ ElectronEfficiencyCorrectorDict = { "m_name"                  : "electronEfficie
                                     "m_systNameTrigMCEff"     : "",
                                     "m_outputSystNamesReco"   : "ElectronEfficiencyCorrector_RecoSyst",
                                     "m_outputSystNamesPID"    : "ElectronEfficiencyCorrector_PIDSyst",
-                                    #"m_outputSystNamesIso"    : "ElectronEfficiencyCorrector_IsoSyst",
-                                    #"m_outputSystNamesTrig"   : "ElectronEfficiencyCorrector_TrigSyst",
-                                    #"m_outputSystNamesTrigMCEff"   : "ElectronEfficiencyCorrector_TrigMCEffSyst",
-                                    "m_corrFileNameReco"      : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.RecoTrk.2015.13TeV.rel20p0.25ns.v04.root",
-                                    "m_corrFileNamePID"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.LooseAndBLayerLLH.2015.13TeV.rel20p0.25ns.v04.root",
-                                    #"m_corrFileNameIso"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.Isolation.LooseAndBLayerLLH_d0z0_v8_isolLoose.2015.13TeV.rel20p0.25ns.v04.root", # comment if d0z0 cuts are NOT tight (TTVA)
-                                    #"m_WorkingPointIDTrig"    : "LHLooseAndBLayer",
-				    #"m_corrFileNameTrig"      : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.LooseAndBLayerLLH_d0z0_v8.2015.13TeV.rel20p0.25ns.v04.root",
-                                    #"m_corrFileNameTrigMCEff" : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiency.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.LooseAndBLayerLLH_d0z0_v8.2015.13TeV.rel20p0.25ns.v04.root",
+                                    "m_outputSystNamesIso"    : "ElectronEfficiencyCorrector_IsoSyst",
+                                    "m_outputSystNamesTrig"   : "ElectronEfficiencyCorrector_TrigSyst",
+                                    "m_outputSystNamesTrigMCEff"   : "ElectronEfficiencyCorrector_TrigMCEffSyst",
+                                    "m_corrFileNameReco"      : path_el_eff + "offline/efficiencySF.offline.RecoTrk.root",
+                                    "m_corrFileNamePID"       : path_el_eff + "offline/efficiencySF.offline.LooseAndBLayerLLH_d0z0_v11.root",
+                                    "m_corrFileNameIso"       : path_el_eff + "isolation/efficiencySF.Isolation.LooseAndBLayerLLH_d0z0_v11_isolLoose.root", # comment if d0z0 cuts are NOT tight (TTVA)
+                                    "m_WorkingPointIDTrig"    : "LHLooseAndBLayer",
+				    "m_corrFileNameTrig"      : path_el_eff + "trigger/efficiencySF." + trigger_el_eff + ".LooseAndBLayerLLH_d0z0_v11_isolLoose.root",
+                                    "m_corrFileNameTrigMCEff" : path_el_eff + "trigger/efficiency." + trigger_el_eff + ".LooseAndBLayerLLH_d0z0_v11_isolLoose.root",
                                    }
 
 ElectronEfficiencyCorrectorTightDict = { "m_name"                  : "electronEfficiencyCorrectorTight",
@@ -330,12 +336,12 @@ ElectronEfficiencyCorrectorTightDict = { "m_name"                  : "electronEf
                                          "m_outputSystNamesIso"    : "ElectronEfficiencyCorrector_IsoSyst",
                                          "m_outputSystNamesTrig"   : "ElectronEfficiencyCorrector_TrigSyst",
                                          "m_outputSystNamesTrigMCEff"   : "ElectronEfficiencyCorrector_TrigMCEffSyst",
-                                         "m_corrFileNameReco"      : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.RecoTrk.2015.13TeV.rel20p0.25ns.v04.root",
-                                         "m_corrFileNamePID"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.offline.TightLLH_d0z0.2015.13TeV.rel20p0.25ns.v04.root",
-                                         "m_corrFileNameIso"       : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.Isolation.TightLLH_d0z0_v8_isolFixedCutTight.2015.13TeV.rel20p0.25ns.v04.root",
+                                         "m_corrFileNameReco"      : path_el_eff + "offline/efficiencySF.offline.RecoTrk.root",
+                                         "m_corrFileNamePID"       : path_el_eff + "offline/efficiencySF.offline.TightLLH_d0z0_v11.root",
+                                         "m_corrFileNameIso"       : path_el_eff + "isolation/efficiencySF.Isolation.TightLLH_d0z0_v11_isolFixedCutTight.root", # comment if d0z0 cuts are NOT tight (TTVA)
                                          "m_WorkingPointIDTrig"    : "LHTight",
-                                         "m_corrFileNameTrig"      : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiencySF.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.TightLLH_d0z0_v8.2015.13TeV.rel20p0.25ns.v04.root",
-                                         "m_corrFileNameTrigMCEff" : "$ROOTCOREBIN/data/ElectronEfficiencyCorrection/efficiency.e24_lhmedium_L1EM20VH_OR_e60_lhmedium_OR_e120_lhloose.TightLLH_d0z0_v8.2015.13TeV.rel20p0.25ns.v04.root",
+				         "m_corrFileNameTrig"      : path_el_eff + "trigger/efficiencySF." + trigger_el_eff + ".TightLLH_d0z0_v11_isolFixedCutTight.root",
+                                         "m_corrFileNameTrigMCEff" : path_el_eff + "trigger/efficiency." + trigger_el_eff + ".TightLLH_d0z0_v11_isolFixedCutTight.root",
                                        }
 
 HTopMultilepEventSelectorDict = { "m_name"                   : "eventSelect_skim",

@@ -385,7 +385,7 @@ class HTopMultilepTree : public HelpTreeBase
 
     void FillEventUser( const xAOD::EventInfo* );
     /*void FillTriggerUser( const xAOD::EventInfo*  );*/
-    void FillMuonsUser( const xAOD::Muon* );
+    void FillMuonsUser( const xAOD::Muon*, const::std::string );
     void FillElectronsUser( const xAOD::Electron*  );
     void FillJetsUser( const xAOD::Jet*, const std::string = "jet" );
     void FillTausUser( const xAOD::TauJet* );

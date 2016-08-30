@@ -6,6 +6,7 @@
 #include <HTopMultilepAnalysis/OverlapRemovalTool_HTopRun1.h>
 #include <HTopMultilepAnalysis/OverlapRemover_HTopRun1.h>
 #include <HTopMultilepAnalysis/HTopMultilepMiniNTupMaker.h>
+#include <HTopMultilepAnalysis/HTopMultilepNTupReprocesser.h>
 
 #ifdef __CINT__
 #pragma link off all globals;
@@ -23,4 +24,5 @@
 #pragma link C++ class OverlapRemovalTool_HTopRun1+;
 #pragma link C++ class OverlapRemover_HTopRun1+;
 #pragma link C++ class HTopMultilepMiniNTupMaker+;
+#pragma link C++ class HTopMultilepNTupReprocesser+;
 #endif

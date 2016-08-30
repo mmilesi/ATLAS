@@ -17,23 +17,25 @@
 /
 *************** */
 
-bool g_debug(false);
-bool g_verbose(false);
+bool g_debug(true);
+bool g_verbose(true);
 
 std::map< std::string, TH1D* > g_el_hist_map;
 std::map< std::string, TH1D* > g_mu_hist_map;
 
-int g_n_el_bins_eta(0);
-int g_n_mu_bins_eta(0);
 int g_n_el_bins_pt_rr(0);
 int g_n_el_bins_pt_fr(0);
 int g_n_mu_bins_pt_rr(0);
 int g_n_mu_bins_pt_fr(0);
 
-double g_el_rr_tot(9e5);
-double g_el_fr_tot(9e5);
-double g_mu_rr_tot(9e5);
-double g_mu_fr_tot(9e5);
+bool g_ratesEta;
+int g_n_el_bins_eta(0);
+int g_n_mu_bins_eta(0);
+
+double g_el_rr_tot(1.0);
+double g_el_fr_tot(1.0);
+double g_mu_rr_tot(1.0);
+double g_mu_fr_tot(1.0);
 
 bool g_doClosure;
 
@@ -67,130 +69,133 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
 
   // ******************************************************
   //
-  // 1. 'REAL' rate
+  // 1. 'REAL' efficiency
 
-  Info("read_rates()", "REAL rate from directory: %s ", rr_dir.c_str() );
+  Info("read_rates()", "REAL efficiency from directory: %s ", rr_dir.c_str() );
 
   std::string path_R_el = glob_path + rr_dir + "/Rates.root";// "/AvgRates.root";
   TFile *file_R_el = TFile::Open(path_R_el.c_str());
   if ( !file_R_el->IsOpen() ) {
-    SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_el.c_str() );
+    SysError("read_rates()", "Failed to open ROOT file with R efficiency from path: %s . Aborting", path_R_el.c_str() );
     exit(-1);
   } else {
-    Info("read_rates()", "ELECTRON REAL rate: %s ", path_R_el.c_str() );
+    Info("read_rates()", "ELECTRON REAL efficiency: %s ", path_R_el.c_str() );
   }
   std::string path_R_mu = glob_path + rr_dir + "/Rates.root"; //"/AvgRates.root";
   TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
   if ( !file_R_mu->IsOpen() ) {
-    SysError("read_rates()", "Failed to open ROOT file with R rate from path: %s . Aborting", path_R_mu.c_str() );
+    SysError("read_rates()", "Failed to open ROOT file with R efficiency from path: %s . Aborting", path_R_mu.c_str() );
     exit(-1);
   } else {
-    Info("read_rates()", "MUON REAL rate: %s ", path_R_mu.c_str() );
+    Info("read_rates()", "MUON REAL efficiency: %s ", path_R_mu.c_str() );
   }
 
   // special case: use charge flip (i.e. "fake" rate) as real rate (only for electrons)!
   bool CFRateAsRR = ( rr_dir.find("ChFlip") != std::string::npos ) ? true : false;
-  if ( CFRateAsRR ) { Info("read_rates()", "---> For ELECTRONS, will be treating charge flip rate as REAL rate!!"); }
+  if ( CFRateAsRR ) { Info("read_rates()", "---> For ELECTRONS, will be treating charge flip efficiency as REAL efficiency!!"); }
 
   std::string rate_type = ( !g_doClosure ) ? "observed" : "expected";
 
   // ELECTRONS
   //
-  std::string histname_el_eta_rr   = ( !CFRateAsRR ) ?  "El_ProbeEta_Real_Rate_" + rate_type : "El_ProbeEta_Fake_Rate_" + rate_type;
-  std::string histname_el_pt_rr    = ( !CFRateAsRR ) ?  "El_ProbePt_Real_Rate_" + rate_type : "El_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_el_eta_r_T  = ( !CFRateAsRR ) ?  "El_ProbeEta_Real_T_" + rate_type : "El_ProbeEta_Fake_Rate_" + rate_type;
-  std::string histname_el_eta_r_L  = ( !CFRateAsRR ) ?  "El_ProbeEta_Real_AntiT_" + rate_type : "El_ProbeEta_Fake_Rate_" + rate_type;
-  std::string histname_el_pt_r_T   = ( !CFRateAsRR ) ?  "El_ProbePt_Real_T_" + rate_type : "El_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_el_pt_r_L   = ( !CFRateAsRR ) ?  "El_ProbePt_Real_AntiT_" + rate_type : "El_ProbePt_Fake_Rate_" + rate_type;
+  std::string histname_el_pt_rr    = ( !CFRateAsRR ) ?  "El_ProbePt_Real_Efficiency_" + rate_type : "El_ProbePt_Fake_Efficiency_" + rate_type;
+  std::string histname_el_eta_rr   = ( !CFRateAsRR ) ?  "El_ProbeEta_Real_Efficiency_" + rate_type : "El_ProbeEta_Fake_Efficiency_" + rate_type;
 
-  // get real rate histograms
+  std::string histname_el_pt_r_T   = ( !CFRateAsRR ) ?  "El_ProbePt_Real_T_" + rate_type : "El_ProbePt_Fake_T_" + rate_type;
+  std::string histname_el_pt_r_L   = ( !CFRateAsRR ) ?  "El_ProbePt_Real_L_" + rate_type : "El_ProbePt_Fake_L_" + rate_type;
+
+  // get real efficiency histograms
   //
-  TH1D *hist_el_eta_rr   = get_hist( *file_R_el, histname_el_eta_rr );
   TH1D *hist_el_pt_rr    = get_hist( *file_R_el, histname_el_pt_rr );
-  TH1D *hist_el_eta_r_T  = get_hist( *file_R_el, histname_el_eta_r_T );
-  TH1D *hist_el_eta_r_L  = get_hist( *file_R_el, histname_el_eta_r_L );
+  TH1D *hist_el_eta_rr   = ( g_ratesEta ) ? get_hist( *file_R_el, histname_el_eta_rr ) : nullptr;
+
   TH1D *hist_el_pt_r_T   = get_hist( *file_R_el, histname_el_pt_r_T );
   TH1D *hist_el_pt_r_L   = get_hist( *file_R_el, histname_el_pt_r_L );
 
   // MUONS
   //
-  std::string histname_mu_eta_rr   = "Mu_ProbeEta_Real_Rate_" + rate_type;
-  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Rate_" + rate_type;
-  std::string histname_mu_eta_r_T  = "Mu_ProbeEta_Real_T_" + rate_type;
-  std::string histname_mu_eta_r_L  = "Mu_ProbeEta_Real_AntiT_" + rate_type;
-  std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_" + rate_type;
-  std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_AntiT_" + rate_type;
+  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Efficiency_" + rate_type;
+  std::string histname_mu_eta_rr   = "Mu_ProbeEta_Real_Efficiency_" + rate_type;
 
-  // get real rate histograms
+  std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_" + rate_type;
+  std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_L_" + rate_type;
+
+  // get real efficiency histograms
   //
-  TH1D *hist_mu_eta_rr   = get_hist( *file_R_mu, histname_mu_eta_rr );
   TH1D *hist_mu_pt_rr    = get_hist( *file_R_mu, histname_mu_pt_rr );
-  TH1D *hist_mu_eta_r_T  = get_hist( *file_R_mu, histname_mu_eta_r_T );
-  TH1D *hist_mu_eta_r_L  = get_hist( *file_R_mu, histname_mu_eta_r_L );
+  TH1D *hist_mu_eta_rr   = ( g_ratesEta ) ? get_hist( *file_R_mu, histname_mu_eta_rr ) : nullptr;
+
   TH1D *hist_mu_pt_r_T   = get_hist( *file_R_mu, histname_mu_pt_r_T );
   TH1D *hist_mu_pt_r_L   = get_hist( *file_R_mu, histname_mu_pt_r_L );
 
-  // 2. FAKE rate
+  // 2. FAKE efficiency
 
   std::string fake_dir(rr_dir);
   if ( !fr_dir.empty() ) {
-     Warning("read_rates()", "FAKE rate is going to be read from %s. Check whether it's really what you want...", fr_dir.c_str());
+     Warning("read_rates()", "FAKE efficiency is going to be read from %s. Check whether it's really what you want...", fr_dir.c_str());
      fake_dir = fr_dir;
   } else {
-     Info("read_rates()", "FAKE rate from same directory" );
+     Info("read_rates()", "FAKE efficiency from same directory" );
   }
 
   std::string path_F_el = glob_path + fake_dir + "/Rates.root"; // "/AvgRates.root";
   TFile *file_F_el = TFile::Open(path_F_el.c_str());
   if ( !file_F_el->IsOpen() ) {
-    SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_el.c_str() );
+    SysError("read_rates()", "Failed to open ROOT file with F efficiency from path: %s . Aborting", path_F_el.c_str() );
     exit(-1);
   } else {
-    Info("read_rates()", "ELECTRON FAKE rate: %s ", path_F_el.c_str() );
+    Info("read_rates()", "ELECTRON FAKE efficiency: %s ", path_F_el.c_str() );
   }
 
   std::string path_F_mu = glob_path + fake_dir + "/Rates.root"; // "/AvgRates.root";
   TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
   if ( !file_F_mu->IsOpen() ) {
-    SysError("read_rates()", "Failed to open ROOT file with F rate from path: %s . Aborting", path_F_mu.c_str() );
+    SysError("read_rates()", "Failed to open ROOT file with F efficiency from path: %s . Aborting", path_F_mu.c_str() );
     exit(-1);
   } else {
-    Info("read_rates()", "MUON FAKE rate: %s ", path_F_mu.c_str() );
+    Info("read_rates()", "MUON FAKE efficiency: %s ", path_F_mu.c_str() );
   }
 
   // ELECTRONS
   //
-  std::string histname_el_eta_fr   = "El_ProbeEta_Fake_Rate_" + rate_type;
-  std::string histname_el_pt_fr    = "El_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_el_eta_f_T  = "El_ProbeEta_Fake_T_" + rate_type;
-  std::string histname_el_eta_f_L  = "El_ProbeEta_Fake_AntiT_" + rate_type;
-  std::string histname_el_pt_f_T   = "El_ProbePt_Fake_T_" + rate_type;
-  std::string histname_el_pt_f_L   = "El_ProbePt_Fake_AntiT_" + rate_type;
+  std::string histname_el_pt_fr(""), histname_el_eta_fr(""), histname_el_pt_f_T(""), histname_el_pt_f_L("");
+  if ( g_doClosure ) {
+    histname_el_pt_fr    = "El_ProbePt_Fake_Efficiency_" + rate_type;
+    histname_el_eta_fr   = "El_ProbeEta_Fake_Efficiency_" + rate_type;
+    histname_el_pt_f_T   = "El_ProbePt_Fake_T_" + rate_type;
+    histname_el_pt_f_L   = "El_ProbePt_Fake_L_" + rate_type;
+  } else {
+    //histname_el_pt_fr    = "El_ProbePt_ScaledFake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
+    //histname_el_eta_fr   = "El_ProbeEta_ScaledFake_Efficiency_" + rate_type;
+    //histname_el_pt_f_T   = "El_ProbePt_ScaledFake_T_" + rate_type;
+    //histname_el_pt_f_L   = "El_ProbePt_ScaledFake_L_" + rate_type;
+    histname_el_pt_fr    = "El_ProbePt_Fake_Efficiency_" + rate_type; // Use the QMisID-eff-scaled fake efficiency for electrons when running MM on DATA
+    histname_el_eta_fr   = "El_ProbeEta_Fake_Efficiency_" + rate_type;
+    histname_el_pt_f_T   = "El_ProbePt_Fake_T_" + rate_type;
+    histname_el_pt_f_L   = "El_ProbePt_Fake_L_" + rate_type;
+  }
 
-  // get fake rate histograms
+  // get fake efficiency histograms
   //
-  TH1D *hist_el_eta_fr   = get_hist( *file_F_el, histname_el_eta_fr );
   TH1D *hist_el_pt_fr    = get_hist( *file_F_el, histname_el_pt_fr );
-  TH1D *hist_el_eta_f_T  = get_hist( *file_F_el, histname_el_eta_f_T );
-  TH1D *hist_el_eta_f_L  = get_hist( *file_F_el, histname_el_eta_f_L );
+  TH1D *hist_el_eta_fr   = ( g_ratesEta ) ? get_hist( *file_F_el, histname_el_eta_fr ) : nullptr;
+
   TH1D *hist_el_pt_f_T   = get_hist( *file_F_el, histname_el_pt_f_T );
   TH1D *hist_el_pt_f_L   = get_hist( *file_F_el, histname_el_pt_f_L );
 
   // MUONS
   //
-  std::string histname_mu_eta_fr   = "Mu_ProbeEta_Fake_Rate_" + rate_type;
-  std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Rate_" + rate_type;
-  std::string histname_mu_eta_f_T  = "Mu_ProbeEta_Fake_T_" + rate_type;
-  std::string histname_mu_eta_f_L  = "Mu_ProbeEta_Fake_AntiT_" + rate_type;
-  std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_" + rate_type;
-  std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_AntiT_" + rate_type;
+  std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Efficiency_" + rate_type;
+  std::string histname_mu_eta_fr   = "Mu_ProbeEta_Fake_Efficiency_" + rate_type;
 
-  // get fake rate histograms
+  std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_" + rate_type;
+  std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_L_" + rate_type;
+
+  // get fake efficiency histograms
   //
-  TH1D *hist_mu_eta_fr   = get_hist( *file_F_mu, histname_mu_eta_fr );
   TH1D *hist_mu_pt_fr    = get_hist( *file_F_mu, histname_mu_pt_fr );
-  TH1D *hist_mu_eta_f_T  = get_hist( *file_F_mu, histname_mu_eta_f_T );
-  TH1D *hist_mu_eta_f_L  = get_hist( *file_F_mu, histname_mu_eta_f_L );
+  TH1D *hist_mu_eta_fr   = ( g_ratesEta ) ? get_hist( *file_F_mu, histname_mu_eta_fr ) : nullptr;
+
   TH1D *hist_mu_pt_f_T   = get_hist( *file_F_mu, histname_mu_pt_f_T );
   TH1D *hist_mu_pt_f_L   = get_hist( *file_F_mu, histname_mu_pt_f_L );
 
@@ -198,38 +203,15 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
 
   // fill a map for later usage
   //
-  g_el_hist_map["eta_rr"]  = hist_el_eta_rr;
   g_el_hist_map["pt_rr"]   = hist_el_pt_rr;
-  g_el_hist_map["eta_r_T"] = hist_el_eta_r_T;
-  g_el_hist_map["eta_r_L"] = hist_el_eta_r_L;
-  g_el_hist_map["pt_r_T"]  = hist_el_pt_r_T;
-  g_el_hist_map["pt_r_L"]  = hist_el_pt_r_L;
-
-  g_mu_hist_map["eta_rr"]  = hist_mu_eta_rr;
   g_mu_hist_map["pt_rr"]   = hist_mu_pt_rr;
-  g_mu_hist_map["eta_r_T"] = hist_mu_eta_r_T;
-  g_mu_hist_map["eta_r_L"] = hist_mu_eta_r_L;
-  g_mu_hist_map["pt_r_T"]  = hist_mu_pt_r_T;
-  g_mu_hist_map["pt_r_L"]  = hist_mu_pt_r_L;
-
-  g_el_hist_map["eta_fr"]  = hist_el_eta_fr;
   g_el_hist_map["pt_fr"]   = hist_el_pt_fr;
-  g_el_hist_map["eta_f_T"] = hist_el_eta_f_T;
-  g_el_hist_map["eta_f_L"] = hist_el_eta_f_L;
-  g_el_hist_map["pt_f_T"]  = hist_el_pt_f_T;
-  g_el_hist_map["pt_f_L"]  = hist_el_pt_f_L;
-
-  g_mu_hist_map["eta_fr"]  = hist_mu_eta_fr;
   g_mu_hist_map["pt_fr"]   = hist_mu_pt_fr;
-  g_mu_hist_map["eta_f_T"] = hist_mu_eta_f_T;
-  g_mu_hist_map["eta_f_L"] = hist_mu_eta_f_L;
-  g_mu_hist_map["pt_f_T"]  = hist_mu_pt_f_T;
-  g_mu_hist_map["pt_f_L"]  = hist_mu_pt_f_L;
 
-  // eta hist has same binning for r/f
-  //
-  g_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX()+1;
-  g_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX()+1;
+  g_el_hist_map["eta_rr"]  = hist_el_eta_rr;
+  g_mu_hist_map["eta_rr"]  = hist_mu_eta_rr;
+  g_el_hist_map["eta_fr"]  = hist_el_eta_fr;
+  g_mu_hist_map["eta_fr"]  = hist_mu_eta_fr;
 
   // pt hist has two different binning for r/f
   //
@@ -238,12 +220,37 @@ void read_rates(const std::string rr_dir, const std::string fr_dir )
   g_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX()+1;
   g_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX()+1;
 
-  // normalisation factor is the same for eta and pt r/f histograms: use eta
+  // eta hist has same binning for r/f
   //
-  g_el_rr_tot = ( hist_el_eta_r_T->Integral(1,hist_el_eta_r_T->GetNbinsX()+1) ) / ( hist_el_eta_r_L->Integral(1,hist_el_eta_r_L->GetNbinsX()+1) );
-  g_el_fr_tot = ( hist_el_eta_f_T->Integral(1,hist_el_eta_f_T->GetNbinsX()+1) ) / ( hist_el_eta_f_L->Integral(1,hist_el_eta_f_L->GetNbinsX()+1) );
-  g_mu_rr_tot = ( hist_mu_eta_r_T->Integral(1,hist_mu_eta_r_T->GetNbinsX()+1) ) / ( hist_mu_eta_r_L->Integral(1,hist_mu_eta_r_L->GetNbinsX()+1) );
-  g_mu_fr_tot = ( hist_mu_eta_f_T->Integral(1,hist_mu_eta_f_T->GetNbinsX()+1) ) / ( hist_mu_eta_f_L->Integral(1,hist_mu_eta_f_L->GetNbinsX()+1) );
+  if ( g_ratesEta ) {
+    g_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX()+1;
+    g_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX()+1;
+  }
+
+  // Calculate normalisation factor for (pT X eta) 1D efficiencies case.
+  //
+  // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
+  //
+  g_el_rr_tot = ( hist_el_pt_r_T->Integral(1,hist_el_pt_r_T->GetNbinsX()+1) ) / ( hist_el_pt_r_L->Integral(1,hist_el_pt_r_L->GetNbinsX()+1) );
+  g_el_fr_tot = ( hist_el_pt_f_T->Integral(1,hist_el_pt_f_T->GetNbinsX()+1) ) / ( hist_el_pt_f_L->Integral(1,hist_el_pt_f_L->GetNbinsX()+1) );
+  g_mu_rr_tot = ( hist_mu_pt_r_T->Integral(1,hist_mu_pt_r_T->GetNbinsX()+1) ) / ( hist_mu_pt_r_L->Integral(1,hist_mu_pt_r_L->GetNbinsX()+1) );
+  g_mu_fr_tot = ( hist_mu_pt_f_T->Integral(1,hist_mu_pt_f_T->GetNbinsX()+1) ) / ( hist_mu_pt_f_L->Integral(1,hist_mu_pt_f_L->GetNbinsX()+1) );
+
+  std::cout << "\n" << std::endl;
+  Info("read_rates()", "MUON REAL efficiency - pT histogram name: %s ", histname_mu_pt_rr.c_str() );
+  Info("read_rates()", "MUON FAKE efficiency - pT histogram name: %s ", histname_mu_pt_fr.c_str() );
+  if ( g_ratesEta ) {
+    Info("read_rates()", "MUON REAL efficiency - eta histogram name: %s ", histname_mu_eta_rr.c_str() );
+    Info("read_rates()", "MUON FAKE efficiency - eta histogram name: %s ", histname_mu_eta_fr.c_str() );
+  }
+  std::cout << "            --------------------------------------------" << std::endl;
+  Info("read_rates()", "ELECTRON REAL efficiency - pT histogram name: %s ", histname_el_pt_rr.c_str() );
+  Info("read_rates()", "ELECTRON FAKE efficiency - pT histogram name: %s ", histname_el_pt_fr.c_str() );
+  if ( g_ratesEta ) {
+    Info("read_rates()", "ELECTRON REAL efficiency - eta histogram name: %s ", histname_el_eta_rr.c_str() );
+    Info("read_rates()", "ELECTRON FAKE efficiency - eta histogram name: %s ", histname_el_eta_fr.c_str() );
+  }
+  std::cout << "\n" << std::endl;
 
 }
 
@@ -272,181 +279,207 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 				   float pt,
 				   float eta,
 				   bool isFakeLep,
-				   int n_bins_eta,
 				   int n_bins_pt_fr,
 				   int n_bins_pt_rr,
-				   double fr_tot,
-				   double rr_tot
-				  )
+				   int n_bins_eta,
+				   float fr_tot,
+				   float rr_tot
+                                  )
 {
-  // Read the real/fake rates from input histograms
-  //
-  // Will eventually convert these to real/fake FACTORS
-
   // As a first thing, convert pT in GeV!
   //
   pt = pt/1e3;
-
-  if ( g_verbose ) { Info("calc_weights()", "lepton pT = %.2f, fabs(eta) = %.2f", pt, fabs(eta) ); }
 
   std::vector<double> weights(3,0.0); //initialized with zeroes
 
   weights.at(0) = 1.0;
   double error(0.0);
 
-  // loop over number of eta bins
-  // do not consider underflow, i.e. 0th bin
-  //
-  for ( int e = 1; e <= n_bins_eta; e++ ) {
+  float this_low_edge_pt(-1.0);
+  float this_up_edge_pt(-1.0);
 
-    // check whether the eta under question is in *this* eta range
-    //
+  float this_low_edge_eta(-999.0);
+  float this_up_edge_eta(-999.0);
+
+  // case 1) : lepton is fake: choose correct pt histogram
+  //
+  if ( isFakeLep ) {
+
     if ( g_verbose ) {
-      Info("calc_weights()", "\tETA bin %i : lower edge = %.2f, upper edge = %.2f", e, (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e),(histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) );
+       Info("calc_weights()", "\tReading fake efficiency...");
     }
 
-    if ( ( fabs(eta) >= (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e) ) && ( fabs(eta) < (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) ) ) {
+    // loop over number of pt bins
+    // do not consider underflow, i.e. 0th bin
+    //
+    for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
 
-      if ( g_verbose ) {
-        Info("calc_weights()", "\t\t==> Reading ETA rate in bin [%.2f,%.2f]", (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e), (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1) );
-      }
-      
-      // case 1) : lepton is fake: choose correct pt histogram
-      //
-      if ( isFakeLep ) {
+      this_low_edge_pt = (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p);
+      this_up_edge_pt  = (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1);
 
-        if ( g_verbose ) {
-          Info("calc_weights()", "\t\tFake lepton");
-        } 
-       
-	// loop over number of pt bins
-        // do not consider underflow, i.e. 0th bin
-        //
-        for ( int p = 1; p <= n_bins_pt_fr; p++ ) {
+      if ( g_verbose ) { Info("calc_weights()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
 
-  	  if ( g_verbose ) {
-            Info("calc_weights()", "\t\tPT bin %i : lower edge = %.2f, upper edge = %.2f", p,(histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-	  }
+      if ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) {
 
-     	  if ( ( pt >= (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
+    	double fr_pt     = (histograms.find("pt_fr")->second)->GetBinContent(p);
+    	double fr_pt_err = (histograms.find("pt_fr")->second)->GetBinError(p);
 
-  	    if ( g_verbose ) {
-    	      Info("calc_weights()", "\t\t\t==> Reading PT fake rate in bin [%.2f,%.2f]", (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_fr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-	    }
+  	if ( g_verbose ) { Info("calc_weights()", "\t\tLepton pT = %.3f GeV ==> Reading fake efficiency in pT bin [%.0f,%.0f] GeV: fr_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, fr_pt ); }
 
-	    // combine eta and pt rates
+	double fr_eta(1.0);
+	double fr_eta_err(1.0);
+        if ( g_ratesEta ) {
+	    // loop over number of eta bins
+	    // do not consider underflow, i.e. 0th bin
 	    //
-	    double fr_pt  = (histograms.find("pt_fr")->second)->GetBinContent(p);
-	    double fr_eta = (histograms.find("eta_fr")->second)->GetBinContent(e);
+	    for ( int e = 1; e <= n_bins_eta; e++ ) {
+		this_low_edge_eta = (histograms.find("eta_fr")->second)->GetXaxis()->GetBinLowEdge(e);
+		this_up_edge_eta  = (histograms.find("eta_fr")->second)->GetXaxis()->GetBinLowEdge(e+1);
 
-	    double fr_pt_err  = (histograms.find("pt_fr")->second)->GetBinError(p);
-	    double fr_eta_err = (histograms.find("eta_fr")->second)->GetBinError(e);
+		if ( g_verbose ) { Info("calc_weights()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
 
-            if ( g_verbose ) {
-	       Info("calc_weights()", "\t\t\t ==> fr_pt = %.2f", fr_pt );
-	       Info("calc_weights()", "\t\t\t ==> fr_eta = %.2f", fr_eta );
+		if ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) {
+
+		    fr_eta     = (histograms.find("eta_fr")->second)->GetBinContent(e);
+		    fr_eta_err = (histograms.find("eta_fr")->second)->GetBinError(e);
+
+		    if ( g_verbose ) {
+			Info("calc_weights()", "\t\tLepton |eta| = %.3f ==> Reading fake efficiency in |eta| bin [%.3f,%.3f]: fr_eta = %.3f, norm factor = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, fr_eta, fr_tot );
+		    }
+
+		    break;
+		}
 	    }
+	}
 
-	    // nominal
-	    //
-     	    weights.at(0) = ( fr_pt * fr_eta ) / fr_tot;
+    	// nominal
+    	//
+    	weights.at(0) = fr_pt;
+    	error	      = fr_pt_err;
 
+    	// up syst
+    	//
+    	weights.at(1) = ( fr_pt + error );
+
+    	// down syst
+    	//
+    	if ( fr_pt - error > 0 ) { weights.at(2) = ( fr_pt - error );}
+    	else		         { weights.at(2) = 0.0; }
+
+	if ( g_ratesEta ) {
+	    weights.at(0) = ( fr_pt * fr_eta ) / fr_tot;
 	    // (assuming  fr_pt,fr_eta are independent) this is the error on the product
-	    // ( the constant factor at denominator will be put back later in the def of weight...
+	    // ( the constant factor at denominator will be put back later in the def of weight...)
 	    //
-	    error	  = sqrt( (fr_eta*fr_pt_err)*(fr_eta*fr_pt_err) + (fr_pt*fr_eta_err)*(fr_pt*fr_eta_err) );
-
-	    // up syst
-	    //
-     	    weights.at(1) = ( (fr_pt * fr_eta) + error ) / fr_tot;
-
-     	    // down syst
-     	    //
+	    error  = sqrt( (fr_eta*fr_pt_err)*(fr_eta*fr_pt_err) + (fr_pt*fr_eta_err)*(fr_pt*fr_eta_err) );
+	    weights.at(1) = ( (fr_pt * fr_eta) + error ) / fr_tot;
 	    if ( (fr_pt * fr_eta) - error > 0 ) { weights.at(2) = ( (fr_pt * fr_eta) - error ) / fr_tot;}
 	    else                                { weights.at(2) = 0.0; }
+	}
 
-            break;
-	    
-     	  }
+        break;
+      }
 
-	} // close loop on pT bins: fake lepton
+    } // close loop on pT bins: fake lepton
 
-      // lepton is real: choose correct pt histogram
-      //
-      }	else {
+  // lepton is real: choose correct pt histogram
+  //
+  } else {
 
-        if ( g_verbose ) {
-          Info("calc_weights()", "\t\tReal lepton");
-        }
-	
-	// loop over number of pt bins
-        // do not consider underflow, i.e. 0th bin
-        //
-        for ( int p = 1; p <= n_bins_pt_rr; p++ ) {
+    if ( g_verbose ) { Info("calc_weights()", "\tReading real efficiency..."); }
 
-          if ( g_verbose ) {
-            Info("calc_weights()", "\t\tPT bin %i : lower edge = %.2f, upper edge = %.2f", p,(histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-          }
-	  
-     	  if ( ( pt >= (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p) ) && ( pt < (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1) ) ) {
+    // loop over number of pt bins
+    // do not consider underflow, i.e. 0th bin
+    //
+    for ( int p = 1; p <= n_bins_pt_rr; p++ ) {
 
-            if ( g_verbose ) {
-    	      Info("calc_weights()", "\t\t\t==> Reading PT real rate in bin [%.2f,%.2f]", (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p), (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1) );
-            }
-	    
-	    // combine eta and pt rates
+      this_low_edge_pt = (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p);
+      this_up_edge_pt  = (histograms.find("pt_rr")->second)->GetXaxis()->GetBinLowEdge(p+1);
+
+      if ( g_verbose ) { Info("calc_weights()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
+
+      if ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) {
+
+    	double rr_pt      = (histograms.find("pt_rr")->second)->GetBinContent(p);
+    	double rr_pt_err  = (histograms.find("pt_rr")->second)->GetBinError(p);
+
+  	if ( g_verbose ) { Info("calc_weights()", "\t\tLepton pT = %.3f GeV ==> Reading real efficiency in pT bin [%.0f,%.0f] GeV: fr_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, rr_pt ); }
+
+	double rr_eta(1.0);
+	double rr_eta_err(1.0);
+        if ( g_ratesEta ) {
+	    // loop over number of eta bins
+	    // do not consider underflow, i.e. 0th bin
 	    //
-	    double rr_pt  = (histograms.find("pt_rr")->second)->GetBinContent(p);
-	    double rr_eta = (histograms.find("eta_rr")->second)->GetBinContent(e);
+	    for ( int e = 1; e <= n_bins_eta; e++ ) {
+		this_low_edge_eta = (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e);
+		this_up_edge_eta  = (histograms.find("eta_rr")->second)->GetXaxis()->GetBinLowEdge(e+1);
 
-	    double rr_pt_err  = (histograms.find("pt_rr")->second)->GetBinError(p);
-	    double rr_eta_err = (histograms.find("eta_rr")->second)->GetBinError(e);
+		if ( g_verbose ) { Info("calc_weights()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
 
-            if ( g_verbose ) {
-	       Info("calc_weights()", "\t\t\t ==> rr_pt = %.2f", rr_pt );
-	       Info("calc_weights()", "\t\t\t ==> rr_eta = %.2f", rr_eta );
+		if ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) {
+
+		    rr_eta     = (histograms.find("eta_rr")->second)->GetBinContent(e);
+		    rr_eta_err = (histograms.find("eta_rr")->second)->GetBinError(e);
+
+		    if ( g_verbose ) {
+			Info("calc_weights()", "\t\tLepton |eta| = %.3f ==> Reading real efficiency in |eta| bin [%.3f,%.3f]: fr_eta = %.3f, norm factor = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, rr_eta, rr_tot );
+		    }
+
+		    break;
+		}
 	    }
+	}
 
-	    // nominal
-	    //
+    	// nominal
+    	//
+    	weights.at(0) = rr_pt;
+    	error	      = rr_pt_err;
+
+    	// up syst
+    	//
+    	weights.at(1) = ( rr_pt + error );
+
+    	// down syst
+    	//
+    	if ( rr_pt - error > 0 ) { weights.at(2) = ( rr_pt - error ); }
+    	else		         { weights.at(2) = 0.0; }
+
+	if ( g_ratesEta ) {
 	    weights.at(0) = ( rr_pt * rr_eta ) / rr_tot;
-
 	    // (assuming  rr_pt,rr_eta are independent) this is the error on the product
-	    // ( the constant factor at denominator will be put back in the def of weight...
+	    // ( the constant factor at denominator will be put back later in the def of weight...)
 	    //
-	    error	  = sqrt( (rr_eta*rr_pt_err)*(rr_eta*rr_pt_err) + (rr_pt*rr_eta_err)*(rr_pt*rr_eta_err) );
-
-     	    // up syst
-	    //
-     	    weights.at(1) = ( (rr_pt * rr_eta) + error ) / rr_tot;
-
-	    // down syst
-	    //
-     	    if ( (rr_pt * rr_eta) - error > 0 ) { weights.at(2) = ( (rr_pt * rr_eta) - error ) / rr_tot; }
+	    error  = sqrt( (rr_eta*rr_pt_err)*(rr_eta*rr_pt_err) + (rr_pt*rr_eta_err)*(rr_pt*rr_eta_err) );
+	    weights.at(1) = ( (rr_pt * rr_eta) + error ) / rr_tot;
+	    if ( (rr_pt * rr_eta) - error > 0 ) { weights.at(2) = ( (rr_pt * rr_eta) - error ) / rr_tot;}
 	    else                                { weights.at(2) = 0.0; }
-	    
-	    break;
+	}
 
-     	  }
-        } // close loop on pT bins: real lepton
+        break;
 
-      } // close check isFakeLep
+      }
+    } // close loop on pT bins: real lepton
 
-      break;
-      
-    } // close check on eta bin
-
-  } // close loop on eta bins
+  } // close check isFakeLep
 
   // Now converting rates to the efficiencies for the MM/FF
   //
-  if ( g_verbose ) { Info("calc_weights()", "Rates = %.2f ( up = %.2f , dn = %.2f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  // --> Not needed anymore: now reading efficiency directly!
+  //
+  // if ( g_verbose ) {
+  //    if ( !isFakeLep ) { Info("calc_weights()", "MM/FF REAL rate ==> r = %.3f ( r_up = %.3f , r_dn = %.3f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  //    if ( isFakeLep )  { Info("calc_weights()", "MM/FF FAKE rate ==> f = %.3f ( f_up = %.3f , f_dn = %.3f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  // }
+  //
+  //weights.at(0) = scaleRateToEfficiency(weights.at(0));
+  //weights.at(1) = scaleRateToEfficiency(weights.at(1));
+  //weights.at(2) = scaleRateToEfficiency(weights.at(2));
 
-  weights.at(0) = scaleRateToEfficiency(weights.at(0));
-  weights.at(1) = scaleRateToEfficiency(weights.at(1));
-  weights.at(2) = scaleRateToEfficiency(weights.at(2));
-
-  if ( g_verbose ) { Info("calc_weights()", "MM/FF efficiencies = %.2f ( up = %.2f , dn = %.2f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  if ( g_verbose ) {
+      if ( !isFakeLep ) { Info("calc_weights()", "\t\tEffective REAL efficiency ==> r = %.3f ( r_up = %.3f , r_dn = %.3f )", weights.at(0), weights.at(1), weights.at(2) ); }
+      if ( isFakeLep )  { Info("calc_weights()", "\t\tEffective FAKE efficiency ==> f = %.3f ( f_up = %.3f , f_dn = %.3f )", weights.at(0), weights.at(1), weights.at(2) ); }
+  }
 
   return weights;
 }
@@ -457,26 +490,30 @@ std::vector<double>  calc_weights( std::map< std::string, TH1D* >& histograms,
 /
 *************************************************************************************** */
 
-double calc_final_event_weight( std::string region, double f1, double f2, double r1, double r2 )
+double calc_final_event_weight( std::string region, double f1, double f2, double r1, double r2, const std::string variation )
 {
 
    double weight = 1.0;
    double alpha  = 1.0 / ( (r1-f1) * (r2-f2) );
+
+   // TEMP!!
+   //if ( r1 > 0.955 ) r1 = 0.955;
+   //if ( r2 > 0.955 ) r2 = 0.955;
 
    if      ( region=="TT" ) { weight = 1 - ( r1 * r2 * (1-f1) * (1-f2) * alpha ); }
    else if ( region=="TL" ) { weight = r1 * r2 * f2 * (1-f1) * alpha;  }
    else if ( region=="LT" ) { weight = r1 * r2 * f1 * (1-f2) * alpha;  }
    else if ( region=="LL" ) { weight = -1 * r1 * r2 * f1 * f2 * alpha; }
 
-   // The above formulas are equvalent to the following:
+   // The above formulas are equivalent to the following:
    //
    //double weight2 = 1.0;
    //if	   ( region=="TT" )   { weight2 = alpha * ( r1 * f2 * ( (f1 - 1) * (1 - r2) ) + r2 * f1 * ( (r1 - 1) * (1 - f2) ) + f1 * f2 * ( (1 - r1) * (1 - r2) ) ); }
    //else if ( region=="TL" ) { weight2 = alpha * ( r1 * f2 * ( (1 - f1) * r2 ) + r2 * f1 * ( (1 - r1) * f2 ) + f1 * f2 * ( (r1 - 1) * r2 ) ); }
    //else if ( region=="LT" ) { weight2 = alpha * ( r1 * f2 * ( (1 - r2) * f1 ) + r2 * f1 * ( (1 - f2) * r1 ) + f1 * f2 * ( (r2 - 1) * r1 ) ); }
-   //else if ( region=="LL" ) { weight2 = alpha * ( r1 * f2 * ( -1.0 * f1 * r2 ) + r2 * f1 * ( -1.0 * r1 * f2 ) + f1 * f2 * ( r1 * r2 ) ); }   
+   //else if ( region=="LL" ) { weight2 = alpha * ( r1 * f2 * ( -1.0 * f1 * r2 ) + r2 * f1 * ( -1.0 * r1 * f2 ) + f1 * f2 * ( r1 * r2 ) ); }
 
-   if ( g_debug ) { Info("calc_final_event_weight()", "In region %s : \n weight = %.15f , alpha = %.15f ", region.c_str(), weight, alpha); }
+   if ( g_debug ) { Info("calc_final_event_weight()", "In region %s : weight (%s) = %.3f , alpha = %.3f ", region.c_str(), variation.c_str(), weight, alpha); }
 
    return weight;
 }
@@ -500,6 +537,11 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
 
   // ********************************************************
 
+  if ( g_debug ) {
+    Info("recomputeMMW()", "Lepton 1 - flavour: %i , pT = %.3f GeV , eta = %.3f", lep_flavour.at(0), lep_pt.at(0)/1e3, lep_eta.at(0) );
+    Info("recomputeMMW()", "Lepton 2 - flavour: %i , pT = %.3f GeV , eta = %.3f", lep_flavour.at(1), lep_pt.at(1)/1e3, lep_eta.at(1) );
+  }
+
   // real and fake rates w/ syst variations
   //
   std::vector<double> r1, r2, f1, f2;
@@ -507,32 +549,28 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
 
   bool isFakeLep = true;
 
-  if ( g_verbose ) {
-    Info("recomputeMMW()", "\n Lepton 1 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n", lep_flavour.at(0), lep_pt.at(0)/1e3, lep_eta.at(0) );
-    Info("recomputeMMW()", "\n Lepton 2 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n", lep_flavour.at(1), lep_pt.at(1)/1e3, lep_eta.at(1) );
-  }
-
   // NB: input lep_* vectors are pT-ordered.
   //
   if ( lep_flavour.at(0) == 11 ) {
-     r1 = calc_weights( g_el_hist_map, lep_pt.at(0), lep_eta.at(0), !isFakeLep, g_n_el_bins_eta, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_el_fr_tot, g_el_rr_tot );
-     f1 = calc_weights( g_el_hist_map, lep_pt.at(0), lep_eta.at(0), isFakeLep,  g_n_el_bins_eta, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_el_fr_tot, g_el_rr_tot );
+      r1 = calc_weights( g_el_hist_map, lep_pt.at(0), lep_eta.at(0), !isFakeLep, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_n_el_bins_eta, g_el_fr_tot, g_el_rr_tot );
+      f1 = calc_weights( g_el_hist_map, lep_pt.at(0), lep_eta.at(0), isFakeLep,  g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_n_el_bins_eta, g_el_fr_tot, g_el_rr_tot );
   } else if ( lep_flavour.at(0) == 13 ) {
-     r1 = calc_weights( g_mu_hist_map, lep_pt.at(0), lep_eta.at(0), !isFakeLep, g_n_mu_bins_eta, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_mu_fr_tot, g_mu_rr_tot );
-     f1 = calc_weights( g_mu_hist_map, lep_pt.at(0), lep_eta.at(0), isFakeLep,  g_n_mu_bins_eta, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_mu_fr_tot, g_mu_rr_tot );
+      r1 = calc_weights( g_mu_hist_map, lep_pt.at(0), lep_eta.at(0), !isFakeLep, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_n_mu_bins_eta, g_mu_fr_tot, g_mu_rr_tot );
+      f1 = calc_weights( g_mu_hist_map, lep_pt.at(0), lep_eta.at(0), isFakeLep,  g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_n_mu_bins_eta, g_mu_fr_tot, g_mu_rr_tot );
   }
-
   if ( lep_flavour.at(1) == 11 ) {
-     r2 = calc_weights( g_el_hist_map, lep_pt.at(1), lep_eta.at(1), !isFakeLep, g_n_el_bins_eta, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_el_fr_tot, g_el_rr_tot );
-     f2 = calc_weights( g_el_hist_map, lep_pt.at(1), lep_eta.at(1), isFakeLep,  g_n_el_bins_eta, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_el_fr_tot, g_el_rr_tot );
+      r2 = calc_weights( g_el_hist_map, lep_pt.at(1), lep_eta.at(1), !isFakeLep, g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_n_el_bins_eta, g_el_fr_tot, g_el_rr_tot );
+      f2 = calc_weights( g_el_hist_map, lep_pt.at(1), lep_eta.at(1), isFakeLep,  g_n_el_bins_pt_fr, g_n_el_bins_pt_rr, g_n_el_bins_eta, g_el_fr_tot, g_el_rr_tot );
   } else if ( lep_flavour.at(1) == 13 ) {
-     r2 = calc_weights( g_mu_hist_map, lep_pt.at(1), lep_eta.at(1), !isFakeLep, g_n_mu_bins_eta, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_mu_fr_tot, g_mu_rr_tot );
-     f2 = calc_weights( g_mu_hist_map, lep_pt.at(1), lep_eta.at(1), isFakeLep,  g_n_mu_bins_eta, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_mu_fr_tot, g_mu_rr_tot );
+      r2 = calc_weights( g_mu_hist_map, lep_pt.at(1), lep_eta.at(1), !isFakeLep, g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_n_mu_bins_eta, g_mu_fr_tot, g_mu_rr_tot );
+      f2 = calc_weights( g_mu_hist_map, lep_pt.at(1), lep_eta.at(1), isFakeLep,  g_n_mu_bins_pt_fr, g_n_mu_bins_pt_rr, g_n_mu_bins_eta, g_mu_fr_tot, g_mu_rr_tot );
   }
 
   if ( g_debug ) {
-    Info("recomputeMMW()", "\n Lepton 1 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n ****** \n Nominal real and fake eff.: \n r1 = %.2f , f1 = %.2f ", lep_flavour.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), r1.at(0), f1.at(0) );
-    Info("recomputeMMW()", "\n Lepton 2 \n flavour: %i \n pT = %.2f [GeV] \n eta = %.2f \n ****** \n Nominal real and fake eff.: \n r2 = %.2f , f2 = %.2f ", lep_flavour.at(1), lep_pt.at(1)/1e3, lep_eta.at(1), r2.at(0), f2.at(0) );
+    std::cout << "" << std::endl;
+    Info("recomputeMMW()", "Lepton 1 - effective real and fake eff. (nominal): r1 = %.3f , f1 = %.3f ", r1.at(0), f1.at(0) );
+    Info("recomputeMMW()", "Lepton 2 - effective real and fake eff. (nominal): r2 = %.3f , f2 = %.3f ", r2.at(0), f2.at(0) );
+    std::cout << "" << std::endl;
   }
 
   // ***************************************************************************************************************
@@ -549,20 +587,18 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
       // event will get null weight - will basically cancel out this event at plotting
       //
       if ( g_debug ) {
-        Warning("recomputeMMW()", "Warning! The Matrix Method cannot be applied because : \n r1 = %.2f , r2 = %.2f , f1 = %.2f , f2 = %.2f \n ,given that pt1 = %.2f , eta1 = %.2f , pt2 = %.2f , eta2 = %.2f ", r1.at(0), r2.at(0),  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
+        Warning("recomputeMMW()", "Warning! The Matrix Method cannot be applied because : \nr1 = %.3f , r2 = %.3f, \nf1 = %.3f , f2 = %.3f \ngiven that \npt1 = %.3f , eta1 = %.3f,\npt2 = %.3f , eta2 = %.3f", r1.at(0), r2.at(0),  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
         Warning("recomputeMMW()", "applying MM weight = 0 ...");
       }
   } else {
       // calculate nominal MM weight
       //
-      mm_weight      = calc_final_event_weight( region, f1.at(0), f2.at(0), r1.at(0), r2.at(0) );
+      mm_weight      = calc_final_event_weight( region, f1.at(0), f2.at(0), r1.at(0), r2.at(0), "nominal" );
   }
 
   // update branch for nominal MM weight
   //
   MMW_out->at(0) = mm_weight;
-
-  if ( g_debug ) { Info("recomputeMMW()", "MM final weight = %.2f ", mm_weight ); }
 
   if ( mm_weight != 0.0 ) {
 
@@ -578,30 +614,30 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
     f1dn = ( f1.at(2) < 0.0 ) ? 0.0 :  f1.at(2) ;
     f2dn = ( f2.at(2) < 0.0 ) ? 0.0 :  f2.at(2) ;
 
-    // rup syst
+    // rup syst (save relative vweight wrt. nominal)
     //
-    MMW_out->at(1) = ( calc_final_event_weight( region, f1.at(0), f2.at(0), r1up, r2up ) / mm_weight );
-    // fdn syst
+    MMW_out->at(1) = ( calc_final_event_weight( region, f1.at(0), f2.at(0), r1up, r2up, "r1, r2 UP" ) / mm_weight );
+    // fdn syst (save relative vweight wrt. nominal)
     //
-    MMW_out->at(4) = ( calc_final_event_weight( region, f1dn, f2dn, r1.at(0), r2.at(0) ) / mm_weight );
+    MMW_out->at(4) = ( calc_final_event_weight( region, f1dn, f2dn, r1.at(0), r2.at(0), "f1, f2 DN" ) / mm_weight );
 
     if ( (r1dn > f1.at(0)) && (r2dn > f2.at(0)) ) {
-      // rdn syst
+      // rdn syst (save relative vweight wrt. nominal)
       //
-      MMW_out->at(2) = ( calc_final_event_weight(region, f1.at(0), f2.at(0), r1dn, r2dn) / mm_weight );
+	MMW_out->at(2) = ( calc_final_event_weight( region, f1.at(0), f2.at(0), r1dn, r2dn, "r1, r2 DN" ) / mm_weight );
     } else {
       if ( g_debug ) {
-         Warning("recomputeMMW()", "Warning! Systematic MMWeight_rdn cannot be calculated because : \n r1dn = %.2f , r2dn = %.2f , f1 = %.2f , f2 = %.2f \n ,given that pt1 = %.2f , eta1 = %.2f , pt2 = %.2f , eta2 = %.2f ", r1dn, r2dn,  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
+         Warning("recomputeMMW()", "Warning! Systematic MMWeight_rdn cannot be calculated because : \nr1dn = %.3f , r2dn = %.3f, \nf1 = %.3f , f2 = %.3f \ngiven that \npt1 = %.3f , eta1 = %.3f, \npt2 = %.3f , eta2 = %.3f ", r1dn, r2dn,  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
       }
     }
 
     if ( (r1.at(0) > f1up) && (r2.at(0) > f2up) ) {
-      // fup syst
+      // fup syst (save relative vweight wrt. nominal)
       //
-      MMW_out->at(3) = ( calc_final_event_weight(region, f1up, f2up, r1.at(0),  r2.at(0)) / mm_weight );
+	MMW_out->at(3) = ( calc_final_event_weight( region, f1up, f2up, r1.at(0),  r2.at(0), "f1, f2 UP" ) / mm_weight );
     } else {
       if ( g_debug ) {
-         Warning("recomputeMMW()", "Warning! Systematic MMWeight_fup cannot be calculated because : \n r1dn = %.2f , r2dn = %.2f , f1 = %.2f , f2 = %.2f \n ,given that pt1 = %.2f , eta1 = %.2f , pt2 = %.2f , eta2 = %.2f ", r1dn, r2dn,  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
+         Warning("recomputeMMW()", "Warning! Systematic MMWeight_fup cannot be calculated because : \nr1dn = %.3f , r2dn = %.3f, \nf1 = %.3f , f2 = %.3f \ngiven that \npt1 = %.3f , eta1 = %.3f, \npt2 = %.3f , eta2 = %.3f ", r1dn, r2dn,  f1.at(0), f2.at(0), lep_pt.at(0)/1e3, lep_eta.at(0), lep_pt.at(1)/1e3, lep_eta.at(1));
       }
     }
   }
@@ -614,7 +650,7 @@ void recomputeMMW( std::vector<double>* MMW_out,  /* pass it by pointer, as you 
 /
 ****************** */
 
-void modifyttree_MM(std::string filename, std::string outfilename, std::string addWeight, std::string RR_dir, std::string doClosure,
+void modifyttree_MM(std::string filename, std::string outfilename, std::string addWeight, std::string RR_dir, std::string doClosure, std::string ratesEta = "NO",
 		    std::string  NENTRIES = "ALL", std::string treename = "physics", std::string FR_dir = "")
 {
 
@@ -639,6 +675,10 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
   //
   g_doClosure = ( doClosure.compare("YES") == 0 );
 
+  // Read efficiencies also parametrised in eta
+  //
+  g_ratesEta = ( ratesEta.compare("YES") == 0 );
+
   if ( addWeight.compare("NO") == 0 ) {
 
     // TO BE MODIFIED ACCORDINGLY TO YOUR NEEDS (name and type of the variables)
@@ -653,7 +693,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
     std::string in_lep_pt_0_name("lep_Pt_0");
     std::string in_lep_pt_1_name("lep_Pt_1");
     std::string in_lep_eta_0_name("lep_Eta_0");
-    std::string in_lep_eta_1_name("lep_Eta_1");    
+    std::string in_lep_eta_1_name("lep_Eta_1");
     std::string in_lep_etaBE2_0_name("lep_EtaBE2_0");
     std::string in_lep_etaBE2_1_name("lep_EtaBE2_1");
     std::string in_lep_flavour_0_name("lep_ID_0");
@@ -672,7 +712,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
     Float_t    lep_pt_0_in;      lep_pt_0_in = 0;
     Float_t    lep_pt_1_in;      lep_pt_1_in = 0;
     Float_t    lep_eta_0_in;	 lep_eta_0_in = 0;
-    Float_t    lep_eta_1_in;	 lep_eta_1_in = 0;    
+    Float_t    lep_eta_1_in;	 lep_eta_1_in = 0;
     Float_t    lep_etaBE2_0_in;  lep_etaBE2_0_in = 0;
     Float_t    lep_etaBE2_1_in;  lep_etaBE2_1_in = 0;
     Float_t    lep_flavour_0_in; lep_flavour_0_in = 0;
@@ -693,7 +733,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
     TBranch	 *b_lep_Pt_0 = 0;         //!
     TBranch	 *b_lep_Pt_1 = 0;         //!
     TBranch	 *b_lep_Eta_0 = 0;        //!
-    TBranch	 *b_lep_Eta_1 = 0;        //!    
+    TBranch	 *b_lep_Eta_1 = 0;        //!
     TBranch	 *b_lep_EtaBE2_0 = 0;     //!
     TBranch	 *b_lep_EtaBE2_1 = 0;     //!
     TBranch	 *b_lep_ID_0 = 0;         //!
@@ -732,7 +772,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
     intree->SetBranchAddress(in_lep_pt_0_name.c_str(), &lep_pt_0_in, &b_lep_Pt_0);
     intree->SetBranchAddress(in_lep_pt_1_name.c_str(), &lep_pt_1_in, &b_lep_Pt_1);
     intree->SetBranchAddress(in_lep_eta_0_name.c_str(), &lep_eta_0_in, &b_lep_Eta_0);
-    intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_Eta_1);    
+    intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_Eta_1);
     intree->SetBranchAddress(in_lep_etaBE2_0_name.c_str(), &lep_etaBE2_0_in, &b_lep_EtaBE2_0);
     intree->SetBranchAddress(in_lep_etaBE2_1_name.c_str(), &lep_etaBE2_1_in, &b_lep_EtaBE2_1);
     intree->SetBranchAddress(in_lep_flavour_0_name.c_str(), &lep_flavour_0_in, &b_lep_ID_0);
@@ -789,16 +829,18 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
       *MMWeight_out = *MMWeight_in;
 
       // and now, recompute the MM weights!
-      // Do it only for 2lepSS events
+      // Do it only for 2lep events
       //
-      if ( nlep_in == 2 && isSS01_in == 1 ) {
+      if ( nlep_in == 2 ) {
 
         if ( g_debug ) {
           int idx_in(0);
           for ( const auto& itr : *MMWeight_in ) {
-      	  Info("modifytree_MM()","\t\t IN MMWeight[%i] = %.2f", idx_in, itr );
-      	  ++idx_in;
+	      if ( idx_in == 0 ) Info("modifytree_MM()","IN MMWeight[%i] = %.3f", idx_in, itr );
+	      else                Info("modifytree_MM()","IN MMWeight[%i] ( MMWeight[%i] * MMWeight[0] ) = %.3f ( %.3f )", idx_in, idx_in, itr, ( itr * *(MMWeight_out->begin()) )  );
+	      ++idx_in;
           }
+	  std::cout << "" << std::endl;
         }
 
         int TT =  ( isTT_in );
@@ -810,18 +852,21 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
         //
         std::vector<float> lep_pt_vec      = { lep_pt_0_in, lep_pt_1_in };
         std::vector<int> lep_flavour_vec   = { abs(static_cast<int>(lep_flavour_0_in)), abs(static_cast<int>(lep_flavour_1_in)) };
-        std::vector<float> lep_eta_vec;	
+        std::vector<float> lep_eta_vec;
 	float eta0 = ( fabs(lep_flavour_0_in) == 13 ) ? lep_eta_0_in : lep_etaBE2_0_in; lep_eta_vec.push_back(eta0);
 	float eta1 = ( fabs(lep_flavour_1_in) == 13 ) ? lep_eta_1_in : lep_etaBE2_1_in; lep_eta_vec.push_back(eta1);
 
         recomputeMMW( MMWeight_out, TT, TL, LT, LL, lep_pt_vec, lep_eta_vec, lep_flavour_vec );
 
         if ( g_debug ) {
+	  std::cout << "" << std::endl;
           int idx_out(0);
           for ( const auto& itr : *MMWeight_out ) {
-      	  Info("modifytree_MM()","\t\t OUT MMWeight[%i] = %.2f", idx_out, itr );
-      	  ++idx_out;
+	      if ( idx_out == 0 ) Info("modifytree_MM()","OUT MMWeight[%i] = %.3f", idx_out, itr );
+	      else                Info("modifytree_MM()","OUT MMWeight[%i] ( MMWeight[%i] * MMWeight[0] ) = %.3f ( %.3f )", idx_out, idx_out, itr, ( itr * *(MMWeight_out->begin()) )  );
+	      ++idx_out;
           }
+	  std::cout << "" << std::endl;
         }
 
         if ( g_debug ) { Info("modifytree_MM()","\n\n"); }
@@ -858,7 +903,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
     std::string in_lep_pt_0_name("lep_Pt_0");
     std::string in_lep_pt_1_name("lep_Pt_1");
     std::string in_lep_eta_0_name("lep_Eta_0");
-    std::string in_lep_eta_1_name("lep_Eta_1");    
+    std::string in_lep_eta_1_name("lep_Eta_1");
     std::string in_lep_etaBE2_0_name("lep_EtaBE2_0");
     std::string in_lep_etaBE2_1_name("lep_EtaBE2_1");
     std::string in_lep_flavour_0_name("lep_ID_0");
@@ -876,7 +921,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
     Float_t    lep_pt_0_in;      lep_pt_0_in = 0;
     Float_t    lep_pt_1_in;      lep_pt_1_in = 0;
     Float_t    lep_eta_0_in;     lep_eta_0_in = 0;
-    Float_t    lep_eta_1_in;     lep_eta_1_in = 0;    
+    Float_t    lep_eta_1_in;     lep_eta_1_in = 0;
     Float_t    lep_etaBE2_0_in;  lep_etaBE2_0_in = 0;
     Float_t    lep_etaBE2_1_in;  lep_etaBE2_1_in = 0;
     Float_t    lep_flavour_0_in; lep_flavour_0_in = 0;
@@ -896,7 +941,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
     TBranch	 *b_lep_Pt_0 = 0;         //!
     TBranch	 *b_lep_Pt_1 = 0;         //!
     TBranch	 *b_lep_Eta_0 = 0;        //!
-    TBranch	 *b_lep_Eta_1 = 0;        //!    
+    TBranch	 *b_lep_Eta_1 = 0;        //!
     TBranch	 *b_lep_EtaBE2_0 = 0;     //!
     TBranch	 *b_lep_EtaBE2_1 = 0;     //!
     TBranch	 *b_lep_ID_0 = 0;         //!
@@ -925,7 +970,7 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
     intree->SetBranchAddress(in_lep_pt_0_name.c_str(), &lep_pt_0_in, &b_lep_Pt_0);
     intree->SetBranchAddress(in_lep_pt_1_name.c_str(), &lep_pt_1_in, &b_lep_Pt_1);
     intree->SetBranchAddress(in_lep_eta_0_name.c_str(), &lep_eta_0_in, &b_lep_Eta_0);
-    intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_Eta_1);    
+    intree->SetBranchAddress(in_lep_eta_1_name.c_str(), &lep_eta_1_in, &b_lep_Eta_1);
     intree->SetBranchAddress(in_lep_etaBE2_0_name.c_str(), &lep_etaBE2_0_in, &b_lep_EtaBE2_0);
     intree->SetBranchAddress(in_lep_etaBE2_1_name.c_str(), &lep_etaBE2_1_in, &b_lep_EtaBE2_1);
     intree->SetBranchAddress(in_lep_flavour_0_name.c_str(), &lep_flavour_0_in, &b_lep_ID_0);
@@ -963,15 +1008,17 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
       if ( g_debug ) {
         int idx(0);
         for ( const auto& itr : MMWeight_out ) {
-          Info("modifytree_MM()","\t\t Default MMWeight[%i] = %.2f", idx, itr );
-          ++idx;
+	   if ( idx == 0 ) Info("modifytree_MM()","Default MMWeight[%i] = %.3f", idx, itr );
+	   else                Info("modifytree_MM()","Default MMWeight[%i] ( MMWeight[%i] * MMWeight[0] ) = %.3f ( %.3f )", idx, idx, itr, ( itr * *(MMWeight_out.begin()) )  );
+	   ++idx;
         }
+	std::cout << "" << std::endl;
       }
 
       // and now, recompute the MM weights!
-      // Do it only for 2lepSS events
+      // Do it only for 2lep events
       //
-      if ( nlep_in == 2 && isSS01_in == 1 ) {
+      if ( nlep_in == 2 ) {
 
         int TT =  ( isTT_in );
         int TL =  ( isTL_in );
@@ -982,18 +1029,21 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
         //
         std::vector<float> lep_pt_vec      = { lep_pt_0_in, lep_pt_1_in };
         std::vector<int> lep_flavour_vec   = { abs(static_cast<int>(lep_flavour_0_in)), abs(static_cast<int>(lep_flavour_1_in)) };
-        std::vector<float> lep_eta_vec;	
+        std::vector<float> lep_eta_vec;
 	float eta0 = ( fabs(lep_flavour_0_in) == 13 ) ? lep_eta_0_in : lep_etaBE2_0_in; lep_eta_vec.push_back(eta0);
 	float eta1 = ( fabs(lep_flavour_1_in) == 13 ) ? lep_eta_1_in : lep_etaBE2_1_in; lep_eta_vec.push_back(eta1);
 
         recomputeMMW( &MMWeight_out, TT, TL, LT, LL, lep_pt_vec, lep_eta_vec, lep_flavour_vec );
 
         if ( g_debug ) {
+	  std::cout << "" << std::endl;
           int idx_out(0);
           for ( const auto& itr : MMWeight_out ) {
-	      Info("modifytree_MM()","\t\t OUT MMWeight[%i] = %.2f", idx_out, itr );
+	      if ( idx_out == 0 ) Info("modifytree_MM()","OUT MMWeight[%i] = %.3f", idx_out, itr );
+	      else                Info("modifytree_MM()","OUT MMWeight[%i] ( MMWeight[%i] * MMWeight[0] ) = %.3f ( %.3f )", idx_out, idx_out, itr, ( itr * *(MMWeight_out.begin()) )  );
 	      ++idx_out;
           }
+	  std::cout << "" << std::endl;
         }
 
         if ( g_debug ) { Info("modifytree_MM()","\n\n"); }
@@ -1025,4 +1075,3 @@ void modifyttree_MM(std::string filename, std::string outfilename, std::string a
   // T->Write();
 
 }
-

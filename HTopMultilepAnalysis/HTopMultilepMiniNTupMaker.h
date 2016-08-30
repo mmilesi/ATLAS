@@ -24,87 +24,90 @@
 #include "TFile.h"
 #include "TH1F.h"
 
+namespace MiniNTupMaker {
+
 class eventObj {
 
-public:
-  eventObj():
-    isMC(0), isSS01(0), isSS12(0),
-    dilep(0), trilep(0),
-    notightlep(0),
-	weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
-  { };
+  public:
+    eventObj():
+      isMC(0), isSS01(0), isSS12(0),
+      dilep(0), trilep(0),
+      notightlep(0),
+  	  weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
+    { };
 
-  char isMC;
-  char isSS01;
-  char isSS12;
-  char dilep;
-  char trilep;
-  char notightlep;
+    char isMC;
+    char isSS01;
+    char isSS12;
+    char dilep;
+    char trilep;
+    char notightlep;
 
-  float weight_event;
-  float weight_event_trig;
-  float weight_event_lep;
-  float weight_tag;
-  float weight_probe;
+    float weight_event;
+    float weight_event_trig;
+    float weight_event_lep;
+    float weight_tag;
+    float weight_probe;
 
-};
+  };
 
-class leptonObj {
+  class leptonObj {
 
-public:
-  leptonObj():
-    pt(-1.0),eta(-999.0),etaBE2(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
-	pid(0),isolated(0),tight(0),trigmatched(0),prompt(0),fake(0),brems(0),qmisid(0),convph(0),tag(0),
-    SFIDLoose(1.0),
-    SFIDTight(1.0),
-    SFTrigLoose(1.0),
-    SFTrigTight(1.0),
-    EffTrigLoose(0.0),
-    EffTrigTight(0.0),
-    SFIsoLoose(1.0),
-    SFIsoTight(1.0),
-    SFReco(1.0),
-    SFTTVA(1.0),
-    SFObjLoose(1.0),
-    SFObjTight(1.0)
-  { };
+  public:
+    leptonObj():
+      pt(-1.0),eta(-999.0),etaBE2(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
+  	  pid(0),isolated(0),tight(0),trigmatched(0),prompt(0),fake(0),brems(0),qmisid(0),convph(0),tag(0),
+      SFIDLoose(1.0),
+      SFIDTight(1.0),
+      SFTrigLoose(1.0),
+      SFTrigTight(1.0),
+      EffTrigLoose(0.0),
+      EffTrigTight(0.0),
+      SFIsoLoose(1.0),
+      SFIsoTight(1.0),
+      SFReco(1.0),
+      SFTTVA(1.0),
+      SFObjLoose(1.0),
+      SFObjTight(1.0)
+    { };
 
-  float pt;
-  float eta;
-  float etaBE2;
-  int ID;
-  int flavour;
-  float charge;
-  float d0sig;
-  float z0sintheta;
-  char pid;
-  char isolated;
-  char tight;
-  char trigmatched;
-  char prompt;
-  char fake;
-  char brems;
-  char qmisid;
-  char convph;
-  int  truthType;
-  int  truthOrigin;
-  char tag;
+    float pt;
+    float eta;
+    float etaBE2;
+    int ID;
+    int flavour;
+    float charge;
+    float d0sig;
+    float z0sintheta;
+    char pid;
+    char isolated;
+    char tight;
+    char trigmatched;
+    char prompt;
+    char fake;
+    char brems;
+    char qmisid;
+    char convph;
+    int  truthType;
+    int  truthOrigin;
+    char tag;
 
-  float SFIDLoose;
-  float SFIDTight;
-  float SFTrigLoose;
-  float SFTrigTight;
-  float EffTrigLoose;
-  float EffTrigTight;
-  float SFIsoLoose;
-  float SFIsoTight;
-  float SFReco;
-  float SFTTVA;
-  float SFObjLoose;
-  float SFObjTight;
+    float SFIDLoose;
+    float SFIDTight;
+    float SFTrigLoose;
+    float SFTrigTight;
+    float EffTrigLoose;
+    float EffTrigTight;
+    float SFIsoLoose;
+    float SFIsoTight;
+    float SFReco;
+    float SFTTVA;
+    float SFObjLoose;
+    float SFObjTight;
 
-};
+  };
 
+}
 
 class HTopMultilepMiniNTupMaker : public xAH::Algorithm
 {
@@ -410,8 +413,8 @@ private:
   float        m_sumGenEvents;  //!
   float        m_sumGenEventsWeighted; //!
 
-  std::shared_ptr<eventObj>                 m_event;   //!
-  std::vector< std::shared_ptr<leptonObj> > m_leptons; //!
+  std::shared_ptr<MiniNTupMaker::eventObj>                 m_event;   //!
+  std::vector< std::shared_ptr<MiniNTupMaker::leptonObj> > m_leptons; //!
 
 public:
 
@@ -435,7 +438,7 @@ public:
 private:
 
   EL::StatusCode enableSelectedBranches ();
-  EL::StatusCode checkIsTightLep( std::shared_ptr<leptonObj> lep );
+  EL::StatusCode checkIsTightLep( std::shared_ptr<MiniNTupMaker::leptonObj> lep );
   EL::StatusCode decorateEvent ();
   EL::StatusCode decorateWeights ();
 
