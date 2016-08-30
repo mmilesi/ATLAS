@@ -784,10 +784,10 @@ void HTopMultilepTree::FillJetsUser( const xAOD::Jet* jet, const std::string jet
   m_jet_m.push_back( jet->m() );
 }
 
-void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon )
+void HTopMultilepTree::FillMuonsUser( const xAOD::Muon* muon, const std::string muonName = "" )
 {
-
-  if ( m_debug ) { Info("FillMuonsUser()", "Filling muons"); }
+  
+  if ( m_debug ) { Info("FillMuonsUser()", "Filling muons. Branch prefix: %s", muonName.c_str() ); }
 
   // access this info only to fill tag/probe branches
 

@@ -6,6 +6,8 @@
 // ROOT include(s)
 #include "TVector3.h"
 
+using namespace MiniNTupMaker;
+
 // this is needed to distribute the algorithm to the workers
 ClassImp(HTopMultilepMiniNTupMaker)
 

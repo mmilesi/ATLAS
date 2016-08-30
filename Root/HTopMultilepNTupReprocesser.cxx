@@ -6,6 +6,8 @@
 // ROOT include(s)
 #include "TObjArray.h"
 
+using namespace NTupReprocesser;
+
 // this is needed to distribute the algorithm to the workers
 ClassImp(HTopMultilepNTupReprocesser)
 
@@ -155,8 +157,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_EtaBE2_1",   			      &m_lep_EtaBE2_1);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_1",   		      &m_lep_isTightSelected_1);
 
-  if ( m_isQMisIDBranchIn ) {  m_inputNTuple->SetBranchAddress ("QMisIDWeight",  &m_QMisIDWeight_in); }
-  if ( m_isMMBranchIn )     {  m_inputNTuple->SetBranchAddress ("MMWeight",      &m_MMWeight_in);  }
 
   return EL::StatusCode::SUCCESS;
 }
@@ -187,10 +187,19 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
       return EL::StatusCode::FAILURE;
   }
 
+  if ( m_doQMisIDWeighting && m_isQMisIDBranchIn ) {
+      Error("initialize()","Trying to add QMisIDWeight branch, which is already in input TTree. Aborting." );
+      return EL::StatusCode::FAILURE;  
+  }
+  if ( m_doMMWeighting && m_isMMBranchIn ) {
+      Error("initialize()","Trying to add MMWeight branch, which is already in input TTree. Aborting." );
+      return EL::StatusCode::FAILURE;  
+  }  
+
   // Set new branches for output TTree
   //
-  if ( !m_isQMisIDBranchIn ) {  m_outputNTuple->tree()->Branch("QMisIDWeight",	&m_QMisIDWeight_out); }
-  if ( !m_isMMBranchIn )     {  m_outputNTuple->tree()->Branch("MMWeight",	&m_MMWeight_out); }
+  if ( m_doQMisIDWeighting ) { m_outputNTuple->tree()->Branch("QMisIDWeight",  &m_QMisIDWeight_out); }
+  if ( m_doMMWeighting )     { m_outputNTuple->tree()->Branch("MMWeight",      &m_MMWeight_out); }
 
   // ---------------------------------------------------------------------------------------------------------------
 
@@ -198,18 +207,21 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
   //
   m_numEntry = 0;
 
+  // Initialise counter for events where inf/nan is read
+  //
+  m_count_inf = 0;
+
   // ---------------------------------------------------------------------------------------------------------------
 
   m_outputNTuple->tree()->SetName( m_outputNTupName.c_str() );
 
   // ---------------------------------------------------------------------------------------------------------------
 
-  Info("initialize()","Reading QMisID rates from ROOT file(s)..");
-  ANA_CHECK( this->readQMisIDRates() );
-
-
-
-
+  if ( m_doQMisIDWeighting ) {  
+      Info("initialize()","Reading QMisID rates from ROOT file(s)..");
+      ANA_CHECK( this->readQMisIDRates() );
+  }
+  
   // ---------------------------------------------------------------------------------------------------------------
 
   Info("initialize()", "All good!");
@@ -237,6 +249,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   ++m_numEntry;
 
   if ( m_numEntry > 0 && ( static_cast<int>(m_numEntry) % 20000 == 0 ) ) { Info("execute()","Processed %u entries", static_cast<uint32_t>(m_numEntry)); }
+
+  // ------------------------------------------------------------------------
+
+  // This call is crucial, otherwise you'll get no entries in the output tree!
+  //
+  m_outputNTuple->setFilterPassed();
 
   // ------------------------------------------------------------------------
 
@@ -269,10 +287,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   m_leptons.push_back(lep1);
 
   if ( m_debug ) {
-    Info("execute()","lep0 pT = %.2f", lep0.get()->pt/1e3 );
-    Info("execute()","lep1 pT = %.2f", lep1.get()->pt/1e3 );
-    Info("execute()","lep0 eta = %.2f", lep0.get()->eta );
-    Info("execute()","lep1 eta = %.2f", lep1.get()->eta );
+      Info("execute()","lep0 pT = %.2f, lep1 pT = %.2f", lep0.get()->pt/1e3, lep1.get()->pt/1e3 );
+      Info("execute()","lep0 flavour = %i, lep1 flavour = %i", lep0.get()->flavour, lep1.get()->flavour );
+      Info("execute()","lep0 etaBE2 = %.2f, lep1 etaBE2 = %.2f", lep0.get()->etaBE2, lep1.get()->etaBE2 );
   }
 
   m_event.get()->isMC   = ( m_mc_channel_number > 0 );
@@ -282,29 +299,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   if ( m_debug ) {
       if ( m_doQMisIDWeighting ) {
 	  unsigned int idx(0);
-	  if ( !m_isQMisIDBranchIn ) {
-	      for ( const auto& itr : m_event.get()->weight_QMisID ) {
-		  Info("execute()","\t\tDefault QMisIDWeight[%i] = %f", idx, itr );
-		  ++idx;
-	      }
-	  } else {
-	      for ( const auto& itr : *m_QMisIDWeight_in ) {
-		  Info("execute()","\t\tIN QMisIDWeight[%i] = %f", idx, itr );
-		  ++idx;
-	      }
+	  for ( const auto& itr : m_event.get()->weight_QMisID ) {
+	      Info("execute()","\t\tDefault QMisIDWeight[%i] = %f", idx, itr );
+	      ++idx;
 	  }
-      } else if ( m_doMMWeighting ) {
+      } 
+      if ( m_doMMWeighting ) {
 	  unsigned int idx(0);
-	  if ( !m_isMMBranchIn ) {
-	      for ( const auto& itr : m_event.get()->weight_MM ) {
-		  Info("execute()","\t\tDefault MMWeight[%i] = %f", idx, itr );
-		  ++idx;
-	      }
-	  } else {
-	      for ( const auto& itr : *m_MMWeight_in ) {
-		  Info("execute()","\t\tIN MMWeight[%i] = %f", idx, itr );
-		  ++idx;
-	      }
+	  for ( const auto& itr : m_event.get()->weight_MM ) {
+	      Info("execute()","\t\tDefault MMWeight[%i] = %f", idx, itr );
+	      ++idx;
 	  }
       }
   }
@@ -313,7 +317,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   if ( m_doQMisIDWeighting ) {
       ANA_CHECK( this->calculateQMisIDWeights () );
-  } else if ( m_doMMWeighting ) {
+  } 
+  if ( m_doMMWeighting ) {
       ANA_CHECK( this->calculateMMWeights () );
   }
 
@@ -326,29 +331,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   if ( m_debug ) {
       if ( m_doQMisIDWeighting ) {
 	  unsigned int idx(0);
-	  if ( !m_isQMisIDBranchIn ) {
-	      for ( const auto& itr : m_QMisIDWeight_out ) {
-		  Info("execute()","\t\tOUT QMisIDWeight[%i] = %f", idx, itr );
-		  ++idx;
-	      }
-	  } else {
-	      for ( const auto& itr : *m_QMisIDWeight_in ) {
-		  Info("execute()","\t\tOUT QMisIDWeight[%i] = %f", idx, itr );
-		  ++idx;
-	      }
+	  for ( const auto& itr : m_QMisIDWeight_out ) {
+	      Info("execute()","\t\tOUT QMisIDWeight[%i] = %f", idx, itr );
+	      ++idx;
 	  }
-      } else if ( m_doMMWeighting ) {
+      } 
+      if ( m_doMMWeighting ) {
 	  unsigned int idx(0);
-	  if ( !m_isMMBranchIn ) {
-	      for ( const auto& itr : m_MMWeight_out ) {
-		  Info("execute()","\t\tOUT MMWeight[%i] = %f", idx, itr );
-		  ++idx;
-	      }
-	  } else {
-	      for ( const auto& itr : *m_MMWeight_in ) {
-		  Info("execute()","\t\tOUT MMWeight[%i] = %f", idx, itr );
-		  ++idx;
-	      }
+	  for ( const auto& itr : m_MMWeight_out ) {
+	      Info("execute()","\t\tOUT MMWeight[%i] = %f", idx, itr );
+	      ++idx;
 	  }
       }
   }
@@ -390,6 +382,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: finalize ()
   //ANA_CHECK_SET_TYPE (EL::StatusCode);
 
   Info("finalize()", "Finalising HTopMultilepNTupReprocesser...");
+
+  Info("finalize()", "Events where inf/nan input was read: %u", m_count_inf );
 
   return EL::StatusCode::SUCCESS;
 }
@@ -434,7 +428,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: enableSelectedBranches ()
   std::istringstream ss( m_inputBranches );
   while ( std::getline(ss, token, ',') ) { branch_vec.push_back(token); }
 
-  // Re-enable the branches we are going to use
+  // Re-enable only the branches we are going to use
   //
   for ( const auto& branch : branch_vec ) {
     if ( !m_isQMisIDBranchIn && branch.compare("QMisIDWeight") == 0 ) { continue; }
@@ -454,25 +448,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: setOutputBranches ()
   //
   ANA_CHECK( this->clearBranches() );
 
-  // Case 1: branches do not exist in input tree --> fill new branches!
-  // Case 2: branches do already exist in input tree --> update branches!
-
   if ( m_doQMisIDWeighting ) {
-      if ( !m_isQMisIDBranchIn ) {
-	  m_QMisIDWeight_out = m_event.get()->weight_QMisID;
-      } else {
-	  m_QMisIDWeight_in.reserve(m_event.get()->weight_QMisID.size());
-	  unsigned int idx(0);
-	  for ( auto &it : *m_QMisIDWeight_in )   { it = m_event.get()->weight_QMisID.at(idx); ++idx }
-      }
-  } else if ( m_doMMWeighting ) {
-      if ( !m_isMMBranchIn ) {
-	  m_MMWeight_out = m_event.get()->weight_MM;
-      } else {
-	  m_MMWeight_in.reserve(m_event.get()->weight_MM.size());
-	  unsigned int idx(0);
-	  for ( auto &it : *m_MMWeight_in )   { it = m_event.get()->weight_MM.at(idx); ++idx }
-      }
+      m_QMisIDWeight_out = m_event.get()->weight_QMisID;
+  } 
+  if ( m_doMMWeighting ) {
+      m_MMWeight_out = m_event.get()->weight_MM;
   }
 
   return EL::StatusCode::SUCCESS;
@@ -482,8 +462,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: setOutputBranches ()
 EL::StatusCode HTopMultilepNTupReprocesser :: clearBranches ()
 {
 
-  if ( m_doQMisIDWeighting && !m_isQMisIDBranchIn ) { m_QMisIDWeight_out.clear(); }
-  else if ( m_doMMWeighting && !m_isMMBranchIn )    { m_MMWeight_out.clear(); }
+  if ( m_doQMisIDWeighting ) { m_QMisIDWeight_out.clear(); }
+  if ( m_doMMWeighting )     { m_MMWeight_out.clear(); }
 
   return EL::StatusCode::SUCCESS;
 
@@ -491,7 +471,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: clearBranches ()
 
 EL::StatusCode HTopMultilepNTupReprocesser ::  readQMisIDRates()
 {
-
     if ( m_QMisIDRates_dir.back() != '/' ) { m_QMisIDRates_dir += "/"; }
 
     std::string path_AntiT = m_QMisIDRates_dir + m_QMisIDRates_Filename_AntiT;
@@ -514,6 +493,9 @@ EL::StatusCode HTopMultilepNTupReprocesser ::  readQMisIDRates()
     TH2D *hist_QMisID_AntiT = get_object<TH2D>( *file_AntiT, "Rates" );
     TH2D *hist_QMisID_T     = get_object<TH2D>( *file_T, "Rates" );
 
+    hist_QMisID_AntiT->SetDirectory(0);
+    hist_QMisID_T->SetDirectory(0);
+
     // fill a map for later usage
     //
     m_QMisID_hist_map["AntiT"] = hist_QMisID_AntiT;
@@ -528,11 +510,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
 
     // If is not a dileptonic event, return
     //
-    if !( m_dilep_type > 0 ) { return EL::StatusCode:SUCCESS; }
+    if ( m_dilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
 
     // If there are no electrons, return
     //
-    if ( m_dilep_type == 1 ) { return EL::StatusCode:SUCCESS; }
+    if ( m_dilep_type == 1 ) { return EL::StatusCode::SUCCESS; }
 
     std::shared_ptr<leptonObj> el0;
     std::shared_ptr<leptonObj> el1;
@@ -546,8 +528,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
 
     // Just a precaution...
     //
-    if !( fabs(el0.get()->eta) < 2.5 && el0.get()->pt >= 0.0 ); { return EL::StatusCode:SUCCESS; }
-    if !( fabs(el1.get()->eta) < 2.5 && el1.get()->pt >= 0.0 ); { return EL::StatusCode:SUCCESS; }
+    if ( el0 && !( fabs(el0.get()->eta) < 2.5 && el0.get()->pt >= 0.0 ) ) { return EL::StatusCode::SUCCESS; }
+    if ( el1 && !( fabs(el1.get()->eta) < 2.5 && el1.get()->pt >= 0.0 ) ) { return EL::StatusCode::SUCCESS; }
 
     float r0(0.0), r0_up(0.0), r0_dn(0.0), r1(0.0), r1_up(0.0), r1_dn(0.0);
 
@@ -596,16 +578,13 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
 
     // Finally, store the event weight + variations
     //
-    if ( !( std::isnan(r0) || std::isnan(r0_up) || std::isnan(r0_dn) ) && !( std::isnan(r1) || std::isnan(r1_up) || std::isnan(r1_dn) ) &&
-	 !( std::isinf(r0) || std::isinf(r0_up) || std::isinf(r0_dn) ) && !( std::isinf(r1) || std::isinf(r1_up) || std::isinf(r1_dn) )
-	) {
+    if ( !( std::isnan(r0) ) && !( std::isnan(r1) ) && !( std::isinf(r0) ) && !( std::isinf(r1) ) ) {
 	m_event.get()->weight_QMisID.at(0) = ( r0 + r1 - 2.0 * r0 * r1 ) / ( 1.0 - r0 - r1 + 2.0 * r0 * r1 ) ;
 	m_event.get()->weight_QMisID.at(1) = ( r0_up + r1_up - 2.0 * r0_up * r1_up ) / ( 1.0 - r0_up - r1_up + 2.0 * r0_up * r1_up );
 	m_event.get()->weight_QMisID.at(2) = ( r0_dn + r1_dn - 2.0 * r0_dn * r1_dn ) / ( 1.0 - r0_dn - r1_dn + 2.0 * r0_dn * r1_dn );
+    } else {
+      ++m_count_inf;
     }
-    // else {
-    //	++m_count_NaN_Inf;
-    // }
 
     return EL::StatusCode::SUCCESS;
 }
@@ -618,75 +597,77 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getQMisIDRatesAndError( std::share
 
     // Get the 2D histogram from the map
     //
-    TH2D* twoD_rates(nullptr);
+    TH2D* rates_2D(nullptr);
     std::string name_eta(""), name_pt("");
 
     if ( selection.compare("TIGHT") == 0 ) {
-      twoD_rates = ( m_QMisID_hist_map.find("T")->second );
+      rates_2D = ( m_QMisID_hist_map.find("T")->second );
       name_eta = "proj_eta_T";
       name_pt  = "proj_pt_T";
     } else if ( selection.compare("ANTI_TIGHT") == 0 ) {
-      twoD_rates = ( m_QMisID_hist_map.find("AntiT")->second );
+      rates_2D = ( m_QMisID_hist_map.find("AntiT")->second );
       name_eta = "proj_eta_AntiT";
       name_pt  = "proj_pt_AntiT";
     }
 
-    // Make X and Y projections of the 2D histogram with the rates
+    // Make (eta,pT) projections of the 2D histogram with the rates
     //
-    TH1D* proj_eta     = twoD_rates->ProjectionX(name_eta.c_str());
-    TH1D* proj_pt      = twoD_rates->ProjectionY(name_pt.c_str());
+    TH1D* proj_eta = rates_2D->ProjectionX(name_eta.c_str());
+    TH1D* proj_pt  = rates_2D->ProjectionY(name_pt.c_str());
 
     float this_low_edge(-999.0),this_up_edge(-999.0);
 
-    int xbin_nr(-1), ybin_nr(-1);
+    int eta_bin_nr(-1), pt_bin_nr(-1);
 
-    float x = el0.get()->etaBE2;
-    float y = el0.get()->pt;
+    float eta = lep.get()->etaBE2;
+    float pt  = lep.get()->pt;
 
     // Loop over the projections, and keep track of the bin number where (x,y) is found
     //
-    for ( int xbin = 0; xbin < proj_X->GetNbinsX()+1; ++xbin  ) {
+    for ( int eta_bin = 0; eta_bin < proj_eta->GetNbinsX()+1; ++eta_bin  ) {
 
-	this_low_edge = proj_X->GetXaxis()->GetBinLowEdge(xbin);
-	this_up_edge  = proj_X->GetXaxis()->GetBinLowEdge(xbin+1);
+	this_low_edge = proj_eta->GetXaxis()->GetBinLowEdge(eta_bin);
+	this_up_edge  = proj_eta->GetXaxis()->GetBinLowEdge(eta_bin+1);
 
-	if ( fabs(x) >= this_low_edge && fabs(x) < this_up_edge ) {
+	if ( fabs(eta) >= this_low_edge && fabs(eta) < this_up_edge ) {
 
-	    if ( m_debug ) { Info("getQMisIDRatesAndError()","\t\t x = %.2f found in %i-th bin", x, xbin ); }
+	    if ( m_debug ) { Info("getQMisIDRatesAndError()","\t\t eta = %.2f found in %i-th bin", eta, eta_bin ); }
 
-	    xbin_nr = proj_X->GetBin(xbin);
-
-	    break;
-	}
-
-    }
-    for ( int ybin = 0; ybin < proj_Y->GetNbinsX()+1; ++ ybin ) {
-
-	this_low_edge = proj_Y->GetXaxis()->GetBinLowEdge(ybin);
-	this_up_edge  = proj_Y->GetXaxis()->GetBinLowEdge(ybin+1);
-
-	if ( y >= this_low_edge && y < this_up_edge ) {
-
-	    if ( m_debug ) { Info("getQMisIDRatesAndError()","\t\t y = %.2f found in %i-th bin", y, ybin ); }
-
-	    ybin_nr = proj_Y->GetBin(ybin);
+	    eta_bin_nr = proj_eta->GetBin(eta_bin);
 
 	    break;
 	}
 
     }
+    for ( int pt_bin = 0; pt_bin < proj_pt->GetNbinsX()+1; ++ pt_bin ) {
 
-    if ( m_debug ) { Info("getQMisIDRatesAndError()","\t\t coordinates of efficiency bin = (%i,%i)", xbin_nr, ybin_nr ); }
+	this_low_edge = proj_pt->GetXaxis()->GetBinLowEdge(pt_bin);
+	this_up_edge  = proj_pt->GetXaxis()->GetBinLowEdge(pt_bin+1);
+
+	if ( pt/1e3 >= this_low_edge && pt/1e3 < this_up_edge ) {
+
+	    if ( m_debug ) { Info("getQMisIDRatesAndError()","\t\t pT = %.2f found in %i-th bin", pt/1e3, pt_bin ); }
+
+	    pt_bin_nr = proj_pt->GetBin(pt_bin);
+
+	    break;
+	}
+
+    }
+
+    if ( m_debug ) { Info("getQMisIDRatesAndError()","\t\t coordinates of efficiency bin = (%i,%i)", eta_bin_nr, pt_bin_nr ); }
 
     // Now get the NOMINAL rate via global bin number (x,y)
 
-    r = rate_map->GetBinContent( rate_map->GetBin( xbin_nr, ybin_nr ) );
+    r = rates_2D->GetBinContent( rates_2D->GetBin( eta_bin_nr, pt_bin_nr ) );
 
     if ( std::isnan(r) ) {
-	Warning("getQMisIDRatesAndError()", "Rate value being read in is nan. Will assign QMisIDWeight = 1");
+	Warning("getQMisIDRatesAndError()", "Rate value being read in is nan. Will assign default QMisIDWeight...");
+	return EL::StatusCode::SUCCESS;
     }
     if ( std::isinf(r) ) {
-	Warning("getQMisIDRatesAndError()", "Rate value being read in is inf. Will assign QMisIDWeight = 1");
+	Warning("getQMisIDRatesAndError()", "Rate value being read in is inf. Will assign default QMisIDWeight...");
+	return EL::StatusCode::SUCCESS;
     }
 
     // Get the UP and DOWN variations
@@ -694,8 +675,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getQMisIDRatesAndError( std::share
     // QUESTION: Why the hell ROOT has GetBinErrorUp and GetBinErrorLow for TH2 ??
     // They seem to give always the same result...
     //
-    r_up = r + rate_map->GetBinErrorUp( rate_map->GetBin( xbin_nr, ybin_nr ) );
-    r_dn = r - rate_map->GetBinErrorUp( rate_map->GetBin( xbin_nr, ybin_nr ) );
+    r_up = r + rates_2D->GetBinErrorUp( rates_2D->GetBin( eta_bin_nr, pt_bin_nr ) );
+    r_dn = r - rates_2D->GetBinErrorUp( rates_2D->GetBin( eta_bin_nr, pt_bin_nr ) );
     r_dn = ( r_dn > 0.0 ) ? r_dn : 0.0;
+
+    return EL::StatusCode::SUCCESS;
 
 }

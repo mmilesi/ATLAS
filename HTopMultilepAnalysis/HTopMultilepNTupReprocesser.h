@@ -21,53 +21,58 @@
 // ROOT include(s):
 #include "TTree.h"
 #include "TFile.h"
-#include "TH1F.h"
 #include "TH1D.h"
+#include "TH2D.h"
 
-class eventObj {
+namespace NTupReprocesser {
 
-public:
-  eventObj():
-        isSS01(0),
-        dilep(0),
-	TT(0),TL(0),LT(0),LL(0),
-	weight_QMisID{1.0,0.0,0.0},
-	weight_MM{1.0,0.0,0.0,0.0,0.0}
-  { };
+  class eventObj {
 
-  char isSS01;
-  char dilep;
-  char TT;
-  char TL;
-  char LT;
-  char LL;
+  public:
+    eventObj():
+    	  isMC(0),
+    	  isSS01(0),
+    	  dilep(0),
+  	  TT(0),TL(0),LT(0),LL(0),
+  	  weight_QMisID{1.0,0.0,0.0},
+  	  weight_MM{1.0,0.0,0.0,0.0,0.0}
+    { };
 
-  std::vector<float> weight_QMisID;
-  std::vector<float> weight_MM;
+    char isMC;
+    char isSS01;
+    char dilep;
+    char TT;
+    char TL;
+    char LT;
+    char LL;
 
-};
+    std::vector<float> weight_QMisID;
+    std::vector<float> weight_MM;
 
-class leptonObj {
+  };
 
-public:
-  leptonObj():
-        pt(-1.0),
-	eta(-999.0),
-	etaBE2(-999.0),
-	ID(0),flavour(0),
-	charge(-999.0),
-	tightselected(0)
-  { };
+  class leptonObj {
 
-  float pt;
-  float eta;
-  float etaBE2;
-  int ID;
-  int flavour;
-  float charge;
-  char tightselected;
-};
+  public:
+    leptonObj():
+    	  pt(-1.0),
+  	  eta(-999.0),
+  	  etaBE2(-999.0),
+  	  ID(0),flavour(0),
+  	  charge(-999.0),
+  	  tightselected(0)
+    { };
 
+    float pt;
+    float eta;
+    float etaBE2;
+    int ID;
+    int flavour;
+    float charge;
+    char tightselected;
+  };
+
+}
 
 class HTopMultilepNTupReprocesser : public xAH::Algorithm
 {
@@ -130,9 +135,6 @@ private:
   Float_t	  m_lep_EtaBE2_1;
   Char_t	  m_lep_isTightSelected_1;
 
-  std::vector<float> *m_QMisIDWeight_in = nullptr; //!
-  std::vector<float> *m_MMWeight_in     = nullptr; //!
-
   /** Add/update weight or not */
 
   bool m_doQMisIDWeighting; //!
@@ -141,6 +143,7 @@ private:
   /** Value of these flags will be inferred from input tree content.
       If false (aka branch does not exist yet), will ADD new corresponding branch to output tree, otherwise (aka branch already exists) will UPDATE it
   */
+  
   bool m_isQMisIDBranchIn;
   bool m_isMMBranchIn;
 
@@ -155,8 +158,11 @@ private:
 
   /** Other private members */
 
-  std::shared_ptr<eventObj>                 m_event;   //!
-  std::vector< std::shared_ptr<leptonObj> > m_leptons; //!
+  unsigned int m_numEntry;   //!
+  unsigned int m_count_inf;  //!
+
+  std::shared_ptr<NTupReprocesser::eventObj>                 m_event;   //!
+  std::vector< std::shared_ptr<NTupReprocesser::leptonObj> > m_leptons; //!
 
   std::map< std::string, TH2D* > m_QMisID_hist_map; //!
 
@@ -164,6 +170,7 @@ private:
   std::map< std::string, TH1D* > m_mu_hist_map; //!
 
   /** Number of bins of the r/f efficiency input histograms */
+  
   int  m_n_el_bins_pt_rr;
   int  m_n_el_bins_pt_fr;
   int  m_n_mu_bins_pt_rr;
@@ -172,6 +179,7 @@ private:
   int  m_n_mu_bins_eta;
 
   /** Normalisation factors for r/f efficiencies */
+  
   double m_el_rr_tot;
   double m_el_fr_tot;
   double m_mu_rr_tot;
@@ -197,6 +205,7 @@ public:
   ClassDef(HTopMultilepNTupReprocesser, 1);
 
   /** Template function to get a generic TObject from a TFile */
+  
   template<typename T>
   T* get_object( TFile& file, const std::string& name ) {
     T* obj = dynamic_cast<T*>( file.Get(name.c_str()) );
@@ -209,12 +218,12 @@ private:
   EL::StatusCode readRFEfficiencies ();
   EL::StatusCode getMMWeightAndError ();
   //std::vector<float>&  calculateMMWeights ();
-  float calculateFinalMMWeight ( const std::string& region, float f1, float f2, float r1, float r2, const std::string& variation )
+  float calculateFinalMMWeight ( const std::string& region, float f1, float f2, float r1, float r2, const std::string& variation );
 
-  EL::StatusCode calculateMMWeights ();
+  EL::StatusCode calculateMMWeights () { return EL::StatusCode::SUCCESS; }; 
 
   EL::StatusCode readQMisIDRates ();
-  EL::StatusCode getQMisIDRatesAndError ( std::shared_ptr<leptonObj> lep,
+  EL::StatusCode getQMisIDRatesAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
 					  float& r, float& r_up, float& r_dn,
 					  const std::string& selection );
   EL::StatusCode calculateQMisIDWeights ();
@@ -222,7 +231,7 @@ private:
 
   EL::StatusCode enableSelectedBranches ();
   EL::StatusCode setOutputBranches ();
-  EL::StatusCode clearBranches ( const std::string& type );
+  EL::StatusCode clearBranches ();
 
 };
 
