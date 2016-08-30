@@ -157,6 +157,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_EtaBE2_1",   			      &m_lep_EtaBE2_1);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_1",   		      &m_lep_isTightSelected_1);
 
+  if ( m_isQMisIDBranchIn ) {  m_inputNTuple->SetBranchAddress ("QMisIDWeight",  &m_QMisIDWeight_in); }
+  if ( m_isMMBranchIn )     {  m_inputNTuple->SetBranchAddress ("MMWeight",      &m_MMWeight_in);     }
 
   return EL::StatusCode::SUCCESS;
 }
@@ -186,15 +188,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
       Error("initialize()","Weight %s is not known. Aborting.", m_weightToCalc.c_str() );
       return EL::StatusCode::FAILURE;
   }
-
-  if ( m_doQMisIDWeighting && m_isQMisIDBranchIn ) {
-      Error("initialize()","Trying to add QMisIDWeight branch, which is already in input TTree. Aborting." );
-      return EL::StatusCode::FAILURE;  
-  }
-  if ( m_doMMWeighting && m_isMMBranchIn ) {
-      Error("initialize()","Trying to add MMWeight branch, which is already in input TTree. Aborting." );
-      return EL::StatusCode::FAILURE;  
-  }  
 
   // Set new branches for output TTree
   //
@@ -299,16 +292,29 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   if ( m_debug ) {
       if ( m_doQMisIDWeighting ) {
 	  unsigned int idx(0);
-	  for ( const auto& itr : m_event.get()->weight_QMisID ) {
-	      Info("execute()","\t\tDefault QMisIDWeight[%i] = %f", idx, itr );
-	      ++idx;
+	  if ( !m_isQMisIDBranchIn ) {
+	      for ( const auto& itr : m_event.get()->weight_QMisID ) {
+		  Info("execute()","\t\tDefault QMisIDWeight[%i] = %f", idx, itr );
+		  ++idx;
+	      }
+	  } else {
+	      for ( const auto& itr : *m_QMisIDWeight_in ) {
+		  Info("execute()","\t\tIN QMisIDWeight[%i] = %f", idx, itr );
+		  ++idx;
+	      }
 	  }
-      } 
-      if ( m_doMMWeighting ) {
+      } else if ( m_doMMWeighting ) {
 	  unsigned int idx(0);
-	  for ( const auto& itr : m_event.get()->weight_MM ) {
-	      Info("execute()","\t\tDefault MMWeight[%i] = %f", idx, itr );
-	      ++idx;
+	  if ( !m_isMMBranchIn ) {
+	      for ( const auto& itr : m_event.get()->weight_MM ) {
+		  Info("execute()","\t\tDefault MMWeight[%i] = %f", idx, itr );
+		  ++idx;
+	      }
+	  } else {
+	      for ( const auto& itr : *m_MMWeight_in ) {
+		  Info("execute()","\t\tIN MMWeight[%i] = %f", idx, itr );
+		  ++idx;
+	      }
 	  }
       }
   }

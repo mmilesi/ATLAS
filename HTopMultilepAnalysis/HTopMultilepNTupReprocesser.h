@@ -106,9 +106,11 @@ public:
 private:
 
   /** Input TTree */
+  
   TTree*          m_inputNTuple;
 
   /** Output TTree (svc) */
+  
   EL::NTupleSvc*  m_outputNTuple;
 
   /** Input TTree branches which need to be used by the algorithm */
@@ -134,6 +136,9 @@ private:
   Float_t	  m_lep_Phi_1;
   Float_t	  m_lep_EtaBE2_1;
   Char_t	  m_lep_isTightSelected_1;
+
+  std::vector<float> *m_QMisIDWeight_in = nullptr; //!
+  std::vector<float> *m_MMWeight_in     = nullptr; //!
 
   /** Add/update weight or not */
 
