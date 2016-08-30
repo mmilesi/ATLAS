@@ -33,18 +33,18 @@ namespace NTupReprocesser {
     	  isMC(0),
     	  isSS01(0),
     	  dilep(0),
-  	  TT(0),TL(0),LT(0),LL(0),
-  	  weight_QMisID{1.0,0.0,0.0},
-  	  weight_MM{1.0,0.0,0.0,0.0,0.0}
+  	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0),
+  	  weight_QMisID{1.0,1.0,1.0},
+  	  weight_MM{1.0,1.0,1.0,1.0,1.0}
     { };
 
     char isMC;
     char isSS01;
     char dilep;
     char TT;
-    char TL;
-    char LT;
-    char LL;
+    char TAntiT;
+    char AntiTT;
+    char AntiTAntiT;
 
     std::vector<float> weight_QMisID;
     std::vector<float> weight_MM;
@@ -81,23 +81,33 @@ class HTopMultilepNTupReprocesser : public xAH::Algorithm
 public:
 
   /** The name of the output TTree */
+  
   std::string m_outputNTupName;
 
   std::string m_outputNTupStreamName;
 
   /** A comma-separated list of input branches to be activated */
+  
   std::string m_inputBranches;
 
   /** The weight to be computed and stored/updated in the ntuple. Can be one of {"MM", "QMisID"} */
+  
   std::string m_weightToCalc;
 
   /** The path to the real/fake efficiency file directory */
+  
   std::string m_RR_dir;
   std::string m_FR_dir;
+  std::string m_Efficiency_Filename;
   bool m_doMMClosure;
-  bool m_useEtaParemetrisation;
+  bool m_useEtaParametrisation;
+  
+  /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
+  
+  bool m_useScaledFakeEfficiency;
 
   /** The path to the QMisID rates file directory */
+  
   std::string m_QMisIDRates_dir;
   std::string m_QMisIDRates_Filename_T;
   std::string m_QMisIDRates_Filename_AntiT;
@@ -119,7 +129,12 @@ private:
   UInt_t          m_RunNumber;
   UInt_t          m_mc_channel_number; /** for DATA, mc_channel_number=0 */
   Int_t 	  m_dilep_type;
+  Int_t           m_trilep_type;
   Char_t          m_isSS01;
+  Char_t          m_is_T_T;
+  Char_t          m_is_T_AntiT;
+  Char_t          m_is_AntiT_T;
+  Char_t          m_is_AntiT_AntiT;
 
   Float_t	  m_lep_ID_0;
   Float_t	  m_lep_Pt_0;
@@ -176,19 +191,19 @@ private:
 
   /** Number of bins of the r/f efficiency input histograms */
   
-  int  m_n_el_bins_pt_rr;
-  int  m_n_el_bins_pt_fr;
-  int  m_n_mu_bins_pt_rr;
-  int  m_n_mu_bins_pt_fr;
-  int  m_n_el_bins_eta;
-  int  m_n_mu_bins_eta;
+  int  m_n_el_bins_pt_rr = -1;
+  int  m_n_el_bins_pt_fr = -1;
+  int  m_n_mu_bins_pt_rr = -1;
+  int  m_n_mu_bins_pt_fr = -1;
+  int  m_n_el_bins_eta = -1;
+  int  m_n_mu_bins_eta = -1;
 
   /** Normalisation factors for r/f efficiencies */
   
-  double m_el_rr_tot;
-  double m_el_fr_tot;
-  double m_mu_rr_tot;
-  double m_mu_fr_tot;
+  double m_el_rr_tot = 1.0;
+  double m_el_fr_tot = 1.0;
+  double m_mu_rr_tot = 1.0;
+  double m_mu_fr_tot = 1.0;
 
 public:
 
@@ -221,18 +236,20 @@ public:
 private:
 
   EL::StatusCode readRFEfficiencies ();
-  EL::StatusCode getMMWeightAndError ();
-  //std::vector<float>&  calculateMMWeights ();
-  float calculateFinalMMWeight ( const std::string& region, float f1, float f2, float r1, float r2, const std::string& variation );
-
-  EL::StatusCode calculateMMWeights () { return EL::StatusCode::SUCCESS; }; 
+  EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep, 
+  					   std::vector<float>& efficiency, 
+					   const std::string& type );
+  EL::StatusCode getMMWeightAndError ( std::vector<float>& mm_weight, 
+  				       const std::vector<float>& r0, const std::vector<float>& r1, 
+				       const std::vector<float>& f0, const std::vector<float>& f1 );
+  float matrix_equation ( const float& r0, const float& r1, const float& f0, const float& f1 );
+  EL::StatusCode calculateMMWeights ();
 
   EL::StatusCode readQMisIDRates ();
   EL::StatusCode getQMisIDRatesAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
 					  float& r, float& r_up, float& r_dn,
 					  const std::string& selection );
   EL::StatusCode calculateQMisIDWeights ();
-
 
   EL::StatusCode enableSelectedBranches ();
   EL::StatusCode setOutputBranches ();
