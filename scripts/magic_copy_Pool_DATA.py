@@ -22,13 +22,12 @@ if __name__ == '__main__':
 
     username = "mmilesi"
 
-    version     = "25ns_v19"
-    sample_type = "Data"
+    version     = "25ns_v20"
+    sample_type = "02/Data"
 
-    basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_v19/" + sample_type
+    basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + version + "/" + sample_type
 
     copylist = [
-
 276262,
 276329,
 276336,
@@ -55,6 +54,7 @@ if __name__ == '__main__':
 279928,
 279932,
 279984,
+280231,
 280273,
 280319,
 280368,
@@ -161,7 +161,7 @@ if __name__ == '__main__':
         cmd = "cd " + basedir + " && mkdir -p 00" + str(sample) + " && cd $_ && xrdcp root://eospublic.cern.ch//eos/escience/UniTexas/HSG8/multileptons_ntuple_run2/" + version + "/" + sample_type + "/00" + str(sample) + ".root ."
         cmdlist.append(cmd)
 
-    MAX_PARALLEL = 5
+    MAX_PARALLEL = 6
 
     #print listchunks(cmdlist,MAX_PARALLEL)
 
@@ -182,4 +182,3 @@ if __name__ == '__main__':
 
     os.chdir(basedir)
     print("Transfer finished!")
-
