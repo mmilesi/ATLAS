@@ -12,6 +12,8 @@ parser.add_argument('--nevents', dest='nevents', action='store', default=0, type
                     help='The number of events to be processed. Default is 0 (i.e., ALL events)')
 parser.add_argument('--treename', dest='treename', action='store', default="physics", type=str, 
                     help='The name of the input TTree. Default is \"physics\"')
+parser.add_argument('--closure', dest='closure', action='store_true', default=False, 
+                    help='Run on ttbar to perform MM closure test. Default is False')		    
 
 args = parser.parse_args()
 
@@ -26,10 +28,12 @@ sampledict = datasets.getListSamples(samplescsv,genericPath=True)
 motherdir = args.source
 destdir   = args.destination
 
-infilelist = [
-  motherdir + "/Data/physics_Main.root",
-  #motherdir + "/tops/410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.root",
-]
+infilelist = []
+
+if not args.closure:
+    infilelist.append(motherdir + "/Data/physics_Main.root")
+else:
+    infilelist.append(motherdir + "/tops/410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.root")
 
 # -------------------------------------------------------------------------------------------------------
 
@@ -61,7 +65,7 @@ for infile in infilelist:
         if not s["ID"]:
           separator = ""
 
-	INTREE  = outputfilepath + "/" + s["category"] + ".root"
+	INTREE  = outputfilepath + "/" + s["group"] + ".root"
 
         if not os.path.exists(destdir + "/" + s["group"]):
             os.makedirs(destdir + "/" + s["group"])

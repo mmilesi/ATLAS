@@ -60,7 +60,8 @@ namespace NTupReprocesser {
   	  etaBE2(-999.0),
   	  ID(0),flavour(0),
   	  charge(-999.0),
-  	  tightselected(0)
+  	  tightselected(0),
+	  trigmatched(0)
     { };
 
     float pt;
@@ -70,6 +71,7 @@ namespace NTupReprocesser {
     int flavour;
     float charge;
     char tightselected;
+    char trigmatched;
   };
 
 }
@@ -98,9 +100,15 @@ public:
   
   std::string m_RR_dir;
   std::string m_FR_dir;
+  std::string m_RRFR_YES_TM_dir;
+  std::string m_RRFR_NO_TM_dir; 
   std::string m_Efficiency_Filename;
   bool m_doMMClosure;
   bool m_useEtaParametrisation;
+
+  /** Read different r/f rates depending on whether the lepton is trigger-matched or not */
+
+  bool m_useTrigMatchingInfo;
   
   /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
   
@@ -143,6 +151,7 @@ private:
   Float_t	  m_lep_Phi_0;
   Float_t	  m_lep_EtaBE2_0;
   Char_t	  m_lep_isTightSelected_0;
+  Char_t	  m_lep_isTrigMatch_0;
 
   Float_t	  m_lep_ID_1;
   Float_t	  m_lep_Pt_1;
@@ -151,6 +160,7 @@ private:
   Float_t	  m_lep_Phi_1;
   Float_t	  m_lep_EtaBE2_1;
   Char_t	  m_lep_isTightSelected_1;
+  Char_t	  m_lep_isTrigMatch_1;
 
   std::vector<float> *m_QMisIDWeight_in = nullptr; //!
   std::vector<float> *m_MMWeight_in     = nullptr; //!

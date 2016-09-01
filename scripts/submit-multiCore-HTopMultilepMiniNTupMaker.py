@@ -113,15 +113,15 @@ if __name__ == '__main__':
 
     infilelist = [
 ## data
-"HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",
+#"HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",
 ## ttbar noallhad
-#"410000",
+"410000",
 ## ttH
 #"343365",
 #"343366",
 #"343367",
 ## ttW
-#"410155",
+"410155",
 ## ttZ
 #"410218",
 #"410219",
@@ -647,10 +647,6 @@ if __name__ == '__main__':
     treename   = args.treename
     nevents    = args.nevents
     motherdir  = args.destination
-
-    #motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v18/25ns_v18_Skim"
-    #motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v19/25ns_v19_Skim"
-    #motherdir = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v19/temp_noweight"
     
     if not os.path.exists(motherdir):
         os.makedirs(motherdir)

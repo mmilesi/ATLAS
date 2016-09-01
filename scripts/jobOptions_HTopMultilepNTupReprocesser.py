@@ -7,8 +7,8 @@ sys.path.insert(0, os.environ['ROOTCOREBIN']+"/user_scripts/HTopMultilepAnalysis
 c = xAH_config()
 
 event_branches = ["EventNumber","RunNumber","mc_channel_number","isSS01","dilep_type","trilep_type","is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT","QMisIDWeight","MMWeight"]
-lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0",
-                  "lep_ID_1","lep_Pt_1","lep_Eta_1","lep_Phi_1","lep_EtaBE2_1","lep_isTightSelected_1"]
+lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0","lep_isTrigMatch_0",
+                  "lep_ID_1","lep_Pt_1","lep_Eta_1","lep_Phi_1","lep_EtaBE2_1","lep_isTightSelected_1","lep_isTrigMatch_1"]
 
 branches_to_activate = event_branches + lep_branches
 

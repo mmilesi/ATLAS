@@ -1,4 +1,6 @@
+// package include(s):
 #include <HTopMultilepAnalysis/HTopMultilepNTupReprocesser.h>
+#include "HTopMultilepAnalysis/tools/HTopReturnCheck.h"
 
 // ASG status code check
 #include <AsgTools/MessageCheck.h>
@@ -46,9 +48,12 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
 
   m_RR_dir                  = "";
   m_FR_dir                  = "";
+  m_RRFR_YES_TM_dir         = "";
+  m_RRFR_NO_TM_dir          = "";
   m_Efficiency_Filename     = "";
   m_doMMClosure             = false;
   m_useEtaParametrisation   = false;
+  m_useTrigMatchingInfo     = false;
   m_useScaledFakeEfficiency = false;
   
 }
@@ -159,6 +164,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_Phi_0",   			      &m_lep_Phi_0);
   m_inputNTuple->SetBranchAddress ("lep_EtaBE2_0",   			      &m_lep_EtaBE2_0);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_0",   		      &m_lep_isTightSelected_0);
+  m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_0",   		      &m_lep_isTrigMatch_0);
 
   m_inputNTuple->SetBranchAddress ("lep_ID_1",   			      &m_lep_ID_1);
   m_inputNTuple->SetBranchAddress ("lep_Pt_1",  			      &m_lep_Pt_1);
@@ -167,6 +173,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_Phi_1",   			      &m_lep_Phi_1);
   m_inputNTuple->SetBranchAddress ("lep_EtaBE2_1",   			      &m_lep_EtaBE2_1);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_1",   		      &m_lep_isTightSelected_1);
+  m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_1",   		      &m_lep_isTrigMatch_1);
 
   if ( m_isQMisIDBranchIn ) {  m_inputNTuple->SetBranchAddress ("QMisIDWeight",  &m_QMisIDWeight_in); }
   if ( m_isMMBranchIn )     {  m_inputNTuple->SetBranchAddress ("MMWeight",      &m_MMWeight_in);     }
@@ -272,31 +279,33 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   auto lep0 = std::make_shared<leptonObj>();
 
-  lep0.get()->pt          = m_lep_Pt_0;
-  lep0.get()->eta         = m_lep_Eta_0;
-  lep0.get()->etaBE2      = m_lep_EtaBE2_0;
-  lep0.get()->ID          = m_lep_ID_0;
-  lep0.get()->flavour     = abs(m_lep_ID_0);
-  lep0.get()->charge      = m_lep_ID_0 / fabs(m_lep_ID_0);
+  lep0.get()->pt            = m_lep_Pt_0;
+  lep0.get()->eta           = m_lep_Eta_0;
+  lep0.get()->etaBE2        = m_lep_EtaBE2_0;
+  lep0.get()->ID            = m_lep_ID_0;
+  lep0.get()->flavour       = abs(m_lep_ID_0);
+  lep0.get()->charge        = m_lep_ID_0 / fabs(m_lep_ID_0);
   lep0.get()->tightselected = m_lep_isTightSelected_0;
+  lep0.get()->trigmatched   = m_lep_isTrigMatch_0;
 
   m_leptons.push_back(lep0);
 
   auto lep1 = std::make_shared<leptonObj>();
 
-  lep1.get()->pt          = m_lep_Pt_1;
-  lep1.get()->eta         = m_lep_Eta_1;
-  lep1.get()->etaBE2      = m_lep_EtaBE2_1;
-  lep1.get()->ID          = m_lep_ID_1;
-  lep1.get()->flavour     = abs(m_lep_ID_1);
-  lep1.get()->charge      = m_lep_ID_1 / fabs(m_lep_ID_1);
+  lep1.get()->pt            = m_lep_Pt_1;
+  lep1.get()->eta           = m_lep_Eta_1;
+  lep1.get()->etaBE2        = m_lep_EtaBE2_1;
+  lep1.get()->ID            = m_lep_ID_1;
+  lep1.get()->flavour       = abs(m_lep_ID_1);
+  lep1.get()->charge        = m_lep_ID_1 / fabs(m_lep_ID_1);
   lep1.get()->tightselected = m_lep_isTightSelected_1;
+  lep1.get()->trigmatched   = m_lep_isTrigMatch_1;
 
   m_leptons.push_back(lep1);
 
   if ( m_debug ) {
-      Info("execute()","lep0:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i", lep0.get()->pt/1e3, lep0.get()->etaBE2, lep0.get()->eta, lep0.get()->flavour, lep0.get()->tightselected );
-      Info("execute()","lep1:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i", lep1.get()->pt/1e3, lep1.get()->etaBE2, lep1.get()->eta, lep1.get()->flavour, lep1.get()->tightselected );
+      Info("execute()","lep0:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched? %i", lep0.get()->pt/1e3, lep0.get()->etaBE2, lep0.get()->eta, lep0.get()->flavour, lep0.get()->tightselected, lep0.get()->trigmatched );
+      Info("execute()","lep1:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched? %i", lep1.get()->pt/1e3, lep1.get()->etaBE2, lep1.get()->eta, lep1.get()->flavour, lep1.get()->tightselected, lep1.get()->trigmatched );
   }
 
   m_event.get()->isMC   = ( m_mc_channel_number > 0 );
@@ -724,92 +733,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   if ( m_RR_dir.back() != '/' ) { m_RR_dir += "/"; }
   if ( m_FR_dir.back() != '/' ) { m_FR_dir += "/"; }
 
-  // ******************************************************
-  //
-  // 1. 'REAL' efficiency
-
-  Info("readRFEfficiencies()", "REAL efficiency from directory: %s ", m_RR_dir.c_str() );
-
-  std::string path_R_el = m_RR_dir + m_Efficiency_Filename;
-  TFile *file_R_el = TFile::Open(path_R_el.c_str());
-  
-  if ( !file_R_el->IsOpen() ) {
-    Error("readRFEfficiencies()", "Failed to open ROOT file with R efficiency from path: %s . Aborting", path_R_el.c_str() );
-    return EL::StatusCode::FAILURE;
-  } else {
-    Info("readRFEfficiencies()", "ELECTRON REAL efficiency: %s ", path_R_el.c_str() );
-  }
-  
-  std::string path_R_mu = m_RR_dir + m_Efficiency_Filename;
-  TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
-  
-  if ( !file_R_mu->IsOpen() ) {
-    Error("readRFEfficiencies()", "Failed to open ROOT file with R efficiency from path: %s . Aborting", path_R_mu.c_str() );
-    return EL::StatusCode::FAILURE;
-  } else {
-    Info("readRFEfficiencies()", "MUON REAL efficiency: %s ", path_R_mu.c_str() );
-  }
-
-  // Electrons
+  // Histogram names - electrons
   //
   std::string histname_el_pt_rr    = "El_ProbePt_Real_Efficiency_"  + rate_type;
   std::string histname_el_eta_rr   = "El_ProbeEta_Real_Efficiency_" + rate_type;
   std::string histname_el_pt_r_T   = "El_ProbePt_Real_T_" + rate_type;
   std::string histname_el_pt_r_L   = "El_ProbePt_Real_L_" + rate_type;
-
-  // Get real efficiency histograms
-  //
-  TH1D *hist_el_pt_rr  = get_object<TH1D>( *file_R_el, histname_el_pt_rr );
-  TH1D *hist_el_eta_rr = ( m_useEtaParametrisation ) ? get_object<TH1D>( *file_R_el, histname_el_eta_rr ) : nullptr;
-  TH1D *hist_el_pt_r_T = get_object<TH1D>( *file_R_el, histname_el_pt_r_T );
-  TH1D *hist_el_pt_r_L = get_object<TH1D>( *file_R_el, histname_el_pt_r_L );
-
-  // Muons
-  //
-  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Efficiency_"  + rate_type;
-  std::string histname_mu_eta_rr   = "Mu_ProbeEta_Real_Efficiency_" + rate_type;
-
-  std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_" + rate_type;
-  std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_L_" + rate_type;
-
-  // Get real efficiency histograms
-  //
-  TH1D *hist_mu_pt_rr  = get_object<TH1D>( *file_R_mu, histname_mu_pt_rr );
-  TH1D *hist_mu_eta_rr = ( m_useEtaParametrisation ) ? get_object<TH1D>( *file_R_mu, histname_mu_eta_rr ) : nullptr;
-  TH1D *hist_mu_pt_r_T = get_object<TH1D>( *file_R_mu, histname_mu_pt_r_T );
-  TH1D *hist_mu_pt_r_L = get_object<TH1D>( *file_R_mu, histname_mu_pt_r_L );
-
-  // 2. FAKE efficiency
-
-  if ( m_FR_dir.compare(m_RR_dir) != 0 ) {
-     Warning("readRFEfficiencies()", "FAKE efficiency is going to be read from %s. Check whether it's really what you want...", m_FR_dir.c_str());
-  } else {
-     Info("readRFEfficiencies()", "FAKE efficiency from same directory as REAL" );
-  }
-
-  std::string path_F_el = m_FR_dir + m_Efficiency_Filename; 
-  TFile *file_F_el = TFile::Open(path_F_el.c_str());
   
-  if ( !file_F_el->IsOpen() ) {
-    Error("readRFEfficiencies()", "Failed to open ROOT file with F efficiency from path: %s . Aborting", path_F_el.c_str() );
-    return EL::StatusCode::FAILURE;
-  } else {
-    Info("readRFEfficiencies()", "ELECTRON FAKE efficiency: %s ", path_F_el.c_str() );
-  }
-
-  std::string path_F_mu = m_FR_dir + m_Efficiency_Filename;
-  TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
-  if ( !file_F_mu->IsOpen() ) {
-    Error("readRFEfficiencies()", "Failed to open ROOT file with F efficiency from path: %s . Aborting", path_F_mu.c_str() );
-    return EL::StatusCode::FAILURE;
-  } else {
-    Info("readRFEfficiencies()", "MUON FAKE efficiency: %s ", path_F_mu.c_str() );
-  }
-
-  // Electrons
-  //
   std::string histname_el_pt_fr(""), histname_el_eta_fr(""), histname_el_pt_f_T(""), histname_el_pt_f_L("");
- 
+  
   if ( m_useScaledFakeEfficiency && !m_doMMClosure ) {
     histname_el_pt_fr	 = "El_ProbePt_ScaledFake_Efficiency_"  + rate_type; 
     histname_el_eta_fr   = "El_ProbeEta_ScaledFake_Efficiency_" + rate_type;
@@ -822,28 +754,157 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
     histname_el_pt_f_L   = "El_ProbePt_Fake_L_" + rate_type;
   }
 
-  // Get fake efficiency histograms
+  // Histogram names - muons
   //
-  TH1D *hist_el_pt_fr    = get_object<TH1D>( *file_F_el, histname_el_pt_fr );
-  TH1D *hist_el_eta_fr   = ( m_useEtaParametrisation ) ? get_object<TH1D>( *file_F_el, histname_el_eta_fr ) : nullptr;
-  TH1D *hist_el_pt_f_T   = get_object<TH1D>( *file_F_el, histname_el_pt_f_T );
-  TH1D *hist_el_pt_f_L   = get_object<TH1D>( *file_F_el, histname_el_pt_f_L );
+  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Efficiency_"  + rate_type;
+  std::string histname_mu_eta_rr   = "Mu_ProbeEta_Real_Efficiency_" + rate_type;
+  std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_" + rate_type;
+  std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_L_" + rate_type;
 
-  // Muons
-  //
   std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Efficiency_"  + rate_type;
   std::string histname_mu_eta_fr   = "Mu_ProbeEta_Fake_Efficiency_" + rate_type;
-
   std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_" + rate_type;
   std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_L_" + rate_type;
 
+  // Histograms - electrons
+
+  TH1D *hist_el_pt_rr(nullptr);  
+  TH1D *hist_el_eta_rr(nullptr);   
+  TH1D *hist_el_pt_r_T(nullptr);   
+  TH1D *hist_el_pt_r_L(nullptr);   
+
+  TH1D *hist_el_pt_rr_YES_TM(nullptr);
+  TH1D *hist_el_pt_rr_NO_TM(nullptr);
+
+  TH1D *hist_el_pt_fr(nullptr);  
+  TH1D *hist_el_eta_fr(nullptr); 
+  TH1D *hist_el_pt_f_T(nullptr); 
+  TH1D *hist_el_pt_f_L(nullptr); 
+  
+  TH1D *hist_el_pt_fr_YES_TM(nullptr);
+  TH1D *hist_el_pt_fr_NO_TM(nullptr);
+
+  // Histograms - muons
+
+  TH1D *hist_mu_pt_rr(nullptr);    
+  TH1D *hist_mu_eta_rr(nullptr);   
+  TH1D *hist_mu_pt_r_T(nullptr);  
+  TH1D *hist_mu_pt_r_L(nullptr);   
+
+  TH1D *hist_mu_pt_rr_YES_TM(nullptr);
+  TH1D *hist_mu_pt_rr_NO_TM(nullptr);
+
+  TH1D *hist_mu_pt_fr(nullptr);  
+  TH1D *hist_mu_eta_fr(nullptr);  
+  TH1D *hist_mu_pt_f_T(nullptr);  
+  TH1D *hist_mu_pt_f_L(nullptr);  
+  
+  TH1D *hist_mu_pt_fr_YES_TM(nullptr);
+  TH1D *hist_mu_pt_fr_NO_TM(nullptr);
+  
+  // 1. 'REAL' efficiency
+
+  Info("readRFEfficiencies()", "REAL efficiency from directory: %s ", m_RR_dir.c_str() );
+
+  std::string path_R_el = m_RR_dir + m_Efficiency_Filename;
+  TFile *file_R_el = TFile::Open(path_R_el.c_str());
+  
+  HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_R_el->IsOpen(), "Failed to open ROOT file" );
+  Info("readRFEfficiencies()", "ELECTRON REAL efficiency: %s ", path_R_el.c_str() );
+  
+  std::string path_R_mu = m_RR_dir + m_Efficiency_Filename;
+  TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
+  
+  HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_R_mu->IsOpen(), "Failed to open ROOT file" );
+  Info("readRFEfficiencies()", "MUON REAL efficiency: %s ", path_R_mu.c_str() );
+
+  // Get real efficiency histograms
+  //
+  hist_el_pt_rr  = get_object<TH1D>( *file_R_el, histname_el_pt_rr );
+  if( m_useEtaParametrisation ) hist_el_eta_rr = get_object<TH1D>( *file_R_el, histname_el_eta_rr );
+  hist_el_pt_r_T = get_object<TH1D>( *file_R_el, histname_el_pt_r_T );
+  hist_el_pt_r_L = get_object<TH1D>( *file_R_el, histname_el_pt_r_L );
+
+  hist_mu_pt_rr  = get_object<TH1D>( *file_R_mu, histname_mu_pt_rr );
+  if ( m_useEtaParametrisation ) hist_mu_eta_rr = get_object<TH1D>( *file_R_mu, histname_mu_eta_rr );
+  hist_mu_pt_r_T = get_object<TH1D>( *file_R_mu, histname_mu_pt_r_T );
+  hist_mu_pt_r_L = get_object<TH1D>( *file_R_mu, histname_mu_pt_r_L );
+
+  // 2. FAKE efficiency
+
+  if ( m_FR_dir.compare(m_RR_dir) != 0 ) {
+     Warning("readRFEfficiencies()", "FAKE efficiency is going to be read from %s. Check whether it's really what you want...", m_FR_dir.c_str());
+  } else {
+     Info("readRFEfficiencies()", "FAKE efficiency from same directory as REAL" );
+  }
+
+  std::string path_F_el = m_FR_dir + m_Efficiency_Filename; 
+  TFile *file_F_el = TFile::Open(path_F_el.c_str());
+  
+  HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_F_el->IsOpen(), "Failed to open ROOT file" );
+  Info("readRFEfficiencies()", "ELECTRON FAKE efficiency: %s ", path_F_el.c_str() );
+
+  std::string path_F_mu = m_FR_dir + m_Efficiency_Filename;
+  TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
+
+  HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_F_mu->IsOpen(), "Failed to open ROOT file" );
+  Info("readRFEfficiencies()", "MUON FAKE efficiency: %s ", path_F_mu.c_str() );
+
   // Get fake efficiency histograms
   //
-  TH1D *hist_mu_pt_fr    = get_object<TH1D>( *file_F_mu, histname_mu_pt_fr );
-  TH1D *hist_mu_eta_fr   = ( m_useEtaParametrisation ) ? get_object<TH1D>( *file_F_mu, histname_mu_eta_fr ) : nullptr;
-  TH1D *hist_mu_pt_f_T   = get_object<TH1D>( *file_F_mu, histname_mu_pt_f_T );
-  TH1D *hist_mu_pt_f_L   = get_object<TH1D>( *file_F_mu, histname_mu_pt_f_L );
+  hist_el_pt_fr    = get_object<TH1D>( *file_F_el, histname_el_pt_fr );
+  if ( m_useEtaParametrisation ) hist_el_eta_fr = get_object<TH1D>( *file_F_el, histname_el_eta_fr );
+  hist_el_pt_f_T   = get_object<TH1D>( *file_F_el, histname_el_pt_f_T );
+  hist_el_pt_f_L   = get_object<TH1D>( *file_F_el, histname_el_pt_f_L );
 
+  hist_mu_pt_fr    = get_object<TH1D>( *file_F_mu, histname_mu_pt_fr );
+  if ( m_useEtaParametrisation ) hist_mu_eta_fr = get_object<TH1D>( *file_F_mu, histname_mu_eta_fr );
+  hist_mu_pt_f_T   = get_object<TH1D>( *file_F_mu, histname_mu_pt_f_T );
+  hist_mu_pt_f_L   = get_object<TH1D>( *file_F_mu, histname_mu_pt_f_L );
+
+  // ***********************************************************************
+  
+  if ( m_useTrigMatchingInfo && m_useEtaParametrisation ) {
+      Error("readRFEfficiencies()", "As of today, it's not possible to use eta parametrisation when reading trigger-matching-dependent efficiencies. Aborting" );
+      return EL::StatusCode::FAILURE;
+  }
+
+  if ( m_useTrigMatchingInfo ) {
+
+    if ( m_RRFR_YES_TM_dir.back() != '/' ) { m_RRFR_YES_TM_dir += "/"; }
+    if ( m_RRFR_NO_TM_dir.back() != '/' )  { m_RRFR_NO_TM_dir += "/"; }
+
+    Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe TRIGGER-MATCHED) from directory: %s ", m_RRFR_YES_TM_dir.c_str() );
+    
+    std::string path_YES_TM = m_RRFR_YES_TM_dir + m_Efficiency_Filename;
+    TFile *file_YES_TM = TFile::Open(path_YES_TM.c_str());
+    HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_YES_TM->IsOpen(), "Failed to open ROOT file" );
+    Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_YES_TM.c_str() );
+    
+    Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe NOT TRIGGER-MATCHED) from directory: %s ", m_RRFR_NO_TM_dir.c_str() );
+    
+    std::string path_NO_TM = m_RRFR_NO_TM_dir + m_Efficiency_Filename;
+    TFile *file_NO_TM = TFile::Open(path_NO_TM.c_str());
+    HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_NO_TM->IsOpen(), "Failed to open ROOT file" );
+    Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_NO_TM.c_str() );
+
+    // Get real efficiency histograms
+    //
+    hist_el_pt_rr_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_rr );
+    hist_el_pt_rr_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_rr );
+    
+    hist_mu_pt_rr_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_rr );
+    hist_mu_pt_rr_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_rr );
+
+    // Get fake efficiency histograms
+    //
+    hist_el_pt_fr_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_fr );
+    hist_el_pt_fr_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_fr );
+
+    hist_mu_pt_fr_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_fr );
+    hist_mu_pt_fr_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_fr );
+   
+  } 
   // ***********************************************************************
 
   // Fill a map for later usage
@@ -852,35 +913,53 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   m_mu_hist_map["pt_rr"]   = hist_mu_pt_rr;
   m_el_hist_map["pt_fr"]   = hist_el_pt_fr;
   m_mu_hist_map["pt_fr"]   = hist_mu_pt_fr;
+  m_el_hist_map["pt_rr_YES_TM"] = hist_el_pt_rr_YES_TM;
+  m_el_hist_map["pt_rr_NO_TM"]  = hist_el_pt_rr_NO_TM;
+  m_mu_hist_map["pt_rr_YES_TM"] = hist_mu_pt_rr_YES_TM;
+  m_mu_hist_map["pt_rr_NO_TM"]  = hist_mu_pt_rr_NO_TM;
 
   m_el_hist_map["eta_rr"]  = hist_el_eta_rr;
   m_mu_hist_map["eta_rr"]  = hist_mu_eta_rr;
   m_el_hist_map["eta_fr"]  = hist_el_eta_fr;
   m_mu_hist_map["eta_fr"]  = hist_mu_eta_fr;
-
+  m_el_hist_map["pt_fr_YES_TM"] = hist_el_pt_fr_YES_TM;
+  m_el_hist_map["pt_fr_NO_TM"]  = hist_el_pt_fr_NO_TM;
+  m_mu_hist_map["pt_fr_YES_TM"] = hist_mu_pt_fr_YES_TM;
+  m_mu_hist_map["pt_fr_NO_TM"]  = hist_mu_pt_fr_NO_TM;
+  
   // pt hist has two different binning for r/f
+  // Trigger-match-dependent efficiencies can have different binning wrt non trigger-matching dependent
   //
   m_n_el_bins_pt_rr =  hist_el_pt_rr->GetNbinsX()+1;
   m_n_el_bins_pt_fr =  hist_el_pt_fr->GetNbinsX()+1;
   m_n_mu_bins_pt_rr =  hist_mu_pt_rr->GetNbinsX()+1;
   m_n_mu_bins_pt_fr =  hist_mu_pt_fr->GetNbinsX()+1;
 
+  if ( m_useTrigMatchingInfo ) {
+      m_n_el_bins_pt_rr =  hist_el_pt_rr_YES_TM->GetNbinsX()+1;
+      m_n_el_bins_pt_fr =  hist_el_pt_fr_YES_TM->GetNbinsX()+1;
+      m_n_mu_bins_pt_rr =  hist_mu_pt_rr_YES_TM->GetNbinsX()+1;
+      m_n_mu_bins_pt_fr =  hist_mu_pt_fr_YES_TM->GetNbinsX()+1;
+  }
+  
   // eta hist has same binning for r/f
   //
   if ( m_useEtaParametrisation ) {
-    m_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX()+1;
-    m_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX()+1;
+      
+      m_n_el_bins_eta   =  hist_el_eta_rr->GetNbinsX()+1;
+      m_n_mu_bins_eta   =  hist_mu_eta_rr->GetNbinsX()+1;
+
+      // Calculate normalisation factor for (pT * eta) 1D efficiencies case.
+      //
+      // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
+      //
+      m_el_rr_tot = ( hist_el_pt_r_T->Integral(1,hist_el_pt_r_T->GetNbinsX()+1) ) / ( hist_el_pt_r_L->Integral(1,hist_el_pt_r_L->GetNbinsX()+1) );
+      m_el_fr_tot = ( hist_el_pt_f_T->Integral(1,hist_el_pt_f_T->GetNbinsX()+1) ) / ( hist_el_pt_f_L->Integral(1,hist_el_pt_f_L->GetNbinsX()+1) );
+      m_mu_rr_tot = ( hist_mu_pt_r_T->Integral(1,hist_mu_pt_r_T->GetNbinsX()+1) ) / ( hist_mu_pt_r_L->Integral(1,hist_mu_pt_r_L->GetNbinsX()+1) );
+      m_mu_fr_tot = ( hist_mu_pt_f_T->Integral(1,hist_mu_pt_f_T->GetNbinsX()+1) ) / ( hist_mu_pt_f_L->Integral(1,hist_mu_pt_f_L->GetNbinsX()+1) );
+  
   }
-
-  // Calculate normalisation factor for (pT * eta) 1D efficiencies case.
-  //
-  // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
-  //
-  m_el_rr_tot = ( hist_el_pt_r_T->Integral(1,hist_el_pt_r_T->GetNbinsX()+1) ) / ( hist_el_pt_r_L->Integral(1,hist_el_pt_r_L->GetNbinsX()+1) );
-  m_el_fr_tot = ( hist_el_pt_f_T->Integral(1,hist_el_pt_f_T->GetNbinsX()+1) ) / ( hist_el_pt_f_L->Integral(1,hist_el_pt_f_L->GetNbinsX()+1) );
-  m_mu_rr_tot = ( hist_mu_pt_r_T->Integral(1,hist_mu_pt_r_T->GetNbinsX()+1) ) / ( hist_mu_pt_r_L->Integral(1,hist_mu_pt_r_L->GetNbinsX()+1) );
-  m_mu_fr_tot = ( hist_mu_pt_f_T->Integral(1,hist_mu_pt_f_T->GetNbinsX()+1) ) / ( hist_mu_pt_f_L->Integral(1,hist_mu_pt_f_L->GetNbinsX()+1) );
-
+  
   std::cout << "\n" << std::endl;
   Info("readRFEfficiencies()", "MUON REAL efficiency - pT histogram name: %s ", histname_mu_pt_rr.c_str() );
   Info("readRFEfficiencies()", "MUON FAKE efficiency - pT histogram name: %s ", histname_mu_pt_fr.c_str() );
@@ -917,27 +996,39 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     std::map< std::string, TH1D* > *histograms = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
 
+    TH1D *hist_pt(nullptr);
+    TH1D *hist_eta(nullptr);
+
     //  1) Fake case: choose appropriate histogram
     //
     if ( type.compare("FAKE") == 0 ) {
     
     	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading fake efficiency..."); }
 
-    	// Loop over number of pt bins
+        hist_pt = ( histograms->find("pt_fr")->second );
+	if ( m_useTrigMatchingInfo ) {
+	    hist_pt = ( lep.get()->trigmatched ) ? ( histograms->find("pt_fr_YES_TM")->second ) : ( histograms->find("pt_fr_NO_TM")->second );
+    	}																					      
+	
+	if ( m_useEtaParametrisation ) {
+	    hist_eta = ( histograms->find("eta_fr")->second );
+	}
+	
+	// Loop over number of pt bins
     	// Do not consider underflow, i.e. 0th bin
     	//
     	for ( int p(1); p <= n_bins_pt_fr; ++p ) {
 
-    	    this_low_edge_pt = ( histograms->find("pt_fr")->second )->GetXaxis()->GetBinLowEdge(p);
-    	    this_up_edge_pt  = ( histograms->find("pt_fr")->second )->GetXaxis()->GetBinLowEdge(p+1);
+    	    this_low_edge_pt = hist_pt->GetXaxis()->GetBinLowEdge(p);
+    	    this_up_edge_pt  = hist_pt->GetXaxis()->GetBinLowEdge(p+1);
 
     	    if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
 
     	    if ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) {
             
-    	        float fr_pt	= ( histograms->find("pt_fr")->second )->GetBinContent(p);
-    	        float fr_pt_err = ( histograms->find("pt_fr")->second )->GetBinError(p);
-
+    	        float fr_pt	= hist_pt->GetBinContent(p);
+    	        float fr_pt_err = hist_pt->GetBinError(p);
+		
       	        if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV ==> Reading fake efficiency in pT bin [%.0f,%.0f] GeV: fr_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, fr_pt ); }
 
     	        float fr_eta(1.0), fr_eta_err(0.0);
@@ -949,15 +1040,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     	            //
     	            for ( int e(1); e <= n_bins_eta; ++e ) {
     	        	
-	    	  	this_low_edge_eta = ( histograms->find("eta_fr")->second )->GetXaxis()->GetBinLowEdge(e);
-    	        	this_up_edge_eta  = ( histograms->find("eta_fr")->second )->GetXaxis()->GetBinLowEdge(e+1);
+	    	  	this_low_edge_eta = hist_eta->GetXaxis()->GetBinLowEdge(e);
+    	        	this_up_edge_eta  = hist_eta->GetXaxis()->GetBinLowEdge(e+1);
 
     	        	if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
 
     	        	if ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) {
 
-    	        	    fr_eta     = ( histograms->find("eta_fr")->second )->GetBinContent(e);
-    	        	    fr_eta_err = ( histograms->find("eta_fr")->second )->GetBinError(e);
+    	        	    fr_eta     = hist_eta->GetBinContent(e);
+    	        	    fr_eta_err = hist_eta->GetBinError(e);
 
     	        	    if ( m_verbose ) {
     	        		Info("getMMEfficiencyAndError()", "\t\tLepton |eta| = %.3f ==> Reading fake efficiency in |eta| bin [%.3f,%.3f]: fr_eta = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, fr_eta );
@@ -1010,20 +1101,29 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     
     	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading real efficiency..."); }
 
+        hist_pt = ( histograms->find("pt_rr")->second );
+	if ( m_useTrigMatchingInfo ) {
+	    hist_pt = ( lep.get()->trigmatched ) ? ( histograms->find("pt_rr_YES_TM")->second ) : ( histograms->find("pt_rr_NO_TM")->second );
+    	}																					      
+	
+	if ( m_useEtaParametrisation ) {
+	    hist_eta = ( histograms->find("eta_rr")->second );
+	}
+
     	// Loop over number of pt bins
     	// Do not consider underflow, i.e. 0th bin
     	//
     	for ( int p(1); p <= n_bins_pt_rr; ++p ) {
 
-    	    this_low_edge_pt = ( histograms->find("pt_rr")->second )->GetXaxis()->GetBinLowEdge(p);
-    	    this_up_edge_pt  = ( histograms->find("pt_rr")->second )->GetXaxis()->GetBinLowEdge(p+1);
+    	    this_low_edge_pt = hist_pt->GetXaxis()->GetBinLowEdge(p);
+    	    this_up_edge_pt  = hist_pt->GetXaxis()->GetBinLowEdge(p+1);
 
     	    if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
 
     	    if ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) {
             
-    	        float rr_pt	= ( histograms->find("pt_rr")->second )->GetBinContent(p);
-    	        float rr_pt_err = ( histograms->find("pt_rr")->second )->GetBinError(p);
+    	        float rr_pt	= hist_pt->GetBinContent(p);
+    	        float rr_pt_err = hist_pt->GetBinError(p);
 
       	        if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV ==> Reading real efficiency in pT bin [%.0f,%.0f] GeV: rr_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, rr_pt ); }
 

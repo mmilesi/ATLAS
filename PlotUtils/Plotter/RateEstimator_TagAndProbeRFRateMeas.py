@@ -145,9 +145,16 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
         # The weight is the QMisID fraction wrt the total (data - prompt) for each bin
         # (The sum of weight is correctly normalised to 1)
         #
-        #w = hist_QMisID.GetBinContent(ibinx) / hist_data.GetBinContent(ibinx)
-        w = hist_QMisID.GetBinContent(ibinx) / ( hist_data.GetBinContent(ibinx) - hist_prompt.GetBinContent(ibinx) )
-
+	
+	numerator   = hist_QMisID.GetBinContent(ibinx)
+	#denominator = hist_data.GetBinContent(ibinx) 
+	denominator = hist_data.GetBinContent(ibinx) - hist_prompt.GetBinContent(ibinx)
+	
+	if denominator:
+            w = numerator / denominator
+	else:
+	    w = 1.0
+	    
 	print("bin {} - [{},{}] GeV\n\tQMisID = {} (hname: {})\n\tData = {} (hname: {})\n\tPrompt = {} (hname: {})\n\t===> w = {}".format(ibinx,bin_lowedge,bin_upedge,hist_QMisID.GetBinContent(ibinx),hist_QMisID.GetName(),hist_data.GetBinContent(ibinx),hist_data.GetName(),hist_prompt.GetBinContent(ibinx),hist_prompt.GetName(),w))
 
         # Deal with the (ill) case where the QMisID yield is higher than the denominator
@@ -235,7 +242,7 @@ if __name__ == "__main__":
 
     list_lep         = dict_channels_lep[args.flavourComp]
     list_types       = ["Real","RealQMisIDBinning","Fake"]
-    list_variables   = ["ProbePt"] #,"ProbeEta"] #"ProbeNJets"]
+    list_variables   = ["ProbePt","ProbeEta"] #"ProbeNJets"]
     list_selections  = ["L","T","AntiT"]
     list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                                   # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
