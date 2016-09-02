@@ -303,11 +303,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   m_leptons.push_back(lep1);
 
-  if ( m_debug ) {
-      Info("execute()","lep0:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched? %i", lep0.get()->pt/1e3, lep0.get()->etaBE2, lep0.get()->eta, lep0.get()->flavour, lep0.get()->tightselected, lep0.get()->trigmatched );
-      Info("execute()","lep1:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched? %i", lep1.get()->pt/1e3, lep1.get()->etaBE2, lep1.get()->eta, lep1.get()->flavour, lep1.get()->tightselected, lep1.get()->trigmatched );
-  }
-
   m_event.get()->isMC   = ( m_mc_channel_number > 0 );
   m_event.get()->dilep  = ( m_dilep_type > 0 );
   m_event.get()->isSS01 = ( m_isSS01 );
@@ -316,6 +311,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   m_event.get()->TAntiT     = m_is_T_AntiT;	  
   m_event.get()->AntiTT     = m_is_AntiT_T;	  
   m_event.get()->AntiTAntiT = m_is_AntiT_AntiT; 
+
+  if ( m_debug ) {
+      Info("execute()","lep0:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched? %i", lep0.get()->pt/1e3, lep0.get()->etaBE2, lep0.get()->eta, lep0.get()->flavour, lep0.get()->tightselected, lep0.get()->trigmatched );
+      Info("execute()","lep1:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched? %i", lep1.get()->pt/1e3, lep1.get()->etaBE2, lep1.get()->eta, lep1.get()->flavour, lep1.get()->tightselected, lep1.get()->trigmatched );
+      Info("execute()","event:\n TT ? %i, TAntiT ? %i, AntiTT ? %i, AntiTAntiT ? %i", m_event.get()->TT, m_event.get()->TAntiT, m_event.get()->AntiTT, m_event.get()->AntiTAntiT );
+  }
 
   if ( m_debug ) {
       if ( m_doQMisIDWeighting ) {
@@ -1269,16 +1270,27 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
 
 }
 
-float HTopMultilepNTupReprocesser :: matrix_equation ( const float& r0, const float& r1, const float& f0, const float& f1 )
+float HTopMultilepNTupReprocesser :: matrix_equation ( const float& f0, const float& f1, const float& r0, const float& r1 )
 {
 
     float w      = 1.0;
     float alpha  = 1.0 / ( (r0-f0) * (r1-f1) );
 
-    if      ( m_event.get()->TT 	 ) { w = 1 - ( r0 * r1 * (1-f0) * (1-f1) * alpha ); }
-    else if ( m_event.get()->TAntiT	 ) { w = r0 * r1 * f1 * (1-f0) * alpha;  }
-    else if ( m_event.get()->AntiTT	 ) { w = r0 * r1 * f0 * (1-f1) * alpha;  }
-    else if ( m_event.get()->AntiTAntiT  ) { w = -1 * r0 * r1 * f0 * f1 * alpha; }
+    if ( m_event.get()->TT ) { 
+        if ( m_verbose ) { Info("matrix_equation()", "In region TT:"); }
+        w = 1.0 - ( r0 * r1 * ( 1.0 -f0 ) * ( 1.0 - f1 ) * alpha ); 
+    } else if ( m_event.get()->TAntiT ) { 
+        if ( m_verbose ) { Info("matrix_equation()", "In region TAntiT:"); }
+        w = r0 * r1 * f1 * ( 1.0 - f0 ) * alpha;  
+    } else if ( m_event.get()->AntiTT ) { 
+        if ( m_verbose ) { Info("matrix_equation()", "In region AntiTT:"); }
+        w = r0 * r1 * f0 * ( 1.0 - f1 ) * alpha;  
+    } else if ( m_event.get()->AntiTAntiT ) { 
+        if ( m_verbose ) { Info("matrix_equation()", "In region AntiTAntiT:"); }
+        w = -1.0 * r0 * r1 * f0 * f1 * alpha; 
+    }
+
+    if ( m_verbose ) { Info("matrix_equation()", "\nr0 = %.3f, r1 = %.3f, f0 = %.3f, f1 = %.3f\nw = %.3f , alpha = %.3f ", r0, r1, f0, f1, w, alpha); }
 
     // The above formulas are equivalent to the following:
     //

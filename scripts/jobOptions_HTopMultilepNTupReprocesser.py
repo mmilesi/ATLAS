@@ -32,9 +32,15 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v19.root",
                                     "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TanitiT_25ns_v19.root",
                                     "m_useTAntiTRates"             : True,
-                                    "m_RR_dir"                     : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
+                                    #"m_RR_dir"                     : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
+				    #"m_RRFR_YES_TM_dir"            : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_YES_TM",
+				    #"m_RRFR_NO_TM_dir"             : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_NO_TM",
+                                    "m_RR_dir"                     : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19",
+				    "m_RRFR_YES_TM_dir"            : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19_Probe_YES_TM",
+				    "m_RRFR_NO_TM_dir"             : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19_Probe_NO_TM",
+				    "m_useTrigMatchingInfo"        : True,
 				    "m_Efficiency_Filename"        : "Rates.root",
-                                    "m_doMMClosure"                : False,
+                                    "m_doMMClosure"                : True,
                                     "m_useEtaParametrisation"      : False,
                                   }
 

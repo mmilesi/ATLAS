@@ -122,11 +122,11 @@ for branch in branches_to_activate:
 #
 HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNTupMaker",
                                   "m_debug"                : False,
-				                  "m_outputNTupName"       : "physics",
+				  "m_outputNTupName"       : "physics",
                                   "m_outputNTupStreamName" : "output",
-				                  "m_inputBranches"        : branches_to_activate_str,
-	                              "m_useAlgSelect"         : True,
-				                  "m_addStreamEventsHist"  : False,
+				  "m_inputBranches"        : branches_to_activate_str,
+	                          "m_useAlgSelect"         : True,
+				  "m_addStreamEventsHist"  : False,
                                 }
 
 # Instantiate the NTupleSvc algorithm
