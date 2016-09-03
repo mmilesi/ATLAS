@@ -228,6 +228,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 
   // ---------------------------------------------------------------------------------------------------------------
 
+  // Copy input TTree weight to output TTree
+  
+  m_outputNTuple->tree()->SetWeight( m_inputNTuple->GetWeight() );
+
+  // ---------------------------------------------------------------------------------------------------------------
+
   if ( m_doQMisIDWeighting ) {  
       Info("initialize()","Reading QMisID rates from ROOT file(s)..");
       ANA_CHECK( this->readQMisIDRates() );
