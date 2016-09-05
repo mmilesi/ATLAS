@@ -257,12 +257,12 @@ else:
     #
     vardb.registerCut( Cut('TrigDec',	  '( passEventCleaning == 1 && ( ( RunYear == 2015 && ( ( HLT_mu20_iloose_L1MU15 == 1 ) || ( HLT_mu50 == 1 ) || ( HLT_e24_lhmedium_L1EM20VH == 1 ) || ( HLT_e60_lhmedium == 1 ) || ( HLT_e120_lhloose == 1 ) ) ) || ( RunYear == 2016 && ( ( HLT_mu24_ivarmedium == 1 ) || ( HLT_mu50 == 1 ) || ( HLT_e24_lhtight_nod0_ivarloose == 1 ) || ( HLT_e60_lhmedium_nod0 == 1 ) || ( HLT_e140_lhloose_nod0 == 1 ) ) ) ) )' ) )
 
-vardb.registerCut( Cut('LargeNBJet',  '( nJets_OR_T_MV2c10_70 > 1 )') )
+vardb.registerCut( Cut('LargeNBJet',      '( nJets_OR_T_MV2c10_70 > 1 )') )
 vardb.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_T_MV2c10_70 < 4 )') )
-vardb.registerCut( Cut('BJetVeto',    '( nJets_OR_T_MV2c10_70 == 0 )') )
-vardb.registerCut( Cut('OneBJet',     '( nJets_OR_T_MV2c10_70 == 1 )') )
-vardb.registerCut( Cut('TauVeto',     '( nTaus_OR_Pt25 == 0 )') )
-vardb.registerCut( Cut('OneTau',      '( nTaus_OR_Pt25 == 1 )') )
+vardb.registerCut( Cut('BJetVeto',        '( nJets_OR_T_MV2c10_70 == 0 )') )
+vardb.registerCut( Cut('OneBJet',         '( nJets_OR_T_MV2c10_70 == 1 )') )
+vardb.registerCut( Cut('TauVeto',         '( nTaus_OR_Pt25 == 0 )') )
+vardb.registerCut( Cut('OneTau',          '( nTaus_OR_Pt25 == 1 )') )
 
 # ---------------------
 # 3lep cuts
@@ -670,6 +670,7 @@ if doStandardPlots:
 # -------------------------------------------------
 # Alterantive ranges and binning for the histograms
 # -------------------------------------------------
+
 midstatsbin = {
     'MMC': (25, 0., 250.),
     'mvis': (25, 0., 250.),
@@ -692,6 +693,7 @@ lowstatsbin = {
 # ---------------------
 # A list of systematics
 # ---------------------
+
 if args.doSyst:
     # if doTwoLepSR or doTwoLepLowNJetCR or dottWCR:
     #    vardb.registerSystematics( Systematics(name='CFsys',      eventweight='sys_weight_CF_') ) ## uncertainties on the kfactors used to normalize the various MC distributions
@@ -704,29 +706,28 @@ if args.doSyst:
         #vardb.registerSystematics( Systematics(name='FFsys',      eventweight='sys_weight_FF_') )
         vardb.registerSystematics( Systematics(name='FFsys',       eventweight='FFWeight') )
 
-    '''
-    vardb.registerSystematics( Systematics(name='PU',             eventweight='evtsel_sys_PU_rescaling_') )
-    vardb.registerSystematics( Systematics(name='el_reco',        eventweight='evtsel_sys_sf_el_reco_') )
-    vardb.registerSystematics( Systematics(name='el_id',          eventweight='evtsel_sys_sf_el_id_') )
-    vardb.registerSystematics( Systematics(name='el_iso',         eventweight='evtsel_sys_sf_el_iso_') )
-    vardb.registerSystematics( Systematics(name='mu_id',          eventweight='evtsel_sys_sf_mu_id_') )
-    vardb.registerSystematics( Systematics(name='mu_iso',         eventweight='evtsel_sys_sf_mu_iso_') )
-    vardb.registerSystematics( Systematics(name='lep_trig',       eventweight='evtsel_sys_sf_lep_trig_') )
-    vardb.registerSystematics( Systematics(name='bjet_b',         eventweight='evtsel_sys_sf_bjet_b_') )
-    vardb.registerSystematics( Systematics(name='bjet_c',         eventweight='evtsel_sys_sf_bjet_c_') )
-    vardb.registerSystematics( Systematics(name='bjet_m',         eventweight='evtsel_sys_sf_bjet_m_') )
+    #vardb.registerSystematics( Systematics(name='PU',             eventweight='evtsel_sys_PU_rescaling_') )
+    #vardb.registerSystematics( Systematics(name='el_reco',        eventweight='evtsel_sys_sf_el_reco_') )
+    #vardb.registerSystematics( Systematics(name='el_id',          eventweight='evtsel_sys_sf_el_id_') )
+    #vardb.registerSystematics( Systematics(name='el_iso',         eventweight='evtsel_sys_sf_el_iso_') )
+    #vardb.registerSystematics( Systematics(name='mu_id',          eventweight='evtsel_sys_sf_mu_id_') )
+    #vardb.registerSystematics( Systematics(name='mu_iso',         eventweight='evtsel_sys_sf_mu_iso_') )
+    #vardb.registerSystematics( Systematics(name='lep_trig',       eventweight='evtsel_sys_sf_lep_trig_') )
+    #vardb.registerSystematics( Systematics(name='bjet_b',         eventweight='evtsel_sys_sf_bjet_b_') )
+    #vardb.registerSystematics( Systematics(name='bjet_c',         eventweight='evtsel_sys_sf_bjet_c_') )
+    #vardb.registerSystematics( Systematics(name='bjet_m',         eventweight='evtsel_sys_sf_bjet_m_') )
 
-    vardb.registerSystematics( Systematics(name='METSys',         treename='METSys') )
-    vardb.registerSystematics( Systematics(name='ElEnResSys',     treename='ElEnResSys') )
-    vardb.registerSystematics( Systematics(name='ElES_LowPt',     treename='ElES_LowPt') )
-    vardb.registerSystematics( Systematics(name='ElES_Zee',       treename='ElES_Zee') )
-    vardb.registerSystematics( Systematics(name='ElES_R12',       treename='ElES_R12') )
-    vardb.registerSystematics( Systematics(name='ElES_PS',        treename='ElES_PS') )
-    vardb.registerSystematics( Systematics(name='EESSys',         treename='EESSys') )
-    vardb.registerSystematics( Systematics(name='MuSys',          treename='MuSys') )
-    vardb.registerSystematics( Systematics(name='JES_Total',      treename='JES_Total') )
-    vardb.registerSystematics( Systematics(name='JER',            treename='JER') )
-    '''
+    #vardb.registerSystematics( Systematics(name='METSys',         treename='METSys') )
+    #vardb.registerSystematics( Systematics(name='ElEnResSys',     treename='ElEnResSys') )
+    #vardb.registerSystematics( Systematics(name='ElES_LowPt',     treename='ElES_LowPt') )
+    #vardb.registerSystematics( Systematics(name='ElES_Zee',       treename='ElES_Zee') )
+    #vardb.registerSystematics( Systematics(name='ElES_R12',       treename='ElES_R12') )
+    #vardb.registerSystematics( Systematics(name='ElES_PS',        treename='ElES_PS') )
+    #vardb.registerSystematics( Systematics(name='EESSys',         treename='EESSys') )
+    #vardb.registerSystematics( Systematics(name='MuSys',          treename='MuSys') )
+    #vardb.registerSystematics( Systematics(name='JES_Total',      treename='JES_Total') )
+    #vardb.registerSystematics( Systematics(name='JER',            treename='JER') )
+    
 # -------------------------------------------------------------------
 # Definition of the categories for which one wants produce histograms
 # -------------------------------------------------------------------
@@ -978,20 +979,20 @@ if doCFChallenge:
 if doMMRates or doMMClosureRates:
 
     # ---------------------------------------
-    # Special plots for MM real/fake rate CRs
+    # Special plots for MM real/fake eff CRs
     # ---------------------------------------
 
     #vardb.registerVar( Variable(shortname = 'ElTagPt', latexname = 'p_{T}^{tag e} [GeV]', ntuplename = ('el_tag_pt[0]/1e3','lep_Tag_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
     #vardb.registerVar( Variable(shortname = 'ElTagEta', latexname = '#eta^{tag e}', ntuplename = ('TMath::Abs( el_tag_eta[0] )','TMath::Abs( lep_Tag_Eta )')[bool(args.useGroupNTup)],bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
+    
     vardb.registerVar( Variable(shortname = 'ElProbePt', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = ('el_probe_pt[0]/1e3','lep_Probe_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
-    #vardb.registerVar( Variable(shortname = 'ElProbeEta', latexname = '#eta^{probe e}', ntuplename = ('TMath::Abs( el_probe_caloCluster_eta[0] )','TMath::Abs( lep_Probe_EtaBE2 )')[bool(args.useGroupNTup)], bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6 ]) )
     vardb.registerVar( Variable(shortname = 'ElProbeEta', latexname = '#eta^{probe e}', ntuplename = ('TMath::Abs( el_probe_caloCluster_eta[0] )','TMath::Abs( lep_Probe_EtaBE2 )')[bool(args.useGroupNTup)], bins = 26, minval = 0.0,  maxval = 2.6) )
     #vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 8, minval = 2, maxval = 10) )
 
     #vardb.registerVar( Variable(shortname = 'MuTagPt', latexname = 'p_{T}^{tag #mu} [GeV]', ntuplename = ('muon_tag_pt[0]/1e3','lep_Tag_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
     #vardb.registerVar( Variable(shortname = 'MuTagEta', latexname = '#eta^{tag #mu}', ntuplename = ('TMath::Abs( muon_tag_eta[0] )','TMath::Abs( lep_Tag_Eta )')[bool(args.useGroupNTup)], bins = 8,  minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
+    
     vardb.registerVar( Variable(shortname = 'MuProbePt', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = ('muon_probe_pt[0]/1e3','lep_Probe_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0) )
-    #vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = ('TMath::Abs( muon_probe_eta[0] )','TMath::Abs( lep_Probe_Eta )')[bool(args.useGroupNTup)], bins = 8, minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
     vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = ('TMath::Abs( muon_probe_eta[0] )','TMath::Abs( lep_Probe_Eta )')[bool(args.useGroupNTup)], bins = 25, minval = 0.0, maxval = 2.5) )
     #vardb.registerVar( Variable(shortname = 'MuProbeNJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 8, minval = 2, maxval = 10) )
 
@@ -1172,8 +1173,8 @@ if doMMClosureTest:
 
         if "ALLNJ" in args.channel:
             vardb.registerCategory( MyCategory('MuMuSS_SR_AllJet_DataDriven_Closure',    cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_MuMu_Event','2Lep_MinNJet']) ) )
-            vardb.registerCategory( MyCategory('OFSS_SR_AllJet_DataDriven_Closure',      cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_MinNJet']) ) )
-            vardb.registerCategory( MyCategory('ElElSS_SR_AllJet_DataDriven_Closure',    cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_ElEl_Event','2Lep_ElEtaCut','2Lep_MinNJet']) ) )
+            vardb.registerCategory( MyCategory('OFSS_SR_AllJet_DataDriven_Closure',	 cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_MinNJet']) ) )
+            vardb.registerCategory( MyCategory('ElElSS_SR_AllJet_DataDriven_Closure',	 cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_ElEl_Event','2Lep_ElEtaCut','2Lep_MinNJet']) ) )
         elif "HIGHNJ" in args.channel:
             vardb.registerCategory( MyCategory('MuMuSS_SR_HighJet_DataDriven_Closure',   cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_MuMu_Event','2Lep_NJet_SR']) ) )
             vardb.registerCategory( MyCategory('OFSS_SR_HighJet_DataDriven_Closure',     cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','TauVeto','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_NJet_SR']) ) )
@@ -1359,12 +1360,12 @@ ttH = TTHBackgrounds(inputs, vardb)
 # Set the integrated luminosity (fb-1)
 # ------------------------------------
 
-#ttH.luminosity = 3.209 # GRL v73 - Moriond 2015 GRL
+#ttH.luminosity = 3.209 # GRL v73 - Moriond 2016 GRL
 #ttH.luminosity = 3.762 # (2015 +) 2016  - GRL v77 (period A)
 #ttH.luminosity =  6.691 # (2015 +) 2016 - GRL v79
 #ttH.luminosity =  8.311 # v17
 #ttH.luminosity = 11.70448 # v18
-ttH.luminosity = 13.20768 # v19
+ttH.luminosity = 13.20768 # v19 - ICHEP 2016 DS
 
 ttH.lumi_units = 'fb-1'
 
@@ -1738,6 +1739,7 @@ if ( doSR or ( doMMSidebands and ( "HIGHNJ" in args.channel or "ALLJ" in args.ch
 #
 # Override colours as well
 # -------------------------------------------------------
+
 histname   = {'Expected':'expected'}
 histcolour = {'Expected':kBlack}
 for samp in ttH.backgrounds:
@@ -1941,7 +1943,6 @@ for category in vardb.categorylist:
                                                                       )
 
         # Creating a file with the observed and expected distributions and systematics.
-        # We fit them for TES uncertainty studies
         #
         foutput = TFile(plotname + '.root','RECREATE')
         if ( 'Mll01' in var.shortname ) or ( 'NJets' in var.shortname ) or ( 'ProbePt' in var.shortname ):
@@ -1976,9 +1977,9 @@ for category in vardb.categorylist:
                                                                                          eventweight=combined_SF_weight,
                                                                                          category=category,
                                                                                          overflowbins=wantooverflow,
-                                                                                         showratio=True,
+                                                                                         showratio=doShowRatio,
                                                                                          wait=False,
-                                                                                         save=[plotname+'.png']
+                                                                                         save=list_formats
                                                                                          )
 
                 # Obtains the total MC histograms with a particular systematics shifted and saving it in the ROOT file
@@ -2008,13 +2009,13 @@ for category in vardb.categorylist:
                 #ACTUALLY THE CODE DOES NOT CONSIDER SYSTEMATICS FOR THE SIGNAL. PUT IT AMONG THE BACKGROUNDS IF YOU WANT SYST ON IT
                 if ( 'Mll01' in var.shortname ) or ( 'NJets' in var.shortname ):
                     outfile.write('Integral syst: \n')
-                    outfile.write('syst %s up:   delta_yields = %f \n' %(syst.name,(systup.Integral()-systnom.Integral())))
-                    outfile.write('syst %s down: delta_yields = %f \n' %(syst.name,(systdown.Integral()-systnom.Integral())))
+                    outfile.write('syst %s up:   delta_yields = %.2f \n' %(syst.name,(systup.Integral()-systnom.Integral())))
+                    outfile.write('syst %s down: delta_yields = %.2f \n' %(syst.name,(systdown.Integral()-systnom.Integral())))
                     if ( args.debug ):
                         outfile.write('GetEntries syst: \n')
-                        outfile.write('syst %s up:   delta_entries %f \n' %(syst.name,(systup.GetEntries()-systnom.GetEntries())))
-                        outfile.write('syst %s down: delta_entries %f \n' %(syst.name,(systdown.GetEntries()-systnom.GetEntries())))
-                total_syst = total_syst + (systup.Integral()-systdown.Integral())/2.0*(systup.Integral()-systdown.Integral())/2.0
+                        outfile.write('syst %s up:   delta_entries %.2f \n' %(syst.name,(systup.GetEntries()-systnom.GetEntries())))
+                        outfile.write('syst %s down: delta_entries %.2f \n' %(syst.name,(systdown.GetEntries()-systnom.GetEntries())))
+                total_syst       = total_syst + (systup.Integral()-systdown.Integral())/2.0*(systup.Integral()-systdown.Integral())/2.0
                 total_syst_up   += (systup.Integral()-systnom.Integral())*(systup.Integral()-systnom.Integral())
                 total_syst_down += (systdown.Integral()-systnom.Integral())*(systdown.Integral()-systnom.Integral())
 
@@ -2023,9 +2024,9 @@ for category in vardb.categorylist:
             total_syst_down = math.sqrt(total_syst_down)
 
             if ( 'Mll01' in var.shortname ) or ( 'NJets' in var.shortname ) or ( 'ProbePt' in var.shortname ):
-                outfile.write('yields total syst UP: %f \n' %(total_syst_up))
-                outfile.write('yields total syst DN: %f \n' %(total_syst_down))
-                outfile.write('yields total syst: %f \n' %(total_syst))
+                outfile.write('yields total syst UP: %.2f \n' %(total_syst_up))
+                outfile.write('yields total syst DN: %.2f \n' %(total_syst_down))
+                outfile.write('yields total syst: %.2f \n' %(total_syst))
 
         # Obtains the histograms correctly normalized
         #

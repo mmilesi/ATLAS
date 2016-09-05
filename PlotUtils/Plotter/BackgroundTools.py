@@ -100,7 +100,7 @@ class Inputs:
     # Load a tree from the alltrees list
     #
     def getTree(self, treename='physics', group='', subgroup='', sampleid=None):
-        
+
 	if sampleid:
             group, subgroup = self.sampleids[self.nomtree][sampleid]
 
@@ -117,11 +117,11 @@ class Inputs:
 	#print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
 
-    # Group list is a list of tuple with two elements (strings), e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards. 
+    # Group list is a list of tuple with two elements (strings), e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards.
     # The entire list of trees is returned, one tree for each tuple.
     #
     def getTrees(self, treename='physics', grouplist=[]):
-        
+
 	newGroupList = []
         for group, subgroup in grouplist:
             #In case of wildcards the functions getGroupList and/or getSubGroupList are colled to solve the *
@@ -236,9 +236,11 @@ class Variable:
         return h
 
 
+# A Cut is defined by a name and a set of rules defined in cut string, 
+# but can be also the composition of a series of cuts specified in the cut list
+
 class Cut:
     def __init__(self, cutname, cutstr, cutlist=None):
-        #cut can be only a cut defined by a name and a set of rules defined in cut string but can be also the composition of a series of cuts specified in the cut list
         self.cutname    = cutname
         self.cutstr     = cutstr
         if cutlist is None:
@@ -525,7 +527,7 @@ class SubProcess:
             #
             # Debug
             #
-            #print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
 	else:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s' % (cutstr))
             #
