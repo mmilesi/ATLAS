@@ -623,12 +623,18 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
 	Info("calculateQMisIDWeights()","\t r1 = %f ( up = %f, dn = %f )", r1, r1_up, r1_dn );
     }
 
-    // Finally, store the event weight + variations
+    // Finally, store the event weight + (relative) variations
     //
     if ( !( std::isnan(r0) ) && !( std::isnan(r1) ) && !( std::isinf(r0) ) && !( std::isinf(r1) ) ) {
-	m_event.get()->weight_QMisID.at(0) = ( r0 + r1 - 2.0 * r0 * r1 ) / ( 1.0 - r0 - r1 + 2.0 * r0 * r1 ) ;
-	m_event.get()->weight_QMisID.at(1) = ( r0_up + r1_up - 2.0 * r0_up * r1_up ) / ( 1.0 - r0_up - r1_up + 2.0 * r0_up * r1_up ) / m_event.get()->weight_QMisID.at(0);
-	m_event.get()->weight_QMisID.at(2) = ( r0_dn + r1_dn - 2.0 * r0_dn * r1_dn ) / ( 1.0 - r0_dn - r1_dn + 2.0 * r0_dn * r1_dn ) / m_event.get()->weight_QMisID.at(0);
+	
+	float nominal = ( r0 + r1 - 2.0 * r0 * r1 ) / ( 1.0 - r0 - r1 + 2.0 * r0 * r1 ); 
+	float up      = ( r0_up + r1_up - 2.0 * r0_up * r1_up ) / ( 1.0 - r0_up - r1_up + 2.0 * r0_up * r1_up );
+	float dn      = ( r0_dn + r1_dn - 2.0 * r0_dn * r1_dn ) / ( 1.0 - r0_dn - r1_dn + 2.0 * r0_dn * r1_dn );
+	
+	m_event.get()->weight_QMisID.at(0) = nominal;
+	m_event.get()->weight_QMisID.at(1) = ( !std::isnan(up/nominal) && !std::isinf(up/nominal) ) ? up/nominal : 0.0;
+	m_event.get()->weight_QMisID.at(2) = ( !std::isnan(dn/nominal) && !std::isinf(dn/nominal) ) ? dn/nominal : 0.0;
+    
     } else {
       ++m_count_inf;
     }
@@ -1194,7 +1200,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
 
     	if ( m_debug ) {
     	    Warning("getMMWeightAndError()", "Warning! The Matrix Method cannot be applied because : \nr0 = %.3f , r1 = %.3f, \nf0 = %.3f , f1 = %.3f", r0.at(0), r1.at(0),  f0.at(0), f1.at(0) );
-    	    Warning("getMMWeightAndError()", "Setting MM weight = 0 ...");
+    	    Warning("getMMWeightAndError()", "Setting MMWeight (nominal) = 0 ...");
     	}
         return EL::StatusCode::SUCCESS;
 
@@ -1219,16 +1225,19 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
     	// rup syst (save relative weight wrt. nominal)
     	//
     	mm_weight.at(1) = ( matrix_equation( f0.at(0), f1.at(0), r0up, r1up ) / mm_weight.at(0) );
+        mm_weight.at(1) = ( !std::isnan(mm_weight.at(1)) && ! std::isinf(mm_weight.at(1)) ) ? mm_weight.at(1) : 0.0;
 
 	// fdn syst (save relative weight wrt. nominal)
     	//
     	mm_weight.at(4) = ( matrix_equation( f0dn, f1dn, r0.at(0), r1.at(0) ) / mm_weight.at(0) );
+        mm_weight.at(4) = ( !std::isnan(mm_weight.at(4)) && ! std::isinf(mm_weight.at(4)) ) ? mm_weight.at(4) : 0.0;
 
     	if ( (r0dn > f0.at(0)) && (r1dn > f1.at(0)) ) {
 
 	    // rdn syst (save relative weight wrt. nominal)
     	    //
     	    mm_weight.at(2) = ( matrix_equation( f0.at(0), f1.at(0), r0dn, r1dn ) / mm_weight.at(0) );
+            mm_weight.at(2) = ( !std::isnan(mm_weight.at(2)) && ! std::isinf(mm_weight.at(2)) ) ? mm_weight.at(2) : 0.0;
 
 	} else {
     	    if ( m_debug ) {
@@ -1241,6 +1250,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
 	    // fup syst (save relative weight wrt. nominal)
     	    //
     	    mm_weight.at(3) = ( matrix_equation( f0up, f1up, r0.at(0), r1.at(0) ) / mm_weight.at(0) );
+            mm_weight.at(3) = ( !std::isnan(mm_weight.at(3)) && ! std::isinf(mm_weight.at(3)) ) ? mm_weight.at(3) : 0.0;
 
 	} else {
     	    if ( m_debug ) {
