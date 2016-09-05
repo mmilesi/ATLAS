@@ -70,7 +70,7 @@ parser.add_argument('--noWeights', action='store_true', dest='noWeights', defaul
 parser.add_argument('--noStandardPlots', action='store_true', dest='noStandardPlots',
                     help='exclude all standard plots')
 parser.add_argument('--doEPS', action='store_true', dest='doEPS', default=True,
-                    help='Make .eps output files (default=True)')
+                    help='Save output plots in eps format (Default is png only)')
 parser.add_argument('--doQMisIDRate', dest='doQMisIDRate', action='store_true',
                     help='Measure charge flip rate in MC (to be used with --channel=MMClosureRates)')
 parser.add_argument('--doUnblinding', dest='doUnblinding', action='store_true', default=False,
@@ -695,16 +695,6 @@ lowstatsbin = {
 # ---------------------
 
 if args.doSyst:
-    # if doTwoLepSR or doTwoLepLowNJetCR or dottWCR:
-    #    vardb.registerSystematics( Systematics(name='CFsys',      eventweight='sys_weight_CF_') ) ## uncertainties on the kfactors used to normalize the various MC distributions
-    if doMM:
-        #vardb.registerSystematics( Systematics(name='MMrsys',     eventweight='sys_weight_MMr_') )
-        #vardb.registerSystematics( Systematics(name='MMfsys',     eventweight='sys_weight_MMf_') )
-        vardb.registerSystematics( Systematics(name='MMrsys',      eventweight='MMWeight') )
-        vardb.registerSystematics( Systematics(name='MMfsys',      eventweight='MMWeight') )
-    if doFF:
-        #vardb.registerSystematics( Systematics(name='FFsys',      eventweight='sys_weight_FF_') )
-        vardb.registerSystematics( Systematics(name='FFsys',       eventweight='FFWeight') )
 
     #vardb.registerSystematics( Systematics(name='PU',             eventweight='evtsel_sys_PU_rescaling_') )
     #vardb.registerSystematics( Systematics(name='el_reco',        eventweight='evtsel_sys_sf_el_reco_') )
@@ -727,6 +717,14 @@ if args.doSyst:
     #vardb.registerSystematics( Systematics(name='MuSys',          treename='MuSys') )
     #vardb.registerSystematics( Systematics(name='JES_Total',      treename='JES_Total') )
     #vardb.registerSystematics( Systematics(name='JER',            treename='JER') )
+    
+    if doTwoLepSR or doThreeLepSR or doTwoLepLowNJetCR or doThreeLepLowNJetCR or doMMClosureTest:
+        #vardb.registerSystematics( Systematics(name='QMIsIDsys',      eventweight='QMisIDWeight_') ) 
+        if doMM:
+            vardb.registerSystematics( Systematics(name='MMrsys',      eventweight='MMWeight_r_') )
+            vardb.registerSystematics( Systematics(name='MMfsys',      eventweight='MMWeight_f_') )
+        if doFF:
+            vardb.registerSystematics( Systematics(name='FFsys',       eventweight='FFWeight_') )
     
 # -------------------------------------------------------------------
 # Definition of the categories for which one wants produce histograms
@@ -1968,7 +1966,11 @@ for category in vardb.categorylist:
                     pass
                 plotname = dirname + '/' + category.name + ' ' + var.shortname + ' ' + syst.name
                 plotname = plotname.replace(' ', '_')
-                #
+        
+	        list_formats_sys = [ plotname + '.png' ] #, plotname + '_canvas.root' ]
+                if args.doEPS:
+                    list_formats_sys.append( plotname + '.eps' )
+                
                 # plotSystematics is the function which takes care of the systematics
                 #
                 systs[category.name + ' ' + var.shortname] = background.plotSystematics( syst,
@@ -1979,13 +1981,15 @@ for category in vardb.categorylist:
                                                                                          overflowbins=wantooverflow,
                                                                                          showratio=doShowRatio,
                                                                                          wait=False,
-                                                                                         save=list_formats
+                                                                                         save=list_formats_sys
                                                                                          )
 
                 # Obtains the total MC histograms with a particular systematics shifted and saving it in the ROOT file
                 #
-                print ("\t\t\tPlotname: {0}\n".format( plotname ))
-                print ("\t\t\tSystematic: {0}\n".format( syst.name ))
+		print("")
+                print ("\tSystematic: {0}".format( syst.name ))
+                print ("\tDirectory for systematic plot: {0}/".format( plotname ))
+                print("")
 
                 systobs, systnom, systup, systdown, systlistup, systlistdown = systs[category.name + ' ' + var.shortname]
 
@@ -1993,21 +1997,24 @@ for category in vardb.categorylist:
                 histograms_syst['Expected_'+syst.name+'_up'].SetNameTitle(histname['Expected']+'_'+syst.name+'_up','')
                 histograms_syst['Expected_'+syst.name+'_up'].SetLineColor(histcolour['Expected'])
                 histograms_syst['Expected_'+syst.name+'_up'].Write()
-                histograms_syst['Expected_'+syst.name+'_down']=systdown
-                histograms_syst['Expected_'+syst.name+'_down'].SetNameTitle(histname['Expected']+'_'+syst.name+'_down','')
-                histograms_syst['Expected_'+syst.name+'_down'].SetLineColor(histcolour['Expected'])
-                histograms_syst['Expected_'+syst.name+'_down'].Write()
+                histograms_syst['Expected_'+syst.name+'_dn']=systdown
+                histograms_syst['Expected_'+syst.name+'_dn'].SetNameTitle(histname['Expected']+'_'+syst.name+'_dn','')
+                histograms_syst['Expected_'+syst.name+'_dn'].SetLineColor(histcolour['Expected'])
+                histograms_syst['Expected_'+syst.name+'_dn'].Write()
                 for samp in ttH.backgrounds:
                     histograms_syst[samp+'_'+syst.name+'_up'] = systlistup[samp]
                     histograms_syst[samp+'_'+syst.name+'_up'].SetNameTitle(histname[samp]+'_'+syst.name+'_up','')
                     histograms_syst[samp+'_'+syst.name+'_up'].SetLineColor(histcolour[samp])
                     histograms_syst[samp+'_'+syst.name+'_up'].Write()
-                    histograms_syst[samp+'_'+syst.name+'_down'] = systlistdown[samp]
-                    histograms_syst[samp+'_'+syst.name+'_down'].SetNameTitle(histname[samp]+'_'+syst.name+'_down','')
-                    histograms_syst[samp+'_'+syst.name+'_down'].SetLineColor(histcolour[samp])
-                    histograms_syst[samp+'_'+syst.name+'_down'].Write()
-                #ACTUALLY THE CODE DOES NOT CONSIDER SYSTEMATICS FOR THE SIGNAL. PUT IT AMONG THE BACKGROUNDS IF YOU WANT SYST ON IT
-                if ( 'Mll01' in var.shortname ) or ( 'NJets' in var.shortname ):
+                    histograms_syst[samp+'_'+syst.name+'_dn'] = systlistdown[samp]
+                    histograms_syst[samp+'_'+syst.name+'_dn'].SetNameTitle(histname[samp]+'_'+syst.name+'_dn','')
+                    histograms_syst[samp+'_'+syst.name+'_dn'].SetLineColor(histcolour[samp])
+                    histograms_syst[samp+'_'+syst.name+'_dn'].Write()
+                
+		# The code does not consider systematics on the signal.
+		# Put the signal in the backgrounds list if you want systematics on it.
+                
+		if ( 'Mll01' in var.shortname ) or ( 'NJets' in var.shortname ):
                     outfile.write('Integral syst: \n')
                     outfile.write('syst %s up:   delta_yields = %.2f \n' %(syst.name,(systup.Integral()-systnom.Integral())))
                     outfile.write('syst %s down: delta_yields = %.2f \n' %(syst.name,(systdown.Integral()-systnom.Integral())))

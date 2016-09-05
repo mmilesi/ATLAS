@@ -779,7 +779,7 @@ class Background:
         cache.append(TColor(1010, 103/255., 73/255., 130/255.))     # purple
         cache.append(TColor(1000, 108/255., 178/255., 81/255.))     # green
         return cache
-    """
+    
     def getProcess(self, name, category=None, systematics=None, systematicsdirection=None, options={}):
         treename = 'physics'
         eventweight = None
@@ -801,53 +801,7 @@ class Background:
                     if systematicsdirection == 'UP':
                         eventweight = systematics.eventweight + 'up'
                     elif systematicsdirection == 'DOWN':
-                        eventweight = systematics.eventweight + 'down'
-
-        if systematics and (systematics.process == name or not systematics.process):
-            options['systematics'] = systematics
-            options['systematicsdirection'] = systematicsdirection
-        process = self.procmap[name](treename=treename, category=category, options=options)
-        if eventweight:
-            process = process.subprocess(eventweight=eventweight)
-
-        return process
-    """
-
-    def getProcess(self, name, category=None, systematics=None, systematicsdirection=None, options={}):
-        treename = 'physics'
-        eventweight = None
-        if systematics:
-            matchtoken = True
-            if systematics.categorytokens:
-                matchtoken = False
-                for c in systematics.categorytokens:
-                    if c in category.tokens:
-                        matchtoken = True
-                        break
-            if matchtoken:
-                if systematics.treename:
-                    if systematicsdirection == 'UP':
-                        treename = 'SystematicsUP/' + systematics.treename
-                    elif systematicsdirection == 'DOWN':
-                        treename = 'SystematicsDOWN/' + systematics.treename
-                if systematics.eventweight:
-		    if ('MMrsys') in systematics.name:
-                        if systematicsdirection == 'UP':
-		            eventweight = systematics.eventweight + '[1]'
-		        elif systematicsdirection == 'DOWN':
-			    eventweight = systematics.eventweight + '[2]'
-		    if ('MMfsys') in systematics.name:
-                        if systematicsdirection == 'UP':
-		            eventweight = systematics.eventweight + '[3]'
-		        elif systematicsdirection == 'DOWN':
-			    eventweight = systematics.eventweight + '[4]'
-		    if ('FFsys') in systematics.name:
-                        if systematicsdirection == 'UP':
-		            eventweight = systematics.eventweight + '[1]'
-		        elif systematicsdirection == 'DOWN':
-			    eventweight = systematics.eventweight + '[2]'
-
-		    print 'systematic name: ', systematics.name, ' - weight: ', eventweight
+                        eventweight = systematics.eventweight + 'dn'
 
         if systematics and (systematics.process == name or not systematics.process):
             options['systematics'] = systematics

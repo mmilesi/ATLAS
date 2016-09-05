@@ -40,7 +40,7 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
   m_weightToCalc         = "";
   m_doQMisIDWeighting    = false;
   m_doMMWeighting        = false;
-
+  
   m_QMisIDRates_dir            = "";
   m_QMisIDRates_Filename_T     = "";
   m_QMisIDRates_Filename_AntiT = "";
@@ -130,13 +130,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   TObjArray* branches = m_inputNTuple->GetListOfBranches();
   int nbranches = branches->GetEntriesFast();
   for ( int idx(0); idx < nbranches; ++idx ) {
-      if ( strcmp( branches->At(idx)->GetName(), "QMisIDWeight" ) == 0 ) {
+      std::string this_branch(branches->At(idx)->GetName());
+      if ( this_branch.find("QMisIDWeight") != std::string::npos ) {
 	  m_isQMisIDBranchIn = true;
 	  break;
       }
   }
   for ( int idx(0); idx < nbranches; ++idx ) {
-      if ( strcmp( branches->At(idx)->GetName(), "MMWeight" ) == 0 ) {
+      std::string this_branch(branches->At(idx)->GetName());
+      if ( this_branch.find("MMWeight") != std::string::npos ) {
 	  m_isMMBranchIn = true;
 	  break;
       }
@@ -175,8 +177,19 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_1",   		      &m_lep_isTightSelected_1);
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_1",   		      &m_lep_isTrigMatch_1);
 
-  if ( m_isQMisIDBranchIn ) {  m_inputNTuple->SetBranchAddress ("QMisIDWeight",  &m_QMisIDWeight_in); }
-  if ( m_isMMBranchIn )     {  m_inputNTuple->SetBranchAddress ("MMWeight",      &m_MMWeight_in);     }
+  if ( m_isQMisIDBranchIn ) {  
+      m_inputNTuple->SetBranchAddress ("QMisIDWeight",     &m_QMisIDWeight_in); 
+      m_inputNTuple->SetBranchAddress ("QMisIDWeight_up",  &m_QMisIDWeight_UP_in); 
+      m_inputNTuple->SetBranchAddress ("QMisIDWeight_dn",  &m_QMisIDWeight_DN_in); 
+  }
+  if ( m_isMMBranchIn ) {  
+      m_inputNTuple->SetBranchAddress ("MMWeight",         &m_MMWeight_in);     
+      m_inputNTuple->SetBranchAddress ("MMWeight_r_up",    &m_MMWeight_R_UP_in);     
+      m_inputNTuple->SetBranchAddress ("MMWeight_r_dn",    &m_MMWeight_R_DN_in);     
+      m_inputNTuple->SetBranchAddress ("MMWeight_f_up",    &m_MMWeight_F_UP_in);     
+      m_inputNTuple->SetBranchAddress ("MMWeight_f_dn",    &m_MMWeight_F_DN_in);     
+  
+  }
 
   return EL::StatusCode::SUCCESS;
 }
@@ -209,8 +222,18 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 
   // Set new branches for output TTree
   //
-  if ( m_doQMisIDWeighting ) { m_outputNTuple->tree()->Branch("QMisIDWeight",  &m_QMisIDWeight_out); }
-  if ( m_doMMWeighting )     { m_outputNTuple->tree()->Branch("MMWeight",      &m_MMWeight_out); }
+  if ( m_doQMisIDWeighting ) { 
+      m_outputNTuple->tree()->Branch("QMisIDWeight",     &m_QMisIDWeight_out,    "QMisIDWeight/F"); 
+      m_outputNTuple->tree()->Branch("QMisIDWeight_up",  &m_QMisIDWeight_UP_out, "QMisIDWeight_up/F"); 
+      m_outputNTuple->tree()->Branch("QMisIDWeight_dn",  &m_QMisIDWeight_DN_out, "QMisIDWeight_dn/F"); 
+  }
+  if ( m_doMMWeighting ) { 
+      m_outputNTuple->tree()->Branch("MMWeight",         &m_MMWeight_out,      "MMWeight/F"); 
+      m_outputNTuple->tree()->Branch("MMWeight_r_up",	 &m_MMWeight_R_UP_out, "MMWeight_r_up/F"); 
+      m_outputNTuple->tree()->Branch("MMWeight_r_dn",	 &m_MMWeight_R_DN_out, "MMWeight_r_dn/F"); 
+      m_outputNTuple->tree()->Branch("MMWeight_f_up",	 &m_MMWeight_F_UP_out, "MMWeight_f_up/F"); 
+      m_outputNTuple->tree()->Branch("MMWeight_f_dn",	 &m_MMWeight_F_DN_out, "MMWeight_f_dn/F"); 
+  }
 
   // ---------------------------------------------------------------------------------------------------------------
 
@@ -326,34 +349,28 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   if ( m_debug ) {
       if ( m_doQMisIDWeighting ) {
-	  unsigned int idx(0);
 	  if ( !m_isQMisIDBranchIn ) {
-	      for ( const auto& itr : m_event.get()->weight_QMisID ) {
-		  if ( idx == 0 ) Info("execute()","\t\tDefault QMisIDWeight[%i] = %.3f", idx, itr );
-		  else            Info("execute()","\t\tDefault QMisIDWeight[%i] ( QMisIDWeight[%i] * QMisIDWeight[0] ) = %.3f ( %.3f )", idx, idx, itr, ( itr * *(m_event.get()->weight_QMisID.begin()) )  );
-		  ++idx;
-	      }
+	      Info("execute()","\t\tDefault QMisIDWeight = %.3f", m_event.get()->weight_QMisID );
+	      Info("execute()","\t\tDefault QMisIDWeight (up) = %.3f", m_event.get()->weight_QMisID_UP );
+	      Info("execute()","\t\tDefault QMisIDWeight (dn) = %.3f", m_event.get()->weight_QMisID_DN );
 	  } else {
-	      for ( const auto& itr : *m_QMisIDWeight_in ) {
-		  if ( idx == 0 ) Info("execute()","\t\tIN QMisIDWeight[%i] = %.3f", idx, itr );
-		  else            Info("execute()","\t\tIN QMisIDWeight[%i] ( QMisIDWeight[%i] * QMisIDWeight[0] ) = %.3f ( %.3f )", idx, idx, itr, ( itr * *(m_QMisIDWeight_in->begin()) )  );
-		  ++idx;
-	      }
+	      Info("execute()","\t\tIN QMisIDWeight = %.3f", m_QMisIDWeight_in );
+	      Info("execute()","\t\tIN QMisIDWeight (up) = %.3f", m_QMisIDWeight_UP_in );
+	      Info("execute()","\t\tIN QMisIDWeight (dn) = %.3f", m_QMisIDWeight_DN_in );
 	  }
       } else if ( m_doMMWeighting ) {
-	  unsigned int idx(0);
 	  if ( !m_isMMBranchIn ) {
-	      for ( const auto& itr : m_event.get()->weight_MM ) {
-		  if ( idx == 0 ) Info("execute()","\t\tDefault MMWeight[%i] = %.3f", idx, itr );
-		  else            Info("execute()","\t\tDefault MMWeight[%i] ( MMWeight[%i] * MMWeight[0] ) = %.3f ( %.3f )", idx, idx, itr, ( itr * *(m_event.get()->weight_MM.begin()) )  );
-		  ++idx;
-	      }
+	      Info("execute()","\t\tDefault MMWeight = %.3f", m_event.get()->weight_MM );
+	      Info("execute()","\t\tDefault MMWeight (r up) = %.3f", m_event.get()->weight_MM_R_UP );
+	      Info("execute()","\t\tDefault MMWeight (r dn) = %.3f", m_event.get()->weight_MM_R_DN );
+	      Info("execute()","\t\tDefault MMWeight (f up) = %.3f", m_event.get()->weight_MM_F_UP );
+	      Info("execute()","\t\tDefault MMWeight (f dn) = %.3f", m_event.get()->weight_MM_F_DN );
 	  } else {
-	      for ( const auto& itr : *m_MMWeight_in ) {
-		  if ( idx == 0 ) Info("execute()","\t\tIN MMWeight[%i] = %.3f", idx, itr );
-		  else            Info("execute()","\t\tIN MMWeight[%i] ( MMWeight[%i] * MMWeight[0] ) = %.3f ( %.3f )", idx, idx, itr, ( itr * *(m_MMWeight_in->begin()) )  );
-		  ++idx;
-	      }
+	      Info("execute()","\t\tIN MMWeight = %.3f", m_MMWeight_in );
+	      Info("execute()","\t\tIN MMWeight (r up) = %.3f", m_MMWeight_R_UP_in );
+	      Info("execute()","\t\tIN MMWeight (r dn) = %.3f", m_MMWeight_R_DN_in );
+	      Info("execute()","\t\tIN MMWeight (f up) = %.3f", m_MMWeight_F_UP_in );
+	      Info("execute()","\t\tIN MMWeight (f dn) = %.3f", m_MMWeight_F_DN_in );
 	  }
       }
   }
@@ -375,20 +392,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   if ( m_debug ) {
       if ( m_doQMisIDWeighting ) {
-	  unsigned int idx(0);
-	  for ( const auto& itr : m_QMisIDWeight_out ) {
-	      if ( idx == 0 ) Info("execute()","\t\tOUT QMisIDWeight[%i] = %.3f", idx, itr );
-              else            Info("execute()","\t\tOUT QMisIDWeight[%i] ( QMisIDWeight[%i] * QMisIDWeight[0] ) = %.3f ( %.3f )", idx, idx, itr, ( itr * *(m_QMisIDWeight_out.begin()) )  );
-	      ++idx;
-	  }
+	  Info("execute()","\t\tOUT QMisIDWeight = %.3f", m_QMisIDWeight_out );
+	  Info("execute()","\t\tOUT QMisIDWeight (up) = %.3f", m_QMisIDWeight_UP_out );
+	  Info("execute()","\t\tOUT QMisIDWeight (dn) = %.3f", m_QMisIDWeight_DN_out );
       }
       if ( m_doMMWeighting ) {
-	  unsigned int idx(0);
-	  for ( const auto& itr : m_MMWeight_out ) {
-	      if ( idx == 0 ) Info("execute()","\t\tOUT MMWeight[%i] = %.3f", idx, itr );
-              else            Info("execute()","\t\tOUT MMWeight[%i] ( MMWeight[%i] * MMWeight[0] ) = %.3f ( %.3f )", idx, idx, itr, ( itr * *(m_MMWeight_out.begin()) )  );
-	      ++idx;
-	  }
+	  Info("execute()","\t\tOUT MMWeight = %.3f", m_MMWeight_out );
+	  Info("execute()","\t\tOUT MMWeight (r up) = %.3f", m_MMWeight_R_UP_out );
+	  Info("execute()","\t\tOUT MMWeight (r dn) = %.3f", m_MMWeight_R_DN_out );
+	  Info("execute()","\t\tOUT MMWeight (f up) = %.3f", m_MMWeight_F_UP_out );
+	  Info("execute()","\t\tOUT MMWeight (f dn) = %.3f", m_MMWeight_F_DN_out );
       }
   }
 
@@ -477,10 +490,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: enableSelectedBranches ()
 
   // Re-enable only the branches we are going to use
   //
+  Info("enableSelectedBranches()", "Activating branches:\n");
   for ( const auto& branch : branch_vec ) {
-    if ( !m_isQMisIDBranchIn && branch.compare("QMisIDWeight") == 0 ) { continue; }
-    if ( !m_isMMBranchIn && branch.compare("MMWeight") == 0 )         { continue; }
+    
+    if ( !m_isQMisIDBranchIn && branch.find("QMisIDWeight") != std::string::npos ) { continue; }
+    if ( !m_isMMBranchIn && branch.find("MMWeight") != std::string::npos )         { continue; }
+    
+    std::cout << "SetBranchStatus(" << branch << ", 1)" << std::endl;
+    
     m_inputNTuple->SetBranchStatus (branch.c_str(), 1);
+  
   }
 
   return EL::StatusCode::SUCCESS;
@@ -496,10 +515,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: setOutputBranches ()
   ANA_CHECK( this->clearBranches() );
 
   if ( m_doQMisIDWeighting ) {
-      m_QMisIDWeight_out = m_event.get()->weight_QMisID;
+      m_QMisIDWeight_out    = m_event.get()->weight_QMisID;
+      m_QMisIDWeight_UP_out = m_event.get()->weight_QMisID_UP;
+      m_QMisIDWeight_DN_out = m_event.get()->weight_QMisID_DN;
   }
   if ( m_doMMWeighting ) {
-      m_MMWeight_out = m_event.get()->weight_MM;
+      m_MMWeight_out       = m_event.get()->weight_MM;
+      m_MMWeight_R_UP_out  = m_event.get()->weight_MM_R_UP;
+      m_MMWeight_R_DN_out  = m_event.get()->weight_MM_R_DN;
+      m_MMWeight_F_UP_out  = m_event.get()->weight_MM_F_UP;
+      m_MMWeight_F_DN_out  = m_event.get()->weight_MM_F_DN;
   }
 
   return EL::StatusCode::SUCCESS;
@@ -508,9 +533,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: setOutputBranches ()
 
 EL::StatusCode HTopMultilepNTupReprocesser :: clearBranches ()
 {
-
-  if ( m_doQMisIDWeighting ) { m_QMisIDWeight_out.clear(); }
-  if ( m_doMMWeighting )     { m_MMWeight_out.clear(); }
 
   return EL::StatusCode::SUCCESS;
 
@@ -526,14 +548,8 @@ EL::StatusCode HTopMultilepNTupReprocesser ::  readQMisIDRates()
     TFile *file_AntiT = TFile::Open(path_AntiT.c_str());
     TFile *file_T     = TFile::Open(path_T.c_str());
 
-    if ( !file_AntiT->IsOpen() ) {
-	Error("readQMisIDRates()", "Failed to open ROOT file from path: %s . Aborting", path_AntiT.c_str() );
-	return EL::StatusCode::FAILURE;
-    }
-    if ( !file_T->IsOpen() ) {
-	Error("readQMisIDRates()", "Failed to open ROOT file from path: %s . Aborting", path_T.c_str() );
-	return EL::StatusCode::FAILURE;
-    }
+    HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readQMisIDRates()", file_AntiT->IsOpen(), "Failed to open ROOT file" );
+    HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readQMisIDRates()", file_T->IsOpen(), "Failed to open ROOT file" );
 
     Info("readQMisIDRates()", "Successfully opened ROOT files with QMisID rates from path:\n AntiT --> %s \n T --> %s", path_AntiT.c_str(), path_T.c_str() );
 
@@ -626,15 +642,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
     // Finally, store the event weight + (relative) variations
     //
     if ( !( std::isnan(r0) ) && !( std::isnan(r1) ) && !( std::isinf(r0) ) && !( std::isinf(r1) ) ) {
+
+        float nominal = ( r0 + r1 - 2.0 * r0 * r1 ) / ( 1.0 - r0 - r1 + 2.0 * r0 * r1 ); 
+        float up      = ( r0_up + r1_up - 2.0 * r0_up * r1_up ) / ( 1.0 - r0_up - r1_up + 2.0 * r0_up * r1_up );
+        float dn      = ( r0_dn + r1_dn - 2.0 * r0_dn * r1_dn ) / ( 1.0 - r0_dn - r1_dn + 2.0 * r0_dn * r1_dn );
 	
-	float nominal = ( r0 + r1 - 2.0 * r0 * r1 ) / ( 1.0 - r0 - r1 + 2.0 * r0 * r1 ); 
-	float up      = ( r0_up + r1_up - 2.0 * r0_up * r1_up ) / ( 1.0 - r0_up - r1_up + 2.0 * r0_up * r1_up );
-	float dn      = ( r0_dn + r1_dn - 2.0 * r0_dn * r1_dn ) / ( 1.0 - r0_dn - r1_dn + 2.0 * r0_dn * r1_dn );
-	
-	m_event.get()->weight_QMisID.at(0) = nominal;
-	m_event.get()->weight_QMisID.at(1) = ( !std::isnan(up/nominal) && !std::isinf(up/nominal) ) ? up/nominal : 0.0;
-	m_event.get()->weight_QMisID.at(2) = ( !std::isnan(dn/nominal) && !std::isinf(dn/nominal) ) ? dn/nominal : 0.0;
-    
+	m_event.get()->weight_QMisID    = nominal;
+	m_event.get()->weight_QMisID_UP = ( !std::isnan(up/nominal) && !std::isinf(up/nominal) ) ? up/nominal : 0.0;
+	m_event.get()->weight_QMisID_DN = ( !std::isnan(dn/nominal) && !std::isinf(dn/nominal) ) ? dn/nominal : 0.0;
+
     } else {
       ++m_count_inf;
     }
@@ -1222,22 +1238,19 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
     	float f0dn = ( f0.at(2) < 0.0 ) ? 0.0 :  f0.at(2) ;
     	float f1dn = ( f1.at(2) < 0.0 ) ? 0.0 :  f1.at(2) ;
 
-    	// rup syst (save relative weight wrt. nominal)
+    	// rup syst 
     	//
-    	mm_weight.at(1) = ( matrix_equation( f0.at(0), f1.at(0), r0up, r1up ) / mm_weight.at(0) );
-        mm_weight.at(1) = ( !std::isnan(mm_weight.at(1)) && ! std::isinf(mm_weight.at(1)) ) ? mm_weight.at(1) : 0.0;
+    	mm_weight.at(1) = matrix_equation( f0.at(0), f1.at(0), r0up, r1up );
 
-	// fdn syst (save relative weight wrt. nominal)
+	// fdn syst
     	//
-    	mm_weight.at(4) = ( matrix_equation( f0dn, f1dn, r0.at(0), r1.at(0) ) / mm_weight.at(0) );
-        mm_weight.at(4) = ( !std::isnan(mm_weight.at(4)) && ! std::isinf(mm_weight.at(4)) ) ? mm_weight.at(4) : 0.0;
+    	mm_weight.at(4) = matrix_equation( f0dn, f1dn, r0.at(0), r1.at(0) );
 
     	if ( (r0dn > f0.at(0)) && (r1dn > f1.at(0)) ) {
 
-	    // rdn syst (save relative weight wrt. nominal)
+	    // rdn syst 
     	    //
-    	    mm_weight.at(2) = ( matrix_equation( f0.at(0), f1.at(0), r0dn, r1dn ) / mm_weight.at(0) );
-            mm_weight.at(2) = ( !std::isnan(mm_weight.at(2)) && ! std::isinf(mm_weight.at(2)) ) ? mm_weight.at(2) : 0.0;
+    	    mm_weight.at(2) = matrix_equation( f0.at(0), f1.at(0), r0dn, r1dn );
 
 	} else {
     	    if ( m_debug ) {
@@ -1247,10 +1260,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
 
     	if ( (r0.at(0) > f0up) && (r1.at(0) > f1up) ) {
 
-	    // fup syst (save relative weight wrt. nominal)
+	    // fup syst
     	    //
-    	    mm_weight.at(3) = ( matrix_equation( f0up, f1up, r0.at(0), r1.at(0) ) / mm_weight.at(0) );
-            mm_weight.at(3) = ( !std::isnan(mm_weight.at(3)) && ! std::isinf(mm_weight.at(3)) ) ? mm_weight.at(3) : 0.0;
+    	    mm_weight.at(3) = matrix_equation( f0up, f1up, r0.at(0), r1.at(0) );
 
 	} else {
     	    if ( m_debug ) {
@@ -1337,7 +1349,13 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 
     ANA_CHECK( this->getMMWeightAndError( mm_weight, r0, r1, f0, f1 ) );
 
-    m_event.get()->weight_MM = mm_weight;
+    // For systematics, save relative weight wrt. nominal
+
+    m_event.get()->weight_MM = mm_weight.at(0);
+    m_event.get()->weight_MM_R_UP = ( !std::isnan(mm_weight.at(1)/mm_weight.at(0)) && !std::isinf(mm_weight.at(1)/mm_weight.at(0)) ) ? mm_weight.at(1)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_R_DN = ( !std::isnan(mm_weight.at(2)/mm_weight.at(0)) && !std::isinf(mm_weight.at(2)/mm_weight.at(0)) ) ? mm_weight.at(2)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_F_UP = ( !std::isnan(mm_weight.at(3)/mm_weight.at(0)) && !std::isinf(mm_weight.at(3)/mm_weight.at(0)) ) ? mm_weight.at(3)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_F_DN = ( !std::isnan(mm_weight.at(4)/mm_weight.at(0)) && !std::isinf(mm_weight.at(4)/mm_weight.at(0)) ) ? mm_weight.at(4)/mm_weight.at(0) : 0.0;
 
     return EL::StatusCode::SUCCESS;
 }

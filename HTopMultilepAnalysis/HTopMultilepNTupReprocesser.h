@@ -34,8 +34,8 @@ namespace NTupReprocesser {
     	  isSS01(0),
     	  dilep(0),
   	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0),
-  	  weight_QMisID{1.0,1.0,1.0},
-  	  weight_MM{1.0,1.0,1.0,1.0,1.0}
+	  weight_QMisID(1.0),weight_QMisID_UP(1.0),weight_QMisID_DN(1.0),
+          weight_MM(1.0),weight_MM_R_UP(1.0),weight_MM_R_DN(1.0),weight_MM_F_UP(1.0),weight_MM_F_DN(1.0)
     { };
 
     char isMC;
@@ -46,8 +46,8 @@ namespace NTupReprocesser {
     char AntiTT;
     char AntiTAntiT;
 
-    std::vector<float> weight_QMisID;
-    std::vector<float> weight_MM;
+    float weight_QMisID, weight_QMisID_UP, weight_QMisID_DN;
+    float weight_MM, weight_MM_R_UP, weight_MM_R_DN, weight_MM_F_UP, weight_MM_F_DN;
 
   };
 
@@ -162,8 +162,15 @@ private:
   Char_t	  m_lep_isTightSelected_1;
   Char_t	  m_lep_isTrigMatch_1;
 
-  std::vector<float> *m_QMisIDWeight_in = nullptr; //!
-  std::vector<float> *m_MMWeight_in     = nullptr; //!
+  Float_t	  m_QMisIDWeight_in;
+  Float_t	  m_QMisIDWeight_UP_in;
+  Float_t	  m_QMisIDWeight_DN_in;
+  
+  Float_t	  m_MMWeight_in;
+  Float_t	  m_MMWeight_R_UP_in;
+  Float_t	  m_MMWeight_R_DN_in;
+  Float_t	  m_MMWeight_F_UP_in;
+  Float_t	  m_MMWeight_F_DN_in;
 
   /** Add/update weight or not */
 
@@ -178,9 +185,16 @@ private:
   bool m_isMMBranchIn;
 
   /** Extra branches to be stored in output TTree */
-
-  std::vector<float> m_QMisIDWeight_out;
-  std::vector<float> m_MMWeight_out;
+  
+  Float_t	  m_QMisIDWeight_out;
+  Float_t	  m_QMisIDWeight_UP_out;
+  Float_t	  m_QMisIDWeight_DN_out;
+  
+  Float_t	  m_MMWeight_out;
+  Float_t	  m_MMWeight_R_UP_out;
+  Float_t	  m_MMWeight_R_DN_out;
+  Float_t	  m_MMWeight_F_UP_out;
+  Float_t	  m_MMWeight_F_DN_out;  
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker

@@ -46,17 +46,17 @@ def get_yields(nominal, up=None, down=None):
             delta_down = value_down - value_nominal
 
             sys_up   = 0.0
-            sys_down = 0.0
+            sys_dn = 0.0
 
             if delta_up >= 0.0:
                 sys_up = abs( delta_up )
             if delta_down <= 0.0:
-                sys_down = abs( delta_down )
+                sys_dn = abs( delta_down )
 
             if nominal.IsBinOverflow(bin):
-                print ("\t\t{0}-jets bin (O-FLOW): integral = {1:.2f} +- {2:.2f} (stat) (+ {3:.2f}, - {4:.2f}) (syst)".format( bincenter, value_nominal, stat_error, sys_up, sys_down ))
+                print ("\t\t{0}-jets bin (O-FLOW): integral = {1:.2f} +- {2:.2f} (stat) (+ {3:.2f}, - {4:.2f}) (syst)".format( bincenter, value_nominal, stat_error, sys_up, sys_dn ))
             else:
-                print ("\t\t{0}-jets bin: integral = {1:.2f} +- {2:.2f} (stat) (+ {3:.2f}, - {4:.2f}) (syst)".format( bincenter, value_nominal, stat_error, sys_up, sys_down ))
+                print ("\t\t{0}-jets bin: integral = {1:.2f} +- {2:.2f} (stat) (+ {3:.2f}, - {4:.2f}) (syst)".format( bincenter, value_nominal, stat_error, sys_up, sys_dn ))
 
         else:
             if nominal.IsBinOverflow(bin):
@@ -76,19 +76,19 @@ def get_yields(nominal, up=None, down=None):
         delta_down = down.Integral(0,down.GetNbinsX()+1) - integral_nominal
 
         integral_sys_up   = 0.0
-        integral_sys_down = 0.0
+        integral_sys_dn = 0.0
 
         if delta_up >= 0.0:
             integral_sys_up = abs( delta_up )
         if delta_down <= 0.0:
-            integral_sys_down = abs( delta_down )
+            integral_sys_dn = abs( delta_down )
 
         # Total uncertainty
         #
-        max_integral_sys   = max([integral_sys_up, integral_sys_down])
+        max_integral_sys   = max([integral_sys_up, integral_sys_dn])
         integral_tot_error = math.sqrt( ( integral_stat_error * integral_stat_error ) + ( max_integral_sys * max_integral_sys ) )
 
-        print ("\t\tIntegral = {0:.2f} +- {1:.2f} (stat) (+ {2:.2f}, - {3:.2f}) (syst)".format(integral_nominal, integral_stat_error, integral_sys_up, integral_sys_down ))
+        print ("\t\tIntegral = {0:.2f} +- {1:.2f} (stat) (+ {2:.2f}, - {3:.2f}) (syst)".format(integral_nominal, integral_stat_error, integral_sys_up, integral_sys_dn ))
         print ("\t\t         = {0:.2f} +- {1:.2f} (TOTAL UNCERTAINTY)".format(integral_nominal, integral_tot_error ))
 
     else:
@@ -152,7 +152,7 @@ if __name__ == '__main__':
 
         fakes_nominal = myfile.Get("fakesbkg")
         fakes_up      = myfile.Get("fakesbkg_MMfsys_up")
-        fakes_down    = myfile.Get("fakesbkg_MMfsys_down")
+        fakes_down    = myfile.Get("fakesbkg_MMfsys_dn")
 
         print ("\n\tFakes: \n")
         fakes, fakes_err = get_yields(fakes_nominal,fakes_up,fakes_down)
@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
         expected_nominal = myfile.Get("expected")
         expected_up      = myfile.Get("expected_MMfsys_up")
-        expected_down    = myfile.Get("expected_MMfsys_down")
+        expected_down    = myfile.Get("expected_MMfsys_dn")
 
         print ("\n\tExpected: \n")
         exp, exp_err = get_yields(expected_nominal,expected_up,expected_down)

@@ -46,8 +46,6 @@ class TTHBackgrounds(Background):
     eventweight = 1.0
     #eventweight = 'weight_pileup*weight_muon_trig*weight_electron_trig'
     #eventweight = 'evtsel_weight*evtsel_weight_el*evtsel_weight_mu*evtsel_bjet_weight*evtsel_weight_lep_trigger*weight_CF'
-    #eventweight = 'evtsel_weight*evtsel_weight_el*evtsel_weight_mu*evtsel_bjet_weight*evtsel_weight_lep_trigger*weight_MM*weight_CF'
-    #eventweight = 'evtsel_weight*evtsel_weight_el*evtsel_weight_mu*evtsel_bjet_weight*evtsel_weight_lep_trigger*weight_FF*weight_CF'
     useEmbedding    = False
     useZCorrections = False
     useSherpaNNPDF30NNLO = False
@@ -108,7 +106,9 @@ class TTHBackgrounds(Background):
 
     def applyTightSF(self, sp):
 
-	#uses the new scale factors for BDT tight instead of the old BDT medium. ATTENTION the correction is done only with the nominal coefficients. To have the right coefficients for systematics shifted correct the corrections code and produce again the ntuples
+	# Uses the new scale factors for BDT tight instead of the old BDT medium. ATTENTION the correction is done only with the nominal coefficients. 
+	# To have the right coefficients for systematics shifted correct the corrections code and produce again the ntuples
+	
         sp1ploweta = sp.subprocess(cut=self.vardb.getCuts(['TauEta00to15', 'OneProng'])) * 0.941 / 0.992
         sp1phigheta = sp.subprocess(cut=self.vardb.getCuts(['TauEta15to25', 'OneProng'])) * 0.89 / 0.952
         sp3ploweta = sp.subprocess(cut=self.vardb.getCuts(['TauEta00to15', 'ThreeProng'])) * 1.006 / 1.073
@@ -1448,7 +1448,7 @@ class TTHBackgrounds(Background):
 
             if bool([ cut for cut in cut_w_el if cut in category.cut.cutname ]):
 
-                weight = 'QMisIDWeight[0]'
+                weight = 'QMisIDWeight'
                 sp = sp.subprocess(cut=basecut,eventweight=weight)
                 print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
 
@@ -1471,7 +1471,7 @@ class TTHBackgrounds(Background):
                     cut_SF = basecut & self.vardb.getCut('2Lep_ElEl_Event')
                     cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
 
-                    weight_SF = weight_OF = 'QMisIDWeight[0]'
+                    weight_SF = weight_OF = 'QMisIDWeight'
 
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
@@ -1485,7 +1485,7 @@ class TTHBackgrounds(Background):
                     cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
 
                     weight_SF = '0.0' # mu-mu region MUST get zero QMisID weight!
-                    weight_OF = 'QMisIDWeight[0]'
+                    weight_OF = 'QMisIDWeight'
 
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
@@ -1500,7 +1500,7 @@ class TTHBackgrounds(Background):
                     cut_OF   = basecut & self.vardb.getCut('2Lep_OF_Event')
 
                     weight_mumu = '0.0' # mu-mu region MUST get zero QMisID weight!
-                    weight_elel = weight_OF = 'QMisIDWeight[0]'
+                    weight_elel = weight_OF = 'QMisIDWeight'
 
                     sp_elel = sp.subprocess(cut=cut_elel,eventweight=weight_elel)
                     sp_mumu = sp.subprocess(cut=cut_mumu,eventweight=weight_mumu)
@@ -1633,7 +1633,7 @@ class TTHBackgrounds(Background):
                 TLcut='TL'
                 LTcut='LT'
                 LLcut='LL'
-                weight='FFWeight[0]'
+                weight='FFWeight'
 
             print 'FakesFF - weight name : ', weight, ', TLcut : ', TLcut, ', LTcut : ', LTcut, ', LLcut : ', LLcut
 
@@ -1647,7 +1647,7 @@ class TTHBackgrounds(Background):
             sp_LT = sp.subprocess(cut=self.vardb.getCut(LTcut))
             sp_LL = sp.subprocess(cut=self.vardb.getCut(LLcut))
 
-            #IN THIS VERSION OF THE CODE THE SIGN MINUS FOR FF EVENTS IS ALREADY IN THE WEIGHT SO THE SUBRACTION OF THE DOUBLE FAKE COUNTING IS DOE ADDING SP_FF
+            #IN THIS VERSION OF THE CODE THE SIGN MINUS FOR FF EVENTS IS ALREADY IN THE WEIGHT SO THE SUBRACTION OF THE DOUBLE FAKE COUNTING IS DONE ADDING SP_FF
             sp = sp_TL + sp_LT +sp_LL
             #OLD WAY subtracting the double counting
             #sp = sp_if - sp_ff
@@ -1688,7 +1688,7 @@ class TTHBackgrounds(Background):
             TLcut  = ('','TL')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
             LTcut  = ('','LT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
             LLcut  = ('','LL')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            weight  = (1.0,'MMWeight[0]')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            weight  = (1.0,'MMWeight')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
 
             # Clean up from any truth cut
             #
@@ -1723,7 +1723,7 @@ class TTHBackgrounds(Background):
                         continue
 
 	    	    QMisIDcut	 = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-	    	    QMisIDweight = 'QMisIDWeight[0] * MMWeight[0]'
+	    	    QMisIDweight = 'QMisIDWeight * MMWeight'
 
             	    sp_QMisID_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight=QMisIDweight)
             	    sp_QMisID_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight=QMisIDweight)
@@ -1767,7 +1767,7 @@ class TTHBackgrounds(Background):
                         continue
 
 	    	    QMisIDcut	 = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-	    	    QMisIDweight = 'QMisIDWeight[0]'
+	    	    QMisIDweight = 'QMisIDWeight'
 
             	    sp_QMisID_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight=QMisIDweight)
             	    print(" ")
@@ -1959,7 +1959,7 @@ class TTHBackgrounds(Background):
                         this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
                         this_cut_sp_D_el = this_cut_sp_D_el.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
                         this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-                        this_weight = 'QMisIDWeight[0]'
+                        this_weight = 'QMisIDWeight'
 
                     sub_sample_C_el = sub_sample_C_el.subprocess( cut = this_cut_sp_C_el, eventweight=this_weight )
                     sub_sample_D_el = sub_sample_D_el.subprocess( cut = this_cut_sp_D_el, eventweight=this_weight )
@@ -2098,7 +2098,7 @@ class TTHBackgrounds(Background):
                             print("NO QMisID subtraction for muons!!")
                             continue
 
-                        this_weight = 'QMisIDWeight[0]'
+                        this_weight = 'QMisIDWeight'
                         this_cut_sp_B_SF = this_cut_sp_B_SF.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
                         this_cut_sp_B_SF = this_cut_sp_B_SF.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
 
@@ -2129,7 +2129,7 @@ class TTHBackgrounds(Background):
 
                     if ( ( sample == "ChargeFlipMC" ) or ( sample == "ChargeFlip" ) ):
 
-                        this_weight = 'QMisIDWeight[0]'
+                        this_weight = 'QMisIDWeight'
                         this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
                         this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
                         this_cut_sp_B_OF_Lmu = this_cut_sp_B_OF_Lmu.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
@@ -2189,7 +2189,7 @@ class TTHBackgrounds(Background):
             TLcut  = ('','TL')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
             LTcut  = ('','LT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
             LLcut  = ('','LL')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            weight  = (1.0,'MMWeight[0]')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            weight  = (1.0,'MMWeight')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
 
             sp_TT  = sp.subprocess(cut=category.cut & self.vardb.getCut(TTcut), eventweight=weight)
             sp_TL  = sp.subprocess(cut=category.cut & self.vardb.getCut(TLcut), eventweight=weight)
