@@ -101,6 +101,9 @@ if __name__ == '__main__':
     region = var_name = None
 
     inputpath = args.inputDir
+    
+    if not inputpath.endswith('/'): 
+         inputpath += '/'
 
     if not args.doClosure:
 

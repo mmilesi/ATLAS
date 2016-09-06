@@ -106,9 +106,9 @@ class TTHBackgrounds(Background):
 
     def applyTightSF(self, sp):
 
-	# Uses the new scale factors for BDT tight instead of the old BDT medium. ATTENTION the correction is done only with the nominal coefficients. 
+	# Uses the new scale factors for BDT tight instead of the old BDT medium. ATTENTION the correction is done only with the nominal coefficients.
 	# To have the right coefficients for systematics shifted correct the corrections code and produce again the ntuples
-	
+
         sp1ploweta = sp.subprocess(cut=self.vardb.getCuts(['TauEta00to15', 'OneProng'])) * 0.941 / 0.992
         sp1phigheta = sp.subprocess(cut=self.vardb.getCuts(['TauEta15to25', 'OneProng'])) * 0.89 / 0.952
         sp3ploweta = sp.subprocess(cut=self.vardb.getCuts(['TauEta00to15', 'ThreeProng'])) * 1.006 / 1.073
@@ -1058,6 +1058,8 @@ class TTHBackgrounds(Background):
 	    inputgroup = [
                 ('tops', 'ttbar_nonallhad'),
                 #('tops', 'ttbar_dilep'),
+                #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
+                #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -2166,6 +2168,8 @@ class TTHBackgrounds(Background):
 	    inputgroup = [
                     ('tops', 'ttbar_nonallhad'),
                     #('tops', 'ttbar_dilep'),
+                    #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
+                    #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))

@@ -761,15 +761,18 @@ void execute_DiffSamples() {
   //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19_Probe_YES_TM/","t#bar{t} - Probe TM"));
   //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19_Probe_NO_TM/","t#bar{t} - Probe !TM"));
 
-  vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID/","Data"));
-  vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_YES_TM/","Data - Probe TM"));
-  vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_NO_TM/","Data - Probe !TM"));
+  //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID/","Data"));
+  //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_YES_TM/","Data - Probe TM"));
+  //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_NO_TM/","Data - Probe !TM"));
+  
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v20_02/","t#bar{t} non allhad"));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_TTBarSemilep_25ns_v20_02/","t#bar{t} semilep"));
 
-  PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
-  PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","eps");
+  //PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
+  //PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","eps");
 
-  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","png");
-  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","eps");
+  PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","png");
+  PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","eps");
   
   //PlotRateEff_DiffSamples(vec,"Data","OF","Efficiency","png");
   //PlotRateEff_DiffSamples(vec,"Data","MuMu","Efficiency","png");

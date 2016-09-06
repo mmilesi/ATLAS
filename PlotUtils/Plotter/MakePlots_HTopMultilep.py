@@ -94,7 +94,7 @@ gROOT.SetBatch(True)
 # -----------------
 # Some ROOT imports
 # -----------------
-from ROOT import TH1I, TH2D, TH2F, TMath, TFile, TAttFill, TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kAzure, kTeal, kSpring, kOrange, kGreen, kCyan, kViolet, kMagenta, kPink, Double
+from ROOT import TH1I, TH2D, TH2F, TH2I, TMath, TFile, TAttFill, TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kAzure, kTeal, kSpring, kOrange, kGreen, kCyan, kViolet, kMagenta, kPink, Double
 
 # ---------------------------------------------------------------------
 # Importing all the tools and the definitions used to produce the plots
@@ -552,6 +552,7 @@ if doSR or doLowNJetCR:
 if doMMSidebands:
     #vardb.registerVar( Variable(shortname = 'MMWeight', latexname = 'MM weight', ntuplename = 'MMWeight[0]', bins = 50, minval = -0.5, maxval = 0.5) )
     #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = ('lep_pt[0]/1e3','lep_Pt_0/1e3')[bool(args.useGroupNTup)], bins = 9, minval = 25.0, maxval = 205.0,) )
+    vardb.registerVar( Variable(shortname = 'Lep0TM_VS_Lep1TM', latexnameX = 'lead lep TM', latexnameY = '2nd lead lep TM', ntuplename = 'lep_isTrigMatch_1:lep_isTrigMatch_0', bins = 2, minval = -0.5, maxval = 1.5, typeval = TH2F) )
     if "HIGHNJ" in args.channel:
         vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 6, minval = 3.5, maxval = 9.5) )
     elif "LOWNJ" in args.channel:
@@ -717,15 +718,15 @@ if args.doSyst:
     #vardb.registerSystematics( Systematics(name='MuSys',          treename='MuSys') )
     #vardb.registerSystematics( Systematics(name='JES_Total',      treename='JES_Total') )
     #vardb.registerSystematics( Systematics(name='JER',            treename='JER') )
-    
+
     if doTwoLepSR or doThreeLepSR or doTwoLepLowNJetCR or doThreeLepLowNJetCR or doMMClosureTest:
-        #vardb.registerSystematics( Systematics(name='QMIsIDsys',      eventweight='QMisIDWeight_') ) 
+        #vardb.registerSystematics( Systematics(name='QMIsIDsys',      eventweight='QMisIDWeight_') )
         if doMM:
             vardb.registerSystematics( Systematics(name='MMrsys',      eventweight='MMWeight_r_') )
             vardb.registerSystematics( Systematics(name='MMfsys',      eventweight='MMWeight_f_') )
         if doFF:
             vardb.registerSystematics( Systematics(name='FFsys',       eventweight='FFWeight_') )
-    
+
 # -------------------------------------------------------------------
 # Definition of the categories for which one wants produce histograms
 # -------------------------------------------------------------------
@@ -982,14 +983,14 @@ if doMMRates or doMMClosureRates:
 
     #vardb.registerVar( Variable(shortname = 'ElTagPt', latexname = 'p_{T}^{tag e} [GeV]', ntuplename = ('el_tag_pt[0]/1e3','lep_Tag_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
     #vardb.registerVar( Variable(shortname = 'ElTagEta', latexname = '#eta^{tag e}', ntuplename = ('TMath::Abs( el_tag_eta[0] )','TMath::Abs( lep_Tag_Eta )')[bool(args.useGroupNTup)],bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
-    
+
     vardb.registerVar( Variable(shortname = 'ElProbePt', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = ('el_probe_pt[0]/1e3','lep_Probe_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
     vardb.registerVar( Variable(shortname = 'ElProbeEta', latexname = '#eta^{probe e}', ntuplename = ('TMath::Abs( el_probe_caloCluster_eta[0] )','TMath::Abs( lep_Probe_EtaBE2 )')[bool(args.useGroupNTup)], bins = 26, minval = 0.0,  maxval = 2.6) )
     #vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 8, minval = 2, maxval = 10) )
 
     #vardb.registerVar( Variable(shortname = 'MuTagPt', latexname = 'p_{T}^{tag #mu} [GeV]', ntuplename = ('muon_tag_pt[0]/1e3','lep_Tag_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0,) )
     #vardb.registerVar( Variable(shortname = 'MuTagEta', latexname = '#eta^{tag #mu}', ntuplename = ('TMath::Abs( muon_tag_eta[0] )','TMath::Abs( lep_Tag_Eta )')[bool(args.useGroupNTup)], bins = 8,  minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
-    
+
     vardb.registerVar( Variable(shortname = 'MuProbePt', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = ('muon_probe_pt[0]/1e3','lep_Probe_Pt/1e3')[bool(args.useGroupNTup)], bins = 40, minval = 10.0, maxval = 210.0) )
     vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = ('TMath::Abs( muon_probe_eta[0] )','TMath::Abs( lep_Probe_Eta )')[bool(args.useGroupNTup)], bins = 25, minval = 0.0, maxval = 2.5) )
     #vardb.registerVar( Variable(shortname = 'MuProbeNJets', latexname = 'Jet multiplicity', ntuplename = ('njets','nJets_OR_T')[bool(args.useGroupNTup)], bins = 8, minval = 2, maxval = 10) )
@@ -1966,11 +1967,11 @@ for category in vardb.categorylist:
                     pass
                 plotname = dirname + '/' + category.name + ' ' + var.shortname + ' ' + syst.name
                 plotname = plotname.replace(' ', '_')
-        
+
 	        list_formats_sys = [ plotname + '.png' ] #, plotname + '_canvas.root' ]
                 if args.doEPS:
                     list_formats_sys.append( plotname + '.eps' )
-                
+
                 # plotSystematics is the function which takes care of the systematics
                 #
                 systs[category.name + ' ' + var.shortname] = background.plotSystematics( syst,
@@ -2010,10 +2011,10 @@ for category in vardb.categorylist:
                     histograms_syst[samp+'_'+syst.name+'_dn'].SetNameTitle(histname[samp]+'_'+syst.name+'_dn','')
                     histograms_syst[samp+'_'+syst.name+'_dn'].SetLineColor(histcolour[samp])
                     histograms_syst[samp+'_'+syst.name+'_dn'].Write()
-                
+
 		# The code does not consider systematics on the signal.
 		# Put the signal in the backgrounds list if you want systematics on it.
-                
+
 		if ( 'Mll01' in var.shortname ) or ( 'NJets' in var.shortname ):
                     outfile.write('Integral syst: \n')
                     outfile.write('syst %s up:   delta_yields = %.2f \n' %(syst.name,(systup.Integral()-systnom.Integral())))

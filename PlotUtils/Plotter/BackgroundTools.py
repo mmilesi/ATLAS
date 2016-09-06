@@ -1,6 +1,7 @@
-from ROOT import TFile, TH1, TH1D, TH1I, TH2D, TH2F, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
-from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
 import sys, glob, os, array, inspect, math, array
+
+from ROOT import TFile, TH1, TH1D, TH1I, TH2D, TH2F, TH2I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
+from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
 
 # glob finds all the pathnames matching a specified pattern.glob.glob(pathname) Return a possibly-empty list of path names that match pathname in which unix wildcards can be used
 
@@ -208,7 +209,7 @@ class Variable:
         if title is None:
             title = self.latexname
 
-        if self.typeval is TH2D or self.typeval is TH2F:
+        if self.typeval is TH2D or self.typeval is TH2F or self.typeval is TH2I:
 	    h = self.typeval(name, title, self.binsX, self.minvalX, self.maxvalX, self.binsY, self.minvalY, self.maxvalY)
             h.GetXaxis().SetTitle(self.latexnameX)
             h.GetYaxis().SetTitle(self.latexnameY)
@@ -926,7 +927,7 @@ class Background:
         obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
 
 	if obs:
-	    if not ( var.typeval is TH2D or var.typeval is TH2F ):
+	    if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
             	process = obslist[0][1]
             	datagr = None
 	    	if not ( ("$ISDATA$") in process.name ):
@@ -945,7 +946,7 @@ class Background:
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
 
         if obs and bkglist and normalise:
-            if not ( var.typeval is TH2D or var.typeval is TH2F ):
+            if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
 	    	num_data = obs.GetEntries()
             	num_mc = 0.0
             	for b, bname in bkglist:
@@ -1010,7 +1011,7 @@ class Background:
                 legs.append([sig, h_name, 'f'])
 
 
-        if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F ):
+        if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
             pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
             pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
             pad1.SetBottomMargin(0.02)
@@ -1026,7 +1027,7 @@ class Background:
             pad1.Draw()
             pad2.Draw()
 
-        if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F ):
+        if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
             if var.typeval is TH1D:
                 ratiomc = tSum.Clone("RatioMC")
                 ratiodata = obs.Clone("RatioData")
@@ -1108,7 +1109,7 @@ class Background:
 
         # trick to rescale:
 	if stack:
-	   if not ( var.typeval is TH2D or var.typeval is TH2F ):
+	   if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
 	      ymax_new = stack.GetMaximum()
 	      if obs and obs.GetMaximum() > ymax_new:
 	          ymax_new = obs.GetMaximum()
@@ -1150,7 +1151,7 @@ class Background:
 	      stack.Draw('lego1')
 
         if bkg:
-            if not ( var.typeval is TH2D or var.typeval is TH2F ):
+            if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
 	       tSum.Draw("E2 SAME")
 
 	if ( "FakesClosureABCD" in self.signals ):
@@ -1158,7 +1159,7 @@ class Background:
 	      sig.Draw("PE SAME")
 
         if obs:
-	   if not ( var.typeval is TH2D or var.typeval is TH2F ):
+	   if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
               if stack:
                  datagr.Draw("PE SAME")
                  #obs.Draw("SAME")
