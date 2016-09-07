@@ -4,7 +4,11 @@ import array
 import os
 import sys
 
-#from array import array
+import argparse
+parser = argparse.ArgumentParser(description="Compare efficiencies measured with T&P and Likelihood fit")
+parser.add_argument("--flavour", metavar="FLAVOUR", dest="flavour", default="mu", type=str,
+		     help="Lepton flavour (mu,el) - default is mu")
+args = parser.parse_args()
 
 from ROOT import gROOT, gDirectory, gStyle, gPad, TH1D, TH2D, TFile, TCanvas, TColor, TLegend, TLatex, kRed, kBlue, kAzure, kCyan
 
@@ -14,14 +18,6 @@ from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
 gROOT.SetBatch(True)
-
-
-import argparse
-parser = argparse.ArgumentParser(description="Compare efficiencies measured with T&P and Likelihood fit")
-parser.add_argument("--flavour", metavar="FLAVOUR", dest="flavour", default="mu", type=str,
-		     help="Lepton flavour (mu,el) - default is mu")
-args = parser.parse_args()
-
 
 # ---------------------------
 # for fancy 2-dim histograms!
