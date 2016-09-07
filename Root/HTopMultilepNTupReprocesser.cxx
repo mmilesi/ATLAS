@@ -32,7 +32,7 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
 
   Info("HTopMultilepNTupReprocesser()", "Calling constructor");
 
-  m_inputBranches       = "";
+  m_inputBranches        = "";
 
   m_outputNTupName       = "physics";
   m_outputNTupStreamName = "output";
@@ -40,21 +40,22 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
   m_weightToCalc         = "";
   m_doQMisIDWeighting    = false;
   m_doMMWeighting        = false;
-  
+
   m_QMisIDRates_dir            = "";
   m_QMisIDRates_Filename_T     = "";
   m_QMisIDRates_Filename_AntiT = "";
   m_useTAntiTRates             = false;
 
-  m_RR_dir                  = "";
-  m_FR_dir                  = "";
-  m_RRFR_YES_TM_dir         = "";
-  m_RRFR_NO_TM_dir          = "";
+  m_REFF_dir                = "";
+  m_FEFF_dir                = "";
+  m_EFF_YES_TM_dir          = "";
+  m_EFF_NO_TM_dir           = "";
   m_Efficiency_Filename     = "";
   m_doMMClosure             = false;
   m_useEtaParametrisation   = false;
   m_useTrigMatchingInfo     = false;
   m_useScaledFakeEfficiency = false;
+  m_useTEfficiency          = false;
 
 }
 
@@ -177,18 +178,18 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_1",   		      &m_lep_isTightSelected_1);
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_1",   		      &m_lep_isTrigMatch_1);
 
-  if ( m_isQMisIDBranchIn ) {  
-      m_inputNTuple->SetBranchAddress ("QMisIDWeight",     &m_QMisIDWeight_in); 
-      m_inputNTuple->SetBranchAddress ("QMisIDWeight_up",  &m_QMisIDWeight_UP_in); 
-      m_inputNTuple->SetBranchAddress ("QMisIDWeight_dn",  &m_QMisIDWeight_DN_in); 
+  if ( m_isQMisIDBranchIn ) {
+      m_inputNTuple->SetBranchAddress ("QMisIDWeight",     &m_QMisIDWeight_in);
+      m_inputNTuple->SetBranchAddress ("QMisIDWeight_up",  &m_QMisIDWeight_UP_in);
+      m_inputNTuple->SetBranchAddress ("QMisIDWeight_dn",  &m_QMisIDWeight_DN_in);
   }
-  if ( m_isMMBranchIn ) {  
-      m_inputNTuple->SetBranchAddress ("MMWeight",         &m_MMWeight_in);     
-      m_inputNTuple->SetBranchAddress ("MMWeight_r_up",    &m_MMWeight_R_UP_in);     
-      m_inputNTuple->SetBranchAddress ("MMWeight_r_dn",    &m_MMWeight_R_DN_in);     
-      m_inputNTuple->SetBranchAddress ("MMWeight_f_up",    &m_MMWeight_F_UP_in);     
-      m_inputNTuple->SetBranchAddress ("MMWeight_f_dn",    &m_MMWeight_F_DN_in);     
-  
+  if ( m_isMMBranchIn ) {
+      m_inputNTuple->SetBranchAddress ("MMWeight",         &m_MMWeight_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_r_up",    &m_MMWeight_R_UP_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_r_dn",    &m_MMWeight_R_DN_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_f_up",    &m_MMWeight_F_UP_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_f_dn",    &m_MMWeight_F_DN_in);
+
   }
 
   return EL::StatusCode::SUCCESS;
@@ -222,17 +223,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 
   // Set new branches for output TTree
   //
-  if ( m_doQMisIDWeighting ) { 
-      m_outputNTuple->tree()->Branch("QMisIDWeight",     &m_QMisIDWeight_out,    "QMisIDWeight/F"); 
-      m_outputNTuple->tree()->Branch("QMisIDWeight_up",  &m_QMisIDWeight_UP_out, "QMisIDWeight_up/F"); 
-      m_outputNTuple->tree()->Branch("QMisIDWeight_dn",  &m_QMisIDWeight_DN_out, "QMisIDWeight_dn/F"); 
+  if ( m_doQMisIDWeighting ) {
+      m_outputNTuple->tree()->Branch("QMisIDWeight",     &m_QMisIDWeight_out,    "QMisIDWeight/F");
+      m_outputNTuple->tree()->Branch("QMisIDWeight_up",  &m_QMisIDWeight_UP_out, "QMisIDWeight_up/F");
+      m_outputNTuple->tree()->Branch("QMisIDWeight_dn",  &m_QMisIDWeight_DN_out, "QMisIDWeight_dn/F");
   }
-  if ( m_doMMWeighting ) { 
-      m_outputNTuple->tree()->Branch("MMWeight",         &m_MMWeight_out,      "MMWeight/F"); 
-      m_outputNTuple->tree()->Branch("MMWeight_r_up",	 &m_MMWeight_R_UP_out, "MMWeight_r_up/F"); 
-      m_outputNTuple->tree()->Branch("MMWeight_r_dn",	 &m_MMWeight_R_DN_out, "MMWeight_r_dn/F"); 
-      m_outputNTuple->tree()->Branch("MMWeight_f_up",	 &m_MMWeight_F_UP_out, "MMWeight_f_up/F"); 
-      m_outputNTuple->tree()->Branch("MMWeight_f_dn",	 &m_MMWeight_F_DN_out, "MMWeight_f_dn/F"); 
+  if ( m_doMMWeighting ) {
+      m_outputNTuple->tree()->Branch("MMWeight",         &m_MMWeight_out,      "MMWeight/F");
+      m_outputNTuple->tree()->Branch("MMWeight_r_up",	 &m_MMWeight_R_UP_out, "MMWeight_r_up/F");
+      m_outputNTuple->tree()->Branch("MMWeight_r_dn",	 &m_MMWeight_R_DN_out, "MMWeight_r_dn/F");
+      m_outputNTuple->tree()->Branch("MMWeight_f_up",	 &m_MMWeight_F_UP_out, "MMWeight_f_up/F");
+      m_outputNTuple->tree()->Branch("MMWeight_f_dn",	 &m_MMWeight_F_DN_out, "MMWeight_f_dn/F");
   }
 
   // ---------------------------------------------------------------------------------------------------------------
@@ -492,14 +493,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: enableSelectedBranches ()
   //
   Info("enableSelectedBranches()", "Activating branches:\n");
   for ( const auto& branch : branch_vec ) {
-    
+
     if ( !m_isQMisIDBranchIn && branch.find("QMisIDWeight") != std::string::npos ) { continue; }
     if ( !m_isMMBranchIn && branch.find("MMWeight") != std::string::npos )         { continue; }
-    
+
     std::cout << "SetBranchStatus(" << branch << ", 1)" << std::endl;
-    
+
     m_inputNTuple->SetBranchStatus (branch.c_str(), 1);
-  
+
   }
 
   return EL::StatusCode::SUCCESS;
@@ -643,10 +644,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
     //
     if ( !( std::isnan(r0) ) && !( std::isnan(r1) ) && !( std::isinf(r0) ) && !( std::isinf(r1) ) ) {
 
-        float nominal = ( r0 + r1 - 2.0 * r0 * r1 ) / ( 1.0 - r0 - r1 + 2.0 * r0 * r1 ); 
+        float nominal = ( r0 + r1 - 2.0 * r0 * r1 ) / ( 1.0 - r0 - r1 + 2.0 * r0 * r1 );
         float up      = ( r0_up + r1_up - 2.0 * r0_up * r1_up ) / ( 1.0 - r0_up - r1_up + 2.0 * r0_up * r1_up );
         float dn      = ( r0_dn + r1_dn - 2.0 * r0_dn * r1_dn ) / ( 1.0 - r0_dn - r1_dn + 2.0 * r0_dn * r1_dn );
-	
+
 	m_event.get()->weight_QMisID    = nominal;
 	m_event.get()->weight_QMisID_UP = ( !std::isnan(up/nominal) && !std::isinf(up/nominal) ) ? up/nominal : 0.0;
 	m_event.get()->weight_QMisID_DN = ( !std::isnan(dn/nominal) && !std::isinf(dn/nominal) ) ? dn/nominal : 0.0;
@@ -757,91 +758,112 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
   std::string rate_type = ( !m_doMMClosure ) ? "observed" : "expected";
 
-  if ( m_FR_dir.empty() ) { m_FR_dir = m_RR_dir; }
+  if ( m_FEFF_dir.empty() ) { m_FEFF_dir = m_REFF_dir; }
 
-  if ( m_RR_dir.back() != '/' ) { m_RR_dir += "/"; }
-  if ( m_FR_dir.back() != '/' ) { m_FR_dir += "/"; }
+  if ( m_REFF_dir.back() != '/' ) { m_REFF_dir += "/"; }
+  if ( m_FEFF_dir.back() != '/' ) { m_FEFF_dir += "/"; }
 
   // Histogram names - electrons
   //
-  std::string histname_el_pt_rr    = "El_ProbePt_Real_Efficiency_"  + rate_type;
-  std::string histname_el_eta_rr   = "El_ProbeEta_Real_Efficiency_" + rate_type;
+  std::string histname_el_pt_reff  = "El_ProbePt_Real_Efficiency_"  + rate_type;
+  std::string histname_el_eta_reff = "El_ProbeEta_Real_Efficiency_" + rate_type;
+  std::string teffname_el_pt_reff  = "El_ProbePt_Real_TEfficiency_"  + rate_type;
+  std::string teffname_el_eta_reff = "El_ProbeEta_Real_TEfficiency_" + rate_type;
+
   std::string histname_el_pt_r_T   = "El_ProbePt_Real_T_" + rate_type;
   std::string histname_el_pt_r_L   = "El_ProbePt_Real_L_" + rate_type;
 
-  std::string histname_el_pt_fr(""), histname_el_eta_fr(""), histname_el_pt_f_T(""), histname_el_pt_f_L("");
+  std::string histname_el_pt_feff(""), histname_el_eta_feff(""), histname_el_pt_f_T(""), histname_el_pt_f_L("");
 
   if ( m_useScaledFakeEfficiency && !m_doMMClosure ) {
-    histname_el_pt_fr	 = "El_ProbePt_ScaledFake_Efficiency_"  + rate_type;
-    histname_el_eta_fr   = "El_ProbeEta_ScaledFake_Efficiency_" + rate_type;
+    histname_el_pt_feff	 = "El_ProbePt_ScaledFake_Efficiency_"  + rate_type;
+    histname_el_eta_feff = "El_ProbeEta_ScaledFake_Efficiency_" + rate_type;
     histname_el_pt_f_T   = "El_ProbePt_ScaledFake_T_" + rate_type;
     histname_el_pt_f_L   = "El_ProbePt_ScaledFake_L_" + rate_type;
   } else {
-    histname_el_pt_fr    = "El_ProbePt_Fake_Efficiency_"  + rate_type;
-    histname_el_eta_fr   = "El_ProbeEta_Fake_Efficiency_" + rate_type;
+    histname_el_pt_feff  = "El_ProbePt_Fake_Efficiency_"  + rate_type;
+    histname_el_eta_feff = "El_ProbeEta_Fake_Efficiency_" + rate_type;
     histname_el_pt_f_T   = "El_ProbePt_Fake_T_" + rate_type;
     histname_el_pt_f_L   = "El_ProbePt_Fake_L_" + rate_type;
   }
+  std::string teffname_el_pt_feff  = "El_ProbePt_Fake_TEfficiency_"  + rate_type;
+  std::string teffname_el_eta_feff = "El_ProbeEta_Fake_TEfficiency_" + rate_type;
 
   // Histogram names - muons
   //
-  std::string histname_mu_pt_rr    = "Mu_ProbePt_Real_Efficiency_"  + rate_type;
-  std::string histname_mu_eta_rr   = "Mu_ProbeEta_Real_Efficiency_" + rate_type;
+  std::string histname_mu_pt_reff  = "Mu_ProbePt_Real_Efficiency_"  + rate_type;
+  std::string histname_mu_eta_reff = "Mu_ProbeEta_Real_Efficiency_" + rate_type;
+  std::string teffname_mu_pt_reff  = "Mu_ProbePt_Real_TEfficiency_"  + rate_type;
+  std::string teffname_mu_eta_reff = "Mu_ProbeEta_Real_TEfficiency_" + rate_type;
   std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_" + rate_type;
   std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_L_" + rate_type;
 
-  std::string histname_mu_pt_fr    = "Mu_ProbePt_Fake_Efficiency_"  + rate_type;
-  std::string histname_mu_eta_fr   = "Mu_ProbeEta_Fake_Efficiency_" + rate_type;
+  std::string histname_mu_pt_feff  = "Mu_ProbePt_Fake_Efficiency_"  + rate_type;
+  std::string histname_mu_eta_feff = "Mu_ProbeEta_Fake_Efficiency_" + rate_type;
+  std::string teffname_mu_pt_feff  = "Mu_ProbePt_Fake_TEfficiency_"  + rate_type;
+  std::string teffname_mu_eta_feff = "Mu_ProbeEta_Fake_TEfficiency_" + rate_type;
   std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_" + rate_type;
   std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_L_" + rate_type;
 
   // Histograms - electrons
 
-  TH1D *hist_el_pt_rr(nullptr);
-  TH1D *hist_el_eta_rr(nullptr);
+  TH1D *hist_el_pt_reff(nullptr);
+  TH1D *hist_el_eta_reff(nullptr);
   TH1D *hist_el_pt_r_T(nullptr);
   TH1D *hist_el_pt_r_L(nullptr);
 
-  TH1D *hist_el_pt_rr_YES_TM(nullptr);
-  TH1D *hist_el_pt_rr_NO_TM(nullptr);
+  TH1D *hist_el_pt_reff_YES_TM(nullptr);
+  TH1D *hist_el_pt_reff_NO_TM(nullptr);
 
-  TH1D *hist_el_pt_fr(nullptr);
-  TH1D *hist_el_eta_fr(nullptr);
+  TH1D *hist_el_pt_feff(nullptr);
+  TH1D *hist_el_eta_feff(nullptr);
   TH1D *hist_el_pt_f_T(nullptr);
   TH1D *hist_el_pt_f_L(nullptr);
 
-  TH1D *hist_el_pt_fr_YES_TM(nullptr);
-  TH1D *hist_el_pt_fr_NO_TM(nullptr);
+  TH1D *hist_el_pt_feff_YES_TM(nullptr);
+  TH1D *hist_el_pt_feff_NO_TM(nullptr);
+
+  TEfficiency *teff_el_pt_reff(nullptr);
+  TEfficiency *teff_el_eta_reff(nullptr);
+
+  TEfficiency *teff_el_pt_feff(nullptr);
+  TEfficiency *teff_el_eta_feff(nullptr);
 
   // Histograms - muons
 
-  TH1D *hist_mu_pt_rr(nullptr);
-  TH1D *hist_mu_eta_rr(nullptr);
+  TH1D *hist_mu_pt_reff(nullptr);
+  TH1D *hist_mu_eta_reff(nullptr);
   TH1D *hist_mu_pt_r_T(nullptr);
   TH1D *hist_mu_pt_r_L(nullptr);
 
-  TH1D *hist_mu_pt_rr_YES_TM(nullptr);
-  TH1D *hist_mu_pt_rr_NO_TM(nullptr);
+  TH1D *hist_mu_pt_reff_YES_TM(nullptr);
+  TH1D *hist_mu_pt_reff_NO_TM(nullptr);
 
-  TH1D *hist_mu_pt_fr(nullptr);
-  TH1D *hist_mu_eta_fr(nullptr);
+  TH1D *hist_mu_pt_feff(nullptr);
+  TH1D *hist_mu_eta_feff(nullptr);
   TH1D *hist_mu_pt_f_T(nullptr);
   TH1D *hist_mu_pt_f_L(nullptr);
 
-  TH1D *hist_mu_pt_fr_YES_TM(nullptr);
-  TH1D *hist_mu_pt_fr_NO_TM(nullptr);
+  TH1D *hist_mu_pt_feff_YES_TM(nullptr);
+  TH1D *hist_mu_pt_feff_NO_TM(nullptr);
+
+  TEfficiency *teff_mu_pt_reff(nullptr);
+  TEfficiency *teff_mu_eta_reff(nullptr);
+
+  TEfficiency *teff_mu_pt_feff(nullptr);
+  TEfficiency *teff_mu_eta_feff(nullptr);
 
   // 1. 'REAL' efficiency
 
-  Info("readRFEfficiencies()", "REAL efficiency from directory: %s ", m_RR_dir.c_str() );
+  Info("readRFEfficiencies()", "REAL efficiency from directory: %s ", m_REFF_dir.c_str() );
 
-  std::string path_R_el = m_RR_dir + m_Efficiency_Filename;
+  std::string path_R_el = m_REFF_dir + m_Efficiency_Filename;
   TFile *file_R_el = TFile::Open(path_R_el.c_str());
 
   HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_R_el->IsOpen(), "Failed to open ROOT file" );
   Info("readRFEfficiencies()", "ELECTRON REAL efficiency: %s ", path_R_el.c_str() );
 
-  std::string path_R_mu = m_RR_dir + m_Efficiency_Filename;
+  std::string path_R_mu = m_REFF_dir + m_Efficiency_Filename;
   TFile *file_R_mu = TFile::Open(path_R_mu.c_str());
 
   HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_R_mu->IsOpen(), "Failed to open ROOT file" );
@@ -849,31 +871,39 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
   // Get real efficiency histograms
   //
-  hist_el_pt_rr  = get_object<TH1D>( *file_R_el, histname_el_pt_rr );
-  if( m_useEtaParametrisation ) hist_el_eta_rr = get_object<TH1D>( *file_R_el, histname_el_eta_rr );
+  hist_el_pt_reff  = get_object<TH1D>( *file_R_el, histname_el_pt_reff );
+  teff_el_pt_reff  = get_object<TEfficiency>( *file_R_el, teffname_el_pt_reff );
+  if( m_useEtaParametrisation ) {
+      hist_el_eta_reff = get_object<TH1D>( *file_R_el, histname_el_eta_reff );
+      teff_el_eta_reff = get_object<TEfficiency>( *file_R_el, teffname_el_eta_reff );
+  }
   hist_el_pt_r_T = get_object<TH1D>( *file_R_el, histname_el_pt_r_T );
   hist_el_pt_r_L = get_object<TH1D>( *file_R_el, histname_el_pt_r_L );
 
-  hist_mu_pt_rr  = get_object<TH1D>( *file_R_mu, histname_mu_pt_rr );
-  if ( m_useEtaParametrisation ) hist_mu_eta_rr = get_object<TH1D>( *file_R_mu, histname_mu_eta_rr );
+  hist_mu_pt_reff  = get_object<TH1D>( *file_R_mu, histname_mu_pt_reff );
+  teff_mu_pt_reff  = get_object<TEfficiency>( *file_R_mu, teffname_mu_pt_reff );
+  if ( m_useEtaParametrisation ) {
+      hist_mu_eta_reff = get_object<TH1D>( *file_R_mu, histname_mu_eta_reff );
+      teff_mu_eta_reff = get_object<TEfficiency>( *file_R_mu, teffname_mu_eta_reff );
+  }
   hist_mu_pt_r_T = get_object<TH1D>( *file_R_mu, histname_mu_pt_r_T );
   hist_mu_pt_r_L = get_object<TH1D>( *file_R_mu, histname_mu_pt_r_L );
 
   // 2. FAKE efficiency
 
-  if ( m_FR_dir.compare(m_RR_dir) != 0 ) {
-     Warning("readRFEfficiencies()", "FAKE efficiency is going to be read from %s. Check whether it's really what you want...", m_FR_dir.c_str());
+  if ( m_FEFF_dir.compare(m_REFF_dir) != 0 ) {
+     Warning("readRFEfficiencies()", "FAKE efficiency is going to be read from %s. Check whether it's really what you want...", m_FEFF_dir.c_str());
   } else {
      Info("readRFEfficiencies()", "FAKE efficiency from same directory as REAL" );
   }
 
-  std::string path_F_el = m_FR_dir + m_Efficiency_Filename;
+  std::string path_F_el = m_FEFF_dir + m_Efficiency_Filename;
   TFile *file_F_el = TFile::Open(path_F_el.c_str());
 
   HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_F_el->IsOpen(), "Failed to open ROOT file" );
   Info("readRFEfficiencies()", "ELECTRON FAKE efficiency: %s ", path_F_el.c_str() );
 
-  std::string path_F_mu = m_FR_dir + m_Efficiency_Filename;
+  std::string path_F_mu = m_FEFF_dir + m_Efficiency_Filename;
   TFile *file_F_mu = TFile::Open(path_F_mu.c_str());
 
   HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_F_mu->IsOpen(), "Failed to open ROOT file" );
@@ -881,13 +911,21 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
   // Get fake efficiency histograms
   //
-  hist_el_pt_fr    = get_object<TH1D>( *file_F_el, histname_el_pt_fr );
-  if ( m_useEtaParametrisation ) hist_el_eta_fr = get_object<TH1D>( *file_F_el, histname_el_eta_fr );
+  hist_el_pt_feff  = get_object<TH1D>( *file_F_el, histname_el_pt_feff );
+  teff_el_pt_feff  = get_object<TEfficiency>( *file_R_el, teffname_el_pt_feff );
+  if ( m_useEtaParametrisation ) {
+      hist_el_eta_feff = get_object<TH1D>( *file_F_el, histname_el_eta_feff );
+      teff_el_eta_feff = get_object<TEfficiency>( *file_R_el, teffname_el_eta_feff );
+  }
   hist_el_pt_f_T   = get_object<TH1D>( *file_F_el, histname_el_pt_f_T );
   hist_el_pt_f_L   = get_object<TH1D>( *file_F_el, histname_el_pt_f_L );
 
-  hist_mu_pt_fr    = get_object<TH1D>( *file_F_mu, histname_mu_pt_fr );
-  if ( m_useEtaParametrisation ) hist_mu_eta_fr = get_object<TH1D>( *file_F_mu, histname_mu_eta_fr );
+  hist_mu_pt_feff    = get_object<TH1D>( *file_F_mu, histname_mu_pt_feff );
+  teff_mu_pt_feff  = get_object<TEfficiency>( *file_R_mu, teffname_mu_pt_feff );
+  if ( m_useEtaParametrisation ) {
+      hist_mu_eta_feff = get_object<TH1D>( *file_F_mu, histname_mu_eta_feff );
+      teff_mu_eta_feff = get_object<TEfficiency>( *file_R_mu, teffname_mu_eta_feff );
+  }
   hist_mu_pt_f_T   = get_object<TH1D>( *file_F_mu, histname_mu_pt_f_T );
   hist_mu_pt_f_L   = get_object<TH1D>( *file_F_mu, histname_mu_pt_f_L );
 
@@ -900,61 +938,69 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
   if ( m_useTrigMatchingInfo ) {
 
-    if ( m_RRFR_YES_TM_dir.back() != '/' ) { m_RRFR_YES_TM_dir += "/"; }
-    if ( m_RRFR_NO_TM_dir.back() != '/' )  { m_RRFR_NO_TM_dir += "/"; }
+    if ( m_EFF_YES_TM_dir.back() != '/' ) { m_EFF_YES_TM_dir += "/"; }
+    if ( m_EFF_NO_TM_dir.back() != '/' )  { m_EFF_NO_TM_dir += "/"; }
 
-    Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe TRIGGER-MATCHED) from directory: %s ", m_RRFR_YES_TM_dir.c_str() );
+    Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe TRIGGER-MATCHED) from directory: %s ", m_EFF_YES_TM_dir.c_str() );
 
-    std::string path_YES_TM = m_RRFR_YES_TM_dir + m_Efficiency_Filename;
+    std::string path_YES_TM = m_EFF_YES_TM_dir + m_Efficiency_Filename;
     TFile *file_YES_TM = TFile::Open(path_YES_TM.c_str());
     HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_YES_TM->IsOpen(), "Failed to open ROOT file" );
     Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_YES_TM.c_str() );
 
-    Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe NOT TRIGGER-MATCHED) from directory: %s ", m_RRFR_NO_TM_dir.c_str() );
+    Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe NOT TRIGGER-MATCHED) from directory: %s ", m_EFF_NO_TM_dir.c_str() );
 
-    std::string path_NO_TM = m_RRFR_NO_TM_dir + m_Efficiency_Filename;
+    std::string path_NO_TM = m_EFF_NO_TM_dir + m_Efficiency_Filename;
     TFile *file_NO_TM = TFile::Open(path_NO_TM.c_str());
     HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_NO_TM->IsOpen(), "Failed to open ROOT file" );
     Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_NO_TM.c_str() );
 
     // Get real efficiency histograms
     //
-    hist_el_pt_rr_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_rr );
-    hist_el_pt_rr_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_rr );
+    hist_el_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_reff );
+    hist_el_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_reff );
 
-    hist_mu_pt_rr_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_rr );
-    hist_mu_pt_rr_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_rr );
+    hist_mu_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_reff );
+    hist_mu_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_reff );
 
     // Get fake efficiency histograms
     //
-    hist_el_pt_fr_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_fr );
-    hist_el_pt_fr_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_fr );
+    hist_el_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_feff );
+    hist_el_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_feff );
 
-    hist_mu_pt_fr_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_fr );
-    hist_mu_pt_fr_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_fr );
+    hist_mu_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_feff );
+    hist_mu_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_feff );
 
   }
   // ***********************************************************************
 
   // Fill a map for later usage
   //
-  m_el_hist_map["pt_rr"]   = hist_el_pt_rr;
-  m_mu_hist_map["pt_rr"]   = hist_mu_pt_rr;
-  m_el_hist_map["pt_fr"]   = hist_el_pt_fr;
-  m_mu_hist_map["pt_fr"]   = hist_mu_pt_fr;
-  m_el_hist_map["pt_rr_YES_TM"] = hist_el_pt_rr_YES_TM;
-  m_el_hist_map["pt_rr_NO_TM"]  = hist_el_pt_rr_NO_TM;
-  m_mu_hist_map["pt_rr_YES_TM"] = hist_mu_pt_rr_YES_TM;
-  m_mu_hist_map["pt_rr_NO_TM"]  = hist_mu_pt_rr_NO_TM;
+  m_el_hist_map["pt_reff"]   = hist_el_pt_reff;
+  m_mu_hist_map["pt_reff"]   = hist_mu_pt_reff;
+  m_el_hist_map["pt_feff"]   = hist_el_pt_feff;
+  m_mu_hist_map["pt_feff"]   = hist_mu_pt_feff;
+  m_el_teff_map["pt_reff"]   = teff_el_pt_reff;
+  m_mu_teff_map["pt_reff"]   = teff_mu_pt_reff;
+  m_el_teff_map["pt_feff"]   = teff_el_pt_feff;
+  m_mu_teff_map["pt_feff"]   = teff_mu_pt_feff;
+  m_el_hist_map["pt_reff_YES_TM"] = hist_el_pt_reff_YES_TM;
+  m_mu_hist_map["pt_reff_YES_TM"] = hist_mu_pt_reff_YES_TM;
+  m_el_hist_map["pt_feff_YES_TM"] = hist_el_pt_feff_YES_TM;
+  m_mu_hist_map["pt_feff_YES_TM"] = hist_mu_pt_feff_YES_TM;
+  m_el_hist_map["pt_reff_NO_TM"]  = hist_el_pt_reff_NO_TM;
+  m_mu_hist_map["pt_reff_NO_TM"]  = hist_mu_pt_reff_NO_TM;
+  m_el_hist_map["pt_feff_NO_TM"]  = hist_el_pt_feff_NO_TM;
+  m_mu_hist_map["pt_feff_NO_TM"]  = hist_mu_pt_feff_NO_TM;
 
-  m_el_hist_map["eta_rr"]  = hist_el_eta_rr;
-  m_mu_hist_map["eta_rr"]  = hist_mu_eta_rr;
-  m_el_hist_map["eta_fr"]  = hist_el_eta_fr;
-  m_mu_hist_map["eta_fr"]  = hist_mu_eta_fr;
-  m_el_hist_map["pt_fr_YES_TM"] = hist_el_pt_fr_YES_TM;
-  m_el_hist_map["pt_fr_NO_TM"]  = hist_el_pt_fr_NO_TM;
-  m_mu_hist_map["pt_fr_YES_TM"] = hist_mu_pt_fr_YES_TM;
-  m_mu_hist_map["pt_fr_NO_TM"]  = hist_mu_pt_fr_NO_TM;
+  m_el_hist_map["eta_reff"]  = hist_el_eta_reff;
+  m_mu_hist_map["eta_reff"]  = hist_mu_eta_reff;
+  m_el_hist_map["eta_feff"]  = hist_el_eta_feff;
+  m_mu_hist_map["eta_feff"]  = hist_mu_eta_feff;
+  m_el_teff_map["eta_reff"]   = teff_el_eta_reff;
+  m_mu_teff_map["eta_reff"]   = teff_mu_eta_reff;
+  m_el_teff_map["eta_feff"]   = teff_el_eta_feff;
+  m_mu_teff_map["eta_feff"]   = teff_mu_eta_feff;
 
   // eta hist has same binning for r/f
   //
@@ -964,26 +1010,26 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
       //
       // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
       //
-      m_el_rr_tot = ( hist_el_pt_r_T->Integral(1,hist_el_pt_r_T->GetNbinsX()+1) ) / ( hist_el_pt_r_L->Integral(1,hist_el_pt_r_L->GetNbinsX()+1) );
-      m_el_fr_tot = ( hist_el_pt_f_T->Integral(1,hist_el_pt_f_T->GetNbinsX()+1) ) / ( hist_el_pt_f_L->Integral(1,hist_el_pt_f_L->GetNbinsX()+1) );
-      m_mu_rr_tot = ( hist_mu_pt_r_T->Integral(1,hist_mu_pt_r_T->GetNbinsX()+1) ) / ( hist_mu_pt_r_L->Integral(1,hist_mu_pt_r_L->GetNbinsX()+1) );
-      m_mu_fr_tot = ( hist_mu_pt_f_T->Integral(1,hist_mu_pt_f_T->GetNbinsX()+1) ) / ( hist_mu_pt_f_L->Integral(1,hist_mu_pt_f_L->GetNbinsX()+1) );
+      m_el_reff_tot = ( hist_el_pt_r_T->Integral(1,hist_el_pt_r_T->GetNbinsX()+1) ) / ( hist_el_pt_r_L->Integral(1,hist_el_pt_r_L->GetNbinsX()+1) );
+      m_el_feff_tot = ( hist_el_pt_f_T->Integral(1,hist_el_pt_f_T->GetNbinsX()+1) ) / ( hist_el_pt_f_L->Integral(1,hist_el_pt_f_L->GetNbinsX()+1) );
+      m_mu_reff_tot = ( hist_mu_pt_r_T->Integral(1,hist_mu_pt_r_T->GetNbinsX()+1) ) / ( hist_mu_pt_r_L->Integral(1,hist_mu_pt_r_L->GetNbinsX()+1) );
+      m_mu_feff_tot = ( hist_mu_pt_f_T->Integral(1,hist_mu_pt_f_T->GetNbinsX()+1) ) / ( hist_mu_pt_f_L->Integral(1,hist_mu_pt_f_L->GetNbinsX()+1) );
 
   }
 
   std::cout << "\n" << std::endl;
-  Info("readRFEfficiencies()", "MUON REAL efficiency - pT histogram name: %s ", histname_mu_pt_rr.c_str() );
-  Info("readRFEfficiencies()", "MUON FAKE efficiency - pT histogram name: %s ", histname_mu_pt_fr.c_str() );
+  Info("readRFEfficiencies()", "MUON REAL efficiency - pT histogram name: %s ", histname_mu_pt_reff.c_str() );
+  Info("readRFEfficiencies()", "MUON FAKE efficiency - pT histogram name: %s ", histname_mu_pt_feff.c_str() );
   if ( m_useEtaParametrisation ) {
-    Info("readRFEfficiencies()", "MUON REAL efficiency - eta histogram name: %s ", histname_mu_eta_rr.c_str() );
-    Info("readRFEfficiencies()", "MUON FAKE efficiency - eta histogram name: %s ", histname_mu_eta_fr.c_str() );
+    Info("readRFEfficiencies()", "MUON REAL efficiency - eta histogram name: %s ", histname_mu_eta_reff.c_str() );
+    Info("readRFEfficiencies()", "MUON FAKE efficiency - eta histogram name: %s ", histname_mu_eta_feff.c_str() );
   }
   std::cout << "            --------------------------------------------" << std::endl;
-  Info("readRFEfficiencies()", "ELECTRON REAL efficiency - pT histogram name: %s ", histname_el_pt_rr.c_str() );
-  Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - pT histogram name: %s ", histname_el_pt_fr.c_str() );
+  Info("readRFEfficiencies()", "ELECTRON REAL efficiency - pT histogram name: %s ", histname_el_pt_reff.c_str() );
+  Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - pT histogram name: %s ", histname_el_pt_feff.c_str() );
   if ( m_useEtaParametrisation ) {
-    Info("readRFEfficiencies()", "ELECTRON REAL efficiency - eta histogram name: %s ", histname_el_eta_rr.c_str() );
-    Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - eta histogram name: %s ", histname_el_eta_fr.c_str() );
+    Info("readRFEfficiencies()", "ELECTRON REAL efficiency - eta histogram name: %s ", histname_el_eta_reff.c_str() );
+    Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - eta histogram name: %s ", histname_el_eta_feff.c_str() );
   }
   std::cout << "\n" << std::endl;
 
@@ -993,7 +1039,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shared_ptr<leptonObj> lep, std::vector<float>& efficiency, const std::string& type )
 {
 
-    float error(0.0);
+    float error_up(0.0), error_dn(0.0);
 
     float pt  = lep.get()->pt/1e3; // Must be in GeV!
     float eta = ( lep.get()->flavour == 13 ) ? lep.get()->eta : lep.get()->etaBE2;
@@ -1001,10 +1047,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     float this_low_edge_pt(-1.0), this_up_edge_pt(-1.0);
     float this_low_edge_eta(-999.0), this_up_edge_eta(-999.0);
 
-    std::map< std::string, TH1D* > *histograms = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
+    std::map< std::string, TH1D* >        *histograms    = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
+    std::map< std::string, TEfficiency* > *tefficiencies = ( lep.get()->flavour == 13 ) ? &m_mu_teff_map : &m_el_teff_map;
 
     TH1D *hist_pt(nullptr);
     TH1D *hist_eta(nullptr);
+
+    TEfficiency* teff_pt(nullptr);
+    TEfficiency* teff_eta(nullptr);
 
     //  1) Fake case: choose appropriate histogram
     //
@@ -1012,13 +1062,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading fake efficiency..."); }
 
-        hist_pt = ( histograms->find("pt_fr")->second );
+        hist_pt = ( histograms->find("pt_feff")->second );
+	teff_pt = ( tefficiencies->find("pt_feff")->second );
+
 	if ( m_useTrigMatchingInfo ) {
-	    hist_pt = ( lep.get()->trigmatched ) ? ( histograms->find("pt_fr_YES_TM")->second ) : ( histograms->find("pt_fr_NO_TM")->second );
+	    hist_pt = ( lep.get()->trigmatched ) ? ( histograms->find("pt_feff_YES_TM")->second ) : ( histograms->find("pt_feff_NO_TM")->second );
     	}
 
 	if ( m_useEtaParametrisation ) {
-	    hist_eta = ( histograms->find("eta_fr")->second );
+	    hist_eta = ( histograms->find("eta_feff")->second );
+	    teff_eta = ( tefficiencies->find("eta_feff")->second );
 	}
 
 	// Loop over number of pt bins
@@ -1033,12 +1086,20 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	    if ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) {
 
-    	        float fr_pt	= hist_pt->GetBinContent(p);
-    	        float fr_pt_err = hist_pt->GetBinError(p);
+    	        float feff_pt(1.0), feff_pt_err_up(0.0), feff_pt_err_dn(0.0);
 
-      	        if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV ==> Reading fake efficiency in pT bin [%.0f,%.0f] GeV: fr_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, fr_pt ); }
+		if ( m_useTEfficiency ) {
+		     feff_pt	    = teff_pt->GetEfficiency(p);
+		     feff_pt_err_up = teff_pt->GetEfficiencyErrorUp(p);
+		     feff_pt_err_dn = teff_pt->GetEfficiencyErrorLow(p);
+		} else {
+		     feff_pt	    = hist_pt->GetBinContent(p);
+		     feff_pt_err_up = feff_pt_err_dn = hist_pt->GetBinError(p);
+                }
 
-    	        float fr_eta(1.0), fr_eta_err(0.0);
+      	        if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV ==> Reading fake efficiency in pT bin [%.0f,%.0f] GeV: feff_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, feff_pt ); }
+
+    	        float feff_eta(1.0), feff_eta_err_up(0.0), feff_eta_err_dn(0.0);
 
     	        if ( m_useEtaParametrisation ) {
 
@@ -1054,11 +1115,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        	if ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) {
 
-    	        	    fr_eta     = hist_eta->GetBinContent(e);
-    	        	    fr_eta_err = hist_eta->GetBinError(e);
+		 	    if ( m_useTEfficiency ) {
+		 		 feff_eta	 = teff_eta->GetEfficiency(e);
+		 		 feff_eta_err_up = teff_eta->GetEfficiencyErrorUp(e);
+		 		 feff_eta_err_dn = teff_eta->GetEfficiencyErrorLow(e);
+		 	    } else {
+		 		 feff_eta        = hist_eta->GetBinContent(e);
+		 		 feff_eta_err_up = feff_eta_err_dn = hist_eta->GetBinError(e);
+                 	    }
 
-    	        	    if ( m_verbose ) {
-    	        		Info("getMMEfficiencyAndError()", "\t\tLepton |eta| = %.3f ==> Reading fake efficiency in |eta| bin [%.3f,%.3f]: fr_eta = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, fr_eta );
+			    if ( m_verbose ) {
+    	        		Info("getMMEfficiencyAndError()", "\t\tLepton |eta| = %.3f ==> Reading fake efficiency in |eta| bin [%.3f,%.3f]: feff_eta = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, feff_eta );
     	        	    }
 
     	        	    break;
@@ -1068,32 +1135,35 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        // Nominal
     	        //
-    	        efficiency.at(0) = fr_pt;
-    	        error		 = fr_pt_err;
+    	        efficiency.at(0) = feff_pt;
+    	        error_up	 = feff_pt_err_up;
+    	        error_dn	 = feff_pt_err_dn;
 
     	        // UP syst
     	        //
-    	        efficiency.at(1) = ( fr_pt + error );
+    	        efficiency.at(1) = ( feff_pt + error_up );
 
     	        // DN syst
     	        //
-    	        if ( fr_pt - error > 0 ) { efficiency.at(2) = ( fr_pt - error ); }
-    	        else			 { efficiency.at(2) = 0.0; }
+    	        if ( feff_pt - error_dn > 0 ) { efficiency.at(2) = ( feff_pt - error_dn ); }
+    	        else			      { efficiency.at(2) = 0.0; }
 
     	        if ( m_useEtaParametrisation ) {
 
-	    	    float fr_tot = ( lep.get()->flavour == 13 ) ? m_mu_fr_tot : m_el_fr_tot;
-    	            if ( m_verbose ) {Info("getMMEfficiencyAndError()", "\t\t norm factor = %.3f", fr_tot ); }
+	    	    float feff_tot = ( lep.get()->flavour == 13 ) ? m_mu_feff_tot : m_el_feff_tot;
+    	            if ( m_verbose ) {Info("getMMEfficiencyAndError()", "\t\t norm factor = %.3f", feff_tot ); }
 
-	    	    efficiency.at(0) = ( fr_pt * fr_eta ) / fr_tot;
+	    	    efficiency.at(0) = ( feff_pt * feff_eta ) / feff_tot;
 
-	    	    // Assuming  fr_pt,fr_eta are independent, this is the error on the product
+	    	    // Assuming  feff_pt,feff_eta are independent, this is the error on the product
     	            // ( the constant factor at denominator will be put back later in the def of Efficiency...)
     	            //
-    	            error  = sqrt( (fr_eta*fr_pt_err)*(fr_eta*fr_pt_err) + (fr_pt*fr_eta_err)*(fr_pt*fr_eta_err) );
-    	            efficiency.at(1) = ( (fr_pt * fr_eta) + error ) / fr_tot;
-    	            if ( (fr_pt * fr_eta) - error > 0 ) { efficiency.at(2) = ( (fr_pt * fr_eta) - error ) / fr_tot;}
-    	            else				{ efficiency.at(2) = 0.0; }
+    	            error_up         = sqrt( (feff_eta*feff_pt_err_up)*(feff_eta*feff_pt_err_up) + (feff_pt*feff_eta_err_up)*(feff_pt*feff_eta_err_up) );
+    	            error_dn         = sqrt( (feff_eta*feff_pt_err_dn)*(feff_eta*feff_pt_err_dn) + (feff_pt*feff_eta_err_dn)*(feff_pt*feff_eta_err_dn) );
+
+    	            efficiency.at(1) = ( (feff_pt * feff_eta) + error_up ) / feff_tot;
+    	            if ( (feff_pt * feff_eta) - error_dn > 0 ) { efficiency.at(2) = ( (feff_pt * feff_eta) - error_dn ) / feff_tot;}
+    	            else				       { efficiency.at(2) = 0.0; }
     	        }
 
     	        break;
@@ -1108,13 +1178,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading real efficiency..."); }
 
-        hist_pt = ( histograms->find("pt_rr")->second );
+        hist_pt = ( histograms->find("pt_reff")->second );
+	teff_pt = ( tefficiencies->find("pt_reff")->second );
+
 	if ( m_useTrigMatchingInfo ) {
-	    hist_pt = ( lep.get()->trigmatched ) ? ( histograms->find("pt_rr_YES_TM")->second ) : ( histograms->find("pt_rr_NO_TM")->second );
+	    hist_pt = ( lep.get()->trigmatched ) ? ( histograms->find("pt_reff_YES_TM")->second ) : ( histograms->find("pt_reff_NO_TM")->second );
     	}
 
 	if ( m_useEtaParametrisation ) {
-	    hist_eta = ( histograms->find("eta_rr")->second );
+	    hist_eta = ( histograms->find("eta_reff")->second );
+	    teff_eta = ( tefficiencies->find("eta_reff")->second );
 	}
 
     	// Loop over number of pt bins
@@ -1129,12 +1202,20 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	    if ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) {
 
-    	        float rr_pt	= hist_pt->GetBinContent(p);
-    	        float rr_pt_err = hist_pt->GetBinError(p);
+    	        float reff_pt(1.0), reff_pt_err_up(0.0), reff_pt_err_dn(0.0);
 
-      	        if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV ==> Reading real efficiency in pT bin [%.0f,%.0f] GeV: rr_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, rr_pt ); }
+		if ( m_useTEfficiency ) {
+		     reff_pt	    = teff_pt->GetEfficiency(p);
+		     reff_pt_err_up = teff_pt->GetEfficiencyErrorUp(p);
+		     reff_pt_err_dn = teff_pt->GetEfficiencyErrorLow(p);
+		} else {
+		     reff_pt	    = hist_pt->GetBinContent(p);
+		     reff_pt_err_up = reff_pt_err_dn = hist_pt->GetBinError(p);
+                }
 
-    	        float rr_eta(1.0), rr_eta_err(0.0);
+      	        if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV ==> Reading real efficiency in pT bin [%.0f,%.0f] GeV: reff_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, reff_pt ); }
+
+    	        float reff_eta(1.0), reff_eta_err_up(0.0), reff_eta_err_dn(0.0);
 
     	        if ( m_useEtaParametrisation ) {
 
@@ -1143,18 +1224,24 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     	            //
     	            for ( int e(1); e <= hist_eta->GetNbinsX()+1; ++e ) {
 
-	    	  	this_low_edge_eta = ( histograms->find("eta_rr")->second )->GetXaxis()->GetBinLowEdge(e);
-    	        	this_up_edge_eta  = ( histograms->find("eta_rr")->second )->GetXaxis()->GetBinLowEdge(e+1);
+	    	  	this_low_edge_eta = ( histograms->find("eta_reff")->second )->GetXaxis()->GetBinLowEdge(e);
+    	        	this_up_edge_eta  = ( histograms->find("eta_reff")->second )->GetXaxis()->GetBinLowEdge(e+1);
 
     	        	if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
 
     	        	if ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) {
 
-    	        	    rr_eta     = ( histograms->find("eta_rr")->second )->GetBinContent(e);
-    	        	    rr_eta_err = ( histograms->find("eta_rr")->second )->GetBinError(e);
+		 	    if ( m_useTEfficiency ) {
+		 		 reff_eta	 = teff_eta->GetEfficiency(e);
+		 		 reff_eta_err_up = teff_eta->GetEfficiencyErrorUp(e);
+		 		 reff_eta_err_dn = teff_eta->GetEfficiencyErrorLow(e);
+		 	    } else {
+		 		 reff_eta        = hist_eta->GetBinContent(e);
+		 		 reff_eta_err_up = reff_eta_err_dn = hist_eta->GetBinError(e);
+                 	    }
 
-    	        	    if ( m_verbose ) {
-    	        		Info("getMMEfficiencyAndError()", "\t\tLepton |eta| = %.3f ==> Reading real efficiency in |eta| bin [%.3f,%.3f]: rr_eta = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, rr_eta );
+			    if ( m_verbose ) {
+    	        		Info("getMMEfficiencyAndError()", "\t\tLepton |eta| = %.3f ==> Reading real efficiency in |eta| bin [%.3f,%.3f]: reff_eta = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, reff_eta );
     	        	    }
 
     	        	    break;
@@ -1164,32 +1251,35 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        // Nominal
     	        //
-    	        efficiency.at(0) = rr_pt;
-    	        error		 = rr_pt_err;
+    	        efficiency.at(0) = reff_pt;
+    	        error_up	 = reff_pt_err_up;
+    	        error_dn	 = reff_pt_err_dn;
 
     	        // UP syst
     	        //
-    	        efficiency.at(1) = ( rr_pt + error );
+    	        efficiency.at(1) = ( reff_pt + error_up );
 
     	        // DN syst
     	        //
-    	        if ( rr_pt - error > 0 ) { efficiency.at(2) = ( rr_pt - error ); }
-    	        else			 { efficiency.at(2) = 0.0; }
+    	        if ( reff_pt - error_dn > 0 ) { efficiency.at(2) = ( reff_pt - error_dn ); }
+    	        else			      { efficiency.at(2) = 0.0; }
 
     	        if ( m_useEtaParametrisation ) {
 
-	    	    float rr_tot = ( lep.get()->flavour == 13 ) ? m_mu_rr_tot : m_el_rr_tot;
-    	            if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\t norm factor = %.3f", rr_tot ); }
+	    	    float reff_tot = ( lep.get()->flavour == 13 ) ? m_mu_reff_tot : m_el_reff_tot;
+    	            if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\t norm factor = %.3f", reff_tot ); }
 
-	    	    efficiency.at(0) = ( rr_pt * rr_eta ) / rr_tot;
+	    	    efficiency.at(0) = ( reff_pt * reff_eta ) / reff_tot;
 
-	    	    // Assuming  rr_pt,rr_eta are independent, this is the error on the product
+	    	    // Assuming  reff_pt,reff_eta are independent, this is the error on the product
     	            // ( the constant factor at denominator will be put back later in the def of Efficiency...)
     	            //
-    	            error  = sqrt( (rr_eta*rr_pt_err)*(rr_eta*rr_pt_err) + (rr_pt*rr_eta_err)*(rr_pt*rr_eta_err) );
-    	            efficiency.at(1) = ( (rr_pt * rr_eta) + error ) / rr_tot;
-    	            if ( (rr_pt * rr_eta) - error > 0 ) { efficiency.at(2) = ( (rr_pt * rr_eta) - error ) / rr_tot;}
-    	            else				{ efficiency.at(2) = 0.0; }
+    	            error_up  = sqrt( (reff_eta*reff_pt_err_up)*(reff_eta*reff_pt_err_up) + (reff_pt*reff_eta_err_up)*(reff_pt*reff_eta_err_up) );
+    	            error_dn  = sqrt( (reff_eta*reff_pt_err_dn)*(reff_eta*reff_pt_err_dn) + (reff_pt*reff_eta_err_dn)*(reff_pt*reff_eta_err_dn) );
+
+    	            efficiency.at(1) = ( (reff_pt * reff_eta) + error_up ) / reff_tot;
+    	            if ( (reff_pt * reff_eta) - error_dn > 0 ) { efficiency.at(2) = ( (reff_pt * reff_eta) - error_dn ) / reff_tot;}
+    	            else				       { efficiency.at(2) = 0.0; }
     	        }
 
     	        break;
@@ -1238,7 +1328,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
     	float f0dn = ( f0.at(2) < 0.0 ) ? 0.0 :  f0.at(2) ;
     	float f1dn = ( f1.at(2) < 0.0 ) ? 0.0 :  f1.at(2) ;
 
-    	// rup syst 
+    	// rup syst
     	//
     	mm_weight.at(1) = matrix_equation( f0.at(0), f1.at(0), r0up, r1up );
 
@@ -1248,7 +1338,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
 
     	if ( (r0dn > f0.at(0)) && (r1dn > f1.at(0)) ) {
 
-	    // rdn syst 
+	    // rdn syst
     	    //
     	    mm_weight.at(2) = matrix_equation( f0.at(0), f1.at(0), r0dn, r1dn );
 

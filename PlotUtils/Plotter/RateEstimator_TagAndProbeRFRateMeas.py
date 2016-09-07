@@ -42,7 +42,7 @@ parser.add_argument("--rebinPt", dest="rebinPt", action="store_true",default=Fal
 parser.add_argument("--doAvgMuFake", dest="doAvgMuFake", action="store_true",default=False,
                   help="get average efficiency for muon fakes only")
 parser.add_argument("--doAvgElFake", dest="doAvgElFake", action="store_true",default=False,
-                  help="get average efficiency for electron fakes only")		  
+                  help="get average efficiency for electron fakes only")
 parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
                   help="get average efficiencies (i.e, make 1 bin)")
 parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",default=False,
@@ -54,7 +54,7 @@ parser.add_argument("--doWeightedAvgFake", dest="doWeightedAvgFake", action="sto
 
 args = parser.parse_args()
 
-from ROOT import ROOT, gROOT, TH1, TH1D, TFile, TGraphAsymmErrors, Double
+from ROOT import ROOT, gROOT, TH1, TH1D, TFile, TGraphAsymmErrors, TEfficiency, Double
 
 gROOT.SetBatch(True)
 TH1.SetDefaultSumw2()
@@ -105,7 +105,7 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
 
     #file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v17.root")
     #file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v17.root")
-    
+
     file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v18.root")
     file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v18.root")
 
@@ -145,16 +145,16 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
         # The weight is the QMisID fraction wrt the total (data - prompt) for each bin
         # (The sum of weight is correctly normalised to 1)
         #
-	
+
 	numerator   = hist_QMisID.GetBinContent(ibinx)
-	#denominator = hist_data.GetBinContent(ibinx) 
+	#denominator = hist_data.GetBinContent(ibinx)
 	denominator = hist_data.GetBinContent(ibinx) - hist_prompt.GetBinContent(ibinx)
-	
+
 	if denominator:
             w = numerator / denominator
 	else:
 	    w = 1.0
-	    
+
 	print("bin {} - [{},{}] GeV\n\tQMisID = {} (hname: {})\n\tData = {} (hname: {})\n\tPrompt = {} (hname: {})\n\t===> w = {}".format(ibinx,bin_lowedge,bin_upedge,hist_QMisID.GetBinContent(ibinx),hist_QMisID.GetName(),hist_data.GetBinContent(ibinx),hist_data.GetName(),hist_prompt.GetBinContent(ibinx),hist_prompt.GetName(),w))
 
         # Deal with the (ill) case where the QMisID yield is higher than the denominator
@@ -183,7 +183,7 @@ def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
 	# Do this:
 	#
 	tot_err_eff_w = max(err_eff_w,sys_err_eff_w)
-	
+
         print("weighted eff_f:\nstat error = {0}\nsyst error = {1}\n==>total error = {2}".format(err_eff_w,sys_err_eff_w,tot_err_eff_w))
 
         print("bin {0} - [{1},{2}] GeV \n\teff_r: {3} +- {4}\n\tscale : {5} +- {6} ({7} %)\n\teff_QMisID: {8} +- {9}\n\teff_f: {10} +- {11}\n\tweighted eff_f: {12} +- {13} ({14})".format(ibinx,bin_lowedge,bin_upedge,eff_r,err_eff_r,scale,err_scale,perc_err_scale,eff_QMisID,err_eff_QMisID,eff_f,err_eff_f,eff_w,err_eff_w,tot_err_eff_w))
@@ -250,6 +250,7 @@ if __name__ == "__main__":
 
     hists  = {}
     graphs = {}
+    tefficiencies = {}
     yields = {}
     fin    = []
 
@@ -412,7 +413,7 @@ if __name__ == "__main__":
 
                                             nBIN  = 4
                                             xbins = [10,15,20,25,200]
-                                       
+
 				        else:
                                             # nominal binning
                                             #
@@ -453,7 +454,7 @@ if __name__ == "__main__":
 
                                     	nBIN  = 4
                                     	xbins = [10,15,20,25,200]
-				    
+
 				    else:
                                         nBIN  = 5
                                         xbins = [10,15,20,25,40,200]
@@ -589,10 +590,36 @@ if __name__ == "__main__":
                 # For efficiency, make sure the errors are computed correctly
                 # (NB: in this case, numerator and denominator are not independent sets of events!)
                 #
+		# The TH1::Divide method with the option "B" calculates errors using the "normal" approximation (NB: fails when eff = 0 or 1)
+		#
                 hist_pass = hists[histname + "_T_" + append_str]
                 hist_tot  = hists[histname + "_T_" + append_str] + hists[histname + "_AntiT_" + append_str]
                 hist_eff  = hist_pass.Clone(histname + "_Efficiency_" + append_str)
-                hist_eff.Divide(hist_pass, hist_tot,1.0,1.0,"B")
+                hist_eff.Divide(hist_pass,hist_tot,1.0,1.0,"B")
+
+		# Use TEfficiency, with the frequentist Clopper-Pearson confidence interval at 68% CL
+		# (this handles the eff = 0, 1 case)
+		#
+		# DOES NOT SEEM TO WORK FOR WEIGHTED HISTOGRAMS --> IT REDUCES TO THE NORMAL APPROX
+		#
+		#t_efficiency = None
+		#if TEfficiency.CheckConsistency(hist_pass, hist_tot,"w"):
+		#    t_efficiency = TEfficiency(hist_pass, hist_tot)
+	        #    t_efficiency.SetConfidenceLevel(0.683)
+		#    t_efficiency.SetStatisticOption(TEfficiency.kFCP)
+		#    t_efficiency.SetName(histname + "_TEfficiency_" + append_str)
+                #tefficiencies[histname + "_Efficiency_" + append_str] = t_efficiency
+
+		# Use TEfficiency, with the Bayesian uniform prior at 68% CL
+		# (This is the same as the TGraphAsymmErrors below)
+		#)
+		t_efficiency = None
+		if TEfficiency.CheckConsistency(hist_pass, hist_tot,"w"):
+		    t_efficiency = TEfficiency(hist_pass, hist_tot)
+		    t_efficiency.SetConfidenceLevel(0.683)
+		    t_efficiency.SetStatisticOption(TEfficiency.kBUniform)
+		    t_efficiency.SetName(histname + "_TEfficiency_" + append_str)
+                tefficiencies[histname + "_Efficiency_" + append_str] = t_efficiency
 
                 print "Denominator AntiT+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
                 for bin in range(1,hist_tot.GetNbinsX()+1):
@@ -624,9 +651,9 @@ if __name__ == "__main__":
                     hists[eff_fake_scaled_name] = hist_eff_fake_scaled
 
                 hists[histname + "_Efficiency_" + append_str] = hist_eff
-                #
-                # even better, use TGraphAsymmErrors
-                # (handles the errors in case eff is 100%)
+
+                # Calculate efficiency using TGraphAsymmErrors
+                # (uses a Bayesian uniform prior for the efficiency, handles the errors in case eff is 0 or 1)
                 #
                 g_efficiency = TGraphAsymmErrors(hist_eff)
                 g_efficiency.Divide(hist_pass,hist_tot,"cl=0.683 b(1,1) mode")
@@ -671,6 +698,12 @@ if __name__ == "__main__":
         outfile.write("%s \n" %(g) )
         for set in Eff:
             outfile.write("{ %s }; \n" %( "Bin nr: " + str(set[0]) + ", efficiency = " + str(round(set[1],3)) + " + " + str(round(set[2],3)) + " - " + str(round(set[3],3)) ) )
+
+    for t in sorted ( tefficiencies.keys() ):
+
+        print "saving TEfficiency: ", tefficiencies[t].GetName()
+
+	tefficiencies[t].Write()
 
 
     for h in sorted( hists.keys() ):

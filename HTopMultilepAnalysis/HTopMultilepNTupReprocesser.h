@@ -23,6 +23,7 @@
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TEfficiency.h"
 
 namespace NTupReprocesser {
 
@@ -98,10 +99,10 @@ public:
 
   /** The path to the real/fake efficiency file directory */
 
-  std::string m_RR_dir;
-  std::string m_FR_dir;
-  std::string m_RRFR_YES_TM_dir;
-  std::string m_RRFR_NO_TM_dir;
+  std::string m_REFF_dir;
+  std::string m_FEFF_dir;
+  std::string m_EFF_YES_TM_dir;
+  std::string m_EFF_NO_TM_dir;
   std::string m_Efficiency_Filename;
   bool m_doMMClosure;
   bool m_useEtaParametrisation;
@@ -109,6 +110,8 @@ public:
   /** Read different r/f rates depending on whether the lepton is trigger-matched or not */
 
   bool m_useTrigMatchingInfo;
+
+  bool m_useTEfficiency;
 
   /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
 
@@ -165,7 +168,7 @@ private:
   Float_t	  m_QMisIDWeight_in;
   Float_t	  m_QMisIDWeight_UP_in;
   Float_t	  m_QMisIDWeight_DN_in;
-  
+
   Float_t	  m_MMWeight_in;
   Float_t	  m_MMWeight_R_UP_in;
   Float_t	  m_MMWeight_R_DN_in;
@@ -185,16 +188,16 @@ private:
   bool m_isMMBranchIn;
 
   /** Extra branches to be stored in output TTree */
-  
+
   Float_t	  m_QMisIDWeight_out;
   Float_t	  m_QMisIDWeight_UP_out;
   Float_t	  m_QMisIDWeight_DN_out;
-  
+
   Float_t	  m_MMWeight_out;
   Float_t	  m_MMWeight_R_UP_out;
   Float_t	  m_MMWeight_R_DN_out;
   Float_t	  m_MMWeight_F_UP_out;
-  Float_t	  m_MMWeight_F_DN_out;  
+  Float_t	  m_MMWeight_F_DN_out;
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
@@ -213,12 +216,15 @@ private:
   std::map< std::string, TH1D* > m_el_hist_map; //!
   std::map< std::string, TH1D* > m_mu_hist_map; //!
 
+  std::map< std::string, TEfficiency* > m_el_teff_map; //!
+  std::map< std::string, TEfficiency* > m_mu_teff_map; //!
+
   /** Normalisation factors for r/f efficiencies */
 
-  double m_el_rr_tot = 1.0;
-  double m_el_fr_tot = 1.0;
-  double m_mu_rr_tot = 1.0;
-  double m_mu_fr_tot = 1.0;
+  double m_el_reff_tot = 1.0;
+  double m_el_feff_tot = 1.0;
+  double m_mu_reff_tot = 1.0;
+  double m_mu_feff_tot = 1.0;
 
 public:
 
