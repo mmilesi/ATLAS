@@ -10,6 +10,7 @@
 
 // C++ include(s)
 #include <iomanip>
+#include <memory>
 
 using namespace NTupReprocesser;
 
@@ -1050,11 +1051,20 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     std::map< std::string, TH1D* >        *histograms    = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
     std::map< std::string, TEfficiency* > *tefficiencies = ( lep.get()->flavour == 13 ) ? &m_mu_teff_map : &m_el_teff_map;
 
-    TH1D *hist_pt(nullptr);
-    TH1D *hist_eta(nullptr);
-
-    TEfficiency* teff_pt(nullptr);
-    TEfficiency* teff_eta(nullptr);
+    // Need this b/c TEfficiency::GetCopyTotalHisto makes a clone of the denominator TH1, passing the ownership of the
+    // pointer to the user. We don't like to delete manually our pointers!
+    //
+    // (NB: when using reset() to change the pointer in our unique_ptr, remember that the unique_ptr then takes ownership of the input pointer!
+    //  This means that when the unique_ptr goes out of scope, the input pointer gets deleted! Hence we need to Clone() the histograms from the map every time)
+    //
+    // An idea to overcome this would be to use a shared_ptr instead, and have a map<shared_ptr>, so that the ownership of the pointer is shared and the
+    // pointer in the map does not get deleted when this function goes out of scope.
+    //
+    auto hist_pt  = std::unique_ptr<TH1D>(new TH1D);
+    auto hist_eta = std::unique_ptr<TH1D>(new TH1D);
+   
+    TEfficiency *teff_pt(nullptr);  
+    TEfficiency *teff_eta (nullptr);
 
     //  1) Fake case: choose appropriate histogram
     //
@@ -1062,16 +1072,29 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading fake efficiency..."); }
 
-        hist_pt = ( histograms->find("pt_feff")->second );
-	teff_pt = ( tefficiencies->find("pt_feff")->second );
-
+	if ( m_useTEfficiency ) {
+	    hist_pt.reset( dynamic_cast<TH1D*>( ( tefficiencies->find("pt_feff")->second )->GetCopyTotalHisto() ) );
+	    teff_pt = ( tefficiencies->find("pt_feff")->second );
+        } else {
+	    hist_pt.reset( dynamic_cast<TH1D*>( (histograms->find("pt_feff")->second )->Clone() ) );
+	}
+	
 	if ( m_useTrigMatchingInfo ) {
-	    hist_pt = ( lep.get()->trigmatched ) ? ( histograms->find("pt_feff_YES_TM")->second ) : ( histograms->find("pt_feff_NO_TM")->second );
-    	}
+	    if ( lep.get()->trigmatched ) {
+	        hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_feff_YES_TM")->second )->Clone() ) );
+	    } else {
+	        hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_feff_NO_TM")->second )->Clone() ) );
+	    }
+	}
 
 	if ( m_useEtaParametrisation ) {
-	    hist_eta = ( histograms->find("eta_feff")->second );
-	    teff_eta = ( tefficiencies->find("eta_feff")->second );
+	    if ( m_useTEfficiency ) {
+	        hist_eta.reset( dynamic_cast<TH1D*>( ( tefficiencies->find("eta_feff")->second )->GetCopyTotalHisto() ) );
+		teff_eta = ( tefficiencies->find("eta_feff")->second );
+	    } else {
+	        hist_eta.reset( histograms->find("eta_feff")->second );
+	        hist_eta.reset( dynamic_cast<TH1D*>( (histograms->find("eta_feff")->second )->Clone() ) );
+	    }
 	}
 
 	// Loop over number of pt bins
@@ -1178,19 +1201,31 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading real efficiency..."); }
 
-        hist_pt = ( histograms->find("pt_reff")->second );
-	teff_pt = ( tefficiencies->find("pt_reff")->second );
-
+	if ( m_useTEfficiency ) {
+	    hist_pt.reset( dynamic_cast<TH1D*>( ( tefficiencies->find("pt_reff")->second )->GetCopyTotalHisto() ) );
+	    teff_pt = ( tefficiencies->find("pt_reff")->second );
+        } else {
+	    hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_reff")->second )->Clone() ) );
+	}
+	
 	if ( m_useTrigMatchingInfo ) {
-	    hist_pt = ( lep.get()->trigmatched ) ? ( histograms->find("pt_reff_YES_TM")->second ) : ( histograms->find("pt_reff_NO_TM")->second );
-    	}
-
+	    if ( lep.get()->trigmatched ) {
+	        hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_reff_YES_TM")->second )->Clone() ) );
+	    } else {
+	        hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_reff_NO_TM")->second )->Clone() ) );
+	    }
+	}
+	
 	if ( m_useEtaParametrisation ) {
-	    hist_eta = ( histograms->find("eta_reff")->second );
-	    teff_eta = ( tefficiencies->find("eta_reff")->second );
+	    if ( m_useTEfficiency ) {
+	        hist_eta.reset( dynamic_cast<TH1D*>( ( tefficiencies->find("eta_reff")->second )->GetCopyTotalHisto() ) );
+		teff_eta = ( tefficiencies->find("eta_reff")->second );
+	    } else {
+	        hist_eta.reset( dynamic_cast<TH1D*>( ( histograms->find("eta_reff")->second )->Clone() ) );
+	    }
 	}
 
-    	// Loop over number of pt bins
+	// Loop over number of pt bins
     	// Do not consider underflow, i.e. 0th bin
     	//
     	for ( int p(1); p <= hist_pt->GetNbinsX()+1; ++p ) {
@@ -1224,8 +1259,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     	            //
     	            for ( int e(1); e <= hist_eta->GetNbinsX()+1; ++e ) {
 
-	    	  	this_low_edge_eta = ( histograms->find("eta_reff")->second )->GetXaxis()->GetBinLowEdge(e);
-    	        	this_up_edge_eta  = ( histograms->find("eta_reff")->second )->GetXaxis()->GetBinLowEdge(e+1);
+	    	  	this_low_edge_eta = hist_eta->GetXaxis()->GetBinLowEdge(e);
+    	        	this_up_edge_eta  = hist_eta->GetXaxis()->GetBinLowEdge(e+1);
 
     	        	if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
 
@@ -1286,7 +1321,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     	    }
 
     	} // close loop on pT bins: real case
-
     }
 
     if ( m_verbose ) {

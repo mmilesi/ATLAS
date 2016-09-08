@@ -37,6 +37,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_useTAntiTRates"             : True,
                                     #
 				    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
+				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_CPPM",
 				    #"m_EFF_YES_TM_dir"	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_YES_TM",
 				    #"m_EFF_NO_TM_dir" 	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_NO_TM",
                                     #
@@ -48,7 +49,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #"m_REFF_dir"  		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_02/OutputPlots_MMClosureRates_NoCorrections_TTBarSemilep_25ns_v20_02",
                                     #
 				    "m_useTrigMatchingInfo"        : False,
-				    "m_Efficiency_Filename"        : "Rates.root",
+				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
                                     "m_doMMClosure"                : False,
                                     "m_useEtaParametrisation"      : False,
 				    "m_useTEfficiency"             : True,

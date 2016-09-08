@@ -582,48 +582,40 @@ if __name__ == "__main__":
                 for bin in range(1,hists[histname + "_AntiT_" + append_str].GetNbinsX()+1):
                     print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hists[histname + "_AntiT_" + append_str].GetBinLowEdge(bin),hists[histname + "_AntiT_" + append_str].GetBinLowEdge(bin+1),hists[histname + "_AntiT_" + append_str].GetBinContent(bin)))
 
+                # -----------------------
+                # RATE (T/!T) MEASUREMENT
+                # -----------------------
+
                 hists[histname + "_Rate_" + append_str]  = hists[histname + "_T_" + append_str].Clone(histname + "_Rate_" + append_str)
                 hists[histname + "_Rate_" + append_str].Divide(hists[histname + "_AntiT_" + append_str])
 
                 yields[histname + "_Rate_" + append_str] = yields[histname + "_T_" + append_str] / yields[histname + "_AntiT_" + append_str]
 
-                # For efficiency, make sure the errors are computed correctly
-                # (NB: in this case, numerator and denominator are not independent sets of events!)
-                #
-		# The TH1::Divide method with the option "B" calculates errors using the "normal" approximation (NB: fails when eff = 0 or 1)
-		#
+                # ---------------------------------
+                # EFFICIENCY (T/(T+!T)) MEASUREMENT
+                # ---------------------------------
+
+                # Define numerator and denominator events
+
                 hist_pass = hists[histname + "_T_" + append_str]
                 hist_tot  = hists[histname + "_T_" + append_str] + hists[histname + "_AntiT_" + append_str]
+
+                print "Denominator L (AntiT+T): tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
+                for bin in range(1,hist_tot.GetNbinsX()+1):
+                    print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hist_tot.GetBinLowEdge(bin),hist_tot.GetBinLowEdge(bin+1),hist_tot.GetBinContent(bin)))
+
+                # NB: For efficiency, need to make sure the errors are computed correctly!
+                # In this case, numerator and denominator are not independent sets of events! The efficiency is described by a binomial PDF.
+
+                # 1.
+                #
+		# The TH1::Divide method with the option "B" calculates binomial errors using the "normal" approximation
+                # (NB: the approximation fails when eff = 0 or 1. In such cases, TEfficiency or TGraphAsymmErrors should be used, since they know how to handle such cases)
+		#
                 hist_eff  = hist_pass.Clone(histname + "_Efficiency_" + append_str)
                 hist_eff.Divide(hist_pass,hist_tot,1.0,1.0,"B")
 
-		# Use TEfficiency, with the frequentist Clopper-Pearson confidence interval at 68% CL
-		# (this handles the eff = 0, 1 case)
-		#
-		# DOES NOT SEEM TO WORK FOR WEIGHTED HISTOGRAMS --> IT REDUCES TO THE NORMAL APPROX
-		#
-		#t_efficiency = None
-		#if TEfficiency.CheckConsistency(hist_pass, hist_tot,"w"):
-		#    t_efficiency = TEfficiency(hist_pass, hist_tot)
-	        #    t_efficiency.SetConfidenceLevel(0.683)
-		#    t_efficiency.SetStatisticOption(TEfficiency.kFCP)
-		#    t_efficiency.SetName(histname + "_TEfficiency_" + append_str)
-                #tefficiencies[histname + "_Efficiency_" + append_str] = t_efficiency
-
-		# Use TEfficiency, with the Bayesian uniform prior at 68% CL
-		# (This is the same as the TGraphAsymmErrors below)
-		#)
-		t_efficiency = None
-		if TEfficiency.CheckConsistency(hist_pass, hist_tot,"w"):
-		    t_efficiency = TEfficiency(hist_pass, hist_tot)
-		    t_efficiency.SetConfidenceLevel(0.683)
-		    t_efficiency.SetStatisticOption(TEfficiency.kBUniform)
-		    t_efficiency.SetName(histname + "_TEfficiency_" + append_str)
-                tefficiencies[histname + "_Efficiency_" + append_str] = t_efficiency
-
-                print "Denominator AntiT+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
-                for bin in range(1,hist_tot.GetNbinsX()+1):
-                    print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hist_tot.GetBinLowEdge(bin),hist_tot.GetBinLowEdge(bin+1),hist_tot.GetBinContent(bin)))
+                # *********************************************************************************************************************************
 
                 # Cache the electron REAL efficiency w/ same binning as fake eff (only in DATA, and for pT dependence)
                 #
@@ -650,18 +642,50 @@ if __name__ == "__main__":
                     hists[eff_QMisID_name]      = hist_eff_QMisID
                     hists[eff_fake_scaled_name] = hist_eff_fake_scaled
 
-                hists[histname + "_Efficiency_" + append_str] = hist_eff
+                # *********************************************************************************************************************************
 
+                # 2.
+                # The TEfficiency class handles the special cases not covered by TH1::Divide
+                #
+		t_efficiency = None
+		if TEfficiency.CheckConsistency(hist_pass, hist_tot,"w"):
+		    t_efficiency = TEfficiency(hist_pass, hist_tot)
+		    t_efficiency.SetName(histname + "_TEfficiency_" + append_str)
+
+		    t_efficiency.SetConfidenceLevel(0.683)
+
+                    # Use TEfficiency, with the frequentist Clopper-Pearson confidence interval at XX% CL (set before)
+                    # (this handles the eff = 0, 1 case)
+                    #
+                    # DOES NOT SEEM TO WORK FOR WEIGHTED HISTOGRAMS --> IT REDUCES TO THE NORMAL APPROX
+                    #
+		    #t_efficiency.SetStatisticOption(TEfficiency.kFCP)
+                    #
+                    # Use TEfficiency, with the Bayesian uniform prior at XX% CL (set before)
+                    # (This is the same as the TGraphAsymmErrors below)
+                    #
+                    # In order to get the same value for efficiency as in a frequentist approach (as from TH1::Divide("B")),
+                    # the MODE should be used as an estimator. This works as long as a uniform prior is chosen.
+                    #
+                    # Please refer to the TEfficiency class docs for details:
+                    # https://root.cern.ch/doc/master/classTEfficiency.html
+                    #
+		    t_efficiency.SetStatisticOption(TEfficiency.kBUniform)
+                    t_efficiency.SetPosteriorMode()
+
+                # 3.
+                #
                 # Calculate efficiency using TGraphAsymmErrors
-                # (uses a Bayesian uniform prior for the efficiency, handles the errors in case eff is 0 or 1)
+                # (uses a Bayesian uniform prior beta(1,1) for the efficiency with 68% CL. It handles the errors in case eff is 0 or 1)
                 #
                 g_efficiency = TGraphAsymmErrors(hist_eff)
                 g_efficiency.Divide(hist_pass,hist_tot,"cl=0.683 b(1,1) mode")
-                graphs[histname + "_Efficiency_" + append_str + "_graph"] = g_efficiency
 
-                #print "Denominator AntiT+T: tot. yield = ", hist_tot.Integral(0,hist_tot.GetNbinsX()+1)
-                #for bin in range(1,hist_tot.GetNbinsX()+1):
-                #    print("\t Bin nr: {0}, [{1},{2}] - yield = {3}".format(bin,hist_tot.GetBinLowEdge(bin),hist_tot.GetBinLowEdge(bin+1),hist_tot.GetBinContent(bin)))
+                # Save the efficiencies in the proper dictionaries
+                #
+                hists[histname + "_Efficiency_" + append_str] = hist_eff
+                tefficiencies[histname + "_Efficiency_" + append_str] = t_efficiency
+                graphs[histname + "_Efficiency_" + append_str + "_graph"] = g_efficiency
 
                 print "\t\t --> RATE hist name: ", histname + "_Rate_" + append_str
                 print "\t\t --> EFFICIENCY hist name: ", histname + "_Efficiency_" + append_str
@@ -669,68 +693,54 @@ if __name__ == "__main__":
     if args.doAvg:
         channel_str += "Avg"
 
-    outfile = open( args.inputDir + channel_str + "Rates.txt", "w")
+    outfile = open( args.inputDir + channel_str + "LeptonEfficiencies.txt", "w")
     outfile.write( "Efficiencies/Rates for FF amd Matrix Method \n")
 
-    foutname = args.inputDir + channel_str + "Rates.root"
+    foutname = args.inputDir + channel_str + "LeptonEfficiencies.root"
     fout = TFile( foutname,"RECREATE" )
     fout.cd()
 
-    for g in sorted( graphs.keys() ):
-
-        print "saving graph: ", graphs[g].GetName()
-
-        graphs[g].Write()
-
-        Eff=[]
-
-        if (args.debug ) :
-            print "saving efficiencies (and errors) from graph: ", graphs[g].GetName()
-
-        for ipoint in range( 0, graphs[g].GetN() ):
-
-            x = Double(0)
-            y = Double(0)
-            graphs[g].GetPoint(ipoint,x,y)
-            set = [ ipoint, y, graphs[g].GetErrorYhigh(ipoint), graphs[g].GetErrorYlow(ipoint) ]
-            Eff.append( set )
-
-        outfile.write("%s \n" %(g) )
-        for set in Eff:
-            outfile.write("{ %s }; \n" %( "Bin nr: " + str(set[0]) + ", efficiency = " + str(round(set[1],3)) + " + " + str(round(set[2],3)) + " - " + str(round(set[3],3)) ) )
+    for h in sorted( hists.keys() ):
+        if not hists[h]: continue
+        print("saving histogram: {0}".format(hists[h].GetName()))
+        hists[h].Write()
+        if ("_Efficiency_" in h) and not ("QMisID" in h) and not ("ScaledFake" in h):
+            Eff=[]
+            for ibin in range( 1, hists[h].GetNbinsX()+1 ):
+                myset = [ ibin, hists[h].GetBinLowEdge(ibin), hists[h].GetBinLowEdge(ibin+1), hists[h].GetBinContent(ibin), hists[h].GetBinError(ibin)]
+                Eff.append( myset )
+            outfile.write("%s \n" %(h) )
+            for myset in Eff:
+                outfile.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + " [" + str(round(myset[1],3)) + "," + str(round(myset[2],3)) + "], efficiency (from TH1::Divide(\"B\")) = " + str(round(myset[3],3)) + " +- " + str(round(myset[4],3)) ) )
 
     for t in sorted ( tefficiencies.keys() ):
-
-        print "saving TEfficiency: ", tefficiencies[t].GetName()
-
+        if not tefficiencies[t]: continue
+        print("saving TEfficiency: {0}".format(tefficiencies[t].GetName()))
 	tefficiencies[t].Write()
+        if ("_Efficiency_" in t) and not ("QMisID" in t) and not ("ScaledFake" in t):
+            TEff=[]
+            for ibin in range( 1, tefficiencies[t].GetTotalHistogram().GetNbinsX()+1 ):
+                myset = [ ibin, tefficiencies[t].GetTotalHistogram().GetBinLowEdge(ibin), tefficiencies[t].GetTotalHistogram().GetBinLowEdge(ibin+1), tefficiencies[t].GetEfficiency(ibin), tefficiencies[t].GetEfficiencyErrorUp(ibin), tefficiencies[t].GetEfficiencyErrorLow(ibin)]
+                TEff.append( myset )
+            outfile.write("%s \n" %(t) )
+            for myset in TEff:
+                outfile.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + " [" + str(round(myset[1],3)) + "," + str(round(myset[2],3)) + "], efficiency (from TEfficiency) = " + str(round(myset[3],3)) + " + " + str(round(myset[4],3)) + " - " + str(round(myset[5],3)) ) )
 
-
-    for h in sorted( hists.keys() ):
-
-        if not hists[h]:
-            continue
-
-        print "saving histogram: ", hists[h].GetName()
-
-        hists[h].Write()
-        Rate=[]
-
-        if "_Rate_" in h:
-
-            if (args.debug ) :
-                print "saving rates (and errors) for histogram: ", hists[h].GetName()
-
-            Rtot=yields[h]
-
-            for ibin in range( 1, hists[h].GetNbinsX()+1 ):
-
-                set = [ ibin, hists[h].GetBinContent(ibin), hists[h].GetBinError(ibin)]
-                Rate.append( set )
-
-            outfile.write("%s \n" %(h) )
-            for set in Rate:
-                outfile.write("{ %s }; \n" %( "Bin nr: " + str(set[0]) + ", rate = " + str(round(set[1],3)) + " +- " + str(round(set[2],3)) ) )
+    for g in sorted( graphs.keys() ):
+        if not graphs[g]: continue
+        print("saving graph: {0}".format(graphs[g].GetName()))
+        graphs[g].Write()
+        if ("_Efficiency_" in g) and not ("QMisID" in g) and not ("ScaledFake" in g):
+            GEff=[]
+            for ipoint in range( 0, graphs[g].GetN() ):
+                x = Double(0)
+                y = Double(0)
+                graphs[g].GetPoint(ipoint,x,y)
+                myset = [ ipoint+1, y, graphs[g].GetErrorYhigh(ipoint), graphs[g].GetErrorYlow(ipoint) ]
+                GEff.append( myset )
+            outfile.write("%s \n" %(g) )
+            for myset in GEff:
+                outfile.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + ", efficiency (from TGraphAsymmErrors) = " + str(round(myset[1],3)) + " + " + str(round(myset[2],3)) + " - " + str(round(myset[3],3)) ) )
 
     outfile.close()
     fout.Write()
