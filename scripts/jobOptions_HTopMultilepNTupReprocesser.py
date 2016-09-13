@@ -26,11 +26,11 @@ base_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysis
 #base_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk"
 
 HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultilepNTupReprocesser",
-                                    "m_debug"                      : True,
-                                    "m_verbose"                    : True,
+                                    "m_debug"                      : False,
+                                    "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                    "m_weightToCalc"               : "MM", # "QMisID",
+                                    "m_weightToCalc"               : "QMisID,MM",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
                                     "m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v19.root",
                                     "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TanitiT_25ns_v19.root",
@@ -52,7 +52,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
                                     "m_doMMClosure"                : False,
                                     "m_useEtaParametrisation"      : False,
-				    "m_useTEfficiency"             : True,
+				    "m_useTEfficiency"             : False,
                                   }
 
 # Instantiate the NTupleSvc algorithm

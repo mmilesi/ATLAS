@@ -175,17 +175,17 @@ private:
   Float_t	  m_MMWeight_F_UP_in;
   Float_t	  m_MMWeight_F_DN_in;
 
-  /** Add/update weight or not */
-
-  bool m_doQMisIDWeighting; //!
-  bool m_doMMWeighting;     //!
-
   /** Value of these flags will be inferred from input tree content.
       If false (aka branch does not exist yet), will ADD new corresponding branch to output tree, otherwise (aka branch already exists) will UPDATE it
   */
 
   bool m_isQMisIDBranchIn;
   bool m_isMMBranchIn;
+
+  /** Add/update weight or not */
+
+  bool m_doQMisIDWeighting; //!
+  bool m_doMMWeighting;     //!
 
   /** Extra branches to be stored in output TTree */
 

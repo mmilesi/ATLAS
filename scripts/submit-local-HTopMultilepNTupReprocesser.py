@@ -13,7 +13,7 @@ parser.add_argument('--nevents', dest='nevents', action='store', default=0, type
 parser.add_argument('--treename', dest='treename', action='store', default="physics", type=str,
                     help='The name of the input TTree. Default is \"physics\"')
 parser.add_argument('--closure', dest='closure', action='store_true', default=False,
-                    help='Run on ttbar to perform MM closure test. Default is False')
+                    help='Run on ttbar to perform MM closure test. Default is False, i.e., the code will run on data.')
 
 args = parser.parse_args()
 

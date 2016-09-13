@@ -22,7 +22,9 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
     m_inputNTuple(nullptr),
     m_outputNTuple(nullptr),
     m_isQMisIDBranchIn(false),
-    m_isMMBranchIn(false)
+    m_isMMBranchIn(false),
+    m_doQMisIDWeighting(false),
+    m_doMMWeighting(false)
 {
   // Here you put any code for the base initialization of variables,
   // e.g. initialize all pointers to 0.  Note that you should only put
@@ -39,8 +41,6 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
   m_outputNTupStreamName = "output";
 
   m_weightToCalc         = "";
-  m_doQMisIDWeighting    = false;
-  m_doMMWeighting        = false;
 
   m_QMisIDRates_dir            = "";
   m_QMisIDRates_Filename_T     = "";
@@ -215,12 +215,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 
   m_outputNTuple = EL::getNTupleSvc (wk(), m_outputNTupStreamName);
 
-  if       ( m_weightToCalc.compare("QMisID") == 0 ) { m_doQMisIDWeighting = true; }
-  else if  ( m_weightToCalc.compare("MM") == 0 )     { m_doMMWeighting = true; }
-  else {
-      Error("initialize()","Weight %s is not known. Aborting.", m_weightToCalc.c_str() );
-      return EL::StatusCode::FAILURE;
-  }
+  // Parse input weight list, split by comma, and put into a vector
+  //
+  std::string token;
+  std::istringstream ss( m_weightToCalc );
+  std::vector<std::string> weights;
+  while ( std::getline(ss, token, ',') ) { weights.push_back(token); }
+  
+  if ( std::find( weights.begin(), weights.end(), "QMisID" ) != weights.end() ) { m_doQMisIDWeighting = true; }
+  if ( std::find( weights.begin(), weights.end(), "MM" ) != weights.end() )	{ m_doMMWeighting = true; }
 
   // Set new branches for output TTree
   //
@@ -360,7 +363,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 	      Info("execute()","\t\tIN QMisIDWeight (up) = %.3f", m_QMisIDWeight_UP_in );
 	      Info("execute()","\t\tIN QMisIDWeight (dn) = %.3f", m_QMisIDWeight_DN_in );
 	  }
-      } else if ( m_doMMWeighting ) {
+      } 
+      if ( m_doMMWeighting ) {
 	  if ( !m_isMMBranchIn ) {
 	      Info("execute()","\t\tDefault MMWeight = %.3f", m_event.get()->weight_MM );
 	      Info("execute()","\t\tDefault MMWeight (r up) = %.3f", m_event.get()->weight_MM_R_UP );
@@ -975,16 +979,38 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   }
   // ***********************************************************************
 
-  // Fill a map for later usage
-  //
-  m_el_hist_map["pt_reff"]   = hist_el_pt_reff;
-  m_mu_hist_map["pt_reff"]   = hist_mu_pt_reff;
-  m_el_hist_map["pt_feff"]   = hist_el_pt_feff;
-  m_mu_hist_map["pt_feff"]   = hist_mu_pt_feff;
+  // Fill maps for later usage
+
   m_el_teff_map["pt_reff"]   = teff_el_pt_reff;
   m_mu_teff_map["pt_reff"]   = teff_mu_pt_reff;
   m_el_teff_map["pt_feff"]   = teff_el_pt_feff;
   m_mu_teff_map["pt_feff"]   = teff_mu_pt_feff;
+  
+  if ( m_useEtaParametrisation ) {
+      m_el_teff_map["eta_reff"]  = teff_el_eta_reff;
+      m_mu_teff_map["eta_reff"]  = teff_mu_eta_reff;
+      m_el_teff_map["eta_feff"]  = teff_el_eta_feff;
+      m_mu_teff_map["eta_feff"]  = teff_mu_eta_feff;
+  }
+
+  // Save in the histogram map a clone of the denominator histogram associated to the TEfficiency object in order to access the axis binning
+  // If we are not using TEfficiency, take the TH1 efficiency histogram itself
+  //
+  // NB: Calling GetCopyTotalHisto() transfer the ownership of the histogram pointer to the user. This intoroduces a memory leak in the code,
+  // as we don't explicitly call delete anywhere. However, this is harmless, since this is executed only once in the job.
+  //
+  m_el_hist_map["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_reff->GetCopyTotalHisto() ) : hist_el_pt_reff;
+  m_mu_hist_map["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_reff->GetCopyTotalHisto() ) : hist_mu_pt_reff;
+  m_el_hist_map["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_feff->GetCopyTotalHisto() ) : hist_el_pt_feff;
+  m_mu_hist_map["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_feff->GetCopyTotalHisto() ) : hist_mu_pt_feff;
+  
+  if ( m_useEtaParametrisation ) {
+      m_el_hist_map["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_reff->GetCopyTotalHisto() ) : hist_el_eta_reff;
+      m_mu_hist_map["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_reff->GetCopyTotalHisto() ) : hist_mu_eta_reff;
+      m_el_hist_map["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_feff->GetCopyTotalHisto() ) : hist_el_eta_feff;
+      m_mu_hist_map["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_feff->GetCopyTotalHisto() ) : hist_mu_eta_feff;
+  }
+
   m_el_hist_map["pt_reff_YES_TM"] = hist_el_pt_reff_YES_TM;
   m_mu_hist_map["pt_reff_YES_TM"] = hist_mu_pt_reff_YES_TM;
   m_el_hist_map["pt_feff_YES_TM"] = hist_el_pt_feff_YES_TM;
@@ -993,15 +1019,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   m_mu_hist_map["pt_reff_NO_TM"]  = hist_mu_pt_reff_NO_TM;
   m_el_hist_map["pt_feff_NO_TM"]  = hist_el_pt_feff_NO_TM;
   m_mu_hist_map["pt_feff_NO_TM"]  = hist_mu_pt_feff_NO_TM;
-
-  m_el_hist_map["eta_reff"]  = hist_el_eta_reff;
-  m_mu_hist_map["eta_reff"]  = hist_mu_eta_reff;
-  m_el_hist_map["eta_feff"]  = hist_el_eta_feff;
-  m_mu_hist_map["eta_feff"]  = hist_mu_eta_feff;
-  m_el_teff_map["eta_reff"]   = teff_el_eta_reff;
-  m_mu_teff_map["eta_reff"]   = teff_mu_eta_reff;
-  m_el_teff_map["eta_feff"]   = teff_el_eta_feff;
-  m_mu_teff_map["eta_feff"]   = teff_mu_eta_feff;
 
   // eta hist has same binning for r/f
   //
@@ -1019,18 +1036,35 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   }
 
   std::cout << "\n" << std::endl;
-  Info("readRFEfficiencies()", "MUON REAL efficiency - pT histogram name: %s ", histname_mu_pt_reff.c_str() );
-  Info("readRFEfficiencies()", "MUON FAKE efficiency - pT histogram name: %s ", histname_mu_pt_feff.c_str() );
-  if ( m_useEtaParametrisation ) {
-    Info("readRFEfficiencies()", "MUON REAL efficiency - eta histogram name: %s ", histname_mu_eta_reff.c_str() );
-    Info("readRFEfficiencies()", "MUON FAKE efficiency - eta histogram name: %s ", histname_mu_eta_feff.c_str() );
-  }
-  std::cout << "            --------------------------------------------" << std::endl;
-  Info("readRFEfficiencies()", "ELECTRON REAL efficiency - pT histogram name: %s ", histname_el_pt_reff.c_str() );
-  Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - pT histogram name: %s ", histname_el_pt_feff.c_str() );
-  if ( m_useEtaParametrisation ) {
-    Info("readRFEfficiencies()", "ELECTRON REAL efficiency - eta histogram name: %s ", histname_el_eta_reff.c_str() );
-    Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - eta histogram name: %s ", histname_el_eta_feff.c_str() );
+  if ( m_useTEfficiency ) {
+    Info("readRFEfficiencies()", "MUON REAL efficiency - pT TEfficiency name: %s ", teffname_mu_pt_reff.c_str() );
+    Info("readRFEfficiencies()", "MUON FAKE efficiency - pT TEfficiency name: %s ", teffname_mu_pt_feff.c_str() );
+    if ( m_useEtaParametrisation ) {
+      Info("readRFEfficiencies()", "MUON REAL efficiency - eta TEfficiency name: %s ", teffname_mu_eta_reff.c_str() );
+      Info("readRFEfficiencies()", "MUON FAKE efficiency - eta TEfficiency name: %s ", teffname_mu_eta_feff.c_str() );
+    }
+    std::cout << "	      --------------------------------------------" << std::endl;
+    Info("readRFEfficiencies()", "ELECTRON REAL efficiency - pT TEfficiency name: %s ", teffname_el_pt_reff.c_str() );
+    Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - pT TEfficiency name: %s ", teffname_el_pt_feff.c_str() );
+    if ( m_useEtaParametrisation ) {
+      Info("readRFEfficiencies()", "ELECTRON REAL efficiency - eta TEfficiency name: %s ", teffname_el_eta_reff.c_str() );
+      Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - eta TEfficiency name: %s ", teffname_el_eta_feff.c_str() );
+    }
+  
+  } else {
+    Info("readRFEfficiencies()", "MUON REAL efficiency - pT TH1D name: %s ", histname_mu_pt_reff.c_str() );
+    Info("readRFEfficiencies()", "MUON FAKE efficiency - pT TH1D name: %s ", histname_mu_pt_feff.c_str() );
+    if ( m_useEtaParametrisation ) {
+      Info("readRFEfficiencies()", "MUON REAL efficiency - eta TH1D name: %s ", histname_mu_eta_reff.c_str() );
+      Info("readRFEfficiencies()", "MUON FAKE efficiency - eta TH1D name: %s ", histname_mu_eta_feff.c_str() );
+    }
+    std::cout << "	      --------------------------------------------" << std::endl;
+    Info("readRFEfficiencies()", "ELECTRON REAL efficiency - pT TH1D name: %s ", histname_el_pt_reff.c_str() );
+    Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - pT TH1D name: %s ", histname_el_pt_feff.c_str() );
+    if ( m_useEtaParametrisation ) {
+      Info("readRFEfficiencies()", "ELECTRON REAL efficiency - eta TH1D name: %s ", histname_el_eta_reff.c_str() );
+      Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - eta TH1D name: %s ", histname_el_eta_feff.c_str() );
+    }
   }
   std::cout << "\n" << std::endl;
 
@@ -1051,18 +1085,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     std::map< std::string, TH1D* >        *histograms    = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
     std::map< std::string, TEfficiency* > *tefficiencies = ( lep.get()->flavour == 13 ) ? &m_mu_teff_map : &m_el_teff_map;
 
-    // Need this b/c TEfficiency::GetCopyTotalHisto makes a clone of the denominator TH1, passing the ownership of the
-    // pointer to the user. We don't like to delete manually our pointers!
-    //
-    // (NB: when using reset() to change the pointer in our unique_ptr, remember that the unique_ptr then takes ownership of the input pointer!
-    //  This means that when the unique_ptr goes out of scope, the input pointer gets deleted! Hence we need to Clone() the histograms from the map every time)
-    //
-    // An idea to overcome this would be to use a shared_ptr instead, and have a map<shared_ptr>, so that the ownership of the pointer is shared and the
-    // pointer in the map does not get deleted when this function goes out of scope.
-    //
-    auto hist_pt  = std::unique_ptr<TH1D>(new TH1D);
-    auto hist_eta = std::unique_ptr<TH1D>(new TH1D);
-   
+    TH1D *hist_pt(nullptr);  
+    TH1D *hist_eta(nullptr); 
+    
     TEfficiency *teff_pt(nullptr);  
     TEfficiency *teff_eta (nullptr);
 
@@ -1071,30 +1096,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     if ( type.compare("FAKE") == 0 ) {
 
     	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading fake efficiency..."); }
-
-	if ( m_useTEfficiency ) {
-	    hist_pt.reset( dynamic_cast<TH1D*>( ( tefficiencies->find("pt_feff")->second )->GetCopyTotalHisto() ) );
-	    teff_pt = ( tefficiencies->find("pt_feff")->second );
-        } else {
-	    hist_pt.reset( dynamic_cast<TH1D*>( (histograms->find("pt_feff")->second )->Clone() ) );
-	}
+	    
+	hist_pt = histograms->find("pt_feff_hist")->second;
+	teff_pt = tefficiencies->find("pt_feff")->second;
 	
 	if ( m_useTrigMatchingInfo ) {
-	    if ( lep.get()->trigmatched ) {
-	        hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_feff_YES_TM")->second )->Clone() ) );
-	    } else {
-	        hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_feff_NO_TM")->second )->Clone() ) );
-	    }
+	    hist_pt = ( lep.get()->trigmatched ) ? histograms->find("pt_feff_YES_TM")->second : histograms->find("pt_feff_NO_TM")->second;
 	}
 
 	if ( m_useEtaParametrisation ) {
-	    if ( m_useTEfficiency ) {
-	        hist_eta.reset( dynamic_cast<TH1D*>( ( tefficiencies->find("eta_feff")->second )->GetCopyTotalHisto() ) );
-		teff_eta = ( tefficiencies->find("eta_feff")->second );
-	    } else {
-	        hist_eta.reset( histograms->find("eta_feff")->second );
-	        hist_eta.reset( dynamic_cast<TH1D*>( (histograms->find("eta_feff")->second )->Clone() ) );
-	    }
+	    hist_eta = histograms->find("eta_feff_hist")->second;
+            teff_eta = tefficiencies->find("eta_feff")->second;
 	}
 
 	// Loop over number of pt bins
@@ -1201,28 +1213,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading real efficiency..."); }
 
-	if ( m_useTEfficiency ) {
-	    hist_pt.reset( dynamic_cast<TH1D*>( ( tefficiencies->find("pt_reff")->second )->GetCopyTotalHisto() ) );
-	    teff_pt = ( tefficiencies->find("pt_reff")->second );
-        } else {
-	    hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_reff")->second )->Clone() ) );
-	}
+	hist_pt = histograms->find("pt_reff_hist")->second;
+	teff_pt = tefficiencies->find("pt_reff")->second;
 	
 	if ( m_useTrigMatchingInfo ) {
-	    if ( lep.get()->trigmatched ) {
-	        hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_reff_YES_TM")->second )->Clone() ) );
-	    } else {
-	        hist_pt.reset( dynamic_cast<TH1D*>( ( histograms->find("pt_reff_NO_TM")->second )->Clone() ) );
-	    }
+	    hist_pt = ( lep.get()->trigmatched ) ? histograms->find("pt_reff_YES_TM")->second : histograms->find("pt_reff_NO_TM")->second;
 	}
-	
+
 	if ( m_useEtaParametrisation ) {
-	    if ( m_useTEfficiency ) {
-	        hist_eta.reset( dynamic_cast<TH1D*>( ( tefficiencies->find("eta_reff")->second )->GetCopyTotalHisto() ) );
-		teff_eta = ( tefficiencies->find("eta_reff")->second );
-	    } else {
-	        hist_eta.reset( dynamic_cast<TH1D*>( ( histograms->find("eta_reff")->second )->Clone() ) );
-	    }
+	    hist_eta = histograms->find("eta_reff_hist")->second;
+	    teff_eta = tefficiencies->find("eta_reff")->second;
 	}
 
 	// Loop over number of pt bins
