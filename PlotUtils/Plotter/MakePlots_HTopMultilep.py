@@ -57,6 +57,8 @@ parser.add_argument('--fakeMethod', dest='fakeMethod', action='store', default=N
                     help='The fake estimation method chosen ({0})'.format(list_available_fakemethod))
 parser.add_argument('--lepFlavComp', dest='lepFlavComp', action='store', default=None, type=str,
                     help='Flavour composition of the dilepton pair used for efficiency measurement. Use w/ option --channel=MMRates,MMClosureRates. Default is None ({0})'.format(list_available_flavcomp))
+parser.add_argument('--doShowRatio', action='store_true', dest='doShowRatio', default=False,
+                    help='Show ratio plot with data/expected (or sys/nominal)')
 parser.add_argument('--doLogScaleX', dest='doLogScaleX', action='store_true',
                     help='Use log scale on the X axis')
 parser.add_argument('--doLogScaleY', dest='doLogScaleY', action='store_true',
@@ -94,7 +96,7 @@ gROOT.SetBatch(True)
 # -----------------
 # Some ROOT imports
 # -----------------
-from ROOT import TH1I, TH2D, TH2F, TH2I, TMath, TFile, TAttFill, TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kAzure, kTeal, kSpring, kOrange, kGreen, kCyan, kViolet, kMagenta, kPink, Double
+from ROOT import TH1I, TH1D, TH2D, TH2F, TH2I, TMath, TFile, TAttFill, TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kAzure, kTeal, kSpring, kOrange, kGreen, kCyan, kViolet, kMagenta, kPink, Double
 
 # ---------------------------------------------------------------------
 # Importing all the tools and the definitions used to produce the plots
@@ -719,13 +721,23 @@ if args.doSyst:
     #vardb.registerSystematics( Systematics(name='JES_Total',      treename='JES_Total') )
     #vardb.registerSystematics( Systematics(name='JER',            treename='JER') )
 
-    if doTwoLepSR or doThreeLepSR or doTwoLepLowNJetCR or doThreeLepLowNJetCR or doMMClosureTest:
-        #vardb.registerSystematics( Systematics(name='QMIsIDsys',      eventweight='QMisIDWeight_') )
+    if doMMRates:
+        vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight='QMisIDWeight_', process='QMisID') )
+    
+    if doMMClosureTest:
         if doMM:
-            vardb.registerSystematics( Systematics(name='MMrsys',      eventweight='MMWeight_r_') )
-            vardb.registerSystematics( Systematics(name='MMfsys',      eventweight='MMWeight_f_') )
+            vardb.registerSystematics( Systematics(name='MMrsys', eventweight='MMWeight_r_', process='FakesClosureMM') )
+            vardb.registerSystematics( Systematics(name='MMfsys', eventweight='MMWeight_f_', process='FakesClosureMM') )
         if doFF:
-            vardb.registerSystematics( Systematics(name='FFsys',       eventweight='FFWeight_') )
+            vardb.registerSystematics( Systematics(name='FFsys', eventweight='FFWeight_', process='FakesClosureMM') )
+    
+    if doTwoLepSR or doThreeLepSR or doTwoLepLowNJetCR or doThreeLepLowNJetCR:
+        #vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight='QMisIDWeight_') )
+        if doMM:
+            vardb.registerSystematics( Systematics(name='MMrsys', eventweight='MMWeight_r_', process='FakesMM') )
+            vardb.registerSystematics( Systematics(name='MMfsys', eventweight='MMWeight_f_', process='FakesMM') )
+        if doFF:
+            vardb.registerSystematics( Systematics(name='FFsys', eventweight='FFWeight_', process='FakesMM') )
 
 # -------------------------------------------------------------------
 # Definition of the categories for which one wants produce histograms
@@ -1037,7 +1049,7 @@ if doMMRates or doMMClosureRates:
 
     if args.useMCQMisID :
         print ('*********************************\n Using MC estimate of QMisID! \n*********************************')
-	# The ChargeFlipMC background class will apply the proper truth cuts
+	# The QMisIDMC background class will apply the proper truth cuts
 
     # Require at least one non-prompt or charge flip lepton if you want to see the MC bkg composition in the fake region
     #
@@ -1081,24 +1093,24 @@ if doMMRates or doMMClosureRates:
 
     # Real CR: OF only
     #
-    #"""
+    """
     vardb.registerCategory( MyCategory('RealCRMuL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_ElEtaCut','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_ElEtaCut','2Lep_MuProbeAntiTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRMuT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_ElEtaCut','2Lep_MuProbeTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRElL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_ElProbeAntiTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
     vardb.registerCategory( MyCategory('RealCRElT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_ElProbeTight','2Lep_OF_Event']) & truth_sub_OS ) ) )
-    #"""
+    """
 
     # Fake CR: OF+SF for electrons, SF for muons
     #
     #"""
-    vardb.registerCategory( MyCategory('FakeCRMuL',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
-    vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_MuProbeAntiTight','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
-    vardb.registerCategory( MyCategory('FakeCRMuT',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_MuProbeTight','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
-    vardb.registerCategory( MyCategory('FakeCRElL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
+    #vardb.registerCategory( MyCategory('FakeCRMuL',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
+    #vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_MuProbeAntiTight','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
+    #vardb.registerCategory( MyCategory('FakeCRMuT',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuRealFakeRateCR','2Lep_MuProbeTight','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
+    #vardb.registerCategory( MyCategory('FakeCRElL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
     vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_ElProbeAntiTight','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
-    vardb.registerCategory( MyCategory('FakeCRElT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_ElProbeTight','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
+    #vardb.registerCategory( MyCategory('FakeCRElT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElRealFakeRateCR','2Lep_ElEtaCut','2Lep_ElProbeTight','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ) ) )
     #"""
 
     # combine OF + SF
@@ -1433,14 +1445,14 @@ elif doDataMCCR or doZSSpeakCR or doMMRates or doMMRatesLHFit or doMMClosureRate
     ttH.channel = 'TwoLepCR'
 
 cut = None
-systematics = None
-systematicsdirection = None # 'UP', 'DOWN'
 
 events = {}
 hists  = {}
+
 # --------------------------------------
 # Dictionary with systematics histograms
 # --------------------------------------
+
 systs = {}
 
 # ----------------------------------
@@ -1475,8 +1487,8 @@ samplenames = {
     'Wmunujets':'wmunujets',
     'Wtaunujets':'wtaunujets',
     'Prompt':'promptbkg',
-    'ChargeFlip':'chargeflipbkg',
-    'ChargeFlipMC':'chargeflipbkg',
+    'QMisID':'qmisidbkg',
+    'QMisIDMC':'qmisidbkg',
     'FakesMC':'fakesbkg',
     'FakesFF':'fakesbkg',
     'FakesMM':'fakesbkg',
@@ -1516,8 +1528,8 @@ colours = {
     'Wmunujets':kGray+1,
     'Wtaunujets':kGray+2,
     'Prompt':kOrange-3,
-    'ChargeFlip':kMagenta+1,
-    'ChargeFlipMC':kMagenta+1,
+    'QMisID':kMagenta+1,
+    'QMisIDMC':kMagenta+1,
     'FakesMC':kMagenta-9,
     'FakesMM':kMagenta-9,
     'FakesFF':kMagenta-9,
@@ -1532,22 +1544,17 @@ if doMMSidebands:
 
     ttH.signals     = ['TTBarH']
     ttH.observed    = ['Observed']
-    #plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
     #ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
-    plotbackgrounds = ['Prompt']
     ttH.backgrounds = ['Prompt']
 
     if args.useMCQMisID:
-        plotbackgrounds.append('ChargeFlipMC')
-        ttH.backgrounds.append('ChargeFlipMC')
+        ttH.backgrounds.append('QMisIDMC')
     else:
-        plotbackgrounds.append('ChargeFlip')
-        ttH.backgrounds.append('ChargeFlip')
+        ttH.backgrounds.append('QMisID')
 
     if "CLOSURE" in args.channel:
         ttH.signals     = []
         ttH.observed    = ['Observed']
-        plotbackgrounds = ['TTBar']
         ttH.backgrounds = ['TTBar']
 
 if ( doSR or doLowNJetCR ):
@@ -1561,69 +1568,54 @@ if ( doSR or doLowNJetCR ):
             # ---> all the MC backgrounds use a truth req. of only prompt leptons in the event (and ch-flip veto) to avoid double counting with
             #      data-driven charge flip and fakes estimate
 
-            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMM']
             ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMM']
-            #plotbackgrounds = ['FakesMM']
             #ttH.backgrounds = ['FakesMM']
-            #plotbackgrounds = ['Prompt','FakesMM']
             #ttH.backgrounds = ['Prompt','FakesMM']
             ttH.sub_backgrounds = []
 
 	    if args.useMCQMisID:
-		plotbackgrounds.append('ChargeFlipMC')
-		ttH.backgrounds.append('ChargeFlipMC')
-		ttH.sub_backgrounds.append('ChargeFlipMC')
+		ttH.backgrounds.append('QMisIDMC')
+		ttH.sub_backgrounds.append('QMisIDMC')
 	    else:
-		plotbackgrounds.append('ChargeFlip')
-		ttH.backgrounds.append('ChargeFlip')
-		ttH.sub_backgrounds.append('ChargeFlip')
+		ttH.backgrounds.append('QMisID')
+		ttH.sub_backgrounds.append('QMisID')
 
         elif doFF:
 
-            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesFF']
             ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesFF']
             ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
 
             if args.useMCQMisID:
-                plotbackgrounds.append('ChargeFlipMC')
-                ttH.backgrounds.append('ChargeFlipMC')
-                ttH.sub_backgrounds.append('ChargeFlipMC')
+                ttH.backgrounds.append('QMisIDMC')
+                ttH.sub_backgrounds.append('QMisIDMC')
             else:
-                plotbackgrounds.append('ChargeFlip')
-                ttH.backgrounds.append('ChargeFlip')
-                ttH.sub_backgrounds.append('ChargeFlip')
+                ttH.backgrounds.append('QMisID')
+                ttH.sub_backgrounds.append('QMisID')
 
         elif doTHETA:
 
-            plotbackgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesTHETA']
             ttH.backgrounds     = ['TTBarW','TTBarZ','Diboson','Rare','FakesTHETA']
             ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
 
             if args.useMCQMisID:
-                plotbackgrounds.append('ChargeFlipMC')
-                ttH.backgrounds.append('ChargeFlipMC')
-                ttH.sub_backgrounds.append('ChargeFlipMC')
+                ttH.backgrounds.append('QMisIDMC')
+                ttH.sub_backgrounds.append('QMisIDMC')
             else:
-                plotbackgrounds.append('ChargeFlip')
-                ttH.backgrounds.append('ChargeFlip')
-                ttH.sub_backgrounds.append('ChargeFlip')
+                ttH.backgrounds.append('QMisID')
+                ttH.sub_backgrounds.append('QMisID')
 
         else:
             # MC based estimate of fakes
-            plotbackgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMC']
             ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMC']
 
             if args.useMCQMisID:
-                plotbackgrounds.append('ChargeFlipMC')
-                ttH.backgrounds.append('ChargeFlipMC')
-                ttH.sub_backgrounds.append('ChargeFlipMC')
+                ttH.backgrounds.append('QMisIDMC')
+                ttH.sub_backgrounds.append('QMisIDMC')
             else:
-                plotbackgrounds.append('ChargeFlip')
-                ttH.backgrounds.append('ChargeFlip')
-                ttH.sub_backgrounds.append('ChargeFlip')
+                ttH.backgrounds.append('QMisID')
+                ttH.sub_backgrounds.append('QMisID')
     else:
         # no fakes in 4lep
-        plotbackgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
         ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
 
 if doMMRates:
@@ -1633,15 +1625,12 @@ if doMMRates:
     if args.ratesFromMC:
         ttH.observed = []
 
-    plotbackgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
     ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if args.useMCQMisID:
-       plotbackgrounds.append('ChargeFlipMC')
-       ttH.backgrounds.append('ChargeFlipMC')
+       ttH.backgrounds.append('QMisIDMC')
     else:
-       plotbackgrounds.append('ChargeFlip')
-       ttH.backgrounds.append('ChargeFlip')
+       ttH.backgrounds.append('QMisID')
 
 if doMMRatesLHFit:
 
@@ -1649,20 +1638,17 @@ if doMMRatesLHFit:
 
     ttH.signals     = []
     ttH.observed    = ['Observed']
-    plotbackgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
     ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if args.useMCQMisID:
-        plotbackgrounds.append('ChargeFlipMC')
-        ttH.backgrounds.append('ChargeFlipMC')
+        ttH.backgrounds.append('QMisIDMC')
     else:
-        plotbackgrounds.append('ChargeFlip')
+        ttH.backgrounds.append('QMisID')
 
     if "CLOSURE" in args.channel:
         print args.channel
         ttH.signals     = []
         ttH.observed    = []
-        plotbackgrounds = ['TTBar']
         ttH.backgrounds = ['TTBar']
 
 if doDataMCCR:
@@ -1670,34 +1656,28 @@ if doDataMCCR:
     ttH.signals     = []
     ttH.observed    = ['Observed']
 
-    plotbackgrounds = ['TTBar','SingleTop','Rare','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
     ttH.backgrounds = ['TTBar','SingleTop','Rare','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if not args.useMCQMisID:
-        plotbackgrounds.append('ChargeFlip')
-        ttH.backgrounds.append('ChargeFlip')
+        ttH.backgrounds.append('QMisID')
 
 if doZSSpeakCR:
 
     ttH.signals     = ['TTBarH']
     ttH.observed    = ['Observed']
-    plotbackgrounds = ['ChargeFlipMC','FakesMC','Prompt']
-    ttH.backgrounds = ['ChargeFlipMC','FakesMC','Prompt']
+    ttH.backgrounds = ['QMisIDMC','FakesMC','Prompt']
 
 if doCFChallenge:
 
     ttH.signals     = ['TTBarHDilep']
     ttH.observed    = ['Observed']
-    plotbackgrounds = ['TTBar']
     ttH.backgrounds = ['TTBar']
 
 if doMMClosureRates:
 
     ttH.signals     = []
     ttH.observed    = []
-    plotbackgrounds = ['TTBar']
     ttH.backgrounds = ['TTBar']
-    #plotbackgrounds = ['Zjets']
     #ttH.backgrounds = ['Zjets']
 
 if doMMClosureTest:
@@ -1705,33 +1685,30 @@ if doMMClosureTest:
     if doMM:
         ttH.signals     = [] # ['FakesClosureTHETA']
         ttH.observed    = ['TTBar']
-        plotbackgrounds = ['FakesClosureMM']
         ttH.backgrounds = ['FakesClosureMM']
     elif doFF:
         ttH.signals     = []
         ttH.observed    = ['TTBar']
-        plotbackgrounds = ['FakesClosureFF']
         ttH.backgrounds = ['FakesClosureFF']
     elif doTHETA:
         ttH.signals     = []
         ttH.observed    = ['TTBar']
-        plotbackgrounds = ['FakesClosureTHETA']
         ttH.backgrounds = ['FakesClosureTHETA']
     else:
         ttH.signals     = []
         ttH.observed    = []
-        plotbackgrounds = ['TTBar']
         ttH.backgrounds = ['TTBar']
 
 if args.noSignal:
     ttH.signals = []
 
-doShowRatio = True
+showRatio = args.doShowRatio
+
 # Make blinded plots in SR unless configured from input
 #
 if ( doSR or ( doMMSidebands and ( "HIGHNJ" in args.channel or "ALLJ" in args.channel ) ) ) and not args.doUnblinding:
     ttH.observed = []
-    doShowRatio = False
+    showRatio  = False
 
 # -------------------------------------------------------
 # Filling histname with the name of the variables we want
@@ -1739,29 +1716,30 @@ if ( doSR or ( doMMSidebands and ( "HIGHNJ" in args.channel or "ALLJ" in args.ch
 # Override colours as well
 # -------------------------------------------------------
 
-histname   = {'Expected':'expected'}
-histcolour = {'Expected':kBlack}
-for samp in ttH.backgrounds:
-    histname[samp]  = samplenames[samp]
-    histcolour[samp] = colours[samp]
+histname   = {'Expected':'expectedbkg','AllSimulation':'allsimbkg'} 
+histcolour = {'Expected': kGray+1,'AllSimulation':kOrange+2} 
+
+for sample in ttH.backgrounds:
+    histname[sample]   = samplenames[sample]
+    histcolour[sample] = colours[sample]
     #
     # Will override default colour based on the dictionary provided above
     #
-    ttH.str_to_class(samp).colour = colours[samp]
-for samp in ttH.observed:
-    histname[samp]  = samplenames[samp]
-    histcolour[samp] = colours[samp]
+    ttH.str_to_class(sample).colour = colours[sample]
+for sample in ttH.observed:
+    histname[sample]   = samplenames[sample]
+    histcolour[sample] = colours[sample]
     #
     # Will override default colour based on the dictionary provided above
     #
-    ttH.str_to_class(samp).colour = colours[samp]
-for samp in ttH.signals:
-    histname[samp]  = samplenames[samp]
-    histcolour[samp] = colours[samp]
+    ttH.str_to_class(sample).colour = colours[sample]
+for sample in ttH.signals:
+    histname[sample]   = samplenames[sample]
+    histcolour[sample] = colours[sample]
     #
     # Will override default colour based on the dictionary provided above
     #
-    ttH.str_to_class(samp).colour = colours[samp]
+    ttH.str_to_class(sample).colour = colours[sample]
 
 print histname
 print histcolour
@@ -1774,9 +1752,7 @@ for category in vardb.categorylist:
 
     print ("\n*********************************************\n\nMaking plots in category: {0}\n".format( category.name ))
 
-    signalfactor = 1.0
-    background   = ttH
-
+    signalfactor  = 1.0
     lepSF_weight  = '1.0'
 
     # ---> apply the lepton SFs to the event here!
@@ -1835,7 +1811,7 @@ for category in vardb.categorylist:
         #
         if ( args.printEventYields and idx is 0 ):
 
-            events[category.name] = background.events(cut=cut, eventweight=combined_SF_weight, category=category, hmass=['125'], systematics=systematics, systematicsdirection=systematicsdirection)
+            events[category.name] = ttH.events(cut=cut, eventweight=combined_SF_weight, category=category, hmass=['125'])
 
         #"""
 
@@ -1895,16 +1871,16 @@ for category in vardb.categorylist:
         else:
             dirname = dirname  + category.name
         if args.doLogScaleX:
-            var.logaxisX = True # activate X-axis log scale in plot
             dirname += '_LOGX'
         if args.doLogScaleY:
-            var.logaxis  = True # activate Y-axis log scale in plot
             dirname += '_LOGY'
+
         dirname = dirname.replace(' ', '_')
 
         try:
             os.makedirs(dirname)
         except:
+	    print("WARNING! Could not create directory:\n{0}".format(dirname))
             pass
 
         # -----------------------------------------------
@@ -1918,28 +1894,26 @@ for category in vardb.categorylist:
 
         wantooverflow = True
 
-        list_formats = [ plotname + '.png' ] #, plotname + '_canvas.root' ]
+        list_formats = [ plotname + '.png' ] 
         if args.doEPS:
             list_formats.append( plotname + '.eps' )
 
         # Here is where the plotting is actually performed!
         #
-        hists[category.name + ' ' + var.shortname] = background.plot( var,
-                                                                      cut=cut,
-                                                                      eventweight=combined_SF_weight,
-                                                                      category=category,
-                                                                      signal='',#'125',
-                                                                      signalfactor=signalfactor,
-                                                                      overridebackground=plotbackgrounds,
-                                                                      systematics=systematics,
-                                                                      systematicsdirection=systematicsdirection,
-                                                                      overflowbins=wantooverflow,
-                                                                      showratio=doShowRatio,
-                                                                      wait=False,
-                                                                      save=list_formats,
-                                                                      log=None,
-                                                                      logx=None
-                                                                      )
+        hists[category.name + ' ' + var.shortname] = ttH.plot( var,
+                                                               cut=cut,
+                                                               eventweight=combined_SF_weight,
+                                                               category=category,
+                                                               signal='',#'125',
+                                                               signalfactor=signalfactor,
+                                                               overridebackground=ttH.backgrounds,
+                                                               overflowbins=wantooverflow,
+                                                               showratio=showRatio,
+                                                               wait=False,
+                                                               save=list_formats,
+							       log=args.doLogScaleY,
+							       logx=args.doLogScaleX
+                                                             )
 
         # Creating a file with the observed and expected distributions and systematics.
         #
@@ -1961,31 +1935,37 @@ for category in vardb.categorylist:
             histograms_syst = {}
 
             for syst in vardb.systlist:
-                try:
+                
+		try:
                     os.makedirs(dirname)
                 except:
-                    pass
-                plotname = dirname + '/' + category.name + ' ' + var.shortname + ' ' + syst.name
+                    print("WARNING! Could not create directory:\n{0}".format(dirname))
+		    pass
+                
+		plotname = dirname + '/' + category.name + ' ' + var.shortname + ' ' + syst.name
                 plotname = plotname.replace(' ', '_')
 
-	        list_formats_sys = [ plotname + '.png' ] #, plotname + '_canvas.root' ]
+	        list_formats_sys = [ plotname + '.png' ] 
                 if args.doEPS:
                     list_formats_sys.append( plotname + '.eps' )
 
                 # plotSystematics is the function which takes care of the systematics
                 #
-                systs[category.name + ' ' + var.shortname] = background.plotSystematics( syst,
-                                                                                         var=var,
-                                                                                         cut=cut,
-                                                                                         eventweight=combined_SF_weight,
-                                                                                         category=category,
-                                                                                         overflowbins=wantooverflow,
-                                                                                         showratio=doShowRatio,
-                                                                                         wait=False,
-                                                                                         save=list_formats_sys
-                                                                                         )
+                systs[category.name + ' ' + var.shortname] = ttH.plotSystematics( syst,
+                                                                                  var=var,
+                                                                                  cut=cut,
+                                                                                  eventweight=combined_SF_weight,
+                                                                                  category=category,
+                                                                                  overflowbins=wantooverflow,
+                                                                                  showratio=True,
+                                                                                  wait=False,
+                                                                                  save=list_formats_sys,
+										  log=args.doLogScaleY,
+										  logx=args.doLogScaleX
+                                                                                )
 
-                # Obtains the total MC histograms with a particular systematics shifted and saving it in the ROOT file
+                # Obtaining histograms for processes and total expected histogram with a particular systematics shifted,
+		# and saving them in the ROOT file
                 #
 		print("")
                 print ("\tSystematic: {0}".format( syst.name ))
@@ -2002,8 +1982,14 @@ for category in vardb.categorylist:
                 histograms_syst['Expected_'+syst.name+'_dn'].SetNameTitle(histname['Expected']+'_'+syst.name+'_dn','')
                 histograms_syst['Expected_'+syst.name+'_dn'].SetLineColor(histcolour['Expected'])
                 histograms_syst['Expected_'+syst.name+'_dn'].Write()
+
+		# The code does not consider systematics on the signal.
+		# Put the signal in the backgrounds list if you want systematics on it.
+
                 for samp in ttH.backgrounds:
-                    histograms_syst[samp+'_'+syst.name+'_up'] = systlistup[samp]
+		    if syst.process and not ( syst.process == samp ) : 
+		        continue
+		    histograms_syst[samp+'_'+syst.name+'_up'] = systlistup[samp]
                     histograms_syst[samp+'_'+syst.name+'_up'].SetNameTitle(histname[samp]+'_'+syst.name+'_up','')
                     histograms_syst[samp+'_'+syst.name+'_up'].SetLineColor(histcolour[samp])
                     histograms_syst[samp+'_'+syst.name+'_up'].Write()
@@ -2012,10 +1998,7 @@ for category in vardb.categorylist:
                     histograms_syst[samp+'_'+syst.name+'_dn'].SetLineColor(histcolour[samp])
                     histograms_syst[samp+'_'+syst.name+'_dn'].Write()
 
-		# The code does not consider systematics on the signal.
-		# Put the signal in the backgrounds list if you want systematics on it.
-
-		if ( 'Mll01' in var.shortname ) or ( 'NJets' in var.shortname ):
+		if ( 'Mll01' in var.shortname ) or ( 'NJets' in var.shortname ) or ( 'ProbePt' in var.shortname ):
                     outfile.write('Integral syst: \n')
                     outfile.write('syst %s up:   delta_yields = %.2f \n' %(syst.name,(systup.Integral()-systnom.Integral())))
                     outfile.write('syst %s down: delta_yields = %.2f \n' %(syst.name,(systdown.Integral()-systnom.Integral())))
@@ -2035,29 +2018,52 @@ for category in vardb.categorylist:
                 outfile.write('yields total syst UP: %.2f \n' %(total_syst_up))
                 outfile.write('yields total syst DN: %.2f \n' %(total_syst_down))
                 outfile.write('yields total syst: %.2f \n' %(total_syst))
+       
+        # ------------------------------------------------------------------
 
-        # Obtains the histograms correctly normalized
+        # Obtain the histograms correctly normalized
         #
-        mclist, expected, observed, signal, _ = hists[category.name + ' ' + var.shortname]
+        bkghists, expected, observed, signal, _ = hists[category.name + ' ' + var.shortname]
         histograms = {}
 
-        for samp in ttH.observed:
-            histograms[samp] = observed
-        if ttH.backgrounds:
-            histograms['Expected']=expected
-            for samp in ttH.backgrounds:
-                histograms[samp] = mclist[samp]
-                #in case you have to add other histograms you maybe prefer to use the method clone:
-                #histograms[samp] = mclist[samp].Clone(histname[samp])
-        if ttH.signals:
-            for samp in ttH.signals:
-                histograms[samp] = signal
+        for sample in ttH.observed:
+            
+	    histograms[sample] = observed
+        
+	if ttH.backgrounds:
+            
+	    histograms['Expected'] = expected
+	    
+	    # Store an additional histogram as the sum of all the MC-based backgrounds (useful e.g. to get all "prompt" backgrounds in one go)
+	    # Take the first *non-data-driven* sample in the background histograms list and clone it, then add all the others
+	    #
+	    
+	    allsim = TH1D()
+	    (firstsim_idx, firstsim_name) = ttH.getFirstSimulatedProc(category)
+	    if firstsim_name:
+	        allsim = bkghists[firstsim_name].Clone(histname["AllSimulation"])
+            
+	    for idx, sample in enumerate(ttH.backgrounds):
+                histograms[sample] = bkghists[sample]
+		if idx != firstsim_idx  and ( not "QMisID" in sample ) and ( not "Fakes" in sample): 
+		    allsim.Add(bkghists[sample].Clone(histname[sample]))
+	    
+	    histograms["AllSimulation"] = allsim
+	
+	if ttH.signals:
+            for sample in ttH.signals:
+                histograms[sample] = signal
+            
+        # ------------------------------------------------------------------
 
-        # Print histograms
+        # Set basic properties for histograms
         #
-        for samp in histograms.keys():
-            histograms[samp].SetNameTitle(histname[samp],'')
-            histograms[samp].SetLineColor(histcolour[samp])
+        for sample in histograms.keys():
+            histograms[sample].SetNameTitle(histname[sample],'')
+            histograms[sample].SetLineColor(histcolour[sample])
+            histograms[sample].SetMarkerColor(histcolour[sample])
+
+        # ------------------------------------------------------------------
 
         # Print yields
         #
@@ -2070,30 +2076,30 @@ for category in vardb.categorylist:
             outfile.write('Integral: \n')
             err=Double(0)  # integral error
             value=0        # integral value
-            for samp in histograms.keys():
+            for sample in histograms.keys():
                 # Include underflow, but do not take overflow! In fact, KG's FW already merges the last bin with the OFlow bin...
                 #
-                value = histograms[samp].IntegralAndError(0,histograms[samp].GetNbinsX(),err)
-                print ("\t\t{0}: {1:.2f} +- {2:.2f}".format(histname[samp], value, err))
-                outfile.write('yields %s: %.2f +- %.2f \n' %(histname[samp], value, err))
+                value = histograms[sample].IntegralAndError(0,histograms[sample].GetNbinsX(),err)
+                print ("\t\t{0}: {1:.2f} +- {2:.2f}".format(histname[sample], value, err))
+                outfile.write('yields %s: %.2f +- %.2f \n' %(histname[sample], value, err))
                 if ( 'NJets' in var.shortname ):
                     # Neglect underflow, but not overflow!
                     #
-                    for bin in range(1,histograms[samp].GetNbinsX()+2):
+                    for bin in range(1,histograms[sample].GetNbinsX()+2):
                         err_bin   = Double(0)
                         value_bin = 0
-                        this_bin  = histograms[samp].GetBinCenter(bin)
-			value_bin = histograms[samp].GetBinContent(bin)
-                        err_bin   = histograms[samp].GetBinError(bin)
+                        this_bin  = histograms[sample].GetBinCenter(bin)
+			value_bin = histograms[sample].GetBinContent(bin)
+                        err_bin   = histograms[sample].GetBinError(bin)
 
-                        if (histograms[samp].IsBinOverflow(bin)):
+                        if (histograms[sample].IsBinOverflow(bin)):
                             print ("\t\t  OVERFLOW BIN:")
                             outfile.write('  OVERFLOW BIN:\n')
 
 			# If it's the last bin before OFlow, subtract OFlow (KG's FW already merges the last bin with the OFlow bin...)
 			#
-			if (histograms[samp].IsBinOverflow(bin+1)):
-			    value_bin -= histograms[samp].GetBinContent(bin+1)
+			if (histograms[sample].IsBinOverflow(bin+1)):
+			    value_bin -= histograms[sample].GetBinContent(bin+1)
 			    err_bin   = 0
                         print ("\t\t  {0}-jets bin: {1:.2f} +- {2:.2f}".format(this_bin, value_bin, err_bin))
                         outfile.write('  %i-jets bin: %.2f +- %.2f \n' %(this_bin, value_bin, err_bin))
@@ -2103,19 +2109,19 @@ for category in vardb.categorylist:
 		    #
                     if ( var.shortname == 'NJets' ):
                         err_HJ   = Double(0)
-                        value_HJ = histograms[samp].IntegralAndError (6,histograms[samp].GetNbinsX(),err_HJ)
+                        value_HJ = histograms[sample].IntegralAndError (6,histograms[sample].GetNbinsX(),err_HJ)
                         print ("\n\t\t  >=5-jets bin: {0:.2f} +- {1:.2f}".format(value_HJ, err_HJ))
                         outfile.write('\n  >=5-jets bin: %.2f +- %.2f \n' %(value_HJ, err_HJ))
             print ("\n\t\tGetEntries:\n")
             print ("\t\tNB 1): this is actually N = GetEntries()-2 \n\t\t       Still not understood why there's such an offset...\n")
             print ("\t\tNB 2): this number does not take into account overflow bin. Better to look at the integral obtained with --noWeights option...\n")
             outfile.write('GetEntries: \n')
-            for samp in histograms.keys():
-                print ("\t\t{0}: {1}".format(histname[samp], histograms[samp].GetEntries()-2))
-                outfile.write('entries %s: %f \n' %(histname[samp], histograms[samp].GetEntries()-2))
+            for sample in histograms.keys():
+                print ("\t\t{0}: {1}".format(histname[sample], histograms[sample].GetEntries()-2))
+                outfile.write('entries %s: %f \n' %(histname[sample], histograms[sample].GetEntries()-2))
 
-        for samp in histograms.keys():
-            histograms[samp].Write()
+        for sample in histograms.keys():
+            histograms[sample].Write()
         foutput.Close()
 
         if ( 'Mll01' in var.shortname ) or ( 'NJets' in  var.shortname ) or ( 'ProbePt' in var.shortname ):

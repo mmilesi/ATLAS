@@ -70,6 +70,16 @@ class TTHBackgrounds(Background):
         #'Mu': (0.153, 0.022), # v027
     }
 
+    # Returns the name and position in bkg list of the first background process which
+    # is *not* data-driven
+    #
+    def getFirstSimulatedProc(self, category):
+	for idx, samplename in enumerate(self.backgrounds):
+            subprocess = self.getProcess(samplename, category)
+            if not ("$ISDATA$") in subprocess.name:
+	        return idx, samplename
+	return (-1,None)	
+
     def str_to_class(self, field):
         try:
             identifier = getattr(self, field)
@@ -1358,7 +1368,7 @@ class TTHBackgrounds(Background):
 	    return (diboson + rare_top + ttbarw + ttbarz)
 
 
-    class ChargeFlipMC(Process):
+    class QMisIDMC(Process):
 
         latexname = 'QMisID (MC)'
         colour = kAzure - 4
@@ -1382,7 +1392,7 @@ class TTHBackgrounds(Background):
 	    return (dibosoncf + topcf + zjetscf)
 
 
-    class ChargeFlip(Process):
+    class QMisID(Process):
 
         latexname = 'QMisID'
         colour = kAzure - 4
@@ -1424,7 +1434,7 @@ class TTHBackgrounds(Background):
             #
             basecut = category.cut
 
-            print("\nChargeFlip initial cut: {0}".format(basecut.cutnamelist))
+            print("\nQMisID initial cut: {0}".format(basecut.cutnamelist))
 
             if ( self.parent.channel=='TwoLepSS' ) or ( self.parent.channel=='ThreeLep' ):
                 TTcut = 'TT'
@@ -1445,20 +1455,20 @@ class TTHBackgrounds(Background):
                 basecut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
             else:
                 sp = sp.subprocess(cut=basecut,eventweight=weight)
-                print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
+                print("\nQMisID sp: {0}".format(sp.basecut.cutnamelist))
                 return sp
 
             if bool([ cut for cut in cut_w_el if cut in category.cut.cutname ]):
 
                 weight = 'QMisIDWeight'
                 sp = sp.subprocess(cut=basecut,eventweight=weight)
-                print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
+                print("\nQMisID sp: {0}".format(sp.basecut.cutnamelist))
 
             elif bool([ cut for cut in cut_wo_el if cut in category.cut.cutname ]):
 
                 weight = '0.0'
                 sp = sp.subprocess(cut=basecut,eventweight=weight)
-                print("\nChargeFlip sp: {0}".format(sp.basecut.cutnamelist))
+                print("\nQMisID sp: {0}".format(sp.basecut.cutnamelist))
 
             else:
 
@@ -1478,8 +1488,8 @@ class TTHBackgrounds(Background):
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
 
-                    print("\nChargeFlip sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
-                    print("\nChargeFlip sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
+                    print("\nQMisID sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
+                    print("\nQMisID sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
 
                 elif ( 'MuRealFakeRateCR' ) in category.cut.cutname:
 
@@ -1492,8 +1502,8 @@ class TTHBackgrounds(Background):
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
 
-                    print("\nChargeFlip sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
-                    print("\nChargeFlip sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
+                    print("\nQMisID sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
+                    print("\nQMisID sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
 
                 else:
 
@@ -1508,9 +1518,9 @@ class TTHBackgrounds(Background):
                     sp_mumu = sp.subprocess(cut=cut_mumu,eventweight=weight_mumu)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
 
-                    print("\nChargeFlip sp_elel: {0}, weight: {1}".format(sp_elel.basecut.cutnamelist, weight_elel))
-                    print("\nChargeFlip sp_mumu: {0}, weight: {1}".format(sp_mumu.basecut.cutnamelist, weight_mumu))
-                    print("\nChargeFlip sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
+                    print("\nQMisID sp_elel: {0}, weight: {1}".format(sp_elel.basecut.cutnamelist, weight_elel))
+                    print("\nQMisID sp_mumu: {0}, weight: {1}".format(sp_mumu.basecut.cutnamelist, weight_mumu))
+                    print("\nQMisID sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
 
                     sp_SF = sp_elel + sp_mumu
 
@@ -1639,7 +1649,7 @@ class TTHBackgrounds(Background):
 
             print 'FakesFF - weight name : ', weight, ', TLcut : ', TLcut, ', LTcut : ', LTcut, ', LLcut : ', LLcut
 
-            # Now doing prompt background subtractions from fakes. sublist must contain both prompt and chargeflips
+            # Now doing prompt background subtractions from fakes. sublist must contain both prompt and QMisIDs
             #
             sublist = [ item for item in self.parent.sub_backgrounds ]
             for sample in sublist:
@@ -1716,7 +1726,7 @@ class TTHBackgrounds(Background):
 
             if QMISID_SUB_OS_SS:
 
-		sublist = [ item for item in self.parent.sub_backgrounds if ( item == "ChargeFlip" or item == "ChargeFlipMC" ) ]
+		sublist = [ item for item in self.parent.sub_backgrounds if ( item == "QMisID" or item == "QMisIDMC" ) ]
             	sp_QMisID_TT = sp_QMisID_TL = sp_QMisID_LT = sp_QMisID_LL = None
             	for process in sublist:
 
@@ -1760,7 +1770,7 @@ class TTHBackgrounds(Background):
 	        return sp
 
             if QMISID_SUB_SCALEDFAKE:
-	    	sublist = [ item for item in self.parent.sub_backgrounds if ( item == "ChargeFlip" or item == "ChargeFlipMC" ) ]
+	    	sublist = [ item for item in self.parent.sub_backgrounds if ( item == "QMisID" or item == "QMisIDMC" ) ]
             	sp_QMisID_TT = None
             	for process in sublist:
 
@@ -1953,10 +1963,10 @@ class TTHBackgrounds(Background):
                     sub_sample_C_el = self.parent.procmap[sample].base(treename,category,options)
                     sub_sample_D_el = self.parent.procmap[sample].base(treename,category,options)
 
-                    if sample == "ChargeFlipMC":
+                    if sample == "QMisIDMC":
                         this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
                         this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
-                    if sample == "ChargeFlip":
+                    if sample == "QMisID":
                         this_cut_sp_C_el = this_cut_sp_C_el.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
                         this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
                         this_cut_sp_D_el = this_cut_sp_D_el.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
@@ -2038,7 +2048,7 @@ class TTHBackgrounds(Background):
                     sub_sample_C_mu = self.parent.procmap[sample].base(treename,category,options)
                     sub_sample_D_mu = self.parent.procmap[sample].base(treename,category,options)
 
-                    if ( sample == "ChargeFlipMC" ) or ( sample == "ChargeFlip" ):
+                    if ( sample == "QMisIDMC" ) or ( sample == "QMisID" ):
                         print("NO QMisID subtraction for muons!!")
                         continue
 
@@ -2094,7 +2104,7 @@ class TTHBackgrounds(Background):
                     this_cut_sp_B_SF = cut_sp_B_SF
                     this_weight = weightMC
 
-                    if ( ( sample == "ChargeFlipMC" ) or ( sample == "ChargeFlip" ) ):
+                    if ( ( sample == "QMisIDMC" ) or ( sample == "QMisID" ) ):
 
                         if ("2Lep_MuMu_Event") in category.cut.cutname:
                             print("NO QMisID subtraction for muons!!")
@@ -2129,7 +2139,7 @@ class TTHBackgrounds(Background):
                     this_cut_sp_B_OF_Lmu = cut_sp_B_OF_Lmu
                     this_weight = weightMC
 
-                    if ( ( sample == "ChargeFlipMC" ) or ( sample == "ChargeFlip" ) ):
+                    if ( ( sample == "QMisIDMC" ) or ( sample == "QMisID" ) ):
 
                         this_weight = 'QMisIDWeight'
                         this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))

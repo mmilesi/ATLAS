@@ -299,9 +299,9 @@ if __name__ == "__main__":
 		    #
 		    prompt_list = []
                     if  ( args.usePrediction == "DATA" ) and ( iType == "Fake" ) and ( iLep == "El" ) and ( iVar == "ProbePt" ) and ( iSel == "L" ):
-                        htmp_QMisID = fin[-1].Get("chargeflipbkg")
+                        htmp_QMisID = fin[-1].Get("qmisidbkg")
                         if not htmp_QMisID:
-                            sys.exit("ERROR: histogram w/ name chargeflipbkg does not exist in input file")
+                            sys.exit("ERROR: histogram w/ name \"qmisidbkg\" does not exist in input file")
 
 			htmp_Prompt = fin[-1].Get("ttbarzbkg")
 			prompt_list.append( fin[-1].Get("dibosonbkg") )

@@ -528,7 +528,7 @@ class SubProcess:
             #
             # Debug
             #
-            print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            #print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
 	else:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s' % (cutstr))
             #
@@ -798,8 +798,8 @@ class Background:
                         treename = 'SystematicsUP/' + systematics.treename
                     elif systematicsdirection == 'DOWN':
                         treename = 'SystematicsDOWN/' + systematics.treename
-                if systematics.eventweight:
-                    if systematicsdirection == 'UP':
+                if systematics.eventweight and systematics.process == name:
+		    if systematicsdirection == 'UP':
                         eventweight = systematics.eventweight + 'up'
                     elif systematicsdirection == 'DOWN':
                         eventweight = systematics.eventweight + 'dn'
@@ -989,26 +989,17 @@ class Background:
         sig, siglist = self.sumhist(var, processes=self.signals, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, scale=signalfactor, options=options)
 
         if sig:
-	    if ( "FakesClosureABCD" in self.signals ):
-            	process = siglist[0][1]
-	    	pname = process.__class__.__name__
-            	sig.SetMarkerSize(1.2)
-            	sig.SetLineColor(self.style.get(pname+'LineColour', kBlue))
-	    	sig.SetMarkerColor(self.style.get(pname+'MarkerColour', kBlue))
-            	sig.SetMarkerStyle(self.style.get(pname+'MarkerStyle', 22))
-                legs.append([sig, process.latexname, "F"])
-	    else:
-            	process = siglist[0][1]
-            	sig.SetFillColor(self.style.get('SignalFillColour', 10))
-            	sig.SetFillStyle(self.style.get('SignalFillStyle', 1001))
-            	sig.SetLineWidth(self.style.get('SignalLineWidth', 3))
-            	sig.SetLineColor(self.style.get('SignalLineColour', 2))
-            	sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
-            	stack.Add(sig)
-                h_name = process.latexname+signal
-                if signalfactor != 1.:
-        	   h_name += " [#times"+str(int(signalfactor))+']'
-                legs.append([sig, h_name, 'f'])
+            process = siglist[0][1]
+            sig.SetFillColor(self.style.get('SignalFillColour', 10))
+            sig.SetFillStyle(self.style.get('SignalFillStyle', 1001))
+            sig.SetLineWidth(self.style.get('SignalLineWidth', 3))
+            sig.SetLineColor(self.style.get('SignalLineColour', 2))
+            sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
+            stack.Add(sig)
+            h_name = process.latexname+signal
+            if signalfactor != 1.:
+               h_name += " [#times"+str(int(signalfactor))+']'
+            legs.append([sig, h_name, 'f'])
 
 
         if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
@@ -1018,14 +1009,20 @@ class Background:
             #pad2.SetTopMargin(0)
             pad2.SetBottomMargin(0.4)
             #pad2.SetGridy(1)
-            if log is True or (var.logaxis and log is None):
+            if log or var.logaxis:
                 pad1.SetLogy()
                 stack.SetMinimum(1)
-            if logx is True or (var.logaxisX and logx is None):
+            if logx or var.logaxisX:
                 pad1.SetLogx()
                 pad2.SetLogx()
             pad1.Draw()
             pad2.Draw()
+	if not showratio:
+            if log or var.logaxis:
+                gPad.SetLogy()
+                stack.SetMinimum(1)
+            if logx or var.logaxisX:
+                gPad.SetLogx()
 
         if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
             if var.typeval is TH1D:
@@ -1107,7 +1104,8 @@ class Background:
         legs.reverse()
         lower, labels = self.labels(legs, showratio and obs and bkg)
 
-        # trick to rescale:
+        # Trick to rescale:
+	#
 	if stack:
 	   if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
 	      ymax_new = stack.GetMaximum()
@@ -1117,12 +1115,12 @@ class Background:
 	          ymax_new = stack.GetMaximum()
 	      if showratio and bkg and obs:
 	          stack.SetMaximum(ymax_new*(2.-lower+0.075))
-	          if log is True or (var.logaxis and log is None):
-	              #stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
-	              stack.SetMaximum(stack.GetMaximum() * 3*10**(2))
-
 	      else:
 	          stack.SetMaximum(ymax_new*(2.-lower+0.15))
+	      if log or var.logaxis:
+	          #stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
+	          stack.SetMaximum(stack.GetMaximum() * 3*10**(2))
+		      	      
 	      stack.Draw('HIST')
 	      #if ymax:
 	      #    dummy = stack.GetHists().At(0)
@@ -1154,19 +1152,15 @@ class Background:
             if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
 	       tSum.Draw("E2 SAME")
 
-	if ( "FakesClosureABCD" in self.signals ):
-	   if sig:
-	      sig.Draw("PE SAME")
-
         if obs:
 	   if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
               if stack:
                  datagr.Draw("PE SAME")
                  #obs.Draw("SAME")
               else:
-	         if logx:
+	         if logx or var.logaxisX:
 	             gPad.SetLogx()
-	         if log:
+	         if log or var.logaxis:
 	             gPad.SetLogy()
                  datagr.GetXaxis().SetTitle(var.latexname)
 	         binwidth = (var.maxval - var.minval) / var.bins
@@ -1187,7 +1181,7 @@ class Background:
             gROOT.SetBatch(False)
         return bkg, tSum, obs, sig, stack
 
-    def plotSystematics(self, systematics, var = 'MMC', cut = None, eventweight=None, category = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps']):
+    def plotSystematics(self, systematics, var = 'MMC', cut = None, eventweight=None, category = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps'], log=False, logx=False):
 
 	if not wait:
             gROOT.SetBatch(True)
@@ -1206,16 +1200,6 @@ class Background:
             [up, systematics.name + ' + 1#sigma', "F"],
             [down, systematics.name + ' - 1#sigma', "F"],
         ]
-
-	if ( "FakesClosureABCD" in self.signals ):
-           if sig:
-              process = siglist[0][1]
-	      pname = process.__class__.__name__
-              sig.SetMarkerSize(1.2)
-              sig.SetLineColor(self.style.get(pname+'LineColour', kBlue))
-	      sig.SetMarkerColor(self.style.get(pname+'MarkerColour', kBlue))
-              sig.SetMarkerStyle(self.style.get(pname+'MarkerStyle', 22))
-              legs.append([sig, process.latexname, "F"])
 
         bkguplist = {}
         bkgdownlist = {}
@@ -1369,7 +1353,8 @@ class Background:
 
         lower, labels = self.labels(legs, showratio)
 
-        # trick to rescale:
+        # Trick to rescale:
+	#
         ymax_new = up.GetMaximum()
         if down and down.GetMaximum() > ymax_new:
             ymax_new = down.GetMaximum()
@@ -1381,6 +1366,8 @@ class Background:
             up.SetMaximum(ymax_new*(2.-lower+0.075))
         else:
             up.SetMaximum(ymax_new*(2.-lower+0.15))
+	if log or var.logaxis:
+	    up.SetMaximum(up.GetMaximum() * 3*10**(2))
 
         if showratio:
             up.GetXaxis().SetLabelOffset(999)
@@ -1405,16 +1392,17 @@ class Background:
         nom_clone.SetMarkerSize(0)
         legs.insert(len(legs), (nom_clone,"Stat. Unc.","F"))
 
+        if log or var.logaxis:
+            gPad.SetLogy()
+        if logx or var.logaxisX:
+            gPad.SetLogx()
+
         up.Draw("HIST")
         down.Draw("HIST SAME")
         nom.Draw("HIST SAME")
 	nom_clone.Draw("E2 SAME")
         if obs:
            datagr.Draw("PE SAME")
-
-	if ( "FakesClosureABCD" in self.signals ):
-	   if sig:
-	      sig.Draw("PE SAME")
 
         lower, labels = self.labels(legs, showratio)
 
@@ -1425,7 +1413,7 @@ class Background:
             c.SaveAs(filepath)
         if not wait:
             gROOT.SetBatch(False)
-        return obs, nom, down, up, bkguplist, bkgdownlist
+        return obs, nom, up, down, bkguplist, bkgdownlist
 
 
 def drawText(text, x, y, size=0.05, colour=1):
