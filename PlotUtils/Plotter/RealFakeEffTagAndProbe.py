@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-""" RateEstimator_TagAndProbeRFRateMeas.py: measure r/f efficiencies/rates for Matrix Method and Fake Factor Method """
+""" RealFakeEffTagAndProbe.py: measure r/f efficiencies/rates for Matrix Method and Fake Factor Method with T&P method"""
 
-__author__     = "Marco Milesi, Francesco Nuti"
-__email__      = "marco.milesi@cern.ch, francesco.nuti@cern.ch"
+__author__     = "Marco Milesi"
+__email__      = "marco.milesi@cern.ch"
 __maintainer__ = "Marco Milesi"
 
 import os, sys, array, math
@@ -15,42 +15,35 @@ sys.path.append(os.path.abspath(os.path.curdir))
 # -------------------------------
 import argparse
 
-parser = argparse.ArgumentParser(description="Plotting python macro for deriving real/fake lepton efficiencies/rates for MM")
+parser = argparse.ArgumentParser(description="Module for deriving real/fake lepton efficiencies/rates for MM/FF")
 
 #***********************************
 # positional arguments (compulsory!)
 #***********************************
 
-parser.add_argument("inputDir", metavar="inputDir",type=str,
+parser.add_argument("inputpath", metavar="inputpath",type=str,
                   help="path to the directory containing subdirs w/ input files")
+
 #*******************
 # optional arguments
 #*******************
 
-parser.add_argument("--flavourComp", metavar="FLAVOUR_COMP", dest="flavourComp", default="", type=str,
-                  help="flavour composition of the two leptons in CR (*empty_string*, ElEl, MuMu, OF) - default is *empty_string*")
-parser.add_argument("--usePrediction", metavar="DATA_TYPE", dest="usePrediction", action="store", default="DATA", type=str,
-                  help="use Monte-Carlo (MC) or data (DATA) to derive efficiencies/rates - default is DATA")
+parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
+                  help='List of variables to be considered. Use a space-separated list. If unspecified, will consider pT only.')
+parser.add_argument("--channel", metavar="channel", default="", type=str,
+                  help="Flavour composition of the two leptons in CR to be considered (\"ElEl\", \"MuMu\", \"OF\"). If unspecified, will consider all combinations.")
+parser.add_argument("--closure", dest="closure", action="store_true",default=False,
+                  help="Estimate efficiencies using MonteCarlo (for closure test)")
 parser.add_argument("--debug", dest="debug", action="store_true",default=False,
-                  help="run in debug mode")
-parser.add_argument("--doBkgSub", dest="doBkgSub", action="store_true",default=False,
-                  help="subtract backgrounds to data (only if using DATA)")
-parser.add_argument("--rebinEta", dest="rebinEta", action="store_true",default=False,
-                  help="do rebinning in eta")
-parser.add_argument("--rebinPt", dest="rebinPt", action="store_true",default=False,
-                  help="do rebinning in pT")
-parser.add_argument("--doAvgMuFake", dest="doAvgMuFake", action="store_true",default=False,
-                  help="get average efficiency for muon fakes only")
-parser.add_argument("--doAvgElFake", dest="doAvgElFake", action="store_true",default=False,
-                  help="get average efficiency for electron fakes only")
-parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
-                  help="get average efficiencies (i.e, make 1 bin)")
-parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",default=False,
-                  help="save only rates")
-parser.add_argument("--useLogPlots", dest="useLogPlots", action="store_true",default=False,
-                  help="read plots with logarithmic Y scale")
-parser.add_argument("--doWeightedAvgFake", dest="doWeightedAvgFake", action="store_true",default=False,
-                  help="Get the actual electron fake efficiency by taking a WEIGHTED average between fake efficiency and QMisID efficiency. Default uses an arithmetic average.")
+                  help="Run in debug mode")
+parser.add_argument("--nosub", dest="nosub", action="store_true",default=False,
+                  help="Do not subtract backgrounds to data (NB: subtraction is disabled by default when running w/ option --closure)")
+parser.add_argument('--sysstematics', dest='systematics', action='store', default="", type=str, nargs='*',
+                  help='Option to pass a list of systematic variations to be considered. Use a space-separated list.')
+parser.add_argument("--log", dest="log", action="store_true",default=False,
+                  help="Read plots with logarithmic Y scale.")
+parser.add_argument('--rebin', dest='rebin', action='store', type=str, nargs='+',
+                  help='Option to pass a bin range for rebinning. Use space-separated lists of numbers to define new bins, specifying whether it should apply to real/fake muons/electrons for a given variable in the following way (eg.):\n --rebin Real,El,Pt,10,20,200 Fake,Mu,Eta,0.0,1.3,2.5')
 
 args = parser.parse_args()
 
@@ -59,157 +52,239 @@ from ROOT import ROOT, gROOT, TH1, TH1D, TFile, TGraphAsymmErrors, TEfficiency, 
 gROOT.SetBatch(True)
 TH1.SetDefaultSumw2()
 
-def getQMisIDRatesRatio( N, D ):
+class RealFakeEffTagAndProbe:
 
-    xbins_N = []
-    for ibinx in range(1,N.GetNbinsX()+1):
-        xbins_N.append(N.GetBinLowEdge(ibinx))
+    def __init__( self, closure=False, variables=[], systematics=[], efficiency=None, nosub=False ):
 
-    xbins_D = []
-    for ibinx in range(1,D.GetNbinsX()+1):
-        xbins_D.append(D.GetBinLowEdge(ibinx))
+	self.closure = closure
 
-    if args.debug:
-        print "xbins_N = ", xbins_N
-        print "xbins_D = ", xbins_D
+        self.tp_lep = "Probe"
 
-    vxbins_N = array.array("d", xbins_N)
-    vxbins_D = array.array("d", xbins_D)
+    	self.__channels     = {"" : ["El","Mu"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
+        self.__leptons      = []
+    	self.__efficiencies = ["Real","Fake"]
+    	self.__variables    = ["Pt"]
+    	self.__selections   = ["L","T","AntiT"]
+    	self.__inputs       = []
+    	self.__subtraction  = []
+    	self.__systematics  = []
 
-    new_N = TH1D("N","N",len(vxbins_N)-1,vxbins_N)
-    if args.debug: print("QMisID rate T - Numerator:")
-    for ibinx in range(1,N.GetNbinsX()):
-        content = N.GetBinContent(ibinx)
-        error   = N.GetBinError(ibinx)
-        perc_error = abs(error) * 100 / content
-        if args.debug: print("bin {0} - {1} +- {2} ({3} %)".format(ibinx,content,error,perc_error))
-        new_N.SetBinContent(ibinx,content)
-        new_N.SetBinError(ibinx,error)
-
-    new_D = TH1D("D","D",len(vxbins_D)-1,vxbins_D)
-    if args.debug: print("QMisID rate L - Denominator:")
-    for ibinx in range(1,D.GetNbinsX()):
-        content = D.GetBinContent(ibinx)
-        error   = D.GetBinError(ibinx)
-        perc_error = abs(error) * 100 / content
-        if args.debug: print("bin {0} - {1} +- {2} ({3} %)".format(ibinx,content,error,perc_error))
-        new_D.SetBinContent(ibinx,content)
-        new_D.SetBinError(ibinx,error)
-
-    ratio = new_N.Clone()
-    ratio.Divide(new_N,new_D,1.0,1.0,"B")
-    return ratio
-
-
-def scaleEff( hist_r, hist_f, hist_data, hist_prompt, hist_QMisID ):
-
-    #file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v17.root")
-    #file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v17.root")
-
-    file_N = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Tight_v18.root")
-    file_D = TFile("$ROOTCOREBIN/data/HTopMultilepAnalysis/External/QMisID_Pt_rates_Loose_v18.root")
-
-    hist_N = file_N.Get("LikelihoodPt")
-    hist_D = file_D.Get("LikelihoodPt")
-
-    # Get the histofram containing the scaling factors to be applied to real efficiency
-    #
-    hist_scales = getQMisIDRatesRatio(hist_N, hist_D)
-
-    hist_eff_QMisID   = hist_r.Clone()
-    hist_eff_f_w      = hist_r.Clone()
-
-    if args.debug:
-        print("Histogram w/ scale factors - GetNbinsX() = {0}".format(hist_scales.GetNbinsX()))
-        print("Input REAL efficiency hist - GetNbinsX() = {0}".format(hist_r.GetNbinsX()))
-
-    for ibinx in range(1,hist_r.GetNbinsX()+1):
-
-        bin_lowedge = hist_r.GetBinLowEdge(ibinx)
-	bin_upedge  = hist_r.GetBinLowEdge(ibinx+1)
-
-        eff_r     = hist_r.GetBinContent(ibinx)
-        err_eff_r = hist_r.GetBinError(ibinx)
-
-        scale          = hist_scales.GetBinContent(ibinx)
-        err_scale      = hist_scales.GetBinError(ibinx)
-        perc_err_scale = abs(err_scale) * 100 / scale
-
-        eff_QMisID     = scale * eff_r
-        err_eff_QMisID = math.sqrt( (eff_r*eff_r) * (err_scale*err_scale) + (scale*scale) * (err_eff_r*err_eff_r) )
-
-        hist_eff_QMisID.SetBinContent(ibinx, eff_QMisID)
-        hist_eff_QMisID.SetBinError(ibinx, err_eff_QMisID)
-
-        # Now get the updated FAKE efficiency, by taking the weighted average <input eff fake, QMisID eff>
-        # The weight is the QMisID fraction wrt the total (data - prompt) for each bin
-        # (The sum of weight is correctly normalised to 1)
-        #
-
-	numerator   = hist_QMisID.GetBinContent(ibinx)
-	#denominator = hist_data.GetBinContent(ibinx)
-	denominator = hist_data.GetBinContent(ibinx) - hist_prompt.GetBinContent(ibinx)
-
-	if denominator:
-            w = numerator / denominator
+	if not self.closure:
+	    self.__inputs.append("observed")
+            if not nosub:
+                self.__subtraction.extend(["qmisidbkg","allsimbkg"])
 	else:
-	    w = 1.0
+	    self.__inputs.append("expectedbkg")
 
-	print("bin {} - [{},{}] GeV\n\tQMisID = {} (hname: {})\n\tData = {} (hname: {})\n\tPrompt = {} (hname: {})\n\t===> w = {}".format(ibinx,bin_lowedge,bin_upedge,hist_QMisID.GetBinContent(ibinx),hist_QMisID.GetName(),hist_data.GetBinContent(ibinx),hist_data.GetName(),hist_prompt.GetBinContent(ibinx),hist_prompt.GetName(),w))
+        if efficiency:
+            self.__efficinecies.append(efficiency)
 
-        # Deal with the (ill) case where the QMisID yield is higher than the denominator
-        #
-        if w > 1.0: w = 1.0
+        if variables:
+            for var in variables:
+                if var not in self.__variables:
+                    self.__variables.append(var)
 
-        eff_f     = hist_f.GetBinContent(ibinx)
-        err_eff_f = hist_f.GetBinError(ibinx)
+        if systematics:
+            for sys in systematics:
+                self.__systematics.append(sys)
 
-        if not args.doWeightedAvgFake:
-	    print("\n\nUSING ARITHMETIC AVERGAGE <eff_fake,eff_QMisID>!!\n\n")
-            w = 0.5
 
-        eff_w     = ( 1.0 - w ) * eff_f + w * eff_QMisID
-        err_eff_w = math.sqrt( math.pow((1.0-w),2.0) * math.pow(err_eff_f,2.0) + math.pow(w,2.0) * math.pow(err_eff_QMisID,2.0) )
+    	# -----------------------------------------
+    	# these dictionaries will store the inputs
+    	# -----------------------------------------
 
-        #sys_err_eff_w = abs(eff_f - eff_w) # less conservative
-	sys_err_eff_w = abs(eff_f - eff_QMisID) # more conservative
+        self.histkeys = []
+	
+        self.loose_hists     = {}
+        self.tight_hists     = {}
+        self.antitight_hists = {}
 
-	if not args.doWeightedAvgFake:
-	    sys_err_eff_w = abs(eff_f - eff_QMisID) / 2.0
+    	# -----------------------------------------
+    	# these dictionaries will store the outputs
+    	# -----------------------------------------
 
-        # This largely overestimates uncertainty
-	#
-	#tot_err_eff_w = math.sqrt( (err_eff_w)*(err_eff_w) + (sys_err_eff_w)*(sys_err_eff_w) )
-	# Do this:
-	#
-	tot_err_eff_w = max(err_eff_w,sys_err_eff_w)
+    	self.histefficiencies	= {}
+    	self.grapheffieciencies = {}
+    	self.tefficiencies      = {}
+    	self.yields             = {}
 
-        print("weighted eff_f:\nstat error = {0}\nsyst error = {1}\n==>total error = {2}".format(err_eff_w,sys_err_eff_w,tot_err_eff_w))
+	# ---------------
+    	# General options
+    	# ---------------
 
-        print("bin {0} - [{1},{2}] GeV \n\teff_r: {3} +- {4}\n\tscale : {5} +- {6} ({7} %)\n\teff_QMisID: {8} +- {9}\n\teff_f: {10} +- {11}\n\tweighted eff_f: {12} +- {13} ({14})".format(ibinx,bin_lowedge,bin_upedge,eff_r,err_eff_r,scale,err_scale,perc_err_scale,eff_QMisID,err_eff_QMisID,eff_f,err_eff_f,eff_w,err_eff_w,tot_err_eff_w))
+	self.debug = False
+	self.log   = False
 
-        # If efficiency unphysically > 1, force it to 1
-        #
-        if eff_w > 1.0 : eff_w = 1.0
+    def subtract( self, inputfile, inputhist ):
 
-        hist_eff_f_w.SetBinContent(ibinx, eff_w)
-        hist_eff_f_w.SetBinError(ibinx, tot_err_eff_w)
+        if self.debug:
+            print("\nSubtracting events to data...")
+            print("********************************************")
+            print("Events BEFORE subtraction in histogram {0}: {1}".format( inputhist.GetName(), inputhist.Integral(0,inputhist.GetNbinsX()+1) ) )
+            print("********************************************")
 
-    hist_eff_QMisID.SetDirectory(0)
-    hist_eff_f_w.SetDirectory(0)
+        for proc in self.__subtraction:
 
-    return hist_eff_QMisID, hist_eff_f_w
+            thishist = inputfile.Get(proc)
 
-def RateToEfficiency( v ):
-    v = float(v)
-    if v < 0:
-        v = 0.
-    return v/(v+1)
+            if self.debug:
+                print("Now subtracting {0}".format(proc))
+                print("Events in histogram {0}: {1}".format( thishist.GetName(), thishist.Integral(0,inputhist.GetNbinsX()+1) ) )
+
+            inputhist.Add( thishist, -1 )
+
+        if self.debug:
+            print("********************************************")
+            print("Events AFTER subtraction in histogram {0}: {1}".format( inputhist.GetName(), inputhist.Integral(0,inputhist.GetNbinsX()+1) ) )
+            print("********************************************")
+
+        return inputhist
+
+    def readInputs(self, inputpath=None, channel=None, log=False):
+
+        if inputpath and inputpath.endswith("/"):
+            inputpath = inputpath[:-1]
+
+        log_suffix = ("","_LOGY")[bool(self.log)]
+
+        self.__leptons = self.__channels[channel]
+
+        print("Leptons to be considered:")
+        print("\n".join("{0}".format(lep) for lep in self.__leptons))
+        print("********************************************")
+        print("Efficiencies to be considered:")
+        print("\n".join("{0}".format(eff) for eff in self.__efficiencies))
+        print("********************************************")
+        print("Variables to be considered:")
+        print("\n".join("{0}".format(var) for var in self.__variables))
+        print("********************************************")
+
+        filename = None
+
+        for lep in self.__leptons:
+
+            for eff in self.__efficiencies:
+
+                actual_eff = eff
+
+                for var in self.__variables:
+
+                    for sel in self.__selections:
+
+                        filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel + "_" + lep + self.tp_lep + var + ".root" )
+
+                        thisfile = TFile(filename)
+                        if not thisfile:
+                            sys.exit("ERROR: file:\n{0}\ndoes not exist!".format(filename))
+
+                        for proc in self.__inputs:
+                            thishist = thisfile.Get(proc)
+                            if ( proc == "observed" ) and self.__subtraction:
+                                thishist = self.subtract(thisfile, thishist)
+
+                            key = "_".join( (actual_eff,lep,var,proc) )
+			    
+			    if not key in self.histkeys:
+			        self.histkeys.append(key)
+			    
+                            thishist.SetName(key)
+
+                            thishist.SetDirectory(0)
+
+                            if sel == "T":
+                                self.tight_hists[key] = thishist
+                            elif sel == "L":
+                                self.loose_hists[key] = thishist
+                            elif sel == "AntiT":
+                                self.antitight_hists[key] = thishist
+
+
+    def rebinHistograms (self, rebinlist=None):
+
+        if not rebinlist:
+            print("Will not do any rebinning...")
+            return
+
+        for key in self.histkeys: 
+	
+	    # By construction, the following will be a list w/ 4 items, where:
+	    #
+	    # tokens[0] = efficiency ("Real","Fake"...)
+	    # tokens[1] = lepton ("El","Mu"...)
+	    # tokens[2] = variable ("Pt","Eta"...)
+	    # tokens[3] = process ("observed","expectedbkg"...)
+	    
+	    tokens = key.split("_")
+	    
+	    print("Current tokens:")
+	    print tokens
+		    	    
+            for rebinitem in rebinlist:
+	    
+	        rebinitem = rebinitem.split(",")
+		
+	        if ( tokens[0] in rebinitem ) and ( tokens[1] in rebinitem ) and ( tokens[2] in rebinitem ):
+
+                    nbins = len(rebinitem[3:])-1
+		    
+                    print("\t===> Rebinning matching histograms with the following values:")
+		    print "\tbin edges: ", rebinitem[3:], ", number of bins = ", nbins
+	                  
+		    bins = [ float(binedge) for binedge in rebinitem[3:] ]	                   
+	            arr_bins = array.array("d", bins)
+		    
+		    self.tight_hists[key].Rebin( nbins, key, arr_bins )                                
+		    self.loose_hists[key].Rebin( nbins, key, arr_bins )                                
+		    self.antitight_hists[key].Rebin( nbins, key, arr_bins )                                
+
+
+
+    def rateToEfficiency(self, r):
+        if r < 0:
+            r = 0.0
+	e = r/(r+1)
+        return e
+
+    def efficiencyToRate(self, e):
+	r = e/(1-e)
+        return r
+
+# -------------------------------------------
 
 if __name__ == "__main__":
 
-    if not args.inputDir.endswith("/"):
-        args.inputDir += "/"
+    eff = RealFakeEffTagAndProbe( closure=args.closure, variables=args.variables, systematics=args.systematics, nosub=args.nosub )
+
+    eff.debug = args.debug
+    eff.log   = args.log
+
+    eff.readInputs( inputpath=args.inputpath, channel=args.channel )
+
+    if eff.debug:
+        print("\n\nTIGHT histograms dictionary:\n")
+        print("\tkey\t\thistname\n")
+        for key, value in eff.tight_hists.iteritems():
+            print("\t{0}\t{1}".format(key, value.GetName()))
+
+        print("\n\nLOOSE histograms dictionary:\n")
+        print("\tkey\t\thistname\n")
+        for key, value in eff.loose_hists.iteritems():
+            print("\t{0}\t{1}".format(key, value.GetName()))
+
+        print("\n\nANTI-TIGHT histograms dictionary:\n")
+        print("\tkey\t\thistname\n")
+        for key, value in eff.antitight_hists.iteritems():
+            print("\t{0}\t{1}".format(key, value.GetName()))
+
+    eff.rebinHistograms( rebinlist=args.rebin )
+    
+    
+    
+# -------------------------------------------
+"""
+
+if __name__ == "__main__":
+
 
     # ---------------------------------------------------------------------------------
     # NB: the following string definitions are to be chosen according to the
@@ -246,6 +321,7 @@ if __name__ == "__main__":
     list_selections  = ["L","T","AntiT"]
     list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
                                                   # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
+    list_out_samples = ["factor","factorbkgsub","rate","ratebkgsub"]
 
     hists  = {}
     graphs = {}
@@ -747,3 +823,4 @@ if __name__ == "__main__":
 
     for f in range( 0,len(fin) ):
         fin[f].Close()
+"""

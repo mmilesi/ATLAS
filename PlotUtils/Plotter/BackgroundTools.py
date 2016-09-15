@@ -237,7 +237,7 @@ class Variable:
         return h
 
 
-# A Cut is defined by a name and a set of rules defined in cut string, 
+# A Cut is defined by a name and a set of rules defined in cut string,
 # but can be also the composition of a series of cuts specified in the cut list
 
 class Cut:
@@ -780,7 +780,7 @@ class Background:
         cache.append(TColor(1010, 103/255., 73/255., 130/255.))     # purple
         cache.append(TColor(1000, 108/255., 178/255., 81/255.))     # green
         return cache
-    
+
     def getProcess(self, name, category=None, systematics=None, systematicsdirection=None, options={}):
         treename = 'physics'
         eventweight = None
@@ -1011,7 +1011,7 @@ class Background:
             #pad2.SetGridy(1)
             if log or var.logaxis:
                 pad1.SetLogy()
-                stack.SetMinimum(1)
+                stack.SetMinimum(0.1)
             if logx or var.logaxisX:
                 pad1.SetLogx()
                 pad2.SetLogx()
@@ -1020,7 +1020,7 @@ class Background:
 	if not showratio:
             if log or var.logaxis:
                 gPad.SetLogy()
-                stack.SetMinimum(1)
+                stack.SetMinimum(0.1)
             if logx or var.logaxisX:
                 gPad.SetLogx()
 
@@ -1120,7 +1120,7 @@ class Background:
 	      if log or var.logaxis:
 	          #stack.SetMaximum(stack.GetMaximum() * 10**(1.5))
 	          stack.SetMaximum(stack.GetMaximum() * 3*10**(2))
-		      	      
+
 	      stack.Draw('HIST')
 	      #if ymax:
 	      #    dummy = stack.GetHists().At(0)
@@ -1256,11 +1256,11 @@ class Background:
         for h in nom, down, up:
             h.SetLineStyle(1)
             h.SetFillStyle(0)
-            h.SetLineWidth(3)
+            h.SetLineWidth(2)
         down.SetLineColor(color_down)
         up.SetLineColor(color_up)
         nom.SetLineColor(1)
-        nom.SetLineWidth(3)
+        nom.SetLineWidth(2)
         nom.SetLineStyle(2)
 
         if showratio:
@@ -1292,18 +1292,18 @@ class Background:
             ratioup.GetYaxis().SetLabelSize(0.12)
             ratioup.GetYaxis().SetNdivisions(5)
             ratioup.SetMarkerColor(color_up)
-            ratioup.SetMarkerSize(1.)
-            ratioup.SetLineWidth(1)
+            ratioup.SetMarkerSize(1.0)
+            ratioup.SetLineWidth(2)
             ratioup.Divide(nom)
 
             ratiodown.SetMarkerColor(color_down)
             ratiodown.SetMarkerSize(1.)
-            ratiodown.SetLineWidth(1)
+            ratiodown.SetLineWidth(2)
             ratiodown.Divide(nom)
 
             if obs:
                 ratioobs.SetMarkerColor(1)
-                ratioobs.SetMarkerSize(1.)
+                ratioobs.SetMarkerSize(1.0)
                 ratioobs.SetLineWidth(1)
                 ratioobs.Divide(nom)
 
@@ -1340,8 +1340,10 @@ class Background:
             #ratioup.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
             pad2.cd()
             #pad2.SetLogy(2)
-            ratioup.Draw()
-            ratiodown.Draw("SAME")
+            #ratioup.Draw()
+            #ratiodown.Draw("SAME")
+            ratioup.Draw("HIST")        # do not draw error bars
+            ratiodown.Draw("HIST SAME")	# do not draw error bars
             #ratioobs.Draw("SAME")
             refl = TLine(ratioup.GetBinLowEdge(1), 1., ratioup.GetBinLowEdge(ratioup.GetNbinsX()+1), 1.)
             #refl.SetLineColor(kRed)
@@ -1383,24 +1385,31 @@ class Background:
                 up.GetXaxis().SetNdivisions(up.GetNbinsX())
                 up.GetXaxis().CenterLabels(True)
 
-        # to draw statistical error bars as well
+        # A trick to draw statistical error bars as well
         #
-	nom_clone = nom.Clone("nom_clone")
-	nom_clone.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
-        nom_clone.SetLineColor(self.style.get('SumErrorLineColour', 10))
-        nom_clone.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
-        nom_clone.SetMarkerSize(0)
-        legs.insert(len(legs), (nom_clone,"Stat. Unc.","F"))
+	nom_stat_err = nom.Clone("nom_stat_err")
+	nom_stat_err.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
+        nom_stat_err.SetLineColor(self.style.get('SumErrorLineColour', 10))
+        nom_stat_err.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
+        nom_stat_err.SetMarkerSize(0)
+	nom_stat_err_ratio = nom_stat_err.Clone("nom_stat_err_ratio")
+	nom_stat_err_ratio.Divide(nom_stat_err)
+        legs.insert(len(legs), (nom_stat_err,"Stat. Unc.","F"))
 
         if log or var.logaxis:
             gPad.SetLogy()
         if logx or var.logaxisX:
             gPad.SetLogx()
-
+            
+	if showratio:    
+            pad2.cd()	    
+	    nom_stat_err_ratio.Draw("E2 SAME")
+            pad1.cd()	    
+	    
         up.Draw("HIST")
         down.Draw("HIST SAME")
         nom.Draw("HIST SAME")
-	nom_clone.Draw("E2 SAME")
+	nom_stat_err.Draw("E2 SAME")
         if obs:
            datagr.Draw("PE SAME")
 
