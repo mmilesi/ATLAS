@@ -45,8 +45,6 @@ parser.add_argument("--doAvgElFake", dest="doAvgElFake", action="store_true",def
                   help="get average efficiency for electron fakes only")
 parser.add_argument("--doAvg", dest="doAvg", action="store_true",default=False,
                   help="get average efficiencies (i.e, make 1 bin)")
-parser.add_argument("--saveOnlyRates", dest="saveOnlyRates", action="store_true",default=False,
-                  help="save only rates")
 parser.add_argument("--useLogPlots", dest="useLogPlots", action="store_true",default=False,
                   help="read plots with logarithmic Y scale")
 parser.add_argument("--doWeightedAvgFake", dest="doWeightedAvgFake", action="store_true",default=False,
@@ -242,10 +240,10 @@ if __name__ == "__main__":
 
     list_lep         = dict_channels_lep[args.flavourComp]
     list_types       = ["Real","RealQMisIDBinning","Fake"]
-    list_variables   = ["ProbePt","ProbeEta"] #"ProbeNJets"]
+    list_variables   = ["ProbePt"]#,"ProbeEta"] #"ProbeNJets"]
     list_selections  = ["L","T","AntiT"]
-    list_prediction  = ["expected", "observed"]   # expected --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
-                                                  # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
+    list_prediction  = ["expectedbkg", "observed"]   # expectedbkg --> use MC distribution for probe lepton to derive the rate (to be used only as a cross check, and in closure test)
+                                                     # observed --> use DATA distribution for probe lepton to derive the rate - need to subtract the prompt/ch-flips here!
 
     hists  = {}
     graphs = {}
@@ -301,7 +299,6 @@ if __name__ == "__main__":
                         htmp_QMisID = fin[-1].Get("qmisidbkg")
                         if not htmp_QMisID:
                             sys.exit("ERROR: histogram w/ name \"qmisidbkg\" does not exist in input file")
-
 			htmp_Prompt = fin[-1].Get("ttbarzbkg")
 			prompt_list.append( fin[-1].Get("dibosonbkg") )
 			prompt_list.append( fin[-1].Get("raretopbkg") )
@@ -309,6 +306,8 @@ if __name__ == "__main__":
 			prompt_list.append( fin[-1].Get("wjetsbkg") )
 			prompt_list.append( fin[-1].Get("ttbarbkg") )
 			prompt_list.append( fin[-1].Get("zjetsbkg") )
+			prompt_list.append( fin[-1].Get("singletopbkg") )
+			
                         for hist in prompt_list:
 			    htmp_Prompt.Add(hist)
 			htmp_Data = fin[-1].Get("observed")
