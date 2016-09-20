@@ -28,6 +28,8 @@ parser.add_argument("inputpath", metavar="inputpath",type=str,
 # optional arguments
 #*******************
 
+g_avaialble_systematics = ["QMisID","AllSimStat"]
+
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
                   help='List of variables to be considered. Use a space-separated list. If unspecified, will consider pT only.')
 parser.add_argument("--channel", metavar="channel", default="", type=str,
@@ -41,7 +43,7 @@ parser.add_argument("--verbose", dest="verbose", action="store_true",default=Fal
 parser.add_argument("--nosub", dest="nosub", action="store_true",default=False,
                   help="Do not subtract backgrounds to data (NB: subtraction is disabled by default when running w/ option --closure)")
 parser.add_argument('--systematics', dest='systematics', action='store', default="", type=str, nargs='*',
-                  help='Option to pass a list of systematic variations to be considered. Use a space-separated list.')
+                  help='Option to pass a list of systematic variations to be considered. Use a space-separated list. Currently available systematics: {0}'.format(g_avaialble_systematics))
 parser.add_argument("--log", dest="log", action="store_true",default=False,
                   help="Read plots with logarithmic Y scale.")
 parser.add_argument('--rebin', dest='rebin', action='store', type=str, nargs='+',
@@ -50,7 +52,7 @@ parser.add_argument('--averagehist', dest='averagehist', action='store', type=st
                   help='Option to get average histograms (i.e., 1 single bin over the full range). Use space-separated sets of options (comma-separated) to tell which histograms should be averaged out, e.g.:\n --averagehist Real,El,Pt Fake,Mu,Eta.\nIf option ALL is specified, all histograms get averaged out.')
 parser.add_argument("--factors", dest="factors", action="store_true",default=False,
                   help="Calculate factors (pass/!pass) in addition to efficiencies.")
-parser.add_argument("--outfilename", metavar="outfilename", default=None, type=str,
+parser.add_argument("--outfilename", metavar="outfilename", default="LeptonEfficiencies", type=str,
                   help="Name of the output file(s). If unspecified, default is \"LeptonEfficiencies\"")
 parser.add_argument("--outpath", metavar="outpath", default=None, type=str,
                   help="Name of directory where to store outputs. If unspecified, default is the input directory.")
@@ -59,7 +61,7 @@ parser.add_argument("--plots", dest="plots", action="store_true", default=False,
 
 args = parser.parse_args()
 
-from ROOT import ROOT, gROOT, Double, TH1, TH1D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange
+from ROOT import ROOT, gROOT, Double, TPad, TLine, TH1, TH1D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
 
 gROOT.Reset()
 gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
@@ -77,10 +79,10 @@ class RealFakeEffTagAndProbe:
 
         self.tp_lep = "Probe"
 
-    	#self.__channels     = {"" : ["El","Mu"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
-    	self.__channels     = {"" : ["El"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
+    	self.__channels     = {"" : ["El","Mu"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
+    	#self.__channels     = {"" : ["El"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
         self.__leptons      = []
-    	self.__efficiencies = ["Fake"] # ["Real","Fake"]
+    	self.__efficiencies = ["Real","Fake"]
     	self.__variables    = ["Pt"]
     	self.__selections   = ["L","T","AntiT"]
     	self.__processes      = []
@@ -118,6 +120,11 @@ class RealFakeEffTagAndProbe:
         # The following dictionary associates a known process to a list of affecting systematics
 
         self.__process_syst_dict = {"qmisidbkg":["QMisID"], "allsimbkg":["AllSimStat"]}
+	
+        self.__syst_color_dict = {"QMisID_N":kGreen+3,
+	                          "QMisID_D":kGreen-7, 
+	                          "AllSimStat_N":kAzure,
+				  "AllSimStat_D":kAzure+6}
 
     	# -----------------------------------------
     	# these dictionaries will store the inputs
@@ -317,7 +324,7 @@ class RealFakeEffTagAndProbe:
 	           print("\tbin {0} - {1:.3f} ({2}) - {3:.3f} ({4})".format(bin_idx,hist.GetBinContent(bin_idx),hist.GetName(),sub_hist.GetBinContent(bin_idx),sub_hist.GetName()))
 
                bin_idx_sub     = hist.GetBinContent(bin_idx) - sub_hist.GetBinContent(bin_idx)
-	       bin_idx_sub_err = math.sqrt( pow( hist.GetBinError(bin_idx),2.0) - pow( sub_hist.GetBinError(bin_idx),2.0 ) )
+	       bin_idx_sub_err = math.sqrt( pow( hist.GetBinError(bin_idx),2.0) + pow( sub_hist.GetBinError(bin_idx),2.0 ) )
 
 	       # Firstly, subtract the base histogram...
 
@@ -457,8 +464,9 @@ class RealFakeEffTagAndProbe:
 
 	        tokens = key.split("_")
 
-	        print("Current tokens:")
-	        print tokens
+                if self.verbose:
+	            print("Current tokens:")
+	            print tokens
 
                 for rebinitem in rebinlist:
 
@@ -468,8 +476,9 @@ class RealFakeEffTagAndProbe:
 
                         nbins = len(rebinitem[3:])-1
 
-                        print("\t===> Rebinning matching histograms with the following values:")
-                        print "\tbin edges: ", rebinitem[3:], ", number of bins = ", nbins
+                        if self.debug:
+                            print("\t===> Rebinning matching histograms with the following values:")
+                            print "\tbin edges: ", rebinitem[3:], ", number of bins = ", nbins
 
                         bins = [ float(binedge) for binedge in rebinitem[3:] ]
 	                arr_bins = array.array("d", bins)
@@ -638,9 +647,6 @@ class RealFakeEffTagAndProbe:
             if len(tokens) > 6:
                 key_heff = key_heff + "_" + "_".join( ("{0}".format(other_tokens) for other_tokens in tokens[5:]) )
 
-            print "key for efficiency: ", key_heff
-            #continue
-
             h_efficiency  = h_pass.Clone(key_heff)
             h_efficiency.Divide(h_pass,h_tot,1.0,1.0,"B")
 
@@ -694,6 +700,8 @@ class RealFakeEffTagAndProbe:
             self.histefficiencies[key_heff]  = h_efficiency
             self.graphefficiencies[key_geff] = g_efficiency
        	    self.tefficiencies[key_teff]     = t_efficiency
+
+            print ("key for efficiency: {0}".format(key_heff))
 
     def computeFactors( self, variation ):
 
@@ -843,19 +851,36 @@ class RealFakeEffTagAndProbe:
         self.__outputfile.Write()
         self.__outputfile.Close()
 
+    def __getLimits__( self, histlist, scale_up=1.0, scale_dn=1.0 ):
+        ymin = 1e9
+	ymax = 0.0
+	for h in histlist:
+	    this_ymin = h.GetBinContent( h.GetMinimumBin() )
+	    this_ymax = h.GetBinContent( h.GetMaximumBin() )
+	    if this_ymin < ymin:
+	        ymin = this_ymin
+	    if this_ymax >= ymax:
+	        ymax = this_ymax
+	
+	if ymin < 0: ymin = 0.0
+	if ymax > 1: ymax = 1.0
+	
+	return scale_dn * ymin, scale_up * ymax
 
-    def plotMaker( self, run_batch=True ):
 
-        if run_batch:
-	    gROOT.SetBatch(True)
+    def plotMaker( self ):
+
+	gROOT.SetBatch(True)
 
         proc = ("observed","expectedbkg")[bool(self.closure)]
+
+        proc_dict = {"observed":"data (w/ subtraction)", "expectedbkg":"simulation"}
 
         for var in self.__variables:
 
 	    for lep in self.__leptons:
 
-	        c = TCanvas("c1","Efficiencies")
+	        c = TCanvas("c_"+lep,"Efficiencies")
                 c.SetFrameFillColor(0)
                 c.SetFrameFillStyle(0)
                 c.SetFrameBorderMode(0)
@@ -876,40 +901,34 @@ class RealFakeEffTagAndProbe:
 
 	        for idx_eff, eff in enumerate(self.__efficiencies):
 
-		    for idx_proc, proc in enumerate(self.__processes):
+                    key  = "_".join((eff,lep,var,"Efficiency",proc,"sub"))
 
-                    	key  = "_".join((eff,lep,var,"Efficiency",proc))
+		    print("\tplotting histogram: {0}".format(key))
 
-			print "\tplotting histogram: ", key
+		    hist = self.histefficiencies[key]
 
-		    	hist = self.histefficiencies[key]
+		    hist.GetYaxis().SetRangeUser(0,1)
 
-		    	hist.GetYaxis().SetRangeUser(0,1)
+		    hist.GetYaxis().SetTitle("#varepsilon")
+	   	    hist.GetXaxis().SetTitleOffset(1.0)
+	   	    hist.GetYaxis().SetTitleOffset(1.0)
 
-		    	hist.GetYaxis().SetTitle("#varepsilon")
-	   	    	hist.GetXaxis().SetTitleOffset(1.0)
-	   	    	hist.GetYaxis().SetTitleOffset(1.0)
+	            hist.SetLineStyle(1)
+                    hist.SetMarkerStyle(kCircle)
 
-	            	hist.SetLineStyle(1)
-                    	hist.SetMarkerStyle(kFullCircle)
+		    if not idx_eff:
+		       hist.SetLineColor(kBlue)
+		       hist.SetMarkerColor(kBlue)
+		    else:
+		       hist.SetLineColor(kOrange+7)
+		       hist.SetMarkerColor(kOrange+7)
 
-			if not ( proc == "observed" ):
-			    hist.SetLineStyle(idx_proc+3)
-                    	    hist.SetMarkerStyle(kCircle)
+                    legend.AddEntry(hist,eff+" - "+proc_dict[proc], "P")
 
-			if eff == "Real":
-		    	   hist.SetLineColor(kBlue)
-		    	   hist.SetMarkerColor(kBlue)
-		    	else:
-		    	   hist.SetLineColor(kOrange)
-		    	   hist.SetMarkerColor(kOrange)
-
-                    	legend.AddEntry(hist,eff+" - "+proc, "P")
-
-		    	if not idx_eff and not idx_proc:
-			   hist.Draw("E0")
-		    	else:
-		    	   hist.Draw("E0,SAME")
+		    if not idx_eff:
+		       hist.Draw("E0")
+		    else:
+		       hist.Draw("E0,SAME")
 
                 legend.Draw()
                 leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
@@ -920,6 +939,190 @@ class RealFakeEffTagAndProbe:
 		for extension in self.extensionlist:
 		    c.SaveAs(self.__outputpath+"/"+canvas_filename+"."+extension)
 
+
+    def plotMakerSys( self ):
+        
+	proc = ("observed","expectedbkg")[bool(self.closure)]
+
+        proc_dict = {"observed":"data (w/ subtraction)", "expectedbkg":"simulation"}
+
+        for var in self.__variables:
+
+  	    for lep in self.__leptons:
+      
+	        for idx_eff, eff in enumerate(self.__efficiencies):
+	
+	            key_nominal = "_".join( (eff,lep,var,"Efficiency",proc,"sub") )
+	
+	            hist_nominal = self.histefficiencies[key_nominal]
+          	    hist_nominal.SetLineStyle(2)
+		    hist_nominal.SetLineWidth(2)
+          	    hist_nominal.SetLineColor(kBlack)
+	  	    hist_nominal.SetMarkerStyle(kFullCircle)
+          	    hist_nominal.SetMarkerColor(kBlack)
+                    
+		    # Store histograms in a list for future convenience
+		    
+		    histlist = [hist_nominal]
+		    
+		    if self.verbose:
+    		        print("plotting nominal histogram: {0}".format(key_nominal))
+	           
+	            hists_sys_numerator   = []
+	            hists_sys_denominator = []
+  
+  	     	    for sys in self.__systematics[1:]:
+			
+	     		for sysdir in self.__systematicsdirections[1:]:
+         			    
+			    for bin in range( 1, hist_nominal.GetNbinsX()+2):
+			    
+			        keyappend_num   = "_".join(("numerator",sys,sysdir,str(bin)))
+			        keyappend_denom = "_".join(("denominator",sys,sysdir,str(bin)))
+			        
+				if self.verbose:
+				    print "\tstoring efficiency: ", "_".join((key_nominal,keyappend_num))
+			     
+	                        hists_sys_numerator.append( self.histefficiencies["_".join((key_nominal,keyappend_num))] )
+                                hists_sys_denominator.append( self.histefficiencies["_".join((key_nominal,keyappend_denom))] )
+				histlist.extend([ self.histefficiencies["_".join((key_nominal,keyappend_num))], self.histefficiencies["_".join((key_nominal,keyappend_denom))] ])
+	 
+          	    legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+                    legend.SetHeader(eff + " - " + self.leptons_full[lep])
+          	    legend.SetBorderSize(0)	# no border
+          	    legend.SetFillStyle(0)	# Legend transparent background
+          	    legend.SetTextSize(0.035)	# Increase entry font size!
+          	    legend.SetTextFont(42)	# Helvetica
+	  	    
+	  	    legend.AddEntry(hist_nominal,"#varepsilon_{{{0}}} - nominal (stat. unc.)".format(eff), "P")
+
+		    count_sys_num = [0 for i in range(len(self.__systematics[1:]))]
+	            
+	  	    for h in hists_sys_numerator:
+	  		
+			h.SetLineStyle(1)
+			h.SetLineWidth(2)
+	  		h.SetMarkerStyle(kCircle)
+			
+			for idx, sys in enumerate(self.__systematics[1:]):
+			    if sys in h.GetName():
+			        h.SetLineColor(self.__syst_color_dict[sys+"_N"])
+			        h.SetMarkerColor(self.__syst_color_dict[sys+"_N"])
+			        if not count_sys_num[idx]:
+			            legend.AddEntry(h,"{0} subtraction sys (TT)".format(sys), "P")
+				    count_sys_num[idx] += 1
+
+		    count_sys_denom = [0 for i in range(len(self.__systematics[1:]))]
+	            
+	  	    for h in hists_sys_denominator:
+	  		
+			h.SetLineStyle(1)
+			h.SetLineWidth(2)
+	  		h.SetMarkerStyle(kOpenTriangleUp)
+			
+			for idx, sys in enumerate(self.__systematics[1:]):
+			    if sys in h.GetName(): 
+			        h.SetLineColor(self.__syst_color_dict[sys+"_D"])
+			        h.SetMarkerColor(self.__syst_color_dict[sys+"_D"])
+			        if not count_sys_denom[idx]:
+			            legend.AddEntry(h,"{0} subtraction sys (T#slash{{T}})".format(sys), "P")
+				    count_sys_denom[idx] += 1
+	 
+	  	    c = TCanvas("c_"+ var + "_" + lep + "_" + eff,"Efficiencies")
+          	    c.SetFrameFillColor(0)
+          	    c.SetFrameFillStyle(0)
+          	    c.SetFrameBorderMode(0)
+	  	    
+          	    pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
+          	    pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
+          	    pad1.SetBottomMargin(0.02)
+          	    pad2.SetBottomMargin(0.4)
+          	    pad2.SetGridy(1)
+          	    pad1.Draw()
+          	    pad2.Draw()
+		    
+		    # Be smarter when setting y range
+		    
+		    scale_dn = scale_up = 1.0		    
+		    if eff == "Fake":
+		        scale_dn = 0.80    
+		        scale_up = 1.20	    
+		    elif eff == "Real":
+		        scale_dn = 0.95    
+		        scale_up = 1.05	    
+		    ymin, ymax = self.__getLimits__(histlist, scale_up, scale_dn)
+		    hist_nominal.GetYaxis().SetRangeUser(ymin,ymax)
+
+                    # Make a clone of nominal, and divide by itself
+		    
+		    rationom = hist_nominal.Clone(hist_nominal.GetName())
+		    rationom.Divide(hist_nominal)
+
+		    rationom.SetLineStyle(1)
+		    rationom.SetLineWidth(2)
+		    rationom.SetMarkerSize(0)
+             	    rationom.SetYTitle("Syst/Nom")
+             	    rationom.GetXaxis().SetTitleSize(0.15)
+             	    rationom.GetYaxis().SetTitleSize(0.15)
+             	    rationom.GetXaxis().SetTitleOffset(1.0)
+             	    rationom.GetYaxis().SetTitleOffset(0.35)
+             	    rationom.GetXaxis().SetLabelSize(0.15)
+             	    rationom.GetYaxis().SetLabelSize(0.12)
+             	    rationom.GetYaxis().SetNdivisions(503)#(5) 
+	   	    rationom.SetFillColor(kGray+3)
+           	    rationom.SetLineColor(10)
+           	    rationom.SetFillStyle(3004) 	
+		    		    
+		    ratiolist = []
+	  	    for h in hists_sys_numerator:
+			if self.verbose:
+			    print "hist sys: ", h.GetName()
+			    print("\t num   = [" + ",".join( "{0:.3f}".format(x) for x in [ h.GetBinContent(i) for i in range(1,h.GetNbinsX()+2) ] ) + "]" )
+			    print("\t denom = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_nominal.GetBinContent(i) for i in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
+			ratio = h.Clone(h.GetName())
+                        ratio.Divide(hist_nominal)
+			if self.verbose:
+			    print("\t ratio = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio.GetBinContent(i) for i in range(1,ratio.GetNbinsX()+2) ] ) + "]" )
+			ratiolist.append(ratio)
+
+	  	    for h in hists_sys_denominator:
+			if self.verbose:
+			    print "hist sys: ", h.GetName()
+			    print("\t num   = [" + ",".join( "{0:.3f}".format(x) for x in [ h.GetBinContent(i) for i in range(1,h.GetNbinsX()+2) ] ) + "]" )
+			    print("\t denom = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_nominal.GetBinContent(i) for i in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
+			ratio = h.Clone(h.GetName())
+                        ratio.Divide(hist_nominal)
+			if self.verbose:
+			    print("\t ratio = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio.GetBinContent(i) for i in range(1,ratio.GetNbinsX()+2) ] ) + "]" )
+			ratiolist.append(ratio)
+		    
+		    ratio_ymin, ratio_ymax = self.__getLimits__(ratiolist, 1.6, 0.4)
+		    rationom.GetYaxis().SetRangeUser(ratio_ymin, ratio_ymax)
+		    
+		    pad1.cd()
+		    # Remove X axis labels from top pad
+		    hist_nominal.GetXaxis().SetLabelSize(0)
+                    hist_nominal.GetXaxis().SetLabelOffset(999)
+	  	    hist_nominal.Draw("E0")
+	  	    for h in histlist[1:]:
+	  	        h.Draw("HIST, SAME")
+	            legend.Draw()
+		    
+		    pad2.cd()
+		    rationom.Draw("E2")
+		    for r in ratiolist:
+			r.Draw("HIST SAME")
+                    refl = TLine(rationom.GetBinLowEdge(1), 1., rationom.GetBinLowEdge(rationom.GetNbinsX()+1), 1.)
+                    refl.SetLineStyle(2)
+		    refl.SetLineColor(kBlack)
+                    refl.SetLineWidth(2)
+		    refl.Draw("SAME")
+	 
+		    canvas_filename = "_".join((eff,lep,var,"Efficiency",proc,"Systematics"))
+
+		    for extension in self.extensionlist:
+		        c.SaveAs(self.__outputpath+"/"+canvas_filename+"."+extension)
+	
 
     def __set_fancy_2D_style( self ):
 
@@ -1003,6 +1206,10 @@ class RealFakeEffTagAndProbe:
 
 if __name__ == "__main__":
 
+    for sys in args.systematics:
+        if not sys in g_avaialble_systematics:
+	    print("\nWARNING!\nSystematic {0} is not supported!!".format(sys))
+	
     eff = RealFakeEffTagAndProbe( closure=args.closure, factors=args.factors, variables=args.variables, systematics=args.systematics, nosub=args.nosub )
 
     eff.debug = args.debug
@@ -1040,4 +1247,4 @@ if __name__ == "__main__":
 
     if args.plots:
         eff.plotMaker()
-
+        eff.plotMakerSys()
