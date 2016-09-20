@@ -16,20 +16,20 @@ gROOT.SetBatch(True)
 
 # -------------------------------------------------------------------------------------------------------------
 
-oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_Data_Original/"
-#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_Data_MM_WEIGHTED_Pt_OS_SS/"
-newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/temp/"
-rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v19_DDQMisID"
+oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_Data_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_Data_MM_WEIGHTED_Pt_OS_SS/"
+newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_Data_MM_WEIGHTED_OldScript/"
+rr_dir  = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID"
 
-#oldpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_410000_Original/"
-#newpath = "/afs/cern.ch/user/m/mmilesi/work/private/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_410000_MM_WEIGHTED_Pt_NoCorrections/"
-#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_NoCorrections_25ns_v19"
+#oldpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_410000_Original/"
+#newpath = "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/25ns_v19/25ns_v19_Skim_410000_MM_WEIGHTED_Pt_NoCorrections/"
+#rr_dir  = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19"
 
 # -------------------------------------------------------------------------------------------------------------
 
-ratesEta = 'YES' # Set to 'YES' if using also eta in the rate parametrisation
+ratesEta = 'NO' # Set to 'YES' if using also eta in the rate parametrisation
 addMM    = 'YES' # Set to 'YES' if MM weight branch does not exist yet
-nentries = '20' # ALL
+nentries = '10' # ALL
 
 if not os.path.exists(newpath):
     os.makedirs(newpath)

@@ -4,14 +4,16 @@ import glob, os, sys, subprocess, shutil, argparse
 
 parser = argparse.ArgumentParser(description='Run HTopMultilepNTupReprocesser algorithm interactively')
 
-parser.add_argument('source', metavar='source', type=str, 
+parser.add_argument('source', metavar='source', type=str,
                     help='The source (base) directory where the input is stored.')
-parser.add_argument('destination', metavar='destination', type=str, 
+parser.add_argument('destination', metavar='destination', type=str,
                     help='The base directory where the output will be stored. Subdirectories for different sample groups will be created automatically by the job.')
-parser.add_argument('--nevents', dest='nevents', action='store', default=0, type=int, 
+parser.add_argument('--nevents', dest='nevents', action='store', default=0, type=int,
                     help='The number of events to be processed. Default is 0 (i.e., ALL events)')
-parser.add_argument('--treename', dest='treename', action='store', default="physics", type=str, 
+parser.add_argument('--treename', dest='treename', action='store', default="physics", type=str,
                     help='The name of the input TTree. Default is \"physics\"')
+parser.add_argument('--closure', dest='closure', action='store_true', default=False,
+                    help='Run on ttbar to perform MM closure test. Default is False, i.e., the code will run on data.')
 
 args = parser.parse_args()
 
@@ -26,10 +28,14 @@ sampledict = datasets.getListSamples(samplescsv,genericPath=True)
 motherdir = args.source
 destdir   = args.destination
 
-infilelist = [
-  motherdir + "/Data/physics_Main.root",
-  #motherdir + "/tops/410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.root",
-]
+infilelist = []
+
+if not args.closure:
+    infilelist.append(motherdir + "/Data/physics_Main.root")
+else:
+    infilelist.append(motherdir + "/tops/410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.root")
+    #infilelist.append(motherdir + "/tops/410187.Sherpa_NNPDF30NNLO_ttbar_SingleLeptonP_MEPS_NLO.root")
+    #infilelist.append(motherdir + "/tops/410188.Sherpa_NNPDF30NNLO_ttbar_SingleLeptonM_MEPS_NLO.root")
 
 # -------------------------------------------------------------------------------------------------------
 
@@ -61,7 +67,7 @@ for infile in infilelist:
         if not s["ID"]:
           separator = ""
 
-	INTREE  = outputfilepath + "/" + s["category"] + ".root"
+	INTREE  = outputfilepath + "/" + s["group"] + ".root"
 
         if not os.path.exists(destdir + "/" + s["group"]):
             os.makedirs(destdir + "/" + s["group"])

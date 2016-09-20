@@ -29,6 +29,8 @@ if __name__ == '__main__':
         groupdir = args.dest + "/" + s["group"]
         if not os.path.exists(groupdir):
             os.makedirs(groupdir)
+    
+    knownDSID = False
 
     for s in sampledict:
 

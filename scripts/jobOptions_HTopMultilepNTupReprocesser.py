@@ -6,9 +6,12 @@ sys.path.insert(0, os.environ['ROOTCOREBIN']+"/user_scripts/HTopMultilepAnalysis
 
 c = xAH_config()
 
-event_branches = ["EventNumber","RunNumber","mc_channel_number","isSS01","dilep_type","trilep_type","is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT","QMisIDWeight","MMWeight"]
-lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0",
-                  "lep_ID_1","lep_Pt_1","lep_Eta_1","lep_Phi_1","lep_EtaBE2_1","lep_isTightSelected_1"]
+event_branches = ["EventNumber","RunNumber","mc_channel_number","isSS01","dilep_type","trilep_type",
+                  "is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT",
+                  "QMisIDWeight","QMisIDWeight_up","QMisIDWeight_dn",
+		  "MMWeight","MMWeight_r_up","MMWeight_r_dn","MMWeight_f_up","MMWeight_f_dn"]
+lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0","lep_isTrigMatch_0",
+                  "lep_ID_1","lep_Pt_1","lep_Eta_1","lep_Phi_1","lep_EtaBE2_1","lep_isTightSelected_1","lep_isTrigMatch_1"]
 
 branches_to_activate = event_branches + lep_branches
 
@@ -27,15 +30,29 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                    "m_weightToCalc"               : "MM", # "QMisID",
+                                    "m_weightToCalc"               : "QMisID,MM",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
                                     "m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v19.root",
                                     "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TanitiT_25ns_v19.root",
                                     "m_useTAntiTRates"             : True,
-                                    "m_RR_dir"                     : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
-				    "m_Efficiency_Filename"        : "Rates.root",
+                                    #
+				    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
+				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_CPPM",
+				    #"m_EFF_YES_TM_dir"	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_YES_TM",
+				    #"m_EFF_NO_TM_dir" 	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_NO_TM",
+                                    #
+				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19",
+				    #"m_EFF_YES_TM_dir"	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19_Probe_YES_TM",
+				    #"m_EFF_NO_TM_dir" 	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19_Probe_NO_TM",
+				    #
+				    #"m_REFF_dir"  		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_02/OutputPlots_MMClosureRates_NoCorrections_TTBarNonAllHad_25ns_v20_02",
+				    #"m_REFF_dir"  		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_02/OutputPlots_MMClosureRates_NoCorrections_TTBarSemilep_25ns_v20_02",
+                                    #
+				    "m_useTrigMatchingInfo"        : False,
+				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
                                     "m_doMMClosure"                : False,
                                     "m_useEtaParametrisation"      : False,
+				    "m_useTEfficiency"             : False,
                                   }
 
 # Instantiate the NTupleSvc algorithm

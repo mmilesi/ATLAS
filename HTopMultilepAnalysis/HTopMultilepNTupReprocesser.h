@@ -23,6 +23,7 @@
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TEfficiency.h"
 
 namespace NTupReprocesser {
 
@@ -34,8 +35,8 @@ namespace NTupReprocesser {
     	  isSS01(0),
     	  dilep(0),
   	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0),
-  	  weight_QMisID{1.0,1.0,1.0},
-  	  weight_MM{1.0,1.0,1.0,1.0,1.0}
+	  weight_QMisID(1.0),weight_QMisID_UP(1.0),weight_QMisID_DN(1.0),
+          weight_MM(1.0),weight_MM_R_UP(1.0),weight_MM_R_DN(1.0),weight_MM_F_UP(1.0),weight_MM_F_DN(1.0)
     { };
 
     char isMC;
@@ -46,8 +47,8 @@ namespace NTupReprocesser {
     char AntiTT;
     char AntiTAntiT;
 
-    std::vector<float> weight_QMisID;
-    std::vector<float> weight_MM;
+    float weight_QMisID, weight_QMisID_UP, weight_QMisID_DN;
+    float weight_MM, weight_MM_R_UP, weight_MM_R_DN, weight_MM_F_UP, weight_MM_F_DN;
 
   };
 
@@ -60,7 +61,8 @@ namespace NTupReprocesser {
   	  etaBE2(-999.0),
   	  ID(0),flavour(0),
   	  charge(-999.0),
-  	  tightselected(0)
+  	  tightselected(0),
+	  trigmatched(0)
     { };
 
     float pt;
@@ -70,6 +72,7 @@ namespace NTupReprocesser {
     int flavour;
     float charge;
     char tightselected;
+    char trigmatched;
   };
 
 }
@@ -81,33 +84,41 @@ class HTopMultilepNTupReprocesser : public xAH::Algorithm
 public:
 
   /** The name of the output TTree */
-  
+
   std::string m_outputNTupName;
 
   std::string m_outputNTupStreamName;
 
   /** A comma-separated list of input branches to be activated */
-  
+
   std::string m_inputBranches;
 
   /** The weight to be computed and stored/updated in the ntuple. Can be one of {"MM", "QMisID"} */
-  
+
   std::string m_weightToCalc;
 
   /** The path to the real/fake efficiency file directory */
-  
-  std::string m_RR_dir;
-  std::string m_FR_dir;
+
+  std::string m_REFF_dir;
+  std::string m_FEFF_dir;
+  std::string m_EFF_YES_TM_dir;
+  std::string m_EFF_NO_TM_dir;
   std::string m_Efficiency_Filename;
   bool m_doMMClosure;
   bool m_useEtaParametrisation;
-  
+
+  /** Read different r/f rates depending on whether the lepton is trigger-matched or not */
+
+  bool m_useTrigMatchingInfo;
+
+  bool m_useTEfficiency;
+
   /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
-  
+
   bool m_useScaledFakeEfficiency;
 
   /** The path to the QMisID rates file directory */
-  
+
   std::string m_QMisIDRates_dir;
   std::string m_QMisIDRates_Filename_T;
   std::string m_QMisIDRates_Filename_AntiT;
@@ -116,11 +127,11 @@ public:
 private:
 
   /** Input TTree */
-  
+
   TTree*          m_inputNTuple;
 
   /** Output TTree (svc) */
-  
+
   EL::NTupleSvc*  m_outputNTuple;
 
   /** Input TTree branches which need to be used by the algorithm */
@@ -143,6 +154,7 @@ private:
   Float_t	  m_lep_Phi_0;
   Float_t	  m_lep_EtaBE2_0;
   Char_t	  m_lep_isTightSelected_0;
+  Char_t	  m_lep_isTrigMatch_0;
 
   Float_t	  m_lep_ID_1;
   Float_t	  m_lep_Pt_1;
@@ -151,26 +163,41 @@ private:
   Float_t	  m_lep_Phi_1;
   Float_t	  m_lep_EtaBE2_1;
   Char_t	  m_lep_isTightSelected_1;
+  Char_t	  m_lep_isTrigMatch_1;
 
-  std::vector<float> *m_QMisIDWeight_in = nullptr; //!
-  std::vector<float> *m_MMWeight_in     = nullptr; //!
+  Float_t	  m_QMisIDWeight_in;
+  Float_t	  m_QMisIDWeight_UP_in;
+  Float_t	  m_QMisIDWeight_DN_in;
+
+  Float_t	  m_MMWeight_in;
+  Float_t	  m_MMWeight_R_UP_in;
+  Float_t	  m_MMWeight_R_DN_in;
+  Float_t	  m_MMWeight_F_UP_in;
+  Float_t	  m_MMWeight_F_DN_in;
+
+  /** Value of these flags will be inferred from input tree content.
+      If false (aka branch does not exist yet), will ADD new corresponding branch to output tree, otherwise (aka branch already exists) will UPDATE it
+  */
+
+  bool m_isQMisIDBranchIn;
+  bool m_isMMBranchIn;
 
   /** Add/update weight or not */
 
   bool m_doQMisIDWeighting; //!
   bool m_doMMWeighting;     //!
 
-  /** Value of these flags will be inferred from input tree content.
-      If false (aka branch does not exist yet), will ADD new corresponding branch to output tree, otherwise (aka branch already exists) will UPDATE it
-  */
-  
-  bool m_isQMisIDBranchIn;
-  bool m_isMMBranchIn;
-
   /** Extra branches to be stored in output TTree */
 
-  std::vector<float> m_QMisIDWeight_out;
-  std::vector<float> m_MMWeight_out;
+  Float_t	  m_QMisIDWeight_out;
+  Float_t	  m_QMisIDWeight_UP_out;
+  Float_t	  m_QMisIDWeight_DN_out;
+
+  Float_t	  m_MMWeight_out;
+  Float_t	  m_MMWeight_R_UP_out;
+  Float_t	  m_MMWeight_R_DN_out;
+  Float_t	  m_MMWeight_F_UP_out;
+  Float_t	  m_MMWeight_F_DN_out;
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
@@ -189,21 +216,15 @@ private:
   std::map< std::string, TH1D* > m_el_hist_map; //!
   std::map< std::string, TH1D* > m_mu_hist_map; //!
 
-  /** Number of bins of the r/f efficiency input histograms */
-  
-  int  m_n_el_bins_pt_rr = -1;
-  int  m_n_el_bins_pt_fr = -1;
-  int  m_n_mu_bins_pt_rr = -1;
-  int  m_n_mu_bins_pt_fr = -1;
-  int  m_n_el_bins_eta = -1;
-  int  m_n_mu_bins_eta = -1;
+  std::map< std::string, TEfficiency* > m_el_teff_map; //!
+  std::map< std::string, TEfficiency* > m_mu_teff_map; //!
 
   /** Normalisation factors for r/f efficiencies */
-  
-  double m_el_rr_tot = 1.0;
-  double m_el_fr_tot = 1.0;
-  double m_mu_rr_tot = 1.0;
-  double m_mu_fr_tot = 1.0;
+
+  double m_el_reff_tot = 1.0;
+  double m_el_feff_tot = 1.0;
+  double m_mu_reff_tot = 1.0;
+  double m_mu_feff_tot = 1.0;
 
 public:
 
@@ -225,7 +246,7 @@ public:
   ClassDef(HTopMultilepNTupReprocesser, 1);
 
   /** Template function to get a generic TObject from a TFile */
-  
+
   template<typename T>
   T* get_object( TFile& file, const std::string& name ) {
     T* obj = dynamic_cast<T*>( file.Get(name.c_str()) );
@@ -236,11 +257,11 @@ public:
 private:
 
   EL::StatusCode readRFEfficiencies ();
-  EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep, 
-  					   std::vector<float>& efficiency, 
+  EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
+  					   std::vector<float>& efficiency,
 					   const std::string& type );
-  EL::StatusCode getMMWeightAndError ( std::vector<float>& mm_weight, 
-  				       const std::vector<float>& r0, const std::vector<float>& r1, 
+  EL::StatusCode getMMWeightAndError ( std::vector<float>& mm_weight,
+  				       const std::vector<float>& r0, const std::vector<float>& r1,
 				       const std::vector<float>& f0, const std::vector<float>& f1 );
   float matrix_equation ( const float& r0, const float& r1, const float& f0, const float& f1 );
   EL::StatusCode calculateMMWeights ();
