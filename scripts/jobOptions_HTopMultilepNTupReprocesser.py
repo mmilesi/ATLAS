@@ -9,7 +9,16 @@ c = xAH_config()
 event_branches = ["EventNumber","RunNumber","mc_channel_number","isSS01","dilep_type","trilep_type",
                   "is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT",
                   "QMisIDWeight","QMisIDWeight_up","QMisIDWeight_dn",
-		  "MMWeight","MMWeight_r_up","MMWeight_r_dn","MMWeight_f_up","MMWeight_f_dn"]
+		  "MMWeight",		  
+		  "MMWeight_lep0_r_stat_up",
+		  "MMWeight_lep0_r_stat_dn",
+		  "MMWeight_lep1_r_stat_up",
+		  "MMWeight_lep1_r_stat_dn",
+		  "MMWeight_lep0_f_stat_up",
+		  "MMWeight_lep0_f_stat_dn",
+		  "MMWeight_lep1_f_stat_up",
+		  "MMWeight_lep1_f_stat_dn"]
+		  
 lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0","lep_isTrigMatch_0",
                   "lep_ID_1","lep_Pt_1","lep_Eta_1","lep_Phi_1","lep_EtaBE2_1","lep_isTightSelected_1","lep_isTrigMatch_1"]
 
@@ -26,11 +35,11 @@ base_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysis
 #base_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk"
 
 HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultilepNTupReprocesser",
-                                    "m_debug"                      : False,
-                                    "m_verbose"                    : False,
+                                    "m_debug"                      : True,
+                                    "m_verbose"                    : True,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                    "m_weightToCalc"               : "QMisID,MM",
+                                    "m_weightToCalc"               : "MM",#"QMisID,MM",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
                                     "m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v19.root",
                                     "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TanitiT_25ns_v19.root",

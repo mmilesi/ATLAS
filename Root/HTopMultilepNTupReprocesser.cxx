@@ -57,6 +57,8 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
   m_useTrigMatchingInfo     = false;
   m_useScaledFakeEfficiency = false;
   m_useTEfficiency          = false;
+  
+  m_systematics_list        = "Stat";
 
 }
 
@@ -185,18 +187,28 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
       m_inputNTuple->SetBranchAddress ("QMisIDWeight_dn",  &m_QMisIDWeight_DN_in);
   }
   if ( m_isMMBranchIn ) {
-      m_inputNTuple->SetBranchAddress ("MMWeight",         &m_MMWeight_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_r_up",    &m_MMWeight_R_UP_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_r_dn",    &m_MMWeight_R_DN_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_f_up",    &m_MMWeight_F_UP_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_f_dn",    &m_MMWeight_F_DN_in);
-
+      m_inputNTuple->SetBranchAddress ("MMWeight",           &m_MMWeight_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_lep0_r_up", &m_weight_MM_lep0_R_stat_UP_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_lep0_r_dn", &m_weight_MM_lep0_R_stat_DN_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_lep1_r_up", &m_weight_MM_lep1_R_stat_UP_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_lep1_r_dn", &m_weight_MM_lep1_R_stat_DN_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_lep0_f_up", &m_weight_MM_lep0_F_stat_UP_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_lep0_f_dn", &m_weight_MM_lep0_F_stat_DN_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_lep1_f_up", &m_weight_MM_lep1_F_stat_UP_in);
+      m_inputNTuple->SetBranchAddress ("MMWeight_lep1_f_dn", &m_weight_MM_lep1_F_stat_DN_in);
   }
 
   return EL::StatusCode::SUCCESS;
 }
 
+EL::StatusCode  HTopMultilepNTupReprocesser :: tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list ) {
 
+  std::string token;
+  std::istringstream ss( list );
+  while ( std::getline(ss, token, separator) ) { vec_tokens.push_back(token); }
+
+  return EL::StatusCode::SUCCESS;
+}
 
 EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 {
@@ -217,11 +229,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 
   // Parse input weight list, split by comma, and put into a vector
   //
-  std::string token;
-  std::istringstream ss( m_weightToCalc );
   std::vector<std::string> weights;
-  while ( std::getline(ss, token, ',') ) { weights.push_back(token); }
-  
+  ANA_CHECK( this->tokenize( ',', weights, m_weightToCalc ) );
+    
   if ( std::find( weights.begin(), weights.end(), "QMisID" ) != weights.end() ) { m_doQMisIDWeighting = true; }
   if ( std::find( weights.begin(), weights.end(), "MM" ) != weights.end() )	{ m_doMMWeighting = true; }
 
@@ -232,14 +242,64 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
       m_outputNTuple->tree()->Branch("QMisIDWeight_up",  &m_QMisIDWeight_UP_out, "QMisIDWeight_up/F");
       m_outputNTuple->tree()->Branch("QMisIDWeight_dn",  &m_QMisIDWeight_DN_out, "QMisIDWeight_dn/F");
   }
-  if ( m_doMMWeighting ) {
-      m_outputNTuple->tree()->Branch("MMWeight",         &m_MMWeight_out,      "MMWeight/F");
-      m_outputNTuple->tree()->Branch("MMWeight_r_up",	 &m_MMWeight_R_UP_out, "MMWeight_r_up/F");
-      m_outputNTuple->tree()->Branch("MMWeight_r_dn",	 &m_MMWeight_R_DN_out, "MMWeight_r_dn/F");
-      m_outputNTuple->tree()->Branch("MMWeight_f_up",	 &m_MMWeight_F_UP_out, "MMWeight_f_up/F");
-      m_outputNTuple->tree()->Branch("MMWeight_f_dn",	 &m_MMWeight_F_DN_out, "MMWeight_f_dn/F");
-  }
 
+  if ( m_doMMWeighting ) {
+
+      m_outputNTuple->tree()->Branch("MMWeight",	        &m_MMWeight_NOMINAL_out,	     "MMWeight/F");
+      m_outputNTuple->tree()->Branch("MMWeight_lep0_r_stat_up", &m_weight_MM_lep0_R_stat_UP_out, "MMWeight_lep0_r_stat_up/F");
+      m_outputNTuple->tree()->Branch("MMWeight_lep0_r_stat_dn", &m_weight_MM_lep0_R_stat_DN_out, "MMWeight_lep0_r_stat_dn/F");
+      m_outputNTuple->tree()->Branch("MMWeight_lep1_r_stat_up", &m_weight_MM_lep1_R_stat_UP_out, "MMWeight_lep1_r_stat_up/F");
+      m_outputNTuple->tree()->Branch("MMWeight_lep1_r_stat_dn", &m_weight_MM_lep1_R_stat_DN_out, "MMWeight_lep1_r_stat_dn/F");
+      m_outputNTuple->tree()->Branch("MMWeight_lep0_f_stat_up", &m_weight_MM_lep0_F_stat_UP_out, "MMWeight_lep0_f_stat_up/F");
+      m_outputNTuple->tree()->Branch("MMWeight_lep0_f_stat_dn", &m_weight_MM_lep0_F_stat_DN_out, "MMWeight_lep0_f_stat_dn/F");
+      m_outputNTuple->tree()->Branch("MMWeight_lep1_f_stat_up", &m_weight_MM_lep1_F_stat_UP_out, "MMWeight_lep1_f_stat_up/F");
+      m_outputNTuple->tree()->Branch("MMWeight_lep1_f_stat_dn", &m_weight_MM_lep1_F_stat_DN_out, "MMWeight_lep1_f_stat_dn/F");
+      
+      /*
+      // Parse input weight list, split by comma, and put into a vector
+      //
+      std::vector<std::string> systematics;
+      ANA_CHECK( this->tokenize( ',', systematics, m_systematics_list ) );
+
+      // Initialise the map containing the variations of MM weights for each input systematics.
+     
+      for ( const auto& sys in systematics ) {
+    	  m_MMWeight_out[sys] = std::vector<float>(8);
+      }
+
+      // Set output branch for the nominal weight
+      
+      m_outputNTuple->tree()->Branch("MMWeight", &m_MMWeight_NOMINAL_out, "MMWeight/F");
+      
+      // Set output branches for the variations of MM weight for each systematic.
+      
+      std::string key("");
+      for ( auto& weight_map in m_MMWeight_out ) {
+      
+           key = weight_map.first();
+	   
+	   std::string branchname_0 = "MMWeight_lep0_r_" + key + "_up";
+	   std::string branchname_1 = "MMWeight_lep0_r_" + key + "_dn";
+	   std::string branchname_2 = "MMWeight_lep1_r_" + key + "_up";
+	   std::string branchname_3 = "MMWeight_lep1_r_" + key + "_dn";     
+	   std::string branchname_4 = "MMWeight_lep0_f_" + key + "_up";
+	   std::string branchname_5 = "MMWeight_lep0_f_" + key + "_dn";
+	   std::string branchname_6 = "MMWeight_lep1_f_" + key + "_up";
+	   std::string branchname_7 = "MMWeight_lep1_f_" + key + "_dn"; 
+ 	
+	   m_outputNTuple->tree()->Branch( (branchname_0).c_str(), &(weight_map.second.at(0)), (branchname_0.append("/F")).c_str() );
+	   m_outputNTuple->tree()->Branch( (branchname_1).c_str(), &(weight_map.second.at(1)), (branchname_1.append("/F")).c_str() );
+	   m_outputNTuple->tree()->Branch( (branchname_2).c_str(), &(weight_map.second.at(2)), (branchname_2.append("/F")).c_str() );
+	   m_outputNTuple->tree()->Branch( (branchname_3).c_str(), &(weight_map.second.at(3)), (branchname_3.append("/F")).c_str() );
+	   m_outputNTuple->tree()->Branch( (branchname_4).c_str(), &(weight_map.second.at(4)), (branchname_4.append("/F")).c_str() );
+	   m_outputNTuple->tree()->Branch( (branchname_5).c_str(), &(weight_map.second.at(5)), (branchname_5.append("/F")).c_str() );
+	   m_outputNTuple->tree()->Branch( (branchname_6).c_str(), &(weight_map.second.at(6)), (branchname_6.append("/F")).c_str() );
+	   m_outputNTuple->tree()->Branch( (branchname_7).c_str(), &(weight_map.second.at(7)), (branchname_7.append("/F")).c_str() );
+
+      }
+      */
+  }
+  
   // ---------------------------------------------------------------------------------------------------------------
 
   // Initialise counter for input TTree entries
@@ -367,16 +427,24 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
       if ( m_doMMWeighting ) {
 	  if ( !m_isMMBranchIn ) {
 	      Info("execute()","\t\tDefault MMWeight = %.3f", m_event.get()->weight_MM );
-	      Info("execute()","\t\tDefault MMWeight (r up) = %.3f", m_event.get()->weight_MM_R_UP );
-	      Info("execute()","\t\tDefault MMWeight (r dn) = %.3f", m_event.get()->weight_MM_R_DN );
-	      Info("execute()","\t\tDefault MMWeight (f up) = %.3f", m_event.get()->weight_MM_F_UP );
-	      Info("execute()","\t\tDefault MMWeight (f dn) = %.3f", m_event.get()->weight_MM_F_DN );
+	      Info("execute()","\t\tDefault MMWeight (lep0 r up) = %.3f", m_event.get()->weight_MM_lep0_R_stat_UP );
+	      Info("execute()","\t\tDefault MMWeight (lep0 r dn) = %.3f", m_event.get()->weight_MM_lep0_R_stat_DN );
+	      Info("execute()","\t\tDefault MMWeight (lep1 r up) = %.3f", m_event.get()->weight_MM_lep1_R_stat_UP );
+	      Info("execute()","\t\tDefault MMWeight (lep1 r dn) = %.3f", m_event.get()->weight_MM_lep1_R_stat_DN );
+	      Info("execute()","\t\tDefault MMWeight (lep0 f up) = %.3f", m_event.get()->weight_MM_lep0_F_stat_UP );
+	      Info("execute()","\t\tDefault MMWeight (lep0 f dn) = %.3f", m_event.get()->weight_MM_lep0_F_stat_DN );
+	      Info("execute()","\t\tDefault MMWeight (lep1 f up) = %.3f", m_event.get()->weight_MM_lep1_F_stat_UP );
+	      Info("execute()","\t\tDefault MMWeight (lep1 f dn) = %.3f", m_event.get()->weight_MM_lep1_F_stat_DN );
 	  } else {
 	      Info("execute()","\t\tIN MMWeight = %.3f", m_MMWeight_in );
-	      Info("execute()","\t\tIN MMWeight (r up) = %.3f", m_MMWeight_R_UP_in );
-	      Info("execute()","\t\tIN MMWeight (r dn) = %.3f", m_MMWeight_R_DN_in );
-	      Info("execute()","\t\tIN MMWeight (f up) = %.3f", m_MMWeight_F_UP_in );
-	      Info("execute()","\t\tIN MMWeight (f dn) = %.3f", m_MMWeight_F_DN_in );
+	      Info("execute()","\t\tIN MMWeight (lep0 r up) = %.3f", m_weight_MM_lep0_R_stat_UP_in );
+	      Info("execute()","\t\tIN MMWeight (lep0 r dn) = %.3f", m_weight_MM_lep0_R_stat_DN_in );
+	      Info("execute()","\t\tIN MMWeight (lep1 r up) = %.3f", m_weight_MM_lep1_R_stat_UP_in );
+	      Info("execute()","\t\tIN MMWeight (lep1 r dn) = %.3f", m_weight_MM_lep1_R_stat_DN_in );
+	      Info("execute()","\t\tIN MMWeight (lep0 f up) = %.3f", m_weight_MM_lep0_F_stat_UP_in );
+	      Info("execute()","\t\tIN MMWeight (lep0 f dn) = %.3f", m_weight_MM_lep0_F_stat_DN_in );
+	      Info("execute()","\t\tIN MMWeight (lep1 f up) = %.3f", m_weight_MM_lep1_F_stat_UP_in );
+	      Info("execute()","\t\tIN MMWeight (lep1 f dn) = %.3f", m_weight_MM_lep1_F_stat_DN_in );
 	  }
       }
   }
@@ -403,11 +471,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 	  Info("execute()","\t\tOUT QMisIDWeight (dn) = %.3f", m_QMisIDWeight_DN_out );
       }
       if ( m_doMMWeighting ) {
-	  Info("execute()","\t\tOUT MMWeight = %.3f", m_MMWeight_out );
-	  Info("execute()","\t\tOUT MMWeight (r up) = %.3f", m_MMWeight_R_UP_out );
-	  Info("execute()","\t\tOUT MMWeight (r dn) = %.3f", m_MMWeight_R_DN_out );
-	  Info("execute()","\t\tOUT MMWeight (f up) = %.3f", m_MMWeight_F_UP_out );
-	  Info("execute()","\t\tOUT MMWeight (f dn) = %.3f", m_MMWeight_F_DN_out );
+	  Info("execute()","\t\tOUT MMWeight = %.3f", m_MMWeight_NOMINAL_out );
+	  Info("execute()","\t\tOUT MMWeight (lep0 r up) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep0_R_stat_UP_out, m_weight_MM_lep0_R_stat_UP_out);
+	  Info("execute()","\t\tOUT MMWeight (lep0 r dn) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep0_R_stat_DN_out, m_weight_MM_lep0_R_stat_DN_out);
+	  Info("execute()","\t\tOUT MMWeight (lep1 r up) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep1_R_stat_UP_out, m_weight_MM_lep1_R_stat_UP_out);
+	  Info("execute()","\t\tOUT MMWeight (lep1 r dn) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep1_R_stat_DN_out, m_weight_MM_lep1_R_stat_DN_out);
+	  Info("execute()","\t\tOUT MMWeight (lep0 f up) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep0_F_stat_UP_out, m_weight_MM_lep0_F_stat_UP_out);
+	  Info("execute()","\t\tOUT MMWeight (lep0 f dn) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep0_F_stat_DN_out, m_weight_MM_lep0_F_stat_DN_out);
+	  Info("execute()","\t\tOUT MMWeight (lep1 f up) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep1_F_stat_UP_out, m_weight_MM_lep1_F_stat_UP_out);
+	  Info("execute()","\t\tOUT MMWeight (lep1 f dn) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep1_F_stat_DN_out, m_weight_MM_lep1_F_stat_DN_out);  
       }
   }
 
@@ -526,11 +598,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: setOutputBranches ()
       m_QMisIDWeight_DN_out = m_event.get()->weight_QMisID_DN;
   }
   if ( m_doMMWeighting ) {
-      m_MMWeight_out       = m_event.get()->weight_MM;
-      m_MMWeight_R_UP_out  = m_event.get()->weight_MM_R_UP;
-      m_MMWeight_R_DN_out  = m_event.get()->weight_MM_R_DN;
-      m_MMWeight_F_UP_out  = m_event.get()->weight_MM_F_UP;
-      m_MMWeight_F_DN_out  = m_event.get()->weight_MM_F_DN;
+      m_MMWeight_NOMINAL_out         = m_event.get()->weight_MM;
+      m_weight_MM_lep0_R_stat_UP_out = m_event.get()->weight_MM_lep0_R_stat_UP;
+      m_weight_MM_lep0_R_stat_DN_out = m_event.get()->weight_MM_lep0_R_stat_DN;
+      m_weight_MM_lep1_R_stat_UP_out = m_event.get()->weight_MM_lep1_R_stat_UP;
+      m_weight_MM_lep1_R_stat_DN_out = m_event.get()->weight_MM_lep1_R_stat_DN;
+      m_weight_MM_lep0_F_stat_UP_out = m_event.get()->weight_MM_lep0_F_stat_UP;
+      m_weight_MM_lep0_F_stat_DN_out = m_event.get()->weight_MM_lep0_F_stat_DN;
+      m_weight_MM_lep1_F_stat_UP_out = m_event.get()->weight_MM_lep1_F_stat_UP;
+      m_weight_MM_lep1_F_stat_DN_out = m_event.get()->weight_MM_lep1_F_stat_DN;
   }
 
   return EL::StatusCode::SUCCESS;
@@ -1362,37 +1438,41 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
     	float f0dn = ( f0.at(2) < 0.0 ) ? 0.0 :  f0.at(2) ;
     	float f1dn = ( f1.at(2) < 0.0 ) ? 0.0 :  f1.at(2) ;
 
-    	// rup syst
+    	// lep0, rup syst
     	//
-    	mm_weight.at(1) = matrix_equation( f0.at(0), f1.at(0), r0up, r1up );
-
-	// fdn syst
+    	mm_weight.at(1) = matrix_equation( f0.at(0), f1.at(0), r0up, r1.at(0) );
+	
+    	// lep0, rdn syst
     	//
-    	mm_weight.at(4) = matrix_equation( f0dn, f1dn, r0.at(0), r1.at(0) );
+    	if ( r0dn > f0.at(0) ) { mm_weight.at(2) = matrix_equation( f0.at(0), f1.at(0), r0dn, r1.at(0) ); }
+        else { Warning("getMMWeightAndError()", "Warning! Systematic lep_0_rdn cannot be calculated because : \nr0dn = %.3f, \nf0 = %.3f", r0dn, f0.at(0)); }
 
-    	if ( (r0dn > f0.at(0)) && (r1dn > f1.at(0)) ) {
+    	// lep1, rup syst
+    	//
+    	mm_weight.at(3) = matrix_equation( f0.at(0), f1.at(0), r0.at(0), r1up );
+	
+    	// lep1, rdn syst
+    	//
+    	if ( r1dn > f1.at(0) ) { mm_weight.at(4) = matrix_equation( f0.at(0), f1.at(0), r0.at(0), r1dn ); }
+        else { Warning("getMMWeightAndError()", "Warning! Systematic lep_1_rdn cannot be calculated because : \nr1dn = %.3f, \nf1 = %.3f", r1dn, f1.at(0) ); }
 
-	    // rdn syst
-    	    //
-    	    mm_weight.at(2) = matrix_equation( f0.at(0), f1.at(0), r0dn, r1dn );
+	// lep0, fup syst
+    	//
+       if ( r0.at(0) > f0up ) { mm_weight.at(5) = matrix_equation( f0up, f1.at(0), r0.at(0), r1.at(0) ); }
+       else { Warning("getMMWeightAndError()", "Warning! Systematic lep_0_fup cannot be calculated because : \nf0up = %.3f, \nr0 = %.3f", f0up, r0.at(0)); }
 
-	} else {
-    	    if ( m_debug ) {
-    	        Warning("getMMWeightAndError()", "Warning! Systematic rdn cannot be calculated because : \nr0dn = %.3f , r1dn = %.3f, \nf0 = %.3f , f1 = %.3f", r0dn, r1dn,  f0.at(0), f1.at(0) );
-    	    }
-    	}
+	// lep0, fdn syst
+    	//
+    	mm_weight.at(6) = matrix_equation( f0dn, f1.at(0), r0.at(0), r1.at(0) );
 
-    	if ( (r0.at(0) > f0up) && (r1.at(0) > f1up) ) {
+	// lep1, fup syst
+    	//
+       if ( r1.at(0) > f1up ) { mm_weight.at(7) = matrix_equation( f0.at(0), f1up, r0.at(0), r1.at(0) ); }
+       else { Warning("getMMWeightAndError()", "Warning! Systematic lep_1_fup cannot be calculated because : \nf1up = %.3f, \nr1 = %.3f", f1up, r1.at(0)); }
 
-	    // fup syst
-    	    //
-    	    mm_weight.at(3) = matrix_equation( f0up, f1up, r0.at(0), r1.at(0) );
-
-	} else {
-    	    if ( m_debug ) {
-    	        Warning("getMMWeightAndError()", "Warning! Systematic fup cannot be calculated because : \nr0dn = %.3f , r1dn = %.3f, \nf0 = %.3f , f1 = %.3f", r0dn, r1dn,  f0.at(0), f1.at(0) );
-    	    }
-    	}
+	// lep1, fdn syst
+    	//
+    	mm_weight.at(8) = matrix_equation( f0.at(0), f1dn, r0.at(0), r1.at(0) );
 
     }
 
@@ -1433,6 +1513,25 @@ float HTopMultilepNTupReprocesser :: matrix_equation ( const float& f0, const fl
     return w;
 }
 
+
+// passs "SYS" as parameter to this method
+
+// -) statistical unc
+// -) QMisID numerator
+// -) QMisId denominator
+// ...
+
+// pass "SYS" as parameter to getMMEfficiencyAndError()
+// it will read the correct histogram  based on the bin lep0 and lep1 are found
+
+// getMMWeightAndError will not change
+
+// store the weights in a std::map belonging to m_event:
+
+//  m_event.get()->weight_MM_lep0_UP["SYS"]
+
+// is there a way to be smart when saving the branches to output, at all?
+
 EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 {
     ANA_CHECK_SET_TYPE (EL::StatusCode);
@@ -1469,17 +1568,21 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 	std::cout << "" << std::endl;
     }
 
-    std::vector<float> mm_weight = { 0.0, 0.0, 0.0, 0.0, 0.0 };
+    std::vector<float> mm_weight = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
     ANA_CHECK( this->getMMWeightAndError( mm_weight, r0, r1, f0, f1 ) );
 
-    // For systematics, save relative weight wrt. nominal
+    // For variations, save relative weight wrt. nominal
 
     m_event.get()->weight_MM = mm_weight.at(0);
-    m_event.get()->weight_MM_R_UP = ( !std::isnan(mm_weight.at(1)/mm_weight.at(0)) && !std::isinf(mm_weight.at(1)/mm_weight.at(0)) ) ? mm_weight.at(1)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_R_DN = ( !std::isnan(mm_weight.at(2)/mm_weight.at(0)) && !std::isinf(mm_weight.at(2)/mm_weight.at(0)) ) ? mm_weight.at(2)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_F_UP = ( !std::isnan(mm_weight.at(3)/mm_weight.at(0)) && !std::isinf(mm_weight.at(3)/mm_weight.at(0)) ) ? mm_weight.at(3)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_F_DN = ( !std::isnan(mm_weight.at(4)/mm_weight.at(0)) && !std::isinf(mm_weight.at(4)/mm_weight.at(0)) ) ? mm_weight.at(4)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_lep0_R_stat_UP = ( !std::isnan(mm_weight.at(1)/mm_weight.at(0)) && !std::isinf(mm_weight.at(1)/mm_weight.at(0)) ) ? mm_weight.at(1)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_lep0_R_stat_DN = ( !std::isnan(mm_weight.at(2)/mm_weight.at(0)) && !std::isinf(mm_weight.at(2)/mm_weight.at(0)) ) ? mm_weight.at(2)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_lep1_R_stat_UP = ( !std::isnan(mm_weight.at(3)/mm_weight.at(0)) && !std::isinf(mm_weight.at(3)/mm_weight.at(0)) ) ? mm_weight.at(3)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_lep1_R_stat_DN = ( !std::isnan(mm_weight.at(4)/mm_weight.at(0)) && !std::isinf(mm_weight.at(4)/mm_weight.at(0)) ) ? mm_weight.at(4)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_lep0_F_stat_UP = ( !std::isnan(mm_weight.at(5)/mm_weight.at(0)) && !std::isinf(mm_weight.at(5)/mm_weight.at(0)) ) ? mm_weight.at(5)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_lep0_F_stat_DN = ( !std::isnan(mm_weight.at(6)/mm_weight.at(0)) && !std::isinf(mm_weight.at(6)/mm_weight.at(0)) ) ? mm_weight.at(6)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_lep1_F_stat_UP = ( !std::isnan(mm_weight.at(7)/mm_weight.at(0)) && !std::isinf(mm_weight.at(7)/mm_weight.at(0)) ) ? mm_weight.at(7)/mm_weight.at(0) : 0.0;
+    m_event.get()->weight_MM_lep1_F_stat_DN = ( !std::isnan(mm_weight.at(8)/mm_weight.at(0)) && !std::isinf(mm_weight.at(8)/mm_weight.at(0)) ) ? mm_weight.at(8)/mm_weight.at(0) : 0.0;
 
     return EL::StatusCode::SUCCESS;
 }

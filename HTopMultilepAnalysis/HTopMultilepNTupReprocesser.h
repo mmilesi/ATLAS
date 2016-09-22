@@ -36,7 +36,15 @@ namespace NTupReprocesser {
     	  dilep(0),
   	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0),
 	  weight_QMisID(1.0),weight_QMisID_UP(1.0),weight_QMisID_DN(1.0),
-          weight_MM(1.0),weight_MM_R_UP(1.0),weight_MM_R_DN(1.0),weight_MM_F_UP(1.0),weight_MM_F_DN(1.0)
+          weight_MM(1.0),
+	  weight_MM_lep0_R_stat_UP(1.0),
+	  weight_MM_lep0_R_stat_DN(1.0),
+	  weight_MM_lep1_R_stat_UP(1.0),
+	  weight_MM_lep1_R_stat_DN(1.0),
+	  weight_MM_lep0_F_stat_UP(1.0),
+	  weight_MM_lep0_F_stat_DN(1.0),
+	  weight_MM_lep1_F_stat_UP(1.0),
+	  weight_MM_lep1_F_stat_DN(1.0)
     { };
 
     char isMC;
@@ -48,8 +56,16 @@ namespace NTupReprocesser {
     char AntiTAntiT;
 
     float weight_QMisID, weight_QMisID_UP, weight_QMisID_DN;
-    float weight_MM, weight_MM_R_UP, weight_MM_R_DN, weight_MM_F_UP, weight_MM_F_DN;
-
+    float weight_MM;
+    float weight_MM_lep0_R_stat_UP;
+    float weight_MM_lep0_R_stat_DN;
+    float weight_MM_lep1_R_stat_UP;
+    float weight_MM_lep1_R_stat_DN;
+    float weight_MM_lep0_F_stat_UP;
+    float weight_MM_lep0_F_stat_DN;
+    float weight_MM_lep1_F_stat_UP;
+    float weight_MM_lep1_F_stat_DN;
+  
   };
 
   class leptonObj {
@@ -112,6 +128,12 @@ public:
   bool m_useTrigMatchingInfo;
 
   bool m_useTEfficiency;
+  
+  /** A list of systematics affecting the efficiency measurement, whoich will be eventually propagated to the final event weight.
+      By default, it includes the statistical uncertainty on the efficiencies
+   */
+  
+  std::string m_systematics_list;
 
   /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
 
@@ -170,10 +192,14 @@ private:
   Float_t	  m_QMisIDWeight_DN_in;
 
   Float_t	  m_MMWeight_in;
-  Float_t	  m_MMWeight_R_UP_in;
-  Float_t	  m_MMWeight_R_DN_in;
-  Float_t	  m_MMWeight_F_UP_in;
-  Float_t	  m_MMWeight_F_DN_in;
+  Float_t	  m_weight_MM_lep0_R_stat_UP_in;
+  Float_t	  m_weight_MM_lep0_R_stat_DN_in;
+  Float_t	  m_weight_MM_lep1_R_stat_UP_in;
+  Float_t	  m_weight_MM_lep1_R_stat_DN_in;
+  Float_t	  m_weight_MM_lep0_F_stat_UP_in;
+  Float_t	  m_weight_MM_lep0_F_stat_DN_in;
+  Float_t	  m_weight_MM_lep1_F_stat_UP_in;
+  Float_t	  m_weight_MM_lep1_F_stat_DN_in;
 
   /** Value of these flags will be inferred from input tree content.
       If false (aka branch does not exist yet), will ADD new corresponding branch to output tree, otherwise (aka branch already exists) will UPDATE it
@@ -193,11 +219,20 @@ private:
   Float_t	  m_QMisIDWeight_UP_out;
   Float_t	  m_QMisIDWeight_DN_out;
 
-  Float_t	  m_MMWeight_out;
-  Float_t	  m_MMWeight_R_UP_out;
-  Float_t	  m_MMWeight_R_DN_out;
-  Float_t	  m_MMWeight_F_UP_out;
-  Float_t	  m_MMWeight_F_DN_out;
+  Float_t	  m_MMWeight_NOMINAL_out;
+
+  /** Map that contains the variations of MM weights for each systematic */
+
+  //std::map<std::string, std::vector<float> > m_MMWeight_out; //!
+
+  Float_t	  m_weight_MM_lep0_R_stat_UP_out;
+  Float_t	  m_weight_MM_lep0_R_stat_DN_out;
+  Float_t	  m_weight_MM_lep1_R_stat_UP_out;
+  Float_t	  m_weight_MM_lep1_R_stat_DN_out;
+  Float_t	  m_weight_MM_lep0_F_stat_UP_out;
+  Float_t	  m_weight_MM_lep0_F_stat_DN_out;
+  Float_t	  m_weight_MM_lep1_F_stat_UP_out;
+  Float_t	  m_weight_MM_lep1_F_stat_DN_out;
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
@@ -210,6 +245,7 @@ private:
 
   std::shared_ptr<NTupReprocesser::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<NTupReprocesser::leptonObj> > m_leptons; //!
+
 
   std::map< std::string, TH2D* > m_QMisID_hist_map; //!
 
@@ -255,6 +291,8 @@ public:
   }
 
 private:
+
+  EL::StatusCode tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list ); 
 
   EL::StatusCode readRFEfficiencies ();
   EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
