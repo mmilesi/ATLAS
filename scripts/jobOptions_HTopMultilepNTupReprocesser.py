@@ -10,14 +10,14 @@ event_branches = ["EventNumber","RunNumber","mc_channel_number","isSS01","dilep_
                   "is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT",
                   "QMisIDWeight","QMisIDWeight_up","QMisIDWeight_dn",
 		  "MMWeight",		  
-		  "MMWeight_lep0_r_stat_up",
-		  "MMWeight_lep0_r_stat_dn",
-		  "MMWeight_lep1_r_stat_up",
-		  "MMWeight_lep1_r_stat_dn",
-		  "MMWeight_lep0_f_stat_up",
-		  "MMWeight_lep0_f_stat_dn",
-		  "MMWeight_lep1_f_stat_up",
-		  "MMWeight_lep1_f_stat_dn"]
+		  "MMWeight_lep0_r_Stat_up",
+		  "MMWeight_lep0_r_Stat_dn",
+		  "MMWeight_lep1_r_Stat_up",
+		  "MMWeight_lep1_r_Stat_dn",
+		  "MMWeight_lep0_f_Stat_up",
+		  "MMWeight_lep0_f_Stat_dn",
+		  "MMWeight_lep1_f_Stat_up",
+		  "MMWeight_lep1_f_Stat_dn"]
 		  
 lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0","lep_isTrigMatch_0",
                   "lep_ID_1","lep_Pt_1","lep_Eta_1","lep_Phi_1","lep_EtaBE2_1","lep_isTightSelected_1","lep_isTrigMatch_1"]
@@ -36,7 +36,7 @@ base_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysis
 
 HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultilepNTupReprocesser",
                                     "m_debug"                      : True,
-                                    "m_verbose"                    : True,
+                                    "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
                                     "m_weightToCalc"               : "MM",#"QMisID,MM",

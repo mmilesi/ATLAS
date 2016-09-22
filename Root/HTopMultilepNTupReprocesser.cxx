@@ -182,20 +182,43 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_1",   		      &m_lep_isTrigMatch_1);
 
   if ( m_isQMisIDBranchIn ) {
-      m_inputNTuple->SetBranchAddress ("QMisIDWeight",     &m_QMisIDWeight_in);
+      m_inputNTuple->SetBranchAddress ("QMisIDWeight",     &m_QMisIDWeight_NOMINAL_in);
       m_inputNTuple->SetBranchAddress ("QMisIDWeight_up",  &m_QMisIDWeight_UP_in);
       m_inputNTuple->SetBranchAddress ("QMisIDWeight_dn",  &m_QMisIDWeight_DN_in);
   }
+  
+  // Parse input weight list, split by comma, and put into a vector
+  //
+  ANA_CHECK( this->tokenize( ',', m_systematics, m_systematics_list ) );
+  
   if ( m_isMMBranchIn ) {
-      m_inputNTuple->SetBranchAddress ("MMWeight",           &m_MMWeight_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_lep0_r_up", &m_weight_MM_lep0_R_stat_UP_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_lep0_r_dn", &m_weight_MM_lep0_R_stat_DN_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_lep1_r_up", &m_weight_MM_lep1_R_stat_UP_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_lep1_r_dn", &m_weight_MM_lep1_R_stat_DN_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_lep0_f_up", &m_weight_MM_lep0_F_stat_UP_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_lep0_f_dn", &m_weight_MM_lep0_F_stat_DN_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_lep1_f_up", &m_weight_MM_lep1_F_stat_UP_in);
-      m_inputNTuple->SetBranchAddress ("MMWeight_lep1_f_dn", &m_weight_MM_lep1_F_stat_DN_in);
+      
+      m_inputNTuple->SetBranchAddress ("MMWeight", &m_MMWeight_NOMINAL_in);
+      
+      for ( const auto& sys : m_systematics ) {
+	  
+	  m_MMWeight_in[sys] = std::vector<float>(8);
+	  
+	  std::string branchname_0 = "MMWeight_lep0_r_" + sys + "_up";
+	  std::string branchname_1 = "MMWeight_lep0_r_" + sys + "_dn";
+	  std::string branchname_2 = "MMWeight_lep1_r_" + sys + "_up";
+	  std::string branchname_3 = "MMWeight_lep1_r_" + sys + "_dn";     
+	  std::string branchname_4 = "MMWeight_lep0_f_" + sys + "_up";
+	  std::string branchname_5 = "MMWeight_lep0_f_" + sys + "_dn";
+	  std::string branchname_6 = "MMWeight_lep1_f_" + sys + "_up";
+	  std::string branchname_7 = "MMWeight_lep1_f_" + sys + "_dn"; 
+	  
+          m_inputNTuple->SetBranchAddress( (branchname_0).c_str(), &(m_MMWeight_in[sys].at(0)) );
+          m_inputNTuple->SetBranchAddress( (branchname_1).c_str(), &(m_MMWeight_in[sys].at(1)) );
+          m_inputNTuple->SetBranchAddress( (branchname_2).c_str(), &(m_MMWeight_in[sys].at(2)) );
+          m_inputNTuple->SetBranchAddress( (branchname_3).c_str(), &(m_MMWeight_in[sys].at(3)) );
+          m_inputNTuple->SetBranchAddress( (branchname_4).c_str(), &(m_MMWeight_in[sys].at(4)) );
+          m_inputNTuple->SetBranchAddress( (branchname_5).c_str(), &(m_MMWeight_in[sys].at(5)) );
+          m_inputNTuple->SetBranchAddress( (branchname_6).c_str(), &(m_MMWeight_in[sys].at(6)) );
+          m_inputNTuple->SetBranchAddress( (branchname_7).c_str(), &(m_MMWeight_in[sys].at(7)) );
+    	  
+      }      
+      
   }
 
   return EL::StatusCode::SUCCESS;
@@ -238,33 +261,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
   // Set new branches for output TTree
   //
   if ( m_doQMisIDWeighting ) {
-      m_outputNTuple->tree()->Branch("QMisIDWeight",     &m_QMisIDWeight_out,    "QMisIDWeight/F");
+      m_outputNTuple->tree()->Branch("QMisIDWeight",     &m_QMisIDWeight_NOMINAL_out,    "QMisIDWeight/F");
       m_outputNTuple->tree()->Branch("QMisIDWeight_up",  &m_QMisIDWeight_UP_out, "QMisIDWeight_up/F");
       m_outputNTuple->tree()->Branch("QMisIDWeight_dn",  &m_QMisIDWeight_DN_out, "QMisIDWeight_dn/F");
   }
 
   if ( m_doMMWeighting ) {
-
-      m_outputNTuple->tree()->Branch("MMWeight",	        &m_MMWeight_NOMINAL_out,	     "MMWeight/F");
-      m_outputNTuple->tree()->Branch("MMWeight_lep0_r_stat_up", &m_weight_MM_lep0_R_stat_UP_out, "MMWeight_lep0_r_stat_up/F");
-      m_outputNTuple->tree()->Branch("MMWeight_lep0_r_stat_dn", &m_weight_MM_lep0_R_stat_DN_out, "MMWeight_lep0_r_stat_dn/F");
-      m_outputNTuple->tree()->Branch("MMWeight_lep1_r_stat_up", &m_weight_MM_lep1_R_stat_UP_out, "MMWeight_lep1_r_stat_up/F");
-      m_outputNTuple->tree()->Branch("MMWeight_lep1_r_stat_dn", &m_weight_MM_lep1_R_stat_DN_out, "MMWeight_lep1_r_stat_dn/F");
-      m_outputNTuple->tree()->Branch("MMWeight_lep0_f_stat_up", &m_weight_MM_lep0_F_stat_UP_out, "MMWeight_lep0_f_stat_up/F");
-      m_outputNTuple->tree()->Branch("MMWeight_lep0_f_stat_dn", &m_weight_MM_lep0_F_stat_DN_out, "MMWeight_lep0_f_stat_dn/F");
-      m_outputNTuple->tree()->Branch("MMWeight_lep1_f_stat_up", &m_weight_MM_lep1_F_stat_UP_out, "MMWeight_lep1_f_stat_up/F");
-      m_outputNTuple->tree()->Branch("MMWeight_lep1_f_stat_dn", &m_weight_MM_lep1_F_stat_DN_out, "MMWeight_lep1_f_stat_dn/F");
       
-      /*
-      // Parse input weight list, split by comma, and put into a vector
-      //
-      std::vector<std::string> systematics;
-      ANA_CHECK( this->tokenize( ',', systematics, m_systematics_list ) );
-
       // Initialise the map containing the variations of MM weights for each input systematics.
      
-      for ( const auto& sys in systematics ) {
-    	  m_MMWeight_out[sys] = std::vector<float>(8);
+      for ( const auto& sys : m_systematics ) {
+    	  m_MMWeight_out[sys] = std::vector<float>(8,1.0);
       }
 
       // Set output branch for the nominal weight
@@ -274,9 +281,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
       // Set output branches for the variations of MM weight for each systematic.
       
       std::string key("");
-      for ( auto& weight_map in m_MMWeight_out ) {
+      for ( auto& weight_sys : m_MMWeight_out ) {
       
-           key = weight_map.first();
+           key = weight_sys.first;
 	   
 	   std::string branchname_0 = "MMWeight_lep0_r_" + key + "_up";
 	   std::string branchname_1 = "MMWeight_lep0_r_" + key + "_dn";
@@ -286,18 +293,18 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 	   std::string branchname_5 = "MMWeight_lep0_f_" + key + "_dn";
 	   std::string branchname_6 = "MMWeight_lep1_f_" + key + "_up";
 	   std::string branchname_7 = "MMWeight_lep1_f_" + key + "_dn"; 
- 	
-	   m_outputNTuple->tree()->Branch( (branchname_0).c_str(), &(weight_map.second.at(0)), (branchname_0.append("/F")).c_str() );
-	   m_outputNTuple->tree()->Branch( (branchname_1).c_str(), &(weight_map.second.at(1)), (branchname_1.append("/F")).c_str() );
-	   m_outputNTuple->tree()->Branch( (branchname_2).c_str(), &(weight_map.second.at(2)), (branchname_2.append("/F")).c_str() );
-	   m_outputNTuple->tree()->Branch( (branchname_3).c_str(), &(weight_map.second.at(3)), (branchname_3.append("/F")).c_str() );
-	   m_outputNTuple->tree()->Branch( (branchname_4).c_str(), &(weight_map.second.at(4)), (branchname_4.append("/F")).c_str() );
-	   m_outputNTuple->tree()->Branch( (branchname_5).c_str(), &(weight_map.second.at(5)), (branchname_5.append("/F")).c_str() );
-	   m_outputNTuple->tree()->Branch( (branchname_6).c_str(), &(weight_map.second.at(6)), (branchname_6.append("/F")).c_str() );
-	   m_outputNTuple->tree()->Branch( (branchname_7).c_str(), &(weight_map.second.at(7)), (branchname_7.append("/F")).c_str() );
+
+	   m_outputNTuple->tree()->Branch( (branchname_0).c_str(), &(weight_sys.second.at(0)) );
+	   m_outputNTuple->tree()->Branch( (branchname_1).c_str(), &(weight_sys.second.at(1)) );
+	   m_outputNTuple->tree()->Branch( (branchname_2).c_str(), &(weight_sys.second.at(2)) );
+	   m_outputNTuple->tree()->Branch( (branchname_3).c_str(), &(weight_sys.second.at(3)) );
+	   m_outputNTuple->tree()->Branch( (branchname_4).c_str(), &(weight_sys.second.at(4)) );
+	   m_outputNTuple->tree()->Branch( (branchname_5).c_str(), &(weight_sys.second.at(5)) );
+	   m_outputNTuple->tree()->Branch( (branchname_6).c_str(), &(weight_sys.second.at(6)) );
+	   m_outputNTuple->tree()->Branch( (branchname_7).c_str(), &(weight_sys.second.at(7)) );      
 
       }
-      */
+      
   }
   
   // ---------------------------------------------------------------------------------------------------------------
@@ -361,6 +368,13 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   // ------------------------------------------------------------------------
 
+  // Need to ensure all weight branches are reset to their default values 
+  // before getting new values for the event.
+  //
+  ANA_CHECK( this->resetDefaultWeights() );
+
+  // ------------------------------------------------------------------------
+
   // This call is crucial, otherwise you'll get no entries in the output tree!
   //
   m_outputNTuple->setFilterPassed();
@@ -415,36 +429,40 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   if ( m_debug ) {
       if ( m_doQMisIDWeighting ) {
 	  if ( !m_isQMisIDBranchIn ) {
-	      Info("execute()","\t\tDefault QMisIDWeight = %.3f", m_event.get()->weight_QMisID );
-	      Info("execute()","\t\tDefault QMisIDWeight (up) = %.3f", m_event.get()->weight_QMisID_UP );
-	      Info("execute()","\t\tDefault QMisIDWeight (dn) = %.3f", m_event.get()->weight_QMisID_DN );
+	      Info("execute()","\t\tDefault QMisIDWeight = %.3f",                                        m_QMisIDWeight_NOMINAL_out );
+	      Info("execute()","\t\tDefault QMisIDWeight (up) * nominal = %.3f ( not rescaled = %.3f )", m_QMisIDWeight_NOMINAL_out * m_QMisIDWeight_UP_out, m_QMisIDWeight_UP_out );
+	      Info("execute()","\t\tDefault QMisIDWeight (dn) * nominal = %.3f ( not rescaled = %.3f )", m_QMisIDWeight_NOMINAL_out * m_QMisIDWeight_DN_out, m_QMisIDWeight_DN_out );
 	  } else {
-	      Info("execute()","\t\tIN QMisIDWeight = %.3f", m_QMisIDWeight_in );
-	      Info("execute()","\t\tIN QMisIDWeight (up) = %.3f", m_QMisIDWeight_UP_in );
-	      Info("execute()","\t\tIN QMisIDWeight (dn) = %.3f", m_QMisIDWeight_DN_in );
+	      Info("execute()","\t\tIN QMisIDWeight = %.3f",                                        m_QMisIDWeight_NOMINAL_in );
+	      Info("execute()","\t\tIN QMisIDWeight (up) * nominal = %.3f ( not rescaled = %.3f )", m_QMisIDWeight_NOMINAL_in * m_QMisIDWeight_UP_in, m_QMisIDWeight_UP_in  );
+	      Info("execute()","\t\tIN QMisIDWeight (dn) * nominal = %.3f ( not rescaled = %.3f )", m_QMisIDWeight_NOMINAL_in * m_QMisIDWeight_DN_in, m_QMisIDWeight_DN_in  );
 	  }
       } 
       if ( m_doMMWeighting ) {
 	  if ( !m_isMMBranchIn ) {
-	      Info("execute()","\t\tDefault MMWeight = %.3f", m_event.get()->weight_MM );
-	      Info("execute()","\t\tDefault MMWeight (lep0 r up) = %.3f", m_event.get()->weight_MM_lep0_R_stat_UP );
-	      Info("execute()","\t\tDefault MMWeight (lep0 r dn) = %.3f", m_event.get()->weight_MM_lep0_R_stat_DN );
-	      Info("execute()","\t\tDefault MMWeight (lep1 r up) = %.3f", m_event.get()->weight_MM_lep1_R_stat_UP );
-	      Info("execute()","\t\tDefault MMWeight (lep1 r dn) = %.3f", m_event.get()->weight_MM_lep1_R_stat_DN );
-	      Info("execute()","\t\tDefault MMWeight (lep0 f up) = %.3f", m_event.get()->weight_MM_lep0_F_stat_UP );
-	      Info("execute()","\t\tDefault MMWeight (lep0 f dn) = %.3f", m_event.get()->weight_MM_lep0_F_stat_DN );
-	      Info("execute()","\t\tDefault MMWeight (lep1 f up) = %.3f", m_event.get()->weight_MM_lep1_F_stat_UP );
-	      Info("execute()","\t\tDefault MMWeight (lep1 f dn) = %.3f", m_event.get()->weight_MM_lep1_F_stat_DN );
+	      Info("execute()","\t\tNominal Default MMWeight = %.3f", m_MMWeight_NOMINAL_out );
+	      for ( const auto& sys : m_systematics ) {
+	        Info("execute()","\t\tSys: %s ==> Default MMWeight (lep0 r up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(0), m_MMWeight_out[sys].at(0) );
+	        Info("execute()","\t\tSys: %s ==> Default MMWeight (lep0 r dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(1), m_MMWeight_out[sys].at(1) );
+	        Info("execute()","\t\tSys: %s ==> Default MMWeight (lep1 r up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(2), m_MMWeight_out[sys].at(2) );
+	        Info("execute()","\t\tSys: %s ==> Default MMWeight (lep1 r dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(3), m_MMWeight_out[sys].at(3) );
+	        Info("execute()","\t\tSys: %s ==> Default MMWeight (lep0 f up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(4), m_MMWeight_out[sys].at(4) );
+	        Info("execute()","\t\tSys: %s ==> Default MMWeight (lep0 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(5), m_MMWeight_out[sys].at(5) );
+	        Info("execute()","\t\tSys: %s ==> Default MMWeight (lep1 f up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(6), m_MMWeight_out[sys].at(6) );
+	        Info("execute()","\t\tSys: %s ==> Default MMWeight (lep1 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(7), m_MMWeight_out[sys].at(7) );
+	      }
 	  } else {
-	      Info("execute()","\t\tIN MMWeight = %.3f", m_MMWeight_in );
-	      Info("execute()","\t\tIN MMWeight (lep0 r up) = %.3f", m_weight_MM_lep0_R_stat_UP_in );
-	      Info("execute()","\t\tIN MMWeight (lep0 r dn) = %.3f", m_weight_MM_lep0_R_stat_DN_in );
-	      Info("execute()","\t\tIN MMWeight (lep1 r up) = %.3f", m_weight_MM_lep1_R_stat_UP_in );
-	      Info("execute()","\t\tIN MMWeight (lep1 r dn) = %.3f", m_weight_MM_lep1_R_stat_DN_in );
-	      Info("execute()","\t\tIN MMWeight (lep0 f up) = %.3f", m_weight_MM_lep0_F_stat_UP_in );
-	      Info("execute()","\t\tIN MMWeight (lep0 f dn) = %.3f", m_weight_MM_lep0_F_stat_DN_in );
-	      Info("execute()","\t\tIN MMWeight (lep1 f up) = %.3f", m_weight_MM_lep1_F_stat_UP_in );
-	      Info("execute()","\t\tIN MMWeight (lep1 f dn) = %.3f", m_weight_MM_lep1_F_stat_DN_in );
+	      Info("execute()","\t\tNominal IN MMWeight = %.3f", m_MMWeight_NOMINAL_in );
+	      for ( const auto& sys : m_systematics ) {
+	        Info("execute()","\t\tSys: %s ==> IN MMWeight (lep0 r up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(0), m_MMWeight_in[sys].at(0) );
+	        Info("execute()","\t\tSys: %s ==> IN MMWeight (lep0 r dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(1), m_MMWeight_in[sys].at(1) );
+	        Info("execute()","\t\tSys: %s ==> IN MMWeight (lep1 r up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(2), m_MMWeight_in[sys].at(2) );
+	        Info("execute()","\t\tSys: %s ==> IN MMWeight (lep1 r dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(3), m_MMWeight_in[sys].at(3) );
+	        Info("execute()","\t\tSys: %s ==> IN MMWeight (lep0 f up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(4), m_MMWeight_in[sys].at(4) );
+	        Info("execute()","\t\tSys: %s ==> IN MMWeight (lep0 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(5), m_MMWeight_in[sys].at(5) );
+	        Info("execute()","\t\tSys: %s ==> IN MMWeight (lep1 f up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(6), m_MMWeight_in[sys].at(6) );
+	        Info("execute()","\t\tSys: %s ==> IN MMWeight (lep1 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(7), m_MMWeight_in[sys].at(7) );
+	      }
 	  }
       }
   }
@@ -455,34 +473,43 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
       ANA_CHECK( this->calculateQMisIDWeights () );
   }
   if ( m_doMMWeighting ) {
-      ANA_CHECK( this->calculateMMWeights () );
+      
+      // Get a full set of MM weights with systematic variations
+      
+      for ( const auto& sys : m_systematics ) {
+        m_this_syst = sys;
+        ANA_CHECK( this->calculateMMWeights () );
+      }
+      
   }
-
-  // ------------------------------------------------------------------------
-
-  ANA_CHECK( this->setOutputBranches() );
 
   // ------------------------------------------------------------------------
 
   if ( m_debug ) {
       if ( m_doQMisIDWeighting ) {
-	  Info("execute()","\t\tOUT QMisIDWeight = %.3f", m_QMisIDWeight_out );
-	  Info("execute()","\t\tOUT QMisIDWeight (up) = %.3f", m_QMisIDWeight_UP_out );
-	  Info("execute()","\t\tOUT QMisIDWeight (dn) = %.3f", m_QMisIDWeight_DN_out );
+	  Info("execute()","\t\tOUT QMisIDWeight = %.3f",      m_QMisIDWeight_NOMINAL_out );
+	  Info("execute()","\t\tOUT QMisIDWeight (up) * nominal = %.3f ( not rescaled = %.3f )", m_QMisIDWeight_NOMINAL_out * m_QMisIDWeight_UP_out, m_QMisIDWeight_UP_out );
+	  Info("execute()","\t\tOUT QMisIDWeight (dn) * nominal = %.3f ( not rescaled = %.3f )", m_QMisIDWeight_NOMINAL_out * m_QMisIDWeight_DN_out, m_QMisIDWeight_DN_out );
       }
       if ( m_doMMWeighting ) {
-	  Info("execute()","\t\tOUT MMWeight = %.3f", m_MMWeight_NOMINAL_out );
-	  Info("execute()","\t\tOUT MMWeight (lep0 r up) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep0_R_stat_UP_out, m_weight_MM_lep0_R_stat_UP_out);
-	  Info("execute()","\t\tOUT MMWeight (lep0 r dn) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep0_R_stat_DN_out, m_weight_MM_lep0_R_stat_DN_out);
-	  Info("execute()","\t\tOUT MMWeight (lep1 r up) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep1_R_stat_UP_out, m_weight_MM_lep1_R_stat_UP_out);
-	  Info("execute()","\t\tOUT MMWeight (lep1 r dn) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep1_R_stat_DN_out, m_weight_MM_lep1_R_stat_DN_out);
-	  Info("execute()","\t\tOUT MMWeight (lep0 f up) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep0_F_stat_UP_out, m_weight_MM_lep0_F_stat_UP_out);
-	  Info("execute()","\t\tOUT MMWeight (lep0 f dn) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep0_F_stat_DN_out, m_weight_MM_lep0_F_stat_DN_out);
-	  Info("execute()","\t\tOUT MMWeight (lep1 f up) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep1_F_stat_UP_out, m_weight_MM_lep1_F_stat_UP_out);
-	  Info("execute()","\t\tOUT MMWeight (lep1 f dn) * nominal = %.3f ( not rescaled = %.3f )", m_MMWeight_NOMINAL_out * m_weight_MM_lep1_F_stat_DN_out, m_weight_MM_lep1_F_stat_DN_out);  
-      }
+	  Info("execute()","\t\tNominal OUT MMWeight = %.3f", m_MMWeight_NOMINAL_out );
+	  for ( const auto& sys : m_systematics ) {
+	    Info("execute()","\t\tSys: %s ==> OUT MMWeight (lep0 r up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(0), m_MMWeight_out[sys].at(0) );
+	    Info("execute()","\t\tSys: %s ==> OUT MMWeight (lep0 r dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(1), m_MMWeight_out[sys].at(1) );
+	    Info("execute()","\t\tSys: %s ==> OUT MMWeight (lep1 r up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(2), m_MMWeight_out[sys].at(2) );
+	    Info("execute()","\t\tSys: %s ==> OUT MMWeight (lep1 r dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(3), m_MMWeight_out[sys].at(3) );
+	    Info("execute()","\t\tSys: %s ==> OUT MMWeight (lep0 f up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(4), m_MMWeight_out[sys].at(4) );
+	    Info("execute()","\t\tSys: %s ==> OUT MMWeight (lep0 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(5), m_MMWeight_out[sys].at(5) );
+	    Info("execute()","\t\tSys: %s ==> OUT MMWeight (lep1 f up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(6), m_MMWeight_out[sys].at(6) );
+	    Info("execute()","\t\tSys: %s ==> OUT MMWeight (lep1 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(7), m_MMWeight_out[sys].at(7) );  
+          }
+     }
   }
 
+  // ------------------------------------------------------------------------
+
+  ANA_CHECK( this->clearBranches() );
+  
   // ------------------------------------------------------------------------
 
   m_leptons.clear();
@@ -558,13 +585,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: enableSelectedBranches ()
   //
   m_inputNTuple->SetBranchStatus ("*", 0);
 
-  std::vector<std::string> branch_vec;
-
   // Parse input list, split by comma, and put into a vector
   //
-  std::string token;
-  std::istringstream ss( m_inputBranches );
-  while ( std::getline(ss, token, ',') ) { branch_vec.push_back(token); }
+  std::vector<std::string> branch_vec;
+  ANA_CHECK( this->tokenize( ',', branch_vec, m_inputBranches ) );
 
   // Re-enable only the branches we are going to use
   //
@@ -584,29 +608,20 @@ EL::StatusCode HTopMultilepNTupReprocesser :: enableSelectedBranches ()
 
 }
 
-
-EL::StatusCode HTopMultilepNTupReprocesser :: setOutputBranches ()
+EL::StatusCode HTopMultilepNTupReprocesser :: resetDefaultWeights ()
 {
 
-  // Clear vector branches from previous event
-  //
-  ANA_CHECK( this->clearBranches() );
+  // Need to reset to default values the output weights!
+  // (in a previous implementation these branches were also members of the "eventObj" class, which
+  // would get instantiated from scrach for every event, and re-initialise its data members through constructor call)
 
-  if ( m_doQMisIDWeighting ) {
-      m_QMisIDWeight_out    = m_event.get()->weight_QMisID;
-      m_QMisIDWeight_UP_out = m_event.get()->weight_QMisID_UP;
-      m_QMisIDWeight_DN_out = m_event.get()->weight_QMisID_DN;
-  }
-  if ( m_doMMWeighting ) {
-      m_MMWeight_NOMINAL_out         = m_event.get()->weight_MM;
-      m_weight_MM_lep0_R_stat_UP_out = m_event.get()->weight_MM_lep0_R_stat_UP;
-      m_weight_MM_lep0_R_stat_DN_out = m_event.get()->weight_MM_lep0_R_stat_DN;
-      m_weight_MM_lep1_R_stat_UP_out = m_event.get()->weight_MM_lep1_R_stat_UP;
-      m_weight_MM_lep1_R_stat_DN_out = m_event.get()->weight_MM_lep1_R_stat_DN;
-      m_weight_MM_lep0_F_stat_UP_out = m_event.get()->weight_MM_lep0_F_stat_UP;
-      m_weight_MM_lep0_F_stat_DN_out = m_event.get()->weight_MM_lep0_F_stat_DN;
-      m_weight_MM_lep1_F_stat_UP_out = m_event.get()->weight_MM_lep1_F_stat_UP;
-      m_weight_MM_lep1_F_stat_DN_out = m_event.get()->weight_MM_lep1_F_stat_DN;
+  m_QMisIDWeight_NOMINAL_out = 1.0;
+  m_QMisIDWeight_UP_out      = 1.0;
+  m_QMisIDWeight_DN_out      = 1.0;
+
+  m_MMWeight_NOMINAL_out = 1.0;
+  for ( auto& weight_sys : m_MMWeight_out ) {
+    std::fill( weight_sys.second.begin(), weight_sys.second.end(), 1.0 );
   }
 
   return EL::StatusCode::SUCCESS;
@@ -615,10 +630,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: setOutputBranches ()
 
 EL::StatusCode HTopMultilepNTupReprocesser :: clearBranches ()
 {
+  
+  // If you store container branches in the output tree (eg., std::vector),
+  // remember to clear them after every event!
 
   return EL::StatusCode::SUCCESS;
 
 }
+
 
 EL::StatusCode HTopMultilepNTupReprocesser ::  readQMisIDRates()
 {
@@ -729,9 +748,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
         float up      = ( r0_up + r1_up - 2.0 * r0_up * r1_up ) / ( 1.0 - r0_up - r1_up + 2.0 * r0_up * r1_up );
         float dn      = ( r0_dn + r1_dn - 2.0 * r0_dn * r1_dn ) / ( 1.0 - r0_dn - r1_dn + 2.0 * r0_dn * r1_dn );
 
-	m_event.get()->weight_QMisID    = nominal;
-	m_event.get()->weight_QMisID_UP = ( !std::isnan(up/nominal) && !std::isinf(up/nominal) ) ? up/nominal : 0.0;
-	m_event.get()->weight_QMisID_DN = ( !std::isnan(dn/nominal) && !std::isinf(dn/nominal) ) ? dn/nominal : 0.0;
+	m_QMisIDWeight_NOMINAL_out    = nominal;
+	m_QMisIDWeight_UP_out = ( !std::isnan(up/nominal) && !std::isinf(up/nominal) ) ? up/nominal : 0.0;
+	m_QMisIDWeight_DN_out = ( !std::isnan(dn/nominal) && !std::isinf(dn/nominal) ) ? dn/nominal : 0.0;
 
     } else {
       ++m_count_inf;
@@ -1426,7 +1445,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
     	//
     	mm_weight.at(0) = matrix_equation( f0.at(0), f1.at(0), r0.at(0), r1.at(0) );
 
-    	// Calculate MM weight with systematics
+    	// Calculate MM weight with variations up/dn for r/f for *this* systematic
     	//
     	float r0up = ( r0.at(1) > 1.0 ) ? 1.0 :  r0.at(1) ;
     	float r1up = ( r1.at(1) > 1.0 ) ? 1.0 :  r1.at(1) ;
@@ -1441,38 +1460,58 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
     	// lep0, rup syst
     	//
     	mm_weight.at(1) = matrix_equation( f0.at(0), f1.at(0), r0up, r1.at(0) );
+	mm_weight.at(1) = ( !std::isnan(mm_weight.at(1)/mm_weight.at(0)) && !std::isinf(mm_weight.at(1)/mm_weight.at(0)) ) ? mm_weight.at(1)/mm_weight.at(0) : 0.0;
 	
     	// lep0, rdn syst
     	//
-    	if ( r0dn > f0.at(0) ) { mm_weight.at(2) = matrix_equation( f0.at(0), f1.at(0), r0dn, r1.at(0) ); }
-        else { Warning("getMMWeightAndError()", "Warning! Systematic lep_0_rdn cannot be calculated because : \nr0dn = %.3f, \nf0 = %.3f", r0dn, f0.at(0)); }
+    	if ( r0dn > f0.at(0) ) { 
+	
+	  mm_weight.at(2) = matrix_equation( f0.at(0), f1.at(0), r0dn, r1.at(0) ); 
+	  mm_weight.at(2) = ( !std::isnan(mm_weight.at(2)/mm_weight.at(0)) && !std::isinf(mm_weight.at(2)/mm_weight.at(0)) ) ? mm_weight.at(2)/mm_weight.at(0) : 0.0;
+	
+	} else { Warning("getMMWeightAndError()", "Warning! Systematic lep_0_rdn cannot be calculated because : \nr0dn = %.3f, \nf0 = %.3f", r0dn, f0.at(0)); }
 
     	// lep1, rup syst
     	//
     	mm_weight.at(3) = matrix_equation( f0.at(0), f1.at(0), r0.at(0), r1up );
+	mm_weight.at(3) = ( !std::isnan(mm_weight.at(3)/mm_weight.at(0)) && !std::isinf(mm_weight.at(3)/mm_weight.at(0)) ) ? mm_weight.at(3)/mm_weight.at(0) : 0.0;
 	
     	// lep1, rdn syst
     	//
-    	if ( r1dn > f1.at(0) ) { mm_weight.at(4) = matrix_equation( f0.at(0), f1.at(0), r0.at(0), r1dn ); }
-        else { Warning("getMMWeightAndError()", "Warning! Systematic lep_1_rdn cannot be calculated because : \nr1dn = %.3f, \nf1 = %.3f", r1dn, f1.at(0) ); }
+    	if ( r1dn > f1.at(0) ) { 
+	  
+	  mm_weight.at(4) = matrix_equation( f0.at(0), f1.at(0), r0.at(0), r1dn ); 
+	  mm_weight.at(4) = ( !std::isnan(mm_weight.at(4)/mm_weight.at(0)) && !std::isinf(mm_weight.at(4)/mm_weight.at(0)) ) ? mm_weight.at(4)/mm_weight.at(0) : 0.0;
+	
+	} else { Warning("getMMWeightAndError()", "Warning! Systematic lep_1_rdn cannot be calculated because : \nr1dn = %.3f, \nf1 = %.3f", r1dn, f1.at(0) ); }
 
 	// lep0, fup syst
     	//
-       if ( r0.at(0) > f0up ) { mm_weight.at(5) = matrix_equation( f0up, f1.at(0), r0.at(0), r1.at(0) ); }
-       else { Warning("getMMWeightAndError()", "Warning! Systematic lep_0_fup cannot be calculated because : \nf0up = %.3f, \nr0 = %.3f", f0up, r0.at(0)); }
+        if ( r0.at(0) > f0up ) { 
+       
+          mm_weight.at(5) = matrix_equation( f0up, f1.at(0), r0.at(0), r1.at(0) ); 
+	  mm_weight.at(5) = ( !std::isnan(mm_weight.at(5)/mm_weight.at(0)) && !std::isinf(mm_weight.at(5)/mm_weight.at(0)) ) ? mm_weight.at(5)/mm_weight.at(0) : 0.0;
+       
+        } else { Warning("getMMWeightAndError()", "Warning! Systematic lep_0_fup cannot be calculated because : \nf0up = %.3f, \nr0 = %.3f", f0up, r0.at(0)); }
 
 	// lep0, fdn syst
     	//
     	mm_weight.at(6) = matrix_equation( f0dn, f1.at(0), r0.at(0), r1.at(0) );
+	mm_weight.at(6) = ( !std::isnan(mm_weight.at(6)/mm_weight.at(0)) && !std::isinf(mm_weight.at(6)/mm_weight.at(0)) ) ? mm_weight.at(6)/mm_weight.at(0) : 0.0;
 
 	// lep1, fup syst
     	//
-       if ( r1.at(0) > f1up ) { mm_weight.at(7) = matrix_equation( f0.at(0), f1up, r0.at(0), r1.at(0) ); }
-       else { Warning("getMMWeightAndError()", "Warning! Systematic lep_1_fup cannot be calculated because : \nf1up = %.3f, \nr1 = %.3f", f1up, r1.at(0)); }
-
-	// lep1, fdn syst
-    	//
-    	mm_weight.at(8) = matrix_equation( f0.at(0), f1dn, r0.at(0), r1.at(0) );
+        if ( r1.at(0) > f1up ) { 
+	 
+	  mm_weight.at(7) = matrix_equation( f0.at(0), f1up, r0.at(0), r1.at(0) ); 
+	  mm_weight.at(7) = ( !std::isnan(mm_weight.at(7)/mm_weight.at(0)) && !std::isinf(mm_weight.at(7)/mm_weight.at(0)) ) ? mm_weight.at(7)/mm_weight.at(0) : 0.0;
+        
+	} else { Warning("getMMWeightAndError()", "Warning! Systematic lep_1_fup cannot be calculated because : \nf1up = %.3f, \nr1 = %.3f", f1up, r1.at(0)); }
+ 
+        // lep1, fdn syst
+        //
+        mm_weight.at(8) = matrix_equation( f0.at(0), f1dn, r0.at(0), r1.at(0) );
+	mm_weight.at(8) = ( !std::isnan(mm_weight.at(8)/mm_weight.at(0)) && !std::isinf(mm_weight.at(8)/mm_weight.at(0)) ) ? mm_weight.at(8)/mm_weight.at(0) : 0.0;
 
     }
 
@@ -1514,27 +1553,11 @@ float HTopMultilepNTupReprocesser :: matrix_equation ( const float& f0, const fl
 }
 
 
-// passs "SYS" as parameter to this method
-
-// -) statistical unc
-// -) QMisID numerator
-// -) QMisId denominator
-// ...
-
-// pass "SYS" as parameter to getMMEfficiencyAndError()
-// it will read the correct histogram  based on the bin lep0 and lep1 are found
-
-// getMMWeightAndError will not change
-
-// store the weights in a std::map belonging to m_event:
-
-//  m_event.get()->weight_MM_lep0_UP["SYS"]
-
-// is there a way to be smart when saving the branches to output, at all?
-
 EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 {
     ANA_CHECK_SET_TYPE (EL::StatusCode);
+
+    if ( m_debug ) { Info("calculateMMWeights()", "Looking at systematic:\n =============> %s", m_this_syst.c_str() ); }
 
     // If is not a dileptonic/trileptonic event, return
     //
@@ -1568,21 +1591,247 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 	std::cout << "" << std::endl;
     }
 
-    std::vector<float> mm_weight = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-
-    ANA_CHECK( this->getMMWeightAndError( mm_weight, r0, r1, f0, f1 ) );
+    std::vector<float> mm_weight = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // First component is NOMINAL
 
     // For variations, save relative weight wrt. nominal
 
-    m_event.get()->weight_MM = mm_weight.at(0);
-    m_event.get()->weight_MM_lep0_R_stat_UP = ( !std::isnan(mm_weight.at(1)/mm_weight.at(0)) && !std::isinf(mm_weight.at(1)/mm_weight.at(0)) ) ? mm_weight.at(1)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_lep0_R_stat_DN = ( !std::isnan(mm_weight.at(2)/mm_weight.at(0)) && !std::isinf(mm_weight.at(2)/mm_weight.at(0)) ) ? mm_weight.at(2)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_lep1_R_stat_UP = ( !std::isnan(mm_weight.at(3)/mm_weight.at(0)) && !std::isinf(mm_weight.at(3)/mm_weight.at(0)) ) ? mm_weight.at(3)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_lep1_R_stat_DN = ( !std::isnan(mm_weight.at(4)/mm_weight.at(0)) && !std::isinf(mm_weight.at(4)/mm_weight.at(0)) ) ? mm_weight.at(4)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_lep0_F_stat_UP = ( !std::isnan(mm_weight.at(5)/mm_weight.at(0)) && !std::isinf(mm_weight.at(5)/mm_weight.at(0)) ) ? mm_weight.at(5)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_lep0_F_stat_DN = ( !std::isnan(mm_weight.at(6)/mm_weight.at(0)) && !std::isinf(mm_weight.at(6)/mm_weight.at(0)) ) ? mm_weight.at(6)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_lep1_F_stat_UP = ( !std::isnan(mm_weight.at(7)/mm_weight.at(0)) && !std::isinf(mm_weight.at(7)/mm_weight.at(0)) ) ? mm_weight.at(7)/mm_weight.at(0) : 0.0;
-    m_event.get()->weight_MM_lep1_F_stat_DN = ( !std::isnan(mm_weight.at(8)/mm_weight.at(0)) && !std::isinf(mm_weight.at(8)/mm_weight.at(0)) ) ? mm_weight.at(8)/mm_weight.at(0) : 0.0;
+    ANA_CHECK( this->getMMWeightAndError( mm_weight, r0, r1, f0, f1 ) );
 
+    m_MMWeight_NOMINAL_out = mm_weight.at(0);
+
+    m_MMWeight_out[m_this_syst].at(0) = mm_weight.at(1);
+    m_MMWeight_out[m_this_syst].at(1) = mm_weight.at(2);
+    m_MMWeight_out[m_this_syst].at(2) = mm_weight.at(3);
+    m_MMWeight_out[m_this_syst].at(3) = mm_weight.at(4);
+    m_MMWeight_out[m_this_syst].at(4) = mm_weight.at(5);
+    m_MMWeight_out[m_this_syst].at(5) = mm_weight.at(6);
+    m_MMWeight_out[m_this_syst].at(6) = mm_weight.at(7);
+    m_MMWeight_out[m_this_syst].at(7) = mm_weight.at(8);
+    
     return EL::StatusCode::SUCCESS;
 }
+
+
+/*
+KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_6;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_1;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_2;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_3;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_4;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_5;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_1;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_2;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_3;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_4;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_5;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_1;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_2;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_3;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_4;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_5;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_1;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_2;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_3;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_4;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_5;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_1;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_2;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_3;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_4;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_5;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_1;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_2;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_3;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_4;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_5;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_1;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_2;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_3;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_4;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_5;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_1;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_2;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_3;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_4;1	
+  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_5;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_1;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_2;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_3;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_4;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_5;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_6;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_7;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_8;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_1;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_2;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_3;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_4;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_5;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_6;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_7;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_8;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_1;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_2;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_3;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_4;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_5;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_6;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_7;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_8;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_1;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_2;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_3;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_4;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_5;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_6;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_7;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_8;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_1;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_2;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_3;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_4;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_5;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_6;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_7;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_8;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_1;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_2;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_3;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_4;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_5;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_6;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_7;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_8;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_1;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_2;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_3;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_4;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_5;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_6;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_7;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_8;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_1;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_2;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_3;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_4;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_5;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_6;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_7;1	
+  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_8;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_1;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_2;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_3;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_4;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_5;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_6;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_7;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_8;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_1;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_2;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_3;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_4;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_5;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_6;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_7;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_8;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_1;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_2;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_3;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_4;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_5;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_6;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_7;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_8;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_1;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_2;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_3;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_4;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_5;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_6;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_7;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_8;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_1;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_2;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_3;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_4;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_5;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_6;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_7;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_8;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_1;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_2;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_3;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_4;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_5;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_6;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_7;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_8;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_1;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_2;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_3;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_4;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_5;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_6;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_7;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_8;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_1;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_2;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_3;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_4;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_5;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_6;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_7;1	
+  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_8;1	
+
+*/

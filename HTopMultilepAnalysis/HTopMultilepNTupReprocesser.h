@@ -34,17 +34,7 @@ namespace NTupReprocesser {
     	  isMC(0),
     	  isSS01(0),
     	  dilep(0),
-  	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0),
-	  weight_QMisID(1.0),weight_QMisID_UP(1.0),weight_QMisID_DN(1.0),
-          weight_MM(1.0),
-	  weight_MM_lep0_R_stat_UP(1.0),
-	  weight_MM_lep0_R_stat_DN(1.0),
-	  weight_MM_lep1_R_stat_UP(1.0),
-	  weight_MM_lep1_R_stat_DN(1.0),
-	  weight_MM_lep0_F_stat_UP(1.0),
-	  weight_MM_lep0_F_stat_DN(1.0),
-	  weight_MM_lep1_F_stat_UP(1.0),
-	  weight_MM_lep1_F_stat_DN(1.0)
+  	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0)
     { };
 
     char isMC;
@@ -54,17 +44,6 @@ namespace NTupReprocesser {
     char TAntiT;
     char AntiTT;
     char AntiTAntiT;
-
-    float weight_QMisID, weight_QMisID_UP, weight_QMisID_DN;
-    float weight_MM;
-    float weight_MM_lep0_R_stat_UP;
-    float weight_MM_lep0_R_stat_DN;
-    float weight_MM_lep1_R_stat_UP;
-    float weight_MM_lep1_R_stat_DN;
-    float weight_MM_lep0_F_stat_UP;
-    float weight_MM_lep0_F_stat_DN;
-    float weight_MM_lep1_F_stat_UP;
-    float weight_MM_lep1_F_stat_DN;
   
   };
 
@@ -131,9 +110,10 @@ public:
   
   /** A list of systematics affecting the efficiency measurement, whoich will be eventually propagated to the final event weight.
       By default, it includes the statistical uncertainty on the efficiencies
-   */
+  */
   
-  std::string m_systematics_list;
+  std::string              m_systematics_list;
+  std::vector<std::string> m_systematics;
 
   /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
 
@@ -187,19 +167,15 @@ private:
   Char_t	  m_lep_isTightSelected_1;
   Char_t	  m_lep_isTrigMatch_1;
 
-  Float_t	  m_QMisIDWeight_in;
+  Float_t	  m_QMisIDWeight_NOMINAL_in;
   Float_t	  m_QMisIDWeight_UP_in;
   Float_t	  m_QMisIDWeight_DN_in;
 
-  Float_t	  m_MMWeight_in;
-  Float_t	  m_weight_MM_lep0_R_stat_UP_in;
-  Float_t	  m_weight_MM_lep0_R_stat_DN_in;
-  Float_t	  m_weight_MM_lep1_R_stat_UP_in;
-  Float_t	  m_weight_MM_lep1_R_stat_DN_in;
-  Float_t	  m_weight_MM_lep0_F_stat_UP_in;
-  Float_t	  m_weight_MM_lep0_F_stat_DN_in;
-  Float_t	  m_weight_MM_lep1_F_stat_UP_in;
-  Float_t	  m_weight_MM_lep1_F_stat_DN_in;
+  Float_t	  m_MMWeight_NOMINAL_in;
+  
+  /** Map containing input branches with the variations of MM weights for each systematic */
+  
+  std::map<std::string, std::vector<float> > m_MMWeight_in; 
 
   /** Value of these flags will be inferred from input tree content.
       If false (aka branch does not exist yet), will ADD new corresponding branch to output tree, otherwise (aka branch already exists) will UPDATE it
@@ -215,24 +191,17 @@ private:
 
   /** Extra branches to be stored in output TTree */
 
-  Float_t	  m_QMisIDWeight_out;
-  Float_t	  m_QMisIDWeight_UP_out;
-  Float_t	  m_QMisIDWeight_DN_out;
+  Float_t	  m_QMisIDWeight_NOMINAL_out = 1.0;
+  Float_t	  m_QMisIDWeight_UP_out = 1.0;
+  Float_t	  m_QMisIDWeight_DN_out = 1.0;
 
-  Float_t	  m_MMWeight_NOMINAL_out;
+  /** Output branch with nominal MM weight */
 
-  /** Map that contains the variations of MM weights for each systematic */
+  Float_t	  m_MMWeight_NOMINAL_out = 1.0;
 
-  //std::map<std::string, std::vector<float> > m_MMWeight_out; //!
+  /** Map containing output branches with the variations of MM weights for each systematic */
 
-  Float_t	  m_weight_MM_lep0_R_stat_UP_out;
-  Float_t	  m_weight_MM_lep0_R_stat_DN_out;
-  Float_t	  m_weight_MM_lep1_R_stat_UP_out;
-  Float_t	  m_weight_MM_lep1_R_stat_DN_out;
-  Float_t	  m_weight_MM_lep0_F_stat_UP_out;
-  Float_t	  m_weight_MM_lep0_F_stat_DN_out;
-  Float_t	  m_weight_MM_lep1_F_stat_UP_out;
-  Float_t	  m_weight_MM_lep1_F_stat_DN_out;
+  std::map<std::string, std::vector<float> > m_MMWeight_out; //!
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
@@ -242,6 +211,10 @@ private:
 
   unsigned int m_numEntry;   //!
   unsigned int m_count_inf;  //!
+  
+  /** This will be updated when looping over the input systematics for a given event, so all the methods know about it */
+  
+  std::string m_this_syst;   //!
 
   std::shared_ptr<NTupReprocesser::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<NTupReprocesser::leptonObj> > m_leptons; //!
@@ -311,8 +284,9 @@ private:
   EL::StatusCode calculateQMisIDWeights ();
 
   EL::StatusCode enableSelectedBranches ();
-  EL::StatusCode setOutputBranches ();
   EL::StatusCode clearBranches ();
+  EL::StatusCode resetDefaultWeights ();
+
 
 };
 
