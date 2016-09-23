@@ -360,7 +360,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   m_inputNTuple->GetEntry( wk()->treeEntry() );
 
-  if ( m_debug ) { Info("execute()", "===> Entry %u - EventNumber = %u ", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) ); }
+  if ( m_debug ) { Info("execute()", "\n\n****************************************\n===> Entry %u - EventNumber = %u\n****************************************\n", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) ); }
 
   ++m_numEntry;
 
@@ -853,105 +853,59 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getQMisIDRatesAndError( std::share
 
 }
 
+/*
+KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_6;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_1;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_2;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_3;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_4;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_5;1	
+  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_6;1	
+*/
+
+std::string HTopMultilepNTupReprocesser :: str_replace( const std::string& input_str, const std::string& old_substr, const std::string& new_substr )
+{
+  size_t start_pos = input_str.find(old_substr);
+
+  if ( start_pos == std::string::npos ) {
+    Warning("str_replace()", "Substring: %s  not found in input string: %s. Returning input string.", old_substr.c_str(), input_str.c_str() );
+    return input_str;
+  }
+  
+  std::string output_str = input_str;
+  
+  return output_str.replace( start_pos, old_substr.length(),new_substr );
+}
+
+
 EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 {
 
-  std::string rate_type = ( !m_doMMClosure ) ? "observed" : "expected";
+  std::string rate_type = ( !m_doMMClosure ) ? "observed_sub" : "expected";
 
   if ( m_FEFF_dir.empty() ) { m_FEFF_dir = m_REFF_dir; }
 
   if ( m_REFF_dir.back() != '/' ) { m_REFF_dir += "/"; }
   if ( m_FEFF_dir.back() != '/' ) { m_FEFF_dir += "/"; }
 
-  // Histogram names - electrons
-  //
-  std::string histname_el_pt_reff  = "El_ProbePt_Real_Efficiency_"  + rate_type;
-  std::string histname_el_eta_reff = "El_ProbeEta_Real_Efficiency_" + rate_type;
-  std::string teffname_el_pt_reff  = "El_ProbePt_Real_TEfficiency_"  + rate_type;
-  std::string teffname_el_eta_reff = "El_ProbeEta_Real_TEfficiency_" + rate_type;
-
-  std::string histname_el_pt_r_T   = "El_ProbePt_Real_T_" + rate_type;
-  std::string histname_el_pt_r_L   = "El_ProbePt_Real_L_" + rate_type;
-
-  std::string histname_el_pt_feff(""), histname_el_eta_feff(""), histname_el_pt_f_T(""), histname_el_pt_f_L("");
-
-  if ( m_useScaledFakeEfficiency && !m_doMMClosure ) {
-    histname_el_pt_feff	 = "El_ProbePt_ScaledFake_Efficiency_"  + rate_type;
-    histname_el_eta_feff = "El_ProbeEta_ScaledFake_Efficiency_" + rate_type;
-    histname_el_pt_f_T   = "El_ProbePt_ScaledFake_T_" + rate_type;
-    histname_el_pt_f_L   = "El_ProbePt_ScaledFake_L_" + rate_type;
-  } else {
-    histname_el_pt_feff  = "El_ProbePt_Fake_Efficiency_"  + rate_type;
-    histname_el_eta_feff = "El_ProbeEta_Fake_Efficiency_" + rate_type;
-    histname_el_pt_f_T   = "El_ProbePt_Fake_T_" + rate_type;
-    histname_el_pt_f_L   = "El_ProbePt_Fake_L_" + rate_type;
-  }
-  std::string teffname_el_pt_feff  = "El_ProbePt_Fake_TEfficiency_"  + rate_type;
-  std::string teffname_el_eta_feff = "El_ProbeEta_Fake_TEfficiency_" + rate_type;
-
-  // Histogram names - muons
-  //
-  std::string histname_mu_pt_reff  = "Mu_ProbePt_Real_Efficiency_"  + rate_type;
-  std::string histname_mu_eta_reff = "Mu_ProbeEta_Real_Efficiency_" + rate_type;
-  std::string teffname_mu_pt_reff  = "Mu_ProbePt_Real_TEfficiency_"  + rate_type;
-  std::string teffname_mu_eta_reff = "Mu_ProbeEta_Real_TEfficiency_" + rate_type;
-  std::string histname_mu_pt_r_T   = "Mu_ProbePt_Real_T_" + rate_type;
-  std::string histname_mu_pt_r_L   = "Mu_ProbePt_Real_L_" + rate_type;
-
-  std::string histname_mu_pt_feff  = "Mu_ProbePt_Fake_Efficiency_"  + rate_type;
-  std::string histname_mu_eta_feff = "Mu_ProbeEta_Fake_Efficiency_" + rate_type;
-  std::string teffname_mu_pt_feff  = "Mu_ProbePt_Fake_TEfficiency_"  + rate_type;
-  std::string teffname_mu_eta_feff = "Mu_ProbeEta_Fake_TEfficiency_" + rate_type;
-  std::string histname_mu_pt_f_T   = "Mu_ProbePt_Fake_T_" + rate_type;
-  std::string histname_mu_pt_f_L   = "Mu_ProbePt_Fake_L_" + rate_type;
-
-  // Histograms - electrons
-
-  TH1D *hist_el_pt_reff(nullptr);
-  TH1D *hist_el_eta_reff(nullptr);
-  TH1D *hist_el_pt_r_T(nullptr);
-  TH1D *hist_el_pt_r_L(nullptr);
-
-  TH1D *hist_el_pt_reff_YES_TM(nullptr);
-  TH1D *hist_el_pt_reff_NO_TM(nullptr);
-
-  TH1D *hist_el_pt_feff(nullptr);
-  TH1D *hist_el_eta_feff(nullptr);
-  TH1D *hist_el_pt_f_T(nullptr);
-  TH1D *hist_el_pt_f_L(nullptr);
-
-  TH1D *hist_el_pt_feff_YES_TM(nullptr);
-  TH1D *hist_el_pt_feff_NO_TM(nullptr);
-
-  TEfficiency *teff_el_pt_reff(nullptr);
-  TEfficiency *teff_el_eta_reff(nullptr);
-
-  TEfficiency *teff_el_pt_feff(nullptr);
-  TEfficiency *teff_el_eta_feff(nullptr);
-
-  // Histograms - muons
-
-  TH1D *hist_mu_pt_reff(nullptr);
-  TH1D *hist_mu_eta_reff(nullptr);
-  TH1D *hist_mu_pt_r_T(nullptr);
-  TH1D *hist_mu_pt_r_L(nullptr);
-
-  TH1D *hist_mu_pt_reff_YES_TM(nullptr);
-  TH1D *hist_mu_pt_reff_NO_TM(nullptr);
-
-  TH1D *hist_mu_pt_feff(nullptr);
-  TH1D *hist_mu_eta_feff(nullptr);
-  TH1D *hist_mu_pt_f_T(nullptr);
-  TH1D *hist_mu_pt_f_L(nullptr);
-
-  TH1D *hist_mu_pt_feff_YES_TM(nullptr);
-  TH1D *hist_mu_pt_feff_NO_TM(nullptr);
-
-  TEfficiency *teff_mu_pt_reff(nullptr);
-  TEfficiency *teff_mu_eta_reff(nullptr);
-
-  TEfficiency *teff_mu_pt_feff(nullptr);
-  TEfficiency *teff_mu_eta_feff(nullptr);
 
   // 1. 'REAL' efficiency
 
@@ -968,26 +922,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
   HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_R_mu->IsOpen(), "Failed to open ROOT file" );
   Info("readRFEfficiencies()", "MUON REAL efficiency: %s ", path_R_mu.c_str() );
-
-  // Get real efficiency histograms
-  //
-  hist_el_pt_reff  = get_object<TH1D>( *file_R_el, histname_el_pt_reff );
-  teff_el_pt_reff  = get_object<TEfficiency>( *file_R_el, teffname_el_pt_reff );
-  if( m_useEtaParametrisation ) {
-      hist_el_eta_reff = get_object<TH1D>( *file_R_el, histname_el_eta_reff );
-      teff_el_eta_reff = get_object<TEfficiency>( *file_R_el, teffname_el_eta_reff );
-  }
-  hist_el_pt_r_T = get_object<TH1D>( *file_R_el, histname_el_pt_r_T );
-  hist_el_pt_r_L = get_object<TH1D>( *file_R_el, histname_el_pt_r_L );
-
-  hist_mu_pt_reff  = get_object<TH1D>( *file_R_mu, histname_mu_pt_reff );
-  teff_mu_pt_reff  = get_object<TEfficiency>( *file_R_mu, teffname_mu_pt_reff );
-  if ( m_useEtaParametrisation ) {
-      hist_mu_eta_reff = get_object<TH1D>( *file_R_mu, histname_mu_eta_reff );
-      teff_mu_eta_reff = get_object<TEfficiency>( *file_R_mu, teffname_mu_eta_reff );
-  }
-  hist_mu_pt_r_T = get_object<TH1D>( *file_R_mu, histname_mu_pt_r_T );
-  hist_mu_pt_r_L = get_object<TH1D>( *file_R_mu, histname_mu_pt_r_L );
 
   // 2. FAKE efficiency
 
@@ -1009,144 +943,214 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_F_mu->IsOpen(), "Failed to open ROOT file" );
   Info("readRFEfficiencies()", "MUON FAKE efficiency: %s ", path_F_mu.c_str() );
 
-  // Get fake efficiency histograms
-  //
-  hist_el_pt_feff  = get_object<TH1D>( *file_F_el, histname_el_pt_feff );
-  teff_el_pt_feff  = get_object<TEfficiency>( *file_R_el, teffname_el_pt_feff );
-  if ( m_useEtaParametrisation ) {
-      hist_el_eta_feff = get_object<TH1D>( *file_F_el, histname_el_eta_feff );
-      teff_el_eta_feff = get_object<TEfficiency>( *file_R_el, teffname_el_eta_feff );
-  }
-  hist_el_pt_f_T   = get_object<TH1D>( *file_F_el, histname_el_pt_f_T );
-  hist_el_pt_f_L   = get_object<TH1D>( *file_F_el, histname_el_pt_f_L );
-
-  hist_mu_pt_feff    = get_object<TH1D>( *file_F_mu, histname_mu_pt_feff );
-  teff_mu_pt_feff  = get_object<TEfficiency>( *file_R_mu, teffname_mu_pt_feff );
-  if ( m_useEtaParametrisation ) {
-      hist_mu_eta_feff = get_object<TH1D>( *file_F_mu, histname_mu_eta_feff );
-      teff_mu_eta_feff = get_object<TEfficiency>( *file_R_mu, teffname_mu_eta_feff );
-  }
-  hist_mu_pt_f_T   = get_object<TH1D>( *file_F_mu, histname_mu_pt_f_T );
-  hist_mu_pt_f_L   = get_object<TH1D>( *file_F_mu, histname_mu_pt_f_L );
-
   // ***********************************************************************
+ 
+  std::string sys_append;
 
-  if ( m_useTrigMatchingInfo && m_useEtaParametrisation ) {
-      Error("readRFEfficiencies()", "As of today, it's not possible to use eta parametrisation when reading trigger-matching-dependent efficiencies. Aborting" );
-      return EL::StatusCode::FAILURE;
-  }
+  for ( const auto& sys : m_systematics ) {
+  
+    std::cout << "" << std::endl;
+    Info("readRFEfficiencies()", "Reading inputs for systematic: ===> %s", sys.c_str() );
+    std::cout << "" << std::endl;
+    
+    // Append sys name if not nominal case
+    
+    sys_append = ( sys.compare("Stat") == 0 ) ? "" : ( "_" + sys );
+    
+    // Histogram names - electrons
+    //
+    std::string histname_el_pt_reff  = "Real_El_Pt_Efficiency_"  + rate_type + sys_append;
+    std::string histname_el_eta_reff = "Real_El_Eta_Efficiency_" + rate_type + sys_append;
+    
+    std::string histname_el_pt_feff(""), histname_el_eta_feff("");
 
-  if ( m_useTrigMatchingInfo ) {
+    if ( !m_useScaledFakeEfficiency || m_doMMClosure ) {
+      histname_el_pt_feff  = "Fake_El_Pt_Efficiency_"  + rate_type + sys_append;
+      histname_el_eta_feff = "Fake_El_Eta_Efficiency_" + rate_type + sys_append;
+    } else {
+      histname_el_pt_feff  = "ScaledFake_El_Pt_Efficiency_"  + rate_type + sys_append;
+      histname_el_eta_feff = "ScaledFake_El_Eta_Efficiency_" + rate_type + sys_append;
+    }
 
-    if ( m_EFF_YES_TM_dir.back() != '/' ) { m_EFF_YES_TM_dir += "/"; }
-    if ( m_EFF_NO_TM_dir.back() != '/' )  { m_EFF_NO_TM_dir += "/"; }
+    // Histogram names - muons
+    //
+    std::string histname_mu_pt_reff  = "Real_Mu_Pt_Efficiency_"  + rate_type + sys_append;
+    std::string histname_mu_eta_reff = "Real_Mu_Eta_Efficiency_" + rate_type + sys_append;
 
-    Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe TRIGGER-MATCHED) from directory: %s ", m_EFF_YES_TM_dir.c_str() );
+    std::string histname_mu_pt_feff  = "Fake_Mu_Pt_Efficiency_"  + rate_type + sys_append;
+    std::string histname_mu_eta_feff = "Fake_Mu_Eta_Efficiency_" + rate_type + sys_append;
 
-    std::string path_YES_TM = m_EFF_YES_TM_dir + m_Efficiency_Filename;
-    TFile *file_YES_TM = TFile::Open(path_YES_TM.c_str());
-    HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_YES_TM->IsOpen(), "Failed to open ROOT file" );
-    Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_YES_TM.c_str() );
+    // Histograms - electrons
 
-    Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe NOT TRIGGER-MATCHED) from directory: %s ", m_EFF_NO_TM_dir.c_str() );
+    TH1D *hist_el_pt_reff(nullptr);
+    TH1D *hist_el_eta_reff(nullptr);
+    TH1D *hist_el_pt_feff(nullptr);
+    TH1D *hist_el_eta_feff(nullptr);
 
-    std::string path_NO_TM = m_EFF_NO_TM_dir + m_Efficiency_Filename;
-    TFile *file_NO_TM = TFile::Open(path_NO_TM.c_str());
-    HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_NO_TM->IsOpen(), "Failed to open ROOT file" );
-    Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_NO_TM.c_str() );
+    TH1D *hist_el_pt_reff_YES_TM(nullptr);
+    TH1D *hist_el_pt_reff_NO_TM(nullptr);
+    TH1D *hist_el_pt_feff_YES_TM(nullptr);
+    TH1D *hist_el_pt_feff_NO_TM(nullptr);
+
+    TEfficiency *teff_el_pt_reff(nullptr);
+    TEfficiency *teff_el_eta_reff(nullptr);
+    TEfficiency *teff_el_pt_feff(nullptr);
+    TEfficiency *teff_el_eta_feff(nullptr);
+
+    // Histograms - muons
+
+    TH1D *hist_mu_pt_reff(nullptr);
+    TH1D *hist_mu_eta_reff(nullptr);
+    TH1D *hist_mu_pt_feff(nullptr);
+    TH1D *hist_mu_eta_feff(nullptr);
+
+    TH1D *hist_mu_pt_reff_YES_TM(nullptr);
+    TH1D *hist_mu_pt_reff_NO_TM(nullptr);
+    TH1D *hist_mu_pt_feff_YES_TM(nullptr);
+    TH1D *hist_mu_pt_feff_NO_TM(nullptr);
+
+    TEfficiency *teff_mu_pt_reff(nullptr);
+    TEfficiency *teff_mu_eta_reff(nullptr);
+    TEfficiency *teff_mu_pt_feff(nullptr);
+    TEfficiency *teff_mu_eta_feff(nullptr);
+
 
     // Get real efficiency histograms
     //
-    hist_el_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_reff );
-    hist_el_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_reff );
+    hist_el_pt_reff  = get_object<TH1D>( *file_R_el, histname_el_pt_reff );
+    teff_el_pt_reff  = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_pt_reff, "Efficiency", "TEfficiency" ).c_str() );
+    if( m_useEtaParametrisation ) {
+    	hist_el_eta_reff = get_object<TH1D>( *file_R_el, histname_el_eta_reff );
+    	teff_el_eta_reff = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_eta_reff, "Efficiency", "TEfficiency" ).c_str() );
+    }
 
-    hist_mu_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_reff );
-    hist_mu_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_reff );
+    hist_mu_pt_reff  = get_object<TH1D>( *file_R_mu, histname_mu_pt_reff );
+    teff_mu_pt_reff  = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_pt_reff, "Efficiency", "TEfficiency" ).c_str() );
+    if ( m_useEtaParametrisation ) {
+    	hist_mu_eta_reff = get_object<TH1D>( *file_R_mu, histname_mu_eta_reff );
+    	teff_mu_eta_reff = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_eta_reff, "Efficiency", "TEfficiency" ).c_str() );
+    }
 
     // Get fake efficiency histograms
     //
-    hist_el_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_feff );
-    hist_el_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_feff );
-
-    hist_mu_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_feff );
-    hist_mu_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_feff );
-
-  }
-  // ***********************************************************************
-
-  // Fill maps for later usage
-
-  m_el_teff_map["pt_reff"]   = teff_el_pt_reff;
-  m_mu_teff_map["pt_reff"]   = teff_mu_pt_reff;
-  m_el_teff_map["pt_feff"]   = teff_el_pt_feff;
-  m_mu_teff_map["pt_feff"]   = teff_mu_pt_feff;
-  
-  if ( m_useEtaParametrisation ) {
-      m_el_teff_map["eta_reff"]  = teff_el_eta_reff;
-      m_mu_teff_map["eta_reff"]  = teff_mu_eta_reff;
-      m_el_teff_map["eta_feff"]  = teff_el_eta_feff;
-      m_mu_teff_map["eta_feff"]  = teff_mu_eta_feff;
-  }
-
-  // Save in the histogram map a clone of the denominator histogram associated to the TEfficiency object in order to access the axis binning
-  // If we are not using TEfficiency, take the TH1 efficiency histogram itself
-  //
-  // NB: Calling GetCopyTotalHisto() transfer the ownership of the histogram pointer to the user. This intoroduces a memory leak in the code,
-  // as we don't explicitly call delete anywhere. However, this is harmless, since this is executed only once in the job.
-  //
-  m_el_hist_map["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_reff->GetCopyTotalHisto() ) : hist_el_pt_reff;
-  m_mu_hist_map["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_reff->GetCopyTotalHisto() ) : hist_mu_pt_reff;
-  m_el_hist_map["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_feff->GetCopyTotalHisto() ) : hist_el_pt_feff;
-  m_mu_hist_map["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_feff->GetCopyTotalHisto() ) : hist_mu_pt_feff;
-  
-  if ( m_useEtaParametrisation ) {
-      m_el_hist_map["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_reff->GetCopyTotalHisto() ) : hist_el_eta_reff;
-      m_mu_hist_map["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_reff->GetCopyTotalHisto() ) : hist_mu_eta_reff;
-      m_el_hist_map["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_feff->GetCopyTotalHisto() ) : hist_el_eta_feff;
-      m_mu_hist_map["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_feff->GetCopyTotalHisto() ) : hist_mu_eta_feff;
-  }
-
-  m_el_hist_map["pt_reff_YES_TM"] = hist_el_pt_reff_YES_TM;
-  m_mu_hist_map["pt_reff_YES_TM"] = hist_mu_pt_reff_YES_TM;
-  m_el_hist_map["pt_feff_YES_TM"] = hist_el_pt_feff_YES_TM;
-  m_mu_hist_map["pt_feff_YES_TM"] = hist_mu_pt_feff_YES_TM;
-  m_el_hist_map["pt_reff_NO_TM"]  = hist_el_pt_reff_NO_TM;
-  m_mu_hist_map["pt_reff_NO_TM"]  = hist_mu_pt_reff_NO_TM;
-  m_el_hist_map["pt_feff_NO_TM"]  = hist_el_pt_feff_NO_TM;
-  m_mu_hist_map["pt_feff_NO_TM"]  = hist_mu_pt_feff_NO_TM;
-
-  // eta hist has same binning for r/f
-  //
-  if ( m_useEtaParametrisation ) {
-
-      // Calculate normalisation factor for (pT * eta) 1D efficiencies case.
-      //
-      // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
-      //
-      m_el_reff_tot = ( hist_el_pt_r_T->Integral(1,hist_el_pt_r_T->GetNbinsX()+1) ) / ( hist_el_pt_r_L->Integral(1,hist_el_pt_r_L->GetNbinsX()+1) );
-      m_el_feff_tot = ( hist_el_pt_f_T->Integral(1,hist_el_pt_f_T->GetNbinsX()+1) ) / ( hist_el_pt_f_L->Integral(1,hist_el_pt_f_L->GetNbinsX()+1) );
-      m_mu_reff_tot = ( hist_mu_pt_r_T->Integral(1,hist_mu_pt_r_T->GetNbinsX()+1) ) / ( hist_mu_pt_r_L->Integral(1,hist_mu_pt_r_L->GetNbinsX()+1) );
-      m_mu_feff_tot = ( hist_mu_pt_f_T->Integral(1,hist_mu_pt_f_T->GetNbinsX()+1) ) / ( hist_mu_pt_f_L->Integral(1,hist_mu_pt_f_L->GetNbinsX()+1) );
-
-  }
-
-  std::cout << "\n" << std::endl;
-  if ( m_useTEfficiency ) {
-    Info("readRFEfficiencies()", "MUON REAL efficiency - pT TEfficiency name: %s ", teffname_mu_pt_reff.c_str() );
-    Info("readRFEfficiencies()", "MUON FAKE efficiency - pT TEfficiency name: %s ", teffname_mu_pt_feff.c_str() );
+    hist_el_pt_feff  = get_object<TH1D>( *file_F_el, histname_el_pt_feff );
+    teff_el_pt_feff  = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_pt_feff, "Efficiency", "TEfficiency" ).c_str() );
     if ( m_useEtaParametrisation ) {
-      Info("readRFEfficiencies()", "MUON REAL efficiency - eta TEfficiency name: %s ", teffname_mu_eta_reff.c_str() );
-      Info("readRFEfficiencies()", "MUON FAKE efficiency - eta TEfficiency name: %s ", teffname_mu_eta_feff.c_str() );
+    	hist_el_eta_feff = get_object<TH1D>( *file_F_el, histname_el_eta_feff );
+    	teff_el_eta_feff = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_eta_feff, "Efficiency", "TEfficiency" ).c_str() );
     }
-    std::cout << "	      --------------------------------------------" << std::endl;
-    Info("readRFEfficiencies()", "ELECTRON REAL efficiency - pT TEfficiency name: %s ", teffname_el_pt_reff.c_str() );
-    Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - pT TEfficiency name: %s ", teffname_el_pt_feff.c_str() );
+
+    hist_mu_pt_feff    = get_object<TH1D>( *file_F_mu, histname_mu_pt_feff );
+    teff_mu_pt_feff  = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_pt_feff, "Efficiency", "TEfficiency" ).c_str() );
     if ( m_useEtaParametrisation ) {
-      Info("readRFEfficiencies()", "ELECTRON REAL efficiency - eta TEfficiency name: %s ", teffname_el_eta_reff.c_str() );
-      Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - eta TEfficiency name: %s ", teffname_el_eta_feff.c_str() );
+    	hist_mu_eta_feff = get_object<TH1D>( *file_F_mu, histname_mu_eta_feff );
+    	teff_mu_eta_feff = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_eta_feff, "Efficiency", "TEfficiency" ).c_str() );
     }
-  
-  } else {
+
+    // ***********************************************************************
+
+    if ( m_useTrigMatchingInfo && m_useEtaParametrisation ) {
+    	Error("readRFEfficiencies()", "As of today, it's not possible to use eta parametrisation when reading trigger-matching-dependent efficiencies. Check your job configuration and retry. Aborting" );
+    	return EL::StatusCode::FAILURE;
+    }
+
+    if ( m_useTrigMatchingInfo ) {
+
+      if ( m_EFF_YES_TM_dir.back() != '/' ) { m_EFF_YES_TM_dir += "/"; }
+      if ( m_EFF_NO_TM_dir.back() != '/' )  { m_EFF_NO_TM_dir += "/"; }
+
+      Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe TRIGGER-MATCHED) from directory: %s ", m_EFF_YES_TM_dir.c_str() );
+
+      std::string path_YES_TM = m_EFF_YES_TM_dir + m_Efficiency_Filename;
+      TFile *file_YES_TM = TFile::Open(path_YES_TM.c_str());
+      HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_YES_TM->IsOpen(), "Failed to open ROOT file" );
+      Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_YES_TM.c_str() );
+
+      Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe NOT TRIGGER-MATCHED) from directory: %s ", m_EFF_NO_TM_dir.c_str() );
+
+      std::string path_NO_TM = m_EFF_NO_TM_dir + m_Efficiency_Filename;
+      TFile *file_NO_TM = TFile::Open(path_NO_TM.c_str());
+      HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_NO_TM->IsOpen(), "Failed to open ROOT file" );
+      Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_NO_TM.c_str() );
+
+      // Get real efficiency histograms
+      //
+      hist_el_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_reff );
+      hist_el_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_reff );
+
+      hist_mu_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_reff );
+      hist_mu_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_reff );
+
+      // Get fake efficiency histograms
+      //
+      hist_el_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_feff );
+      hist_el_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_feff );
+
+      hist_mu_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_feff );
+      hist_mu_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_feff );
+
+    }
+    // ***********************************************************************
+
+    // Fill maps for later usage
+
+    m_el_teff_map[sys]["pt_reff"]   = teff_el_pt_reff;
+    m_mu_teff_map[sys]["pt_reff"]   = teff_mu_pt_reff;
+    m_el_teff_map[sys]["pt_feff"]   = teff_el_pt_feff;
+    m_mu_teff_map[sys]["pt_feff"]   = teff_mu_pt_feff;
+    
+    if ( m_useEtaParametrisation ) {
+    	m_el_teff_map[sys]["eta_reff"]  = teff_el_eta_reff;
+    	m_mu_teff_map[sys]["eta_reff"]  = teff_mu_eta_reff;
+    	m_el_teff_map[sys]["eta_feff"]  = teff_el_eta_feff;
+    	m_mu_teff_map[sys]["eta_feff"]  = teff_mu_eta_feff;
+    }
+
+    // Save in the histogram map a clone of the denominator histogram associated to the TEfficiency object in order to access the axis binning
+    // If we are not using TEfficiency, take the TH1 efficiency histogram itself (use the denominator "total" histogram by convention) 
+    //
+    // NB: Calling GetCopyTotalHisto() transfer the ownership of the histogram pointer to the user. This intoroduces a memory leak in the code,
+    // as we don't explicitly call delete anywhere. However, this is harmless, since this is executed only once in the job.
+    //
+    m_el_hist_map[sys]["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_reff->GetCopyTotalHisto() ) : hist_el_pt_reff;
+    m_mu_hist_map[sys]["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_reff->GetCopyTotalHisto() ) : hist_mu_pt_reff;
+    m_el_hist_map[sys]["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_feff->GetCopyTotalHisto() ) : hist_el_pt_feff;
+    m_mu_hist_map[sys]["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_feff->GetCopyTotalHisto() ) : hist_mu_pt_feff;
+    
+    if ( m_useEtaParametrisation ) {
+    	m_el_hist_map[sys]["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_reff->GetCopyTotalHisto() ) : hist_el_eta_reff;
+    	m_mu_hist_map[sys]["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_reff->GetCopyTotalHisto() ) : hist_mu_eta_reff;
+    	m_el_hist_map[sys]["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_feff->GetCopyTotalHisto() ) : hist_el_eta_feff;
+    	m_mu_hist_map[sys]["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_feff->GetCopyTotalHisto() ) : hist_mu_eta_feff;
+    }
+
+    m_el_hist_map[sys]["pt_reff_YES_TM"] = hist_el_pt_reff_YES_TM;
+    m_mu_hist_map[sys]["pt_reff_YES_TM"] = hist_mu_pt_reff_YES_TM;
+    m_el_hist_map[sys]["pt_feff_YES_TM"] = hist_el_pt_feff_YES_TM;
+    m_mu_hist_map[sys]["pt_feff_YES_TM"] = hist_mu_pt_feff_YES_TM;
+    m_el_hist_map[sys]["pt_reff_NO_TM"]  = hist_el_pt_reff_NO_TM;
+    m_mu_hist_map[sys]["pt_reff_NO_TM"]  = hist_mu_pt_reff_NO_TM;
+    m_el_hist_map[sys]["pt_feff_NO_TM"]  = hist_el_pt_feff_NO_TM;
+    m_mu_hist_map[sys]["pt_feff_NO_TM"]  = hist_mu_pt_feff_NO_TM;
+
+    // eta hist has same binning for r/f
+    //
+    if ( m_useEtaParametrisation ) {
+
+    	// Calculate normalisation factor for (pT * eta) 1D efficiencies case.
+    	//
+    	// This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
+    	// ---> get the TH1 objects that were used for measuring efficiency directly from the TRfficiency object
+     
+    	m_el_reff_tot[sys] = ( teff_el_pt_reff->GetPassedHistogram()->Integral(1,teff_el_pt_reff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_el_pt_reff->GetTotalHistogram()->Integral(1,teff_el_pt_reff->GetTotalHistogram()->GetNbinsX()+1) );
+    	m_el_feff_tot[sys] = ( teff_el_pt_feff->GetPassedHistogram()->Integral(1,teff_el_pt_feff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_el_pt_feff->GetTotalHistogram()->Integral(1,teff_el_pt_feff->GetTotalHistogram()->GetNbinsX()+1) );
+    		     
+    	m_mu_reff_tot[sys] = ( teff_mu_pt_reff->GetPassedHistogram()->Integral(1,teff_mu_pt_reff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_mu_pt_reff->GetTotalHistogram()->Integral(1,teff_mu_pt_reff->GetTotalHistogram()->GetNbinsX()+1) );
+    	m_mu_feff_tot[sys] = ( teff_mu_pt_feff->GetPassedHistogram()->Integral(1,teff_mu_pt_feff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_mu_pt_feff->GetTotalHistogram()->Integral(1,teff_mu_pt_feff->GetTotalHistogram()->GetNbinsX()+1) );
+
+    }
+
+    std::cout << "\n" << std::endl;
     Info("readRFEfficiencies()", "MUON REAL efficiency - pT TH1D name: %s ", histname_mu_pt_reff.c_str() );
     Info("readRFEfficiencies()", "MUON FAKE efficiency - pT TH1D name: %s ", histname_mu_pt_feff.c_str() );
     if ( m_useEtaParametrisation ) {
@@ -1160,11 +1164,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
       Info("readRFEfficiencies()", "ELECTRON REAL efficiency - eta TH1D name: %s ", histname_el_eta_reff.c_str() );
       Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - eta TH1D name: %s ", histname_el_eta_feff.c_str() );
     }
+    std::cout << "\n" << std::endl;
   }
-  std::cout << "\n" << std::endl;
-
+  
   return EL::StatusCode::SUCCESS;
 }
+
 
 EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shared_ptr<leptonObj> lep, std::vector<float>& efficiency, const std::string& type )
 {
@@ -1177,8 +1182,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     float this_low_edge_pt(-1.0), this_up_edge_pt(-1.0);
     float this_low_edge_eta(-999.0), this_up_edge_eta(-999.0);
 
-    std::map< std::string, TH1D* >        *histograms    = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
-    std::map< std::string, TEfficiency* > *tefficiencies = ( lep.get()->flavour == 13 ) ? &m_mu_teff_map : &m_el_teff_map;
+    std::map< std::string, TH1D* >        *histograms    = ( lep.get()->flavour == 13 ) ? &(m_mu_hist_map[m_this_syst]) : &(m_el_hist_map[m_this_syst]);
+    std::map< std::string, TEfficiency* > *tefficiencies = ( lep.get()->flavour == 13 ) ? &(m_mu_teff_map[m_this_syst]) : &(m_el_teff_map[m_this_syst]);
 
     TH1D *hist_pt(nullptr);  
     TH1D *hist_eta(nullptr); 
@@ -1194,6 +1199,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 	    
 	hist_pt = histograms->find("pt_feff_hist")->second;
 	teff_pt = tefficiencies->find("pt_feff")->second;
+	
+	
+    	if ( m_verbose ) { 
+	  Info("getMMEfficiencyAndError()", "\t ===> FAKE histogram pT name: %s", hist_pt->GetName() ); 
+	}
+	
 	
 	if ( m_useTrigMatchingInfo ) {
 	    hist_pt = ( lep.get()->trigmatched ) ? histograms->find("pt_feff_YES_TM")->second : histograms->find("pt_feff_NO_TM")->second;
@@ -1280,7 +1291,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        if ( m_useEtaParametrisation ) {
 
-	    	    float feff_tot = ( lep.get()->flavour == 13 ) ? m_mu_feff_tot : m_el_feff_tot;
+	    	    float feff_tot = ( lep.get()->flavour == 13 ) ? m_mu_feff_tot[m_this_syst] : m_el_feff_tot[m_this_syst];
     	            if ( m_verbose ) {Info("getMMEfficiencyAndError()", "\t\t norm factor = %.3f", feff_tot ); }
 
 	    	    efficiency.at(0) = ( feff_pt * feff_eta ) / feff_tot;
@@ -1310,7 +1321,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
 	hist_pt = histograms->find("pt_reff_hist")->second;
 	teff_pt = tefficiencies->find("pt_reff")->second;
-	
+
+    	if ( m_verbose ) { 
+	  Info("getMMEfficiencyAndError()", "\t ===> REAL histogram pT name: %s", hist_pt->GetName() ); 
+	}
+
 	if ( m_useTrigMatchingInfo ) {
 	    hist_pt = ( lep.get()->trigmatched ) ? histograms->find("pt_reff_YES_TM")->second : histograms->find("pt_reff_NO_TM")->second;
 	}
@@ -1396,7 +1411,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        if ( m_useEtaParametrisation ) {
 
-	    	    float reff_tot = ( lep.get()->flavour == 13 ) ? m_mu_reff_tot : m_el_reff_tot;
+	    	    float reff_tot = ( lep.get()->flavour == 13 ) ? m_mu_reff_tot[m_this_syst] : m_el_reff_tot[m_this_syst];
     	            if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\t norm factor = %.3f", reff_tot ); }
 
 	    	    efficiency.at(0) = ( reff_pt * reff_eta ) / reff_tot;
@@ -1557,8 +1572,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 {
     ANA_CHECK_SET_TYPE (EL::StatusCode);
 
-    if ( m_debug ) { Info("calculateMMWeights()", "Looking at systematic:\n =============> %s", m_this_syst.c_str() ); }
-
+    if ( m_debug ) { 
+      std::cout << "" << std::endl;
+      Info("calculateMMWeights()", "Looking at systematic: ===> %s", m_this_syst.c_str() );
+      std::cout << "" << std::endl;
+    }
+    
     // If is not a dileptonic/trileptonic event, return
     //
     if ( m_dilep_type <= 0 && m_trilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
@@ -1611,227 +1630,3 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
     return EL::StatusCode::SUCCESS;
 }
 
-
-/*
-KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_1;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_2;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_3;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_4;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_5;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_6;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_1;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_2;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_3;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_4;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_5;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_6;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_1;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_2;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_3;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_4;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_5;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_6;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_1;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_2;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_3;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_4;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_5;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_6;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_1;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_2;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_3;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_4;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_5;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_6;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_1;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_2;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_3;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_4;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_5;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_6;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_1;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_2;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_3;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_4;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_5;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_6;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_1;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_2;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_3;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_4;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_5;1	
-  KEY: TH1D	Fake_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_6;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_1;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_2;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_3;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_4;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_5;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_1;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_2;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_3;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_4;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_5;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_1;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_2;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_3;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_4;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_5;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_1;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_2;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_3;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_4;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_5;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_1;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_2;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_3;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_4;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_5;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_1;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_2;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_3;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_4;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_5;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_1;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_2;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_3;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_4;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_5;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_1;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_2;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_3;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_4;1	
-  KEY: TH1D	Fake_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_5;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_1;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_2;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_3;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_4;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_5;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_6;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_7;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_8;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_1;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_2;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_3;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_4;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_5;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_6;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_7;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_8;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_1;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_2;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_3;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_4;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_5;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_6;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_7;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_dn_8;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_1;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_2;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_3;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_4;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_5;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_6;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_7;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_denominator_QMisID_up_8;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_1;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_2;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_3;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_4;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_5;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_6;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_7;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_8;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_1;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_2;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_3;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_4;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_5;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_6;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_7;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_8;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_1;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_2;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_3;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_4;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_5;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_6;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_7;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_dn_8;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_1;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_2;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_3;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_4;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_5;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_6;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_7;1	
-  KEY: TH1D	Real_El_Pt_Efficiency_observed_sub_numerator_QMisID_up_8;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_1;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_2;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_3;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_4;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_5;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_6;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_7;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_dn_8;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_1;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_2;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_3;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_4;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_5;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_6;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_7;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_AllSimStat_up_8;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_1;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_2;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_3;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_4;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_5;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_6;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_7;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_dn_8;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_1;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_2;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_3;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_4;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_5;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_6;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_7;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_denominator_QMisID_up_8;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_1;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_2;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_3;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_4;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_5;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_6;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_7;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_dn_8;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_1;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_2;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_3;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_4;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_5;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_6;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_7;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_AllSimStat_up_8;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_1;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_2;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_3;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_4;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_5;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_6;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_7;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_dn_8;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_1;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_2;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_3;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_4;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_5;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_6;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_7;1	
-  KEY: TH1D	Real_Mu_Pt_Efficiency_observed_sub_numerator_QMisID_up_8;1	
-
-*/

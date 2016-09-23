@@ -138,40 +138,40 @@ private:
 
   /** Input TTree branches which need to be used by the algorithm */
 
-  ULong64_t       m_EventNumber;
-  UInt_t          m_RunNumber;
-  UInt_t          m_mc_channel_number; /** for DATA, mc_channel_number=0 */
-  Int_t 	  m_dilep_type;
-  Int_t           m_trilep_type;
-  Char_t          m_isSS01;
-  Char_t          m_is_T_T;
-  Char_t          m_is_T_AntiT;
-  Char_t          m_is_AntiT_T;
-  Char_t          m_is_AntiT_AntiT;
+  ULong64_t  m_EventNumber;
+  UInt_t     m_RunNumber;
+  UInt_t     m_mc_channel_number; /** for DATA, mc_channel_number=0 */
+  Int_t      m_dilep_type;
+  Int_t      m_trilep_type;
+  Char_t     m_isSS01;
+  Char_t     m_is_T_T;
+  Char_t     m_is_T_AntiT;
+  Char_t     m_is_AntiT_T;
+  Char_t     m_is_AntiT_AntiT;
 
-  Float_t	  m_lep_ID_0;
-  Float_t	  m_lep_Pt_0;
-  Float_t	  m_lep_E_0;
-  Float_t	  m_lep_Eta_0;
-  Float_t	  m_lep_Phi_0;
-  Float_t	  m_lep_EtaBE2_0;
-  Char_t	  m_lep_isTightSelected_0;
-  Char_t	  m_lep_isTrigMatch_0;
+  Float_t    m_lep_ID_0;
+  Float_t    m_lep_Pt_0;
+  Float_t    m_lep_E_0;
+  Float_t    m_lep_Eta_0;
+  Float_t    m_lep_Phi_0;
+  Float_t    m_lep_EtaBE2_0;
+  Char_t     m_lep_isTightSelected_0;
+  Char_t     m_lep_isTrigMatch_0;
 
-  Float_t	  m_lep_ID_1;
-  Float_t	  m_lep_Pt_1;
-  Float_t	  m_lep_E_1;
-  Float_t	  m_lep_Eta_1;
-  Float_t	  m_lep_Phi_1;
-  Float_t	  m_lep_EtaBE2_1;
-  Char_t	  m_lep_isTightSelected_1;
-  Char_t	  m_lep_isTrigMatch_1;
+  Float_t    m_lep_ID_1;
+  Float_t    m_lep_Pt_1;
+  Float_t    m_lep_E_1;
+  Float_t    m_lep_Eta_1;
+  Float_t    m_lep_Phi_1;
+  Float_t    m_lep_EtaBE2_1;
+  Char_t     m_lep_isTightSelected_1;
+  Char_t     m_lep_isTrigMatch_1;
 
-  Float_t	  m_QMisIDWeight_NOMINAL_in;
-  Float_t	  m_QMisIDWeight_UP_in;
-  Float_t	  m_QMisIDWeight_DN_in;
+  Float_t    m_QMisIDWeight_NOMINAL_in;
+  Float_t    m_QMisIDWeight_UP_in;
+  Float_t    m_QMisIDWeight_DN_in;
 
-  Float_t	  m_MMWeight_NOMINAL_in;
+  Float_t    m_MMWeight_NOMINAL_in;
   
   /** Map containing input branches with the variations of MM weights for each systematic */
   
@@ -191,13 +191,13 @@ private:
 
   /** Extra branches to be stored in output TTree */
 
-  Float_t	  m_QMisIDWeight_NOMINAL_out = 1.0;
-  Float_t	  m_QMisIDWeight_UP_out = 1.0;
-  Float_t	  m_QMisIDWeight_DN_out = 1.0;
+  Float_t   m_QMisIDWeight_NOMINAL_out = 1.0;
+  Float_t   m_QMisIDWeight_UP_out = 1.0;
+  Float_t   m_QMisIDWeight_DN_out = 1.0;
 
   /** Output branch with nominal MM weight */
 
-  Float_t	  m_MMWeight_NOMINAL_out = 1.0;
+  Float_t   m_MMWeight_NOMINAL_out = 1.0;
 
   /** Map containing output branches with the variations of MM weights for each systematic */
 
@@ -219,21 +219,21 @@ private:
   std::shared_ptr<NTupReprocesser::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<NTupReprocesser::leptonObj> > m_leptons; //!
 
-
   std::map< std::string, TH2D* > m_QMisID_hist_map; //!
 
-  std::map< std::string, TH1D* > m_el_hist_map; //!
-  std::map< std::string, TH1D* > m_mu_hist_map; //!
+  /** For each systematic, store a map with the efficiency histogram "type" to be read and the histogram pointer */
 
-  std::map< std::string, TEfficiency* > m_el_teff_map; //!
-  std::map< std::string, TEfficiency* > m_mu_teff_map; //!
+  std::map< std::string, std::map< std::string, TH1D* > >        m_el_hist_map; //!
+  std::map< std::string, std::map< std::string, TH1D* > >        m_mu_hist_map; //!
+  std::map< std::string, std::map< std::string, TEfficiency* > > m_el_teff_map; //!
+  std::map< std::string, std::map< std::string, TEfficiency* > > m_mu_teff_map; //!
 
-  /** Normalisation factors for r/f efficiencies */
+  /** Normalisation factors for r/f efficiencies (different for each systematic) */
 
-  double m_el_reff_tot = 1.0;
-  double m_el_feff_tot = 1.0;
-  double m_mu_reff_tot = 1.0;
-  double m_mu_feff_tot = 1.0;
+  std::map< std::string, float > m_el_reff_tot;
+  std::map< std::string, float > m_el_feff_tot;
+  std::map< std::string, float > m_mu_reff_tot;
+  std::map< std::string, float > m_mu_feff_tot;
 
 public:
 
@@ -264,6 +264,8 @@ public:
   }
 
 private:
+
+  std::string str_replace( const std::string& input_str, const std::string& old_substr, const std::string& new_substr );
 
   EL::StatusCode tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list ); 
 

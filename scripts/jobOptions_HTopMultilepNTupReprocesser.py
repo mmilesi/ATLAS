@@ -36,7 +36,7 @@ base_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysis
 
 HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultilepNTupReprocesser",
                                     "m_debug"                      : True,
-                                    "m_verbose"                    : False,
+                                    "m_verbose"                    : True,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
                                     "m_weightToCalc"               : "MM",#"QMisID,MM",
@@ -45,7 +45,12 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TanitiT_25ns_v19.root",
                                     "m_useTAntiTRates"             : True,
                                     #
-				    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
+				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
+				    #
+				    #
+				    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v19_DDQMisID_QMisIDSys_2",
+				    #
+				    #
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_CPPM",
 				    #"m_EFF_YES_TM_dir"	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_YES_TM",
 				    #"m_EFF_NO_TM_dir" 	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_NO_TM",
@@ -57,6 +62,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #"m_REFF_dir"  		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_02/OutputPlots_MMClosureRates_NoCorrections_TTBarNonAllHad_25ns_v20_02",
 				    #"m_REFF_dir"  		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_02/OutputPlots_MMClosureRates_NoCorrections_TTBarSemilep_25ns_v20_02",
                                     #
+				    "m_systematics_list"           : "Stat,numerator_QMisID_dn_5",
 				    "m_useTrigMatchingInfo"        : False,
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
                                     "m_doMMClosure"                : False,
