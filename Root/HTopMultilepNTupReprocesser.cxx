@@ -945,227 +945,249 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
   // ***********************************************************************
  
+  std::vector<std::string> sysdirs = { "up","dn" };
+  std::vector<int> sysbins         = {3}; // hardcoded - change me! NB: must be different for r/f, e/mu
+ 
   std::string sys_append;
 
+  bool nominal_read(false);
+  
   for ( const auto& sys : m_systematics ) {
   
     std::cout << "" << std::endl;
     Info("readRFEfficiencies()", "Reading inputs for systematic: ===> %s", sys.c_str() );
     std::cout << "" << std::endl;
+        
+    for ( const auto& dir : sysdirs ) {
+    	    
+      for ( const auto& bin : sysbins ) {
+
+        // Do this only once for the nominal case:
+	 
+	if ( sys.compare("Stat") == 0 && nominal_read ) continue;
+	
+        sys_append = ( sys.compare("Stat") == 0 ) ? "" : ( "_" + sys + "_" + dir +  "_" + std::to_string(bin) );
+	
+        // Histogram names - electrons
+        //
+        std::string histname_el_pt_reff  = "Real_El_Pt_Efficiency_"  + rate_type + sys_append;
+        std::string histname_el_eta_reff = "Real_El_Eta_Efficiency_" + rate_type + sys_append;
     
-    // Append sys name if not nominal case
+        std::string histname_el_pt_feff(""), histname_el_eta_feff("");
+
+        if ( !m_useScaledFakeEfficiency || m_doMMClosure ) {
+          histname_el_pt_feff  = "Fake_El_Pt_Efficiency_"  + rate_type + sys_append;
+          histname_el_eta_feff = "Fake_El_Eta_Efficiency_" + rate_type + sys_append;
+        } else {
+          histname_el_pt_feff  = "ScaledFake_El_Pt_Efficiency_"  + rate_type + sys_append;
+          histname_el_eta_feff = "ScaledFake_El_Eta_Efficiency_" + rate_type + sys_append;
+        }
+
+        // Histogram names - muons
+        //
+        std::string histname_mu_pt_reff  = "Real_Mu_Pt_Efficiency_"  + rate_type + sys_append;
+        std::string histname_mu_eta_reff = "Real_Mu_Eta_Efficiency_" + rate_type + sys_append;
+
+        std::string histname_mu_pt_feff  = "Fake_Mu_Pt_Efficiency_"  + rate_type + sys_append;
+        std::string histname_mu_eta_feff = "Fake_Mu_Eta_Efficiency_" + rate_type + sys_append;
+
+        // Histograms - electrons
+
+        TH1D *hist_el_pt_reff(nullptr);
+        TH1D *hist_el_eta_reff(nullptr);
+        TH1D *hist_el_pt_feff(nullptr);
+        TH1D *hist_el_eta_feff(nullptr);
+
+        TH1D *hist_el_pt_reff_YES_TM(nullptr);
+        TH1D *hist_el_pt_reff_NO_TM(nullptr);
+        TH1D *hist_el_pt_feff_YES_TM(nullptr);
+        TH1D *hist_el_pt_feff_NO_TM(nullptr);
+
+        TEfficiency *teff_el_pt_reff(nullptr);
+        TEfficiency *teff_el_eta_reff(nullptr);
+        TEfficiency *teff_el_pt_feff(nullptr);
+        TEfficiency *teff_el_eta_feff(nullptr);
+
+        // Histograms - muons
+
+        TH1D *hist_mu_pt_reff(nullptr);
+        TH1D *hist_mu_eta_reff(nullptr);
+        TH1D *hist_mu_pt_feff(nullptr);
+        TH1D *hist_mu_eta_feff(nullptr);
+
+        TH1D *hist_mu_pt_reff_YES_TM(nullptr);
+        TH1D *hist_mu_pt_reff_NO_TM(nullptr);
+        TH1D *hist_mu_pt_feff_YES_TM(nullptr);
+        TH1D *hist_mu_pt_feff_NO_TM(nullptr);
+
+        TEfficiency *teff_mu_pt_reff(nullptr);
+        TEfficiency *teff_mu_eta_reff(nullptr);
+        TEfficiency *teff_mu_pt_feff(nullptr);
+        TEfficiency *teff_mu_eta_feff(nullptr);
+
+        // Get real efficiency histograms
+        //
+        hist_el_pt_reff  = get_object<TH1D>( *file_R_el, histname_el_pt_reff );
+        teff_el_pt_reff  = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_pt_reff, "Efficiency", "TEfficiency" ).c_str() );
+        if( m_useEtaParametrisation ) {
+      	    hist_el_eta_reff = get_object<TH1D>( *file_R_el, histname_el_eta_reff );
+      	    teff_el_eta_reff = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_eta_reff, "Efficiency", "TEfficiency" ).c_str() );
+        }
+
+        hist_mu_pt_reff  = get_object<TH1D>( *file_R_mu, histname_mu_pt_reff );
+        teff_mu_pt_reff  = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_pt_reff, "Efficiency", "TEfficiency" ).c_str() );
+        if ( m_useEtaParametrisation ) {
+      	    hist_mu_eta_reff = get_object<TH1D>( *file_R_mu, histname_mu_eta_reff );
+      	    teff_mu_eta_reff = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_eta_reff, "Efficiency", "TEfficiency" ).c_str() );
+        }
+
+        // Get fake efficiency histograms
+        //
+        hist_el_pt_feff  = get_object<TH1D>( *file_F_el, histname_el_pt_feff );
+        teff_el_pt_feff  = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_pt_feff, "Efficiency", "TEfficiency" ).c_str() );
+        if ( m_useEtaParametrisation ) {
+      	    hist_el_eta_feff = get_object<TH1D>( *file_F_el, histname_el_eta_feff );
+      	    teff_el_eta_feff = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_eta_feff, "Efficiency", "TEfficiency" ).c_str() );
+        }
+
+        hist_mu_pt_feff    = get_object<TH1D>( *file_F_mu, histname_mu_pt_feff );
+        teff_mu_pt_feff  = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_pt_feff, "Efficiency", "TEfficiency" ).c_str() );
+        if ( m_useEtaParametrisation ) {
+      	    hist_mu_eta_feff = get_object<TH1D>( *file_F_mu, histname_mu_eta_feff );
+      	    teff_mu_eta_feff = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_eta_feff, "Efficiency", "TEfficiency" ).c_str() );
+        }
+
+        // ***********************************************************************
+
+        if ( m_useTrigMatchingInfo && m_useEtaParametrisation ) {
+      	    Error("readRFEfficiencies()", "As of today, it's not possible to use eta parametrisation when reading trigger-matching-dependent efficiencies. Check your job configuration and retry. Aborting" );
+      	    return EL::StatusCode::FAILURE;
+        }
+
+        if ( m_useTrigMatchingInfo ) {
+
+          if ( m_EFF_YES_TM_dir.back() != '/' ) { m_EFF_YES_TM_dir += "/"; }
+          if ( m_EFF_NO_TM_dir.back() != '/' )  { m_EFF_NO_TM_dir += "/"; }
+
+          Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe TRIGGER-MATCHED) from directory: %s ", m_EFF_YES_TM_dir.c_str() );
+
+          std::string path_YES_TM = m_EFF_YES_TM_dir + m_Efficiency_Filename;
+          TFile *file_YES_TM = TFile::Open(path_YES_TM.c_str());
+          HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_YES_TM->IsOpen(), "Failed to open ROOT file" );
+          Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_YES_TM.c_str() );
+
+          Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe NOT TRIGGER-MATCHED) from directory: %s ", m_EFF_NO_TM_dir.c_str() );
+
+          std::string path_NO_TM = m_EFF_NO_TM_dir + m_Efficiency_Filename;
+          TFile *file_NO_TM = TFile::Open(path_NO_TM.c_str());
+          HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_NO_TM->IsOpen(), "Failed to open ROOT file" );
+          Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_NO_TM.c_str() );
+
+          // Get real efficiency histograms
+          //
+          hist_el_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_reff );
+          hist_el_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_reff );
+
+          hist_mu_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_reff );
+          hist_mu_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_reff );
+
+          // Get fake efficiency histograms
+          //
+          hist_el_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_feff );
+          hist_el_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_feff );
+
+          hist_mu_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_feff );
+          hist_mu_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_feff );
+
+        }
+        
+	// ***********************************************************************
+
+        // Fill maps for later usage
+
+        std::string syskey = ( sys.compare("Stat") == 0 ) ? sys : ( sys + "_" + dir + "_" + std::to_string(bin) );
+        
+	if ( m_debug ) { Info("readRFEfficiencies()", "Storing histograms in map w/ the following key: %s ", syskey.c_str() ); }
+
+        m_el_teff_map[syskey]["pt_reff"]	= teff_el_pt_reff;
+        m_mu_teff_map[syskey]["pt_reff"]	= teff_mu_pt_reff;
+        m_el_teff_map[syskey]["pt_feff"]	= teff_el_pt_feff;
+        m_mu_teff_map[syskey]["pt_feff"]	= teff_mu_pt_feff;
     
-    sys_append = ( sys.compare("Stat") == 0 ) ? "" : ( "_" + sys );
+        if ( m_useEtaParametrisation ) {
+      	    m_el_teff_map[syskey]["eta_reff"]  = teff_el_eta_reff;
+      	    m_mu_teff_map[syskey]["eta_reff"]  = teff_mu_eta_reff;
+      	    m_el_teff_map[syskey]["eta_feff"]  = teff_el_eta_feff;
+      	    m_mu_teff_map[syskey]["eta_feff"]  = teff_mu_eta_feff;
+        }
+
+        // Save in the histogram map a clone of the denominator histogram associated to the TEfficiency object in order to access the axis binning
+        // If we are not using TEfficiency, take the TH1 efficiency histogram itself (use the denominator "total" histogram by convention) 
+        //
+        // NB: Calling GetCopyTotalHisto() transfer the ownership of the histogram pointer to the user. This intoroduces a memory leak in the code,
+        // as we don't explicitly call delete anywhere. However, this is harmless, since this is executed only once in the job.
+        //
+        m_el_hist_map[syskey]["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_reff->GetCopyTotalHisto() ) : hist_el_pt_reff;
+        m_mu_hist_map[syskey]["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_reff->GetCopyTotalHisto() ) : hist_mu_pt_reff;
+        m_el_hist_map[syskey]["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_feff->GetCopyTotalHisto() ) : hist_el_pt_feff;
+        m_mu_hist_map[syskey]["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_feff->GetCopyTotalHisto() ) : hist_mu_pt_feff;
     
-    // Histogram names - electrons
-    //
-    std::string histname_el_pt_reff  = "Real_El_Pt_Efficiency_"  + rate_type + sys_append;
-    std::string histname_el_eta_reff = "Real_El_Eta_Efficiency_" + rate_type + sys_append;
-    
-    std::string histname_el_pt_feff(""), histname_el_eta_feff("");
+        if ( m_useEtaParametrisation ) {
+      	    m_el_hist_map[syskey]["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_reff->GetCopyTotalHisto() ) : hist_el_eta_reff;
+      	    m_mu_hist_map[syskey]["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_reff->GetCopyTotalHisto() ) : hist_mu_eta_reff;
+      	    m_el_hist_map[syskey]["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_feff->GetCopyTotalHisto() ) : hist_el_eta_feff;
+      	    m_mu_hist_map[syskey]["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_feff->GetCopyTotalHisto() ) : hist_mu_eta_feff;
+        }
 
-    if ( !m_useScaledFakeEfficiency || m_doMMClosure ) {
-      histname_el_pt_feff  = "Fake_El_Pt_Efficiency_"  + rate_type + sys_append;
-      histname_el_eta_feff = "Fake_El_Eta_Efficiency_" + rate_type + sys_append;
-    } else {
-      histname_el_pt_feff  = "ScaledFake_El_Pt_Efficiency_"  + rate_type + sys_append;
-      histname_el_eta_feff = "ScaledFake_El_Eta_Efficiency_" + rate_type + sys_append;
-    }
+        m_el_hist_map[syskey]["pt_reff_YES_TM"] = hist_el_pt_reff_YES_TM;
+        m_mu_hist_map[syskey]["pt_reff_YES_TM"] = hist_mu_pt_reff_YES_TM;
+        m_el_hist_map[syskey]["pt_feff_YES_TM"] = hist_el_pt_feff_YES_TM;
+        m_mu_hist_map[syskey]["pt_feff_YES_TM"] = hist_mu_pt_feff_YES_TM;
+        m_el_hist_map[syskey]["pt_reff_NO_TM"]  = hist_el_pt_reff_NO_TM;
+        m_mu_hist_map[syskey]["pt_reff_NO_TM"]  = hist_mu_pt_reff_NO_TM;
+        m_el_hist_map[syskey]["pt_feff_NO_TM"]  = hist_el_pt_feff_NO_TM;
+        m_mu_hist_map[syskey]["pt_feff_NO_TM"]  = hist_mu_pt_feff_NO_TM;
 
-    // Histogram names - muons
-    //
-    std::string histname_mu_pt_reff  = "Real_Mu_Pt_Efficiency_"  + rate_type + sys_append;
-    std::string histname_mu_eta_reff = "Real_Mu_Eta_Efficiency_" + rate_type + sys_append;
+        // eta hist has same binning for r/f
+        //
+        if ( m_useEtaParametrisation ) {
 
-    std::string histname_mu_pt_feff  = "Fake_Mu_Pt_Efficiency_"  + rate_type + sys_append;
-    std::string histname_mu_eta_feff = "Fake_Mu_Eta_Efficiency_" + rate_type + sys_append;
+      	    // Calculate normalisation factor for (pT * eta) 1D efficiencies case.
+      	    //
+      	    // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
+      	    // ---> get the TH1 objects that were used for measuring efficiency directly from the TRfficiency object
+         
+      	    m_el_reff_tot[syskey] = ( teff_el_pt_reff->GetPassedHistogram()->Integral(1,teff_el_pt_reff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_el_pt_reff->GetTotalHistogram()->Integral(1,teff_el_pt_reff->GetTotalHistogram()->GetNbinsX()+1) );
+      	    m_el_feff_tot[syskey] = ( teff_el_pt_feff->GetPassedHistogram()->Integral(1,teff_el_pt_feff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_el_pt_feff->GetTotalHistogram()->Integral(1,teff_el_pt_feff->GetTotalHistogram()->GetNbinsX()+1) );
+      	  		 
+      	    m_mu_reff_tot[syskey] = ( teff_mu_pt_reff->GetPassedHistogram()->Integral(1,teff_mu_pt_reff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_mu_pt_reff->GetTotalHistogram()->Integral(1,teff_mu_pt_reff->GetTotalHistogram()->GetNbinsX()+1) );
+      	    m_mu_feff_tot[syskey] = ( teff_mu_pt_feff->GetPassedHistogram()->Integral(1,teff_mu_pt_feff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_mu_pt_feff->GetTotalHistogram()->Integral(1,teff_mu_pt_feff->GetTotalHistogram()->GetNbinsX()+1) );
 
-    // Histograms - electrons
+        }
 
-    TH1D *hist_el_pt_reff(nullptr);
-    TH1D *hist_el_eta_reff(nullptr);
-    TH1D *hist_el_pt_feff(nullptr);
-    TH1D *hist_el_eta_feff(nullptr);
-
-    TH1D *hist_el_pt_reff_YES_TM(nullptr);
-    TH1D *hist_el_pt_reff_NO_TM(nullptr);
-    TH1D *hist_el_pt_feff_YES_TM(nullptr);
-    TH1D *hist_el_pt_feff_NO_TM(nullptr);
-
-    TEfficiency *teff_el_pt_reff(nullptr);
-    TEfficiency *teff_el_eta_reff(nullptr);
-    TEfficiency *teff_el_pt_feff(nullptr);
-    TEfficiency *teff_el_eta_feff(nullptr);
-
-    // Histograms - muons
-
-    TH1D *hist_mu_pt_reff(nullptr);
-    TH1D *hist_mu_eta_reff(nullptr);
-    TH1D *hist_mu_pt_feff(nullptr);
-    TH1D *hist_mu_eta_feff(nullptr);
-
-    TH1D *hist_mu_pt_reff_YES_TM(nullptr);
-    TH1D *hist_mu_pt_reff_NO_TM(nullptr);
-    TH1D *hist_mu_pt_feff_YES_TM(nullptr);
-    TH1D *hist_mu_pt_feff_NO_TM(nullptr);
-
-    TEfficiency *teff_mu_pt_reff(nullptr);
-    TEfficiency *teff_mu_eta_reff(nullptr);
-    TEfficiency *teff_mu_pt_feff(nullptr);
-    TEfficiency *teff_mu_eta_feff(nullptr);
-
-
-    // Get real efficiency histograms
-    //
-    hist_el_pt_reff  = get_object<TH1D>( *file_R_el, histname_el_pt_reff );
-    teff_el_pt_reff  = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_pt_reff, "Efficiency", "TEfficiency" ).c_str() );
-    if( m_useEtaParametrisation ) {
-    	hist_el_eta_reff = get_object<TH1D>( *file_R_el, histname_el_eta_reff );
-    	teff_el_eta_reff = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_eta_reff, "Efficiency", "TEfficiency" ).c_str() );
-    }
-
-    hist_mu_pt_reff  = get_object<TH1D>( *file_R_mu, histname_mu_pt_reff );
-    teff_mu_pt_reff  = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_pt_reff, "Efficiency", "TEfficiency" ).c_str() );
-    if ( m_useEtaParametrisation ) {
-    	hist_mu_eta_reff = get_object<TH1D>( *file_R_mu, histname_mu_eta_reff );
-    	teff_mu_eta_reff = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_eta_reff, "Efficiency", "TEfficiency" ).c_str() );
-    }
-
-    // Get fake efficiency histograms
-    //
-    hist_el_pt_feff  = get_object<TH1D>( *file_F_el, histname_el_pt_feff );
-    teff_el_pt_feff  = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_pt_feff, "Efficiency", "TEfficiency" ).c_str() );
-    if ( m_useEtaParametrisation ) {
-    	hist_el_eta_feff = get_object<TH1D>( *file_F_el, histname_el_eta_feff );
-    	teff_el_eta_feff = get_object<TEfficiency>( *file_R_el, this->str_replace( histname_el_eta_feff, "Efficiency", "TEfficiency" ).c_str() );
-    }
-
-    hist_mu_pt_feff    = get_object<TH1D>( *file_F_mu, histname_mu_pt_feff );
-    teff_mu_pt_feff  = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_pt_feff, "Efficiency", "TEfficiency" ).c_str() );
-    if ( m_useEtaParametrisation ) {
-    	hist_mu_eta_feff = get_object<TH1D>( *file_F_mu, histname_mu_eta_feff );
-    	teff_mu_eta_feff = get_object<TEfficiency>( *file_R_mu, this->str_replace( histname_mu_eta_feff, "Efficiency", "TEfficiency" ).c_str() );
-    }
-
-    // ***********************************************************************
-
-    if ( m_useTrigMatchingInfo && m_useEtaParametrisation ) {
-    	Error("readRFEfficiencies()", "As of today, it's not possible to use eta parametrisation when reading trigger-matching-dependent efficiencies. Check your job configuration and retry. Aborting" );
-    	return EL::StatusCode::FAILURE;
-    }
-
-    if ( m_useTrigMatchingInfo ) {
-
-      if ( m_EFF_YES_TM_dir.back() != '/' ) { m_EFF_YES_TM_dir += "/"; }
-      if ( m_EFF_NO_TM_dir.back() != '/' )  { m_EFF_NO_TM_dir += "/"; }
-
-      Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe TRIGGER-MATCHED) from directory: %s ", m_EFF_YES_TM_dir.c_str() );
-
-      std::string path_YES_TM = m_EFF_YES_TM_dir + m_Efficiency_Filename;
-      TFile *file_YES_TM = TFile::Open(path_YES_TM.c_str());
-      HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_YES_TM->IsOpen(), "Failed to open ROOT file" );
-      Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_YES_TM.c_str() );
-
-      Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe NOT TRIGGER-MATCHED) from directory: %s ", m_EFF_NO_TM_dir.c_str() );
-
-      std::string path_NO_TM = m_EFF_NO_TM_dir + m_Efficiency_Filename;
-      TFile *file_NO_TM = TFile::Open(path_NO_TM.c_str());
-      HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_NO_TM->IsOpen(), "Failed to open ROOT file" );
-      Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_NO_TM.c_str() );
-
-      // Get real efficiency histograms
-      //
-      hist_el_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_reff );
-      hist_el_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_reff );
-
-      hist_mu_pt_reff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_reff );
-      hist_mu_pt_reff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_reff );
-
-      // Get fake efficiency histograms
-      //
-      hist_el_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_el_pt_feff );
-      hist_el_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_el_pt_feff );
-
-      hist_mu_pt_feff_YES_TM = get_object<TH1D>( *file_YES_TM, histname_mu_pt_feff );
-      hist_mu_pt_feff_NO_TM  = get_object<TH1D>( *file_NO_TM, histname_mu_pt_feff );
-
-    }
-    // ***********************************************************************
-
-    // Fill maps for later usage
-
-    m_el_teff_map[sys]["pt_reff"]   = teff_el_pt_reff;
-    m_mu_teff_map[sys]["pt_reff"]   = teff_mu_pt_reff;
-    m_el_teff_map[sys]["pt_feff"]   = teff_el_pt_feff;
-    m_mu_teff_map[sys]["pt_feff"]   = teff_mu_pt_feff;
-    
-    if ( m_useEtaParametrisation ) {
-    	m_el_teff_map[sys]["eta_reff"]  = teff_el_eta_reff;
-    	m_mu_teff_map[sys]["eta_reff"]  = teff_mu_eta_reff;
-    	m_el_teff_map[sys]["eta_feff"]  = teff_el_eta_feff;
-    	m_mu_teff_map[sys]["eta_feff"]  = teff_mu_eta_feff;
-    }
-
-    // Save in the histogram map a clone of the denominator histogram associated to the TEfficiency object in order to access the axis binning
-    // If we are not using TEfficiency, take the TH1 efficiency histogram itself (use the denominator "total" histogram by convention) 
-    //
-    // NB: Calling GetCopyTotalHisto() transfer the ownership of the histogram pointer to the user. This intoroduces a memory leak in the code,
-    // as we don't explicitly call delete anywhere. However, this is harmless, since this is executed only once in the job.
-    //
-    m_el_hist_map[sys]["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_reff->GetCopyTotalHisto() ) : hist_el_pt_reff;
-    m_mu_hist_map[sys]["pt_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_reff->GetCopyTotalHisto() ) : hist_mu_pt_reff;
-    m_el_hist_map[sys]["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_pt_feff->GetCopyTotalHisto() ) : hist_el_pt_feff;
-    m_mu_hist_map[sys]["pt_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_pt_feff->GetCopyTotalHisto() ) : hist_mu_pt_feff;
-    
-    if ( m_useEtaParametrisation ) {
-    	m_el_hist_map[sys]["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_reff->GetCopyTotalHisto() ) : hist_el_eta_reff;
-    	m_mu_hist_map[sys]["eta_reff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_reff->GetCopyTotalHisto() ) : hist_mu_eta_reff;
-    	m_el_hist_map[sys]["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_el_eta_feff->GetCopyTotalHisto() ) : hist_el_eta_feff;
-    	m_mu_hist_map[sys]["eta_feff_hist"] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff_mu_eta_feff->GetCopyTotalHisto() ) : hist_mu_eta_feff;
-    }
-
-    m_el_hist_map[sys]["pt_reff_YES_TM"] = hist_el_pt_reff_YES_TM;
-    m_mu_hist_map[sys]["pt_reff_YES_TM"] = hist_mu_pt_reff_YES_TM;
-    m_el_hist_map[sys]["pt_feff_YES_TM"] = hist_el_pt_feff_YES_TM;
-    m_mu_hist_map[sys]["pt_feff_YES_TM"] = hist_mu_pt_feff_YES_TM;
-    m_el_hist_map[sys]["pt_reff_NO_TM"]  = hist_el_pt_reff_NO_TM;
-    m_mu_hist_map[sys]["pt_reff_NO_TM"]  = hist_mu_pt_reff_NO_TM;
-    m_el_hist_map[sys]["pt_feff_NO_TM"]  = hist_el_pt_feff_NO_TM;
-    m_mu_hist_map[sys]["pt_feff_NO_TM"]  = hist_mu_pt_feff_NO_TM;
-
-    // eta hist has same binning for r/f
-    //
-    if ( m_useEtaParametrisation ) {
-
-    	// Calculate normalisation factor for (pT * eta) 1D efficiencies case.
-    	//
-    	// This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
-    	// ---> get the TH1 objects that were used for measuring efficiency directly from the TRfficiency object
-     
-    	m_el_reff_tot[sys] = ( teff_el_pt_reff->GetPassedHistogram()->Integral(1,teff_el_pt_reff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_el_pt_reff->GetTotalHistogram()->Integral(1,teff_el_pt_reff->GetTotalHistogram()->GetNbinsX()+1) );
-    	m_el_feff_tot[sys] = ( teff_el_pt_feff->GetPassedHistogram()->Integral(1,teff_el_pt_feff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_el_pt_feff->GetTotalHistogram()->Integral(1,teff_el_pt_feff->GetTotalHistogram()->GetNbinsX()+1) );
-    		     
-    	m_mu_reff_tot[sys] = ( teff_mu_pt_reff->GetPassedHistogram()->Integral(1,teff_mu_pt_reff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_mu_pt_reff->GetTotalHistogram()->Integral(1,teff_mu_pt_reff->GetTotalHistogram()->GetNbinsX()+1) );
-    	m_mu_feff_tot[sys] = ( teff_mu_pt_feff->GetPassedHistogram()->Integral(1,teff_mu_pt_feff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff_mu_pt_feff->GetTotalHistogram()->Integral(1,teff_mu_pt_feff->GetTotalHistogram()->GetNbinsX()+1) );
-
-    }
-
-    std::cout << "\n" << std::endl;
-    Info("readRFEfficiencies()", "MUON REAL efficiency - pT TH1D name: %s ", histname_mu_pt_reff.c_str() );
-    Info("readRFEfficiencies()", "MUON FAKE efficiency - pT TH1D name: %s ", histname_mu_pt_feff.c_str() );
-    if ( m_useEtaParametrisation ) {
-      Info("readRFEfficiencies()", "MUON REAL efficiency - eta TH1D name: %s ", histname_mu_eta_reff.c_str() );
-      Info("readRFEfficiencies()", "MUON FAKE efficiency - eta TH1D name: %s ", histname_mu_eta_feff.c_str() );
-    }
-    std::cout << "	      --------------------------------------------" << std::endl;
-    Info("readRFEfficiencies()", "ELECTRON REAL efficiency - pT TH1D name: %s ", histname_el_pt_reff.c_str() );
-    Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - pT TH1D name: %s ", histname_el_pt_feff.c_str() );
-    if ( m_useEtaParametrisation ) {
-      Info("readRFEfficiencies()", "ELECTRON REAL efficiency - eta TH1D name: %s ", histname_el_eta_reff.c_str() );
-      Info("readRFEfficiencies()", "ELECTRON FAKE efficiency - eta TH1D name: %s ", histname_el_eta_feff.c_str() );
-    }
-    std::cout << "\n" << std::endl;
-  }
+        std::cout << "\n" << std::endl;
+        Info("readRFEfficiencies()", "\tMUON REAL efficiency - pT TH1D name: %s ", histname_mu_pt_reff.c_str() );
+        Info("readRFEfficiencies()", "\tMUON FAKE efficiency - pT TH1D name: %s ", histname_mu_pt_feff.c_str() );
+        if ( m_useEtaParametrisation ) {
+          Info("readRFEfficiencies()", "\tMUON REAL efficiency - eta TH1D name: %s ", histname_mu_eta_reff.c_str() );
+          Info("readRFEfficiencies()", "\tMUON FAKE efficiency - eta TH1D name: %s ", histname_mu_eta_feff.c_str() );
+        }
+        std::cout << "\t\t\t\t--------------------------------------------" << std::endl;
+        Info("readRFEfficiencies()", "\tELECTRON REAL efficiency - pT TH1D name: %s ", histname_el_pt_reff.c_str() );
+        Info("readRFEfficiencies()", "\tELECTRON FAKE efficiency - pT TH1D name: %s ", histname_el_pt_feff.c_str() );
+        if ( m_useEtaParametrisation ) {
+          Info("readRFEfficiencies()", "\tELECTRON REAL efficiency - eta TH1D name: %s ", histname_el_eta_reff.c_str() );
+          Info("readRFEfficiencies()", "\tELECTRON FAKE efficiency - eta TH1D name: %s ", histname_el_eta_feff.c_str() );
+        }
+        std::cout << "\n" << std::endl;
+	
+	if ( sys.compare("Stat") == 0 ) { nominal_read = true; }
+	
+      } // loop over sys bins
+      
+    } // loop over sys directions
+  
+  } // loop over systematics
   
   return EL::StatusCode::SUCCESS;
 }
@@ -1182,14 +1204,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     float this_low_edge_pt(-1.0), this_up_edge_pt(-1.0);
     float this_low_edge_eta(-999.0), this_up_edge_eta(-999.0);
 
-    std::map< std::string, TH1D* >        *histograms    = ( lep.get()->flavour == 13 ) ? &(m_mu_hist_map[m_this_syst]) : &(m_el_hist_map[m_this_syst]);
-    std::map< std::string, TEfficiency* > *tefficiencies = ( lep.get()->flavour == 13 ) ? &(m_mu_teff_map[m_this_syst]) : &(m_el_teff_map[m_this_syst]);
-
-    TH1D *hist_pt(nullptr);  
-    TH1D *hist_eta(nullptr); 
-    
-    TEfficiency *teff_pt(nullptr);  
-    TEfficiency *teff_eta (nullptr);
+    std::map< std::string, std::map< std::string, TH1D* > >        *histograms    = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
+    std::map< std::string, std::map< std::string, TEfficiency* > > *tefficiencies = ( lep.get()->flavour == 13 ) ? &m_mu_teff_map : &m_el_teff_map;
 
     //  1) Fake case: choose appropriate histogram
     //
@@ -1197,31 +1213,19 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading fake efficiency..."); }
 	    
-	hist_pt = histograms->find("pt_feff_hist")->second;
-	teff_pt = tefficiencies->find("pt_feff")->second;
-	
-	
-    	if ( m_verbose ) { 
-	  Info("getMMEfficiencyAndError()", "\t ===> FAKE histogram pT name: %s", hist_pt->GetName() ); 
-	}
-	
-	
-	if ( m_useTrigMatchingInfo ) {
-	    hist_pt = ( lep.get()->trigmatched ) ? histograms->find("pt_feff_YES_TM")->second : histograms->find("pt_feff_NO_TM")->second;
-	}
+	// Get the number of bins. Use nominal
+	    
+	int nbins_pt = (histograms->find("Stat")->second).find("pt_feff_hist")->second->GetNbinsX()+1;
 
-	if ( m_useEtaParametrisation ) {
-	    hist_eta = histograms->find("eta_feff_hist")->second;
-            teff_eta = tefficiencies->find("eta_feff")->second;
-	}
+        std::string syskey_up(m_this_syst), syskey_dn(m_this_syst);
 
 	// Loop over number of pt bins
     	// Do not consider underflow, i.e. 0th bin
     	//
-    	for ( int p(1); p <= hist_pt->GetNbinsX()+1; ++p ) {
+    	for ( int p(1); p <= nbins_pt; ++p ) {
 
-    	    this_low_edge_pt = hist_pt->GetXaxis()->GetBinLowEdge(p);
-    	    this_up_edge_pt  = hist_pt->GetXaxis()->GetBinLowEdge(p+1);
+    	    this_low_edge_pt = (histograms->find("Stat")->second).find("pt_feff_hist")->second->GetBinLowEdge(p);
+    	    this_up_edge_pt  = (histograms->find("Stat")->second).find("pt_feff_hist")->second->GetBinLowEdge(p+1);
 
     	    if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
 
@@ -1229,14 +1233,38 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        float feff_pt(1.0), feff_pt_err_up(0.0), feff_pt_err_dn(0.0);
 
-		if ( m_useTEfficiency ) {
-		     feff_pt	    = teff_pt->GetEfficiency(p);
-		     feff_pt_err_up = teff_pt->GetEfficiencyErrorUp(p);
-		     feff_pt_err_dn = teff_pt->GetEfficiencyErrorLow(p);
-		} else {
-		     feff_pt	    = hist_pt->GetBinContent(p);
-		     feff_pt_err_up = feff_pt_err_dn = hist_pt->GetBinError(p);
-                }
+                // The central value for the efficiency will always be read from the nominal efficinecy histogram
+		//
+                // If the systematic in question is not "Stat" (aka, nominal case), get the up/dn variations from the syst hstograms in the corresponding pT bin (look it up in the map) 
+		// If the systematic in question is  "Stat" (aka, nominal case), get the up/dn variations from the bin error
+		
+		if ( m_this_syst.compare("Stat") != 0 ) {
+		  //syskey_up = syskey_up + "_up_" + std::to_string(p);
+		  //syskey_dn = syskey_dn + "_dn_" + std::to_string(p);
+		  
+		  // TEMP!!!!
+		  syskey_up = syskey_up + "_up_" + "3";
+		  syskey_dn = syskey_dn + "_dn_" + "3";		
+		}
+
+    	  	if ( m_verbose ) { 
+	  	  Info("getMMEfficiencyAndError()", "\t ===> Retrieving nominal pT histogram and variations from map w/ key: %s (up), %s (dn)", syskey_up.c_str(), syskey_dn.c_str() ); 
+	  	}
+				
+		if ( !m_useTEfficiency ) {
+		  feff_pt	 = (histograms->find("Stat")->second).find("pt_feff_hist")->second->GetBinContent(p);
+		  feff_pt_err_up = ( m_this_syst.compare("Stat") == 0 ) ? (histograms->find("Stat")->second).find("pt_feff_hist")->second->GetBinError(p) : (histograms->find(syskey_up)->second).find("pt_feff_hist")->second->GetBinContent(p);
+		  feff_pt_err_dn = ( m_this_syst.compare("Stat") == 0 ) ? (histograms->find("Stat")->second).find("pt_feff_hist")->second->GetBinError(p) : (histograms->find(syskey_dn)->second).find("pt_feff_hist")->second->GetBinContent(p);
+	 	  if ( m_useTrigMatchingInfo ) {
+		      feff_pt	     = ( lep.get()->trigmatched ) ? (histograms->find("Stat")->second).find("pt_feff_YES_TM")->second->GetBinContent(p) : (histograms->find("Stat")->second).find("pt_feff_NO_TM")->second->GetBinContent(p);
+		      feff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find("Stat")->second).find("pt_feff_YES_TM")->second->GetBinError(p)	: (histograms->find("Stat")->second).find("pt_feff_NO_TM")->second->GetBinError(p);  
+		      feff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find("Stat")->second).find("pt_feff_YES_TM")->second->GetBinError(p)	: (histograms->find("Stat")->second).find("pt_feff_NO_TM")->second->GetBinError(p);  
+	 	  }		    
+                } else {
+		  feff_pt	 = (tefficiencies->find("Stat")->second).find("pt_feff")->second->GetEfficiency(p);
+		  feff_pt_err_up = ( m_this_syst.compare("Stat") == 0 ) ? (tefficiencies->find("Stat")->second).find("pt_feff")->second->GetEfficiencyErrorUp(p)  : (tefficiencies->find(syskey_up)->second).find("pt_feff")->second->GetEfficiency(p);
+		  feff_pt_err_dn = ( m_this_syst.compare("Stat") == 0 ) ? (tefficiencies->find("Stat")->second).find("pt_feff")->second->GetEfficiencyErrorLow(p) : (tefficiencies->find(syskey_dn)->second).find("pt_feff")->second->GetEfficiency(p);
+		}
 
       	        if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV ==> Reading fake efficiency in pT bin [%.0f,%.0f] GeV: feff_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, feff_pt ); }
 
@@ -1244,26 +1272,40 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        if ( m_useEtaParametrisation ) {
 
+	 	    // Get the number of bins. Use nominal
+	 		
+	 	    int nbins_eta = (histograms->find("Stat")->second).find("eta_feff_hist")->second->GetNbinsX()+1;
+
 	    	    // Loop over number of eta bins
     	            // Do not consider underflow, i.e. 0th bin
     	            //
-    	            for ( int e(1); e <= hist_eta->GetNbinsX()+1; ++e ) {
+    	            for ( int e(1); e <= nbins_eta; ++e ) {
 
-	    	  	this_low_edge_eta = hist_eta->GetXaxis()->GetBinLowEdge(e);
-    	        	this_up_edge_eta  = hist_eta->GetXaxis()->GetBinLowEdge(e+1);
+	    	  	this_low_edge_eta = (histograms->find("Stat")->second).find("eta_feff_hist")->second->GetBinLowEdge(e);  
+    	        	this_up_edge_eta  = (histograms->find("Stat")->second).find("eta_feff_hist")->second->GetBinLowEdge(e+1);
 
     	        	if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
 
     	        	if ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) {
+		     	    
+			    if ( m_this_syst.compare("Stat") != 0 ) {
+		     	      syskey_up = syskey_up + "_up_" + std::to_string(e);
+		     	      syskey_dn = syskey_dn + "_dn_" + std::to_string(e);
+		     	    }
+    	  	 	    
+			    if ( m_verbose ) { 
+	  	 	      Info("getMMEfficiencyAndError()", "\t ===> Retrieving nominal eta histogram and variations from map w/ key: %s (up), %s (dn)", syskey_up.c_str(), syskey_dn.c_str() ); 
+	  	 	    }				
 
-		 	    if ( m_useTEfficiency ) {
-		 		 feff_eta	 = teff_eta->GetEfficiency(e);
-		 		 feff_eta_err_up = teff_eta->GetEfficiencyErrorUp(e);
-		 		 feff_eta_err_dn = teff_eta->GetEfficiencyErrorLow(e);
-		 	    } else {
-		 		 feff_eta        = hist_eta->GetBinContent(e);
-		 		 feff_eta_err_up = feff_eta_err_dn = hist_eta->GetBinError(e);
-                 	    }
+		  	    if ( !m_useTEfficiency ) {
+		  	      feff_eta       = (histograms->find("Stat")->second).find("eta_feff_hist")->second->GetBinContent(e);
+		  	      feff_eta_err_up = ( m_this_syst.compare("Stat") == 0 ) ? (histograms->find("Stat")->second).find("eta_feff_hist")->second->GetBinError(e) : (histograms->find(syskey_up)->second).find("eta_feff_hist")->second->GetBinContent(e);
+		  	      feff_eta_err_dn = ( m_this_syst.compare("Stat") == 0 ) ? (histograms->find("Stat")->second).find("eta_feff_hist")->second->GetBinError(e) : (histograms->find(syskey_dn)->second).find("eta_feff_hist")->second->GetBinContent(e);
+                  	    } else {
+		  	      feff_eta       = (tefficiencies->find("Stat")->second).find("eta_feff")->second->GetEfficiency(e);
+		  	      feff_eta_err_up = ( m_this_syst.compare("Stat") == 0 ) ? (tefficiencies->find("Stat")->second).find("eta_feff")->second->GetEfficiencyErrorUp(e)  : (tefficiencies->find(syskey_up)->second).find("eta_feff")->second->GetEfficiency(e);
+		  	      feff_eta_err_dn = ( m_this_syst.compare("Stat") == 0 ) ? (tefficiencies->find("Stat")->second).find("eta_feff")->second->GetEfficiencyErrorLow(e) : (tefficiencies->find(syskey_dn)->second).find("eta_feff")->second->GetEfficiency(e);
+		  	    }
 
 			    if ( m_verbose ) {
     	        		Info("getMMEfficiencyAndError()", "\t\tLepton |eta| = %.3f ==> Reading fake efficiency in |eta| bin [%.3f,%.3f]: feff_eta = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, feff_eta );
@@ -1277,8 +1319,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     	        // Nominal
     	        //
     	        efficiency.at(0) = feff_pt;
-    	        error_up	 = feff_pt_err_up;
-    	        error_dn	 = feff_pt_err_dn;
+    	        error_up	 = ( m_this_syst.compare("Stat") == 0 ) ? feff_pt_err_up : fabs( feff_pt - feff_pt_err_up );
+    	        error_dn	 = ( m_this_syst.compare("Stat") == 0 ) ? feff_pt_err_dn : fabs( feff_pt - feff_pt_err_dn );
 
     	        // UP syst
     	        //
@@ -1291,7 +1333,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        if ( m_useEtaParametrisation ) {
 
-	    	    float feff_tot = ( lep.get()->flavour == 13 ) ? m_mu_feff_tot[m_this_syst] : m_el_feff_tot[m_this_syst];
+	    	    float feff_tot = ( lep.get()->flavour == 13 ) ? m_mu_feff_tot["Stat"] : m_el_feff_tot["Stat"];
     	            if ( m_verbose ) {Info("getMMEfficiencyAndError()", "\t\t norm factor = %.3f", feff_tot ); }
 
 	    	    efficiency.at(0) = ( feff_pt * feff_eta ) / feff_tot;
@@ -1299,6 +1341,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 	    	    // Assuming  feff_pt,feff_eta are independent, this is the error on the product
     	            // ( the constant factor at denominator will be put back later in the def of Efficiency...)
     	            //
+		    
+		    
+		    
+		    // FIXME! --> error when non nominal is difference abs(nom - err(up,dn) )
+		    
+		    
+		    
+		    
     	            error_up         = sqrt( (feff_eta*feff_pt_err_up)*(feff_eta*feff_pt_err_up) + (feff_pt*feff_eta_err_up)*(feff_pt*feff_eta_err_up) );
     	            error_dn         = sqrt( (feff_eta*feff_pt_err_dn)*(feff_eta*feff_pt_err_dn) + (feff_pt*feff_eta_err_dn)*(feff_pt*feff_eta_err_dn) );
 
@@ -1315,33 +1365,23 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     }
     //  2) Real case: choose appropriate histogram
     //
-    else if ( type.compare("REAL") == 0 ) {
+    if ( type.compare("REAL") == 0 ) {
 
-    	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading real efficiency..."); }
+    	if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading fake efficiency..."); }
+	    
+	// Get the number of bins. Use nominal
+	    
+	int nbins_pt = (histograms->find("Stat")->second).find("pt_reff_hist")->second->GetNbinsX()+1;
 
-	hist_pt = histograms->find("pt_reff_hist")->second;
-	teff_pt = tefficiencies->find("pt_reff")->second;
-
-    	if ( m_verbose ) { 
-	  Info("getMMEfficiencyAndError()", "\t ===> REAL histogram pT name: %s", hist_pt->GetName() ); 
-	}
-
-	if ( m_useTrigMatchingInfo ) {
-	    hist_pt = ( lep.get()->trigmatched ) ? histograms->find("pt_reff_YES_TM")->second : histograms->find("pt_reff_NO_TM")->second;
-	}
-
-	if ( m_useEtaParametrisation ) {
-	    hist_eta = histograms->find("eta_reff_hist")->second;
-	    teff_eta = tefficiencies->find("eta_reff")->second;
-	}
+        std::string syskey_up(m_this_syst), syskey_dn(m_this_syst);
 
 	// Loop over number of pt bins
     	// Do not consider underflow, i.e. 0th bin
     	//
-    	for ( int p(1); p <= hist_pt->GetNbinsX()+1; ++p ) {
+    	for ( int p(1); p <= nbins_pt; ++p ) {
 
-    	    this_low_edge_pt = hist_pt->GetXaxis()->GetBinLowEdge(p);
-    	    this_up_edge_pt  = hist_pt->GetXaxis()->GetBinLowEdge(p+1);
+    	    this_low_edge_pt = (histograms->find("Stat")->second).find("pt_reff_hist")->second->GetBinLowEdge(p);
+    	    this_up_edge_pt  = (histograms->find("Stat")->second).find("pt_reff_hist")->second->GetBinLowEdge(p+1);
 
     	    if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
 
@@ -1349,44 +1389,83 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        float reff_pt(1.0), reff_pt_err_up(0.0), reff_pt_err_dn(0.0);
 
-		if ( m_useTEfficiency ) {
-		     reff_pt	    = teff_pt->GetEfficiency(p);
-		     reff_pt_err_up = teff_pt->GetEfficiencyErrorUp(p);
-		     reff_pt_err_dn = teff_pt->GetEfficiencyErrorLow(p);
-		} else {
-		     reff_pt	    = hist_pt->GetBinContent(p);
-		     reff_pt_err_up = reff_pt_err_dn = hist_pt->GetBinError(p);
-                }
+                // The central value for the efficiency will always be read from the nominal efficinecy histogram
+		//
+                // If the systematic in question is not "Stat" (aka, nominal case), get the up/dn variations from the syst hstograms in the corresponding pT bin (look it up in the map) 
+		// If the systematic in question is  "Stat" (aka, nominal case), get the up/dn variations from the bin error
+		
+		if ( m_this_syst.compare("Stat") != 0 ) {
+		  //syskey_up = syskey_up + "_up_" + std::to_string(p);
+		  //syskey_dn = syskey_dn + "_dn_" + std::to_string(p);
+		  
+		  // TEMP!!!!
+		  syskey_up = syskey_up + "_up_" + "3";
+		  syskey_dn = syskey_dn + "_dn_" + "3";
+		  
+		}
 
-      	        if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV ==> Reading real efficiency in pT bin [%.0f,%.0f] GeV: reff_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, reff_pt ); }
+    	  	if ( m_verbose ) { 
+	  	  Info("getMMEfficiencyAndError()", "\t ===> Retrieving nominal pT histogram and variations from map w/ key: %s (up), %s (dn)", syskey_up.c_str(), syskey_dn.c_str() ); 
+	  	}
+				
+		if ( !m_useTEfficiency ) {
+		  reff_pt	 = (histograms->find("Stat")->second).find("pt_reff_hist")->second->GetBinContent(p);
+		  reff_pt_err_up = ( m_this_syst.compare("Stat") == 0 ) ? (histograms->find("Stat")->second).find("pt_reff_hist")->second->GetBinError(p) : (histograms->find(syskey_up)->second).find("pt_reff_hist")->second->GetBinContent(p);
+		  reff_pt_err_dn = ( m_this_syst.compare("Stat") == 0 ) ? (histograms->find("Stat")->second).find("pt_reff_hist")->second->GetBinError(p) : (histograms->find(syskey_dn)->second).find("pt_reff_hist")->second->GetBinContent(p);
+	 	  if ( m_useTrigMatchingInfo ) {
+		      reff_pt	     = ( lep.get()->trigmatched ) ? (histograms->find("Stat")->second).find("pt_reff_YES_TM")->second->GetBinContent(p) : (histograms->find("Stat")->second.find("pt_reff_NO_TM")->second)->GetBinContent(p);
+		      reff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find("Stat")->second).find("pt_reff_YES_TM")->second->GetBinError(p)	: (histograms->find("Stat")->second.find("pt_reff_NO_TM")->second)->GetBinError(p);  
+		      reff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find("Stat")->second).find("pt_reff_YES_TM")->second->GetBinError(p)	: (histograms->find("Stat")->second.find("pt_reff_NO_TM")->second)->GetBinError(p);  
+	 	  }		    
+                } else {
+		  reff_pt	 = (tefficiencies->find("Stat")->second).find("pt_reff")->second->GetEfficiency(p);
+		  reff_pt_err_up = ( m_this_syst.compare("Stat") == 0 ) ? (tefficiencies->find("Stat")->second).find("pt_reff")->second->GetEfficiencyErrorUp(p)  : (tefficiencies->find(syskey_up)->second).find("pt_reff")->second->GetEfficiency(p);
+		  reff_pt_err_dn = ( m_this_syst.compare("Stat") == 0 ) ? (tefficiencies->find("Stat")->second).find("pt_reff")->second->GetEfficiencyErrorLow(p) : (tefficiencies->find(syskey_dn)->second).find("pt_reff")->second->GetEfficiency(p);
+		}
+
+      	        if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV ==> Reading fake efficiency in pT bin [%.0f,%.0f] GeV: reff_pt = %.3f", pt, this_low_edge_pt, this_up_edge_pt, reff_pt ); }
 
     	        float reff_eta(1.0), reff_eta_err_up(0.0), reff_eta_err_dn(0.0);
 
     	        if ( m_useEtaParametrisation ) {
 
+	 	    // Get the number of bins. Use nominal
+	 		
+	 	    int nbins_eta = (histograms->find("Stat")->second).find("eta_reff_hist")->second->GetNbinsX()+1;
+
 	    	    // Loop over number of eta bins
     	            // Do not consider underflow, i.e. 0th bin
     	            //
-    	            for ( int e(1); e <= hist_eta->GetNbinsX()+1; ++e ) {
+    	            for ( int e(1); e <= nbins_eta; ++e ) {
 
-	    	  	this_low_edge_eta = hist_eta->GetXaxis()->GetBinLowEdge(e);
-    	        	this_up_edge_eta  = hist_eta->GetXaxis()->GetBinLowEdge(e+1);
+	    	  	this_low_edge_eta = (histograms->find("Stat")->second).find("eta_reff_hist")->second->GetBinLowEdge(e);  
+    	        	this_up_edge_eta  = (histograms->find("Stat")->second).find("eta_reff_hist")->second->GetBinLowEdge(e+1);
 
     	        	if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
 
     	        	if ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) {
+		     	    
+			    if ( m_this_syst.compare("Stat") != 0 ) {
+		     	      syskey_up = syskey_up + "_up_" + std::to_string(e);
+		     	      syskey_dn = syskey_dn + "_dn_" + std::to_string(e);
+		     	    }
+    	  	 	    
+			    if ( m_verbose ) { 
+	  	 	      Info("getMMEfficiencyAndError()", "\t ===> Retrieving nominal eta histogram and variations from map w/ key: %s (up), %s (dn)", syskey_up.c_str(), syskey_dn.c_str() ); 
+	  	 	    }				
 
-		 	    if ( m_useTEfficiency ) {
-		 		 reff_eta	 = teff_eta->GetEfficiency(e);
-		 		 reff_eta_err_up = teff_eta->GetEfficiencyErrorUp(e);
-		 		 reff_eta_err_dn = teff_eta->GetEfficiencyErrorLow(e);
-		 	    } else {
-		 		 reff_eta        = hist_eta->GetBinContent(e);
-		 		 reff_eta_err_up = reff_eta_err_dn = hist_eta->GetBinError(e);
-                 	    }
+		  	    if ( !m_useTEfficiency ) {
+		  	      reff_eta       = (histograms->find("Stat")->second).find("eta_reff_hist")->second->GetBinContent(e);
+		  	      reff_eta_err_up = ( m_this_syst.compare("Stat") == 0 ) ? (histograms->find("Stat")->second).find("eta_reff_hist")->second->GetBinError(e) : (histograms->find(syskey_up)->second).find("eta_reff_hist")->second->GetBinContent(e);
+		  	      reff_eta_err_dn = ( m_this_syst.compare("Stat") == 0 ) ? (histograms->find("Stat")->second).find("eta_reff_hist")->second->GetBinError(e) : (histograms->find(syskey_dn)->second).find("eta_reff_hist")->second->GetBinContent(e);
+                  	    } else {
+		  	      reff_eta       = (tefficiencies->find("Stat")->second).find("eta_reff")->second->GetEfficiency(e);
+		  	      reff_eta_err_up = ( m_this_syst.compare("Stat") == 0 ) ? (tefficiencies->find("Stat")->second).find("eta_reff")->second->GetEfficiencyErrorUp(e)  : (tefficiencies->find(syskey_up)->second).find("eta_reff")->second->GetEfficiency(e);
+		  	      reff_eta_err_dn = ( m_this_syst.compare("Stat") == 0 ) ? (tefficiencies->find("Stat")->second).find("eta_reff")->second->GetEfficiencyErrorLow(e) : (tefficiencies->find(syskey_dn)->second).find("eta_reff")->second->GetEfficiency(e);
+		  	    }
 
 			    if ( m_verbose ) {
-    	        		Info("getMMEfficiencyAndError()", "\t\tLepton |eta| = %.3f ==> Reading real efficiency in |eta| bin [%.3f,%.3f]: reff_eta = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, reff_eta );
+    	        		Info("getMMEfficiencyAndError()", "\t\tLepton |eta| = %.3f ==> Reading fake efficiency in |eta| bin [%.3f,%.3f]: reff_eta = %.3f", fabs(eta), this_low_edge_eta, this_up_edge_eta, reff_eta );
     	        	    }
 
     	        	    break;
@@ -1397,8 +1476,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     	        // Nominal
     	        //
     	        efficiency.at(0) = reff_pt;
-    	        error_up	 = reff_pt_err_up;
-    	        error_dn	 = reff_pt_err_dn;
+    	        error_up	 = ( m_this_syst.compare("Stat") == 0 ) ? reff_pt_err_up : fabs( reff_pt - reff_pt_err_up );
+    	        error_dn	 = ( m_this_syst.compare("Stat") == 0 ) ? reff_pt_err_dn : fabs( reff_pt - reff_pt_err_dn );
 
     	        // UP syst
     	        //
@@ -1411,16 +1490,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     	        if ( m_useEtaParametrisation ) {
 
-	    	    float reff_tot = ( lep.get()->flavour == 13 ) ? m_mu_reff_tot[m_this_syst] : m_el_reff_tot[m_this_syst];
-    	            if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\t norm factor = %.3f", reff_tot ); }
+	    	    float reff_tot = ( lep.get()->flavour == 13 ) ? m_mu_reff_tot["Stat"] : m_el_reff_tot["Stat"];
+    	            if ( m_verbose ) {Info("getMMEfficiencyAndError()", "\t\t norm factor = %.3f", reff_tot ); }
 
 	    	    efficiency.at(0) = ( reff_pt * reff_eta ) / reff_tot;
 
 	    	    // Assuming  reff_pt,reff_eta are independent, this is the error on the product
     	            // ( the constant factor at denominator will be put back later in the def of Efficiency...)
     	            //
-    	            error_up  = sqrt( (reff_eta*reff_pt_err_up)*(reff_eta*reff_pt_err_up) + (reff_pt*reff_eta_err_up)*(reff_pt*reff_eta_err_up) );
-    	            error_dn  = sqrt( (reff_eta*reff_pt_err_dn)*(reff_eta*reff_pt_err_dn) + (reff_pt*reff_eta_err_dn)*(reff_pt*reff_eta_err_dn) );
+    	            error_up         = sqrt( (reff_eta*reff_pt_err_up)*(reff_eta*reff_pt_err_up) + (reff_pt*reff_eta_err_up)*(reff_pt*reff_eta_err_up) );
+    	            error_dn         = sqrt( (reff_eta*reff_pt_err_dn)*(reff_eta*reff_pt_err_dn) + (reff_pt*reff_eta_err_dn)*(reff_pt*reff_eta_err_dn) );
 
     	            efficiency.at(1) = ( (reff_pt * reff_eta) + error_up ) / reff_tot;
     	            if ( (reff_pt * reff_eta) - error_dn > 0 ) { efficiency.at(2) = ( (reff_pt * reff_eta) - error_dn ) / reff_tot;}
@@ -1430,8 +1509,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     	        break;
     	    }
 
-    	} // close loop on pT bins: real case
-    }
+    	} // close loop on pT bins: fake case
+
+    }   
 
     if ( m_verbose ) {
         if ( type.compare("REAL") == 0 ) { Info("getMMEfficiencyAndError()", "\t\tEffective REAL efficiency ==> r = %.3f ( r_up = %.3f , r_dn = %.3f )", efficiency.at(0), efficiency.at(1), efficiency.at(2) ); }
@@ -1440,6 +1520,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     return EL::StatusCode::SUCCESS;
 }
+
 
 EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<float>& mm_weight,
 								   const std::vector<float>& r0, const std::vector<float>& r1,
