@@ -171,14 +171,20 @@ if __name__ == '__main__':
 
             print("\nNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
 
-        expected_nominal = myfile.Get("expected")
-        expected_up      = myfile.Get("expected_MMfsys_up")
-        expected_down    = myfile.Get("expected_MMfsys_dn")
+        expected_nominal = myfile.Get("expectedbkg")
+        expected_up      = myfile.Get("expectedbkg_MMfsys_up")
+        expected_down    = myfile.Get("expectedbkg_MMfsys_dn")
 
         print ("\n\tExpected: \n")
         exp, exp_err = get_yields(expected_nominal,expected_up,expected_down)
 
         if not args.doClosure:
+	
+            chargemisid = myfile.Get("qmisidbkg")
+            if chargemisid:
+                print ("\n\tQMisID: \n")
+                qmisid, qmisid_err = get_yields(chargemisid)	
+	
             observed = myfile.Get("observed")
             if observed:
                 print ("\n\tObserved: \n")
