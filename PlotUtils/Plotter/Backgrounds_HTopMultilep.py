@@ -78,7 +78,7 @@ class TTHBackgrounds(Background):
             subprocess = self.getProcess(samplename, category)
             if not ("$ISDATA$") in subprocess.name:
 	        return idx, samplename
-	return (-1,None)	
+	return (-1,None)
 
     def str_to_class(self, field):
         try:
@@ -1727,6 +1727,7 @@ class TTHBackgrounds(Background):
             if QMISID_SUB_OS_SS:
 
 		sublist = [ item for item in self.parent.sub_backgrounds if ( item == "QMisID" or item == "QMisIDMC" ) ]
+            	sp_OS_TT = sp_OS_TL = sp_OS_LT = sp_OS_LL = None
             	sp_QMisID_TT = sp_QMisID_TL = sp_QMisID_LT = sp_QMisID_LL = None
             	for process in sublist:
 
@@ -1735,32 +1736,42 @@ class TTHBackgrounds(Background):
                         continue
 
 	    	    QMisIDcut	 = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-	    	    QMisIDweight = 'QMisIDWeight * MMWeight'
+	    	    OSweight = 'QMisIDWeight * MMWeight'
 
-            	    sp_QMisID_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight=QMisIDweight)
-            	    sp_QMisID_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight=QMisIDweight)
-            	    sp_QMisID_LT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LTcut), eventweight=QMisIDweight)
-            	    sp_QMisID_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight=QMisIDweight)
+                    # These are the actual QMisID events in the sidebands
+
+            	    sp_QMisID_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight='QMisIDWeight')
+            	    sp_QMisID_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight='QMisIDWeight')
+            	    sp_QMisID_LT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LTcut), eventweight='QMisIDWeight')
+            	    sp_QMisID_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight='QMisIDWeight')
+
+                    # These are the OS weighted events that need to be subtracted
+
+            	    sp_OS_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight=OSweight)
+            	    sp_OS_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight=OSweight)
+            	    sp_OS_LT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LTcut), eventweight=OSweight)
+            	    sp_OS_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight=OSweight)
+
             	    print(" ")
-            	    print("Subtracting QMisID TT sp: {0}, weight: {1}".format(sp_QMisID_TT.basecut.cutnamelist, QMisIDweight))
-            	    print("{0} - TT : Fakes (before QMisID subtraction) = {1:.2f}, QMisID = {2:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0],sp_QMisID_TT.numberstats()[0]))
-            	    print("Subtracting QMisID TL sp: {0}, weight: {1}".format(sp_QMisID_TL.basecut.cutnamelist, QMisIDweight))
-            	    print("{0} - TL : Fakes (before QMisID subtraction) = {1:.2f}, QMisID = {2:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0],sp_QMisID_TL.numberstats()[0]))
-            	    print("Subtracting QMisID TL sp: {0}, weight: {1}".format(sp_QMisID_LT.basecut.cutnamelist, QMisIDweight))
-            	    print("{0} - LT : Fakes (before QMisID subtraction) = {1:.2f}, QMisID = {2:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0],sp_QMisID_LT.numberstats()[0]))
-            	    print("Subtracting QMisID LL sp: {0}, weight: {1}".format(sp_QMisID_LL.basecut.cutnamelist, QMisIDweight))
-            	    print("{0} - LL : Fakes (before QMisID subtraction) = {1:.2f}, QMisID = {2:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0],sp_QMisID_LL.numberstats()[0]))
+            	    print("Subtracting OS TT sp: {0}, weight: {1}".format(sp_OS_TT.basecut.cutnamelist, OSweight))
+            	    print("{0} - TT :\nFakes (before OS subtraction) = {1:.2f},\nQMisID = {2:.2f},\nOS = {3:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0],(sp_QMisID_TT.numberstats())[0],(sp_OS_TT.numberstats())[0]))
+            	    print("Subtracting OS TL sp: {0}, weight: {1}".format(sp_OS_TL.basecut.cutnamelist, OSweight))
+            	    print("{0} - TL :\nFakes (before OS subtraction) = {1:.2f},\nQMisID = {2:.2f},\nOS = {3:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0],(sp_QMisID_TL.numberstats())[0],(sp_OS_TL.numberstats())[0]))
+            	    print("Subtracting OS LT sp: {0}, weight: {1}".format(sp_OS_LT.basecut.cutnamelist, OSweight))
+            	    print("{0} - LT :\nFakes (before OS subtraction) = {1:.2f},\nQMisID = {2:.2f},\nOS = {3:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0],(sp_QMisID_LT.numberstats())[0],(sp_OS_LT.numberstats())[0]))
+            	    print("Subtracting OS LL sp: {0}, weight: {1}".format(sp_OS_LL.basecut.cutnamelist, OSweight))
+            	    print("{0} - LL :\nFakes (before OS subtraction) = {1:.2f},\nQMisID = {2:.2f},\nOS = {3:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0],(sp_QMisID_LL.numberstats())[0],(sp_OS_LL.numberstats())[0]))
 
-                    sp_TT  = sp_TT - sp_QMisID_TT
-                    sp_TL  = sp_TL - sp_QMisID_TL
-                    sp_LT  = sp_LT - sp_QMisID_LT
-                    sp_LL  = sp_LL - sp_QMisID_LL
+                    sp_TT  = sp_TT - sp_OS_TT
+                    sp_TL  = sp_TL - sp_OS_TL
+                    sp_LT  = sp_LT - sp_OS_LT
+                    sp_LL  = sp_LL - sp_OS_LL
 
 		    print(" ")
-              	    print("{0} - TT : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0]))
-            	    print("{0} - TL : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0]))
-            	    print("{0} - LT : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0]))
-            	    print("{0} - LL : Fakes (AFTER QMisID subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0]))
+              	    print("{0} - TT : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0]))
+            	    print("{0} - TL : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0]))
+            	    print("{0} - LT : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0]))
+            	    print("{0} - LL : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0]))
 
                 sp = sp_TT + sp_TL + sp_LT + sp_LL
 
