@@ -886,6 +886,9 @@ class RealFakeEffTagAndProbe:
 
         proc_dict = {"observed":"data (w/ subtraction)", "expectedbkg":"simulation"}
 
+        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/BasicPlots"):
+	    os.makedirs(self.__outputpath+"/EfficiencyPlots/BasicPlots")
+
         for var in self.__variables:
 
 	    for lep in self.__leptons:
@@ -947,7 +950,7 @@ class RealFakeEffTagAndProbe:
                 canvas_filename = "_".join(("RealFake",lep,var,"Efficiency",proc))
 
 		for extension in self.extensionlist:
-		    c.SaveAs(self.__outputpath+"/"+canvas_filename+"."+extension)
+		    c.SaveAs(self.__outputpath+"/EfficiencyPlots/BasicPlots/"+canvas_filename+"."+extension)
 
 
     def plotMakerSys( self ):
@@ -956,6 +959,11 @@ class RealFakeEffTagAndProbe:
 
         proc_dict = {"observed":"data (w/ subtraction)", "expectedbkg":"simulation"}
 
+        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/SplitSys"):
+	    os.makedirs(self.__outputpath+"/EfficiencyPlots/SplitSys")
+        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/CombinedSys"):
+	    os.makedirs(self.__outputpath+"/EfficiencyPlots/CombinedSys")
+	    
         for var in self.__variables:
 
   	    for lep in self.__leptons:
@@ -1110,7 +1118,9 @@ class RealFakeEffTagAndProbe:
 		    rationom = hist_nominal.Clone(hist_nominal.GetName()+"_Ratio")
 		    rationom.Divide(hist_nominal)
 		    for bin in 	range(1,rationom.GetNbinsX()+2):
-		        error = 2.0 * ( hist_nominal.GetBinError(bin) / hist_nominal.GetBinContent(bin) )
+		        error = 0.0
+			if hist_nominal.GetBinContent(bin) > 0:
+		            error = 2.0 * ( hist_nominal.GetBinError(bin) / hist_nominal.GetBinContent(bin) )
 		        rationom.SetBinError( bin, error )	    
 
 		    rationom.SetLineStyle(1)
@@ -1178,7 +1188,7 @@ class RealFakeEffTagAndProbe:
 		    canvas_filename = "_".join((eff,lep,var,"Efficiency",proc,"Systematics"))
 
 		    for extension in self.extensionlist:
-		        c.SaveAs(self.__outputpath+"/"+canvas_filename+"."+extension)
+		        c.SaveAs(self.__outputpath+"/EfficiencyPlots/SplitSys/"+canvas_filename+"."+extension)
 
                     # Reset axis labels to default (otherwise next plots won't have labels)
 		    
@@ -1219,7 +1229,9 @@ class RealFakeEffTagAndProbe:
 		    ratio_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_Ratio_AllSys")
 		    ratio_allsys.Divide(hist_nominal)
 		    for bin in 	range(1,ratio_allsys.GetNbinsX()+2):
-			error = 2.0 * ( all_sys[str(bin)] / hist_nominal.GetBinContent(bin) )
+		        error = 0.0
+			if hist_nominal.GetBinContent(bin) > 0:
+			    error = 2.0 * ( all_sys[str(bin)] / hist_nominal.GetBinContent(bin) )
 		        ratio_allsys.SetBinError( bin, error )	    
 
 		    ratio_allsys.SetLineStyle(1)
@@ -1284,7 +1296,7 @@ class RealFakeEffTagAndProbe:
 		    canvas_allsys_filename = "_".join((eff,lep,var,"Efficiency",proc,"CombinedSystematics"))
 
 		    for extension in self.extensionlist:
-		        c_allsys.SaveAs(self.__outputpath+"/"+canvas_allsys_filename+"."+extension)
+		        c_allsys.SaveAs(self.__outputpath+"/EfficiencyPlots/CombinedSys/"+canvas_allsys_filename+"."+extension)
 		
 
     def __set_fancy_2D_style( self ):
