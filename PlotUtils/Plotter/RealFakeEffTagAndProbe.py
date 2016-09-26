@@ -852,15 +852,15 @@ class RealFakeEffTagAndProbe:
         self.__outputfile.Write()
         self.__outputfile.Close()
 
-    def __getLimits__( self, histlist, scale_up=1.0, scale_dn=1.0, ratio=False ):
+    def __getLimits__( self, histlist, scale_up=1.0, scale_dn=1.0, shift_up=0.0, shift_dn=0.0, ratio=False ):
         ymin = 1e9
 	ymax = 0.0
 	for h in histlist:
 	    this_ymin = h.GetBinContent( h.GetMinimumBin() )
 	    this_ymax = h.GetBinContent( h.GetMaximumBin() )
 	    if ratio:
-	        shifted_dn = [ ( h.GetBinContent(bin) - h.GetBinError(bin)/2.0 ) for bin in range(1,h.GetNbinsX()+2) ]
-	        shifted_up = [ ( h.GetBinContent(bin) + h.GetBinError(bin)/2.0 ) for bin in range(1,h.GetNbinsX()+2) ]
+		shifted_dn = [ ( h.GetBinContent(bin) - h.GetBinError(bin)/2.0 ) if ( h.GetBinError(bin) ) else 1 for bin in range(1,h.GetNbinsX()+2) ]
+	        shifted_up = [ ( h.GetBinContent(bin) + h.GetBinError(bin)/2.0 ) if ( h.GetBinError(bin) ) else 1 for bin in range(1,h.GetNbinsX()+2) ]
 		this_ymin = min(shifted_dn)
 		this_ymax = max(shifted_up)
 	    
@@ -873,9 +873,14 @@ class RealFakeEffTagAndProbe:
 	    if ymin < 0: ymin = 0.0
 	    if ymax > 1: ymax = 1.0
 	else:
-	   if  ymax == 1: ymax = 1.2   
-	
-	return scale_dn * ymin, scale_up * ymax
+	   if  abs( ymax - 1 ) <= 0.05: 
+	       ymax = 1.05   
+	       shift_up = 0
+	   if  abs( ymin - 1 ) <= 0.05: 
+	       ymin = 0.95   
+	       shift_dn = 0	       
+	       
+	return scale_dn * ( ymin - shift_dn ), scale_up * ( ymax + shift_up )
 
 
     def plotMaker( self ):
@@ -1244,13 +1249,13 @@ class RealFakeEffTagAndProbe:
              	    ratio_allsys.GetYaxis().SetTitleOffset(0.35)
              	    ratio_allsys.GetXaxis().SetLabelSize(0.15)
              	    ratio_allsys.GetYaxis().SetLabelSize(0.12)
-             	    ratio_allsys.GetYaxis().SetNdivisions(503)#(5) 
+             	    ratio_allsys.GetYaxis().SetNdivisions(5)#(503)#(5) 
 	   	    ratio_allsys.SetFillColor(kYellow-9)
            	    ratio_allsys.SetFillStyle(1001) 	
 
                     # Need to re-get the nominal ratio hist with stats errors
 
-		    ratio_ymin_allsys, ratio_ymax_allsys = self.__getLimits__([ratio_allsys,rationom], scale_up=1.2, scale_dn=0.8, ratio=True)
+		    ratio_ymin_allsys, ratio_ymax_allsys = self.__getLimits__([ratio_allsys,rationom], shift_up=0.2, shift_dn=0.2, ratio=True)
 		    
 		    print ("ratio_ymin_allsys = {0:.1f}, ratio_ymax_allsys = {1:.1f}".format(ratio_ymin_allsys, ratio_ymax_allsys))
 		    ratio_allsys.GetYaxis().SetRangeUser(round(ratio_ymin_allsys,1), round(ratio_ymax_allsys,1))

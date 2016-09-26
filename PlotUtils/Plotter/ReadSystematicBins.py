@@ -19,14 +19,14 @@ from ROOT import gROOT, TH1D, TFile, Double
 
 gROOT.SetBatch(True)
 
-def get_yields(nominal, up=None, down=None):
 
-    #print("\t\tGetNbinsX() = {0}".format(nominal.GetNbinsX()))
-    #print("\t\trange(0,GetNbinsX()+1) = {0}".format(range(0,nominal.GetNbinsX()+1)))
+g_sys_dict = {}
 
-    # Pick also O-Flow bin (NB: the last bin contains also the OFlow!)
+def get_yields(nominal, up=None, down=None, sysname=None):
+
+    # Pick also O-Flow bin (NB: the last bin contains also the OFlow! Thus, stop at bin before oflow)
     #
-    for bin in range(0,nominal.GetNbinsX()+1):#+2):
+    for bin in range(0,nominal.GetNbinsX()+1):
 
         nextbin = bin
 
@@ -53,10 +53,10 @@ def get_yields(nominal, up=None, down=None):
             if delta_down <= 0.0:
                 sys_dn = abs( delta_down )
 
-            if nominal.IsBinOverflow(bin):
-                print ("\t\t{0}-jets bin (O-FLOW): integral = {1:.2f} +- {2:.2f} (stat) (+ {3:.2f}, - {4:.2f}) (syst)".format( bincenter, value_nominal, stat_error, sys_up, sys_dn ))
-            else:
-                print ("\t\t{0}-jets bin: integral = {1:.2f} +- {2:.2f} (stat) (+ {3:.2f}, - {4:.2f}) (syst)".format( bincenter, value_nominal, stat_error, sys_up, sys_dn ))
+            #if nominal.IsBinOverflow(bin):
+            #    print ("\t\t{0}-jets bin (O-FLOW): integral = {1:.2f} +- {2:.2f} (stat) (+ {3:.2f}, - {4:.2f}) (syst: {5})".format( bincenter, value_nominal, stat_error, sys_up, sys_dn, sysname ))
+            #else:
+            #    print ("\t\t{0}-jets bin: integral = {1:.2f} +- {2:.2f} (stat) (+ {3:.2f}, - {4:.2f}) (syst: {5})".format( bincenter, value_nominal, stat_error, sys_up, sys_dn, sysname ))
 
         else:
             if nominal.IsBinOverflow(bin):
@@ -69,40 +69,61 @@ def get_yields(nominal, up=None, down=None):
 
     integral_total_error = integral_stat_error
 
-    print ("\t\t--------------------")
+    #print ("\t\t--------------------")
     if ( up and down ):
 
-        delta_up   = up.Integral(0,up.GetNbinsX()+1) - integral_nominal
-        delta_down = down.Integral(0,down.GetNbinsX()+1) - integral_nominal
+        integral_sys_up = abs( up.Integral(0,up.GetNbinsX()+1) - integral_nominal )
+        integral_sys_dn = abs( integral_nominal - down.Integral(0,down.GetNbinsX()+1) )
 
-        integral_sys_up   = 0.0
-        integral_sys_dn = 0.0
+	# Symmetrised systematic uncertainty
+	#
+	simm_sys_unc = abs( integral_sys_up + integral_sys_dn ) / 2.0
 
-        if delta_up >= 0.0:
-            integral_sys_up = abs( delta_up )
-        if delta_down <= 0.0:
-            integral_sys_dn = abs( delta_down )
+        g_sys_dict[sysname] = simm_sys_unc
 
         # Total uncertainty
         #
         max_integral_sys   = max([integral_sys_up, integral_sys_dn])
         integral_tot_error = math.sqrt( ( integral_stat_error * integral_stat_error ) + ( max_integral_sys * max_integral_sys ) )
 
-        print ("\t\tIntegral = {0:.2f} +- {1:.2f} (stat) (+ {2:.2f}, - {3:.2f}) (syst)".format(integral_nominal, integral_stat_error, integral_sys_up, integral_sys_dn ))
-        print ("\t\t         = {0:.2f} +- {1:.2f} (TOTAL UNCERTAINTY)".format(integral_nominal, integral_tot_error ))
+        #print ("\t\tIntegral = {0:.2f} +- {1:.2f} (stat) ( +{2:.2f}, -{3:.2f} --> +- {4:.2f}) (syst: {5})".format(integral_nominal, integral_stat_error, integral_sys_up, integral_sys_dn, simm_sys_unc,  sysname ))
 
     else:
         print ("\t\tIntegral = {0:.2f} +- {1:.2f} (stat)".format(integral_nominal, integral_stat_error ))
 
-    return integral_nominal, integral_total_error
+    return integral_nominal, integral_stat_error
+
+
+def printTotFakeUncertainty( nominal, stat, flav ):
+
+    if ( "HIGHNJ" in args.channel ):
+        if flav == "ElEl" : non_closure = 0.29 * nominal
+        if flav == "OF"   : non_closure = 0.27 * nominal
+        if flav == "MuMu" : non_closure = 0.20 * nominal
+    elif ( "LOWNJ" in args.channel ):
+        if flav == "ElEl" : non_closure = 0.34 * nominal
+        if flav == "OF"   : non_closure = 0.22 * nominal
+        if flav == "MuMu" : non_closure = 0.22 * nominal
+
+    # This prints out sorting systematics from smaller to larger
+    #
+    print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) + "\t\t+- {0:.2f} [{1:.2f} %] (non-closure)".format(non_closure, (non_closure/nominal)*100) )
+
+    sum_quad = pow(stat,2.0) + pow(non_closure,2.0)
+    for sys in g_sys_dict.itervalues():
+        sum_quad += pow(sys,2.0)
+    sum_quad = math.sqrt(sum_quad)
+
+    print ("\t\t= {0:.2f} +- {1:.2f} [{2:.2f} %] (TOTAL UNCERTAINTY)".format(nominal, sum_quad, (sum_quad/nominal)*100))
+
 
 if __name__ == '__main__':
 
     region = var_name = None
 
     inputpath = args.inputDir
-    
-    if not inputpath.endswith('/'): 
+
+    if not inputpath.endswith('/'):
          inputpath += '/'
 
     if not args.doClosure:
@@ -154,11 +175,38 @@ if __name__ == '__main__':
         print("Looking at file: {0}".format(filename))
 
         fakes_nominal = myfile.Get("fakesbkg")
-        fakes_up      = myfile.Get("fakesbkg_MMfsys_up")
-        fakes_down    = myfile.Get("fakesbkg_MMfsys_dn")
+
+        fakes_syst = [
+	  'MMsys_lep0_r_Stat',
+	  'MMsys_lep1_r_Stat',
+	  'MMsys_lep0_f_Stat',
+	  'MMsys_lep1_f_Stat',
+	  'MMsys_lep0_r_numerator_QMisID',
+	  'MMsys_lep1_r_numerator_QMisID',
+	  'MMsys_lep0_f_numerator_QMisID',
+	  'MMsys_lep1_f_numerator_QMisID',
+	  'MMsys_lep0_r_denominator_QMisID',
+	  'MMsys_lep1_r_denominator_QMisID',
+	  'MMsys_lep0_f_denominator_QMisID',
+	  'MMsys_lep1_f_denominator_QMisID',
+	  'MMsys_lep0_r_numerator_AllSimStat',
+	  'MMsys_lep1_r_numerator_AllSimStat',
+	  'MMsys_lep0_f_numerator_AllSimStat',
+	  'MMsys_lep1_f_numerator_AllSimStat',
+	  'MMsys_lep0_r_denominator_AllSimStat',
+	  'MMsys_lep1_r_denominator_AllSimStat',
+	  'MMsys_lep0_f_denominator_AllSimStat',
+	  'MMsys_lep1_f_denominator_AllSimStat',
+	]
 
         print ("\n\tFakes: \n")
-        fakes, fakes_err = get_yields(fakes_nominal,fakes_up,fakes_down)
+
+	for sys in fakes_syst:
+	   fakes_up   = myfile.Get( "fakesbkg_" + sys + "_up")
+	   fakes_down = myfile.Get( "fakesbkg_" + sys + "_dn")
+	   #print(" ==> sys: {0}\n".format(sys))
+           fakes, fakes_err = get_yields(fakes_nominal,fakes_up,fakes_down, sys)
+        printTotFakeUncertainty( fakes, fakes_err, flav )
 
         if args.doClosure:
             ttbar_nominal = myfile.Get("ttbarbkg")
@@ -172,19 +220,17 @@ if __name__ == '__main__':
             print("\nNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
 
         expected_nominal = myfile.Get("expectedbkg")
-        expected_up      = myfile.Get("expectedbkg_MMfsys_up")
-        expected_down    = myfile.Get("expectedbkg_MMfsys_dn")
 
         print ("\n\tExpected: \n")
-        exp, exp_err = get_yields(expected_nominal,expected_up,expected_down)
+        exp, exp_err = get_yields(expected_nominal)
 
         if not args.doClosure:
-	
+
             chargemisid = myfile.Get("qmisidbkg")
             if chargemisid:
                 print ("\n\tQMisID: \n")
-                qmisid, qmisid_err = get_yields(chargemisid)	
-	
+                qmisid, qmisid_err = get_yields(chargemisid)
+
             observed = myfile.Get("observed")
             if observed:
                 print ("\n\tObserved: \n")
