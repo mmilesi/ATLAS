@@ -71,8 +71,6 @@ parser.add_argument('--noWeights', action='store_true', dest='noWeights', defaul
                     help='Do not apply weights, except for mcEventWeight and Xsec*lumi...')
 parser.add_argument('--noStandardPlots', action='store_true', dest='noStandardPlots',
                     help='exclude all standard plots')
-parser.add_argument('--doEPS', action='store_true', dest='doEPS', default=True,
-                    help='Save output plots in eps format (Default is png only)')
 parser.add_argument('--doQMisIDRate', dest='doQMisIDRate', action='store_true',
                     help='Measure charge flip rate in MC (to be used with --channel=MMClosureRates)')
 parser.add_argument('--doUnblinding', dest='doUnblinding', action='store_true', default=False,
@@ -720,16 +718,121 @@ if args.doSyst:
 
     if doMMClosureTest:
         if doMM:
-            vardb.registerSystematics( Systematics(name='MMrsys', eventweight='MMWeight_r_', process='FakesClosureMM') )
-            vardb.registerSystematics( Systematics(name='MMfsys', eventweight='MMWeight_f_', process='FakesClosureMM') )
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_1',	       eventweight='MMWeight_Real_El_Pt_Stat_1_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_2',	       eventweight='MMWeight_Real_El_Pt_Stat_2_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_3',	       eventweight='MMWeight_Real_El_Pt_Stat_3_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_4',	       eventweight='MMWeight_Real_El_Pt_Stat_4_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_5',	       eventweight='MMWeight_Real_El_Pt_Stat_5_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_6',	       eventweight='MMWeight_Real_El_Pt_Stat_6_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_7',	       eventweight='MMWeight_Real_El_Pt_Stat_7_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_8',	       eventweight='MMWeight_Real_El_Pt_Stat_8_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_1',	       eventweight='MMWeight_Real_Mu_Pt_Stat_1_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_2',	       eventweight='MMWeight_Real_Mu_Pt_Stat_2_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_3',	       eventweight='MMWeight_Real_Mu_Pt_Stat_3_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_4',	       eventweight='MMWeight_Real_Mu_Pt_Stat_4_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_5',	       eventweight='MMWeight_Real_Mu_Pt_Stat_5_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_6',	       eventweight='MMWeight_Real_Mu_Pt_Stat_6_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_7',	       eventweight='MMWeight_Real_Mu_Pt_Stat_7_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_8',	       eventweight='MMWeight_Real_Mu_Pt_Stat_8_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_1',	       eventweight='MMWeight_Fake_El_Pt_Stat_1_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_2',	       eventweight='MMWeight_Fake_El_Pt_Stat_2_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_3',	       eventweight='MMWeight_Fake_El_Pt_Stat_3_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_4',	       eventweight='MMWeight_Fake_El_Pt_Stat_4_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_5',	       eventweight='MMWeight_Fake_El_Pt_Stat_5_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_6',	       eventweight='MMWeight_Fake_El_Pt_Stat_6_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_1',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_1_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_2',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_2_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_3',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_3_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_4',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_4_',	       process='FakesClosureMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_5',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_5_',	       process='FakesClosureMM'))
         if doFF:
             vardb.registerSystematics( Systematics(name='FFsys', eventweight='FFWeight_', process='FakesClosureMM') )
 
     if doTwoLepSR or doThreeLepSR or doTwoLepLowNJetCR or doThreeLepLowNJetCR:
         #vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight='QMisIDWeight_') )
         if doMM:
-            vardb.registerSystematics( Systematics(name='MMrsys', eventweight='MMWeight_r_', process='FakesMM') )
-            vardb.registerSystematics( Systematics(name='MMfsys', eventweight='MMWeight_f_', process='FakesMM') )
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_1',	       eventweight='MMWeight_Real_El_Pt_Stat_1_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_2',	       eventweight='MMWeight_Real_El_Pt_Stat_2_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_3',	       eventweight='MMWeight_Real_El_Pt_Stat_3_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_4',	       eventweight='MMWeight_Real_El_Pt_Stat_4_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_5',	       eventweight='MMWeight_Real_El_Pt_Stat_5_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_6',	       eventweight='MMWeight_Real_El_Pt_Stat_6_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_7',	       eventweight='MMWeight_Real_El_Pt_Stat_7_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_8',	       eventweight='MMWeight_Real_El_Pt_Stat_8_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_1',	       eventweight='MMWeight_Real_Mu_Pt_Stat_1_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_2',	       eventweight='MMWeight_Real_Mu_Pt_Stat_2_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_3',	       eventweight='MMWeight_Real_Mu_Pt_Stat_3_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_4',	       eventweight='MMWeight_Real_Mu_Pt_Stat_4_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_5',	       eventweight='MMWeight_Real_Mu_Pt_Stat_5_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_6',	       eventweight='MMWeight_Real_Mu_Pt_Stat_6_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_7',	       eventweight='MMWeight_Real_Mu_Pt_Stat_7_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_8',	       eventweight='MMWeight_Real_Mu_Pt_Stat_8_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_1',	       eventweight='MMWeight_Fake_El_Pt_Stat_1_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_2',	       eventweight='MMWeight_Fake_El_Pt_Stat_2_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_3',	       eventweight='MMWeight_Fake_El_Pt_Stat_3_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_4',	       eventweight='MMWeight_Fake_El_Pt_Stat_4_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_5',	       eventweight='MMWeight_Fake_El_Pt_Stat_5_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_6',	       eventweight='MMWeight_Fake_El_Pt_Stat_6_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_1',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_1_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_2',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_2_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_3',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_3_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_4',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_4_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_5',	       eventweight='MMWeight_Fake_Mu_Pt_Stat_5_',	       process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_1',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_1_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_2',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_2_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_3',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_3_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_4',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_4_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_5',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_5_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_6',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_6_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_7',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_7_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_8',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_8_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_1',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_1_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_2',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_2_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_3',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_3_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_4',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_4_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_5',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_5_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_6',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_6_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_7',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_7_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_8',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_8_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_1',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_1_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_2',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_2_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_3',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_3_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_4',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_4_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_5',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_5_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_6',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_6_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_1',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_1_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_2',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_2_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_3',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_3_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_4',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_4_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_5',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_5_',  process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_1',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_1_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_2',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_2_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_3',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_3_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_4',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_4_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_5',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_5_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_6',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_6_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_7',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_7_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_8',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_8_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_1',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_1_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_2',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_2_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_3',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_3_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_4',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_4_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_5',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_5_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_6',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_6_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_7',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_7_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_8',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_8_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_1',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_1_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_2',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_2_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_3',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_3_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_4',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_4_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_5',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_5_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_6',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_6_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_1',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_1_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_2',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_2_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_3',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_3_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_4',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_4_',process='FakesMM'))
+	    vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_5',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_5_',process='FakesMM'))
+	    
         if doFF:
             vardb.registerSystematics( Systematics(name='FFsys', eventweight='FFWeight_', process='FakesMM') )
 
@@ -1891,9 +1994,7 @@ for category in vardb.categorylist:
 
         wantooverflow = True
 
-        list_formats = [ plotname + '.png' ]
-        if args.doEPS:
-            list_formats.append( plotname + '.eps' )
+        list_formats = [ plotname + '.png', plotname + '.eps' ]
 
         # Here is where the plotting is actually performed!
         #
@@ -1942,9 +2043,7 @@ for category in vardb.categorylist:
 		plotname = dirname + '/' + category.name + ' ' + var.shortname + ' ' + syst.name
                 plotname = plotname.replace(' ', '_')
 
-	        list_formats_sys = [ plotname + '.png' ]
-                if args.doEPS:
-                    list_formats_sys.append( plotname + '.eps' )
+	        list_formats_sys = [ plotname + '.png', plotname + '.eps' ]
 
                 # plotSystematics is the function which takes care of the systematics
                 #

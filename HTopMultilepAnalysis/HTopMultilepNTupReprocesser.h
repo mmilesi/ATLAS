@@ -34,9 +34,7 @@ namespace NTupReprocesser {
     	  isMC(0),
     	  isSS01(0),
     	  dilep(0),
-  	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0),
-	  weight_QMisID(1.0),weight_QMisID_UP(1.0),weight_QMisID_DN(1.0),
-          weight_MM(1.0),weight_MM_R_UP(1.0),weight_MM_R_DN(1.0),weight_MM_F_UP(1.0),weight_MM_F_DN(1.0)
+  	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0)
     { };
 
     char isMC;
@@ -46,10 +44,7 @@ namespace NTupReprocesser {
     char TAntiT;
     char AntiTT;
     char AntiTAntiT;
-
-    float weight_QMisID, weight_QMisID_UP, weight_QMisID_DN;
-    float weight_MM, weight_MM_R_UP, weight_MM_R_DN, weight_MM_F_UP, weight_MM_F_DN;
-
+  
   };
 
   class leptonObj {
@@ -112,6 +107,13 @@ public:
   bool m_useTrigMatchingInfo;
 
   bool m_useTEfficiency;
+  
+  /** A list of systematics affecting the efficiency measurement, whoich will be eventually propagated to the final event weight.
+      By default, it includes the statistical uncertainty on the efficiencies
+  */
+  
+  std::string              m_systematics_list;
+  std::vector<std::string> m_systematics;
 
   /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
 
@@ -136,44 +138,44 @@ private:
 
   /** Input TTree branches which need to be used by the algorithm */
 
-  ULong64_t       m_EventNumber;
-  UInt_t          m_RunNumber;
-  UInt_t          m_mc_channel_number; /** for DATA, mc_channel_number=0 */
-  Int_t 	  m_dilep_type;
-  Int_t           m_trilep_type;
-  Char_t          m_isSS01;
-  Char_t          m_is_T_T;
-  Char_t          m_is_T_AntiT;
-  Char_t          m_is_AntiT_T;
-  Char_t          m_is_AntiT_AntiT;
+  ULong64_t  m_EventNumber;
+  UInt_t     m_RunNumber;
+  UInt_t     m_mc_channel_number; /** for DATA, mc_channel_number=0 */
+  Int_t      m_dilep_type;
+  Int_t      m_trilep_type;
+  Char_t     m_isSS01;
+  Char_t     m_is_T_T;
+  Char_t     m_is_T_AntiT;
+  Char_t     m_is_AntiT_T;
+  Char_t     m_is_AntiT_AntiT;
 
-  Float_t	  m_lep_ID_0;
-  Float_t	  m_lep_Pt_0;
-  Float_t	  m_lep_E_0;
-  Float_t	  m_lep_Eta_0;
-  Float_t	  m_lep_Phi_0;
-  Float_t	  m_lep_EtaBE2_0;
-  Char_t	  m_lep_isTightSelected_0;
-  Char_t	  m_lep_isTrigMatch_0;
+  Float_t    m_lep_ID_0;
+  Float_t    m_lep_Pt_0;
+  Float_t    m_lep_E_0;
+  Float_t    m_lep_Eta_0;
+  Float_t    m_lep_Phi_0;
+  Float_t    m_lep_EtaBE2_0;
+  Char_t     m_lep_isTightSelected_0;
+  Char_t     m_lep_isTrigMatch_0;
 
-  Float_t	  m_lep_ID_1;
-  Float_t	  m_lep_Pt_1;
-  Float_t	  m_lep_E_1;
-  Float_t	  m_lep_Eta_1;
-  Float_t	  m_lep_Phi_1;
-  Float_t	  m_lep_EtaBE2_1;
-  Char_t	  m_lep_isTightSelected_1;
-  Char_t	  m_lep_isTrigMatch_1;
+  Float_t    m_lep_ID_1;
+  Float_t    m_lep_Pt_1;
+  Float_t    m_lep_E_1;
+  Float_t    m_lep_Eta_1;
+  Float_t    m_lep_Phi_1;
+  Float_t    m_lep_EtaBE2_1;
+  Char_t     m_lep_isTightSelected_1;
+  Char_t     m_lep_isTrigMatch_1;
 
-  Float_t	  m_QMisIDWeight_in;
-  Float_t	  m_QMisIDWeight_UP_in;
-  Float_t	  m_QMisIDWeight_DN_in;
+  Float_t    m_QMisIDWeight_NOMINAL_in;
+  Float_t    m_QMisIDWeight_UP_in;
+  Float_t    m_QMisIDWeight_DN_in;
 
-  Float_t	  m_MMWeight_in;
-  Float_t	  m_MMWeight_R_UP_in;
-  Float_t	  m_MMWeight_R_DN_in;
-  Float_t	  m_MMWeight_F_UP_in;
-  Float_t	  m_MMWeight_F_DN_in;
+  Float_t    m_MMWeight_NOMINAL_in;
+  
+  /** Map containing input branches with the variations of MM weights for each systematic */
+  
+  std::map<std::string, std::vector<float> > m_MMWeight_in; 
 
   /** Value of these flags will be inferred from input tree content.
       If false (aka branch does not exist yet), will ADD new corresponding branch to output tree, otherwise (aka branch already exists) will UPDATE it
@@ -189,15 +191,17 @@ private:
 
   /** Extra branches to be stored in output TTree */
 
-  Float_t	  m_QMisIDWeight_out;
-  Float_t	  m_QMisIDWeight_UP_out;
-  Float_t	  m_QMisIDWeight_DN_out;
+  Float_t   m_QMisIDWeight_NOMINAL_out = 1.0;
+  Float_t   m_QMisIDWeight_UP_out = 1.0;
+  Float_t   m_QMisIDWeight_DN_out = 1.0;
 
-  Float_t	  m_MMWeight_out;
-  Float_t	  m_MMWeight_R_UP_out;
-  Float_t	  m_MMWeight_R_DN_out;
-  Float_t	  m_MMWeight_F_UP_out;
-  Float_t	  m_MMWeight_F_DN_out;
+  /** Output branch with nominal MM weight */
+
+  Float_t   m_MMWeight_NOMINAL_out = 1.0;
+
+  /** Map containing output branches with the variations of MM weights for each systematic */
+
+  std::map<std::string, std::vector<float> > m_MMWeight_out; //!
 
   // variables that don't get filled at submission time should be
   // protected from being send from the submission node to the worker
@@ -207,24 +211,29 @@ private:
 
   unsigned int m_numEntry;   //!
   unsigned int m_count_inf;  //!
+  
+  /** This will be updated when looping over the input systematics for a given event, so all the methods know about it */
+  
+  std::string m_this_syst;   //!
 
   std::shared_ptr<NTupReprocesser::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<NTupReprocesser::leptonObj> > m_leptons; //!
 
   std::map< std::string, TH2D* > m_QMisID_hist_map; //!
 
-  std::map< std::string, TH1D* > m_el_hist_map; //!
-  std::map< std::string, TH1D* > m_mu_hist_map; //!
+  /** For each systematic, store a map with the efficiency histogram "type" to be read and the histogram pointer */
 
-  std::map< std::string, TEfficiency* > m_el_teff_map; //!
-  std::map< std::string, TEfficiency* > m_mu_teff_map; //!
+  std::map< std::string, std::map< std::string, TH1D* > >        m_el_hist_map; //!
+  std::map< std::string, std::map< std::string, TH1D* > >        m_mu_hist_map; //!
+  std::map< std::string, std::map< std::string, TEfficiency* > > m_el_teff_map; //!
+  std::map< std::string, std::map< std::string, TEfficiency* > > m_mu_teff_map; //!
 
-  /** Normalisation factors for r/f efficiencies */
+  /** Normalisation factors for r/f efficiencies (different for each systematic) */
 
-  double m_el_reff_tot = 1.0;
-  double m_el_feff_tot = 1.0;
-  double m_mu_reff_tot = 1.0;
-  double m_mu_feff_tot = 1.0;
+  std::map< std::string, float > m_el_reff_tot;
+  std::map< std::string, float > m_el_feff_tot;
+  std::map< std::string, float > m_mu_reff_tot;
+  std::map< std::string, float > m_mu_feff_tot;
 
 public:
 
@@ -256,6 +265,10 @@ public:
 
 private:
 
+  std::string str_replace( const std::string& input_str, const std::string& old_substr, const std::string& new_substr );
+
+  EL::StatusCode tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list ); 
+
   EL::StatusCode readRFEfficiencies ();
   EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
   					   std::vector<float>& efficiency,
@@ -273,8 +286,9 @@ private:
   EL::StatusCode calculateQMisIDWeights ();
 
   EL::StatusCode enableSelectedBranches ();
-  EL::StatusCode setOutputBranches ();
   EL::StatusCode clearBranches ();
+  EL::StatusCode resetDefaultWeights ();
+
 
 };
 

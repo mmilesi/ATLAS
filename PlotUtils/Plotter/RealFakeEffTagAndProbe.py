@@ -83,6 +83,7 @@ class RealFakeEffTagAndProbe:
     	#self.__channels     = {"" : ["El"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
         self.__leptons      = []
     	self.__efficiencies = ["Real","Fake"]
+    	#self.__efficiencies = ["Fake"]
     	self.__variables    = ["Pt"]
     	self.__selections   = ["L","T","AntiT"]
     	self.__processes      = []
@@ -157,7 +158,7 @@ class RealFakeEffTagAndProbe:
 	self.log   = False
 
         self.lumi = 13.2
-	self.extensionlist = ["eps","png"]
+	self.extensionlist = ["eps","png","root"]
 
     def addProcess( self, processlist=None ):
 	self.__processes.extend(processlist)
@@ -614,6 +615,15 @@ class RealFakeEffTagAndProbe:
                 h_pass = self.tight_hists[nominal_key]
                 h_tot  = self.tight_hists[nominal_key] + self.antitight_hists[key]
 
+           
+	    # Make sure overflow bin will return same efficiency as last bin before overflow
+            
+	    h_pass.SetBinContent( h_pass.GetNbinsX()+1, h_pass.GetBinContent( h_pass.GetNbinsX() ) )
+	    h_pass.SetBinError( h_pass.GetNbinsX()+1, h_pass.GetBinError( h_pass.GetNbinsX() )  )
+	    
+	    h_tot.SetBinContent( h_tot.GetNbinsX()+1, h_tot.GetBinContent( h_tot.GetNbinsX() ) )
+	    h_tot.SetBinError( h_tot.GetNbinsX()+1, h_tot.GetBinError( h_tot.GetNbinsX() )  )	    
+
 	    ratiolist = []
 	    for idx, elem in enumerate(self.tight_yields[key]):
 	        n = elem
@@ -851,21 +861,35 @@ class RealFakeEffTagAndProbe:
         self.__outputfile.Write()
         self.__outputfile.Close()
 
-    def __getLimits__( self, histlist, scale_up=1.0, scale_dn=1.0 ):
+    def __getLimits__( self, histlist, scale_up=1.0, scale_dn=1.0, shift_up=0.0, shift_dn=0.0, ratio=False ):
         ymin = 1e9
 	ymax = 0.0
 	for h in histlist:
 	    this_ymin = h.GetBinContent( h.GetMinimumBin() )
 	    this_ymax = h.GetBinContent( h.GetMaximumBin() )
+	    if ratio:
+		shifted_dn = [ ( h.GetBinContent(bin) - h.GetBinError(bin)/2.0 ) if ( h.GetBinError(bin) ) else 1 for bin in range(1,h.GetNbinsX()+2) ]
+	        shifted_up = [ ( h.GetBinContent(bin) + h.GetBinError(bin)/2.0 ) if ( h.GetBinError(bin) ) else 1 for bin in range(1,h.GetNbinsX()+2) ]
+		this_ymin = min(shifted_dn)
+		this_ymax = max(shifted_up)
+	    
 	    if this_ymin < ymin:
 	        ymin = this_ymin
 	    if this_ymax >= ymax:
 	        ymax = this_ymax
 	
-	if ymin < 0: ymin = 0.0
-	if ymax > 1: ymax = 1.0
-	
-	return scale_dn * ymin, scale_up * ymax
+	if not ratio:
+	    if ymin < 0: ymin = 0.0
+	    if ymax > 1: ymax = 1.0
+	else:
+	   if  abs( ymax - 1 ) <= 0.05: 
+	       ymax = 1.05   
+	       shift_up = 0
+	   if  abs( ymin - 1 ) <= 0.05: 
+	       ymin = 0.95   
+	       shift_dn = 0	       
+	       
+	return scale_dn * ( ymin - shift_dn ), scale_up * ( ymax + shift_up )
 
 
     def plotMaker( self ):
@@ -875,6 +899,9 @@ class RealFakeEffTagAndProbe:
         proc = ("observed","expectedbkg")[bool(self.closure)]
 
         proc_dict = {"observed":"data (w/ subtraction)", "expectedbkg":"simulation"}
+
+        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/BasicPlots"):
+	    os.makedirs(self.__outputpath+"/EfficiencyPlots/BasicPlots")
 
         for var in self.__variables:
 
@@ -937,7 +964,7 @@ class RealFakeEffTagAndProbe:
                 canvas_filename = "_".join(("RealFake",lep,var,"Efficiency",proc))
 
 		for extension in self.extensionlist:
-		    c.SaveAs(self.__outputpath+"/"+canvas_filename+"."+extension)
+		    c.SaveAs(self.__outputpath+"/EfficiencyPlots/BasicPlots/"+canvas_filename+"."+extension)
 
 
     def plotMakerSys( self ):
@@ -946,6 +973,11 @@ class RealFakeEffTagAndProbe:
 
         proc_dict = {"observed":"data (w/ subtraction)", "expectedbkg":"simulation"}
 
+        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/SplitSys"):
+	    os.makedirs(self.__outputpath+"/EfficiencyPlots/SplitSys")
+        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/CombinedSys"):
+	    os.makedirs(self.__outputpath+"/EfficiencyPlots/CombinedSys")
+	    
         for var in self.__variables:
 
   	    for lep in self.__leptons:
@@ -993,9 +1025,21 @@ class RealFakeEffTagAndProbe:
           	    legend.SetFillStyle(0)	# Legend transparent background
           	    legend.SetTextSize(0.035)	# Increase entry font size!
           	    legend.SetTextFont(42)	# Helvetica
+
+                    leg_ATLAS  = TLatex()
+                    leg_lumi   = TLatex()
+                    leg_ATLAS.SetTextSize(0.04)
+                    leg_ATLAS.SetNDC()
+                    leg_lumi.SetTextSize(0.04)
+                    leg_lumi.SetNDC()
 	  	    
 	  	    legend.AddEntry(hist_nominal,"#varepsilon_{{{0}}} - nominal (stat. unc.)".format(eff), "P")
 
+	  	    # Store the sum in quadrature of all the UP and DN variations wrt nominal to eventually make a single sys error band
+		    # Assuming that all uncertainties in each bin are not correlated (which is the case!)
+
+		    all_sys = {} # for each bin nr. store the sum in quadrature of sys for that bin
+		    
 		    count_sys_num = [0 for i in range(len(self.__systematics[1:]))]
 	            
 	  	    for h in hists_sys_numerator:
@@ -1006,7 +1050,19 @@ class RealFakeEffTagAndProbe:
 			
 			for idx, sys in enumerate(self.__systematics[1:]):
 			    if sys in h.GetName():
-			        h.SetLineColor(self.__syst_color_dict[sys+"_N"])
+			        
+				#print "\tsys hist name: ", h.GetName()
+				bin = h.GetName()[-1] # get the bin number
+				sys_var = abs( hist_nominal.GetBinContent(int(bin)) - h.GetBinContent(int(bin)) )
+				#print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
+				
+				if not all_sys.get(bin):
+				    all_sys[bin] = pow(sys_var,2.0)
+				else:
+				    all_sys[bin] += pow(sys_var,2.0)
+				#print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
+				
+				h.SetLineColor(self.__syst_color_dict[sys+"_N"])
 			        h.SetMarkerColor(self.__syst_color_dict[sys+"_N"])
 			        if not count_sys_num[idx]:
 			            legend.AddEntry(h,"{0} subtraction sys (TT)".format(sys), "P")
@@ -1022,11 +1078,29 @@ class RealFakeEffTagAndProbe:
 			
 			for idx, sys in enumerate(self.__systematics[1:]):
 			    if sys in h.GetName(): 
+
+				#print "\tsys hist name: ", h.GetName()
+				bin = h.GetName()[-1] # get the bin number
+				sys_var = abs( hist_nominal.GetBinContent(int(bin)) - h.GetBinContent(int(bin)) )
+				#print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
+				
+				if not all_sys.get(bin):
+				    all_sys[bin] = pow(sys_var,2.0)
+				else:
+				    all_sys[bin] += pow(sys_var,2.0)
+				#print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
+
 			        h.SetLineColor(self.__syst_color_dict[sys+"_D"])
 			        h.SetMarkerColor(self.__syst_color_dict[sys+"_D"])
 			        if not count_sys_denom[idx]:
 			            legend.AddEntry(h,"{0} subtraction sys (T#slash{{T}})".format(sys), "P")
 				    count_sys_denom[idx] += 1
+	 
+	            # Now get sqrt of sum in quadrature of systematics
+		    
+		    for key, sys_var in sorted(all_sys.iteritems()):
+		        all_sys[key] = math.sqrt(all_sys[key])
+			#print("\ttot sys bin[{0}] = {1}".format(key,all_sys[key]))
 	 
 	  	    c = TCanvas("c_"+ var + "_" + lep + "_" + eff,"Efficiencies")
           	    c.SetFrameFillColor(0)
@@ -1055,8 +1129,13 @@ class RealFakeEffTagAndProbe:
 
                     # Make a clone of nominal, and divide by itself
 		    
-		    rationom = hist_nominal.Clone(hist_nominal.GetName())
+		    rationom = hist_nominal.Clone(hist_nominal.GetName()+"_Ratio")
 		    rationom.Divide(hist_nominal)
+		    for bin in 	range(1,rationom.GetNbinsX()+2):
+		        error = 0.0
+			if hist_nominal.GetBinContent(bin) > 0:
+		            error = 2.0 * ( hist_nominal.GetBinError(bin) / hist_nominal.GetBinContent(bin) )
+		        rationom.SetBinError( bin, error )	    
 
 		    rationom.SetLineStyle(1)
 		    rationom.SetLineWidth(2)
@@ -1096,7 +1175,7 @@ class RealFakeEffTagAndProbe:
 			    print("\t ratio = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio.GetBinContent(i) for i in range(1,ratio.GetNbinsX()+2) ] ) + "]" )
 			ratiolist.append(ratio)
 		    
-		    ratio_ymin, ratio_ymax = self.__getLimits__(ratiolist, 1.6, 0.4)
+		    ratio_ymin, ratio_ymax = self.__getLimits__(ratiolist, ratio=True)
 		    rationom.GetYaxis().SetRangeUser(ratio_ymin, ratio_ymax)
 		    
 		    pad1.cd()
@@ -1107,6 +1186,8 @@ class RealFakeEffTagAndProbe:
 	  	    for h in histlist[1:]:
 	  	        h.Draw("HIST, SAME")
 	            legend.Draw()
+                    leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
+                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0} fb^{{-1}}".format(str(self.lumi)));
 		    
 		    pad2.cd()
 		    rationom.Draw("E2")
@@ -1121,8 +1202,127 @@ class RealFakeEffTagAndProbe:
 		    canvas_filename = "_".join((eff,lep,var,"Efficiency",proc,"Systematics"))
 
 		    for extension in self.extensionlist:
-		        c.SaveAs(self.__outputpath+"/"+canvas_filename+"."+extension)
+		        c.SaveAs(self.__outputpath+"/EfficiencyPlots/SplitSys/"+canvas_filename+"."+extension)
+
+                    # Reset axis labels to default (otherwise next plots won't have labels)
+		    
+		    hist_nominal.GetXaxis().SetLabelSize()
+                    hist_nominal.GetXaxis().SetLabelOffset()		
 	
+	            # ---------------------------------------------------------------------------------------------------------------
+	
+	            # Make a set of plots for nominal + *symmetrised* combination of systematic uncertainties
+
+	  	    c_allsys = TCanvas("c_"+ var + "_" + lep + "_" + eff + "_allsys","Efficiencies_CombinedSystematics")
+          	    c_allsys.SetFrameFillColor(0)
+          	    c_allsys.SetFrameFillStyle(0)
+          	    c_allsys.SetFrameBorderMode(0)
+
+          	    legend_allsys = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+                    legend_allsys.SetHeader(eff + " - " + self.leptons_full[lep])
+          	    legend_allsys.SetBorderSize(0)	# no border
+          	    legend_allsys.SetFillStyle(0)	# Legend transparent background
+          	    legend_allsys.SetTextSize(0.035)	# Increase entry font size!
+          	    legend_allsys.SetTextFont(42)	# Helvetica
+
+		    hist_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_AllSys")
+	   	    hist_allsys.SetFillColor(kYellow-9)
+           	    hist_allsys.SetLineColor(kYellow-9)
+           	    hist_allsys.SetFillStyle(1001) 	
+		    
+	  	    legend_allsys.AddEntry(hist_nominal,"#varepsilon_{{{0}}} - nominal (stat. unc.)".format(eff), "P")
+		    legend_allsys.AddEntry(hist_allsys,"Combined systematics", "F")
+		    
+		    for bin in 	range(1,hist_allsys.GetNbinsX()+2):
+			# A dirty hack: if the error is zero, drawing w/ option E2 seems
+			# to be ingnored and HIST gets used instead.
+			# Thus, just set a tiny error on the hist
+			# 
+			error = 0.0001 
+			if all_sys[str(bin)]:
+			    error = all_sys[str(bin)]
+		        hist_allsys.SetBinError(bin,error)	    
+
+		    ymin_allsys, ymax_allsys = self.__getLimits__([hist_allsys,hist_nominal], scale_up, scale_dn)
+		    hist_allsys.GetYaxis().SetRangeUser(ymin_allsys,ymax_allsys)
+		    
+	    
+		    ratio_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_Ratio_AllSys")
+		    ratio_allsys.Divide(hist_nominal)
+		    for bin in 	range(1,ratio_allsys.GetNbinsX()+2):
+			# A dirty hack: if the error is zero, drawing w/ option E2 seems
+			# to be ingnored and HIST gets used instead.
+			# Thus, just set a tiny error on the hist
+			#		      
+			error = 0.0001
+			if hist_nominal.GetBinContent(bin) > 0 and all_sys[str(bin)]:
+			    error = 2.0 * ( all_sys[str(bin)] / hist_nominal.GetBinContent(bin) )
+		        ratio_allsys.SetBinError( bin, error )	    
+
+		    ratio_allsys.SetLineStyle(1)
+		    ratio_allsys.SetLineWidth(2)
+		    ratio_allsys.SetMarkerSize(0)
+             	    ratio_allsys.SetYTitle("Syst/Nom")
+             	    ratio_allsys.GetXaxis().SetTitleSize(0.15)
+             	    ratio_allsys.GetYaxis().SetTitleSize(0.15)
+             	    ratio_allsys.GetXaxis().SetTitleOffset(1.0)
+             	    ratio_allsys.GetYaxis().SetTitleOffset(0.35)
+             	    ratio_allsys.GetXaxis().SetLabelSize(0.15)
+             	    ratio_allsys.GetYaxis().SetLabelSize(0.12)
+             	    ratio_allsys.GetYaxis().SetNdivisions(5)#(503)#(5) 
+	   	    ratio_allsys.SetFillColor(kYellow-9)
+           	    ratio_allsys.SetFillStyle(1001) 	
+
+                    # Need to re-get the nominal ratio hist with stats errors
+
+		    ratio_ymin_allsys, ratio_ymax_allsys = self.__getLimits__([ratio_allsys,rationom], shift_up=0.2, shift_dn=0.2, ratio=True)
+		    
+		    print ("ratio_ymin_allsys = {0:.1f}, ratio_ymax_allsys = {1:.1f}".format(ratio_ymin_allsys, ratio_ymax_allsys))
+		    ratio_allsys.GetYaxis().SetRangeUser(round(ratio_ymin_allsys,1), round(ratio_ymax_allsys,1))
+	
+          	    pad1_allsys = TPad("pad1", "", 0, 0.25, 1, 1)
+          	    pad2_allsys = TPad("pad2", "", 0, 0,   1, 0.25)
+          	    pad1_allsys.SetBottomMargin(0.02)
+          	    pad2_allsys.SetBottomMargin(0.4)
+          	    pad2_allsys.SetGridy(1)
+          	    pad1_allsys.Draw()
+          	    pad2_allsys.Draw()
+	
+		    pad1_allsys.cd()
+		    # Remove X axis labels from top pad
+		    hist_allsys.GetXaxis().SetLabelSize(0)
+                    hist_allsys.GetXaxis().SetLabelOffset(999)
+		    hist_allsys.Draw("E2")
+		    hist_nominal.Draw("E0 SAME")
+                    legend_allsys.Draw()
+		    leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
+                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0} fb^{{-1}}".format(str(self.lumi)));
+		    
+		    print("NOMINAL: bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinContent(ibin) for ibin in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
+		    print("NOMINAL: binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinError(ibin) for ibin in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
+		    print("ALLSYS:  bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_allsys.GetBinContent(ibin) for ibin in range(1,hist_allsys.GetNbinsX()+2) ] ) + "]" ) 
+		    print("ALLSYS:  binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_allsys.GetBinError(ibin) for ibin in range(1,hist_allsys.GetNbinsX()+2) ] ) + "]" )
+		    
+		    pad2_allsys.cd()
+		    ratio_allsys.Draw("E2")
+		    rationom.Draw("E2 SAME")
+                    
+		    print("RATIO NOMINAL: bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ rationom.GetBinContent(ibin) for ibin in range(1,rationom.GetNbinsX()+2) ] ) + "]" )
+		    print("RATIO NOMINAL: binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ rationom.GetBinError(ibin) for ibin in range(1,rationom.GetNbinsX()+2) ] ) + "]" )
+		    print("RATIO ALLSYS:  bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ ratio_allsys.GetBinContent(ibin) for ibin in range(1,ratio_allsys.GetNbinsX()+2) ] ) + "]" ) 
+		    print("RATIO ALLSYS:  binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ ratio_allsys.GetBinError(ibin) for ibin in range(1,ratio_allsys.GetNbinsX()+2) ] ) + "]" )
+		    
+		    refl = TLine(rationom.GetBinLowEdge(1), 1., rationom.GetBinLowEdge(rationom.GetNbinsX()+1), 1.)
+                    refl.SetLineStyle(2)
+		    refl.SetLineColor(kBlack)
+                    refl.SetLineWidth(2)
+		    refl.Draw("SAME")
+	 
+		    canvas_allsys_filename = "_".join((eff,lep,var,"Efficiency",proc,"CombinedSystematics"))
+
+		    for extension in self.extensionlist:
+		        c_allsys.SaveAs(self.__outputpath+"/EfficiencyPlots/CombinedSys/"+canvas_allsys_filename+"."+extension)
+		
 
     def __set_fancy_2D_style( self ):
 
