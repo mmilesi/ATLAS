@@ -1234,7 +1234,14 @@ class RealFakeEffTagAndProbe:
 		    legend_allsys.AddEntry(hist_allsys,"Combined systematics", "F")
 		    
 		    for bin in 	range(1,hist_allsys.GetNbinsX()+2):
-		        hist_allsys.SetBinError(bin,all_sys[str(bin)])	    
+			# A dirty hack: if the error is zero, drawing w/ option E2 seems
+			# to be ingnored and HIST gets used instead.
+			# Thus, just set a tiny error on the hist
+			# 
+			error = 0.0001 
+			if all_sys[str(bin)]:
+			    error = all_sys[str(bin)]
+		        hist_allsys.SetBinError(bin,error)	    
 
 		    ymin_allsys, ymax_allsys = self.__getLimits__([hist_allsys,hist_nominal], scale_up, scale_dn)
 		    hist_allsys.GetYaxis().SetRangeUser(ymin_allsys,ymax_allsys)
@@ -1243,8 +1250,12 @@ class RealFakeEffTagAndProbe:
 		    ratio_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_Ratio_AllSys")
 		    ratio_allsys.Divide(hist_nominal)
 		    for bin in 	range(1,ratio_allsys.GetNbinsX()+2):
-		        error = 0.0
-			if hist_nominal.GetBinContent(bin) > 0:
+			# A dirty hack: if the error is zero, drawing w/ option E2 seems
+			# to be ingnored and HIST gets used instead.
+			# Thus, just set a tiny error on the hist
+			#		      
+			error = 0.0001
+			if hist_nominal.GetBinContent(bin) > 0 and all_sys[str(bin)]:
 			    error = 2.0 * ( all_sys[str(bin)] / hist_nominal.GetBinContent(bin) )
 		        ratio_allsys.SetBinError( bin, error )	    
 
