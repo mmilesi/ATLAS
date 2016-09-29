@@ -19,10 +19,13 @@ from ROOT import gROOT, TH1D, TFile, Double
 
 gROOT.SetBatch(True)
 
-
+# Store sys integral for each systematic name
 g_sys_dict = {}
 
-def get_yields(nominal, up=None, down=None, sysname=None):
+# Store list of sys integrals for each sys group 
+g_sysgroup_dict = {}
+
+def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
 
     # Pick also O-Flow bin (NB: the last bin contains also the OFlow! Thus, stop at bin before oflow)
     #
@@ -69,29 +72,42 @@ def get_yields(nominal, up=None, down=None, sysname=None):
 
     integral_total_error = integral_stat_error
 
-    #print ("\t\t--------------------")
     if ( up and down ):
 
-        integral_sys_up = abs( up.Integral(0,up.GetNbinsX()+1) - integral_nominal )
-        integral_sys_dn = abs( integral_nominal - down.Integral(0,down.GetNbinsX()+1) )
+        integral_sys_up = abs( up.Integral(0,up.GetNbinsX()) - integral_nominal )
+        integral_sys_dn = abs( integral_nominal - down.Integral(0,down.GetNbinsX()) )
 
 	# Symmetrised systematic uncertainty
 	#
 	simm_sys_unc = abs( integral_sys_up + integral_sys_dn ) / 2.0
 
         g_sys_dict[sysname] = simm_sys_unc
-
-        # Total uncertainty
+        
+	if not g_sysgroup_dict.get(sysgroup):
+	    g_sysgroup_dict[sysgroup] = [simm_sys_unc]
+        else:
+	    g_sysgroup_dict[sysgroup].append(simm_sys_unc)
+	
+	# Total uncertainty
         #
         max_integral_sys   = max([integral_sys_up, integral_sys_dn])
         integral_tot_error = math.sqrt( ( integral_stat_error * integral_stat_error ) + ( max_integral_sys * max_integral_sys ) )
 
+        # This will print the yield w/ stat and syst error per each bin
+	
         #print ("\t\tIntegral = {0:.2f} +- {1:.2f} (stat) ( +{2:.2f}, -{3:.2f} --> +- {4:.2f}) (syst: {5})".format(integral_nominal, integral_stat_error, integral_sys_up, integral_sys_dn, simm_sys_unc,  sysname ))
 
     else:
         print ("\t\tIntegral = {0:.2f} +- {1:.2f} (stat)".format(integral_nominal, integral_stat_error ))
 
     return integral_nominal, integral_stat_error
+
+
+def sum_quad ( inlist ):
+    sq = 0
+    for elem in inlist:
+    	sq +=  pow(elem,2.0)
+    return math.sqrt(sq)
 
 
 def printTotFakeUncertainty( nominal, stat, flav ):
@@ -107,15 +123,31 @@ def printTotFakeUncertainty( nominal, stat, flav ):
 
     # This prints out sorting systematics from smaller to larger
     #
-    print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) + "\t\t+- {0:.2f} [{1:.2f} %] (non-closure)".format(non_closure, (non_closure/nominal)*100) )
+    print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.4f} [{1:.4f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) + "\t\t+- {0:.2f} [{1:.2f} %] (non-closure)".format(non_closure, (non_closure/nominal)*100) )
+   
+    print("")
+    
+    # Print sum in quadrature of syst for each syst group
+    
+    print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (stat)".format(nominal, stat, (stat/nominal)*100) )
+    for sg, values in g_sysgroup_dict.iteritems():
+    
+        print("\t\t+- {0:.2f} [{1:.2f} %] ({2})".format( sum_quad(values), (sum_quad(values)/nominal)*100, sg ) )
+    
+    print("")
 
-    sum_quad = pow(stat,2.0) + pow(non_closure,2.0)
-    for sys in g_sys_dict.itervalues():
-        sum_quad += pow(sys,2.0)
-    sum_quad = math.sqrt(sum_quad)
+    # Print sum in quadrature of ALL syst + stat
+    
+    toterrlist = list(g_sys_dict.values())
+    toterrlist.extend([stat,non_closure])
+    sq = sum_quad( toterrlist )
 
-    print ("\t\t= {0:.2f} +- {1:.2f} [{2:.2f} %] (TOTAL UNCERTAINTY)".format(nominal, sum_quad, (sum_quad/nominal)*100))
+    print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (TOTAL UNCERTAINTY)".format(nominal, sq, (sq/nominal)*100))
 
+
+def clearDicts():
+    g_sys_dict.clear()
+    g_sysgroup_dict .clear()
 
 if __name__ == '__main__':
 
@@ -166,8 +198,10 @@ if __name__ == '__main__':
     flavour_list = ["ElEl", "MuMu", "OF"]
 
     for flav in flavour_list:
-
-        print ("\nFlavour region: {0}\n".format(flav))
+        
+	clearDicts()
+	
+	print ("\nFlavour region: {0}\n".format(flav))
 
         filename = inputpath + flav + region + "/" + flav + region + "_" + var_name + ".root"
         myfile = TFile(filename)
@@ -176,36 +210,97 @@ if __name__ == '__main__':
 
         fakes_nominal = myfile.Get("fakesbkg")
 
-        fakes_syst = [
-	  'MMsys_lep0_r_Stat',
-	  'MMsys_lep1_r_Stat',
-	  'MMsys_lep0_f_Stat',
-	  'MMsys_lep1_f_Stat',
-	  'MMsys_lep0_r_numerator_QMisID',
-	  'MMsys_lep1_r_numerator_QMisID',
-	  'MMsys_lep0_f_numerator_QMisID',
-	  'MMsys_lep1_f_numerator_QMisID',
-	  'MMsys_lep0_r_denominator_QMisID',
-	  'MMsys_lep1_r_denominator_QMisID',
-	  'MMsys_lep0_f_denominator_QMisID',
-	  'MMsys_lep1_f_denominator_QMisID',
-	  'MMsys_lep0_r_numerator_AllSimStat',
-	  'MMsys_lep1_r_numerator_AllSimStat',
-	  'MMsys_lep0_f_numerator_AllSimStat',
-	  'MMsys_lep1_f_numerator_AllSimStat',
-	  'MMsys_lep0_r_denominator_AllSimStat',
-	  'MMsys_lep1_r_denominator_AllSimStat',
-	  'MMsys_lep0_f_denominator_AllSimStat',
-	  'MMsys_lep1_f_denominator_AllSimStat',
-	]
-
+        fakes_syst = {
+	  'MMsys_Real_El_Pt_Stat_1':		   'Stat',		
+	  'MMsys_Real_El_Pt_Stat_2':		   'Stat',		
+	  'MMsys_Real_El_Pt_Stat_3':		   'Stat',		
+	  'MMsys_Real_El_Pt_Stat_4':		   'Stat',		
+	  'MMsys_Real_El_Pt_Stat_5':		   'Stat',		
+	  'MMsys_Real_El_Pt_Stat_6':		   'Stat',		
+	  'MMsys_Real_El_Pt_Stat_7':		   'Stat',		
+	  'MMsys_Real_El_Pt_Stat_8':		   'Stat',		
+	  'MMsys_Real_Mu_Pt_Stat_1':		   'Stat',		
+	  'MMsys_Real_Mu_Pt_Stat_2':		   'Stat',		
+	  'MMsys_Real_Mu_Pt_Stat_3':		   'Stat',		
+	  'MMsys_Real_Mu_Pt_Stat_4':		   'Stat',		
+	  'MMsys_Real_Mu_Pt_Stat_5':		   'Stat',		
+	  'MMsys_Real_Mu_Pt_Stat_6':		   'Stat',		
+	  'MMsys_Real_Mu_Pt_Stat_7':		   'Stat',		
+	  'MMsys_Real_Mu_Pt_Stat_8':		   'Stat',		
+	  'MMsys_Fake_El_Pt_Stat_1':		   'Stat',		
+	  'MMsys_Fake_El_Pt_Stat_2':		   'Stat',		
+	  'MMsys_Fake_El_Pt_Stat_3':		   'Stat',		
+	  'MMsys_Fake_El_Pt_Stat_4':		   'Stat',		
+	  'MMsys_Fake_El_Pt_Stat_5':		   'Stat',		
+	  'MMsys_Fake_El_Pt_Stat_6':		   'Stat',		
+	  'MMsys_Fake_Mu_Pt_Stat_1':		   'Stat',		
+	  'MMsys_Fake_Mu_Pt_Stat_2':		   'Stat',		
+	  'MMsys_Fake_Mu_Pt_Stat_3':		   'Stat',		
+	  'MMsys_Fake_Mu_Pt_Stat_4':		   'Stat',		
+	  'MMsys_Fake_Mu_Pt_Stat_5':		   'Stat',		
+	  'MMsys_Real_El_Pt_numerator_QMisID_1':   'numerator_QMisID',  
+	  'MMsys_Real_El_Pt_numerator_QMisID_2':   'numerator_QMisID',  
+	  'MMsys_Real_El_Pt_numerator_QMisID_3':   'numerator_QMisID',  
+	  'MMsys_Real_El_Pt_numerator_QMisID_4':   'numerator_QMisID',  
+	  'MMsys_Real_El_Pt_numerator_QMisID_5':   'numerator_QMisID',  
+	  'MMsys_Real_El_Pt_numerator_QMisID_6':   'numerator_QMisID',  
+	  'MMsys_Real_El_Pt_numerator_QMisID_7':   'numerator_QMisID',  
+	  'MMsys_Real_El_Pt_numerator_QMisID_8':   'numerator_QMisID',  
+	  'MMsys_Real_Mu_Pt_numerator_QMisID_1':   'numerator_QMisID',  
+	  'MMsys_Real_Mu_Pt_numerator_QMisID_2':   'numerator_QMisID',  
+	  'MMsys_Real_Mu_Pt_numerator_QMisID_3':   'numerator_QMisID',  
+	  'MMsys_Real_Mu_Pt_numerator_QMisID_4':   'numerator_QMisID',  
+	  'MMsys_Real_Mu_Pt_numerator_QMisID_5':   'numerator_QMisID',  
+	  'MMsys_Real_Mu_Pt_numerator_QMisID_6':   'numerator_QMisID',  
+	  'MMsys_Real_Mu_Pt_numerator_QMisID_7':   'numerator_QMisID',  
+	  'MMsys_Real_Mu_Pt_numerator_QMisID_8':   'numerator_QMisID',  
+	  'MMsys_Fake_El_Pt_numerator_QMisID_1':   'numerator_QMisID',  
+	  'MMsys_Fake_El_Pt_numerator_QMisID_2':   'numerator_QMisID',  
+	  'MMsys_Fake_El_Pt_numerator_QMisID_3':   'numerator_QMisID',  
+	  'MMsys_Fake_El_Pt_numerator_QMisID_4':   'numerator_QMisID',  
+	  'MMsys_Fake_El_Pt_numerator_QMisID_5':   'numerator_QMisID',  
+	  'MMsys_Fake_El_Pt_numerator_QMisID_6':   'numerator_QMisID',  
+	  'MMsys_Fake_Mu_Pt_numerator_QMisID_1':   'numerator_QMisID',  
+	  'MMsys_Fake_Mu_Pt_numerator_QMisID_2':   'numerator_QMisID',  
+	  'MMsys_Fake_Mu_Pt_numerator_QMisID_3':   'numerator_QMisID',  
+	  'MMsys_Fake_Mu_Pt_numerator_QMisID_4':   'numerator_QMisID',  
+	  'MMsys_Fake_Mu_Pt_numerator_QMisID_5':   'numerator_QMisID',  
+	  'MMsys_Real_El_Pt_denominator_QMisID_1': 'denominator_QMisID',
+	  'MMsys_Real_El_Pt_denominator_QMisID_2': 'denominator_QMisID',
+	  'MMsys_Real_El_Pt_denominator_QMisID_3': 'denominator_QMisID',
+	  'MMsys_Real_El_Pt_denominator_QMisID_4': 'denominator_QMisID',
+	  'MMsys_Real_El_Pt_denominator_QMisID_5': 'denominator_QMisID',
+	  'MMsys_Real_El_Pt_denominator_QMisID_6': 'denominator_QMisID',
+	  'MMsys_Real_El_Pt_denominator_QMisID_7': 'denominator_QMisID',
+	  'MMsys_Real_El_Pt_denominator_QMisID_8': 'denominator_QMisID',
+	  'MMsys_Real_Mu_Pt_denominator_QMisID_1': 'denominator_QMisID',
+	  'MMsys_Real_Mu_Pt_denominator_QMisID_2': 'denominator_QMisID',
+	  'MMsys_Real_Mu_Pt_denominator_QMisID_3': 'denominator_QMisID',
+	  'MMsys_Real_Mu_Pt_denominator_QMisID_4': 'denominator_QMisID',
+	  'MMsys_Real_Mu_Pt_denominator_QMisID_5': 'denominator_QMisID',
+	  'MMsys_Real_Mu_Pt_denominator_QMisID_6': 'denominator_QMisID',
+	  'MMsys_Real_Mu_Pt_denominator_QMisID_7': 'denominator_QMisID',
+	  'MMsys_Real_Mu_Pt_denominator_QMisID_8': 'denominator_QMisID',
+	  'MMsys_Fake_El_Pt_denominator_QMisID_1': 'denominator_QMisID',
+	  'MMsys_Fake_El_Pt_denominator_QMisID_2': 'denominator_QMisID',
+	  'MMsys_Fake_El_Pt_denominator_QMisID_3': 'denominator_QMisID',
+	  'MMsys_Fake_El_Pt_denominator_QMisID_4': 'denominator_QMisID',
+	  'MMsys_Fake_El_Pt_denominator_QMisID_5': 'denominator_QMisID',
+	  'MMsys_Fake_El_Pt_denominator_QMisID_6': 'denominator_QMisID',
+	  'MMsys_Fake_Mu_Pt_denominator_QMisID_1': 'denominator_QMisID',
+	  'MMsys_Fake_Mu_Pt_denominator_QMisID_2': 'denominator_QMisID',
+	  'MMsys_Fake_Mu_Pt_denominator_QMisID_3': 'denominator_QMisID',
+	  'MMsys_Fake_Mu_Pt_denominator_QMisID_4': 'denominator_QMisID',
+	  'MMsys_Fake_Mu_Pt_denominator_QMisID_5': 'denominator_QMisID',
+        } 
+	
         print ("\n\tFakes: \n")
 
-	for sys in fakes_syst:
+	for sys, sysgroup in fakes_syst.iteritems():
 	   fakes_up   = myfile.Get( "fakesbkg_" + sys + "_up")
 	   fakes_down = myfile.Get( "fakesbkg_" + sys + "_dn")
-	   #print(" ==> sys: {0}\n".format(sys))
-           fakes, fakes_err = get_yields(fakes_nominal,fakes_up,fakes_down, sys)
+	   #print(" ==> sys: {0}, sysgroup: {1}\n".format(sys, sysgroup))
+           fakes, fakes_err = get_yields(fakes_nominal,fakes_up,fakes_down, sys, sysgroup)
         printTotFakeUncertainty( fakes, fakes_err, flav )
 
         if args.doClosure:

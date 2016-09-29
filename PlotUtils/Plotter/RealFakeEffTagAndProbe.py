@@ -615,6 +615,15 @@ class RealFakeEffTagAndProbe:
                 h_pass = self.tight_hists[nominal_key]
                 h_tot  = self.tight_hists[nominal_key] + self.antitight_hists[key]
 
+           
+	    # Make sure overflow bin will return same efficiency as last bin before overflow
+            
+	    h_pass.SetBinContent( h_pass.GetNbinsX()+1, h_pass.GetBinContent( h_pass.GetNbinsX() ) )
+	    h_pass.SetBinError( h_pass.GetNbinsX()+1, h_pass.GetBinError( h_pass.GetNbinsX() )  )
+	    
+	    h_tot.SetBinContent( h_tot.GetNbinsX()+1, h_tot.GetBinContent( h_tot.GetNbinsX() ) )
+	    h_tot.SetBinError( h_tot.GetNbinsX()+1, h_tot.GetBinError( h_tot.GetNbinsX() )  )	    
+
 	    ratiolist = []
 	    for idx, elem in enumerate(self.tight_yields[key]):
 	        n = elem
