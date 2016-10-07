@@ -475,6 +475,8 @@ class TTHBackgrounds(Background):
                 ('tops', 'ttee_aMcAtNlo'),
                 ('tops', 'ttmumu_aMcAtNlo'),
                 ('tops', 'tttautau_aMcAtNlo'),
+                ('tops', 'ttZnunu_aMcAtNlo'),
+                ('tops', 'ttZqq_aMcAtNlo'),
                 #('tops', 'Sherpa_ttZnnqq'),
                 #('tops', 'Sherpa_ttll'),
                          ]
@@ -1597,7 +1599,6 @@ class TTHBackgrounds(Background):
 	    #
 	    basecut = category.cut
             truthcut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_NonPromptEvent'))
-
             sp = sp.subprocess(cut=truthcut,eventweight=weight)
 
             if TTcut:
