@@ -45,6 +45,7 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
   m_QMisIDRates_dir            = "";
   m_QMisIDRates_Filename_T     = "";
   m_QMisIDRates_Filename_AntiT = "";
+  m_QMisIDRates_Histname_T = m_QMisIDRates_Histname_AntiT = "Rates";
   m_useTAntiTRates             = false;
 
   m_REFF_dir                = "";
@@ -611,8 +612,8 @@ EL::StatusCode HTopMultilepNTupReprocesser ::  readQMisIDRates()
 
     Info("readQMisIDRates()", "Successfully opened ROOT files with QMisID rates from path:\n AntiT --> %s \n T --> %s", path_AntiT.c_str(), path_T.c_str() );
 
-    TH2D *hist_QMisID_AntiT = get_object<TH2D>( *file_AntiT, "Rates" );
-    TH2D *hist_QMisID_T     = get_object<TH2D>( *file_T, "Rates" );
+    TH2D *hist_QMisID_AntiT = get_object<TH2D>( *file_AntiT, m_QMisIDRates_Histname_AntiT.c_str() );
+    TH2D *hist_QMisID_T     = get_object<TH2D>( *file_T, m_QMisIDRates_Histname_T.c_str() );
 
     hist_QMisID_AntiT->SetDirectory(0);
     hist_QMisID_T->SetDirectory(0);
@@ -920,19 +921,19 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 		  std::cout << "" << std::endl;
 		  Info("readRFEfficiencies()", "Reading inputs for systematic group: ===> %s", sysgroup.c_str() );
 		  std::cout << "" << std::endl;
-                  
+
 		  for ( int bin(1);  bin <= n_sysbins; ++bin ) {
 
 		      // Do this only once for the nominal case:
 
 		      if ( sysgroup.compare("Nominal") == 0 && nominal_read ) continue;
-                      
+
 		      std::string sys = eff + "_" + lep + "_" + var + "_" + sysgroup;
                       if ( sysgroup.compare("Nominal") != 0 ) {
 		          sys += "_" + std::to_string(bin);
 		      }
 		      m_systematics.push_back(sys);
-			  
+
 		      for ( const auto& dir : sysdirs ) {
 
 			  sys_append = ( sysgroup.compare("Nominal") == 0 || sysgroup.compare("Stat") == 0 ) ? "" : ( "_" + sysgroup + "_" + dir +  "_" + std::to_string(bin) );
@@ -1135,14 +1136,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 	    ANA_CHECK( this->tokenize( '_', tokens, m_this_syst ) );
 
             bool readNominalPt(false);
-	    
+
 	    if ( ( isNominal ) ||
 	         ( p != std::stoi(tokens.back() ) ) ||
 	         ( ( lep.get()->flavour == 13 )  && ( m_this_syst.find("El") != std::string::npos ) )   ||
 		 ( ( lep.get()->flavour == 11 )  && ( m_this_syst.find("Mu") != std::string::npos ) )   ||
 		 ( ( type.compare("REAL") == 0 ) && ( m_this_syst.find("Fake") != std::string::npos ) ) ||
 		 ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.find("Real") != std::string::npos ) ) ||
-		 ( m_this_syst.find("Pt") == std::string::npos ) 
+		 ( m_this_syst.find("Pt") == std::string::npos )
 		)
 	    {
 		syskey_up_pt = syskey_dn_pt = "Nominal";
@@ -1185,7 +1186,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		} else {
 		  eff_pt_err_up = (tefficiencies->find(syskey_up_pt)->second).find(key_pt_teff)->second->GetEfficiency(p);
 		  eff_pt_err_dn = (tefficiencies->find(syskey_dn_pt)->second).find(key_pt_teff)->second->GetEfficiency(p);
-		}		
+		}
 	    }
 
 	    if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tLepton pT = %.3f GeV, flavour = %i ==> Reading %s efficiency in pT bin [%.0f,%.0f] GeV: eff_pt = %.3f", pt, lep.get()->flavour, type.c_str(), this_low_edge_pt, this_up_edge_pt, eff_pt ); }
@@ -1217,14 +1218,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		    if ( ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) || ( isBinOverflowEta && fabs(eta) >= overflow_eta_up_edge ) ) {
 
                 	bool readNominalEta(false);
-	        	
+
 	        	if ( ( isNominal ) ||
 	        	     ( e != std::stoi(tokens.back() ) ) ||
 	        	     ( ( lep.get()->flavour == 13 )  && ( m_this_syst.find("El") != std::string::npos ) )   ||
 	        	     ( ( lep.get()->flavour == 11 )  && ( m_this_syst.find("Mu") != std::string::npos ) )   ||
 	        	     ( ( type.compare("REAL") == 0 ) && ( m_this_syst.find("Fake") != std::string::npos ) ) ||
 	        	     ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.find("Real") != std::string::npos ) ) ||
-	        	     ( m_this_syst.find("Eta") == std::string::npos ) 
+	        	     ( m_this_syst.find("Eta") == std::string::npos )
 	        	    )
 	        	{
 	        	    syskey_up_eta = syskey_dn_eta = "Nominal";
@@ -1257,7 +1258,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 	    		    } else {
 	    		      eff_eta_err_up = (tefficiencies->find(syskey_up_eta)->second).find(key_eta_teff)->second->GetEfficiency(e);
 	    		      eff_eta_err_dn = (tefficiencies->find(syskey_dn_eta)->second).find(key_eta_teff)->second->GetEfficiency(e);
-	    		    }		    
+	    		    }
 	                }
 
 			if ( m_verbose ) {
@@ -1334,16 +1335,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
 								   const std::vector<float>& f0, const std::vector<float>& f1 )
 {
 
-    if ( (r0.at(0) == 0) || (r1.at(0) == 0) || 
-         (r0.at(0) <= f0.at(0))             || 
-	 (r1.at(0) <= f1.at(0)) 
-	) 
+    if ( (r0.at(0) == 0) || (r1.at(0) == 0) ||
+         (r0.at(0) <= f0.at(0))             ||
+	 (r1.at(0) <= f1.at(0))
+	)
     {
     	Warning("getMMWeightAndError()", "Warning! The Matrix Method cannot be applied to EventNumber %u because:", static_cast<uint32_t>(m_EventNumber) );
     	std::cout << "r0 = " << r0.at(0) << ", f0 = " << f0.at(0) <<  "\nr1 = " << r1.at(0) << ", f1 = " << f1.at(0) << std::endl;
     	Warning("getMMWeightAndError()", "Will make sure this event is removed by setting MMWeight (nominal) = 0 ...");
         return EL::StatusCode::SUCCESS;
-    } 
+    }
 
     // Calculate nominal MM weight
     //
@@ -1452,7 +1453,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
     // 1) component is NOMINAL (default is 0 ==> remove event at plotting)
     // 2) component is THIS-SYS up
     // 3) component is THIS-SYS dn
-    
+
     std::vector<float> mm_weight = { 0.0, 1.0, 1.0 };
 
     // For variations, save relative weight wrt. nominal
