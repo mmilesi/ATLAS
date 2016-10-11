@@ -1395,10 +1395,10 @@ class TTHBackgrounds(Background):
 	    
 	    #  DD/MC factors measured in v19 to rescale MC
 	    #
-            if ("2Lep_ElEl_Event") in category.cut.cutname:
-	    	weight = 0.65
-	    if ("2Lep_OF_Event") in category.cut.cutname:
-	    	weight = 0.86
+            #if ("2Lep_ElEl_Event") in category.cut.cutname:
+	    #	weight = 0.65
+	    #if ("2Lep_OF_Event") in category.cut.cutname:
+	    #	weight = 0.86
 
 	    return ( dibosoncf.subprocess(eventweight=weight) + topcf.subprocess(eventweight=weight) + zjetscf.subprocess(eventweight=weight))
 
@@ -1606,12 +1606,12 @@ class TTHBackgrounds(Background):
 
 	    #  DD/MC factors measured in v19 to rescale MC
 	    #
-            if ("2Lep_ElEl_Event") in category.cut.cutname:
-	        weight = 2.94
-	    if ("2Lep_OF_Event") in category.cut.cutname:
-	        weight = 1.19
-	    if ("2Lep_MuMu_Event") in category.cut.cutname:
-	        weight = 2.14
+            #if ("2Lep_ElEl_Event") in category.cut.cutname:
+	    #    weight = 2.94
+	    #if ("2Lep_OF_Event") in category.cut.cutname:
+	    #    weight = 1.19
+	    #if ("2Lep_MuMu_Event") in category.cut.cutname:
+	    #    weight = 2.14
 
             # Require >= truth-matched non-prompt lepton and veto on QMisID
 	    #

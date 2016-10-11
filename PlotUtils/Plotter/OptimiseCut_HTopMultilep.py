@@ -90,26 +90,92 @@ parser.add_argument('--useMoriondTruth', dest='useMoriondTruth', action='store_t
 
 args = parser.parse_args()
 
-# -------------------------------
-# Important to run without popups
-# -------------------------------
-from ROOT import gROOT
-
-gROOT.SetBatch(True)
-
 # -----------------
 # Some ROOT imports
 # -----------------
-from ROOT import TH1I, TH1D, TH2D, TH2F, TH2I, TGraph, TMath, TFile, TAttFill, TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kAzure, kTeal, kSpring, kOrange, kGreen, kCyan, kViolet, kMagenta, kPink, Double
+
+from ROOT import gROOT
+from ROOT import TH1I, TH1D, TH2D, TH2F, TH2I, TMath, TFile, TAttFill, TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kAzure, kTeal, kSpring, kOrange, kGreen, kCyan, kViolet, kMagenta, kPink, Double
+from ROOT import TCanvas, TPaveText, TGraph, TGraph2D
+
+def plot_significance_1D( Z_dict ):
+
+    gROOT.SetBatch(True)
+
+    gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")     
+    from ROOT import SetAtlasStyle
+    SetAtlasStyle()
+
+    for key, value in Z_dict.iteritems():
+
+    	print("pT-SORTED:\nkey: {0}".format(key) + ", cut: [" + ",".join( "{0}".format(val[0]) for val in sorted(value) )  + "], value: [" + ",".join( "{0:.3f}".format(val[1]) for val in sorted(value) ) + "]\n")
+
+    	bins = [ val[0] for val in sorted(value) ]
+    	sigs = [ val[1] for val in sorted(value) ]
+
+    	graph_significance = TGraph( len(cutvalues), array.array("f", bins ), array.array("f", sigs ) )
+    	graph_significance.SetName(key)
+    	graph_significance.GetXaxis().SetTitle("p_{T}^{2nd lead lep} [GeV]")
+    	graph_significance.GetYaxis().SetTitle("Z significance")
+    	graph_significance.SetLineWidth(2)
+    	graph_significance.SetMarkerStyle(20)
+    	graph_significance.SetMarkerSize(1.3)
+    	graph_significance.SetMarkerColor(2)
+
+    	c = TCanvas("c_Z_Significance_lep_Pt_1_"+ key,"Z")
+
+    	graph_significance.Draw("ACP")
+
+    	c.SaveAs(os.path.abspath(os.path.curdir) + "/" + basedirname + "Z_Significance_lep_Pt_1_"+key+".png")
+
+
+def plot_significance_2D( Z_dict ):
+
+    gROOT.SetBatch(True)
+
+    gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")     
+    from ROOT import SetAtlasStyle
+    SetAtlasStyle()
+
+    for key, value in Z_dict.iteritems():
+
+    	print("pT-SORTED:\nkey: {0}".format(key) + ",\nlep 0,1 cut: [" + ",".join( "({0},{1})".format(val[0],val[1]) for val in sorted(value) )  + "],\nZ: [" + ",".join( "{0:.3f}".format(val[2]) for val in sorted(value) ) + "]\n")
+
+    	graph_significance = TGraph2D()
+
+    	for idx, val in enumerate(sorted(value)):
+    	    graph_significance.SetPoint(idx, val[0], val[1], val[2])
+
+    	graph_significance.SetName(key)
+    	graph_significance.GetXaxis().SetTitle("p_{T}^{lead lep} [GeV]")
+    	graph_significance.GetYaxis().SetTitle("p_{T}^{2nd lead lep} [GeV]")
+    	graph_significance.GetZaxis().SetTitle("Z significance")
+
+    	c = TCanvas("c_Z_Significance_lep_Pt_0_lep_Pt_1_"+ key,"Z")
+
+    	graph_significance.Draw("SURF1")
+
+    	max_Z = max( value, key=(lambda val : val[2]) )
+
+    	print("\nMax Z: {0:.3f} ({1},{2})".format(max_Z[2], max_Z[0], max_Z[1]))
+
+    	text = TPaveText(0.05,0.1,0.95,0.8);
+    	text.AddText("Max Z: {0:.3f} ({1},{2})".format(max_Z[2], max_Z[0], max_Z[1]))
+    	text.Draw()
+
+    	c.SaveAs(os.path.abspath(os.path.curdir) + "/" + basedirname + "Z_Significance_lep_Pt_0_lep_Pt_1_"+key+".png")
 
 # ---------------------------------------------------------------------
 # Importing all the tools and the definitions used to produce the plots
 # ---------------------------------------------------------------------
+
 from Plotter.BackgroundTools import loadSamples, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
+
 # ---------------------------------------------------------------------------
 # Importing the classes for the different processes.
 # They contains many info on the normalization and treatment of the processes
 # ---------------------------------------------------------------------------
+
 from Plotter.OptimiseCut_Backgrounds_HTopMultilep import MyCategory, TTHBackgrounds
 
 try:
@@ -307,8 +373,10 @@ else:
     #
     # 2015+2016 trigger matching - ICHEP & POST-ICHEP
     #
-    vardb.registerCut( Cut('2Lep_TrigMatch',	   '( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
-    #vardb.registerCut( Cut('2Lep_TrigMatch',	   '( ( lep_isTrigMatch_0 && lep_Pt_0 > 27e3 ) || ( lep_isTrigMatch_1 && lep_Pt_1 > 27e3 ) )') )
+    if "v21" in args.inputDir:
+        vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
+    if "v19" in args.inputDir:
+        vardb.registerCut( Cut('2Lep_TrigMatch','( ( lep_isTrigMatch_0 && lep_Pt_0 > 27e3 ) || ( lep_isTrigMatch_1 && lep_Pt_1 > 27e3 ) )') )
 
 if doRelaxedBJetCut:
     print("\nUsing relaxed nr. bjet cut: INCLUSIVE bjet multiplicity...\n")
@@ -813,10 +881,18 @@ if args.doSyst:
 # Definition of the categories for which one wants produce histograms
 # -------------------------------------------------------------------
 
-# Make as many categories as the number of different pT cuts on lep1 you want to test
+# Make as many categories as the number of different pT cuts on (lep0,lep1) you want to test
 #
-cutvalues = [15.0,16.0,17.0,18.0,19.0,20.0,21.0,22.0,23.0,24.0,25.0,26.0,27.0]
-#cutvalues = [25.0]
+
+# SLT v21
+#
+#cutvalues_lep0 = [ float(x) for x in range(27,33) ]
+#cutvalues_lep1 = [ float(x) for x in range(15,28) ]
+
+# DLT v21
+#
+cutvalues_lep0 = [ float(x) for x in range(18,31) ]
+cutvalues_lep1 = [ float(x) for x in range(10,30) ]
 
 # ------------
 # SRs
@@ -825,7 +901,41 @@ cutvalues = [15.0,16.0,17.0,18.0,19.0,20.0,21.0,22.0,23.0,24.0,25.0,26.0,27.0]
 if doSR:
 
     if doTwoLepSR :
+        
+	#"""
+    	for cutval_lep0 in cutvalues_lep0:
 
+	    for cutval_lep1 in cutvalues_lep1:
+
+		if cutval_lep1 > cutval_lep0: continue
+
+    	    	this_cutname = "2Lep_pT" + "_Lep0_" + str(cutval_lep0) + "_Lep1_" + str(cutval_lep1)
+    	    	this_cutstr  = "( lep_Pt_0 > {0}e3 && lep_Pt_1 > {1}e3 )".format( str(cutval_lep0), str(cutval_lep1) )
+    	    	this_cut     = Cut( this_cutname, this_cutstr )
+
+    	    	basecut_mm = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR']) & this_cut
+    	    	basecut_ee = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) & this_cut
+    	    	basecut_OF = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) & this_cut
+
+            	this_cat_name_mm = "MuMuSS_SR"
+            	this_cat_name_ee = "ElElSS_SR"
+            	this_cat_name_OF = "OFSS_SR"
+
+    	    	if ( doMM or doFF or doTHETA ):
+    	    	    this_cat_name_mm += "_DataDriven"
+    	    	    this_cat_name_ee += "_DataDriven"
+    	    	    this_cat_name_OF += "_DataDriven"
+
+	    	this_cat_name_mm += "_Lep0_" + str(cutval_lep0) + "_Lep1_" + str(cutval_lep1)
+    	    	this_cat_name_ee += "_Lep0_" + str(cutval_lep0) + "_Lep1_" + str(cutval_lep1)
+    	    	this_cat_name_OF += "_Lep0_" + str(cutval_lep0) + "_Lep1_" + str(cutval_lep1)
+
+    	    	vardb.registerCategory( MyCategory(this_cat_name_OF, cut = basecut_OF ) )
+            	vardb.registerCategory( MyCategory(this_cat_name_ee, cut = basecut_ee ) )
+            	vardb.registerCategory( MyCategory(this_cat_name_mm, cut = basecut_mm ) )
+
+	#"""
+        """
     	for cutval in cutvalues:
 
     	    this_cutname = "2Lep_pT" + "_Lep1_" + str(cutval)
@@ -836,15 +946,15 @@ if doSR:
     	    basecut_ee = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) & this_cut
     	    basecut_OF = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']) & this_cut
 
-            this_cat_name_mm = "MuMuSS_SR" 
-            this_cat_name_ee = "ElElSS_SR" 
-            this_cat_name_OF = "OFSS_SR"   
+            this_cat_name_mm = "MuMuSS_SR"
+            this_cat_name_ee = "ElElSS_SR"
+            this_cat_name_OF = "OFSS_SR"
 
     	    if ( doMM or doFF or doTHETA ):
-    	    	this_cat_name_mm += "DataDriven"
-    	    	this_cat_name_ee += "DataDriven"
-    	    	this_cat_name_OF += "DataDriven"
-    	    
+    	    	this_cat_name_mm += "_DataDriven"
+    	    	this_cat_name_ee += "_DataDriven"
+    	    	this_cat_name_OF += "_DataDriven"
+
 	    this_cat_name_mm += "_" + str(cutval)
     	    this_cat_name_ee += "_" + str(cutval)
     	    this_cat_name_OF += "_" + str(cutval)
@@ -852,6 +962,7 @@ if doSR:
     	    vardb.registerCategory( MyCategory(this_cat_name_OF, cut = basecut_OF ) )
             vardb.registerCategory( MyCategory(this_cat_name_ee, cut = basecut_ee ) )
             vardb.registerCategory( MyCategory(this_cat_name_mm, cut = basecut_mm ) )
+        """
 
 
     if doThreeLepSR:
@@ -866,33 +977,25 @@ if doSR:
 
 if doTwoLepLowNJetCR :
 
-    for cutval in cutvalues:
+    if ( doMM or doFF ):
 
-	this_cutname = "2Lep_pT" + "_Lep1_" + str(cutval)
-	this_cutstr  = "( lep_Pt_0 > 25e3 && lep_Pt_1 > " + str(cutval) + "e3 )"
-        this_cut     = Cut( this_cutname, this_cutstr )
+        vardb.registerCategory( MyCategory('MuMuSS_LowNJetCR_DataDriven',  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_CR']) ) )
+        vardb.registerCategory( MyCategory('OFSS_LowNJetCR_DataDriven',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
+        vardb.registerCategory( MyCategory('ElElSS_LowNJetCR_DataDriven',  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
 
-        basecut_mm = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_CR']) & this_cut
-        basecut_ee = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) & this_cut
-        basecut_OF = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) & this_cut
+    elif ( doTHETA ):
 
-        this_cat_name_mm = "MuMuSS_SR" 
-        this_cat_name_ee = "ElElSS_SR" 
-        this_cat_name_OF = "OFSS_SR"   
+        vardb.registerCategory( MyCategory('OFSS_LowNJetCR_DataDriven',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
 
-    	if ( doMM or doFF or doTHETA ):
-    	    this_cat_name_mm += "DataDriven"
-    	    this_cat_name_ee += "DataDriven"
-    	    this_cat_name_OF += "DataDriven"
-    	
-	this_cat_name_mm += "_" + str(cutval)
-    	this_cat_name_ee += "_" + str(cutval)
-    	this_cat_name_OF += "_" + str(cutval)
-	    
-    	vardb.registerCategory( MyCategory(this_cat_name_OF, cut = basecut_OF ) )
-	if ( doMM or doFF or doMC ):
-    	    vardb.registerCategory( MyCategory(this_cat_name_ee, cut = basecut_ee ) )
-    	    vardb.registerCategory( MyCategory(this_cat_name_mm, cut = basecut_mm ) )
+    elif ( doMC ):
+
+	vardb.registerCategory( MyCategory('MuMuSS_LowNJetCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_CR']) ) )
+        vardb.registerCategory( MyCategory('OFSS_LowNJetCR',         cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
+        vardb.registerCategory( MyCategory('ElElSS_LowNJetCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_CR']) ) )
+        #
+	# 2lep+tau region
+        #
+        #vardb.registerCategory( MyCategory('TwoLepSSTau_LowNJetCR',  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep1Tau_NLep','2Lep1Tau_pT','2Lep1Tau_TrigMatch','2Lep1Tau_SS','2Lep1Tau_1Tau','2Lep1Tau_Zsidescut','2Lep1Tau_NJet_CR','2Lep1Tau_NBJet']) ) )
 
 
 if doThreeLepLowNJetCR:
@@ -1646,7 +1749,7 @@ if ( doSR or doLowNJetCR ):
 
             ttH.backgrounds	= ['TTBarW','TTBarZ','Diboson','Rare','FakesTHETA']
             ttH.sub_backgrounds = ['TTBarW','TTBarZ','Diboson','Rare']
-	    
+            
             if args.useMCQMisID:
             	ttH.backgrounds.append('QMisIDMC')
             	ttH.sub_backgrounds.append('QMisIDMC')
@@ -1654,12 +1757,13 @@ if ( doSR or doLowNJetCR ):
             	ttH.backgrounds.append('QMisID')
             	ttH.sub_backgrounds.append('QMisID')
             
+
         else:
 
             # MC based estimate of fakes
 
 	    ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMC']
-
+            
 	    if args.useMCQMisID:
 		ttH.backgrounds.append('QMisIDMC')
 		ttH.sub_backgrounds.append('QMisIDMC')
@@ -1667,6 +1771,7 @@ if ( doSR or doLowNJetCR ):
 		ttH.backgrounds.append('QMisID')
 		ttH.sub_backgrounds.append('QMisID')
             
+
     else:
         # no fakes in 4lep
         ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets']
@@ -1944,7 +2049,7 @@ for category in sorted(vardb.categorylist, key=(lambda category: category.name) 
         # -----------------------------------------------
         # Making a plot with ( category + variable ) name
         # -----------------------------------------------
-	
+
         plotname = dirname + '/' + category.name + ' ' + var.shortname
         plotname = plotname.replace(' ', '_')
 
@@ -2174,6 +2279,7 @@ for category in sorted(vardb.categorylist, key=(lambda category: category.name) 
 	    print("\n\nSignificance:\ns={0:.2f}\nb={1:.2f}\nZ={2:.3f}".format(s, b, Z))
 	    outfile.write('\nSignificance:\ns=%.2f\nb=%.2f\nZ=%.3f\n' %(s, b, Z))
 
+	    """
 	    tokens = category.name.split("_")
             key   = tokens[0]
             bin   = float(tokens[-1])
@@ -2181,6 +2287,17 @@ for category in sorted(vardb.categorylist, key=(lambda category: category.name) 
 	        significance_dict[key] = [ (bin,Z) ]
 	    else:
 	        significance_dict[key].append( (bin,Z) )
+            """
+
+	    tokens = category.name.split("_")
+            key   = tokens[0]
+            bin_lep0   = float(tokens[tokens.index("Lep0")+1])
+            bin_lep1   = float(tokens[tokens.index("Lep1")+1])
+
+	    if not significance_dict.get(key):
+	        significance_dict[key] = [ (bin_lep0,bin_lep1,Z) ]
+	    else:
+	        significance_dict[key].append( (bin_lep0,bin_lep1,Z) )
 
 	    print ("\n\t\tGetEntries:\n")
             print ("\t\tNB 1): this is actually N = GetEntries()-2 \n\t\t       Still not understood why there's such an offset...\n")
@@ -2199,33 +2316,5 @@ for category in sorted(vardb.categorylist, key=(lambda category: category.name) 
 
         #"""
 
-from ROOT import TCanvas
-
-gROOT.Reset()
-gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
-from ROOT import SetAtlasStyle
-SetAtlasStyle()
-
-gROOT.SetBatch(True)
-
-for key, value in significance_dict.iteritems():
-
-    print("pT-SORTED:\nkey: {0}".format(key) + ", cut: [" + ",".join( "{0}".format(val[0]) for val in sorted(value) )  + "], value: [" + ",".join( "{0:.3f}".format(val[1]) for val in sorted(value) ) + "]\n")
-
-    bins = [ val[0] for val in sorted(value) ]
-    sigs = [ val[1] for val in sorted(value) ]
-
-    graph_significance = TGraph( len(cutvalues), array.array("f", bins ), array.array("f", sigs ) )
-    graph_significance.SetName(key)
-    graph_significance.GetXaxis().SetTitle("p_{T}^{2nd lead lep} [GeV]")
-    graph_significance.GetYaxis().SetTitle("Z significance")
-    graph_significance.SetLineWidth(2)
-    graph_significance.SetMarkerStyle(20)
-    graph_significance.SetMarkerSize(1.3)
-    graph_significance.SetMarkerColor(2)
-
-    c = TCanvas("c_Z_Significance_lep_Pt_1_"+ key,"Z")
-
-    graph_significance.Draw("ACP")
-
-    c.SaveAs(os.path.abspath(os.path.curdir) + "/" + basedirname + "Z_Significance_lep_Pt_1_"+key+".png")
+#plot_significance_1D( significance_dict )
+plot_significance_2D( significance_dict )
