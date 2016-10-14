@@ -497,10 +497,12 @@ class SubProcess:
             cut = cut & var.basecut
         elif var.basecut and not cut:
             cut = var.basecut
-        if type(var.weight) is str:
-            self = self.subprocess(eventweight=var.weight)
-        elif type(var.weight) is float:
-            weight *= var.weight
+        if not ("$ISDATA$") in self.name:
+	    if type(var.weight) is str:
+                if not var.weight in self.eventweight:
+            	    self = self.subprocess(eventweight=var.weight)
+            elif type(var.weight) is float:
+            	weight *= var.weight
 
         if category and category.overridebins and var.shortname in category.overridebins:
             binname = str(category.overridebins[var.shortname])
