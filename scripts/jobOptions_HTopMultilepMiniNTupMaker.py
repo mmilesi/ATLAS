@@ -14,7 +14,7 @@ eventweight_branches = ["mcWeightOrg","SherpaNJetWeight","pileupEventWeight_090"
 			"lepSFObjLoose","lepSFObjTight",
 			"tauSFTight","tauSFLoose"]
 
-event_branches       = ["EventNumber","RunNumber","RunYear","mc_channel_number","passEventCleaning",
+event_branches       = ["EventNumber","RunNumber","RunYear","mc_channel_number","averageIntPerXing","passEventCleaning",
                         "onelep_type","dilep_type","trilep_type","quadlep_type","total_charge","total_leptons",
                         "isQMisIDEvent","isFakeEvent","isLepFromPhEvent",
 			"nJets_OR","nJets_OR_MV2c10_70",
