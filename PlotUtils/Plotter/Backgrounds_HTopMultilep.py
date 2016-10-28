@@ -14,23 +14,24 @@ from ROOT import TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kGreen, kA
 
 class MyCategory(Category):
 
-    def __init__(self, name, cut=None, controlcut=None, overridebins=None):
+    def __init__(self, name, cut=None, controlcut=None, weight=None, overridebins=None):
         self.name = name
         self.tokens = name.split(' ')
         self.cut = cut
         self.controlcut = controlcut
+	self.weight = weight
         self.overridebins = overridebins
         self.stream = '*'
         self.streamname = '*'
         self.jet = name
-        #self.met = 'HMET'
+        self.met = 'HMET'
 
-        if len(self.tokens)>=2:
+        if len(self.tokens)>=3:
             self.stream = self.tokens[0]
             if self.stream == 'El': self.streamname = 'Egamma'
             elif self.stream == 'Mu': self.streamname = 'Muons'
             self.jet = self.tokens[1]
-            #self.met = self.tokens[2]
+            self.met = self.tokens[2]
 
 class TTHBackgrounds(Background):
 
@@ -44,30 +45,24 @@ class TTHBackgrounds(Background):
     rescaleXsecAndLumi = False  # Set to "True" if you don't want to take into account the Xsec*lumi weight
     channel     = 'TwoLepSS'    # Can be one of ['TwoLepSS' 'TwoLepCR', 'ThreeLep', 'FourLep']
     eventweight = 1.0
-    #eventweight = 'weight_pileup*weight_muon_trig*weight_electron_trig'
-    #eventweight = 'evtsel_weight*evtsel_weight_el*evtsel_weight_mu*evtsel_bjet_weight*evtsel_weight_lep_trigger*weight_CF'
+    noWeights = False
     useEmbedding    = False
     useZCorrections = False
     useSherpaNNPDF30NNLO = False
+    
     RQCD = {
         'El': (1.00, 0.05),
         'Mu': (1.11, 0.08),
     }
 
     theta = {
-        #'El': (999.0, 0.0),
-        #'Mu': (999.0, 0.0),
-        #'El': (0.390, 0.156), # v15
-        #'Mu': (0.602, 0.120), # v15
-        'El': (0.316, 0.095), # v18
-        'Mu': (0.636, 0.128), # v18
+        'El': (999.0, 0.0),
+        'Mu': (999.0, 0.0),
     }
 
     theta_MC = {
         'El': (999.0, 0.0),
         'Mu': (999.0, 0.0),
-        #'El': (0.194, 0.037), # v027
-        #'Mu': (0.153, 0.022), # v027
     }
 
     # Returns the name and position in bkg list of the first background process which
@@ -239,7 +234,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -290,7 +285,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -332,7 +327,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -373,7 +368,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -413,7 +408,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -455,7 +450,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -475,6 +470,8 @@ class TTHBackgrounds(Background):
                 ('tops', 'ttee_aMcAtNlo'),
                 ('tops', 'ttmumu_aMcAtNlo'),
                 ('tops', 'tttautau_aMcAtNlo'),
+                ('tops', 'ttZnunu_aMcAtNlo'),
+                ('tops', 'ttZqq_aMcAtNlo'),
                 #('tops', 'Sherpa_ttZnnqq'),
                 #('tops', 'Sherpa_ttll'),
                          ]
@@ -504,7 +501,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -564,7 +561,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -623,7 +620,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -682,7 +679,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -780,7 +777,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -826,7 +823,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -872,7 +869,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -918,7 +915,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -987,7 +984,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -1029,7 +1026,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -1097,7 +1094,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -1159,7 +1156,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -1218,7 +1215,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -1291,7 +1288,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -1331,7 +1328,7 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -1389,7 +1386,16 @@ class TTHBackgrounds(Background):
             topcf     = self.parent.procmap['TopCF'](treename, category, options)
             zjetscf   = self.parent.procmap['ZjetsCF'](treename, category, options)
 
-	    return (dibosoncf + topcf + zjetscf)
+            weight = 1.0
+
+	    #  DD/MC factors to rescale MC
+	    #
+            #if ("2Lep_ElEl_Event") in category.cut.cutname:
+	    #	weight = 0.6
+	    #if ("2Lep_OF_Event") in category.cut.cutname:
+	    #   weight = 0.7
+
+	    return ( dibosoncf.subprocess(eventweight=weight) + topcf.subprocess(eventweight=weight) + zjetscf.subprocess(eventweight=weight))
 
 
     class QMisID(Process):
@@ -1430,7 +1436,7 @@ class TTHBackgrounds(Background):
             #
             cut_wo_el = ['2Lep_MuMu_Event']
 
-            # Take the category cut (NB: cahce it in a temporary cut, since we do NOT want to modify the original one!)
+            # Take the category cut (NB: cache it in a temporary cut, since we do NOT want to modify the original one!)
             #
             basecut = category.cut
 
@@ -1455,20 +1461,20 @@ class TTHBackgrounds(Background):
                 basecut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
             else:
                 sp = sp.subprocess(cut=basecut,eventweight=weight)
-                print("\nQMisID sp: {0}".format(sp.basecut.cutnamelist))
+                print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
                 return sp
 
             if bool([ cut for cut in cut_w_el if cut in category.cut.cutname ]):
 
                 weight = 'QMisIDWeight'
                 sp = sp.subprocess(cut=basecut,eventweight=weight)
-                print("\nQMisID sp: {0}".format(sp.basecut.cutnamelist))
+                print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             elif bool([ cut for cut in cut_wo_el if cut in category.cut.cutname ]):
 
                 weight = '0.0'
                 sp = sp.subprocess(cut=basecut,eventweight=weight)
-                print("\nQMisID sp: {0}".format(sp.basecut.cutnamelist))
+                print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             else:
 
@@ -1488,8 +1494,8 @@ class TTHBackgrounds(Background):
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
 
-                    print("\nQMisID sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
-                    print("\nQMisID sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
+                    print("\nQMisID sp_SF - cuts: {0}, process weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
+                    print("\nQMisID sp_OF - cuts: {0}, process weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
 
                 elif ( 'MuRealFakeRateCR' ) in category.cut.cutname:
 
@@ -1502,9 +1508,9 @@ class TTHBackgrounds(Background):
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
 
-                    print("\nQMisID sp_SF: {0}, weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
-                    print("\nQMisID sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
-
+                    print("\nQMisID sp_SF - cuts: {0}, process weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
+                    print("\nQMisID sp_OF - cuts: {0}, process weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
+ 
                 else:
 
                     cut_elel = basecut & self.vardb.getCut('2Lep_ElEl_Event')
@@ -1518,9 +1524,9 @@ class TTHBackgrounds(Background):
                     sp_mumu = sp.subprocess(cut=cut_mumu,eventweight=weight_mumu)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
 
-                    print("\nQMisID sp_elel: {0}, weight: {1}".format(sp_elel.basecut.cutnamelist, weight_elel))
-                    print("\nQMisID sp_mumu: {0}, weight: {1}".format(sp_mumu.basecut.cutnamelist, weight_mumu))
-                    print("\nQMisID sp_OF: {0}, weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
+                    print("\nQMisID sp_elel - cuts: {0}, process weight: {1}".format(sp_elel.basecut.cutnamelist, weight_elel))
+                    print("\nQMisID sp_mumu - cuts: {0}, process weight: {1}".format(sp_mumu.basecut.cutnamelist, weight_mumu))
+                    print("\nQMisID sp_OF - cuts: {0}, process weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
 
                     sp_SF = sp_elel + sp_mumu
 
@@ -1593,17 +1599,25 @@ class TTHBackgrounds(Background):
             weight=1.0
             TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
 
+	    #  DD/MC factors to rescale MC
+	    #
+            #if ("2Lep_ElEl_Event") in category.cut.cutname:
+	    #	weight = 2.3
+	    #if ("2Lep_OF_Event") in category.cut.cutname:
+	    #	weight = 1.6
+	    #if ("2Lep_MuMu_Event") in category.cut.cutname:
+	    #	weight = 2.1
+
             # Require >= truth-matched non-prompt lepton and veto on QMisID
 	    #
 	    basecut = category.cut
             truthcut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_NonPromptEvent'))
-
             sp = sp.subprocess(cut=truthcut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            print("\n{0} - cuts: {1}, weights: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp
 
@@ -1716,10 +1730,10 @@ class TTHBackgrounds(Background):
             sp_LL  = sp.subprocess(cut=basecut & self.vardb.getCut(LLcut), eventweight=weight)
 
             print(" ")
-            print("{0} - TT cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_TT.basecut.cutnamelist, weight))
-            print("{0} - TL cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
-            print("{0} - LT cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
-            print("{0} - LL cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
+            print("{0} - TT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TT.basecut.cutnamelist, weight))
+            print("{0} - TL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
+            print("{0} - LT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
+            print("{0} - LL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
 
 	    QMISID_SUB_OS_SS      = True    # Perform SUSY-style QMisID per-event subtraction
 	    QMISID_SUB_SCALEDFAKE = False   # Subtract QMisID from final MM yield in TT when using avg fake efficiency, since in that case MM estimates both
@@ -1810,7 +1824,7 @@ class TTHBackgrounds(Background):
 
                 return sp
 
-
+    """
     class FakesTHETA(Process):
 
         # Consider the following regions:
@@ -1960,6 +1974,390 @@ class TTHBackgrounds(Background):
                 #
                 for sample in sublist:
 
+                    print ("\tSubtracting {0} from data in regions C,D...".format(sample))
+
+                    this_cut_sp_C_el = cut_sp_C_el
+                    this_cut_sp_D_el = cut_sp_D_el
+
+                    this_weight = weightMC
+
+                    # Subtract DD QMisID at numerator (C is TT), and MC QMisID at denominator (D is TL, TL)
+                    #
+		    if sample == "QMisID":
+                        sub_sample_C_el = self.parent.procmap[sample].base(treename,category,options)
+                        sub_sample_D_el = self.parent.procmap["QMisIDMC"].base(treename,category,options)
+
+			this_cut_sp_C_el = this_cut_sp_C_el.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                        this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
+                        this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
+
+                        sub_sample_C_el = sub_sample_C_el.subprocess( cut = this_cut_sp_C_el, eventweight='QMisIDWeight' )
+                        sub_sample_D_el = sub_sample_D_el.subprocess( cut = this_cut_sp_D_el, eventweight=weightMC )
+                    else:
+
+                    	# NB: here it is crucial to call .base() on the subprocess, otherwise the subprocess would have the cuts
+                    	# defined in its own __call__ method already applied, whcih in general is not what we want
+                    	# (e.g., it might have a TT selection applied, when we want to consider TL events instead...)
+                    	#
+                    	sub_sample_C_el = self.parent.procmap[sample].base(treename,category,options)
+                    	sub_sample_D_el = self.parent.procmap[sample].base(treename,category,options)
+
+                    	if sample == "QMisIDMC":
+                    	    this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
+                    	    this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
+
+                    	sub_sample_C_el = sub_sample_C_el.subprocess( cut = this_cut_sp_C_el, eventweight=this_weight )
+                    	sub_sample_D_el = sub_sample_D_el.subprocess( cut = this_cut_sp_D_el, eventweight=this_weight )
+
+                    print ("\tsub_sample_C_el = {0}".format(sub_sample_C_el.basecut.cutnamelist))
+
+                    print ("\tC (el) - yields data: {0:.2f}".format(sp_C_el.numberstats()[0]))
+                    print ("\tC (el) - yields bkg: {0:.2f}".format(sub_sample_C_el.numberstats()[0]))
+                    sp_C_el = sp_C_el - sub_sample_C_el
+                    print ("\tC (el) ==> yields data after sub: {0:.2f}".format(sp_C_el.numberstats()[0]))
+
+                    # *********************************************
+
+                    print ("\tsub_sample_D_el = {0}".format(sub_sample_D_el.basecut.cutnamelist))
+
+                    print ("\tD (el) - yields data: {0:.2f}".format(sp_D_el.numberstats()[0]))
+                    print ("\tD (el) - yields bkg: {0:.2f}".format(sub_sample_D_el.numberstats()[0]))
+                    sp_D_el = sp_D_el - sub_sample_D_el
+                    print ("\tD (el) ==> yields data after sub: {0:.2f}".format(sp_D_el.numberstats()[0]))
+
+
+                print ("---------------------------------------------------------------------\n")
+                print ("C (el) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_C_el.numberstats()[0]))
+                print ("D (el) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_D_el.numberstats()[0]))
+                print ("\n---------------------------------------------------------------------")
+
+                # derive theta factors for el
+                #
+                TTHBackgrounds.theta['El'] = self.calcTheta(sp_C_el,sp_D_el,stream='El')
+
+            else :
+                print ("Reading theta(el) value: {0} +- {1}".format(TTHBackgrounds.theta['El'][0], TTHBackgrounds.theta['El'][1]))
+
+
+            if TTHBackgrounds.theta['Mu'][0] == 999.0 :
+
+                print ("Calculating theta_mu from data in regions C,D...")
+
+                # define selection for region C and D (mumu)
+                #
+                cut_sp_C_mu = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_MuMu_Event') & TTCut
+                cut_sp_D_mu = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_MuMu_Event') & TL_LT_Cut
+
+                # Lower pT threshold of subleading lepton to enrich in fakes
+                #
+                #cut_sp_C_mu     = cut_sp_C_mu.swapCut(self.vardb.getCut('2Lep_NLep'),self.vardb.getCut('2Lep_NLep_Relaxed'))
+                #cut_sp_D_mu     = cut_sp_D_mu.swapCut(self.vardb.getCut('2Lep_NLep'),self.vardb.getCut('2Lep_NLep_Relaxed'))
+
+                sp_C_mu = sp.subprocess( cut = cut_sp_C_mu, eventweight=weight )
+                sp_D_mu = sp.subprocess( cut = cut_sp_D_mu, eventweight=weight )
+
+                print("Region C (mu) sp: {0}".format(cut_sp_C_mu.cutnamelist))
+                print("Region D (mu) sp: {0}".format(cut_sp_D_mu.cutnamelist))
+
+                # get a list of stuff to subtract for region C and D (i.e, prompt MC and charge flips)
+                #
+                sublist = [ item for item in self.parent.sub_backgrounds ]
+
+                # ... and now subtract!
+                #
+                for sample in sublist:
+
+                    print ("\tSubtracting {0} from data in regions C,D...".format(sample))
+
+                    this_cut_sp_C_mu = cut_sp_C_mu
+                    this_cut_sp_D_mu = cut_sp_D_mu
+
+                    this_weight = weightMC
+
+                    # NB: here it is crucial to call .base() on the subprocess, otherwise the subprocess would have the cuts
+                    # defined in its own __call__ method already applied, whcih in general is not what we want
+                    # (e.g., it might have a TT selection applied, when we want to consider TL events instead...)
+                    #
+                    sub_sample_C_mu = self.parent.procmap[sample].base(treename,category,options)
+                    sub_sample_D_mu = self.parent.procmap[sample].base(treename,category,options)
+
+                    if ( sample == "QMisIDMC" ) or ( sample == "QMisID" ):
+                        print("NO QMisID subtraction for muons!!")
+                        continue
+
+                    sub_sample_C_mu = sub_sample_C_mu.subprocess( cut = this_cut_sp_C_mu, eventweight=this_weight )
+                    sub_sample_D_mu = sub_sample_D_mu.subprocess( cut = this_cut_sp_D_mu, eventweight=this_weight )
+
+                    print ("sub_sample_C_mu ={0} ".format(sub_sample_C_mu.basecut.cutnamelist))
+
+                    print ("\tC (mu) - yields data: {0:.2f}".format(sp_C_mu.numberstats()[0]))
+                    print ("\tC (mu) - yields bkg: {0:.2f}".format(sub_sample_C_mu.numberstats()[0]))
+                    sp_C_mu = sp_C_mu - sub_sample_C_mu
+                    print ("\tC (mu) ==> yields after sub: {0:.2f}".format(sp_C_mu.numberstats()[0]))
+
+                    # *********************************************
+
+                    print ("\tsub_sample_D_mu ={0} ".format(sub_sample_D_mu.basecut.cutnamelist))
+
+                    print ("\tD (mu) - yields data: {0:.2f}".format(sp_D_mu.numberstats()[0]))
+                    print ("\tD (mu) - yields bkg: {0:.2f}".format(sub_sample_D_mu.numberstats()[0]))
+                    sp_D_mu = sp_D_mu - sub_sample_D_mu
+                    print ("\tD (mu) ==> yields after sub: {0:.2f}".format(sp_D_mu.numberstats()[0]))
+
+
+                print ("---------------------------------------------------------------------\n")
+                print ("C (mu) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_C_mu.numberstats()[0]))
+                print ("D (mu) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_D_mu.numberstats()[0]))
+                print ("\n---------------------------------------------------------------------")
+
+                # derive theta factors for mu
+                #
+                TTHBackgrounds.theta['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
+
+            else :
+                print ("Reading theta(mu) value: {0:.3f} +- {1:.3f}".format(TTHBackgrounds.theta['Mu'][0], TTHBackgrounds.theta['Mu'][1]))
+
+
+            # Define Region B,  depending on which flavour composition we are looking at:
+	    # (NB now we must look at the original category cut!)
+            #
+            cut_sp_B_SF     = category.cut & TL_LT_Cut
+            cut_sp_B_OF_Lel = category.cut & (LelTmuCut | TmuLelCut)
+            cut_sp_B_OF_Lmu = category.cut & (TelLmuCut | LmuTelCut)
+
+            if not ("2Lep_OF_Event") in category.cut.cutname:
+
+                sp_B = sp.subprocess( cut = cut_sp_B_SF, eventweight=weight )
+
+                sublist = [ item for item in self.parent.sub_backgrounds ]
+                for sample in sublist:
+
+                    print ("\tSubtracting {0} from data in region B...".format(sample))
+
+                    this_cut_sp_B_SF = cut_sp_B_SF
+                    this_weight = weightMC
+
+                    # Subtract MC QMisID (B is TL, TL)
+                    #
+		    if sample == "QMisID":
+                        sub_sample_B = self.parent.procmap["QMisIDMC"].base(treename,category,options)
+
+			this_cut_sp_B_SF = this_cut_sp_B_SF.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
+                    else:
+                        sub_sample_B = self.parent.procmap[sample].base(treename,category,options)
+
+		    sub_sample_B = sub_sample_B.subprocess( cut = this_cut_sp_B_SF, eventweight=this_weight )
+
+                    sp_B = sp_B - sub_sample_B
+
+                print ("Region B (mumu,ee), yield: {0:.2f}\n".format(sp_B.numberstats()[0]))
+
+                if ("2Lep_ElEl_Event") in category.cut.cutname:
+                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds.theta['El'])
+                elif ("2Lep_MuMu_Event") in category.cut.cutname:
+                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds.theta['Mu'])
+            else:
+
+                sp_B_OF_Lel = sp.subprocess(cut=cut_sp_B_OF_Lel, eventweight=weight )
+                sp_B_OF_Lmu = sp.subprocess(cut=cut_sp_B_OF_Lmu, eventweight=weight )
+
+                sublist = [ item for item in self.parent.sub_backgrounds ]
+                for sample in sublist:
+
+                    print ("\tSubtracting {0} from data in region B...".format(sample))
+
+                    this_cut_sp_B_OF_Lel = cut_sp_B_OF_Lel
+                    this_cut_sp_B_OF_Lmu = cut_sp_B_OF_Lmu
+                    this_weight = weightMC
+
+		    # Subtract MC QMisID (B is TL, TL)
+                    #
+		    if sample == "QMisID":
+                        sub_sample_B_OF_Lel  = self.parent.procmap["QMisIDMC"].base(treename,category,options)
+                        this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'), self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
+			sub_sample_B_OF_Lmu  = self.parent.procmap["QMisIDMC"].base(treename,category,options)
+                        this_cut_sp_B_OF_Lmu = this_cut_sp_B_OF_Lmu.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'), self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
+		    else:
+                    	sub_sample_B_OF_Lel = self.parent.procmap[sample].base(treename,category,options)
+                      	sub_sample_B_OF_Lmu = self.parent.procmap[sample].base(treename,category,options)
+
+                    sub_sample_B_OF_Lel = sub_sample_B_OF_Lel.subprocess( cut = this_cut_sp_B_OF_Lel, eventweight=this_weight )
+                    sub_sample_B_OF_Lmu = sub_sample_B_OF_Lmu.subprocess( cut = this_cut_sp_B_OF_Lmu, eventweight=this_weight )
+
+                    sp_B_OF_Lel = sp_B_OF_Lel - sub_sample_B_OF_Lel
+                    sp_B_OF_Lmu = sp_B_OF_Lmu - sub_sample_B_OF_Lmu
+
+                print ("Region B (emu) \n yield (loose el): {0:.2f}\n yield (loose mu): {1:.2f}\n".format(sp_B_OF_Lel.numberstats()[0],sp_B_OF_Lmu.numberstats()[0]))
+
+                sp_B = self.applyThetaFactor(sp_B_OF_Lmu,TTHBackgrounds.theta['Mu']) + self.applyThetaFactor(sp_B_OF_Lel,TTHBackgrounds.theta['El'])
+
+            print(" ")
+            print ("=================>\n")
+            print ("Final fakes yield: {0:.2f} +- {1:.2f}\n".format(sp_B.numberstats()[0],sp_B.numberstats()[1]))
+
+            return sp_B
+    """
+
+    #"""
+    class FakesTHETA(Process):
+
+        # Consider the following regions:
+        #
+        # Region A: TT, njet >= 5 (SR)
+        # Region B (in DATA): LT,TL njet >= 5
+        # Region C (in DATA): TT, njet = [2,3,4]
+        # Region D (in DATA): LT,TL  njet = [2,3,4]
+        #
+        # After subtracting prompt MC and charge flips from data in B, C and D, the estimate of fakes in A is:
+        #
+        # (C/D) * B = A
+        #
+        # where theta_e = (C/D)(ee), theta_mu = (C/D)(mumu)
+        #
+        # This corrects the normalisation (we assume the shape in B and A is the same!) for the fake probability as measured in data.
+	#
+	# This method is eventually just an "inclusive" fake factor method
+        #
+        # Hence we return B (ee, mumu, OF), scaled by the ratio of TT/LT events (ee, mumu) in low jet multiplicity region.
+        # The OF case is obtained via:
+        #
+        # theta_e * B(L_e,T_mu) + theta_mu * B (L_mu,T_e) = A (OF)
+
+        latexname = 'Fakes #theta method'
+        colour = kCyan - 9
+
+    	theta = {
+    	    'El': (999.0, 0.0),
+    	    'Mu': (999.0, 0.0),
+    	}
+
+        def base(self, treename='physics', category=None, options={}):
+
+	    inputgroup = [
+                    ('Data', 'physics_Main'),
+                ]
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+
+            trees = self.inputs.getTrees(treename, inputgroup)
+            return self.subprocess(trees=trees)
+
+        def clearTheta(self):
+            self.theta['El'] = (999.0, 0.0)
+            self.theta['Mu'] = (999.0, 0.0)
+
+        def calcTheta(self, sp_num, sp_denom, stream=None, options={}):
+
+            if not sp_denom.number():
+                print ("ERROR: Cannot calculate theta transfer factor! Denominator = 0")
+
+            theta = (sp_num/sp_denom).numberstats()
+
+            print ("\n***********************************************************************\n")
+            print ("Calculated theta transfer factor for stream {0}: theta = {1:.3f} +- {2:.3f}".format(stream,theta[0],theta[1]))
+            print ("\n***********************************************************************\n")
+
+            return theta
+
+        def applyThetaFactor(self, sp, theta, options={}):
+            systematics = options.get('systematics', None)
+            systematicsdirection = options.get('systematicsdirection', None)
+
+            if systematics:
+                if systematicsdirection == 'UP':
+                    systdir = 1.0
+                elif systematicsdirection == 'DOWN':
+                    systdir = -1.0
+                theta = (theta[0] + theta[1]*systdir, theta[1])
+
+            ssp = sp.subprocess()
+            ssp *= theta[0]
+            return ssp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            print("\n{0}\n".format(self.__class__.__name__))
+
+            systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+
+            TTCut =''
+            TLCut =''
+            LTCut =''
+            TelLmuCut =''
+            LelTmuCut =''
+            TmuLelCut =''
+            LmuTelCut =''
+            weight   = '1.0'
+            weightMC = (category.weight,"1.0")[bool(TTHBackgrounds.noWeights)]
+
+            if ( self.parent.channel=='TwoLepSS' ):
+                TTCut  = self.vardb.getCut('TT')
+                TLCut  = self.vardb.getCut('TL')
+                LTCut  = self.vardb.getCut('LT')
+                TelLmuCut = self.vardb.getCut('TelLmu')
+                LelTmuCut = self.vardb.getCut('LelTmu')
+                TmuLelCut = self.vardb.getCut('TmuLel')
+                LmuTelCut = self.vardb.getCut('LmuTel')
+
+            TL_LT_Cut = (TLCut | LTCut)
+
+            # Take the base suprocess (DATA)
+            #
+            sp = self.base(treename, category, options)
+
+            # Cache the category cut in a base cut which can be modified at no risk
+	    #
+            basecut = category.cut
+
+            print("base sp: {0}".format(basecut.cutnamelist))
+
+            # Remove the cuts defining the flavour composition (this is made just for calculating thetas...)
+            #
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_ElEl_Event'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_MuMu_Event'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_OF_Event'))
+
+            # Remove the cuts defining the jet multiplicity
+            #
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_NJet_SR'))
+            basecut = basecut.removeCut(self.vardb.getCut('2Lep_NJet_CR'))
+
+            self.clearTheta()
+
+            if self.theta['El'][0] == 999.0 :
+
+                print ("Calculating theta_el from data in regions C,D...")
+
+                # define selection for region C and D (ee)
+                #
+                cut_sp_C_el = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_ElEl_Event') & TTCut & self.vardb.getCut('2Lep_Zsidescut') & self.vardb.getCut('2Lep_ElEtaCut')
+                cut_sp_D_el = basecut & self.vardb.getCut('2Lep_NJet_CR') & self.vardb.getCut('2Lep_ElEl_Event') & TL_LT_Cut & self.vardb.getCut('2Lep_Zsidescut') & self.vardb.getCut('2Lep_ElEtaCut')
+
+                # Lower pT threshold of subleading lepton to enrich in fakes
+                #
+                #cut_sp_C_el     = cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_NLep'),self.vardb.getCut('2Lep_NLep_Relaxed'))
+                #cut_sp_D_el     = cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_NLep'),self.vardb.getCut('2Lep_NLep_Relaxed'))
+
+                sp_C_el = sp.subprocess( cut = cut_sp_C_el, eventweight=weight )
+                sp_D_el = sp.subprocess( cut = cut_sp_D_el, eventweight=weight )
+
+                print("Region C (el) sp: {0}".format(cut_sp_C_el.cutnamelist))
+                print("Region D (el) sp: {0}".format(cut_sp_D_el.cutnamelist))
+
+                # get a list of stuff to subtract for region C and D (i.e, prompt MC and charge flips)
+                #
+                sublist = [ item for item in self.parent.sub_backgrounds ]
+
+                # ... and now subtract!
+                #
+                for sample in sublist:
+
                     print ("Subtracting {0} from data in regions C,D...".format(sample))
 
                     this_cut_sp_C_el = cut_sp_C_el
@@ -1992,7 +2390,7 @@ class TTHBackgrounds(Background):
                     print ("C (el) - yields data: {0:.2f}".format(sp_C_el.numberstats()[0]))
                     print ("C (el) - yields bkg: {0:.2f}".format(sub_sample_C_el.numberstats()[0]))
                     sp_C_el = sp_C_el - sub_sample_C_el
-                    print ("C (el) - yields after sub: {0:.2f}".format(sp_C_el.numberstats()[0]))
+                    print ("C (el) ==> yields after sub: {0:.2f}".format(sp_C_el.numberstats()[0]))
 
                     # *********************************************
 
@@ -2001,23 +2399,23 @@ class TTHBackgrounds(Background):
                     print ("D (el) - yields data: {0:.2f}".format(sp_D_el.numberstats()[0]))
                     print ("D (el) - yields bkg: {0:.2f}".format(sub_sample_D_el.numberstats()[0]))
                     sp_D_el = sp_D_el - sub_sample_D_el
-                    print ("D (el) - yields after sub: {0:.2f}".format(sp_D_el.numberstats()[0]))
+                    print ("D (el) ==> yields after sub: {0:.2f}".format(sp_D_el.numberstats()[0]))
 
 
                 print ("---------------------------------------------------------------------\n")
-                print ("C (el) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_C_el.numberstats()[0]))
-                print ("D (el) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_D_el.numberstats()[0]))
+                print ("C (el) - data yields after prompt/ch-flip subtraction: {0:.2f} +- {1:.2f}".format(sp_C_el.numberstats()[0], sp_C_el.numberstats()[1]))
+                print ("D (el) - data yields after prompt/ch-flip subtraction: {0:.2f} +- {1:.2f}".format(sp_D_el.numberstats()[0], sp_D_el.numberstats()[1]))
                 print ("\n---------------------------------------------------------------------")
 
                 # derive theta factors for el
                 #
-                TTHBackgrounds.theta['El'] = self.calcTheta(sp_C_el,sp_D_el,stream='El')
+                self.theta['El'] = self.calcTheta(sp_C_el,sp_D_el,stream='El')
 
             else :
-                print ("Reading theta(el) value: {0} +- {1}".format(TTHBackgrounds.theta['El'][0], TTHBackgrounds.theta['El'][1]))
+                print ("Reading theta(el) value: {0} +- {1}".format(self.theta['El'][0], self.theta['El'][1]))
 
 
-            if TTHBackgrounds.theta['Mu'][0] == 999.0 :
+            if self.theta['Mu'][0] == 999.0 :
 
                 print ("Calculating theta_mu from data in regions C,D...")
 
@@ -2071,7 +2469,7 @@ class TTHBackgrounds(Background):
                     print ("C (mu) - yields data: {0:.2f}".format(sp_C_mu.numberstats()[0]))
                     print ("C (mu) - yields bkg: {0:.2f}".format(sub_sample_C_mu.numberstats()[0]))
                     sp_C_mu = sp_C_mu - sub_sample_C_mu
-                    print ("C (mu) - yields after sub: {0:.2f}".format(sp_C_mu.numberstats()[0]))
+                    print ("C (mu) ==> yields after sub: {0:.2f}".format(sp_C_mu.numberstats()[0]))
 
                     # *********************************************
 
@@ -2080,20 +2478,20 @@ class TTHBackgrounds(Background):
                     print ("D (mu) - yields data: {0:.2f}".format(sp_D_mu.numberstats()[0]))
                     print ("D (mu) - yields bkg: {0:.2f}".format(sub_sample_D_mu.numberstats()[0]))
                     sp_D_mu = sp_D_mu - sub_sample_D_mu
-                    print ("D (mu) - yields after sub: {0:.2f}".format(sp_D_mu.numberstats()[0]))
+                    print ("D (mu) ==> yields after sub: {0:.2f}".format(sp_D_mu.numberstats()[0]))
 
 
                 print ("---------------------------------------------------------------------\n")
-                print ("C (mu) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_C_mu.numberstats()[0]))
-                print ("D (mu) - data yields after prompt/ch-flip subtraction: {0:.2f}".format(sp_D_mu.numberstats()[0]))
+                print ("C (mu) - data yields after prompt/ch-flip subtraction: {0:.2f} +- {1:.2f}".format(sp_C_mu.numberstats()[0],sp_C_mu.numberstats()[1]))
+                print ("D (mu) - data yields after prompt/ch-flip subtraction: {0:.2f} +- {1:.2f}".format(sp_D_mu.numberstats()[0],sp_D_mu.numberstats()[1]))
                 print ("\n---------------------------------------------------------------------")
 
                 # derive theta factors for mu
                 #
-                TTHBackgrounds.theta['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
+                self.theta['Mu'] = self.calcTheta(sp_C_mu,sp_D_mu,stream='Mu')
 
             else :
-                print ("Reading theta(mu) value: {0:.3f} +- {1:.3f}".format(TTHBackgrounds.theta['Mu'][0], TTHBackgrounds.theta['Mu'][1]))
+                print ("Reading theta(mu) value: {0:.3f} +- {1:.3f}".format(self.theta['Mu'][0], self.theta['Mu'][1]))
 
 
             # Define Region B,  depending on which flavour composition we are looking at:
@@ -2121,6 +2519,9 @@ class TTHBackgrounds(Background):
                             print("NO QMisID subtraction for muons!!")
                             continue
 
+                    if sample == "QMisIDMC":
+                        this_cut_sp_B_SF = this_cut_sp_B_SF.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
+                    if sample == "QMisID":
                         this_weight = 'QMisIDWeight'
                         this_cut_sp_B_SF = this_cut_sp_B_SF.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
                         this_cut_sp_B_SF = this_cut_sp_B_SF.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
@@ -2128,14 +2529,19 @@ class TTHBackgrounds(Background):
                     sub_sample_B = self.parent.procmap[sample].base(treename,category,options)
                     sub_sample_B = sub_sample_B.subprocess( cut = this_cut_sp_B_SF, eventweight=this_weight )
 
-                    sp_B = sp_B - sub_sample_B
+                    print ("B (mumu,ee) - yields data: {0:.2f}".format(sp_B.numberstats()[0]))
+                    print ("B (mumu,ee) - yields bkg: {0:.2f}".format(sub_sample_B.numberstats()[0]))
+
+		    sp_B = sp_B - sub_sample_B
+
+		    print ("B (mumu,ee) ==> yields after sub: {0:.2f}".format(sp_B.numberstats()[0]))
 
                 print ("Region B (mumu,ee), yield: {0:.2f}\n".format(sp_B.numberstats()[0]))
 
                 if ("2Lep_ElEl_Event") in category.cut.cutname:
-                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds.theta['El'])
+                    sp_B = self.applyThetaFactor(sp_B,self.theta['El'])
                 elif ("2Lep_MuMu_Event") in category.cut.cutname:
-                    sp_B = self.applyThetaFactor(sp_B,TTHBackgrounds.theta['Mu'])
+                    sp_B = self.applyThetaFactor(sp_B,self.theta['Mu'])
             else:
 
                 sp_B_OF_Lel = sp.subprocess(cut=cut_sp_B_OF_Lel, eventweight=weight )
@@ -2150,8 +2556,10 @@ class TTHBackgrounds(Background):
                     this_cut_sp_B_OF_Lmu = cut_sp_B_OF_Lmu
                     this_weight = weightMC
 
-                    if ( ( sample == "QMisIDMC" ) or ( sample == "QMisID" ) ):
-
+                    if sample == "QMisIDMC":
+                        this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'), self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
+                        this_cut_sp_B_OF_Lmu = this_cut_sp_B_OF_Lmu.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'), self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
+		    if sample == "QMisID":
                         this_weight = 'QMisIDWeight'
                         this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
                         this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
@@ -2163,19 +2571,26 @@ class TTHBackgrounds(Background):
                     sub_sample_B_OF_Lmu = self.parent.procmap[sample].base(treename,category,options)
                     sub_sample_B_OF_Lmu = sub_sample_B_OF_Lmu.subprocess( cut = this_cut_sp_B_OF_Lmu, eventweight=this_weight )
 
+		    print ("B (emu,mue, loose el) - yields data: {0:.2f}".format(sp_B_OF_Lel.numberstats()[0]))
+                    print ("B (emu,mue, loose el) - yields bkg: {0:.2f}".format(sub_sample_B_OF_Lel.numberstats()[0]))
+		    print ("B (emu,mue, loose mu) - yields data: {0:.2f}".format(sp_B_OF_Lmu.numberstats()[0]))
+                    print ("B (emu,mue, loose mu) - yields bkg: {0:.2f}".format(sub_sample_B_OF_Lmu.numberstats()[0]))
+
                     sp_B_OF_Lel = sp_B_OF_Lel - sub_sample_B_OF_Lel
                     sp_B_OF_Lmu = sp_B_OF_Lmu - sub_sample_B_OF_Lmu
 
-                print ("Region B (emu) \n yield (loose el): {0:.2f}\n yield (loose mu): {1:.2f}\n".format(sp_B_OF_Lel.numberstats()[0],sp_B_OF_Lmu.numberstats()[0]))
+		    print ("B (emu,mue, loose el) ==> yields after sub: {0:.2f}".format(sp_B_OF_Lel.numberstats()[0]))
+                    print ("B (emu,mue, loose mu) ==> yields after sub: {0:.2f}".format(sp_B_OF_Lmu.numberstats()[0]))
 
-                sp_B = self.applyThetaFactor(sp_B_OF_Lmu,TTHBackgrounds.theta['Mu']) + self.applyThetaFactor(sp_B_OF_Lel,TTHBackgrounds.theta['El'])
+                print ("Region B (emu,mue) \n yield (loose el): {0:.2f}\n yield (loose mu): {1:.2f}\n".format(sp_B_OF_Lel.numberstats()[0],sp_B_OF_Lmu.numberstats()[0]))
 
-            print(" ")
-            print ("=================>\n")
-            print ("Final fakes yield: {0:.2f} +- {1:.2f}\n".format(sp_B.numberstats()[0],sp_B.numberstats()[1]))
+                sp_B = self.applyThetaFactor(sp_B_OF_Lmu,self.theta['Mu']) + self.applyThetaFactor(sp_B_OF_Lel,self.theta['El'])
+
+            print ("\n=========> Final fakes yield: {0:.2f} +- {1:.2f}\n".format(sp_B.numberstats()[0],sp_B.numberstats()[1]))
 
             return sp_B
 
+    #"""
 
     class FakesClosureMM(Process):
 
@@ -2222,10 +2637,10 @@ class TTHBackgrounds(Background):
             sp_LL  = sp.subprocess(cut=category.cut & self.vardb.getCut(LLcut), eventweight=weight)
 
             print(" ")
-            print("{0} - TT cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_TT.basecut.cutnamelist, weight))
-            print("{0} - TL cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
-            print("{0} - LT cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
-            print("{0} - LL cuts: {1}, weights: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
+            print("{0} - TT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TT.basecut.cutnamelist, weight))
+            print("{0} - TL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
+            print("{0} - LT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
+            print("{0} - LL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
 
             sp = sp_TT + sp_TL + sp_LT + sp_LL
 

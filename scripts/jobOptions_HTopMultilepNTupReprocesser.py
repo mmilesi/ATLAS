@@ -7,17 +7,8 @@ sys.path.insert(0, os.environ['ROOTCOREBIN']+"/user_scripts/HTopMultilepAnalysis
 c = xAH_config()
 
 event_branches = ["EventNumber","RunNumber","mc_channel_number","isSS01","dilep_type","trilep_type",
-                  "is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT",
-                  "QMisIDWeight","QMisIDWeight_up","QMisIDWeight_dn",
-		  "MMWeight",
-		  "MMWeight_lep0_r_Stat_up",
-		  "MMWeight_lep0_r_Stat_dn",
-		  "MMWeight_lep1_r_Stat_up",
-		  "MMWeight_lep1_r_Stat_dn",
-		  "MMWeight_lep0_f_Stat_up",
-		  "MMWeight_lep0_f_Stat_dn",
-		  "MMWeight_lep1_f_Stat_up",
-		  "MMWeight_lep1_f_Stat_dn"]
+                  "is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT"
+                  ]
 
 lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0","lep_isTrigMatch_0",
                   "lep_ID_1","lep_Pt_1","lep_Eta_1","lep_Phi_1","lep_EtaBE2_1","lep_isTightSelected_1","lep_isTrigMatch_1"]
@@ -39,16 +30,26 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                    "m_weightToCalc"               : "QMisID,MM",
+                                    "m_weightToCalc"               : "MM", #"QMisID", #,MM",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
+                                    #"m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v21.root",
+                                    #"m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_antiT_25ns_v21.root",
+                                    #"m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
+                                    #"m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPtLoose",
+				    #
                                     "m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v19.root",
-                                    "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TanitiT_25ns_v19.root",
-                                    "m_useTAntiTRates"             : True,
+                                    "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TantiT_25ns_v19.root",
+                                    "m_useTAntiTRates"             : True, # for v19
                                     #
+				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMRates_25ns_v20_04_DDQMisID",
+				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMClosureRates_25ns_v20_04",
+				    #
+				    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMRates_25ns_v20_04_DDQMisID_ICHEPBinning",
+				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMClosureRates_25ns_v20_04_ICHEPBinning",
+				    #
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
 				    #
-				    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_QMisIDSys",
-				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_QMisIDSys_WrongOverflow",
+				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_QMisIDSys",
 				    #
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_CPPM",
 				    #"m_EFF_YES_TM_dir"  	   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_YES_TM",
@@ -61,7 +62,8 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #"m_REFF_dir"  		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_02/OutputPlots_MMClosureRates_NoCorrections_TTBarNonAllHad_25ns_v20_02",
 				    #"m_REFF_dir"  		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_02/OutputPlots_MMClosureRates_NoCorrections_TTBarSemilep_25ns_v20_02",
                                     #
-				    "m_systematics_list"           : "Nominal,Stat,numerator_QMisID,denominator_QMisID",
+				    #"m_systematics_list"           : "Nominal,Stat,numerator_QMisID,denominator_QMisID",
+				    "m_systematics_list"           : "Nominal,Stat",
 				    "m_useTrigMatchingInfo"        : False,
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
                                     "m_doMMClosure"                : False,

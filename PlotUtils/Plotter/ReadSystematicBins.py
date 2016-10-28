@@ -120,7 +120,10 @@ def printTotFakeUncertainty( nominal, stat, flav ):
         if flav == "ElEl" : non_closure = 0.34 * nominal
         if flav == "OF"   : non_closure = 0.22 * nominal
         if flav == "MuMu" : non_closure = 0.22 * nominal
-
+    
+    if args.doClosure:
+        non_closure = 0.0
+    
     # This prints out sorting systematics from smaller to larger
     #
     print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.4f} [{1:.4f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) + "\t\t+- {0:.2f} [{1:.2f} %] (non-closure)".format(non_closure, (non_closure/nominal)*100) )
@@ -209,90 +212,21 @@ if __name__ == '__main__':
         print("Looking at file: {0}".format(filename))
 
         fakes_nominal = myfile.Get("fakesbkg")
-
-        fakes_syst = {
-	  'MMsys_Real_El_Pt_Stat_1':		   'Stat',		
-	  'MMsys_Real_El_Pt_Stat_2':		   'Stat',		
-	  'MMsys_Real_El_Pt_Stat_3':		   'Stat',		
-	  'MMsys_Real_El_Pt_Stat_4':		   'Stat',		
-	  'MMsys_Real_El_Pt_Stat_5':		   'Stat',		
-	  'MMsys_Real_El_Pt_Stat_6':		   'Stat',		
-	  'MMsys_Real_El_Pt_Stat_7':		   'Stat',		
-	  'MMsys_Real_El_Pt_Stat_8':		   'Stat',		
-	  'MMsys_Real_Mu_Pt_Stat_1':		   'Stat',		
-	  'MMsys_Real_Mu_Pt_Stat_2':		   'Stat',		
-	  'MMsys_Real_Mu_Pt_Stat_3':		   'Stat',		
-	  'MMsys_Real_Mu_Pt_Stat_4':		   'Stat',		
-	  'MMsys_Real_Mu_Pt_Stat_5':		   'Stat',		
-	  'MMsys_Real_Mu_Pt_Stat_6':		   'Stat',		
-	  'MMsys_Real_Mu_Pt_Stat_7':		   'Stat',		
-	  'MMsys_Real_Mu_Pt_Stat_8':		   'Stat',		
-	  'MMsys_Fake_El_Pt_Stat_1':		   'Stat',		
-	  'MMsys_Fake_El_Pt_Stat_2':		   'Stat',		
-	  'MMsys_Fake_El_Pt_Stat_3':		   'Stat',		
-	  'MMsys_Fake_El_Pt_Stat_4':		   'Stat',		
-	  'MMsys_Fake_El_Pt_Stat_5':		   'Stat',		
-	  'MMsys_Fake_El_Pt_Stat_6':		   'Stat',		
-	  'MMsys_Fake_Mu_Pt_Stat_1':		   'Stat',		
-	  'MMsys_Fake_Mu_Pt_Stat_2':		   'Stat',		
-	  'MMsys_Fake_Mu_Pt_Stat_3':		   'Stat',		
-	  'MMsys_Fake_Mu_Pt_Stat_4':		   'Stat',		
-	  'MMsys_Fake_Mu_Pt_Stat_5':		   'Stat',		
-	  'MMsys_Real_El_Pt_numerator_QMisID_1':   'numerator_QMisID',  
-	  'MMsys_Real_El_Pt_numerator_QMisID_2':   'numerator_QMisID',  
-	  'MMsys_Real_El_Pt_numerator_QMisID_3':   'numerator_QMisID',  
-	  'MMsys_Real_El_Pt_numerator_QMisID_4':   'numerator_QMisID',  
-	  'MMsys_Real_El_Pt_numerator_QMisID_5':   'numerator_QMisID',  
-	  'MMsys_Real_El_Pt_numerator_QMisID_6':   'numerator_QMisID',  
-	  'MMsys_Real_El_Pt_numerator_QMisID_7':   'numerator_QMisID',  
-	  'MMsys_Real_El_Pt_numerator_QMisID_8':   'numerator_QMisID',  
-	  'MMsys_Real_Mu_Pt_numerator_QMisID_1':   'numerator_QMisID',  
-	  'MMsys_Real_Mu_Pt_numerator_QMisID_2':   'numerator_QMisID',  
-	  'MMsys_Real_Mu_Pt_numerator_QMisID_3':   'numerator_QMisID',  
-	  'MMsys_Real_Mu_Pt_numerator_QMisID_4':   'numerator_QMisID',  
-	  'MMsys_Real_Mu_Pt_numerator_QMisID_5':   'numerator_QMisID',  
-	  'MMsys_Real_Mu_Pt_numerator_QMisID_6':   'numerator_QMisID',  
-	  'MMsys_Real_Mu_Pt_numerator_QMisID_7':   'numerator_QMisID',  
-	  'MMsys_Real_Mu_Pt_numerator_QMisID_8':   'numerator_QMisID',  
-	  'MMsys_Fake_El_Pt_numerator_QMisID_1':   'numerator_QMisID',  
-	  'MMsys_Fake_El_Pt_numerator_QMisID_2':   'numerator_QMisID',  
-	  'MMsys_Fake_El_Pt_numerator_QMisID_3':   'numerator_QMisID',  
-	  'MMsys_Fake_El_Pt_numerator_QMisID_4':   'numerator_QMisID',  
-	  'MMsys_Fake_El_Pt_numerator_QMisID_5':   'numerator_QMisID',  
-	  'MMsys_Fake_El_Pt_numerator_QMisID_6':   'numerator_QMisID',  
-	  'MMsys_Fake_Mu_Pt_numerator_QMisID_1':   'numerator_QMisID',  
-	  'MMsys_Fake_Mu_Pt_numerator_QMisID_2':   'numerator_QMisID',  
-	  'MMsys_Fake_Mu_Pt_numerator_QMisID_3':   'numerator_QMisID',  
-	  'MMsys_Fake_Mu_Pt_numerator_QMisID_4':   'numerator_QMisID',  
-	  'MMsys_Fake_Mu_Pt_numerator_QMisID_5':   'numerator_QMisID',  
-	  'MMsys_Real_El_Pt_denominator_QMisID_1': 'denominator_QMisID',
-	  'MMsys_Real_El_Pt_denominator_QMisID_2': 'denominator_QMisID',
-	  'MMsys_Real_El_Pt_denominator_QMisID_3': 'denominator_QMisID',
-	  'MMsys_Real_El_Pt_denominator_QMisID_4': 'denominator_QMisID',
-	  'MMsys_Real_El_Pt_denominator_QMisID_5': 'denominator_QMisID',
-	  'MMsys_Real_El_Pt_denominator_QMisID_6': 'denominator_QMisID',
-	  'MMsys_Real_El_Pt_denominator_QMisID_7': 'denominator_QMisID',
-	  'MMsys_Real_El_Pt_denominator_QMisID_8': 'denominator_QMisID',
-	  'MMsys_Real_Mu_Pt_denominator_QMisID_1': 'denominator_QMisID',
-	  'MMsys_Real_Mu_Pt_denominator_QMisID_2': 'denominator_QMisID',
-	  'MMsys_Real_Mu_Pt_denominator_QMisID_3': 'denominator_QMisID',
-	  'MMsys_Real_Mu_Pt_denominator_QMisID_4': 'denominator_QMisID',
-	  'MMsys_Real_Mu_Pt_denominator_QMisID_5': 'denominator_QMisID',
-	  'MMsys_Real_Mu_Pt_denominator_QMisID_6': 'denominator_QMisID',
-	  'MMsys_Real_Mu_Pt_denominator_QMisID_7': 'denominator_QMisID',
-	  'MMsys_Real_Mu_Pt_denominator_QMisID_8': 'denominator_QMisID',
-	  'MMsys_Fake_El_Pt_denominator_QMisID_1': 'denominator_QMisID',
-	  'MMsys_Fake_El_Pt_denominator_QMisID_2': 'denominator_QMisID',
-	  'MMsys_Fake_El_Pt_denominator_QMisID_3': 'denominator_QMisID',
-	  'MMsys_Fake_El_Pt_denominator_QMisID_4': 'denominator_QMisID',
-	  'MMsys_Fake_El_Pt_denominator_QMisID_5': 'denominator_QMisID',
-	  'MMsys_Fake_El_Pt_denominator_QMisID_6': 'denominator_QMisID',
-	  'MMsys_Fake_Mu_Pt_denominator_QMisID_1': 'denominator_QMisID',
-	  'MMsys_Fake_Mu_Pt_denominator_QMisID_2': 'denominator_QMisID',
-	  'MMsys_Fake_Mu_Pt_denominator_QMisID_3': 'denominator_QMisID',
-	  'MMsys_Fake_Mu_Pt_denominator_QMisID_4': 'denominator_QMisID',
-	  'MMsys_Fake_Mu_Pt_denominator_QMisID_5': 'denominator_QMisID',
-        } 
+        fakes_syst = {}
+	for key in myfile.GetListOfKeys():
+	    keyname = key.GetName()
+	    if not ( "fakesbkg_" in keyname ): continue
+            keyname = keyname.replace("fakesbkg_","")
+	    keyname = keyname.replace("_dn","")
+	    keyname = keyname.replace("_up","")
+	    if "Stat" in keyname:
+	        value = "Stat"
+	    if "numerator_QMisID" in keyname:
+	        value = "numerator_QMisID"
+	    if "denominator_QMisID" in keyname:
+	        value = "denominator_QMisID"
+            if not fakes_syst.get(keyname):
+	        fakes_syst[keyname] = value
 	
         print ("\n\tFakes: \n")
 

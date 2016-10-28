@@ -347,6 +347,11 @@ private:
   int       m_nmuons;
   int       m_nelectrons;
   int       m_nleptons;
+  
+  float     m_el_Pt_0;
+  float     m_el_Pt_1;
+  float     m_mu_Pt_0;
+  float     m_mu_Pt_1;
 
   char	    m_lep_isTightSelected_0;
   char	    m_lep_isTightSelected_1;

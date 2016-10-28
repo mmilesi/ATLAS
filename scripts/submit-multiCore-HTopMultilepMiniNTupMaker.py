@@ -6,15 +6,15 @@ import multiprocessing
 
 parser = argparse.ArgumentParser(description='Run HTopMultilepMiniNTupMaker algorithm interactively on multiple cores')
 
-parser.add_argument('destination', metavar='destination', type=str, 
+parser.add_argument('destination', metavar='destination', type=str,
                     help='The base directory where the output will be stored. Subdirectories for different sample groups will be created automatically by the job.')
-parser.add_argument('version', metavar='version', type=str, 
+parser.add_argument('version', metavar='version', type=str,
                     help='The NTuple version to be used (e.g., v17, v18 ...)')
-parser.add_argument('--nparallel', dest='nparallel', action='store', default=1, type=int, 
+parser.add_argument('--nparallel', dest='nparallel', action='store', default=1, type=int,
                     help='The maximum number of parallel processes to be executed. The number to choose depends on the features of the machine you are using. Default is 1 (i.e., no parallel jobs)')
-parser.add_argument('--nevents', dest='nevents', action='store', default=0, type=int, 
+parser.add_argument('--nevents', dest='nevents', action='store', default=0, type=int,
                     help='The number of events to be processed. Default is 0 (i.e., ALL events)')
-parser.add_argument('--treename', dest='treename', action='store', default="nominal", type=str, 
+parser.add_argument('--treename', dest='treename', action='store', default="nominal", type=str,
                     help='The name of the input TTree. Default is \"nominal\"')
 
 args = parser.parse_args()
@@ -115,13 +115,13 @@ if __name__ == '__main__':
 ## data
 #"HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",
 ## ttbar noallhad
-"410000",
+#"410000",
 ## ttH
-#"343365",
-#"343366",
-#"343367",
+"343365",
+"343366",
+"343367",
 ## ttW
-"410155",
+#"410155",
 ## ttZ
 #"410218",
 #"410219",
@@ -356,8 +356,6 @@ if __name__ == '__main__':
 #
 ## Others
 #
-#"301535",
-#"301536",
 #"301890",
 #"301891",
 #"301892",
@@ -385,11 +383,14 @@ if __name__ == '__main__':
 #"341988",
 #"341990",
 #"341991",
+#"341993",
 #"341994",
 #"341996",
 #"341997",
 #"341999",
 #"342000",
+#"342002",
+#"342003",
 #"342005",
 #"342170",
 #"342171",
@@ -405,15 +406,20 @@ if __name__ == '__main__':
 #"343272",
 #"343273",
 #"343274",
-#"361074",
-#"361075",
-#"361076",
-#"361078",
-#"361079",
-#"361080",
-#"361088",
-#"361089",
-#"361090",
+#"343637",
+#"344096",
+#"344097",
+#"344098",
+#"344422",
+#"344423",
+#"344424",
+#"344425",
+#"344426",
+#"344427",
+#"344428",
+#"344429",
+#"344430",
+#"344431",
 #"361100",
 #"361101",
 #"361102",
@@ -456,6 +462,7 @@ if __name__ == '__main__':
 #"361632",
 #"361633",
 #"361634",
+#"361635",
 #"361636",
 #"361637",
 #"361638",
@@ -628,6 +635,7 @@ if __name__ == '__main__':
 #"410114",
 #"410115",
 #"410116",
+#"410120",
 #"410121",
 #"410142",
 #"410143",
@@ -638,7 +646,6 @@ if __name__ == '__main__':
 #"410187",
 #"410188",
 #"410189",
-#"410500",
     ]
 
     # -------------------------------------------------------------------------------------------------------
@@ -647,13 +654,13 @@ if __name__ == '__main__':
     treename   = args.treename
     nevents    = args.nevents
     motherdir  = args.destination
-    
+
     if not os.path.exists(motherdir):
-        os.makedirs(motherdir)
+	os.makedirs(motherdir)
     for s in sampledict:
-        groupdir = motherdir + "/" + s["group"]
-        if not os.path.exists(groupdir):
-            os.makedirs(groupdir)
+	groupdir = motherdir + "/" + s["group"]
+	if not os.path.exists(groupdir):
+	    os.makedirs(groupdir)
 
     list_commands = generateCmdList(infilelist)
 
@@ -663,10 +670,9 @@ if __name__ == '__main__':
 
     for chunk in listchunks(list_commands,MAX_PARALLEL):
 
-        print("Processing samples: ")
-        print("\n".join("{0} - {1}".format(idx,elem[elem.find("--submitDir")+len("--submitDir")+1:elem.find("--nevents")-1]) for idx, elem in enumerate(chunk)))
-        p = multiprocessing.Pool(MAX_PARALLEL)
-        p.map(miniNTuplise,chunk)
+	print("Processing samples: ")
+	print("\n".join("{0} - {1}".format(idx,elem[elem.find("--submitDir")+len("--submitDir")+1:elem.find("--nevents")-1]) for idx, elem in enumerate(chunk)))
+	p = multiprocessing.Pool(MAX_PARALLEL)
+	p.map(miniNTuplise,chunk)
 	p.close()
-        p.join()
-
+	p.join()

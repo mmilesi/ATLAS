@@ -328,6 +328,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("nelectrons",               	&m_nelectrons, "nelectrons/I");
   m_outputNTuple->tree()->Branch("nleptons",               	&m_nleptons, "nleptons/I");
 
+  m_outputNTuple->tree()->Branch("electron_Pt_0", 	        &m_el_Pt_0, "electron_Pt_0/F");
+  m_outputNTuple->tree()->Branch("electron_Pt_1",		&m_el_Pt_1, "electron_Pt_1/F");
+  m_outputNTuple->tree()->Branch("muon_Pt_0",		        &m_mu_Pt_0, "muon_Pt_0/F");
+  m_outputNTuple->tree()->Branch("muon_Pt_1",  	                &m_mu_Pt_1, "muon_Pt_1/F");
+
   m_outputNTuple->tree()->Branch("lep_isTightSelected_0",       &m_lep_isTightSelected_0, "lep_isTightSelected_0/B");
   m_outputNTuple->tree()->Branch("lep_isTightSelected_1",       &m_lep_isTightSelected_1, "lep_isTightSelected_1/B");
   m_outputNTuple->tree()->Branch("lep_isTightSelected_2",       &m_lep_isTightSelected_2, "lep_isTightSelected_2/B");
@@ -713,7 +718,15 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: enableSelectedBranches ()
   // Re-enable the branches we are going to use
   //
   for ( const auto& branch : branch_vec ) {
-    m_inputNTuple->SetBranchStatus (branch.c_str(), 1);
+    
+    size_t found_regexp = branch.find(".*");
+    if (  found_regexp != std::string::npos ) {
+      std::string wildcarded_branch(branch);
+      wildcarded_branch =  wildcarded_branch.replace( found_regexp, 2, "*" ); // replace ".*" with "*"
+      m_inputNTuple->SetBranchStatus (wildcarded_branch.c_str(), 1);
+    } else {
+      m_inputNTuple->SetBranchStatus (branch.c_str(), 1);
+    }
   }
 
   return EL::StatusCode::SUCCESS;
@@ -932,6 +945,24 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
   m_nmuons     = 0;
   m_nelectrons = 0;
 
+  if ( m_event.get()->dilep ) {
+    
+    int idx_el(0), idx_mu(0);
+    m_el_Pt_0 = m_el_Pt_1 = m_mu_Pt_0 = m_mu_Pt_1 = -1.0;
+    
+    // NB: m_leptons is pT sorted by construction
+    //
+    for ( const auto lep : m_leptons ) {
+      if ( lep.get()->flavour == 13 ) {
+        if ( idx_mu == 0 )      { m_mu_Pt_0 = lep.get()->pt; ++idx_mu; }
+        else if ( idx_mu == 1 ) { m_mu_Pt_1 = lep.get()->pt; ++idx_mu; }
+      } else if ( lep.get()->flavour == 11 ) {
+        if ( idx_el == 0 )      { m_el_Pt_0 = lep.get()->pt; ++idx_el; }
+        else if ( idx_el == 1 ) { m_el_Pt_1 = lep.get()->pt; ++idx_el; }
+      }
+    }
+  }
+    
   for ( const auto lep : m_leptons ) {
 
     if ( lep.get()->flavour == 13 ) ++m_nmuons;

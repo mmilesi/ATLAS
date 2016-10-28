@@ -251,7 +251,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
     if ( samp.first.back() != '/' ) { samp.first += "/"; }
 
     string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : FLAV_COMP;
-    string path = samp.first + prepend + "Rates.root"; // "AvgRates.root"
+    string path = samp.first + prepend + "LeptonEfficiencies.root"; // "AvgRates.root"
 
     //string path = samp.first;
 
@@ -284,7 +284,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
   
   string data_type("");
   if ( DATA_TYPE == "Data" )     { data_type = "observed"; }
-  else if ( DATA_TYPE == "MC" )  { data_type = "expected"; }
+  else if ( DATA_TYPE == "MC" )  { data_type = "expectedbkg"; }
 
   // loop over variables
   //
@@ -349,7 +349,8 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 
           TH1D *h(nullptr);
 
-	  string histname = lepton_flavours.at(iFlav) + "_Probe" + variables.at(iVar) + "_" + Rates.at(iRate) + "_" + RATE_OR_EFF  + "_" + data_type;
+          string append    = ( input_files.at(iFile).second.find("Data") != string::npos ) ? "_sub" : "";
+ 	  string histname = Rates.at(iRate) + "_" + lepton_flavours.at(iFlav) + "_" + variables.at(iVar) + "_" + RATE_OR_EFF  + "_" + data_type + append;
 
           (input_files.at(iFile).first)->GetObject(histname.c_str(), h);
 
@@ -408,14 +409,14 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
 	  }
 
 	  if ( Rates.at(iRate) == "Real" ) {
-            h->SetLineColor(kRed);
-            h->SetMarkerColor(kRed);
-	  } else if ( Rates.at(iRate) == "Fake" ) {
             h->SetLineColor(kBlue);
             h->SetMarkerColor(kBlue);
-	  } else if ( Rates.at(iRate) == "QMisID" ) {
+	  } else if ( Rates.at(iRate) == "Fake" ) {
             h->SetLineColor(kOrange+7);
             h->SetMarkerColor(kOrange+7);
+	  } else if ( Rates.at(iRate) == "QMisID" ) {
+            h->SetLineColor(kOrange+1);
+            h->SetMarkerColor(kOrange+1);
 	  } else if ( Rates.at(iRate) == "ScaledFake" ) {
             h->SetLineColor(kAzure+10);
             h->SetMarkerColor(kAzure+10);
@@ -480,7 +481,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
     if ( samp.first.back() != '/' ) { samp.first += "/"; }
 
     string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : FLAV_COMP;
-    string path = samp.first + prepend + "Rates.root"; // "AvgRates.root"
+    string path = samp.first + prepend + "LeptonEfficiencies.root"; // "AvgRates.root"
 
     TFile *f = TFile::Open(path.c_str());
     if ( !f->IsOpen() ) {
@@ -497,7 +498,7 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  //variables.push_back("Eta");
+  variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
@@ -566,13 +567,14 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 
           TH1D *h(nullptr);
 
-          string data_type = ( input_files.at(iFile).second.find("Data") != string::npos ) ? "observed" : "expected";
+          string data_type = ( input_files.at(iFile).second.find("Data") != string::npos ) ? "observed" : "expectedbkg";
+          string append    = ( input_files.at(iFile).second.find("Data") != string::npos ) ? "_sub" : "";
 
 //	  if ( Rates.at(iRate) == "Fake" && input_files.at(iFile).second.find("Data") != string::npos && lepton_flavours.at(iFlav) == "El" ) { continue; }
 //	  if ( Rates.at(iRate) == "ScaledFake" && input_files.at(iFile).second.find("Data") == string::npos ) { continue; }
-//          if ( Rates.at(iRate) == "ScaledFake" && lepton_flavours.at(iFlav) == "Mu" ) { continue; }
-
-	  string histname = lepton_flavours.at(iFlav) + "_Probe" + variables.at(iVar) + "_" + Rates.at(iRate) + "_" + RATE_OR_EFF  + "_" + data_type;
+//        if ( Rates.at(iRate) == "ScaledFake" && lepton_flavours.at(iFlav) == "Mu" ) { continue; }
+ 
+ 	  string histname = Rates.at(iRate) + "_" + lepton_flavours.at(iFlav) + "_" + variables.at(iVar) + "_" + RATE_OR_EFF  + "_" + data_type + append;
 
           (input_files.at(iFile).first)->GetObject(histname.c_str(), h);
 
@@ -626,8 +628,8 @@ void PlotRateEff_DataVSMC( vector< pair<string,string> >& SAMPLE_LIST,
 
           switch (iRate) {
 	    case 0:
-              h->SetLineColor(kBlack);
-              h->SetMarkerColor(kBlack);
+              h->SetLineColor(kBlue);
+              h->SetMarkerColor(kBlue);
 	     break;
 	    default:
               h->SetLineColor(kOrange+7);
@@ -695,84 +697,18 @@ void execute() {
 void execute_DiffSamples() {
 
   vector<pair<string,string> > vec;
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","Baseline"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIso_MCQMisID_Mllgt40GeV_AllElEtaCut/","No Isolation"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_NoLepIP_MCQMisID_Mllgt40GeV_AllElEtaCut/","Relaxed IP"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_Baseline_Mllgt40GeV_AllElEtaCut/","t#bar{t} -Baseline"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIso_Mllgt40GeV_AllElEtaCut/","t#bar{t} - No Isolation"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v029_NoLepIP_Mllgt40GeV_AllElEtaCut/","t#bar{t} - Relaxed IP"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_ElTagEtaCut/","|#eta_{e}| < 1.37 on tag only"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","|#eta_{e}| < 1.37 on all"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/Rates.root","OF+SF"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/MuMuRates.root","SF"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/ElElRates.root","SF"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_MCQMisID_Mllgt40GeV_AllElEtaCut/","MC QMisID"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v029_Baseline_DDQMisID_Mllgt40GeV_AllElEtaCut/","DD QMisID"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_DDQMisID_NoZminCut/","Data - Group NTup v7"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Data - Melb NTup v30"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_NoZminCut/","MC t#bar{t} - Group NTup v7"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_v030_NoZminCut/","MC t#bar{t} - Melb NTup v30"));
-
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - OF+SF - No sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - OF+SF - Prompt & QMisID Sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - OF - No sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - OF - Prompt & QMisID Sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - SF - No sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - SF - Prompt & QMisID Sub."));
-
-  //vec.push_back(make_pair("../PlotVault/PLOTS_v030_25ns_v7/OutputPlots_MMRates_v030_DDQMisID_NoZminCut/","Data - OLR on loose"));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_v031_DDQmisID/","Data - OLR on tight"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePrompt/","Data - OF+SF - No sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID_BabarSub/Rates_NoSub/","Data - Babar sel. - No sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID/","Data - OF+SF - Prompt & QMisID Sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FakeCRProbePromptORQMisID_BabarSub/Rates_Sub/","Data - Babar sel. - Prompt & QMisID Sub."));
-
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_OFplusSF_TTBar/","t#bar{t} - OF + SF"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_OFplusSF_Zjets/","Z/#gamma* + jets - OF + SF"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_OFplusSF_AllMC/","All MC - OF + SF"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v7_RealCRAllPromptChFlipVeto_ZjetsCR_Zjets/","Z/#gamma* + jets - Z CR"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_NoSub/","Data - No sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v7_FinalSelection/Rates_ProbeSub/","Data - (!Prompt & QMisID) Sub."));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake/","Data - T&P - w/ sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_FIXED/","Data - T&P - w/ sub."));
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v15/MMRates_25ns_v15_ScaledElFake_ARITHMETIC_AVG/","Data - T&P - w/ sub."));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_LHFit_25ns_v15/","Data - Likelihood - w/ sub."));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v17_NewTruthMatch_MCQMisIDLEl/","Data - T&P - w/ sub."));
-
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2_RebinnedEff/","MC t#bar{t}"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2_ProbeTrigMatched/","MC t#bar{t} - Probe TM"));
-  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v17_NOWEIGHTS_NewTruthMatch_2_Probe_NOT_TrigMatched/","MC t#bar{t} - Probe !TM"));
-
-  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v18_DDQMisID/","Data - w/ sub (DD QMisID)"));
   
-  //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19/","t#bar{t}"));
-  //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19_Probe_YES_TM/","t#bar{t} - Probe TM"));
-  //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMClosureRates_NoCorrections_25ns_v19_Probe_NO_TM/","t#bar{t} - Probe !TM"));
-
-  //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID/","Data"));
-  //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_YES_TM/","Data - Probe TM"));
-  //vec.push_back(make_pair("../PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID_Probe_NO_TM/","Data - Probe !TM"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v20_02/","t#bar{t} non allhad"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_TTBarSemilep_25ns_v20_02/","t#bar{t} semilep"));
+ 
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v19_v20Setup_DDQMisID/","Data (w/sub.) - ICHEP (v19)"));
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v20_04_DDQMisID_ICHEPBinning/","Data (w/sub.) - v20-04"));
   
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v20_02/","t#bar{t} non allhad"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_TTBarSemilep_25ns_v20_02/","t#bar{t} semilep"));
+  PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
+  PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","eps");
 
-  //PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
-  //PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","eps");
-
-  PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","png");
-  PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","eps");
+  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","png");
+  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","eps");
   
   //PlotRateEff_DiffSamples(vec,"Data","OF","Efficiency","png");
   //PlotRateEff_DiffSamples(vec,"Data","MuMu","Efficiency","png");
@@ -816,8 +752,15 @@ void execute_DataVSMC() {
   //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v18_DDQMisID/","Data - w/ sub (DD QMisID)"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v18/","t#bar{t} - no corrections"));
   
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v19_DDQMisID/","Data"));
-  vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v19/","t#bar{t}"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v19_DDQMisID/","Data"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v19/","t#bar{t}"));
+  
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v20_04_DDQMisID/","Data (w/subtraction)"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v20_04/","simulation"));
+  //vec.push_back(make_pair("../OutputPlots_MMClosureRates_Corrected_25ns_v20_04/","simulation"));
+  
+  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v20_04_DDQMisID_ICHEPBinning/","Data (w/subtraction)"));
+  vec.push_back(make_pair("../OutputPlots_MMClosureRates_25ns_v20_04_ICHEPBinning/","simulation")); 
   
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","png");
   PlotRateEff_DataVSMC(vec,"Inclusive","Efficiency","eps");

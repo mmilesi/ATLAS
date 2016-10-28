@@ -44,7 +44,7 @@ namespace NTupReprocesser {
     char TAntiT;
     char AntiTT;
     char AntiTAntiT;
-  
+
   };
 
   class leptonObj {
@@ -107,11 +107,11 @@ public:
   bool m_useTrigMatchingInfo;
 
   bool m_useTEfficiency;
-  
+
   /** A list of systematics affecting the efficiency measurement, whoich will be eventually propagated to the final event weight.
       By default, it includes the statistical uncertainty on the efficiencies
   */
-  
+
   std::string              m_systematics_list;
   std::vector<std::string> m_systematics;
 
@@ -124,6 +124,8 @@ public:
   std::string m_QMisIDRates_dir;
   std::string m_QMisIDRates_Filename_T;
   std::string m_QMisIDRates_Filename_AntiT;
+  std::string m_QMisIDRates_Histname_T;
+  std::string m_QMisIDRates_Histname_AntiT;
   bool m_useTAntiTRates;
 
 private:
@@ -172,10 +174,10 @@ private:
   Float_t    m_QMisIDWeight_DN_in;
 
   Float_t    m_MMWeight_NOMINAL_in;
-  
+
   /** Map containing input branches with the variations of MM weights for each systematic */
-  
-  std::map<std::string, std::vector<float> > m_MMWeight_in; 
+
+  std::map<std::string, std::vector<float> > m_MMWeight_in;
 
   /** Value of these flags will be inferred from input tree content.
       If false (aka branch does not exist yet), will ADD new corresponding branch to output tree, otherwise (aka branch already exists) will UPDATE it
@@ -211,9 +213,9 @@ private:
 
   unsigned int m_numEntry;   //!
   unsigned int m_count_inf;  //!
-  
+
   /** This will be updated when looping over the input systematics for a given event, so all the methods know about it */
-  
+
   std::string m_this_syst;   //!
 
   std::shared_ptr<NTupReprocesser::eventObj>                 m_event;   //!
@@ -267,7 +269,7 @@ private:
 
   std::string str_replace( const std::string& input_str, const std::string& old_substr, const std::string& new_substr );
 
-  EL::StatusCode tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list ); 
+  EL::StatusCode tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list );
 
   EL::StatusCode readRFEfficiencies ();
   EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
