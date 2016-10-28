@@ -1391,7 +1391,7 @@ class TTHBackgrounds(Background):
 	    #  DD/MC factors to rescale MC
 	    #
             #if ("2Lep_ElEl_Event") in category.cut.cutname:
-	    #   weight = 0.6
+	    #	weight = 0.6
 	    #if ("2Lep_OF_Event") in category.cut.cutname:
 	    #   weight = 0.7
 
@@ -2215,6 +2215,8 @@ class TTHBackgrounds(Background):
         # where theta_e = (C/D)(ee), theta_mu = (C/D)(mumu)
         #
         # This corrects the normalisation (we assume the shape in B and A is the same!) for the fake probability as measured in data.
+	#
+	# This method is eventually just an "inclusive" fake factor method
         #
         # Hence we return B (ee, mumu, OF), scaled by the ratio of TT/LT events (ee, mumu) in low jet multiplicity region.
         # The OF case is obtained via:

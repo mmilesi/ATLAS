@@ -30,6 +30,13 @@ parser.add_argument("inputpath", metavar="inputpath",type=str,
 
 g_avaialble_systematics = ["QMisID","AllSimStat"]
 
+g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
+                   "ICHEP 2015+2016 DS":13.20768,       # August 2016
+                   "POST-ICHEP 2015+2016 DS":22.07036   # October 2016
+                 }
+		 
+parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["ICHEP 2015+2016 DS"],
+                    help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) )
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
                   help='List of variables to be considered. Use a space-separated list. If unspecified, will consider pT only.')
 parser.add_argument("--channel", metavar="channel", default="", type=str,
@@ -75,6 +82,7 @@ class RealFakeEffTagAndProbe:
     def __init__( self, closure=False, factors=False, variables=[], systematics=[], efficiency=None, nosub=False ):
 
 	self.closure = closure
+	self.nosub   = nosub
 	self.factors = factors
 
         self.tp_lep = "Probe"
@@ -102,7 +110,7 @@ class RealFakeEffTagAndProbe:
 	if not self.closure:
 	    self.__processes.append("observed")
 	    #self.__processes.extend(["expectedbkg","dibosonbkg","ttbarzbkg","raretopbkg","qmisidbkg","wjetsbkg","ttbarwbkg","ttbarbkg","zjetsbkg","singletopbkg","allsimbkg"])
-            if not nosub:
+            if not self.nosub:
                 self.__processes_sub.extend(["qmisidbkg","allsimbkg"])
 	else:
 	    self.__processes.append("expectedbkg")
@@ -581,9 +589,22 @@ class RealFakeEffTagAndProbe:
 
         for key in sorted(self.histkeys):
 
-            tokens = key.split("_")
+	    if self.closure and variation != "nominal":
+	        print("\n\tCLOSURE: do nominal only..\n")
+		return
+	    if self.nosub and variation != "nominal":
+	        print("\n\No subtraction activated: do nominal only..\n")
+		return
 
-            if ( len(tokens) < 5 or tokens[3] not in self.__processes ): continue
+            tokens = key.split("_")
+	    
+	    min_tokens = True
+	    if self.closure or self.nosub:
+	        min_tokens = ( len(tokens) >= 4 )
+	    else:
+	        min_tokens = ( len(tokens) >= 5 )
+	    
+            if ( not min_tokens or tokens[3] not in self.__processes ): continue
 
             if ( variation == "nominal"):
                 if ( len(tokens) > 5 ): continue
@@ -651,7 +672,11 @@ class RealFakeEffTagAndProbe:
 	    # The TH1::Divide method with the option "B" calculates binomial errors using the "normal" approximation
             # (NB: the approximation fails when eff = 0 or 1. In such cases, TEfficiency or TGraphAsymmErrors should be used, since they know how to handle such cases)
 	    #
-            key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3],tokens[4],append) )
+	    if self.closure or self.nosub:
+                key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3],append) )
+            else:
+	        key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3],tokens[4],append) )
+	    
             if key_heff.endswith("_"):
                 key_heff = key_heff[:-1]
             if len(tokens) > 6:
@@ -721,9 +746,19 @@ class RealFakeEffTagAndProbe:
 
         for key in sorted(self.histkeys):
 
+	    if self.closure and variation != "nominal":
+	        print("\n\tCLOSURE: do nominal only..\n")
+		return
+
 	    tokens = key.split("_")
 
-            if ( len(tokens) < 5 or tokens[3] not in self.__processes ): continue
+	    min_tokens = True
+	    if self.closure or self.nosub:
+	        min_tokens = ( len(tokens) >= 4 )
+	    else:
+	        min_tokens = ( len(tokens) >= 5 )
+	    
+            if ( not min_tokens or tokens[3] not in self.__processes ): continue
 
             if ( variation == "nominal"):
                 if ( len(tokens) > 5 ): continue
@@ -776,7 +811,11 @@ class RealFakeEffTagAndProbe:
                 print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(ratiolist[:-1])))
                 print("")
 
-            key_hfactor = "_".join( (tokens[0],tokens[1],tokens[2],"Factor",tokens[3],tokens[4],append) )
+	    if self.closure or self.nosub:
+                key_hfactor = "_".join( (tokens[0],tokens[1],tokens[2],"Factor",tokens[3],append) )
+            else:
+	        key_hfactor = "_".join( (tokens[0],tokens[1],tokens[2],"Factor",tokens[3],tokens[4],append) )
+
             if key_hfactor.endswith("_"):
                 key_hfactor = key_hfactor[:-1]
 
@@ -898,7 +937,8 @@ class RealFakeEffTagAndProbe:
 
         proc = ("observed","expectedbkg")[bool(self.closure)]
 
-        proc_dict = {"observed":"data (w/ subtraction)", "expectedbkg":"simulation"}
+        sub = ("w/","w/o")[bool(self.nosub)]
+        proc_dict = {"observed":"Data ({0} subtraction)".format(sub), "expectedbkg":"simulation"}
 
         if not os.path.exists(self.__outputpath+"/EfficiencyPlots/BasicPlots"):
 	    os.makedirs(self.__outputpath+"/EfficiencyPlots/BasicPlots")
@@ -929,7 +969,9 @@ class RealFakeEffTagAndProbe:
 	        for idx_eff, eff in enumerate(self.__efficiencies):
 
                     key  = "_".join((eff,lep,var,"Efficiency",proc,"sub"))
-
+                    if self.closure or self.nosub:
+		        key  = "_".join((eff,lep,var,"Efficiency",proc))
+		   
 		    print("\tplotting histogram: {0}".format(key))
 
 		    hist = self.histefficiencies[key]
@@ -959,7 +1001,7 @@ class RealFakeEffTagAndProbe:
 
                 legend.Draw()
                 leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-                leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0} fb^{{-1}}".format(str(self.lumi)));
+                leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
 
                 canvas_filename = "_".join(("RealFake",lep,var,"Efficiency",proc))
 
@@ -971,7 +1013,7 @@ class RealFakeEffTagAndProbe:
         
 	proc = ("observed","expectedbkg")[bool(self.closure)]
 
-        proc_dict = {"observed":"data (w/ subtraction)", "expectedbkg":"simulation"}
+        proc_dict = {"observed":"Data (w/ subtraction)", "expectedbkg":"simulation"}
 
         if not os.path.exists(self.__outputpath+"/EfficiencyPlots/SplitSys"):
 	    os.makedirs(self.__outputpath+"/EfficiencyPlots/SplitSys")
@@ -984,8 +1026,10 @@ class RealFakeEffTagAndProbe:
       
 	        for idx_eff, eff in enumerate(self.__efficiencies):
 	
-	            key_nominal = "_".join( (eff,lep,var,"Efficiency",proc,"sub") )
-	
+	            key_nominal = "_".join( (eff,lep,var,"Efficiency",proc) )
+	            if not self.nosub:
+	                key_nominal += "_sub"
+		    
 	            hist_nominal = self.histefficiencies[key_nominal]
           	    hist_nominal.SetLineStyle(2)
 		    hist_nominal.SetLineWidth(2)
@@ -1187,7 +1231,7 @@ class RealFakeEffTagAndProbe:
 	  	        h.Draw("HIST, SAME")
 	            legend.Draw()
                     leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0} fb^{{-1}}".format(str(self.lumi)));
+                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
 		    
 		    pad2.cd()
 		    rationom.Draw("E2")
@@ -1296,7 +1340,7 @@ class RealFakeEffTagAndProbe:
 		    hist_nominal.Draw("E0 SAME")
                     legend_allsys.Draw()
 		    leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0} fb^{{-1}}".format(str(self.lumi)));
+                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
 		    
 		    print("NOMINAL: bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinContent(ibin) for ibin in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
 		    print("NOMINAL: binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinError(ibin) for ibin in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
@@ -1412,6 +1456,7 @@ if __name__ == "__main__":
 	
     eff = RealFakeEffTagAndProbe( closure=args.closure, factors=args.factors, variables=args.variables, systematics=args.systematics, nosub=args.nosub )
 
+    eff.lumi  = args.lumi
     eff.debug = args.debug
     eff.log   = args.log
 
@@ -1443,8 +1488,9 @@ if __name__ == "__main__":
         print("\n")
         eff.computeFactors("denominator")
 
-    eff.saveOutputs( filename=args.outfilename )
+    eff.saveOutputs( filename=args.outfilename, outputpath=args.outpath )
 
     if args.plots:
         eff.plotMaker()
-        eff.plotMakerSys()
+        if args.systematics and not args.closure and not args.nosub: 
+	    eff.plotMakerSys()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import glob, os, sys, subprocess, shutil, argparse
+import glob, os, sys, subprocess, shutil, argparse, datetime
 
 samplescsv = os.path.abspath(os.path.curdir) + "/HTopMultilepAnalysis/PlotUtils/Files/samples2015_HTopMultilep_25ns.csv"
 
@@ -23,13 +23,16 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
 
-    if not os.path.exists(args.dest):
-        os.makedirs(args.dest)
+    dest = args.dest
+
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+
     for s in sampledict:
-        groupdir = args.dest + "/" + s["group"]
+        groupdir = dest + "/" + s["group"]
         if not os.path.exists(groupdir):
             os.makedirs(groupdir)
-    
+
     knownDSID = False
 
     for s in sampledict:
@@ -48,8 +51,8 @@ if __name__ == '__main__':
                 INTREE  = args.DSID +"/data-output" + "/list-local-HTopGroupNTup.root"
                 INHIST  = args.DSID + "/hist-list-local-HTopGroupNTup.root"
 
-            OUTTREE = args.dest + "/" + s["group"] + "/" + s["ID"] + separator + s["name"] + ".root"
-            OUTHIST = args.dest + "/" + s["group"] + "/hist-" + s["ID"] + separator + s["name"] + ".root"
+            OUTTREE = dest + "/" + s["group"] + "/" + s["ID"] + separator + s["name"] + ".root"
+            OUTHIST = dest + "/" + s["group"] + "/hist-" + s["ID"] + separator + s["name"] + ".root"
 
             print("Moving :\n{0}\nto:\n{1}".format(INTREE,OUTTREE))
             print("Moving :\n{0}\nto:\n{1}".format(INHIST,OUTHIST))

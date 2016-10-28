@@ -1,4 +1,4 @@
-import sys, glob, os, array, inspect, math, array
+import sys, glob, os, array, inspect, math
 
 from ROOT import TFile, TH1, TH1D, TH1I, TH2D, TH2F, TH2I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
 from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
@@ -530,7 +530,7 @@ class SubProcess:
             #
             # Debug
             #
-            #print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
 	else:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s' % (cutstr))
             #
@@ -923,7 +923,11 @@ class Background:
         if type(var) is str:
             var = self.vardb.getVar(var)
 
-        c = TCanvas("c1","Temp",50,50,600,600)
+        if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
+            c = TCanvas("c1","Temp",50,50,600,600)
+	else:
+	    c = TCanvas("c1","Temp",50,50,800,600)
+
         legs = []
 
         obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
@@ -932,15 +936,16 @@ class Background:
 	    if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
             	process = obslist[0][1]
             	datagr = None
-	    	if not ( ("$ISDATA$") in process.name ):
-	    	    #
+	    	if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
 	    	    # the two lines below are actually equivalent...
 	    	    #
 	    	    #datagr = makeMCErrors(obs)
 	    	    datagr = TH1D(obs)
+		    datagr.SetLineStyle(2)
 	    	else :
 	    	    datagr = makePoissonErrors(obs)
-            	datagr.SetMarkerSize(1.2)
+            	#datagr.SetMarkerSize(1.2)
+            	datagr.SetMarkerSize(0.8)
             	datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
             	datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
             	legs.append([datagr, process.latexname, "p"])
@@ -1041,7 +1046,10 @@ class Background:
                     ratiodata.SetBinContent(i, obs.GetBinContent(i))
 
             ratiomc.SetXTitle(var.latexname)
-            ratiomc.SetYTitle("Data/Bkg")
+	    if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
+                ratiomc.SetYTitle("")
+	    else:
+                ratiomc.SetYTitle("Data/Bkg")
             ratiomc.GetXaxis().SetTitleSize(0.15)
             ratiomc.GetYaxis().SetTitleSize(0.15)
             ratiomc.GetXaxis().SetTitleOffset(0.90)
@@ -1053,9 +1061,13 @@ class Background:
             ratiomc.SetLineColor(10)
             ratiomc.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
             ratiomc.SetMarkerSize(0)
+
             ratiomc.Divide(tSum)
 
-            ratiodata.SetMarkerSize(0.3)
+            #ratiodata.SetMarkerSize(0.3)
+            ratiodata.SetMarkerSize(0.8)
+	    if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
+	         ratiodata.SetLineStyle(2)
             ratiodata.SetLineWidth(1)
             ratiodata.Divide(tSum)
 
@@ -1088,10 +1100,10 @@ class Background:
             if type(showratio) is tuple:
                 ratiomc.GetYaxis().SetRangeUser(showratio[0], showratio[1])
             else:
-                #ratiomc.GetYaxis().SetRangeUser(0.8, 1.2)
-                #ratiomc.GetYaxis().SetRangeUser(0.0, 2.0)
                 ratiomc.GetYaxis().SetRangeUser(0.75, 1.25)
-
+                if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
+                    ratiomc.GetYaxis().SetRangeUser(0.3, 1.7)
+		
             #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
             pad2.cd()
             #pad2.SetLogy(2)
@@ -1148,7 +1160,10 @@ class Background:
 	              stack.GetHistogram().GetXaxis().SetNdivisions(tSum.GetNbinsX())
 	              stack.GetHistogram().GetXaxis().CenterLabels(True)
 	   else:
-	      stack.Draw('lego1')
+	      #stack.Draw('lego1')
+	      set_fancy_2D_style()
+              gPad.SetRightMargin(0.2)
+	      stack.Draw("COLZ1") # The "1" does not plot empty bins even if there are bins w/ negative weights (in that case ROOT by default forces empty bins to be painted still!). See https://root.cern.ch/doc/master/classTHistPainter.html
 
         if bkg:
             if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
@@ -1224,12 +1239,13 @@ class Background:
 
         if obs:
             process = obslist[0][1]
-	    if not ( ("$ISDATA$") in process.name ):
+	    if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
 		#
 		# the two lines below are actually equivalent...
 		#
 		#datagr = makeMCErrors(obs)
 		datagr = TH1D(obs)
+		datagr.SetLineStyle(2)
 	    else :
 	        datagr = makePoissonErrors(obs)
             datagr.SetMarkerSize(1.2)
@@ -1402,12 +1418,12 @@ class Background:
             gPad.SetLogy()
         if logx or var.logaxisX:
             gPad.SetLogx()
-            
-	if showratio:    
-            pad2.cd()	    
+
+	if showratio:
+            pad2.cd()
 	    nom_stat_err_ratio.Draw("E2 SAME")
-            pad1.cd()	    
-	    
+            pad1.cd()
+
         up.Draw("HIST")
         down.Draw("HIST SAME")
         nom.Draw("HIST SAME")
@@ -1532,10 +1548,10 @@ def set_fancy_2D_style():
 
     ncontours=999
 
-    s = array('d', [0.00, 0.34, 0.61, 0.84, 1.00])
-    r = array('d', [0.00, 0.00, 0.87, 1.00, 0.51])
-    g = array('d', [0.00, 0.81, 1.00, 0.20, 0.00])
-    b = array('d', [0.51, 1.00, 0.12, 0.00, 0.00])
+    s = array.array('d', [0.00, 0.34, 0.61, 0.84, 1.00])
+    r = array.array('d', [0.00, 0.00, 0.87, 1.00, 0.51])
+    g = array.array('d', [0.00, 0.81, 1.00, 0.20, 0.00])
+    b = array.array('d', [0.51, 1.00, 0.12, 0.00, 0.00])
 
     npoints = len(s)
     TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)

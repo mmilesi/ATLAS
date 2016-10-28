@@ -111,31 +111,6 @@ def calculate_Z( s, b, err_s, err_b ):
 
     return (Z, err_Z)
 
-def set_fancy_2D_style():
-
-    icol = 0
-    gStyle.SetFrameBorderMode(icol);
-    gStyle.SetFrameFillColor(icol);
-    gStyle.SetCanvasBorderMode(icol);
-    gStyle.SetCanvasColor(icol);
-    gStyle.SetPadBorderMode(icol);
-    gStyle.SetPadColor(icol);
-    gStyle.SetStatColor(icol);
-    gStyle.SetOptTitle(0);
-    gStyle.SetOptStat(0);
-    gStyle.SetOptFit(0);
-
-    ncontours=999
-
-    s = array.array('d', [0.00, 0.34, 0.61, 0.84, 1.00])
-    r = array.array('d', [0.00, 0.00, 0.87, 1.00, 0.51])
-    g = array.array('d', [0.00, 0.81, 1.00, 0.20, 0.00])
-    b = array.array('d', [0.51, 1.00, 0.12, 0.00, 0.00])
-
-    npoints = len(s)
-    TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
-    gStyle.SetNumberContours(ncontours)
-
 
 def plot_significance( Z_dict, dim ):
 
@@ -194,9 +169,9 @@ def plot_significance( Z_dict, dim ):
             c = TCanvas("c_Z_Significance_lep_Pt_0_lep_Pt_1_"+ key,"Z")
 
             gPad.SetRightMargin(0.2)
-            
+
 	    graph_significance.Draw("COLZ")
-            
+
             max_Z = max( value, key=(lambda val : val[2]) )
 
             print("Z max: {0:.3f} +- {1:.3f} ({2},{3})".format(max_Z[2], max_Z[3], max_Z[0], max_Z[1]))
@@ -218,14 +193,14 @@ def plot_significance( Z_dict, dim ):
 # Importing all the tools and the definitions used to produce the plots
 # ---------------------------------------------------------------------
 
-from Plotter.BackgroundTools import loadSamples, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
+from Plotter.BackgroundTools import loadSamples, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category, set_fancy_2D_style
 
 # ---------------------------------------------------------------------------
 # Importing the classes for the different processes.
 # They contains many info on the normalization and treatment of the processes
 # ---------------------------------------------------------------------------
 
-from Plotter.OptimiseCut_Backgrounds_HTopMultilep import MyCategory, TTHBackgrounds
+from Plotter.Backgrounds_HTopMultilep import MyCategory, TTHBackgrounds
 
 if __name__ == "__main__":
 
@@ -369,14 +344,19 @@ if __name__ == "__main__":
         #
         # 2015 + 2016 triggers - 20.7 samples - ICHEP
         #
-        if "v19" in args.inputDir:
+        if "v19" in args.inputDir or "v20" in args.inputDir:
             vardb.registerCut( Cut('TrigDec', '( ( RunYear == 2015 && ( HLT_2e12_lhloose_L12EM10VH || HLT_2mu10 || HLT_e17_loose_mu14 ) ) || ( RunYear == 2016 && ( HLT_2e15_lhvloose_nod0_L12EM13VH || HLT_2mu14 || HLT_e17_lhloose_mu14 ) ) )') )
         #
         # 2015 + 2016 triggers - 20.7 samples - POST-ICHEP
         #
         if "v21" in args.inputDir:
-            vardb.registerCut( Cut('TrigDec', '( ( RunYear == 2015 && ( HLT_2e12_lhloose_L12EM10VH || HLT_mu18_mu8noL1 || HLT_e24_medium_L1EM20VHI_mu8noL1 || HLT_e7_medium_mu24 ) ) || ( RunYear == 2016 && ( HLT_2e17_lhvloose_nod0 || HLT_mu22_mu8noL1 || HLT_e7_lhmedium_mu24 || HLT_e17_lhloose_nod0_mu14 ) ) )') )
-        #
+            # use DLT for all categories
+	    #
+	    #vardb.registerCut( Cut('TrigDec', '( ( RunYear == 2015 && ( HLT_2e12_lhloose_L12EM10VH || HLT_mu18_mu8noL1 || HLT_e24_medium_L1EM20VHI_mu8noL1 || HLT_e7_medium_mu24 ) ) || ( RunYear == 2016 && ( HLT_2e17_lhvloose_nod0 || HLT_mu22_mu8noL1 || HLT_e7_lhmedium_mu24 || HLT_e17_lhloose_nod0_mu14 ) ) )') )
+	    #
+	    # use DLT for ee, mm, OR of SLT for OF
+	    #
+	    vardb.registerCut( Cut('TrigDec', '( ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_mu18_mu8noL1 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1 ) ) ) || ( dilep_type == 2 && ( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 || HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_mu26_ivarmedium || HLT_mu50 || HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH ) || ( RunYear == 2016 && HLT_2e17_lhvloose_nod0 ) ) ) ) ') )
     else:
         #
         # 2015 SLT triggers - 20.7 samples - ICHEP
@@ -385,7 +365,7 @@ if __name__ == "__main__":
         #
         # 2015 + 2016 triggers - 20.7 samples - ICHEP
         #
-        if "v19" in args.inputDir:
+        if "v19" in args.inputDir or "v20" in args.inputDir:
             vardb.registerCut( Cut('TrigDec', '( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 || HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_mu24_ivarmedium || HLT_mu50 || HLT_e24_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) )' ) )
         #
         # 2015 + 2016 triggers - 20.7 samples - POST-ICHEP
@@ -412,26 +392,31 @@ if __name__ == "__main__":
         #
         # 2015+2016 DLT trigger matching - ICHEP
         #
-        if "v19" in args.inputDir:
+        if "v19" in args.inputDir or "v20" in args.inputDir:
             vardb.registerCut( Cut('2Lep_TrigMatch',       '( ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_2mu10 == 1 && lep_Pt_0 > 11e3 && lep_Pt_1 > 11e3 ) || ( RunYear == 2016 && HLT_2mu14 == 1 && lep_Pt_0 > 15e3 && lep_Pt_1 > 15e3 ) ) ) || ( dilep_type == 2 && ( ( RunYear == 2015 && HLT_e17_loose_mu14 == 1 ) || ( RunYear == 2016 && HLT_e17_lhloose_mu14 == 1 ) ) && ( ( TMath::Abs( lep_ID_0 ) == 11 && lep_Pt_0 > 18e3 && lep_Pt_1 > 15e3 ) || (  TMath::Abs( lep_ID_0 ) == 13 && lep_Pt_0 > 15e3 && lep_Pt_1 > 18e3 ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH == 1 && lep_Pt_0 > 13e3 && lep_Pt_1 > 13e3 ) || ( RunYear == 2016 && HLT_2e15_lhvloose_nod0_L12EM13VH == 1 && lep_Pt_0 > 16e3 && lep_Pt_1 > 16e3 ) ) ) )') )
         #
         # 2015+2016 DLT trigger matching - POST-ICHEP
         #
         if "v21" in args.inputDir:
             #vardb.registerCut( Cut('2Lep_TrigMatch',       '( ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_mu18_mu8noL1 && lep_Pt_0 > 1.05*18e3 && lep_Pt_1 > 1.05*8e3 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1  && lep_Pt_0 > 1.05*22e3 && lep_Pt_1 > 1.05*8e3 ) ) ) || ( dilep_type == 2 && ( ( RunYear == 2015 && ( ( TMath::Abs(lep_ID_0) == 11 && HLT_e24_medium_L1EM20VHI_mu8noL1 && lep_Pt_0 > 25e3 && lep_Pt_1 > 1.05*8e3 ) || ( TMath::Abs(lep_ID_0) == 13 && HLT_e7_medium_mu24 && lep_Pt_0 > 1.05*24e3 && lep_Pt_1 > 8e3 ) ) ) || ( RunYear == 2016 && ( ( TMath::Abs(lep_ID_0) == 11 && HLT_e17_lhloose_nod0_mu14 && lep_Pt_0 > 18e3 && lep_Pt_1 > 1.05*14e3 ) || ( TMath::Abs(lep_ID_0) == 13 && HLT_e7_lhmedium_mu24 && lep_Pt_0 > 1.05*24e3 && lep_Pt_1 > 8e3 ) ) ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH && lep_Pt_0 > 13e3 && lep_Pt_1 > 13e3 ) || ( RunYear == 2016 && HLT_2e17_lhvloose_nod0 && lep_Pt_0 > 16e3 && lep_Pt_1 > 16e3 ) ) ) )') )
-	    # 
+	    #
 	    # Use only HLT_e17_lhloose_nod0_mu14
 	    #
-	    vardb.registerCut( Cut('2Lep_TrigMatch',       '( ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_mu18_mu8noL1 && lep_Pt_0 > 1.05*18e3 && lep_Pt_1 > 1.05*8e3 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1  && lep_Pt_0 > 1.05*22e3 && lep_Pt_1 > 1.05*8e3 ) ) ) || ( dilep_type == 2 && ( ( RunYear == 2015 && ( HLT_e24_medium_L1EM20VHI_mu8noL1 && lep_Pt_0 > 25e3 && lep_Pt_1 > 1.05*8e3 ) ) || ( RunYear == 2016 && ( HLT_e17_lhloose_nod0_mu14 && lep_Pt_0 > 18e3 && lep_Pt_1 > 1.05*14e3 ) ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH && lep_Pt_0 > 13e3 && lep_Pt_1 > 13e3 ) || ( RunYear == 2016 && HLT_2e17_lhvloose_nod0 && lep_Pt_0 > 16e3 && lep_Pt_1 > 16e3 ) ) ) )') )
-        
+	    # use DLT for all categories
+	    #
+	    #vardb.registerCut( Cut('2Lep_TrigMatch', '( ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_mu18_mu8noL1 && lep_Pt_0 > 1.05*18e3 && lep_Pt_1 > 1.05*8e3 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1  && lep_Pt_0 > 1.05*22e3 && lep_Pt_1 > 1.05*8e3 ) ) ) || ( dilep_type == 2 && ( ( RunYear == 2015 && ( HLT_e24_medium_L1EM20VHI_mu8noL1 && lep_Pt_0 > 25e3 && lep_Pt_1 > 1.05*8e3 ) ) || ( RunYear == 2016 && ( HLT_e17_lhloose_nod0_mu14 && lep_Pt_0 > 18e3 && lep_Pt_1 > 1.05*14e3 ) ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH && lep_Pt_0 > 13e3 && lep_Pt_1 > 13e3 ) || ( RunYear == 2016 && HLT_2e17_lhvloose_nod0 && lep_Pt_0 > 16e3 && lep_Pt_1 > 16e3 ) ) ) )') )
+ 	    #
+	    # use DLT for ee, mm, OR of SLT for OF
+	    #
+            vardb.registerCut( Cut('2Lep_TrigMatch', '( ( dilep_type == 2 && ( lep_isTrigMatch_0 || lep_isTrigMatch_1 ) ) || ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_mu18_mu8noL1 && lep_Pt_0 > 1.05*18e3 && lep_Pt_1 > 1.05*8e3 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1  && lep_Pt_0 > 1.05*22e3 && lep_Pt_1 > 1.05*8e3 ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH && lep_Pt_0 > 13e3 && lep_Pt_1 > 13e3 ) || ( RunYear == 2016 && HLT_2e17_lhvloose_nod0 && lep_Pt_0 > 18e3 && lep_Pt_1 > 18e3 ) ) ) )') )
     else:
         #
         # 2015+2016 trigger matching - ICHEP & POST-ICHEP
         #
-        if "v21" in args.inputDir:
-            vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
-        if "v19" in args.inputDir:
+        if "v19" in args.inputDir or "v20" in args.inputDir:
             #vardb.registerCut( Cut('2Lep_TrigMatch','( ( lep_isTrigMatch_0 && lep_Pt_0 > 27e3 ) || ( lep_isTrigMatch_1 && lep_Pt_1 > 27e3 ) )') )
+            vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
+        if "v21" in args.inputDir:
             vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
 
     if doRelaxedBJetCut:
@@ -476,7 +461,7 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_ElProbe',              '( TMath::Abs( lep_Probe_ID ) == 11 )') )
     vardb.registerCut( Cut('2Lep_MuProbe',              '( TMath::Abs( lep_Probe_ID ) == 13 )') )
     vardb.registerCut( Cut('2Lep_ProbeTight',           '( lep_Probe_isTightSelected == 1 )') )
-    vardb.registerCut( Cut('2Lep_ProbeAntiTight',               '( lep_Probe_isTightSelected == 0 )') )
+    vardb.registerCut( Cut('2Lep_ProbeAntiTight',       '( lep_Probe_isTightSelected == 0 )') )
 
     gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/passBabar.cxx+")
     from ROOT import passBabar
@@ -484,6 +469,9 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_passBabar',            '( passBabar( dilep_type, lep_Probe_ID, lep_ID_0 ) == 1 )') )
 
     vardb.registerCut( Cut('TT',      '( is_T_T == 1 )') )
+    #
+    #vardb.registerCut( Cut('TT',      '( 1 )') )
+    #
     vardb.registerCut( Cut('TL',      '( is_T_AntiT == 1 )') )
     vardb.registerCut( Cut('LT',      '( is_AntiT_T == 1 )') )
     vardb.registerCut( Cut('TL_LT',   '( is_T_AntiT == 1 || is_AntiT_T == 1 )') )
@@ -561,8 +549,10 @@ if __name__ == "__main__":
         # We classify as 'prompt' also a 'brems' lepton whose charge has been reconstructed with the correct sign
         #
         #vardb.registerCut( Cut('2Lep_TRUTH_NonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( isFakeEvent == 1 ) && ( isQMisIDEvent == 0 ) ) )') )
-        vardb.registerCut( Cut('2Lep_TRUTH_NonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_isPrompt_0 == 0 && !( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) || ( lep_isPrompt_1 == 0 && !( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) ) && ( isQMisIDEvent == 0 ) ) )') )
-        #vardb.registerCut( Cut('2Lep_TRUTH_NonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_isPrompt_0 == 0 || lep_isPrompt_1 == 0 ) && ( isQMisIDEvent == 0 ) ) ) )') )
+        #
+	vardb.registerCut( Cut('2Lep_TRUTH_NonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_isPrompt_0 == 0 && !( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) || ( lep_isPrompt_1 == 0 && !( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) ) && ( isQMisIDEvent == 0 ) ) )') )
+        #
+	#vardb.registerCut( Cut('2Lep_TRUTH_NonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_isPrompt_0 == 0 || lep_isPrompt_1 == 0 ) && ( isQMisIDEvent == 0 ) ) ) )') )
         #vardb.registerCut( Cut('2Lep_TRUTH_NonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_isPrompt_0 == 0 || lep_isPrompt_1 == 0 ) && !( lep_isQMisID_0 == 1 || lep_isQMisID_1 == 1 ) ) ) )') )
 
         # Ok, this is same as vetoing qmisid moriond style
@@ -672,14 +662,16 @@ if __name__ == "__main__":
         print ''
         #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         if doSR:
-            vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight") )
+            #vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', bins = 20, minval = 0.0, maxval = 60.0, typeval = TH2D) )
+            #vardb.registerVar( Variable(shortname = 'Mu0Pt_VS_El0Pt', latexnameX = 'p_{T}^{#mu} [GeV]', latexnameY = 'p_{T}^{el} [GeV]', ntuplename = 'electron_Pt_0/1e3:muon_Pt_0/1e3', bins = 20, minval = 0.0, maxval = 60.0, typeval = TH2D) )
+	    vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight") )
         elif doLowNJetCR:
             vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5) )
         #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
         #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
         #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_Eta_0', bins = 16, minval = -2.6, maxval = 2.6) )
         #vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_Eta_1', bins = 16, minval = -2.6, maxval = 2.6) )
-        #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 9, minval = 25.0, maxval = 205.0,) )
+        #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 18, minval = 25.0, maxval = 205.0,) )
         #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 6, minval = 25.0, maxval = 145.0,) )
         #vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} (FinalTrk) [GeV]', ntuplename = 'MET_RefFinal_et/1e3', bins = 9, minval = 0.0, maxval = 180.0,) )
         #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
@@ -713,8 +705,12 @@ if __name__ == "__main__":
             vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
         #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename ='nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
         #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
-        #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 9, minval = 25.0, maxval = 205.0,) )
-        #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 6, minval = 25.0, maxval = 145.0,) )
+	#vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 18, minval = 25.0, maxval = 205.0) )
+        #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 6, minval = 25.0, maxval = 145.0) )
+	#vardb.registerVar( Variable(shortname = 'Lep0Pt_ElBinning', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 18, minval = 25.0, maxval = 205.0, manualbins = [25,40,60,100,200]) )
+        #vardb.registerVar( Variable(shortname = 'Lep1Pt_ElBinning', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 18, minval = 25.0, maxval = 205.0, manualbins = [25,40,60,100,200]) )
+        #vardb.registerVar( Variable(shortname = 'Lep0Pt_MuBinning', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 18, minval = 25.0, maxval = 205.0, manualbins = [25,35,200]) )
+        #vardb.registerVar( Variable(shortname = 'Lep1Pt_MuBinning', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 18, minval = 25.0, maxval = 205.0, manualbins = [25,35,200]) )
         #vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} (FinalTrk) [GeV]', ntuplename = 'MET_RefFinal_et/1e3', bins = 9, minval = 0.0, maxval = 180.0,) )
         #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
 
@@ -812,131 +808,75 @@ if __name__ == "__main__":
         if doMMRates:
             vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight='QMisIDWeight_', process='QMisID') )
 
+        # Efficiency binning - v19
+
+	bins_real_el_pt = range(1,9)
+        bins_real_mu_pt = range(1,9)
+        bins_fake_el_pt = range(1,7)
+        bins_fake_mu_pt = range(1,6)
+
         if doMMClosureTest:
-            if doMM:
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_1',          eventweight='MMWeight_Real_El_Pt_Stat_1_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_2',          eventweight='MMWeight_Real_El_Pt_Stat_2_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_3',          eventweight='MMWeight_Real_El_Pt_Stat_3_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_4',          eventweight='MMWeight_Real_El_Pt_Stat_4_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_5',          eventweight='MMWeight_Real_El_Pt_Stat_5_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_6',          eventweight='MMWeight_Real_El_Pt_Stat_6_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_7',          eventweight='MMWeight_Real_El_Pt_Stat_7_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_8',          eventweight='MMWeight_Real_El_Pt_Stat_8_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_1',          eventweight='MMWeight_Real_Mu_Pt_Stat_1_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_2',          eventweight='MMWeight_Real_Mu_Pt_Stat_2_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_3',          eventweight='MMWeight_Real_Mu_Pt_Stat_3_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_4',          eventweight='MMWeight_Real_Mu_Pt_Stat_4_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_5',          eventweight='MMWeight_Real_Mu_Pt_Stat_5_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_6',          eventweight='MMWeight_Real_Mu_Pt_Stat_6_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_7',          eventweight='MMWeight_Real_Mu_Pt_Stat_7_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_8',          eventweight='MMWeight_Real_Mu_Pt_Stat_8_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_1',          eventweight='MMWeight_Fake_El_Pt_Stat_1_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_2',          eventweight='MMWeight_Fake_El_Pt_Stat_2_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_3',          eventweight='MMWeight_Fake_El_Pt_Stat_3_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_4',          eventweight='MMWeight_Fake_El_Pt_Stat_4_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_5',          eventweight='MMWeight_Fake_El_Pt_Stat_5_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_6',          eventweight='MMWeight_Fake_El_Pt_Stat_6_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_1',          eventweight='MMWeight_Fake_Mu_Pt_Stat_1_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_2',          eventweight='MMWeight_Fake_Mu_Pt_Stat_2_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_3',          eventweight='MMWeight_Fake_Mu_Pt_Stat_3_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_4',          eventweight='MMWeight_Fake_Mu_Pt_Stat_4_',              process='FakesClosureMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_5',          eventweight='MMWeight_Fake_Mu_Pt_Stat_5_',              process='FakesClosureMM'))
-            if doFF:
-                vardb.registerSystematics( Systematics(name='FFsys', eventweight='FFWeight_', process='FakesClosureMM') )
+
+	    if doMM:
+		for ibin in bins_real_el_pt:
+		   thiscat    = "MMsys_Real_El_Pt_Stat_" + str(ibin)
+		   thisweight = "MMWeight_Real_El_Pt_Stat_" + str(ibin) + "_"
+		   vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process="FakesClosureMM"))
+		for ibin in bins_real_mu_pt:
+		   thiscat    = "MMsys_Real_Mu_Pt_Stat_" + str(ibin)
+		   thisweight = "MMWeight_Real_Mu_Pt_Stat_" + str(ibin) + "_"
+		   vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process="FakesClosureMM"))
+		for ibin in bins_fake_el_pt:
+		   thiscat    = "MMsys_Fake_El_Pt_Stat_" + str(ibin)
+		   thisweight = "MMWeight_Fake_El_Pt_Stat_" + str(ibin) + "_"
+		   vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process="FakesClosureMM"))
+		for ibin in bins_fake_mu_pt:
+		   thiscat    = "MMsys_Fake_Mu_Pt_Stat_" + str(ibin)
+		   thisweight = "MMWeight_Fake_Mu_Pt_Stat_" + str(ibin) + "_"
+		   vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process="FakesClosureMM"))
+
+	    if doFF:
+                vardb.registerSystematics( Systematics(name="FFsys", eventweight="FFWeight_", process="FakesClosureMM") )
 
         if doTwoLepSR or doThreeLepSR or doTwoLepLowNJetCR or doThreeLepLowNJetCR:
-            #vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight='QMisIDWeight_') )
-            if doMM:
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_1',          eventweight='MMWeight_Real_El_Pt_Stat_1_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_2',          eventweight='MMWeight_Real_El_Pt_Stat_2_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_3',          eventweight='MMWeight_Real_El_Pt_Stat_3_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_4',          eventweight='MMWeight_Real_El_Pt_Stat_4_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_5',          eventweight='MMWeight_Real_El_Pt_Stat_5_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_6',          eventweight='MMWeight_Real_El_Pt_Stat_6_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_7',          eventweight='MMWeight_Real_El_Pt_Stat_7_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_Stat_8',          eventweight='MMWeight_Real_El_Pt_Stat_8_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_1',          eventweight='MMWeight_Real_Mu_Pt_Stat_1_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_2',          eventweight='MMWeight_Real_Mu_Pt_Stat_2_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_3',          eventweight='MMWeight_Real_Mu_Pt_Stat_3_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_4',          eventweight='MMWeight_Real_Mu_Pt_Stat_4_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_5',          eventweight='MMWeight_Real_Mu_Pt_Stat_5_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_6',          eventweight='MMWeight_Real_Mu_Pt_Stat_6_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_7',          eventweight='MMWeight_Real_Mu_Pt_Stat_7_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_Stat_8',          eventweight='MMWeight_Real_Mu_Pt_Stat_8_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_1',          eventweight='MMWeight_Fake_El_Pt_Stat_1_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_2',          eventweight='MMWeight_Fake_El_Pt_Stat_2_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_3',          eventweight='MMWeight_Fake_El_Pt_Stat_3_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_4',          eventweight='MMWeight_Fake_El_Pt_Stat_4_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_5',          eventweight='MMWeight_Fake_El_Pt_Stat_5_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_Stat_6',          eventweight='MMWeight_Fake_El_Pt_Stat_6_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_1',          eventweight='MMWeight_Fake_Mu_Pt_Stat_1_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_2',          eventweight='MMWeight_Fake_Mu_Pt_Stat_2_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_3',          eventweight='MMWeight_Fake_Mu_Pt_Stat_3_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_4',          eventweight='MMWeight_Fake_Mu_Pt_Stat_4_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_Stat_5',          eventweight='MMWeight_Fake_Mu_Pt_Stat_5_',              process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_1',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_1_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_2',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_2_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_3',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_3_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_4',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_4_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_5',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_5_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_6',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_6_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_7',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_7_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_numerator_QMisID_8',  eventweight='MMWeight_Real_El_Pt_numerator_QMisID_8_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_1',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_1_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_2',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_2_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_3',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_3_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_4',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_4_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_5',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_5_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_6',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_6_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_7',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_7_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_numerator_QMisID_8',  eventweight='MMWeight_Real_Mu_Pt_numerator_QMisID_8_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_1',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_1_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_2',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_2_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_3',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_3_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_4',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_4_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_5',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_5_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_numerator_QMisID_6',  eventweight='MMWeight_Fake_El_Pt_numerator_QMisID_6_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_1',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_1_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_2',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_2_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_3',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_3_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_4',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_4_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_numerator_QMisID_5',  eventweight='MMWeight_Fake_Mu_Pt_numerator_QMisID_5_',  process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_1',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_1_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_2',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_2_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_3',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_3_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_4',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_4_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_5',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_5_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_6',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_6_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_7',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_7_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_El_Pt_denominator_QMisID_8',eventweight='MMWeight_Real_El_Pt_denominator_QMisID_8_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_1',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_1_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_2',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_2_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_3',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_3_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_4',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_4_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_5',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_5_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_6',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_6_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_7',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_7_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Real_Mu_Pt_denominator_QMisID_8',eventweight='MMWeight_Real_Mu_Pt_denominator_QMisID_8_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_1',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_1_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_2',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_2_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_3',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_3_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_4',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_4_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_5',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_5_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_El_Pt_denominator_QMisID_6',eventweight='MMWeight_Fake_El_Pt_denominator_QMisID_6_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_1',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_1_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_2',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_2_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_3',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_3_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_4',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_4_',process='FakesMM'))
-                vardb.registerSystematics(Systematics(name='MMsys_Fake_Mu_Pt_denominator_QMisID_5',eventweight='MMWeight_Fake_Mu_Pt_denominator_QMisID_5_',process='FakesMM'))
+
+	    #vardb.registerSystematics( Systematics(name="QMisIDsys", eventweight="QMisIDWeight_") )
+
+	    if doMM:
+
+		#sys_sources = ["Stat","numerator_QMisID","denominator_QMisID"]
+		sys_sources = ["Stat"]
+
+		for sys in sys_sources:
+		   for ibin in bins_real_el_pt:
+		       thiscat    = "MMsys_Real_El_Pt_" + sys + "_" + str(ibin)
+		       thisweight = "MMWeight_Real_El_Pt_" + sys + "_" + str(ibin) + "_"
+		       vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process="FakesMM"))
+		   for ibin in bins_real_mu_pt:
+		       thiscat    = "MMsys_Real_Mu_Pt_" + sys + "_" + str(ibin)
+		       thisweight = "MMWeight_Real_Mu_Pt_" + sys + "_" + str(ibin) + "_"
+		       vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process="FakesMM"))
+		   for ibin in bins_fake_el_pt:
+		       thiscat    = "MMsys_Fake_El_Pt_" + sys + "_" + str(ibin)
+		       thisweight = "MMWeight_Fake_El_Pt_" + sys + "_" + str(ibin) + "_"
+		       vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process="FakesMM"))
+		   for ibin in bins_fake_mu_pt:
+		       thiscat    = "MMsys_Fake_Mu_Pt_" + sys + "_" + str(ibin)
+		       thisweight = "MMWeight_Fake_Mu_Pt_" + sys + "_" + str(ibin) + "_"
+		       vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process="FakesMM"))
 
             if doFF:
-                vardb.registerSystematics( Systematics(name='FFsys', eventweight='FFWeight_', process='FakesMM') )
+                vardb.registerSystematics( Systematics(name="FFsys", eventweight="FFWeight_", process="FakesMM") )
 
     # -------------------------------------------------------------------
     # Definition of the categories for which one wants produce histograms
     # -------------------------------------------------------------------
 
-    weight_SR_CR = "tauSFTight * weight_event_trig * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
+    #weight_SR_CR = "tauSFTight * weight_event_trig * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
+
+    # TEMP: remove trigger SF
+    #
+    weight_SR_CR = "tauSFTight * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
 
     # ------------
     # SRs
@@ -951,15 +891,127 @@ if __name__ == "__main__":
                 cat_name_mm = 'MuMuSS_SR'
                 cat_name_ee = 'ElElSS_SR'
                 cat_name_OF = 'OFSS_SR'
+                cat_name_em = 'ElMuSS_SR'
+                cat_name_me = 'MuElSS_SR'
 
                 if ( doMM or doFF or doTHETA ):
                     cat_name_mm += '_DataDriven'
                     cat_name_ee += '_DataDriven'
                     cat_name_OF += '_DataDriven'
+                    cat_name_em += '_DataDriven'
+                    cat_name_me += '_DataDriven'
 
-                vardb.registerCategory( MyCategory(cat_name_mm,  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR']), weight = weight_SR_CR ) )
-                vardb.registerCategory( MyCategory(cat_name_ee,  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
-                vardb.registerCategory( MyCategory(cat_name_OF,  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                # -----------------------------------------------------------------------------------------------------------------------------
+
+		# -) MuMu
+
+		# DLT
+                #
+		vardb.registerCut( Cut('TrigDec_DLT_MuMu', '( ( RunYear == 2015 && HLT_mu18_mu8noL1 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1 ) )') )
+		# SLT
+                #
+		vardb.registerCut( Cut('TrigDec_SLT_MuMu', '( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 ) ) || ( RunYear == 2016 && ( HLT_mu26_ivarmedium || HLT_mu50 ) ) )') )
+
+		# Region A:  23 < pt(0) < 27; pt(1) > 10
+		#
+		vardb.registerCut( Cut('Pt_MuMu_A', '( lep_Pt_0 > 1.05*22e3 && lep_Pt_0 <= 1.05*26e3 && lep_Pt_1 > 10e3 )') )
+ 		# Region B: pt(0) > 27; pt(1) > 10
+		#
+		vardb.registerCut( Cut('Pt_MuMu_B', '( lep_Pt_0 > 1.05*26e3 && lep_Pt_1 > 10e3 )') )
+
+                #vardb.registerCategory( MyCategory(cat_name_mm+"_DLT_A",  cut = vardb.getCuts(['TrigDec_DLT_MuMu','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_MuMu_A','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_mm+"_DLT_B",  cut = vardb.getCuts(['TrigDec_DLT_MuMu','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_MuMu_B','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_mm+"_SLT_B",  cut = vardb.getCuts(['TrigDec_SLT_MuMu','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_MuMu_B','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+
+		# -----------------------------------------
+
+		# -) ElEl
+
+		# DLT
+                #
+		vardb.registerCut( Cut('TrigDec_DLT_ElEl', '( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH ) || ( RunYear == 2016 && HLT_2e17_lhvloose_nod0 ) )') )
+		# SLT
+                #
+                vardb.registerCut( Cut('TrigDec_SLT_ElEl', '( ( RunYear == 2015 && ( HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) )') )
+
+		# Region A:  18 < pt(0) < 27; pt(1) > 18
+		#
+		vardb.registerCut( Cut('Pt_ElEl_A', '( lep_Pt_0 > 18e3 && lep_Pt_0 <= 27e3 && lep_Pt_1 > 18e3 )') )
+ 		# Region B: pt(0) > 27; pt(1) > 18
+		#
+		vardb.registerCut( Cut('Pt_ElEl_B', '( lep_Pt_0 > 27e3 && lep_Pt_1 > 18e3 )') )
+ 		# Region X: pt(0) > 27;  10 < pt(1) < 18 (low sensitivity)
+		vardb.registerCut( Cut('Pt_ElEl_X', '( lep_Pt_0 > 27e3 && lep_Pt_1 > 10e3 && lep_Pt_1 <= 18e3 )') )
+
+                #vardb.registerCategory( MyCategory(cat_name_ee+"_DLT_A",  cut = vardb.getCuts(['TrigDec_DLT_ElEl','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_ElEl_A','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR','2Lep_ElEtaCut']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_ee+"_DLT_B",  cut = vardb.getCuts(['TrigDec_DLT_ElEl','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_ElEl_B','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR','2Lep_ElEtaCut']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_ee+"_SLT_B",  cut = vardb.getCuts(['TrigDec_SLT_ElEl','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_ElEl_B','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR','2Lep_ElEtaCut']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_ee+"_SLT_X",  cut = vardb.getCuts(['TrigDec_SLT_ElEl','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_ElEl_X','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR','2Lep_ElEtaCut']), weight = weight_SR_CR ) )
+
+		# -----------------------------------------
+
+		# -) OF
+
+		# DLT
+                #
+		vardb.registerCut( Cut('TrigDec_DLT_OF',      '( ( RunYear == 2015 && ( HLT_e24_medium_L1EM20VHI_mu8noL1 || HLT_e7_medium_mu24 ) ) || ( RunYear == 2016 && HLT_e17_lhloose_nod0_mu14 ) )') )
+		# SLT(e)
+                #
+                vardb.registerCut( Cut('TrigDec_SLT_e_OF',    '( ( RunYear == 2015 && ( HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) )') )
+		# SLT(m)
+                #
+		vardb.registerCut( Cut('TrigDec_SLT_m_OF',    '( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 ) ) || ( RunYear == 2016 && ( HLT_mu26_ivarmedium || HLT_mu50 ) ) )') )
+		# SLT(e) || SLT(m)
+                #
+                vardb.registerCut( Cut('TrigDec_SLT_eORm_OF', '( ( RunYear == 2015 && ( HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose || HLT_mu20_iloose_L1MU15 || HLT_mu50  ) ) || ( RunYear == 2016 && ( HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 || HLT_mu26_ivarmedium || HLT_mu50 ) ) )') )
+		# DLT || SLT(e) || SLT(m)
+                #
+                vardb.registerCut( Cut('TrigDec_DLT_OR_SLT_OF', '( ( RunYear == 2015 && ( HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose || HLT_mu20_iloose_L1MU15 || HLT_mu50 || HLT_e24_medium_L1EM20VHI_mu8noL1 || HLT_e7_medium_mu24 ) ) || ( RunYear == 2016 && ( HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 || HLT_mu26_ivarmedium || HLT_mu50 || HLT_e17_lhloose_nod0_mu14 ) ) )') )
+
+		# Region A:  15 < pt(m) < 27;  18 < pt(e) < 27
+		#
+		vardb.registerCut( Cut('Pt_OF_A', '( muon_Pt_0 > 1.05*14e3 && muon_Pt_0 <= 27e3 && electron_Pt_0 > 18e3 && electron_Pt_0 <= 27e3 )') )
+ 		# Region B:  pt(m) > 27;  18 < pt(e) < 27
+		#
+		vardb.registerCut( Cut('Pt_OF_B', '( muon_Pt_0 > 1.05*26e3 && electron_Pt_0 > 18e3 && electron_Pt_0 <= 27e3 )') )
+		# Region C:  pt(m) > 27;  pt(e) > 27
+		#
+		vardb.registerCut( Cut('Pt_OF_C', '( muon_Pt_0 > 1.05*26e3 && electron_Pt_0 > 27e3 )') )
+		# Region D:  15 < pt(m) < 27;  pt(e) > 27
+		#
+		vardb.registerCut( Cut('Pt_OF_D', '( muon_Pt_0 > 1.05*14e3 && muon_Pt_0 <= 27e3 && electron_Pt_0 > 27e3 )') )
+		# Region X:  10 < pt(m) > 15;  pt(e) > 27 (low sensitivity)
+		#
+		vardb.registerCut( Cut('Pt_OF_X', '( muon_Pt_0 > 10e3 && muon_Pt_0 < 1.05*14e3 && electron_Pt_0 > 27e3 )') )
+ 		# Region Y:  pt(m) > 27;  10 < pt(e) < 18 (low sensitivity)
+		#
+		vardb.registerCut( Cut('Pt_OF_Y', '( muon_Pt_0 > 1.05*26e3 && electron_Pt_0 > 10e3 && electron_Pt_0 < 18e3 )') )
+		# Region A+B+C+D:  pt(m) > 15;  pt(e) > 18
+		#
+		vardb.registerCut( Cut('Pt_OF_ABCD', '( muon_Pt_0 > 1.05*14e3 && electron_Pt_0 > 18e3 )') )
+ 
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_DLT_A",      cut = vardb.getCuts(['TrigDec_DLT_OF','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_A','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_DLT_B",      cut = vardb.getCuts(['TrigDec_DLT_OF','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_B','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_DLT_C",      cut = vardb.getCuts(['TrigDec_DLT_OF','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_C','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_DLT_D",      cut = vardb.getCuts(['TrigDec_DLT_OF','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_D','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_SLT_m_C",    cut = vardb.getCuts(['TrigDec_SLT_m_OF','2Lep_TrigMatch','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_C','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_SLT_m_B",    cut = vardb.getCuts(['TrigDec_SLT_m_OF','2Lep_TrigMatch','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_B','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_SLT_e_C",    cut = vardb.getCuts(['TrigDec_SLT_e_OF','2Lep_TrigMatch','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_C','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_SLT_e_D",    cut = vardb.getCuts(['TrigDec_SLT_e_OF','2Lep_TrigMatch','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_D','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_SLT_eORm_C", cut = vardb.getCuts(['TrigDec_SLT_eORm_OF','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_C','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_SLT_e_X",    cut = vardb.getCuts(['TrigDec_SLT_e_OF','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_X','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_OF+"_SLT_m_Y",    cut = vardb.getCuts(['TrigDec_SLT_m_OF','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_Y','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+
+                vardb.registerCategory( MyCategory(cat_name_OF+"_DLT_OR_SLT", cut = vardb.getCuts(['TrigDec_DLT_OR_SLT_OF','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','Pt_OF_ABCD','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+		
+		# -----------------------------------------------------------------------------------------------------------------------------
+
+                #vardb.registerCategory( MyCategory(cat_name_mm,  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','2Lep_MuMu_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_ee,  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','2Lep_ElEl_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                #vardb.registerCategory( MyCategory(cat_name_OF,  cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','2Lep_OF_Event','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
                 #
                 # 2lep+tau region
                 #
@@ -970,12 +1022,15 @@ if __name__ == "__main__":
                 listflav = []
 
                 if "SLT" in args.optimisation:
-                    listflav.extend(["MuMu","ElEl","OF"])
+                    #listflav.extend(["MuMu","ElEl","OF"])
+                    listflav.extend(["OF"])
                 elif "DLT" in args.optimisation:
                     #listflav.extend(["MuMu","ElEl","ElMu","MuEl"])
                     #listflav.extend(["MuMu","ElEl","OF"])
                     #listflav.extend(["OF"])
-                    listflav.extend(["ElMu","MuEl"])
+                    #listflav.extend(["ElMu","MuEl"])
+                    #listflav.extend(["MuMu","ElEl"])
+                    listflav.extend(["ElEl"])
 
                 for flav in listflav:
 
@@ -986,26 +1041,26 @@ if __name__ == "__main__":
                     if "SLT" in args.optimisation:
 
                         cutvalues_lep0 = [ float(x) for x in range(27,28) ]
-                        #cutvalues_lep1 = [ float(x) for x in range(15,28) ] # use this
-                        cutvalues_lep1 = [ float(x) for x in range(20,21,1) ] # temp!
+                        cutvalues_lep1 = [ float(x) for x in range(15,28) ] # use this
+                        #cutvalues_lep1 = [ float(x) for x in range(20,21,1) ] # temp!
 
                     elif "DLT" in args.optimisation:
 
                         if flav == "MuMu":
-                            #cutvalues_lep0 = [ float(x) for x in range(23,32,2) ]
-                            #cutvalues_lep1 = [ float(x) for x in range(9,27,2) ]
-                            cutvalues_lep0 = [ float(x) for x in range(24,25) ] # optimal!
-                            cutvalues_lep1 = [ float(x) for x in range(20,21) ] # optimal!
+                            cutvalues_lep0 = [ float(x) for x in range(23,32,2) ]
+                            cutvalues_lep1 = [ float(x) for x in range(9,27,2) ]
+                            #cutvalues_lep0 = [ float(x) for x in range(24,25) ] # optimal!
+                            #cutvalues_lep1 = [ float(x) for x in range(20,21) ] # optimal!
                         elif flav == "ElEl":
                             #cutvalues_lep0 = [ float(x) for x in range(18,31,2) ]
                             #cutvalues_lep1 = [ float(x) for x in range(18,27,2) ]
-                            cutvalues_lep0 = [ float(x) for x in range(20,21) ] # optimal!
-                            cutvalues_lep1 = [ float(x) for x in range(20,21) ] # optimal!
+                            cutvalues_lep0 = [ float(x) for x in range(18,19) ] # optimal!
+                            cutvalues_lep1 = [ float(x) for x in range(18,19) ] # optimal!
                         elif flav == "ElMu":
                             #cutvalues_lep0 = [ float(x) for x in range(18,31,2) ]
                             #cutvalues_lep1 = [ float(x) for x in range(15,27,2) ]
 			    cutvalues_lep0 = [ float(x) for x in range(20,21) ] # optimal!
-                            cutvalues_lep1 = [ float(x) for x in range(20,21) ] # optimal!				    
+                            cutvalues_lep1 = [ float(x) for x in range(20,21) ] # optimal!
                         elif flav == "MuEl":
                             #cutvalues_lep0 = [ float(x) for x in range(25,35,2) ]
                             #cutvalues_lep1 = [ float(x) for x in range(8,29,2) ]
@@ -1251,8 +1306,10 @@ if __name__ == "__main__":
         vardb.registerVar( Variable(shortname = 'ElProbePt', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0,) )
         vardb.registerVar( Variable(shortname = 'ElProbeEta',latexname = '#eta^{probe e}', ntuplename = 'TMath::Abs( lep_Probe_EtaBE2 )', bins = 26, minval = 0.0,  maxval = 2.6) )
         if False:
-            vardb.registerVar( Variable(shortname = 'ElProbePtFakeBinning', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,40,200]) )
-            vardb.registerVar( Variable(shortname = 'ElProbePtRealBinning', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,30,40,60,200]) )
+            vardb.registerVar( Variable(shortname = 'ElProbed0sig', latexname = '|d_{0}^{sig}| probe e', ntuplename = 'TMath::Abs(lep_Probe_sigd0PV)', bins = 40, minval = 0.0, maxval = 10.0,) )
+            vardb.registerVar( Variable(shortname = 'ElProbez0sintheta', latexname = '|z_{0}*sin(#theta)| probe e [mm]', ntuplename = 'TMath::Abs(lep_Probe_Z0SinTheta)', bins = 15, minval = 0.0, maxval = 1.5,) )
+            vardb.registerVar( Variable(shortname = 'ElProbePtFakeRebinned', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,40,200,210]) )
+            vardb.registerVar( Variable(shortname = 'ElProbePtRealRebinned', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,30,40,60,200,210]) )
 
         if False:
             vardb.registerVar( Variable(shortname = 'MuTagPt', latexname = 'p_{T}^{tag #mu} [GeV]', ntuplename = 'lep_Tag_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0,) )
@@ -1261,10 +1318,11 @@ if __name__ == "__main__":
 
         vardb.registerVar( Variable(shortname = 'MuProbePt', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0) )
         vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = 'TMath::Abs( lep_Probe_Eta )', bins = 25, minval = 0.0, maxval = 2.5) )
-
         if False:
-            vardb.registerVar( Variable(shortname = 'MuProbePtFakeBinning', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,200]) )
-            vardb.registerVar( Variable(shortname = 'MuProbePtRealBinning', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,200]) )
+            vardb.registerVar( Variable(shortname = 'MuProbed0sig', latexname = '|d_{0}^{sig}| probe #mu', ntuplename = 'TMath::Abs(lep_Probe_sigd0PV)', bins = 40, minval = 0.0, maxval = 10.0,) )
+            vardb.registerVar( Variable(shortname = 'MuProbez0sintheta', latexname = '|z_{0}*sin(#theta)| probe #mu [mm]', ntuplename = 'TMath::Abs(lep_Probe_Z0SinTheta)', bins = 15, minval = 0.0, maxval = 1.5,) )
+            vardb.registerVar( Variable(shortname = 'MuProbePtFakeRebinned', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,200,210]) )
+            vardb.registerVar( Variable(shortname = 'MuProbePtRealRebinned', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,200,210]) )
 
         # Probe truthType VS truthOrigin
         #
@@ -1330,12 +1388,12 @@ if __name__ == "__main__":
             truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
 
             if doMMClosureRates:
-                print ('*********************************\n Doing MMClosure : looking at ttbar nonallhad only! \n*********************************')
+                print ('\n*********************************************\nMeasuring efficiencies for closure test ===> looking at ttbar nonallhad only! \n*********************************************\n')
             if args.ratesFromMC:
-                print ('*********************************\n Measuring efficiencies from MC simulation! \n*********************************')
+                print ('\n*********************************\nMeasuring efficiencies from MC simulation! \n*********************************\n')
 
             if ( args.doQMisIDRate ):
-                print ('*********************************\nMEASURING CHARGE FLIP RATE IN MC\n*********************************')
+                print ('\n*********************************\nMEASURING CHARGE FLIP RATE IN MC\n*********************************\n')
                 truth_sub_SS = ( vardb.getCut('2Lep_TRUTH_ProbeQMisIDEvent') )
 
 
@@ -1362,7 +1420,7 @@ if __name__ == "__main__":
         vardb.registerCategory( MyCategory('RealCRElL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElEtaCut','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_OS ), weight = weight_TP_MM ) )
         vardb.registerCategory( MyCategory('RealCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElEtaCut','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
         vardb.registerCategory( MyCategory('RealCRElT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElEtaCut','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-
+        #"""
         # Fake CR: OF+SF for electrons, SF for muons
         #
         #"""
@@ -1445,8 +1503,8 @@ if __name__ == "__main__":
 
             if "ALLNJ" in args.channel:
                 vardb.registerCategory( MyCategory('MuMuSS_SR_AllJet_DataDriven_Closure',    cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','TauVeto','2Lep_SS','2Lep_MuMu_Event','2Lep_MinNJet']), weight = weight_SR_CR ) )
-                vardb.registerCategory( MyCategory('OFSS_SR_AllJet_DataDriven_Closure',  cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','TauVeto','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_MinNJet']), weight = weight_SR_CR ) )
-                vardb.registerCategory( MyCategory('ElElSS_SR_AllJet_DataDriven_Closure',        cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','TauVeto','2Lep_SS','2Lep_ElEl_Event','2Lep_ElEtaCut','2Lep_MinNJet']), weight = weight_SR_CR ) )
+                vardb.registerCategory( MyCategory('OFSS_SR_AllJet_DataDriven_Closure',      cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','TauVeto','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_MinNJet']), weight = weight_SR_CR ) )
+                vardb.registerCategory( MyCategory('ElElSS_SR_AllJet_DataDriven_Closure',    cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','TauVeto','2Lep_SS','2Lep_ElEl_Event','2Lep_ElEtaCut','2Lep_MinNJet']), weight = weight_SR_CR ) )
             elif "HIGHNJ" in args.channel:
                 vardb.registerCategory( MyCategory('MuMuSS_SR_HighJet_DataDriven_Closure',   cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','TauVeto','2Lep_SS','2Lep_MuMu_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
                 vardb.registerCategory( MyCategory('OFSS_SR_HighJet_DataDriven_Closure',     cut = truth_cut & vardb.getCuts(['2Lep_TrigMatch','TrigDec','BlindingCut','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','TauVeto','2Lep_SS','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_NJet_SR']), weight = weight_SR_CR ) )
@@ -1822,14 +1880,15 @@ if __name__ == "__main__":
 
                 # MC based estimate of fakes
 
-                ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMC']
+                #ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','FakesMC']
+                ttH.backgrounds = ['TTBarH']
 
-                if args.useMCQMisID:
-                    ttH.backgrounds.append('QMisIDMC')
-                    ttH.sub_backgrounds.append('QMisIDMC')
-                else:
-                    ttH.backgrounds.append('QMisID')
-                    ttH.sub_backgrounds.append('QMisID')
+                #if args.useMCQMisID:
+                #    ttH.backgrounds.append('QMisIDMC')
+                #    ttH.sub_backgrounds.append('QMisIDMC')
+                #else:
+                #    ttH.backgrounds.append('QMisID')
+                #    ttH.sub_backgrounds.append('QMisID')
 
         else:
             # no fakes in 4lep
@@ -1937,6 +1996,8 @@ if __name__ == "__main__":
         ttH.signals = []
 
     showRatio = args.doShowRatio
+    if doMMClosureTest:
+        showRatio = True
 
     # Make blinded plots in SR unless configured from input
     #
@@ -2031,6 +2092,10 @@ if __name__ == "__main__":
             # Avoid making useless plots
             # --------------------------
 
+            if not ("OF") in category.name and ("Mu0Pt_VS_El0Pt") in var.shortname:
+                print ("\tSkipping variable: {0}\n".format( var.shortname ))
+                continue
+
             if ( ("MuMu") in category.name and ("El") in var.shortname ) or ( ("ElEl") in category.name and ("Mu") in var.shortname ):
                 print ("\tSkipping variable: {0}\n".format( var.shortname ))
                 continue
@@ -2045,18 +2110,11 @@ if __name__ == "__main__":
 
             if doMMRates or doMMClosureRates:
                 # if probe is a muon, do not plot ElProbe* stuff!
-                if ( ( ("MuRealFakeRateCR") in category.cut.cutname ) and ( ("ElProbe") in var.shortname ) ):
+                if ( ( ("MuProbe") in category.cut.cutname ) and ( ("ElProbe") in var.shortname ) ):
                     print ("\tSkipping variable: {0}\n".format( var.shortname ))
                     continue
                 # if probe is an electron, do not plot MuProbe* stuff!
-                if ( ( ("ElRealFakeRateCR") in category.cut.cutname ) and ( ("MuProbe") in var.shortname ) ):
-                    print ("\tSkipping variable: {0}\n".format( var.shortname ))
-                    continue
-                # be smart when looking at OF regions!
-                if ( ("OF") in category.name and( ("MuRealFakeRateCR") in category.cut.cutname ) and ( ("MuTag") in var.shortname or ("ElProbe") in var.shortname ) ):
-                    print ("\tSkipping variable: {0}\n".format( var.shortname ))
-                    continue
-                if ( ("OF") in category.name and( ("ElRealFakeRateCR") in category.cut.cutname ) and ( ("ElTag") in var.shortname or ("MuProbe") in var.shortname ) ):
+                if ( ( ("ElProbe") in category.cut.cutname ) and ( ("MuProbe") in var.shortname ) ):
                     print ("\tSkipping variable: {0}\n".format( var.shortname ))
                     continue
 
@@ -2148,10 +2206,12 @@ if __name__ == "__main__":
 
                     plotname = dirname + "/" + category.name + "_" + var.shortname + "_" + syst.name
 
-                    print("")
-                    print ("\t\tSystematic:\t{0}".format( syst.name ))
-                    print ("\t\tDirectory for systematic plot:\t{0}/".format( plotname ))
-                    print("")
+                    print("")            
+		    print ("\t\t-----------------------------------------------------------------------------------------------------------------------------\n")
+                    print ("\t\tSystematic:\t{0}\n".format( syst.name ))
+                    if args.debug:
+		        print ("\t\tDirectory for systematic plot:\t{0}/".format( plotname ))
+                    print ("\t\t-----------------------------------------------------------------------------------------------------------------------------\n")
 
                     list_formats_sys = [ plotname + ".png", plotname + ".eps" ]
 
@@ -2284,23 +2344,23 @@ if __name__ == "__main__":
                     outfile.write("Integral: \n")
                     err=Double(0)  # integral error
                     value=0        # integral value
-                    
+
 		    for sample in histograms.keys():
-                        
+
 			# Include underflow, but do not take overflow explicitly! In fact, KG"s FW already merges the last bin with the OFlow bin...
                         #
                         value = histograms[sample].IntegralAndError(0,histograms[sample].GetNbinsX(),err)
-                        
+
 			yields_outstream     = "\t\t{0}: {1:.2f} +- {2:.2f}".format(histname[sample], value, err)
 			yields_outfilestream = "yields {0}: {1:.2f} +- {2:.2f}".format(histname[sample], value, err)
-			
+
 			if not ( sample == "Observed" or sample == "TTBarH" or sample == "Expected" ):
 			    yields_outstream     += " ({0:.1f} % tot. bkg.)".format((value/b)*1e2)
 			    yields_outfilestream += " ({0:.1f} % tot. bkg.)".format((value/b)*1e2)
-			    
+
 			print (yields_outstream)
                         outfile.write(yields_outfilestream)
-			    
+
 			if ( "NJets" in var.shortname ):
                             # Neglect underflow, but not overflow!
                             #
@@ -2332,22 +2392,24 @@ if __name__ == "__main__":
                                 print ("\n\t\t  >=5-jets bin: {0:.2f} +- {1:.2f}".format(value_HJ, err_HJ))
                                 outfile.write("\n  >=5-jets bin: %.2f +- %.2f \n" %(value_HJ, err_HJ))
 
-                    Z = calculate_Z( s, b, err_s, err_b )
+                    if not args.noSignal and ttH.signals:
 
-                    print("\n\t\tSignificance:\n\t\ts = {0:.2f} +- {1:.2f}\n\t\tb = {2:.2f} +- {3:.2f}\n\t\tZ = {4:.3f} +- {5:.3f}".format(s, err_s, b, err_b, Z[0], Z[1]) )
-                    outfile.write("\nSignificance:\ns = %.2f +- %.2f\nb = %.2f +- %.2f\nZ = %.3f +- %.3f\n" %(s, err_s, b, err_b, Z[0], Z[1]))
+			Z = calculate_Z( s, b, err_s, err_b )
 
-                    if args.optimisation:
-                        
-			tokens = category.name.split("_")
-                        key   = tokens[0]
-                        bin_lep0   = float(tokens[tokens.index("Lep0")+1])
-                        bin_lep1   = float(tokens[tokens.index("Lep1")+1])
+                        print("\n\t\tSignificance:\n\t\ts = {0:.2f} +- {1:.2f}\n\t\tb = {2:.2f} +- {3:.2f}\n\t\tZ = {4:.3f} +- {5:.3f}".format(s, err_s, b, err_b, Z[0], Z[1]) )
+                        outfile.write("\nSignificance:\ns = %.2f +- %.2f\nb = %.2f +- %.2f\nZ = %.3f +- %.3f\n" %(s, err_s, b, err_b, Z[0], Z[1]))
 
-                        if not significance_dict.get(key):
-                            significance_dict[key] = [ (bin_lep0, bin_lep1, Z[0], Z[1]) ]
-                        else:
-                            significance_dict[key].append( (bin_lep0, bin_lep1, Z[0], Z[1]) )
+                    	if args.optimisation:
+
+		      	    tokens = category.name.split("_")
+                    	    key   = tokens[0]
+                    	    bin_lep0   = float(tokens[tokens.index("Lep0")+1])
+                    	    bin_lep1   = float(tokens[tokens.index("Lep1")+1])
+
+                    	    if not significance_dict.get(key):
+                    		significance_dict[key] = [ (bin_lep0, bin_lep1, Z[0], Z[1]) ]
+                    	    else:
+                    		significance_dict[key].append( (bin_lep0, bin_lep1, Z[0], Z[1]) )
 
                     print ("\n\t\tGetEntries:\n")
                     print ("\t\tNB 1): this is actually N = GetEntries()-2 \n\t\t       Still not understood why there's such an offset...\n")
@@ -2366,7 +2428,7 @@ if __name__ == "__main__":
 
             #"""
 
-    if args.optimisation:
+    if not args.noSignal and args.optimisation:
         if "SLT" in args.optimisation:
             dim = "1D"
         elif "DLT" in args.optimisation:

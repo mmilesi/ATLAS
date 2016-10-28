@@ -3,8 +3,8 @@
 #include <HTopMultilepAnalysis/HTopMultilepTreeAlgo.h>
 #include <HTopMultilepAnalysis/HTopMultilepEventSelector.h>
 #include <HTopMultilepAnalysis/TruthMatchAlgo.h>
-#include <HTopMultilepAnalysis/OverlapRemovalTool_HTopRun1.h>
-#include <HTopMultilepAnalysis/OverlapRemover_HTopRun1.h>
+//#include <HTopMultilepAnalysis/OverlapRemovalTool_HTopRun1.h>
+//#include <HTopMultilepAnalysis/OverlapRemover_HTopRun1.h>
 #include <HTopMultilepAnalysis/HTopMultilepMiniNTupMaker.h>
 #include <HTopMultilepAnalysis/HTopMultilepNTupReprocesser.h>
 
@@ -21,8 +21,8 @@
 #pragma link C++ class HTopMultilepTreeAlgo+;
 #pragma link C++ class HTopMultilepEventSelector+;
 #pragma link C++ class TruthMatchAlgo+;
-#pragma link C++ class OverlapRemovalTool_HTopRun1+;
-#pragma link C++ class OverlapRemover_HTopRun1+;
+//#pragma link C++ class OverlapRemovalTool_HTopRun1+;
+//#pragma link C++ class OverlapRemover_HTopRun1+;
 #pragma link C++ class HTopMultilepMiniNTupMaker+;
 #pragma link C++ class HTopMultilepNTupReprocesser+;
 #endif
