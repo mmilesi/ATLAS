@@ -301,26 +301,59 @@ private:
   ULong64_t       m_totalEvents;
   Float_t         m_totalEventsWeighted;
 
+  /** Trigger match decision per-lepton (for each chain) */
+  
+  // 2015
+  
+  std::vector<int> *m_electron_match_HLT_e24_lhmedium_L1EM20VH        = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e60_lhmedium                 = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e120_lhloose                 = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_2e12_lhloose_L12EM10VH       = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1 = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e7_medium_mu24               = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_mu20_iloose_L1MU15               = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_mu18_mu8noL1                     = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1     = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_e7_medium_mu24                   = nullptr; //!
+  
+  // 2016
+  
+  std::vector<int> *m_electron_match_HLT_e26_lhtight_nod0_ivarloose = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e60_lhmedium_nod0          = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e140_lhloose_nod0          = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_2e17_lhvloose_nod0         = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e17_lhloose_mu14           = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e17_lhloose_nod0_mu14      = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e7_lhmedium_mu24           = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_mu26_ivarmedium                = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_mu22_mu8noL1                   = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_e17_lhloose_mu14               = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_e17_lhloose_nod0_mu14          = nullptr; //!
+   
+  // 2015 & 2016
+  
+  std::vector<int> *m_muon_match_HLT_mu50 = nullptr; //!
+
   /** Reco jets BEFORE overlap removal */
 
-  std::vector<float>   *m_jet_pt;  //!
-  std::vector<float>   *m_jet_eta; //!
-  std::vector<float>   *m_jet_phi; //!
-  std::vector<float>   *m_jet_E;   //!
-  std::vector<int>     *m_jet_flavor_truth_label;       //!
-  std::vector<int>     *m_jet_flavor_truth_label_ghost; //!
+  std::vector<float>   *m_jet_pt = nullptr;  //!
+  std::vector<float>   *m_jet_eta = nullptr; //!
+  std::vector<float>   *m_jet_phi = nullptr; //!
+  std::vector<float>   *m_jet_E = nullptr;   //!
+  std::vector<int>     *m_jet_flavor_truth_label = nullptr;       //!
+  std::vector<int>     *m_jet_flavor_truth_label_ghost = nullptr; //!
 
   /** Indexes of jets that pass overlap removal */
 
-  std::vector<short>   *m_selected_jets;   //!
-  std::vector<short>   *m_selected_jets_T; //!
+  std::vector<short>   *m_selected_jets = nullptr;   //!
+  std::vector<short>   *m_selected_jets_T = nullptr; //!
 
   /** Truth jets */
 
-  std::vector<float>   *m_truth_jet_pt;  //!
-  std::vector<float>   *m_truth_jet_eta; //!
-  std::vector<float>   *m_truth_jet_phi; //!
-  std::vector<float>   *m_truth_jet_e;   //!
+  std::vector<float>   *m_truth_jet_pt = nullptr;  //!
+  std::vector<float>   *m_truth_jet_eta = nullptr; //!
+  std::vector<float>   *m_truth_jet_phi = nullptr; //!
+  std::vector<float>   *m_truth_jet_e = nullptr;   //!
 
   /** Extra branches to be stored in output TTree */
 
@@ -356,6 +389,13 @@ private:
   char	    m_lep_isTightSelected_0;
   char	    m_lep_isTightSelected_1;
   char	    m_lep_isTightSelected_2;
+
+  char	    m_lep_isTrigMatch_SLT_0;
+  char	    m_lep_isTrigMatch_SLT_1;
+  char	    m_lep_isTrigMatch_DLT_0;
+  char	    m_lep_isTrigMatch_DLT_1;
+  
+  char	    m_event_isTrigMatch_DLT;
 
   float     m_lep_Tag_Pt;
   float     m_lep_Tag_Eta;
@@ -446,6 +486,8 @@ private:
   EL::StatusCode checkIsTightLep( std::shared_ptr<MiniNTupMaker::leptonObj> lep );
   EL::StatusCode decorateEvent ();
   EL::StatusCode decorateWeights ();
+
+  EL::StatusCode triggerMatching ();
 
   /**
     * @brief  Set which lepton is tag and which is probe for the r/f efficiency measurement

@@ -115,11 +115,11 @@ if __name__ == '__main__':
 ## data
 #"HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",
 ## ttbar noallhad
-#"410000",
+"410000",
 ## ttH
-"343365",
-"343366",
-"343367",
+#"343365",
+#"343366",
+#"343367",
 ## ttW
 #"410155",
 ## ttZ

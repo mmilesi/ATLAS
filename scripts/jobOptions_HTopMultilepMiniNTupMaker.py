@@ -28,6 +28,36 @@ trigbits_branches    = ["HLT_.*"]
 
 jet_branches         = ["lead_jetPt","lead_jetEta","lead_jetPhi","sublead_jetPt","sublead_jetEta","sublead_jetPhi"]
 
+
+trigmatch_branches   = [
+        		# 2015
+        		"electron_match_HLT_e24_lhmedium_L1EM20VH",
+        		"electron_match_HLT_e60_lhmedium",
+        		"electron_match_HLT_e120_lhloose",
+        		"electron_match_HLT_2e12_lhloose_L12EM10VH",
+        		"electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1",
+        		"electron_match_HLT_e7_medium_mu24",
+        		"muon_match_HLT_mu20_iloose_L1MU15",
+        		"muon_match_HLT_mu18_mu8noL1",
+			"muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1",
+			"muon_match_HLT_e7_medium_mu24",
+        		# 2016
+        		"electron_match_HLT_e26_lhtight_nod0_ivarloose",
+        		"electron_match_HLT_e60_lhmedium_nod0",
+        		"electron_match_HLT_e140_lhloose_nod0",
+        		"electron_match_HLT_2e17_lhvloose_nod0",
+			"electron_match_HLT_e17_lhloose_mu14",
+        		"electron_match_HLT_e17_lhloose_nod0_mu14",
+        		"electron_match_HLT_e7_lhmedium_mu24",
+        		"muon_match_HLT_mu26_ivarmedium",
+        		"muon_match_HLT_mu22_mu8noL1",
+			"muon_match_HLT_e17_lhloose_mu14",
+			"muon_match_HLT_e17_lhloose_nod0_mu14",
+        		 # 2015 & 2016
+        		"muon_match_HLT_mu50",
+                       ]
+
+
 lep_branches         = ["lep_ID_0",
                         "lep_Index_0",
 			"lep_Pt_0",
@@ -208,7 +238,7 @@ branches_to_copy = eventweight_branches + event_branches + trigbits_branches + j
 jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_E","m_jet_flavor_truth_label","m_jet_flavor_truth_label_ghost"]
 jet_truth_vec_branches = ["m_truth_jet_pt","m_truth_jet_eta","m_truth_jet_phi","m_truth_jet_e"]
 
-branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches
+branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches + trigmatch_branches
 
 # Trick to pass the list as a comma-separated string to the C++ algorithm
 #

@@ -259,6 +259,31 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_SFObjLoose_2",   		      &m_lep_SFObjLoose_2);
   m_inputNTuple->SetBranchAddress ("lep_SFObjTight_2",   		      &m_lep_SFObjTight_2);
 
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e26_lhtight_nod0_ivarloose",   &m_electron_match_HLT_e26_lhtight_nod0_ivarloose);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e24_lhmedium_L1EM20VH",        &m_electron_match_HLT_e24_lhmedium_L1EM20VH);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e60_lhmedium",		      &m_electron_match_HLT_e60_lhmedium);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e120_lhloose",		      &m_electron_match_HLT_e120_lhloose);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_2e12_lhloose_L12EM10VH",       &m_electron_match_HLT_2e12_lhloose_L12EM10VH);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1", &m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e7_medium_mu24", 	      &m_electron_match_HLT_e7_medium_mu24);
+  m_inputNTuple->SetBranchAddress ("muon_match_HLT_mu20_iloose_L1MU15", 	      &m_muon_match_HLT_mu20_iloose_L1MU15);
+  m_inputNTuple->SetBranchAddress ("muon_match_HLT_mu50",			      &m_muon_match_HLT_mu50);
+  m_inputNTuple->SetBranchAddress ("muon_match_HLT_mu18_mu8noL1",		      &m_muon_match_HLT_mu18_mu8noL1);
+  m_inputNTuple->SetBranchAddress ("muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1",     &m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1);
+  m_inputNTuple->SetBranchAddress ("muon_match_HLT_e7_medium_mu24",                   &m_muon_match_HLT_e7_medium_mu24);
+
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e26_lhtight_nod0_ivarloose",   &m_electron_match_HLT_e26_lhtight_nod0_ivarloose);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e60_lhmedium_nod0",	      &m_electron_match_HLT_e60_lhmedium_nod0);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e140_lhloose_nod0",	      &m_electron_match_HLT_e140_lhloose_nod0);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_2e17_lhvloose_nod0",	      &m_electron_match_HLT_2e17_lhvloose_nod0);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e17_lhloose_mu14",             &m_electron_match_HLT_e17_lhloose_mu14);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e17_lhloose_nod0_mu14",        &m_electron_match_HLT_e17_lhloose_nod0_mu14);
+  m_inputNTuple->SetBranchAddress ("electron_match_HLT_e7_lhmedium_mu24",	      &m_electron_match_HLT_e7_lhmedium_mu24);
+  m_inputNTuple->SetBranchAddress ("muon_match_HLT_mu26_ivarmedium",		      &m_muon_match_HLT_mu26_ivarmedium);
+  m_inputNTuple->SetBranchAddress ("muon_match_HLT_mu22_mu8noL1",		      &m_muon_match_HLT_mu22_mu8noL1);
+  m_inputNTuple->SetBranchAddress ("muon_match_HLT_e17_lhloose_mu14",		      &m_muon_match_HLT_e17_lhloose_mu14);
+  m_inputNTuple->SetBranchAddress ("muon_match_HLT_e17_lhloose_nod0_mu14",	      &m_muon_match_HLT_e17_lhloose_nod0_mu14);
+   
   m_inputNTuple->SetBranchAddress ("m_jet_pt",  &m_jet_pt);
   m_inputNTuple->SetBranchAddress ("m_jet_eta", &m_jet_eta);
   m_inputNTuple->SetBranchAddress ("m_jet_phi", &m_jet_phi);
@@ -337,6 +362,13 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("lep_isTightSelected_1",       &m_lep_isTightSelected_1, "lep_isTightSelected_1/B");
   m_outputNTuple->tree()->Branch("lep_isTightSelected_2",       &m_lep_isTightSelected_2, "lep_isTightSelected_2/B");
 
+  m_outputNTuple->tree()->Branch("lep_isTrigMatch_SLT_0",       &m_lep_isTrigMatch_SLT_0, "lep_isTrigMatch_SLT_0/B");
+  m_outputNTuple->tree()->Branch("lep_isTrigMatch_SLT_1",       &m_lep_isTrigMatch_SLT_1, "lep_isTrigMatch_SLT_1/B");
+  m_outputNTuple->tree()->Branch("lep_isTrigMatch_DLT_0",       &m_lep_isTrigMatch_DLT_0, "lep_isTrigMatch_DLT_0/B");
+  m_outputNTuple->tree()->Branch("lep_isTrigMatch_DLT_1",       &m_lep_isTrigMatch_DLT_1, "lep_isTrigMatch_DLT_1/B");
+ 
+  m_outputNTuple->tree()->Branch("event_isTrigMatch_DLT",       &m_event_isTrigMatch_DLT, "event_isTrigMatch_DLT/B");
+
   m_outputNTuple->tree()->Branch("lep_Tag_Pt",               	&m_lep_Tag_Pt, "lep_Tag_Pt/F");
   m_outputNTuple->tree()->Branch("lep_Tag_Eta",                 &m_lep_Tag_Eta, "lep_Tag_Eta/F");
   m_outputNTuple->tree()->Branch("lep_Tag_EtaBE2",              &m_lep_Tag_EtaBE2, "lep_Tag_EtaBE2/F");
@@ -388,25 +420,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
 
   // ---------------------------------------------------------------------------------------------------------------
 
-  // Initialise pointers to input vector branches
-  //
-  m_jet_pt  = nullptr;
-  m_jet_eta = nullptr;
-  m_jet_phi = nullptr;
-  m_jet_E   = nullptr;
-  m_jet_flavor_truth_label       = nullptr;
-  m_jet_flavor_truth_label_ghost = nullptr;
-
-  m_selected_jets   = nullptr;
-  m_selected_jets_T = nullptr;
-
-  m_truth_jet_pt  = nullptr;
-  m_truth_jet_eta = nullptr;
-  m_truth_jet_phi = nullptr;
-  m_truth_jet_e   = nullptr;
-
-  // ---------------------------------------------------------------------------------------------------------------
-
   // Initialise counter for input TTree entries
   //
   m_numEntry = 0;
@@ -452,7 +465,10 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
   m_inputNTuple->GetEntry( wk()->treeEntry() );
 
-  if ( m_debug ) { Info("execute()", "===> Entry %u - EventNumber = %u ", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) ); }
+  if ( m_debug ) { 
+    std::cout << "" << std::endl;
+    Info("execute()", "===> Entry %u - EventNumber = %u - RunYear = %i", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber), m_RunYear ); 
+  }
 
   ++m_numEntry;
 
@@ -771,12 +787,120 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateEvent ( )
      for ( const auto& lep : m_leptons ) { prod_lep_charge *= lep.get()->charge; }
 
      m_event.get()->isSS01 = ( prod_lep_charge > 0 );
-
+     
+     // Fill flat branches with trigger matching decision split in SLT/DLT, and per-event (pair) matching for DLT
+     
+     ANA_CHECK( this->triggerMatching() );
+  
   } else if ( m_event.get()->trilep ) {
 
      m_event.get()->isSS12 = ( fabs( m_leptons.at(0).get()->charge + m_leptons.at(1).get()->charge + m_leptons.at(2).get()->charge ) != 3 );
 
   }
+
+  return EL::StatusCode::SUCCESS;
+
+}
+
+
+EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching ( )
+{
+
+  if ( m_dilep_type == 1 ) { // 1) mumu
+  
+    if ( m_muon_match_HLT_mu20_iloose_L1MU15->size() < 2 ) {
+      std::cout << "ALARM! m_muon_match_HLT_mu20_iloose_L1MU15->size() < 2" << std::endl;
+      return EL::StatusCode::FAILURE;
+    }
+    
+    if ( m_RunYear == 2015 ) {
+      
+      m_lep_isTrigMatch_SLT_0 = ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) || m_muon_match_HLT_mu50->at(0) );
+      m_lep_isTrigMatch_SLT_1 = ( m_muon_match_HLT_mu20_iloose_L1MU15->at(1) || m_muon_match_HLT_mu50->at(1) );
+      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu18_mu8noL1->at(0) );
+      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu18_mu8noL1->at(1) );
+    
+    } else if ( m_RunYear == 2016 ) {
+    
+      m_lep_isTrigMatch_SLT_0 = ( m_muon_match_HLT_mu26_ivarmedium->at(0) || m_muon_match_HLT_mu50->at(0) );
+      m_lep_isTrigMatch_SLT_1 = ( m_muon_match_HLT_mu26_ivarmedium->at(1) || m_muon_match_HLT_mu50->at(1) );
+      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu22_mu8noL1->at(0) );
+      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu22_mu8noL1->at(1) );  
+    
+    }
+  
+  } else if ( m_dilep_type == 2 ) { // 2) OF
+    
+    /*
+    std::cout << "\n2015: \n" << std::endl;
+    std::cout << "m_electron_match_HLT_e24_lhmedium_L1EM20VH->size() = " << m_electron_match_HLT_e24_lhmedium_L1EM20VH->size() << std::endl;
+    std::cout << "m_electron_match_HLT_e60_lhmedium->size() = " << m_electron_match_HLT_e60_lhmedium->size() << std::endl;
+    std::cout << "m_electron_match_HLT_e120_lhloose->size() = " << m_electron_match_HLT_e120_lhloose->size() << std::endl;
+    std::cout << "m_muon_match_HLT_mu20_iloose_L1MU15->size() = " << m_muon_match_HLT_mu20_iloose_L1MU15->size() << std::endl;
+    std::cout << "m_muon_match_HLT_mu50->size() = " << m_muon_match_HLT_mu50->size() << std::endl;
+    std::cout << "m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->size() = " << m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->size() << std::endl;
+    std::cout << "m_electron_match_HLT_e7_medium_mu24->size() = " << m_electron_match_HLT_e7_medium_mu24->size() << std::endl;
+    std::cout << "m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->size() = " << m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->size() << std::endl;
+    std::cout << "m_muon_match_HLT_e7_medium_mu24->size() = " << m_muon_match_HLT_e7_medium_mu24->size() << std::endl;
+    std::cout << "\n2016: \n" << std::endl;
+    std::cout << "m_electron_match_HLT_e26_lhtight_nod0_ivarloose->size() = " << m_electron_match_HLT_e26_lhtight_nod0_ivarloose->size() << std::endl;
+    std::cout << "m_electron_match_HLT_e60_lhmedium_nod0->size() = " << m_electron_match_HLT_e60_lhmedium_nod0->size() << std::endl;
+    std::cout << "m_electron_match_HLT_e140_lhloose_nod0->size() = " << m_electron_match_HLT_e140_lhloose_nod0->size() << std::endl;
+    std::cout << "m_muon_match_HLT_mu26_ivarmedium->size() = " << m_muon_match_HLT_mu26_ivarmedium->size() << std::endl;
+    std::cout << "m_muon_match_HLT_mu50->size() = " << m_muon_match_HLT_mu50->size() << std::endl;
+    std::cout << "m_electron_match_HLT_e17_lhloose_mu14->size() = " << m_electron_match_HLT_e17_lhloose_mu14->size() << std::endl;
+    std::cout << "m_electron_match_HLT_e17_lhloose_nod0_mu14->size() = " << m_electron_match_HLT_e17_lhloose_nod0_mu14->size() << std::endl;
+    std::cout << "m_muon_match_HLT_e17_lhloose_mu14->size() = " << m_muon_match_HLT_e17_lhloose_mu14->size() << std::endl;
+    std::cout << "m_muon_match_HLT_e17_lhloose_nod0_mu14->size() = " << m_muon_match_HLT_e17_lhloose_nod0_mu14->size() << std::endl;
+    */
+    
+    auto lep0 = m_leptons.at(0);
+    auto lep1 = m_leptons.at(1);
+
+    // NB: make sure to always read the first component of the trigmatch bits vector in this case!
+    
+    if ( m_RunYear == 2015 ) {
+
+      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) || m_electron_match_HLT_e60_lhmedium->at(0) || m_electron_match_HLT_e120_lhloose->at(0) ) ) || ( lep0.get()->flavour == 13 && ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) || m_muon_match_HLT_mu50->at(0) ) ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) || m_electron_match_HLT_e60_lhmedium->at(0) || m_electron_match_HLT_e120_lhloose->at(0) ) ) || ( lep1.get()->flavour == 13 && ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) || m_muon_match_HLT_mu50->at(0) ) ) );
+      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) || m_electron_match_HLT_e7_medium_mu24->at(0) ) ) || ( lep0.get()->flavour == 13 && ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) ||  m_muon_match_HLT_e7_medium_mu24->at(0) ) ) );
+      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) || m_electron_match_HLT_e7_medium_mu24->at(0) ) ) || ( lep1.get()->flavour == 13 && ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) ||  m_muon_match_HLT_e7_medium_mu24->at(0) ) ) );
+    
+    } else if ( m_RunYear == 2016 ) {
+     
+      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) || m_electron_match_HLT_e60_lhmedium_nod0->at(0) || m_electron_match_HLT_e140_lhloose_nod0->at(0) ) ) || ( lep0.get()->flavour == 13 && ( m_muon_match_HLT_mu26_ivarmedium->at(0) || m_muon_match_HLT_mu50->at(0) ) ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) || m_electron_match_HLT_e60_lhmedium_nod0->at(0) || m_electron_match_HLT_e140_lhloose_nod0->at(0) ) ) || ( lep1.get()->flavour == 13 && ( m_muon_match_HLT_mu26_ivarmedium->at(0) || m_muon_match_HLT_mu50->at(0) ) ) );
+      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( m_electron_match_HLT_e17_lhloose_mu14->at(0) || m_electron_match_HLT_e17_lhloose_nod0_mu14->at(0) ) ) || ( lep0.get()->flavour == 13 && ( m_muon_match_HLT_e17_lhloose_mu14->at(0) || m_muon_match_HLT_e17_lhloose_nod0_mu14->at(0) ) ) );
+      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( m_electron_match_HLT_e17_lhloose_mu14->at(0) || m_electron_match_HLT_e17_lhloose_nod0_mu14->at(0) ) ) || ( lep1.get()->flavour == 13 && ( m_muon_match_HLT_e17_lhloose_mu14->at(0) || m_muon_match_HLT_e17_lhloose_nod0_mu14->at(0) ) ) );
+    
+    }
+  
+  } else if ( m_dilep_type == 3 ) { // 3) ee
+
+    if ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->size() < 2 ) {
+      std::cout << "ALARM! m_electron_match_HLT_e24_lhmedium_L1EM20VH->size() < 2" << std::endl;
+      return EL::StatusCode::FAILURE;
+    }
+
+    if ( m_RunYear == 2015 ) {
+      
+      m_lep_isTrigMatch_SLT_0 = ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) || m_electron_match_HLT_e60_lhmedium->at(0) || m_electron_match_HLT_e120_lhloose->at(0) );
+      m_lep_isTrigMatch_SLT_1 = ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(1) || m_electron_match_HLT_e60_lhmedium->at(1) || m_electron_match_HLT_e120_lhloose->at(1) );
+      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(0) );
+      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(1) );
+    
+    } else if ( m_RunYear == 2016 ) {
+    
+      m_lep_isTrigMatch_SLT_0 = ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) || m_electron_match_HLT_e60_lhmedium_nod0->at(0) || m_electron_match_HLT_e140_lhloose_nod0->at(0) );
+      m_lep_isTrigMatch_SLT_1 = ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(1) || m_electron_match_HLT_e60_lhmedium_nod0->at(1) || m_electron_match_HLT_e140_lhloose_nod0->at(1) );
+      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(0) );
+      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(1) );  
+    
+    }
+
+  }
+  
+  m_event_isTrigMatch_DLT = ( m_lep_isTrigMatch_DLT_0 && m_lep_isTrigMatch_DLT_1 );
 
   return EL::StatusCode::SUCCESS;
 
@@ -854,7 +978,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
   for ( auto lep : m_leptons ) {
 
     this_eff = ( lep.get()->tight ) ? lep.get()->EffTrigTight : lep.get()->EffTrigLoose;
-    this_SF  = ( lep.get()->tight ) ? lep.get()->SFTrigTight : lep.get()->SFTrigLoose;
+    this_SF  = ( lep.get()->tight ) ? lep.get()->SFTrigTight  : lep.get()->SFTrigLoose;
 
     trig_weight_N *= ( 1.0 - this_SF * this_eff );
     trig_weight_D *= ( 1.0 - this_eff );
@@ -1027,9 +1151,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ( const std::string& t
 {
 
   if ( type.compare("leptons") == 0 ) {
+   
     m_lep_Pt.clear();
     m_lep_Eta.clear();
     m_lep_EtaBE2.clear();
+    
   } else if ( type.compare("jets") == 0 ) {
     m_jet_OR_Pt.clear();
     m_jet_OR_Eta.clear();
