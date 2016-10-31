@@ -30,25 +30,29 @@ parser.add_argument('samplesCSV', metavar='samplesCSV',type=str,
 # optional arguments
 #*******************
 
-list_available_channel    = ['TwoLepSR','ThreeLepSR','FourLepSR','MMRates(,DATAMC,PROBE_TM,PROBE_NOT_TM)','MMRates_LHFit(,CLOSURE)',
-                             'TwoLepLowNJetCR', 'ThreeLepLowNJetCR',
-                             'WZonCR', 'WZoffCR', 'WZHFonCR', 'WZHFoffCR',
-                             'ttWCR', 'ttZCR','ZSSpeakCR', 'DataMC', 'MMClosureTest(,NO_CORR,HIGHNJ,LOWNJ,ALLNJ)',
-                             'MMClosureRates(,NO_CORR,PROBE_TM,PROBE_NOT_TM)','CutFlowChallenge(,MM,2LepSS,2LepSS1Tau,3Lep)','MMSidebands(,NO_CORR,CLOSURE,HIGHNJ,LOWNJ,ALLNJ)']
-list_available_fakemethod = ['MC','MM','FF','THETA']
-list_available_flavcomp   = ['OF','SF','INCLUSIVE']
+list_available_channel    = ["TwoLepSR","ThreeLepSR","FourLepSR","MMRates(,DATAMC,PROBE_TM,PROBE_NOT_TM)","MMRates_LHFit(,CLOSURE)",
+                             "TwoLepLowNJetCR", "ThreeLepLowNJetCR",
+                             "WZonCR", "WZoffCR", "WZHFonCR", "WZHFoffCR",
+                             "ttWCR", "ttZCR","ZSSpeakCR", "DataMC", "MMClosureTest(,NO_CORR,HIGHNJ,LOWNJ,ALLNJ)",
+                             "MMClosureRates(,NO_CORR,PROBE_TM,PROBE_NOT_TM)","CutFlowChallenge(,MM,2LepSS,2LepSS1Tau,3Lep)","MMSidebands(,NO_CORR,CLOSURE,HIGHNJ,LOWNJ,ALLNJ)"]
+list_available_fakemethod = ["MC","MM","FF","THETA"]
+list_available_flavcomp   = ["OF","SF","INCLUSIVE"]
 
-jet_multiplicity_opt = ['HIGHNJ','LOWNJ','ALLNJ']
+jet_multiplicity_opt = ["HIGHNJ","LOWNJ","ALLNJ"]
 
 luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
                  "ICHEP 2015+2016 DS":13.20768,       # August 2016
                  "POST-ICHEP 2015+2016 DS":22.07036   # October 2016
                }
 
+triggers = ["SLT","DLT"]
+
 parser.add_argument('--debug', dest='debug', action='store_true', default=False,
                     help='Run in debug mode')
 parser.add_argument('--lumi', dest='lumi', action='store', type=float, default=luminosities["ICHEP 2015+2016 DS"],
                     help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in luminosities.iteritems() ) )
+parser.add_argument('--trigger', dest='trigger', action='store', default=triggers[0], type=str, nargs='+',
+                    help='The trigger strategy to be used. Choose one of:\n{0}.\nIf this option is not specified, default is {1}'.format(triggers,triggers[0]))
 parser.add_argument('--channel', dest='channel', action='store', default='TwoLepSR', type=str, nargs='+',
                     help='The channel chosen. Full list of available options:\n{1}'.format(jet_multiplicity_opt,list_available_channel))
 parser.add_argument('--ratesFromMC', dest='ratesFromMC', action='store_true', default=False,
@@ -83,12 +87,11 @@ parser.add_argument('--doUnblinding', dest='doUnblinding', action='store_true', 
                     help='Unblind data in SRs')
 parser.add_argument('--printEventYields', dest='printEventYields', action='store_true', default=False,
                     help='Prints out event yields in tabular form (NB: can be slow)')
-parser.add_argument('--useDLT', dest='useDLT', action='store_true', default=False,
-                    help='Use dilepton triggers')
 parser.add_argument('--useMoriondTruth', dest='useMoriondTruth', action='store_true', default=False,
                     help='Use 2016 Moriond-style truth matching (aka, just rely on type/origin info)')
 parser.add_argument('--optimisation', dest='optimisation', action='store', default=None, type=str, nargs='+',
                     help='Optimise cuts. At the moment, performs 1D optimisation on pT(lep1) only if \"SLT\" option is passed, 2D optimisation on pT(lep0),pT(lep1) if \"DLT\" option is passed')
+
 
 args = parser.parse_args()
 
@@ -336,6 +339,44 @@ if __name__ == "__main__":
 
     vardb.registerCut( Cut('IsMC',        '( isMC == 1 )') )
 
+    # -------
+    # Trigger
+    # -------
+    
+    if "v19" in args.inputDir or "v20" in args.inputDir:
+
+        # Lowest unprescaled SLT in ICHEP DS have 24 GeV threshold
+	
+	e_SLT = "( ( RunYear == 2015 && ( HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_e24_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) )"
+	m_SLT = "( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 ) ) || ( RunYear == 2016 && ( HLT_mu24_ivarmedium || HLT_mu50 ) ) )"
+            
+    if "v21" in args.inputDir:
+        
+	# Lowest unprescaled SLT in POST-ICHEP DS have 26 GeV threshold
+	
+	e_SLT = "( ( RunYear == 2015 && ( HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) )"
+	m_SLT = "( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 ) ) || ( RunYear == 2016 && ( HLT_mu26_ivarmedium || HLT_mu50 ) ) )"
+	    
+    ee_DLT = "( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH ) || ( RunYear == 2016 && HLT_2e17_lhvloose_nod0 ) )"
+    mm_DLT = "( ( RunYear == 2015 && HLT_mu18_mu8noL1 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1 ) )"
+    of_DLT = "( ( RunYear == 2015 && ( HLT_e24_medium_L1EM20VHI_mu8noL1 || HLT_e7_medium_mu24 ) ) || ( RunYear == 2016 && HLT_e17_lhloose_nod0_mu14 ) )"
+	
+
+    if "SLT" in args.trigger:
+
+        vardb.registerCut( Cut("TrigDec", "( " + e_SLT + " || " + m_SLT + " )" ) )
+
+    elif "DLT" in args.trigger:
+
+        # use DLT for all categories
+	#
+        #vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT + " )" + " )" ) )
+        #
+	# use DLT for ee, mm, OR of SLT for OF
+	#
+        vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT + " )" + " || " + "( dilep_type == 2 && ( " + e_SLT + " || " + m_SLT + " ) )" + " || " + "( dilep_type == 3 && " + ee_DLT + " )" + " )" ) )
+
+    """
     if args.useDLT:
         #
         # 2015 DLT triggers - 20.7 samples - ICHEP
@@ -357,6 +398,7 @@ if __name__ == "__main__":
 	    # use DLT for ee, mm, OR of SLT for OF
 	    #
 	    vardb.registerCut( Cut('TrigDec', '( ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_mu18_mu8noL1 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1 ) ) ) || ( dilep_type == 2 && ( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 || HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_mu26_ivarmedium || HLT_mu50 || HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH ) || ( RunYear == 2016 && HLT_2e17_lhvloose_nod0 ) ) ) ) ') )
+	    
     else:
         #
         # 2015 SLT triggers - 20.7 samples - ICHEP
@@ -373,7 +415,8 @@ if __name__ == "__main__":
         if "v21" in args.inputDir:
             vardb.registerCut( Cut('TrigDec',  '( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 || HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_mu26_ivarmedium || HLT_mu50 || HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) )' ) )
 
-
+    """
+    
     vardb.registerCut( Cut('LargeNBJet',      '( nJets_OR_T_MV2c10_70 > 1 )') )
     vardb.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_T_MV2c10_70 < 4 )') )
     vardb.registerCut( Cut('BJetVeto',        '( nJets_OR_T_MV2c10_70 == 0 )') )
@@ -385,6 +428,34 @@ if __name__ == "__main__":
     # 2Lep SS + 0 tau cuts
     # ---------------------
 
+    # ----------------
+    # Trigger matching
+    # ----------------
+
+    if "SLT" in args.trigger:
+
+        vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
+        #vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_SLT_0 || lep_isTrigMatch_SLT_1 )') ) # <------------------- need to understand why GN branch is different sometimes
+
+    elif "DLT" in args.trigger:
+        
+        if "v19" in args.inputDir or "v20" in args.inputDir:
+	    
+	    # No trigger matching for DLT available: just require pT in efficiency plateau
+	    #
+            vardb.registerCut( Cut('2Lep_TrigMatch', '( ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_2mu10 == 1 && lep_Pt_0 > 11e3 && lep_Pt_1 > 11e3 ) || ( RunYear == 2016 && HLT_2mu14 == 1 && lep_Pt_0 > 15e3 && lep_Pt_1 > 15e3 ) ) ) || ( dilep_type == 2 && ( ( RunYear == 2015 && HLT_e17_loose_mu14 == 1 ) || ( RunYear == 2016 && HLT_e17_lhloose_mu14 == 1 ) ) && ( ( TMath::Abs( lep_ID_0 ) == 11 && lep_Pt_0 > 18e3 && lep_Pt_1 > 15e3 ) || (  TMath::Abs( lep_ID_0 ) == 13 && lep_Pt_0 > 15e3 && lep_Pt_1 > 18e3 ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH == 1 && lep_Pt_0 > 13e3 && lep_Pt_1 > 13e3 ) || ( RunYear == 2016 && HLT_2e15_lhvloose_nod0_L12EM13VH == 1 && lep_Pt_0 > 16e3 && lep_Pt_1 > 16e3 ) ) ) )') )
+	
+	if "v21" in args.inputDir:
+
+            # use DLT for all categories
+            #
+            #vardb.registerCut( Cut('2Lep_TrigMatch', '( event_isTrigMatch_DLT )') )
+            #
+            # use DLT for ee, mm, OR of SLT for OF
+            #
+            vardb.registerCut( Cut('2Lep_TrigMatch', '( ( ( dilep_type == 1 || dilep_type == 3 ) && ( lep_isTrigMatch_DLT_0 || lep_isTrigMatch_DLT_1 ) ) || ( dilep_type == 2 && ( lep_isTrigMatch_0 || lep_isTrigMatch_1 ) ) )') ) # event_isTrigMatch_DLT --> BOTH leptons DLT-matched
+
+    """
     if args.useDLT:
         # 2015 DLT trigger matching - ICHEP
         #
@@ -419,6 +490,8 @@ if __name__ == "__main__":
         if "v21" in args.inputDir:
             vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
 
+    """
+
     if doRelaxedBJetCut:
         print("\nUsing relaxed nbjet cut: be INCLUSIVE in bjet multiplicity...\n")
         vardb.registerCut( Cut('2Lep_NBJet',      '( nJets_OR_T_MV2c10_70 >= 0 )') )
@@ -451,12 +524,21 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_Zsidescut',          '( ( dilep_type != 3 ) || ( dilep_type == 3 && TMath::Abs( Mll01 - 91.2e3 ) > 7.5e3 ) )' ) )   # Use this to require the 2 SF electrons to be outside Z peak
     vardb.registerCut( Cut('2Lep_Zpeakcut',           '( ( dilep_type == 2 ) || ( TMath::Abs( Mll01 - 91.2e3 ) < 30e3  ) )' ) )       # Use this to require the 2 SF leptons to be around Z peak
     vardb.registerCut( Cut('2Lep_Zmincut',            '( ( dilep_type == 2 ) || ( Mll01  > 20e3 ) )' ) )   # Remove J/Psi, Upsilon peak
-
-    if args.useDLT:
-        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_isTightSelected == 1 )') )
-    else:
+    
+    if "v19" in args.inputDir or "v20" in args.inputDir:
         vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_isTightSelected == 1 && lep_Tag_isTrigMatch == 1 )') )
         vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_isTrigMatch == 1 )') )
+
+    if "v21" in args.inputDir:
+
+        if "SLT" in args.trigger:
+            vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_SLT_isTightSelected == 1 && lep_Tag_SLT_isTrigMatch == 1 )') )
+            vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_SLT_isTrigMatch == 1 )') )
+       
+        elif "DLT" in args.trigger:
+            
+	    vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_DLT_isTightSelected == 1 && lep_Tag_DLT_isTrigMatch == 1 )') )
+            vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_DLT_isTrigMatch == 1 )') )
 
     vardb.registerCut( Cut('2Lep_ElProbe',              '( TMath::Abs( lep_Probe_ID ) == 11 )') )
     vardb.registerCut( Cut('2Lep_MuProbe',              '( TMath::Abs( lep_Probe_ID ) == 13 )') )
@@ -493,7 +575,7 @@ if __name__ == "__main__":
 
     vardb.registerCut( Cut('2Lep_HTJ_ttW',        '( dilep_type == 1 || HT_jets > 220e3 )') )
     vardb.registerCut( Cut('2Lep_MET_ttW',        '( dilep_type != 3 || ( MET_RefFinal_et > 50e3 ) )') )
-    vardb.registerCut( Cut('2Lep_Zsidescut_ttW',          '( dilep_type != 3 || ( TMath::Abs( Mll01 - 91.2e3 ) > 15e3 ) )') )
+    vardb.registerCut( Cut('2Lep_Zsidescut_ttW',  '( dilep_type != 3 || ( TMath::Abs( Mll01 - 91.2e3 ) > 15e3 ) )') )
     vardb.registerCut( Cut('2Lep_NJet_ttW',       '( nJets_OR_T <= 4 )') )
     vardb.registerCut( Cut('2Lep_NBJet_ttW',      '( nJets_OR_T_MV2c10_70 >= 2 )') )
     vardb.registerCut( Cut('2Lep_Zmincut_ttW',    '( Mll01 > 40e3 )'))
@@ -872,11 +954,11 @@ if __name__ == "__main__":
     # Definition of the categories for which one wants produce histograms
     # -------------------------------------------------------------------
 
-    #weight_SR_CR = "tauSFTight * weight_event_trig * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
+    weight_SR_CR = "tauSFTight * weight_event_trig * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
 
     # TEMP: remove trigger SF
     #
-    weight_SR_CR = "tauSFTight * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
+    #weight_SR_CR = "tauSFTight * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
 
     # ------------
     # SRs
@@ -1294,35 +1376,46 @@ if __name__ == "__main__":
 
     if doMMRates or doMMClosureRates:
 
+        tag   = "lep_Tag_"
+        probe = "lep_Probe_"
+	    
+        if "v21" in args.inputDir:
+	    if "SLT" in args.trigger: 
+    	        tag   += "SLT_"
+		probe += "SLT_"
+	    elif "DLT" in args.trigger: 
+    	        tag   += "DLT_"
+		probe += "DLT_"
+    
         # ---------------------------------------
         # Special plots for MM real/fake eff CRs
         # ---------------------------------------
 
         if False:
-            vardb.registerVar( Variable(shortname = 'ElTagPt', latexname = 'p_{T}^{tag e} [GeV]', ntuplename = 'lep_Tag_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0,) )
-            vardb.registerVar( Variable(shortname = 'ElTagEta', latexname = '#eta^{tag e}', ntuplename = 'TMath::Abs( lep_Tag_Eta )',bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
-            vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 8, minval = 2, maxval = 10, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = "ElTagPt", latexname = "p_{T}^{tag e} [GeV]", ntuplename = tag + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0,) )
+            vardb.registerVar( Variable(shortname = "ElTagEta", latexname = "#eta^{tag e}", ntuplename = "TMath::Abs( " + tag + "EtaBE2 )",bins = 8, minval = 0.0,  maxval = 2.6, manualbins = [ 0.0 , 0.5 , 0.8 , 1.1 , 1.37 , 1.52 , 2.0 , 2.25 , 2.6]) )
+            vardb.registerVar( Variable(shortname = "ElProbeNJets", latexname = "Jet multiplicity", ntuplename = "nJets_OR_T", bins = 8, minval = 2, maxval = 10, weight = "JVT_EventWeight") )
 
-        vardb.registerVar( Variable(shortname = 'ElProbePt', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0,) )
-        vardb.registerVar( Variable(shortname = 'ElProbeEta',latexname = '#eta^{probe e}', ntuplename = 'TMath::Abs( lep_Probe_EtaBE2 )', bins = 26, minval = 0.0,  maxval = 2.6) )
+        vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{probe e} [GeV]", ntuplename = probe + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0,) )
+        vardb.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{probe e}", ntuplename = "TMath::Abs( " + probe + "EtaBE2 )", bins = 26, minval = 0.0,  maxval = 2.6) )
         if False:
-            vardb.registerVar( Variable(shortname = 'ElProbed0sig', latexname = '|d_{0}^{sig}| probe e', ntuplename = 'TMath::Abs(lep_Probe_sigd0PV)', bins = 40, minval = 0.0, maxval = 10.0,) )
-            vardb.registerVar( Variable(shortname = 'ElProbez0sintheta', latexname = '|z_{0}*sin(#theta)| probe e [mm]', ntuplename = 'TMath::Abs(lep_Probe_Z0SinTheta)', bins = 15, minval = 0.0, maxval = 1.5,) )
-            vardb.registerVar( Variable(shortname = 'ElProbePtFakeRebinned', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,40,200,210]) )
-            vardb.registerVar( Variable(shortname = 'ElProbePtRealRebinned', latexname = 'p_{T}^{probe e} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,30,40,60,200,210]) )
+            vardb.registerVar( Variable(shortname = "ElProbed0sig", latexname = "|d_{0}^{sig}| probe e", ntuplename = "TMath::Abs(" + probe + "sigd0PV)", bins = 40, minval = 0.0, maxval = 10.0,) )
+            vardb.registerVar( Variable(shortname = "ElProbez0sintheta", latexname = "|z_{0}*sin(#theta)| probe e [mm]", ntuplename = "TMath::Abs(" + probe + "Z0SinTheta)", bins = 15, minval = 0.0, maxval = 1.5,) )
+            vardb.registerVar( Variable(shortname = "ElProbePtFakeRebinned", latexname = "p_{T}^{probe e} [GeV]", ntuplename = probe + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,40,200,210]) )
+            vardb.registerVar( Variable(shortname = "ElProbePtRealRebinned", latexname = "p_{T}^{probe e} [GeV]", ntuplename = probe + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,30,40,60,200,210]) )
 
         if False:
-            vardb.registerVar( Variable(shortname = 'MuTagPt', latexname = 'p_{T}^{tag #mu} [GeV]', ntuplename = 'lep_Tag_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0,) )
-            vardb.registerVar( Variable(shortname = 'MuTagEta', latexname = '#eta^{tag #mu}', ntuplename = 'TMath::Abs( lep_Tag_Eta )', bins = 8,  minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
-            vardb.registerVar( Variable(shortname = 'MuProbeNJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 8, minval = 2, maxval = 10, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = "MuTagPt", latexname = "p_{T}^{tag #mu} [GeV]", ntuplename = tag + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0,) )
+            vardb.registerVar( Variable(shortname = "MuTagEta", latexname = "#eta^{tag #mu}", ntuplename = "TMath::Abs( " + tag + "Eta )", bins = 8,  minval = 0.0, maxval = 2.5, manualbins = [ 0.0 , 0.1 , 0.4 , 0.7, 1.0,  1.3 , 1.6 , 1.9, 2.2, 2.5 ]) )
+            vardb.registerVar( Variable(shortname = "MuProbeNJets", latexname = "Jet multiplicity", ntuplename = "nJets_OR_T", bins = 8, minval = 2, maxval = 10, weight = "JVT_EventWeight") )
 
-        vardb.registerVar( Variable(shortname = 'MuProbePt', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0) )
-        vardb.registerVar( Variable(shortname = 'MuProbeEta', latexname = '#eta^{probe #mu}', ntuplename = 'TMath::Abs( lep_Probe_Eta )', bins = 25, minval = 0.0, maxval = 2.5) )
+        vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{probe #mu} [GeV]", ntuplename = probe + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0) )
+        vardb.registerVar( Variable(shortname = "MuProbeEta", latexname = "#eta^{probe #mu}", ntuplename = "TMath::Abs( " + probe + "Eta )", bins = 25, minval = 0.0, maxval = 2.5) )
         if False:
-            vardb.registerVar( Variable(shortname = 'MuProbed0sig', latexname = '|d_{0}^{sig}| probe #mu', ntuplename = 'TMath::Abs(lep_Probe_sigd0PV)', bins = 40, minval = 0.0, maxval = 10.0,) )
-            vardb.registerVar( Variable(shortname = 'MuProbez0sintheta', latexname = '|z_{0}*sin(#theta)| probe #mu [mm]', ntuplename = 'TMath::Abs(lep_Probe_Z0SinTheta)', bins = 15, minval = 0.0, maxval = 1.5,) )
-            vardb.registerVar( Variable(shortname = 'MuProbePtFakeRebinned', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,200,210]) )
-            vardb.registerVar( Variable(shortname = 'MuProbePtRealRebinned', latexname = 'p_{T}^{probe #mu} [GeV]', ntuplename = 'lep_Probe_Pt/1e3', bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,200,210]) )
+            vardb.registerVar( Variable(shortname = "MuProbed0sig", latexname = "|d_{0}^{sig}| probe #mu", ntuplename = "TMath::Abs(" + probe + "sigd0PV)", bins = 40, minval = 0.0, maxval = 10.0,) )
+            vardb.registerVar( Variable(shortname = "MuProbez0sintheta", latexname = "|z_{0}*sin(#theta)| probe #mu [mm]", ntuplename = "TMath::Abs(" + probe + "Z0SinTheta)", bins = 15, minval = 0.0, maxval = 1.5,) )
+            vardb.registerVar( Variable(shortname = "MuProbePtFakeRebinned", latexname = "p_{T}^{probe #mu} [GeV]", ntuplename = probe + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,200,210]) )
+            vardb.registerVar( Variable(shortname = "MuProbePtRealRebinned", latexname = "p_{T}^{probe #mu} [GeV]", ntuplename = probe + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0, manualbins = [10,15,20,25,200,210]) )
 
         # Probe truthType VS truthOrigin
         #
@@ -2072,7 +2165,7 @@ if __name__ == "__main__":
         # For DLT, trigger SF not available in v21 (and before).
         # Set trigger weight to 1
         #
-        if args.useDLT and "weight_event_trig" in category.weight:
+        if "DLT" in args.trigger and "weight_event_trig" in category.weight:
             category.weight = category.weight.replace("weight_event_trig","1.0")
 
         # ------------------------------

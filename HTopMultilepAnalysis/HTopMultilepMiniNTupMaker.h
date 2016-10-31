@@ -26,14 +26,19 @@
 
 namespace MiniNTupMaker {
 
+struct Branch_Types {
+  float f;
+  char c;
+  int i;
+};
+  
 class eventObj {
 
   public:
     eventObj():
       isMC(0), isSS01(0), isSS12(0),
       dilep(0), trilep(0),
-      notightlep(0),
-  	  weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
+      weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
     { };
 
     char isMC;
@@ -41,7 +46,6 @@ class eventObj {
     char isSS12;
     char dilep;
     char trilep;
-    char notightlep;
 
     float weight_event;
     float weight_event_trig;
@@ -56,7 +60,7 @@ class eventObj {
   public:
     leptonObj():
       pt(-1.0),eta(-999.0),etaBE2(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
-  	  pid(0),isolated(0),tight(0),trigmatched(0),prompt(0),fake(0),brems(0),qmisid(0),convph(0),tag(0),
+      pid(0),isolated(0),tight(0),trigmatched(0),trigmatched_SLT(0),trigmatched_DLT(0),prompt(0),fake(0),brems(0),qmisid(0),convph(0),tag_SLT(0),tag_DLT(0),
       SFIDLoose(1.0),
       SFIDTight(1.0),
       SFTrigLoose(1.0),
@@ -83,6 +87,8 @@ class eventObj {
     char isolated;
     char tight;
     char trigmatched;
+    char trigmatched_SLT;
+    char trigmatched_DLT;
     char prompt;
     char fake;
     char brems;
@@ -90,7 +96,9 @@ class eventObj {
     char convph;
     int  truthType;
     int  truthOrigin;
-    char tag;
+    char tag_SLT;
+    char tag_DLT;
+    
 
     float SFIDLoose;
     float SFIDTight;
@@ -397,38 +405,13 @@ private:
   
   char	    m_event_isTrigMatch_DLT;
 
-  float     m_lep_Tag_Pt;
-  float     m_lep_Tag_Eta;
-  float     m_lep_Tag_EtaBE2;
-  float     m_lep_Tag_sigd0PV;
-  float     m_lep_Tag_Z0SinTheta;
-  float	    m_lep_Tag_ID;
-  char	    m_lep_Tag_isTrigMatch;
-  char	    m_lep_Tag_isTightSelected;
-  char	    m_lep_Tag_isPrompt;
-  char	    m_lep_Tag_isBrems;
-  char	    m_lep_Tag_isFakeLep;
-  char	    m_lep_Tag_isQMisID;
-  char      m_lep_Tag_isConvPh;
-  int	    m_lep_Tag_truthType;
-  int	    m_lep_Tag_truthOrigin;
-
-  float     m_lep_Probe_Pt;
-  float     m_lep_Probe_Eta;
-  float     m_lep_Probe_EtaBE2;
-  float     m_lep_Probe_sigd0PV;
-  float     m_lep_Probe_Z0SinTheta;
-  float	    m_lep_Probe_ID;
-  char	    m_lep_Probe_isTrigMatch;
-  char	    m_lep_Probe_isTightSelected;
-  char	    m_lep_Probe_isPrompt;
-  char	    m_lep_Probe_isBrems;
-  char	    m_lep_Probe_isFakeLep;
-  char	    m_lep_Probe_isQMisID;
-  char      m_lep_Probe_isConvPh;
-  int	    m_lep_Probe_truthType;
-  int	    m_lep_Probe_truthOrigin;
-
+  /** Tag & Probe variables */
+  
+  char m_isBadTPEvent_SLT; /**No T&TM (SLT) leptons found */
+  char m_isBadTPEvent_DLT; /**No T&TM (DLT) leptons found */
+  
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_TagProbe_branches;
+  
   std::vector<float> m_lep_Pt;
   std::vector<float> m_lep_Eta;
   std::vector<float> m_lep_EtaBE2;

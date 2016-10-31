@@ -9,7 +9,7 @@ c = xAH_config()
 # List the branches to be copied over from the input TTree
 #
 eventweight_branches = ["mcWeightOrg","SherpaNJetWeight","pileupEventWeight_090",
-                        "MV2c10_70_EventWeight","JVT_EventWeight",
+                        "MV2c10_70_EventWeight","MV2c10_77_EventWeight","JVT_EventWeight",
 			"lepSFTrigLoose","lepSFTrigTight",
 			"lepSFObjLoose","lepSFObjTight",
 			"tauSFTight","tauSFLoose"]
@@ -17,8 +17,8 @@ eventweight_branches = ["mcWeightOrg","SherpaNJetWeight","pileupEventWeight_090"
 event_branches       = ["EventNumber","RunNumber","RunYear","mc_channel_number","averageIntPerXing","passEventCleaning",
                         "onelep_type","dilep_type","trilep_type","quadlep_type","total_charge","total_leptons",
                         "isQMisIDEvent","isFakeEvent","isLepFromPhEvent",
-			"nJets_OR","nJets_OR_MV2c10_70",
-                        "nJets_OR_T","nJets_OR_T_MV2c10_70",
+			"nJets_OR","nJets_OR_MV2c10_70","nJets_OR_MV2c10_77",
+                        "nJets_OR_T","nJets_OR_T_MV2c10_70","nJets_OR_T_MV2c10_77",
 			"nTaus_OR_Pt25",
 			"Mll01","Ptll01","DRll01","Mlll012","Mll02","Ptll02","DRll02","Mll12","Ptll12","DRll12","HT","HT_lep","HT_jets",
 			"MET_RefFinal_et","MET_RefFinal_phi",

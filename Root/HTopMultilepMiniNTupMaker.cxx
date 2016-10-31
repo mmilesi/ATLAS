@@ -369,38 +369,37 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
  
   m_outputNTuple->tree()->Branch("event_isTrigMatch_DLT",       &m_event_isTrigMatch_DLT, "event_isTrigMatch_DLT/B");
 
-  m_outputNTuple->tree()->Branch("lep_Tag_Pt",               	&m_lep_Tag_Pt, "lep_Tag_Pt/F");
-  m_outputNTuple->tree()->Branch("lep_Tag_Eta",                 &m_lep_Tag_Eta, "lep_Tag_Eta/F");
-  m_outputNTuple->tree()->Branch("lep_Tag_EtaBE2",              &m_lep_Tag_EtaBE2, "lep_Tag_EtaBE2/F");
-  m_outputNTuple->tree()->Branch("lep_Tag_sigd0PV",             &m_lep_Tag_sigd0PV, "lep_Tag_sigd0PV/F");
-  m_outputNTuple->tree()->Branch("lep_Tag_Z0SinTheta",          &m_lep_Tag_Z0SinTheta, "lep_Tag_Z0SinTheta/F");
-  m_outputNTuple->tree()->Branch("lep_Tag_ID",               	&m_lep_Tag_ID, "lep_Tag_ID/F");
-  m_outputNTuple->tree()->Branch("lep_Tag_isTrigMatch",         &m_lep_Tag_isTrigMatch, "lep_Tag_isTrigMatch/B");
-  m_outputNTuple->tree()->Branch("lep_Tag_isTightSelected",     &m_lep_Tag_isTightSelected, "lep_Tag_isTightSelected/B");
-  m_outputNTuple->tree()->Branch("lep_Tag_isPrompt",		&m_lep_Tag_isPrompt, "lep_Tag_isPrompt/B");
-  m_outputNTuple->tree()->Branch("lep_Tag_isBrems",		&m_lep_Tag_isBrems, "lep_Tag_isBrems/B");
-  m_outputNTuple->tree()->Branch("lep_Tag_isFakeLep",		&m_lep_Tag_isFakeLep, "lep_Tag_isFakeLep/B");
-  m_outputNTuple->tree()->Branch("lep_Tag_isQMisID",		&m_lep_Tag_isQMisID, "lep_Tag_isQMisID/B");
-  m_outputNTuple->tree()->Branch("lep_Tag_isConvPh",		&m_lep_Tag_isConvPh, "lep_Tag_isConvPh/B");
-  m_outputNTuple->tree()->Branch("lep_Tag_truthType",		&m_lep_Tag_truthType, "lep_Tag_truthType/I");
-  m_outputNTuple->tree()->Branch("lep_Tag_truthOrigin",		&m_lep_Tag_truthOrigin, "lep_Tag_truthOrigin/I");
+  std::vector<std::string> TPS   = { "Tag", "Probe" };
+  std::vector<std::string> TRIGS = { "SLT", "DLT" };
+  std::vector<std::string> VARS  = { "Pt/F", "Eta/F", "EtaBE2/F", "sigd0PV/F", "Z0SinTheta/F", "ID/F", "isTrigMatch/B", "isTightSelected/B", "isPrompt/B", "isBrems/B", "isFakeLep/B", "isQMisID/B", "isConvPh/B", "truthType/I", "truthOrigin/I" };
+  
+  m_outputNTuple->tree()->Branch("event_isBadTP_SLT", &m_isBadTPEvent_SLT, "event_isBadTP_SLT/B");
+  m_outputNTuple->tree()->Branch("event_isBadTP_DLT", &m_isBadTPEvent_DLT, "event_isBadTP_DLT/B");
+  
+  for ( const auto& tp : TPS ) {
+    
+    for ( const auto& trig : TRIGS ) {
+    
+      for ( const auto& var : VARS ) {
 
-  m_outputNTuple->tree()->Branch("lep_Probe_Pt",                &m_lep_Probe_Pt,         "lep_Probe_Pt/F");
-  m_outputNTuple->tree()->Branch("lep_Probe_Eta",               &m_lep_Probe_Eta, "lep_Probe_Eta/F");
-  m_outputNTuple->tree()->Branch("lep_Probe_EtaBE2",            &m_lep_Probe_EtaBE2, "lep_Probe_EtaBE2/F");
-  m_outputNTuple->tree()->Branch("lep_Probe_sigd0PV",           &m_lep_Probe_sigd0PV, "lep_Probe_sigd0PV/F");
-  m_outputNTuple->tree()->Branch("lep_Probe_Z0SinTheta",        &m_lep_Probe_Z0SinTheta, "lep_Probe_Z0SinTheta/F");
-  m_outputNTuple->tree()->Branch("lep_Probe_ID",                &m_lep_Probe_ID,        "lep_Probe_ID/F");
-  m_outputNTuple->tree()->Branch("lep_Probe_isTrigMatch",       &m_lep_Probe_isTrigMatch, "lep_Probe_isTrigMatch/B");
-  m_outputNTuple->tree()->Branch("lep_Probe_isTightSelected",   &m_lep_Probe_isTightSelected, "lep_Probe_isTightSelected/B");
-  m_outputNTuple->tree()->Branch("lep_Probe_isPrompt",		&m_lep_Probe_isPrompt, "lep_Probe_isPrompt/B");
-  m_outputNTuple->tree()->Branch("lep_Probe_isBrems",           &m_lep_Probe_isBrems, "lep_Probe_isBrems/B");
-  m_outputNTuple->tree()->Branch("lep_Probe_isFakeLep",		&m_lep_Probe_isFakeLep, "lep_Probe_isFakeLep/B");
-  m_outputNTuple->tree()->Branch("lep_Probe_isQMisID",		&m_lep_Probe_isQMisID, "lep_Probe_isQMisID/B");
-  m_outputNTuple->tree()->Branch("lep_Probe_isConvPh",		&m_lep_Probe_isConvPh, "lep_Probe_isConvPh/B");
-  m_outputNTuple->tree()->Branch("lep_Probe_truthType",		&m_lep_Probe_truthType, "lep_Probe_truthType/I");
-  m_outputNTuple->tree()->Branch("lep_Probe_truthOrigin",	&m_lep_Probe_truthOrigin, "lep_Probe_truthOrigin/I");
-
+        std::string branchtype     = var.substr( var.length() - 1 );
+        std::string branchname     = "lep_" + tp + "_" + trig + "_" + var.substr( 0, var.length() - 2 );
+        std::string branchnametype = var;
+        
+        if ( branchtype.compare("F") == 0 ) {
+          m_outputNTuple->tree()->Branch( branchname.c_str(), &( m_TagProbe_branches[branchname].f ), branchnametype.c_str() );
+        } else if ( branchtype.compare("B") == 0 ) {
+          m_outputNTuple->tree()->Branch( branchname.c_str(), &( m_TagProbe_branches[branchname].c ), branchnametype.c_str() );
+        } else if ( branchtype.compare("I") == 0 ) {
+          m_outputNTuple->tree()->Branch( branchname.c_str(), &( m_TagProbe_branches[branchname].i ), branchnametype.c_str() );
+        }
+      
+      }
+  
+    }
+  
+  }
+  
   m_outputNTuple->tree()->Branch("lep_Pt",		   	&m_lep_Pt);
   m_outputNTuple->tree()->Branch("lep_Eta",		   	&m_lep_Eta);
   m_outputNTuple->tree()->Branch("lep_EtaBE2",  	   	&m_lep_EtaBE2);
@@ -504,8 +503,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep0.get()->pid         = m_lep_isTightLH_0;
   lep0.get()->isolated    = ( fabs(m_lep_ID_0) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_0 : m_lep_isolationFixedCutTight_0;
   lep0.get()->trigmatched = m_lep_isTrigMatch_0;  
-  // TEMP --> for dilepton triggers, assume they are always matched!
-  //lep0.get()->trigmatched = 1;  
   lep0.get()->prompt      = m_lep_isPrompt_0;
   lep0.get()->fake        = m_lep_isFakeLep_0;
   lep0.get()->brems       = m_lep_isBrems_0;
@@ -543,8 +540,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep1.get()->pid         = m_lep_isTightLH_1;
   lep1.get()->isolated    = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_1 : m_lep_isolationFixedCutTight_1;
   lep1.get()->trigmatched = m_lep_isTrigMatch_1;  
-  // TEMP --> for dilepton triggers, assume they are always matched!
-  //lep1.get()->trigmatched = 1;  
   lep1.get()->prompt      = m_lep_isPrompt_1;
   lep1.get()->fake        = m_lep_isFakeLep_1;
   lep1.get()->brems       = m_lep_isBrems_1;
@@ -595,8 +590,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
     lep2.get()->pid	    = m_lep_isTightLH_2;
     lep2.get()->isolated    = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_2 : m_lep_isolationFixedCutTight_2;
     lep2.get()->trigmatched = m_lep_isTrigMatch_2;  
-    // TEMP --> for dilepton triggers, assume they are always matched!
-    //lep2.get()->trigmatched = 1;  
     lep2.get()->prompt      = m_lep_isPrompt_2;
     lep2.get()->fake	    = m_lep_isFakeLep_2;
     lep2.get()->brems       = m_lep_isBrems_2;
@@ -806,26 +799,29 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateEvent ( )
 EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching ( )
 {
 
-  if ( m_dilep_type == 1 ) { // 1) mumu
+  auto lep0 = m_leptons.at(0);
+  auto lep1 = m_leptons.at(1);
   
-    if ( m_muon_match_HLT_mu20_iloose_L1MU15->size() < 2 ) {
-      std::cout << "ALARM! m_muon_match_HLT_mu20_iloose_L1MU15->size() < 2" << std::endl;
-      return EL::StatusCode::FAILURE;
-    }
-    
+  // Initialise w/ dummy values
+  
+  m_lep_isTrigMatch_SLT_0 = m_lep_isTrigMatch_SLT_1 = m_lep_isTrigMatch_DLT_0 = m_lep_isTrigMatch_DLT_1 = -1;
+
+  if ( m_dilep_type == 1 ) { // 1) mumu
+      
     if ( m_RunYear == 2015 ) {
       
-      m_lep_isTrigMatch_SLT_0 = ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) || m_muon_match_HLT_mu50->at(0) );
-      m_lep_isTrigMatch_SLT_1 = ( m_muon_match_HLT_mu20_iloose_L1MU15->at(1) || m_muon_match_HLT_mu50->at(1) );
-      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu18_mu8noL1->at(0) );
-      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu18_mu8noL1->at(1) );
+      m_lep_isTrigMatch_SLT_0 = ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) && lep0.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep0.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(1) && lep1.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(1) && lep1.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu18_mu8noL1->at(0) && lep0.get()->pt > 1.05*18e3 );
+      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu18_mu8noL1->at(1) && lep1.get()->pt > 1.05*8e3 );
     
     } else if ( m_RunYear == 2016 ) {
     
-      m_lep_isTrigMatch_SLT_0 = ( m_muon_match_HLT_mu26_ivarmedium->at(0) || m_muon_match_HLT_mu50->at(0) );
-      m_lep_isTrigMatch_SLT_1 = ( m_muon_match_HLT_mu26_ivarmedium->at(1) || m_muon_match_HLT_mu50->at(1) );
-      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu22_mu8noL1->at(0) );
-      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu22_mu8noL1->at(1) );  
+    
+      m_lep_isTrigMatch_SLT_0 = ( ( m_muon_match_HLT_mu26_ivarmedium->at(0) && lep0.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep0.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( m_muon_match_HLT_mu26_ivarmedium->at(1) && lep1.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(1) && lep1.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu22_mu8noL1->at(0) && lep0.get()->pt > 1.05*22e3 );
+      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu22_mu8noL1->at(1) && lep1.get()->pt > 1.05*8e3 );  
     
     }
   
@@ -853,54 +849,52 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching ( )
     std::cout << "m_muon_match_HLT_e17_lhloose_mu14->size() = " << m_muon_match_HLT_e17_lhloose_mu14->size() << std::endl;
     std::cout << "m_muon_match_HLT_e17_lhloose_nod0_mu14->size() = " << m_muon_match_HLT_e17_lhloose_nod0_mu14->size() << std::endl;
     */
-    
-    auto lep0 = m_leptons.at(0);
-    auto lep1 = m_leptons.at(1);
 
     // NB: make sure to always read the first component of the trigmatch bits vector in this case!
     
     if ( m_RunYear == 2015 ) {
-
-      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) || m_electron_match_HLT_e60_lhmedium->at(0) || m_electron_match_HLT_e120_lhloose->at(0) ) ) || ( lep0.get()->flavour == 13 && ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) || m_muon_match_HLT_mu50->at(0) ) ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) || m_electron_match_HLT_e60_lhmedium->at(0) || m_electron_match_HLT_e120_lhloose->at(0) ) ) || ( lep1.get()->flavour == 13 && ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) || m_muon_match_HLT_mu50->at(0) ) ) );
-      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) || m_electron_match_HLT_e7_medium_mu24->at(0) ) ) || ( lep0.get()->flavour == 13 && ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) ||  m_muon_match_HLT_e7_medium_mu24->at(0) ) ) );
-      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) || m_electron_match_HLT_e7_medium_mu24->at(0) ) ) || ( lep1.get()->flavour == 13 && ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) ||  m_muon_match_HLT_e7_medium_mu24->at(0) ) ) );
+    
+      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) && lep0.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(0) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(0) && lep0.get()->pt > 121e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) && lep0.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep0.get()->pt > 1.05*50e3 ) ) ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) && lep1.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(0) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(0) && lep1.get()->pt > 121e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) && lep1.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep1.get()->pt > 1.05*50e3 ) ) ) );      
+      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e7_medium_mu24->at(0) && lep0.get()->pt > 8e3 ) || ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) && lep0.get()->pt > 25e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_e7_medium_mu24->at(0) && lep0.get()->pt > 1.05*24e3 ) || ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) && lep0.get()->pt > 1.05*8e3 ) ) ) );
+      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e7_medium_mu24->at(0) && lep1.get()->pt > 8e3 ) || ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) && lep1.get()->pt > 25e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_e7_medium_mu24->at(0) && lep1.get()->pt > 1.05*24e3 ) || ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) && lep1.get()->pt > 1.05*8e3 ) ) ) );
     
     } else if ( m_RunYear == 2016 ) {
-     
-      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) || m_electron_match_HLT_e60_lhmedium_nod0->at(0) || m_electron_match_HLT_e140_lhloose_nod0->at(0) ) ) || ( lep0.get()->flavour == 13 && ( m_muon_match_HLT_mu26_ivarmedium->at(0) || m_muon_match_HLT_mu50->at(0) ) ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) || m_electron_match_HLT_e60_lhmedium_nod0->at(0) || m_electron_match_HLT_e140_lhloose_nod0->at(0) ) ) || ( lep1.get()->flavour == 13 && ( m_muon_match_HLT_mu26_ivarmedium->at(0) || m_muon_match_HLT_mu50->at(0) ) ) );
-      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( m_electron_match_HLT_e17_lhloose_mu14->at(0) || m_electron_match_HLT_e17_lhloose_nod0_mu14->at(0) ) ) || ( lep0.get()->flavour == 13 && ( m_muon_match_HLT_e17_lhloose_mu14->at(0) || m_muon_match_HLT_e17_lhloose_nod0_mu14->at(0) ) ) );
-      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( m_electron_match_HLT_e17_lhloose_mu14->at(0) || m_electron_match_HLT_e17_lhloose_nod0_mu14->at(0) ) ) || ( lep1.get()->flavour == 13 && ( m_muon_match_HLT_e17_lhloose_mu14->at(0) || m_muon_match_HLT_e17_lhloose_nod0_mu14->at(0) ) ) );
+    
+      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) && lep0.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(0) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(0) && lep0.get()->pt > 141e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_mu26_ivarmedium->at(0) && lep0.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep0.get()->pt > 1.05*50e3 ) ) ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) && lep1.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(0) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(0) && lep1.get()->pt > 141e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_mu26_ivarmedium->at(0) && lep1.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep1.get()->pt > 1.05*50e3 ) ) ) );
+      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e17_lhloose_mu14->at(0) && lep0.get()->pt > 18e3 ) || ( m_electron_match_HLT_e17_lhloose_nod0_mu14->at(0) && lep0.get()->pt > 18e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_e17_lhloose_mu14->at(0) && lep0.get()->pt > 1.05*14e3 ) || ( m_muon_match_HLT_e17_lhloose_nod0_mu14->at(0) && lep0.get()->pt > 1.05*14e3 ) ) ) );
+      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e17_lhloose_mu14->at(0) && lep1.get()->pt > 18e3 ) || ( m_electron_match_HLT_e17_lhloose_nod0_mu14->at(0) && lep1.get()->pt > 18e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_e17_lhloose_mu14->at(0) && lep1.get()->pt > 1.05*14e3 ) || ( m_muon_match_HLT_e17_lhloose_nod0_mu14->at(0) && lep1.get()->pt > 1.05*14e3 ) ) ) );
     
     }
   
   } else if ( m_dilep_type == 3 ) { // 3) ee
 
-    if ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->size() < 2 ) {
-      std::cout << "ALARM! m_electron_match_HLT_e24_lhmedium_L1EM20VH->size() < 2" << std::endl;
-      return EL::StatusCode::FAILURE;
-    }
-
     if ( m_RunYear == 2015 ) {
       
-      m_lep_isTrigMatch_SLT_0 = ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) || m_electron_match_HLT_e60_lhmedium->at(0) || m_electron_match_HLT_e120_lhloose->at(0) );
-      m_lep_isTrigMatch_SLT_1 = ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(1) || m_electron_match_HLT_e60_lhmedium->at(1) || m_electron_match_HLT_e120_lhloose->at(1) );
-      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(0) );
-      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(1) );
+      m_lep_isTrigMatch_SLT_0 = ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) && lep0.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(0) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(0) && lep0.get()->pt > 121e3 ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(1) && lep1.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(1) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(1) && lep1.get()->pt > 121e3 ) );
+      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(0) && lep0.get()->pt > 13e3 );
+      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(1) && lep1.get()->pt > 13e3 );
     
     } else if ( m_RunYear == 2016 ) {
     
-      m_lep_isTrigMatch_SLT_0 = ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) || m_electron_match_HLT_e60_lhmedium_nod0->at(0) || m_electron_match_HLT_e140_lhloose_nod0->at(0) );
-      m_lep_isTrigMatch_SLT_1 = ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(1) || m_electron_match_HLT_e60_lhmedium_nod0->at(1) || m_electron_match_HLT_e140_lhloose_nod0->at(1) );
-      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(0) );
-      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(1) );  
+      m_lep_isTrigMatch_SLT_0 = ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) && lep0.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(0) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(0) && lep0.get()->pt > 141e3 ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(1) && lep1.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(1) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(1) && lep1.get()->pt > 141e3 ) );
+      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(0) && lep0.get()->pt > 18e3 );
+      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(1) && lep1.get()->pt > 18e3 );  
     
     }
 
   }
   
   m_event_isTrigMatch_DLT = ( m_lep_isTrigMatch_DLT_0 && m_lep_isTrigMatch_DLT_1 );
+  
+  lep0.get()->trigmatched_SLT = m_lep_isTrigMatch_SLT_0; 
+  lep1.get()->trigmatched_SLT = m_lep_isTrigMatch_SLT_1; 
+  
+  lep0.get()->trigmatched_DLT = m_lep_isTrigMatch_DLT_0; 
+  lep1.get()->trigmatched_DLT = m_lep_isTrigMatch_DLT_1; 
 
   return EL::StatusCode::SUCCESS;
 
@@ -1014,26 +1008,43 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
   //
   if ( !m_event.get()->dilep ) { return EL::StatusCode::SUCCESS; }
 
-  bool found_tag(false);
+  // Case 1) - use SLT matching
+  // Case 2) - use SLT matching
+
+  bool found_tag_SLT(false), found_tag_DLT(false);
+
+  // The first trigger-matched. tight lepton encountered in the event will be the tag (NB: the lepton container is pT-ordered).
+  // Events where no such lepton is found are flagged and will be discarded
+  
+  m_isBadTPEvent_SLT = m_isBadTPEvent_DLT = 0; // be optimistic!
 
   for ( auto lep : m_leptons ) {
 
-    if ( m_debug ) { Info("defineTagAndProbe()","lepton pT = %f", lep.get()->pt/1e3 ); }
+    if ( m_debug ) { Info("defineTagAndProbe()","lepton pT = %.2f", lep.get()->pt/1e3 ); }
 
-    if ( !found_tag && ( lep.get()->tight && lep.get()->trigmatched ) ) {
-      lep.get()->tag = 1;
-      found_tag = true;
-      if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found tag!"); }
+    if ( !found_tag_SLT && ( lep.get()->tight && lep.get()->trigmatched ) ) { // <---------- SHOULD use trigmatched_SLT (the Group NTup tm flag might be buggy!)
+      lep.get()->tag_SLT = 1;
+      found_tag_SLT = true;
+      if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found tag (SLT matching)!"); }
     }
-
+    if ( !found_tag_DLT && ( lep.get()->tight && lep.get()->trigmatched_DLT ) ) {
+      lep.get()->tag_DLT = 1;
+      found_tag_DLT = true;
+      if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found tag (DLT matching)!"); }
+    }
+  
   }
 
-  if ( !found_tag ) {
-    m_leptons.at(0).get()->tag = 1;
-    // take note that this event should not be used
-    m_event.get()->notightlep = 1;
-    if ( m_debug ) { Info("defineTagAndProbe()","None lepton is T&TM - choose leading as tag (pT = %f)", m_leptons.at(0).get()->pt/1e3 ); }
+  if ( !found_tag_SLT ) {
+    m_leptons.at(0).get()->tag_SLT = 1;
+    m_isBadTPEvent_SLT = 1;
+    if ( m_debug ) { Info("defineTagAndProbe()","None lepton is T & TM (SLT matching) - choose leading as tag (pT = %.2f) and flag this event as bad", m_leptons.at(0).get()->pt/1e3 ); }
   }
+  if ( !found_tag_DLT ) {
+    m_leptons.at(0).get()->tag_DLT = 1;
+    m_isBadTPEvent_DLT = 1;
+    if ( m_debug ) { Info("defineTagAndProbe()","None lepton is T & TM (DLT matching) - choose leading as tag (pT = %.2f) and flag this event as bad", m_leptons.at(0).get()->pt/1e3 ); }
+  }  
 
   return EL::StatusCode::SUCCESS;
 
@@ -1100,38 +1111,80 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 
     if ( m_event.get()->dilep ) {
 
-      if ( lep.get()->tag ) {
-  	m_lep_Tag_Pt		  = lep.get()->pt;
-  	m_lep_Tag_Eta		  = lep.get()->eta;
-  	m_lep_Tag_EtaBE2	  = lep.get()->etaBE2;
-  	m_lep_Tag_sigd0PV	  = lep.get()->d0sig;
-  	m_lep_Tag_Z0SinTheta	  = lep.get()->z0sintheta;
-  	m_lep_Tag_ID		  = lep.get()->ID;
-  	m_lep_Tag_isTrigMatch	  = lep.get()->trigmatched;
-  	m_lep_Tag_isTightSelected = lep.get()->tight;
-	m_lep_Tag_isPrompt        = lep.get()->prompt;
-	m_lep_Tag_isBrems         = lep.get()->brems;
-	m_lep_Tag_isFakeLep       = lep.get()->fake;
-	m_lep_Tag_isQMisID        = lep.get()->qmisid;
-	m_lep_Tag_isConvPh        = lep.get()->convph;
-	m_lep_Tag_truthType       = lep.get()->truthType;
-	m_lep_Tag_truthOrigin     = lep.get()->truthOrigin;
+      if ( lep.get()->tag_SLT ) {
+  	
+	m_TagProbe_branches["lep_Tag_SLT_Pt"].f              = lep.get()->pt;
+	m_TagProbe_branches["lep_Tag_SLT_Eta"].f             = lep.get()->eta;
+	m_TagProbe_branches["lep_Tag_SLT_EtaBE2"].f          = lep.get()->etaBE2;
+	m_TagProbe_branches["lep_Tag_SLT_sigd0PV"].f         = lep.get()->d0sig;
+	m_TagProbe_branches["lep_Tag_SLT_Z0SinTheta"].f      = lep.get()->z0sintheta;
+	m_TagProbe_branches["lep_Tag_SLT_ID"].f              = lep.get()->ID;
+	m_TagProbe_branches["lep_Tag_SLT_isTrigMatch"].c     = lep.get()->trigmatched; // <---------- SHOULD use trigmatched_SLT (the Group NTup tm flag might be buggy!)
+	m_TagProbe_branches["lep_Tag_SLT_isTightSelected"].c = lep.get()->tight;
+	m_TagProbe_branches["lep_Tag_SLT_isPrompt"].c        = lep.get()->prompt;
+	m_TagProbe_branches["lep_Tag_SLT_isBrems"].c         = lep.get()->brems;
+	m_TagProbe_branches["lep_Tag_SLT_isFakeLep"].c       = lep.get()->fake;
+	m_TagProbe_branches["lep_Tag_SLT_isQMisID"].c        = lep.get()->qmisid;
+	m_TagProbe_branches["lep_Tag_SLT_isConvPh"].c        = lep.get()->convph;
+	m_TagProbe_branches["lep_Tag_SLT_truthType"].i       = lep.get()->truthType;
+	m_TagProbe_branches["lep_Tag_SLT_truthOrigin"].i     = lep.get()->truthOrigin;
+      
       } else {
-  	m_lep_Probe_Pt  	    = lep.get()->pt;
-  	m_lep_Probe_Eta 	    = lep.get()->eta;
-  	m_lep_Probe_EtaBE2	    = lep.get()->etaBE2;
-  	m_lep_Probe_sigd0PV	    = lep.get()->d0sig;
-  	m_lep_Probe_Z0SinTheta      = lep.get()->z0sintheta;
-  	m_lep_Probe_ID  	    = lep.get()->ID;
-  	m_lep_Probe_isTrigMatch     = lep.get()->trigmatched;
-  	m_lep_Probe_isTightSelected = lep.get()->tight;
-	m_lep_Probe_isPrompt        = lep.get()->prompt;
-	m_lep_Probe_isBrems         = lep.get()->brems;
-	m_lep_Probe_isFakeLep       = lep.get()->fake;
-	m_lep_Probe_isQMisID        = lep.get()->qmisid;
-	m_lep_Probe_isConvPh        = lep.get()->convph;
-	m_lep_Probe_truthType       = lep.get()->truthType;
-	m_lep_Probe_truthOrigin     = lep.get()->truthOrigin;
+  	
+	m_TagProbe_branches["lep_Probe_SLT_Pt"].f              = lep.get()->pt;
+	m_TagProbe_branches["lep_Probe_SLT_Eta"].f             = lep.get()->eta;
+	m_TagProbe_branches["lep_Probe_SLT_EtaBE2"].f          = lep.get()->etaBE2;
+	m_TagProbe_branches["lep_Probe_SLT_sigd0PV"].f         = lep.get()->d0sig;
+	m_TagProbe_branches["lep_Probe_SLT_Z0SinTheta"].f      = lep.get()->z0sintheta;
+	m_TagProbe_branches["lep_Probe_SLT_ID"].f              = lep.get()->ID;
+	m_TagProbe_branches["lep_Probe_SLT_isTrigMatch"].c     = lep.get()->trigmatched; // <---------- SHOULD use trigmatched_SLT (the Group NTup tm flag might be buggy!)
+	m_TagProbe_branches["lep_Probe_SLT_isTightSelected"].c = lep.get()->tight;
+	m_TagProbe_branches["lep_Probe_SLT_isPrompt"].c        = lep.get()->prompt;
+	m_TagProbe_branches["lep_Probe_SLT_isBrems"].c         = lep.get()->brems;
+	m_TagProbe_branches["lep_Probe_SLT_isFakeLep"].c       = lep.get()->fake;
+	m_TagProbe_branches["lep_Probe_SLT_isQMisID"].c        = lep.get()->qmisid;
+	m_TagProbe_branches["lep_Probe_SLT_isConvPh"].c        = lep.get()->convph;
+	m_TagProbe_branches["lep_Probe_SLT_truthType"].i       = lep.get()->truthType;
+	m_TagProbe_branches["lep_Probe_SLT_truthOrigin"].i     = lep.get()->truthOrigin;
+	
+      }
+      
+      if ( lep.get()->tag_DLT ) {
+  	
+	m_TagProbe_branches["lep_Tag_DLT_Pt"].f              = lep.get()->pt;
+	m_TagProbe_branches["lep_Tag_DLT_Eta"].f             = lep.get()->eta;
+	m_TagProbe_branches["lep_Tag_DLT_EtaBE2"].f          = lep.get()->etaBE2;
+	m_TagProbe_branches["lep_Tag_DLT_sigd0PV"].f         = lep.get()->d0sig;
+	m_TagProbe_branches["lep_Tag_DLT_Z0SinTheta"].f      = lep.get()->z0sintheta;
+	m_TagProbe_branches["lep_Tag_DLT_ID"].f              = lep.get()->ID;
+	m_TagProbe_branches["lep_Tag_DLT_isTrigMatch"].c     = lep.get()->trigmatched_DLT; 
+	m_TagProbe_branches["lep_Tag_DLT_isTightSelected"].c = lep.get()->tight;
+	m_TagProbe_branches["lep_Tag_DLT_isPrompt"].c        = lep.get()->prompt;
+	m_TagProbe_branches["lep_Tag_DLT_isBrems"].c         = lep.get()->brems;
+	m_TagProbe_branches["lep_Tag_DLT_isFakeLep"].c       = lep.get()->fake;
+	m_TagProbe_branches["lep_Tag_DLT_isQMisID"].c        = lep.get()->qmisid;
+	m_TagProbe_branches["lep_Tag_DLT_isConvPh"].c        = lep.get()->convph;
+	m_TagProbe_branches["lep_Tag_DLT_truthType"].i       = lep.get()->truthType;
+	m_TagProbe_branches["lep_Tag_DLT_truthOrigin"].i     = lep.get()->truthOrigin;
+      
+      } else {
+  	
+	m_TagProbe_branches["lep_Probe_DLT_Pt"].f              = lep.get()->pt;
+	m_TagProbe_branches["lep_Probe_DLT_Eta"].f             = lep.get()->eta;
+	m_TagProbe_branches["lep_Probe_DLT_EtaBE2"].f          = lep.get()->etaBE2;
+	m_TagProbe_branches["lep_Probe_DLT_sigd0PV"].f         = lep.get()->d0sig;
+	m_TagProbe_branches["lep_Probe_DLT_Z0SinTheta"].f      = lep.get()->z0sintheta;
+	m_TagProbe_branches["lep_Probe_DLT_ID"].f              = lep.get()->ID;
+	m_TagProbe_branches["lep_Probe_DLT_isTrigMatch"].c     = lep.get()->trigmatched_DLT; 
+	m_TagProbe_branches["lep_Probe_DLT_isTightSelected"].c = lep.get()->tight;
+	m_TagProbe_branches["lep_Probe_DLT_isPrompt"].c        = lep.get()->prompt;
+	m_TagProbe_branches["lep_Probe_DLT_isBrems"].c         = lep.get()->brems;
+	m_TagProbe_branches["lep_Probe_DLT_isFakeLep"].c       = lep.get()->fake;
+	m_TagProbe_branches["lep_Probe_DLT_isQMisID"].c        = lep.get()->qmisid;
+	m_TagProbe_branches["lep_Probe_DLT_isConvPh"].c        = lep.get()->convph;
+	m_TagProbe_branches["lep_Probe_DLT_truthType"].i       = lep.get()->truthType;
+	m_TagProbe_branches["lep_Probe_DLT_truthOrigin"].i     = lep.get()->truthOrigin;
+	
       }
 
     }

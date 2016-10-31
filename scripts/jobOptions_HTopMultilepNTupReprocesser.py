@@ -30,16 +30,16 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                    "m_weightToCalc"               : "MM", #"QMisID", #,MM",
+                                    "m_weightToCalc"               : "QMisID", #,MM",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
-                                    #"m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v21.root",
-                                    #"m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_antiT_25ns_v21.root",
-                                    #"m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
-                                    #"m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPtLoose",
+                                    "m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v21.root",
+                                    "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_antiT_25ns_v21.root",
+                                    "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
+                                    "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPtLoose",
 				    #
-                                    "m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v19.root",
-                                    "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TantiT_25ns_v19.root",
-                                    "m_useTAntiTRates"             : True, # for v19
+                                    #"m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v19.root",
+                                    #"m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TantiT_25ns_v19.root",
+                                    #"m_useTAntiTRates"             : True, # for v19
                                     #
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMRates_25ns_v20_04_DDQMisID",
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMClosureRates_25ns_v20_04",
