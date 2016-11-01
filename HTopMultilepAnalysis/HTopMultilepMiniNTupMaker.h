@@ -309,7 +309,7 @@ private:
   ULong64_t       m_totalEvents;
   Float_t         m_totalEventsWeighted;
 
-  /** Trigger match decision per-lepton (for each chain) */
+  /** Trigger match decision per-lepton (for each chain) - BEFORE overlap removal! */
   
   // 2015
   
@@ -341,6 +341,12 @@ private:
   // 2015 & 2016
   
   std::vector<int> *m_muon_match_HLT_mu50 = nullptr; //!
+
+  /** Index of leptons which passed the overlap removal */
+  
+  std::vector<char> *m_electron_passOR = nullptr; //!
+  std::vector<char> *m_muon_passOR     = nullptr; //!
+
 
   /** Reco jets BEFORE overlap removal */
 
@@ -437,6 +443,7 @@ private:
 
   /** Other private members */
 
+  unsigned int m_effectiveTotEntries; //!
   unsigned int m_numEntry;   //!
   float        m_sumGenEvents;  //!
   float        m_sumGenEventsWeighted; //!
@@ -470,6 +477,7 @@ private:
   EL::StatusCode decorateEvent ();
   EL::StatusCode decorateWeights ();
 
+  EL::StatusCode getPostOLRIndex( int& idx, const unsigned int& pos, const std::string& lep_type );
   EL::StatusCode triggerMatching ();
 
   /**

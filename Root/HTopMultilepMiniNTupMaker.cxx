@@ -284,6 +284,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("muon_match_HLT_e17_lhloose_mu14",		      &m_muon_match_HLT_e17_lhloose_mu14);
   m_inputNTuple->SetBranchAddress ("muon_match_HLT_e17_lhloose_nod0_mu14",	      &m_muon_match_HLT_e17_lhloose_nod0_mu14);
    
+  m_inputNTuple->SetBranchAddress ("electron_passOR",        &m_electron_passOR);
+  m_inputNTuple->SetBranchAddress ("muon_passOR",            &m_muon_passOR);
+   
   m_inputNTuple->SetBranchAddress ("m_jet_pt",  &m_jet_pt);
   m_inputNTuple->SetBranchAddress ("m_jet_eta", &m_jet_eta);
   m_inputNTuple->SetBranchAddress ("m_jet_phi", &m_jet_phi);
@@ -305,6 +308,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
 
   m_sumWeightsTree->SetBranchAddress ("totalEvents", &m_totalEvents);
   m_sumWeightsTree->SetBranchAddress ("totalEventsWeighted", &m_totalEventsWeighted);
+
 
   return EL::StatusCode::SUCCESS;
 }
@@ -419,9 +423,20 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
 
   // ---------------------------------------------------------------------------------------------------------------
 
-  // Initialise counter for input TTree entries
+  // Initialise counter for input TTree entries processed
   //
   m_numEntry = 0;
+
+  m_effectiveTotEntries = m_inputNTuple->GetEntries();
+
+  unsigned int maxEvents = static_cast<int>( wk()->metaData()->castDouble("nc_EventLoop_MaxEvents") );
+  
+  if ( maxEvents > 0 ) {
+    m_effectiveTotEntries = maxEvents;
+  }
+    
+  Info("initialize()", "Name of input TTree : %s", m_inputNTuple->GetName() ); 
+  Info("initialize()", "Total events to run on: %u", m_effectiveTotEntries );
 
   // ---------------------------------------------------------------------------------------------------------------
 
@@ -435,7 +450,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
 
   // ---------------------------------------------------------------------------------------------------------------
 
-  Info("initialize()", "All good!");
+  Info("initialize()", "All good! Start processing now...");
 
   return EL::StatusCode::SUCCESS;
 }
@@ -460,8 +475,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
   }
 
-  if ( m_numEntry == 0 ) { Info("execute()", "Processing input TTree : %s\n", m_inputNTuple->GetName() ); }
-
   m_inputNTuple->GetEntry( wk()->treeEntry() );
 
   if ( m_debug ) { 
@@ -471,6 +484,10 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
   ++m_numEntry;
 
+  if ( m_numEntry >= 10000 && m_numEntry % 10000 == 0 ) {
+    std::cout << "Processed " << std::setprecision(3) << ( (float) m_numEntry / m_effectiveTotEntries ) * 1e2 << " % of total entries" << std::endl;
+  }
+  
   // ------------------------------------------------------------------------
 
   if ( !m_useAlgSelect ) {
@@ -795,9 +812,71 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateEvent ( )
 
 }
 
+EL::StatusCode  HTopMultilepMiniNTupMaker :: getPostOLRIndex( int& idx, const unsigned int& pos, const std::string& lep_type ) {
 
-EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching ( )
+  unsigned int idxOLR(0);
+  char passOLR(0);
+ 
+  if ( m_debug ) { std::cout << "\nlepton type: " << lep_type << "\nlooking at lepton ranked: " << pos << "\n" << std::endl; }
+ 
+  if ( lep_type.compare("electron") == 0 ) {
+    
+    for ( unsigned int e(0); e < m_electron_passOR->size(); ++e ) {
+      
+      passOLR = m_electron_passOR->at(e);
+      
+      if ( m_debug ) { std::cout << "\telectron - idx: " << e << ", pasOLR? " << static_cast<int>(passOLR) << std::endl; }
+      
+      if ( passOLR ) {
+        
+        if ( idxOLR == pos ) { 
+          idx = e;
+	  if ( m_debug ) { std::cout << "\t==> found! " << pos << "-th electron which pass OLR is at position " << idx << " in vector" << std::endl; }
+	  return EL::StatusCode::SUCCESS;
+        }
+	++idxOLR; 
+	
+      }
+    
+    }
+  
+  } else if ( lep_type.compare("muon") == 0 ) {
+
+    for ( unsigned int m(0); m < m_muon_passOR->size(); ++m ) {
+      
+      passOLR = m_muon_passOR->at(m);
+      
+      if ( m_debug ) { std::cout << "\tmuon - idx: " << m << ", pasOLR? " << static_cast<int>(passOLR) << std::endl; }
+      
+      if ( passOLR ) {
+        
+        if ( idxOLR == pos ) { 
+          idx = m;
+	  if ( m_debug ) { std::cout << "\t==> found! " << pos << "-th muon which pass OLR is at position " << idx << " in vector" << std::endl; }
+	  return EL::StatusCode::SUCCESS;
+        }
+	++idxOLR; 
+	
+      }
+    
+    }
+  
+  }
+  
+  if ( idx < 0 ) {
+    Error("getPostOLRIndex()","Index of %i-th %s passing OLR was not found. Aborting.", pos, lep_type.c_str() );
+    return EL::StatusCode::FAILURE; 
+  }
+  
+  return EL::StatusCode::SUCCESS;
+
+}
+
+
+EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching()
 {
+    
+  if ( m_debug ) { Info("triggerMatching()","Performing trigger matching..." ); }
 
   auto lep0 = m_leptons.at(0);
   auto lep1 = m_leptons.at(1);
@@ -806,26 +885,36 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching ( )
   
   m_lep_isTrigMatch_SLT_0 = m_lep_isTrigMatch_SLT_1 = m_lep_isTrigMatch_DLT_0 = m_lep_isTrigMatch_DLT_1 = -1;
 
+  // Get the indexes of leading/subleading leptons which passed the OLR
+
+  int el0_idx(-1), el1_idx(-1), mu0_idx(-1), mu1_idx(-1);
+
   if ( m_dilep_type == 1 ) { // 1) mumu
       
+    ANA_CHECK( this->getPostOLRIndex( mu0_idx, 0, "muon" ) );
+    ANA_CHECK( this->getPostOLRIndex( mu1_idx, 1, "muon" ) );
+            
     if ( m_RunYear == 2015 ) {
       
-      m_lep_isTrigMatch_SLT_0 = ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) && lep0.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep0.get()->pt > 1.05*50e3 ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(1) && lep1.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(1) && lep1.get()->pt > 1.05*50e3 ) );
-      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu18_mu8noL1->at(0) && lep0.get()->pt > 1.05*18e3 );
-      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu18_mu8noL1->at(1) && lep1.get()->pt > 1.05*8e3 );
+      m_lep_isTrigMatch_SLT_0 = ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu0_idx) && lep0.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep0.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu1_idx) && lep1.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(mu1_idx) && lep1.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu18_mu8noL1->at(mu0_idx) && lep0.get()->pt > 1.05*18e3 );
+      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu18_mu8noL1->at(mu1_idx) && lep1.get()->pt > 1.05*8e3 );
     
     } else if ( m_RunYear == 2016 ) {
     
     
-      m_lep_isTrigMatch_SLT_0 = ( ( m_muon_match_HLT_mu26_ivarmedium->at(0) && lep0.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep0.get()->pt > 1.05*50e3 ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( m_muon_match_HLT_mu26_ivarmedium->at(1) && lep1.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(1) && lep1.get()->pt > 1.05*50e3 ) );
-      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu22_mu8noL1->at(0) && lep0.get()->pt > 1.05*22e3 );
-      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu22_mu8noL1->at(1) && lep1.get()->pt > 1.05*8e3 );  
+      m_lep_isTrigMatch_SLT_0 = ( ( m_muon_match_HLT_mu26_ivarmedium->at(mu0_idx) && lep0.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep0.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( m_muon_match_HLT_mu26_ivarmedium->at(mu1_idx) && lep1.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(mu1_idx) && lep1.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu22_mu8noL1->at(mu0_idx) && lep0.get()->pt > 1.05*22e3 );
+      m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu22_mu8noL1->at(mu1_idx) && lep1.get()->pt > 1.05*8e3 );  
     
     }
   
   } else if ( m_dilep_type == 2 ) { // 2) OF
+    
+    ANA_CHECK( this->getPostOLRIndex( el0_idx, 0, "electron" ) );
+    ANA_CHECK( this->getPostOLRIndex( mu0_idx, 0, "muon" ) );
     
     /*
     std::cout << "\n2015: \n" << std::endl;
@@ -850,39 +939,42 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching ( )
     std::cout << "m_muon_match_HLT_e17_lhloose_nod0_mu14->size() = " << m_muon_match_HLT_e17_lhloose_nod0_mu14->size() << std::endl;
     */
 
-    // NB: make sure to always read the first component of the trigmatch bits vector in this case!
+    // NB: make sure to always read the leading component (passing OLR) of the trigmatch bits vector in this case!
     
     if ( m_RunYear == 2015 ) {
     
-      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) && lep0.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(0) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(0) && lep0.get()->pt > 121e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) && lep0.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep0.get()->pt > 1.05*50e3 ) ) ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) && lep1.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(0) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(0) && lep1.get()->pt > 121e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(0) && lep1.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep1.get()->pt > 1.05*50e3 ) ) ) );      
-      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e7_medium_mu24->at(0) && lep0.get()->pt > 8e3 ) || ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) && lep0.get()->pt > 25e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_e7_medium_mu24->at(0) && lep0.get()->pt > 1.05*24e3 ) || ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) && lep0.get()->pt > 1.05*8e3 ) ) ) );
-      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e7_medium_mu24->at(0) && lep1.get()->pt > 8e3 ) || ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) && lep1.get()->pt > 25e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_e7_medium_mu24->at(0) && lep1.get()->pt > 1.05*24e3 ) || ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(0) && lep1.get()->pt > 1.05*8e3 ) ) ) );
+      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el0_idx) && lep0.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(el0_idx) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(el0_idx) && lep0.get()->pt > 121e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu0_idx) && lep0.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep0.get()->pt > 1.05*50e3 ) ) ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el0_idx) && lep1.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(el0_idx) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(el0_idx) && lep1.get()->pt > 121e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu0_idx) && lep1.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep1.get()->pt > 1.05*50e3 ) ) ) );      
+      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e7_medium_mu24->at(el0_idx) && lep0.get()->pt > 8e3 ) || ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(el0_idx) && lep0.get()->pt > 25e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_e7_medium_mu24->at(mu0_idx) && lep0.get()->pt > 1.05*24e3 ) || ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(mu0_idx) && lep0.get()->pt > 1.05*8e3 ) ) ) );
+      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e7_medium_mu24->at(el0_idx) && lep1.get()->pt > 8e3 ) || ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(el0_idx) && lep1.get()->pt > 25e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_e7_medium_mu24->at(mu0_idx) && lep1.get()->pt > 1.05*24e3 ) || ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(mu0_idx) && lep1.get()->pt > 1.05*8e3 ) ) ) );
     
     } else if ( m_RunYear == 2016 ) {
     
-      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) && lep0.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(0) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(0) && lep0.get()->pt > 141e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_mu26_ivarmedium->at(0) && lep0.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep0.get()->pt > 1.05*50e3 ) ) ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) && lep1.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(0) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(0) && lep1.get()->pt > 141e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_mu26_ivarmedium->at(0) && lep1.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(0) && lep1.get()->pt > 1.05*50e3 ) ) ) );
-      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e17_lhloose_mu14->at(0) && lep0.get()->pt > 18e3 ) || ( m_electron_match_HLT_e17_lhloose_nod0_mu14->at(0) && lep0.get()->pt > 18e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_e17_lhloose_mu14->at(0) && lep0.get()->pt > 1.05*14e3 ) || ( m_muon_match_HLT_e17_lhloose_nod0_mu14->at(0) && lep0.get()->pt > 1.05*14e3 ) ) ) );
-      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e17_lhloose_mu14->at(0) && lep1.get()->pt > 18e3 ) || ( m_electron_match_HLT_e17_lhloose_nod0_mu14->at(0) && lep1.get()->pt > 18e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_e17_lhloose_mu14->at(0) && lep1.get()->pt > 1.05*14e3 ) || ( m_muon_match_HLT_e17_lhloose_nod0_mu14->at(0) && lep1.get()->pt > 1.05*14e3 ) ) ) );
+      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el0_idx) && lep0.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(el0_idx) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(el0_idx) && lep0.get()->pt > 141e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_mu26_ivarmedium->at(mu0_idx) && lep0.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep0.get()->pt > 1.05*50e3 ) ) ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el0_idx) && lep1.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(el0_idx) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(el0_idx) && lep1.get()->pt > 141e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_mu26_ivarmedium->at(mu0_idx) && lep1.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep1.get()->pt > 1.05*50e3 ) ) ) );
+      m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e17_lhloose_mu14->at(el0_idx) && lep0.get()->pt > 18e3 ) || ( m_electron_match_HLT_e17_lhloose_nod0_mu14->at(el0_idx) && lep0.get()->pt > 18e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_e17_lhloose_mu14->at(mu0_idx) && lep0.get()->pt > 1.05*14e3 ) || ( m_muon_match_HLT_e17_lhloose_nod0_mu14->at(mu0_idx) && lep0.get()->pt > 1.05*14e3 ) ) ) );
+      m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e17_lhloose_mu14->at(el0_idx) && lep1.get()->pt > 18e3 ) || ( m_electron_match_HLT_e17_lhloose_nod0_mu14->at(el0_idx) && lep1.get()->pt > 18e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_e17_lhloose_mu14->at(mu0_idx) && lep1.get()->pt > 1.05*14e3 ) || ( m_muon_match_HLT_e17_lhloose_nod0_mu14->at(mu0_idx) && lep1.get()->pt > 1.05*14e3 ) ) ) );
     
     }
   
   } else if ( m_dilep_type == 3 ) { // 3) ee
 
+    ANA_CHECK( this->getPostOLRIndex( el0_idx, 0, "electron" ) );
+    ANA_CHECK( this->getPostOLRIndex( el1_idx, 1, "electron" ) );
+
     if ( m_RunYear == 2015 ) {
       
-      m_lep_isTrigMatch_SLT_0 = ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(0) && lep0.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(0) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(0) && lep0.get()->pt > 121e3 ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(1) && lep1.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(1) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(1) && lep1.get()->pt > 121e3 ) );
-      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(0) && lep0.get()->pt > 13e3 );
-      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(1) && lep1.get()->pt > 13e3 );
+      m_lep_isTrigMatch_SLT_0 = ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el0_idx) && lep0.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(el0_idx) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(el0_idx) && lep0.get()->pt > 121e3 ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el1_idx) && lep1.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(el1_idx) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(el1_idx) && lep1.get()->pt > 121e3 ) );
+      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(el0_idx) && lep0.get()->pt > 13e3 );
+      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(el1_idx) && lep1.get()->pt > 13e3 );
     
     } else if ( m_RunYear == 2016 ) {
     
-      m_lep_isTrigMatch_SLT_0 = ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(0) && lep0.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(0) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(0) && lep0.get()->pt > 141e3 ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(1) && lep1.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(1) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(1) && lep1.get()->pt > 141e3 ) );
-      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(0) && lep0.get()->pt > 18e3 );
-      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(1) && lep1.get()->pt > 18e3 );  
+      m_lep_isTrigMatch_SLT_0 = ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el0_idx) && lep0.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(el0_idx) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(el0_idx) && lep0.get()->pt > 141e3 ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el1_idx) && lep1.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(el1_idx) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(el1_idx) && lep1.get()->pt > 141e3 ) );
+      m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(el0_idx) && lep0.get()->pt > 18e3 );
+      m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(el1_idx) && lep1.get()->pt > 18e3 );  
     
     }
 

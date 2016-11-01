@@ -57,6 +57,7 @@ trigmatch_branches   = [
         		"muon_match_HLT_mu50",
                        ]
 
+vec_lep_branches     = ["electron_passOR","muon_passOR"]
 
 lep_branches         = ["lep_ID_0",
                         "lep_Index_0",
@@ -238,7 +239,7 @@ branches_to_copy = eventweight_branches + event_branches + trigbits_branches + j
 jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_E","m_jet_flavor_truth_label","m_jet_flavor_truth_label_ghost"]
 jet_truth_vec_branches = ["m_truth_jet_pt","m_truth_jet_eta","m_truth_jet_phi","m_truth_jet_e"]
 
-branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches + trigmatch_branches
+branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches + trigmatch_branches + vec_lep_branches
 
 # Trick to pass the list as a comma-separated string to the C++ algorithm
 #
