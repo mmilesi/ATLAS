@@ -106,6 +106,8 @@ class RealFakeEffTagAndProbe:
         self.__outputpath = os.path.abspath(os.path.curdir)
         self.__outputfile = None
         self.__outputfile_yields = None
+	
+	self.__averagehists = False
 
 	if not self.closure:
 	    self.__processes.append("observed")
@@ -497,7 +499,10 @@ class RealFakeEffTagAndProbe:
                         self.antitight_hists[key] = self.antitight_hists[key].Rebin( nbins, key, arr_bins )
 
         if averagehistlist:
-            for key in self.histkeys:
+            
+	    self.__averagehists = True
+	    
+	    for key in self.histkeys:
 
 		tokens = key.split("_")
 
@@ -836,6 +841,9 @@ class RealFakeEffTagAndProbe:
 
 	self.__outputpath = outputpath
 
+        if self.__averagehists:
+	    filename += "Avg"
+
         print("\nStoring output files:\n{0}\n{1}\nin directory: {2}".format(filename+".root",filename+".txt",os.path.abspath(outputpath)))
 
         self.__outputfile_yields = open(self.__outputpath+"/"+filename+".txt","w")
@@ -940,8 +948,10 @@ class RealFakeEffTagAndProbe:
         sub = ("w/","w/o")[bool(self.nosub)]
         proc_dict = {"observed":"Data ({0} subtraction)".format(sub), "expectedbkg":"simulation"}
 
-        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/BasicPlots"):
-	    os.makedirs(self.__outputpath+"/EfficiencyPlots/BasicPlots")
+        savepath = self.__outputpath+"/EfficiencyPlots"+("","_Avg")[self.__averagehists]
+        
+	if not os.path.exists(savepath+"/BasicPlots"):
+	    os.makedirs(savepath+"/BasicPlots")
 
         for var in self.__variables:
 
@@ -1006,7 +1016,7 @@ class RealFakeEffTagAndProbe:
                 canvas_filename = "_".join(("RealFake",lep,var,"Efficiency",proc))
 
 		for extension in self.extensionlist:
-		    c.SaveAs(self.__outputpath+"/EfficiencyPlots/BasicPlots/"+canvas_filename+"."+extension)
+		    c.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"."+extension)
 
 
     def plotMakerSys( self ):
@@ -1014,11 +1024,13 @@ class RealFakeEffTagAndProbe:
 	proc = ("observed","expectedbkg")[bool(self.closure)]
 
         proc_dict = {"observed":"Data (w/ subtraction)", "expectedbkg":"simulation"}
+        
+	savepath = self.__outputpath+"/EfficiencyPlots"+("","_Avg")[self.__averagehists]
 
-        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/SplitSys"):
-	    os.makedirs(self.__outputpath+"/EfficiencyPlots/SplitSys")
-        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/CombinedSys"):
-	    os.makedirs(self.__outputpath+"/EfficiencyPlots/CombinedSys")
+        if not os.path.exists(savepath+"/SplitSys"):
+	    os.makedirs(savepath+"/SplitSys")
+        if not os.path.exists(savepath+"/CombinedSys"):
+	    os.makedirs(savepath+"/CombinedSys")
 	    
         for var in self.__variables:
 
@@ -1246,7 +1258,7 @@ class RealFakeEffTagAndProbe:
 		    canvas_filename = "_".join((eff,lep,var,"Efficiency",proc,"Systematics"))
 
 		    for extension in self.extensionlist:
-		        c.SaveAs(self.__outputpath+"/EfficiencyPlots/SplitSys/"+canvas_filename+"."+extension)
+		        c.SaveAs(savepath+"/SplitSys/"+canvas_filename+"."+extension)
 
                     # Reset axis labels to default (otherwise next plots won't have labels)
 		    
@@ -1365,7 +1377,7 @@ class RealFakeEffTagAndProbe:
 		    canvas_allsys_filename = "_".join((eff,lep,var,"Efficiency",proc,"CombinedSystematics"))
 
 		    for extension in self.extensionlist:
-		        c_allsys.SaveAs(self.__outputpath+"/EfficiencyPlots/CombinedSys/"+canvas_allsys_filename+"."+extension)
+		        c_allsys.SaveAs(savepath+"/CombinedSys/"+canvas_allsys_filename+"."+extension)
 		
 
     def __set_fancy_2D_style( self ):

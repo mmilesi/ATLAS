@@ -30,7 +30,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                    "m_weightToCalc"               : "QMisID", #,MM",
+                                    "m_weightToCalc"               : "MM", #"QMisID",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
                                     "m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v21.root",
                                     "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_antiT_25ns_v21.root",
@@ -44,8 +44,10 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMRates_25ns_v20_04_DDQMisID",
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMClosureRates_25ns_v20_04",
 				    #
-				    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMRates_25ns_v20_04_DDQMisID_ICHEPBinning",
+				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMRates_25ns_v20_04_DDQMisID_ICHEPBinning",
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMClosureRates_25ns_v20_04_ICHEPBinning",
+				    #
+				    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_LHFit_NoCorr_DLT_25ns_v21",
 				    #
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
 				    #
@@ -65,8 +67,11 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #"m_systematics_list"           : "Nominal,Stat,numerator_QMisID,denominator_QMisID",
 				    "m_systematics_list"           : "Nominal,Stat",
 				    "m_useTrigMatchingInfo"        : False,
-				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
-                                    "m_doMMClosure"                : False,
+				    #
+				    #"m_Efficiency_Filename"        : "LeptonEfficiencies.root",
+				    "m_Efficiency_Filename"        : "LeptonEfficiencies_LH.root",
+				    #
+                                    "m_doMMClosure"                : True,
                                     "m_useEtaParametrisation"      : False,
 				    "m_useTEfficiency"             : False,
                                   }

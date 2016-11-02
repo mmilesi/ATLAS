@@ -294,14 +294,13 @@ def plotter_r_flavours():
   #file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
   
   # CLOSURE
-  #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
-  file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v14_DLT_2015/Rates.root"
+  file_TP_path = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_25ns_v21/LeptonEfficiencies.root"
 
   file_TP = TFile(file_TP_path)
 
   #hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Real_Efficiency_observed") )[bool(args.flavour == "mu")]
   # CLOSURE
-  hist_TP = ( file_TP.Get("El_ProbePt_Real_Efficiency_expected"), file_TP.Get("Mu_ProbePt_Real_Efficiency_expected") )[bool(args.flavour == "mu")]
+  hist_TP = ( file_TP.Get("Real_El_Pt_Efficiency_expectedbkg"), file_TP.Get("Real_Mu_Pt_Efficiency_expectedbkg") )[bool(args.flavour == "mu")]
 
   print("Reading histogram {0} from file {1}".format(hist_TP.GetName(), file_TP_path))
 
@@ -346,19 +345,20 @@ def plotter_r_flavours():
   # -------------------------------------------
 
   #LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub_DiffFlavours/"
-  LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_LHFit_25ns_v14_DLT_2015/LHClosureRates_25ns_v14_DLT_2015/"
+  
+  LH_init_path = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_LHFit_NoCorr_DLT_25ns_v21/LeptonEfficiencies_LH/"
   
   hist_LH_list = []
   #flav_comp_list = ["mumu","elel","of","incl"]
-  #flav_comp_list = ["mumu"]
-  flav_comp_list = ["incl"]
+  flav_comp_list = ["mumu","elel"]
+  #flav_comp_list = ["incl"]
 
   if ( args.flavour == "mu" and "elel" in flav_comp_list ): flav_comp_list.remove("elel")
   if ( args.flavour == "el" and "mumu" in flav_comp_list ): flav_comp_list.remove("mumu")
 
   for idx, flavcomp in enumerate(flav_comp_list,start=0):
 
-    file_LH_path = LH_init_path + "Fit_" + flavcomp + "/LH_efficiencies_real_" + args.flavour + "_" + flavcomp + ".root"
+    file_LH_path = LH_init_path + "LH_" + flavcomp + "/LH_efficiencies_real_" + args.flavour + "_" + flavcomp + ".root"
 
     file_LH = TFile(file_LH_path)
 
@@ -432,7 +432,7 @@ def plotter_r_flavours():
     legend.Draw()
 
   leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
-  leg_lumi.DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}")
+  leg_lumi.DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 22.1 fb^{-1}")
 
   canvasname = ( "real_eff_el_TP_LH", "real_eff_mu_TP_LH" )[bool(args.flavour == "mu")]
   c.SaveAs( canvasname + ".png" )
@@ -448,13 +448,13 @@ def plotter_f_flavours():
  
   # CLOSURE
   #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
-  file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v14_DLT_2015/Rates.root"
+  file_TP_path = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_25ns_v21/LeptonEfficiencies.root"
 
   file_TP = TFile(file_TP_path)
 
   #hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_observed"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_observed") )[bool(args.flavour == "mu")]
   # CLOSURE
-  hist_TP = ( file_TP.Get("El_ProbePt_Fake_Efficiency_expected"), file_TP.Get("Mu_ProbePt_Fake_Efficiency_expected") )[bool(args.flavour == "mu")]
+  hist_TP = ( file_TP.Get("Fake_El_Pt_Efficiency_expectedbkg"), file_TP.Get("Fake_Mu_Pt_Efficiency_expectedbkg") )[bool(args.flavour == "mu")]
 
   print("Reading histogram {0} from file {1}".format(hist_TP.GetName(), file_TP_path))
 
@@ -496,19 +496,20 @@ def plotter_f_flavours():
   # -------------------------------------------
 
   #LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_LHFit_25ns_v7_FinalSelection_NominalBinning/FittedEfficiencies_YesSub_DiffFlavours/"
-  LH_init_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_LHFit_25ns_v14_DLT_2015/LHClosureRates_25ns_v14_DLT_2015/"
+
+  LH_init_path = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_LHFit_NoCorr_DLT_25ns_v21/LeptonEfficiencies_LH/"
 
   hist_LH_list = []
   #flav_comp_list = ["mumu","elel","of","incl"]
-  #flav_comp_list = ["mumu"]
-  flav_comp_list = ["incl"]
+  flav_comp_list = ["mumu","elel"]
+  #flav_comp_list = ["incl"]
 
   if ( args.flavour == "mu" and "elel" in flav_comp_list ): flav_comp_list.remove("elel")
   if ( args.flavour == "el" and "mumu" in flav_comp_list ): flav_comp_list.remove("mumu")
 
   for idx, flavcomp in enumerate(flav_comp_list,start=0):
 
-    file_LH_path = LH_init_path + "Fit_" + flavcomp + "/LH_efficiencies_fake_" + args.flavour + "_" + flavcomp + ".root"
+    file_LH_path = LH_init_path + "LH_" + flavcomp + "/LH_efficiencies_fake_" + args.flavour + "_" + flavcomp + ".root"
 
     file_LH = TFile(file_LH_path)
 
@@ -589,7 +590,7 @@ def plotter_f_flavours():
     legend.Draw()
 
   leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
-  leg_lumi.DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 3.2 fb^{-1}")
+  leg_lumi.DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 22.1 fb^{-1}")
 
   canvasname = ( "fake_eff_el_TP_LH", "fake_eff_mu_TP_LH" )[bool(args.flavour == "mu")]
   c.SaveAs( canvasname + ".png" )

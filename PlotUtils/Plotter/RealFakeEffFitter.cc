@@ -822,10 +822,10 @@ LHFitter :: LHFitter( kFlavour FLAVOUR, kEfficiency EFFICIENCY ) :
 
   if ( m_efficiency == kEfficiency::REAL ) { m_efficiency_str = "REAL"; }
   if ( m_efficiency == kEfficiency::FAKE ) { m_efficiency_str = "FAKE"; }
-  if ( m_flavour == kFlavour::ELEL ) { m_flavour_str = "ELEL"; }
-  if ( m_flavour == kFlavour::MUMU ) { m_flavour_str = "MUMU"; }
-  if ( m_flavour == kFlavour::OF ) { m_flavour_str = "OF"; }
-  if ( m_flavour == kFlavour::INCLUSIVE ) { m_flavour_str = "INCLUSIVE"; }
+  if ( m_flavour == kFlavour::ELEL )       { m_flavour_str = "ELEL"; }
+  if ( m_flavour == kFlavour::MUMU )       { m_flavour_str = "MUMU"; }
+  if ( m_flavour == kFlavour::OF )         { m_flavour_str = "OF"; }
+  if ( m_flavour == kFlavour::INCLUSIVE )  { m_flavour_str = "INCLUSIVE"; }
 
   Info("LHFitter()","Creating class instance to fit %s efficiency for %s... \n", m_efficiency_str.c_str(), m_flavour_str.c_str() );
 
@@ -1782,8 +1782,8 @@ void LHFitter :: readTagAndProbeEff() {
 
   Info("readTagAndProbeEff()", "Reading histograms with tag and probe efficiencies from input...");
 
-  std::string path     = m_input_path_TP + "Rates.root";
-  std::string path_avg = m_input_path_TP + "AvgRates.root";
+  std::string path     = m_input_path_TP + "LeptonEfficiencies.root";
+  std::string path_avg = m_input_path_TP + "LeptonEfficienciesAvg.root";
 
   TFile *file = TFile::Open(path.c_str());
   if ( !file->IsOpen() ) {
@@ -1802,12 +1802,12 @@ void LHFitter :: readTagAndProbeEff() {
   std::string filename_rmu(""), filename_rmu_avg("");
   std::string filename_fmu(""), filename_fmu_avg("");
 
-  std::string eff_type = ( !s_useMC ) ? "observed" : "expected";
+  std::string eff_type = ( !s_useMC ) ? "observed_sub" : "expectedbkg";
 
-  filename_rel = filename_rel_avg = "El_ProbePt_Real_Efficiency_" + eff_type;
-  filename_fel = filename_fel_avg = "El_ProbePt_Fake_Efficiency_" + eff_type;
-  filename_rmu = filename_rmu_avg = "Mu_ProbePt_Real_Efficiency_" + eff_type;
-  filename_fmu = filename_fmu_avg = "Mu_ProbePt_Fake_Efficiency_" + eff_type;
+  filename_rel = filename_rel_avg = "Real_El_Pt_Efficiency_" + eff_type;
+  filename_fel = filename_fel_avg = "Fake_El_Pt_Efficiency_" + eff_type;
+  filename_rmu = filename_rmu_avg = "Real_Mu_Pt_Efficiency_" + eff_type;
+  filename_fmu = filename_fmu_avg = "Fake_Mu_Pt_Efficiency_" + eff_type;
 
   TH1D *releff = get_object<TH1D>( *file, filename_rel );
   TH1D *feleff = get_object<TH1D>( *file, filename_fel );
@@ -1869,7 +1869,7 @@ void LHFitter :: getHists() {
       flavour_comb.push_back("ElMu");
   }
 
-  std::string eff_type = ( !s_useMC ) ? "observed" : "expected";
+  std::string eff_type = ( !s_useMC ) ? "observed" : "expectedbkg";
 
   for ( const auto& flav : flavour_comb ) {
 
@@ -1894,7 +1894,7 @@ void LHFitter :: getHists() {
 
 	      Info("getHists()", "Subtracting bkgs to data...");
 
-	      TH2D *hist_to_sub = get_object<TH2D>( *file, "expected" );
+	      TH2D *hist_to_sub = get_object<TH2D>( *file, "expectedbkg" );
 	      hist->Add(hist_to_sub, -1.0);
 
 	      // Set bin content to 0 if subtraction gives negative yield
@@ -2700,6 +2700,38 @@ void  LHFitter :: saveEfficiencies() {
   }
 
   std::string xtitle("");
+  
+  // This little hack simplifies our life below.
+  // The vector gets a new first component copying the old one (that would correspond to the underflow bin)
+  //
+  // The last component (the overflow) is set to the value of the second last bin (aka the one before the overflow)
+  // 
+  if ( m_efficiency == kEfficiency::REAL ) { 
+  
+    m_rmu_vals.insert( m_rmu_vals.begin(), m_rmu_vals.at(0) );
+    m_rmu_vals.at( m_rmu_vals.size()-1 ) = m_rmu_vals.at( m_rmu_vals.size()-2 );
+    m_rmu_errs.insert( m_rmu_errs.begin(), m_rmu_errs.at(0) );
+    m_rmu_errs.at( m_rmu_errs.size()-1 ) = m_rmu_errs.at( m_rmu_errs.size()-2 );
+    
+    m_rel_vals.insert( m_rel_vals.begin(), m_rel_vals.at(0) );
+    m_rel_vals.at( m_rel_vals.size()-1 ) = m_rel_vals.at( m_rel_vals.size()-2 );
+    m_rel_errs.insert( m_rel_errs.begin(), m_rel_errs.at(0) );
+    m_rel_errs.at( m_rel_errs.size()-1 ) = m_rel_errs.at( m_rel_errs.size()-2 );
+  
+  }
+  if ( m_efficiency == kEfficiency::FAKE ) { 
+
+    m_fmu_vals.insert( m_fmu_vals.begin(), m_fmu_vals.at(0) );
+    m_fmu_vals.at( m_fmu_vals.size()-1 ) = m_fmu_vals.at( m_fmu_vals.size()-2 );
+    m_fmu_errs.insert( m_fmu_errs.begin(), m_fmu_errs.at(0) );
+    m_fmu_errs.at( m_fmu_errs.size()-1 ) = m_fmu_errs.at( m_fmu_errs.size()-2 );
+    
+    m_fel_vals.insert( m_fel_vals.begin(), m_fel_vals.at(0) );
+    m_fel_vals.at( m_fel_vals.size()-1 ) = m_fel_vals.at( m_fel_vals.size()-2 );
+    m_fel_errs.insert( m_fel_errs.begin(), m_fel_errs.at(0) );
+    m_fel_errs.at( m_fel_errs.size()-1 ) = m_fel_errs.at( m_fel_errs.size()-2 );
+    
+  }
 
   for ( auto& outfilename : outfilenames ) {
 
@@ -2724,7 +2756,6 @@ void  LHFitter :: saveEfficiencies() {
 	double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
 	r_hist = new TH1D( "r_hist", "real efficiency", m_nPtBins_Linear-1, rmin, rmax );
       }
-      r_hist->SetCanExtend(TH1::kXaxis);
 
       r_hist->GetYaxis()->SetTitle("Real efficiency");
       r_hist->GetYaxis()->SetRangeUser(0.0,1.0);
@@ -2735,10 +2766,14 @@ void  LHFitter :: saveEfficiencies() {
       r_hist->GetXaxis()->SetTitle(xtitle.c_str());
 
       outtextfile << "Real efficiency - " << xtitle << "\n";
-      for ( auto idx(0); idx < m_nPtBins_Linear; ++idx ) {
+      for ( auto idx(1); idx < m_nPtBins_Linear+1; ++idx ) {
 
 	double this_r_val;
 	std::tuple<double,double,double> this_r_err;
+	
+	double this_r_low_edge = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(idx);
+	double this_r_up_edge  = ( m_histograms.at(0) )->GetXaxis()->GetBinUpEdge(idx);
+		
 	if ( outfilename.find("_mu") != std::string::npos ) {
 	  this_r_val = m_rmu_vals.at(idx);
 	  this_r_err = m_rmu_errs.at(idx);
@@ -2746,16 +2781,19 @@ void  LHFitter :: saveEfficiencies() {
 	  this_r_val = m_rel_vals.at(idx);
 	  this_r_err = m_rel_errs.at(idx);
 	}
-
-	if ( m_debug ) { std:: cout << "Bin idx " << idx+1 << " central value: " << ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1) << " - value to fill in: " << this_r_val << std::endl; }
-	r_hist->Fill( ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1), this_r_val );
-	r_hist->SetBinError( idx + 1, std::get<2>(this_r_err) );
-	outtextfile << "{ Bin nr: " << idx << ", efficiency = " <<  this_r_val << " + " << std::get<0>(this_r_err) << " - " << fabs( std::get<1>(this_r_err) ) << " ( +- " << std::get<2>(this_r_err) << " ) }\n";
+	
+	r_hist->SetBinContent( idx, this_r_val );
+	r_hist->SetBinError( idx, std::get<2>(this_r_err) );
+	
+	if ( m_debug ) { std:: cout << "Bin idx " << idx << " central value: " << ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx) << " GeV - value to fill in: " << this_r_val << std::endl; }
+	outtextfile << "{ Bin nr: " << idx << ", [" << this_r_low_edge << "," << this_r_up_edge << "] GeV, efficiency = " << std::setprecision(3) << this_r_val << " + " << std::setprecision(3) << std::get<0>(this_r_err) << " - " << std::setprecision(3) << fabs( std::get<1>(this_r_err) ) << " ( +- " << std::setprecision(3) << std::get<2>(this_r_err) << " ) }\n";
+      
       }
-
+      
       r_hist->Write();
+      
     }
-
+    
     // --------------------
     // fake efficiency
     // --------------------
@@ -2770,7 +2808,6 @@ void  LHFitter :: saveEfficiencies() {
 	double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
 	f_hist = new TH1D( "f_hist", "fake efficiency", m_nPtBins_Linear-1, rmin, rmax );
       }
-      f_hist->SetCanExtend(TH1::kXaxis);
 
       f_hist->GetYaxis()->SetTitle("Fake efficiency");
       f_hist->GetYaxis()->SetRangeUser(0.0,1.0);
@@ -2781,10 +2818,15 @@ void  LHFitter :: saveEfficiencies() {
       f_hist->GetXaxis()->SetTitle(xtitle.c_str());
 
       outtextfile << "Fake efficiency - " << xtitle << "\n";
-      for ( auto idx(0); idx < m_nPtBins_Linear; ++idx ) {
+      for ( auto idx(1); idx < m_nPtBins_Linear+1; ++idx ) {
 
 	double this_f_val;
 	std::tuple<double,double,double> this_f_err;
+	
+	double this_f_low_edge = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(idx);
+	double this_f_up_edge  = ( m_histograms.at(0) )->GetXaxis()->GetBinUpEdge(idx);
+	
+	
 	if ( outfilename.find("_mu") != std::string::npos ) {
 	  this_f_val = m_fmu_vals.at(idx);
 	  this_f_err = m_fmu_errs.at(idx);
@@ -2793,15 +2835,17 @@ void  LHFitter :: saveEfficiencies() {
 	  this_f_err = m_fel_errs.at(idx);
 	}
 
-	if ( m_debug ) { std:: cout << "Bin idx " << idx+1 << " central value: " << ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1) << " - value to fill in: " << this_f_val << std::endl; }
-	f_hist->Fill( ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx + 1), this_f_val );
-	f_hist->SetBinError( idx + 1, std::get<2>(this_f_err) );
-	outtextfile << "{ Bin nr: " << idx << ", efficiency = " <<  this_f_val << " + " << std::get<0>(this_f_err) << " - " << fabs( std::get<1>(this_f_err) ) << " ( +- " << std::get<2>(this_f_err) << " ) }\n";
+	f_hist->SetBinContent( idx, this_f_val );
+	f_hist->SetBinError( idx, std::get<2>(this_f_err) );
+	
+	if ( m_debug ) { std:: cout << "Bin idx " << idx << " central value: " << ( m_histograms.at(0) )->GetXaxis()->GetBinCenter(idx) << " GeV - value to fill in: " << this_f_val << std::endl; }
+	outtextfile << "{ Bin nr: " << idx << ", [" << this_f_low_edge << "," << this_f_up_edge << "] GeV, efficiency = " << std::setprecision(3) << this_f_val << " + " << std::setprecision(3) << std::get<0>(this_f_err) << " - " << std::setprecision(3) << fabs( std::get<1>(this_f_err) ) << " ( +- " << std::setprecision(3) << std::get<2>(this_f_err) << " ) }\n";
+      
       }
 
       f_hist->Write();
     }
-
+     
     outfile.Close();
     outtextfile.close();
 
@@ -2850,8 +2894,8 @@ int main( int argc, char **argv ) {
     //const std::string tp_path("../OutputPlots_MMRates_25ns_v14_DLT_2015/");
     //const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v14_DLT_2015/");
     
-    const std::string tp_path("../OutputPlots_MMRates_25ns_v15/");
-    const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v15/");
+    //const std::string tp_path("../OutputPlots_MMRates_25ns_v15/");
+    //const std::string input_path("../OutputPlots_MMRates_LHFit_25ns_v15/");
 
     // DO THE FIT ON TTBAR MC
 
@@ -2859,7 +2903,10 @@ int main( int argc, char **argv ) {
     //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
     //const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v14_DLT_2015/");
     //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v14_DLT_2015/");
-    //LHFitter::useMC();
+    
+    const std::string tp_path("../OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_25ns_v21/");
+    const std::string input_path("../OutputPlots_MMClosureRates_LHFit_NoCorr_DLT_25ns_v21/");
+    LHFitter::useMC();
 
     // -------------
     // FIT SF events
@@ -2914,7 +2961,7 @@ int main( int argc, char **argv ) {
       real_mm.m_doRebinning = true;
       //real_mm.setBinGrouping(2);
       int array_real_bin_size(8);
-      double real_mm_new_bins[array_real_bin_size] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0}; // mu - DATA, MC
+      double real_mm_new_bins[array_real_bin_size] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0}; 
       real_mm.setVariableBins( real_mm_new_bins, array_real_bin_size-1 );
       real_mm.initialise();
       real_mm.fit();
@@ -2930,9 +2977,8 @@ int main( int argc, char **argv ) {
       fake_mm.m_doRebinning = true;
       //fake_mm.setBinGrouping(2);
       int array_fake_bin_size(5);
-      double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,200.0}; // mu - DATA
+      double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,200.0}; 
       //int array_fake_bin_size(6);
-      //double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,35.0,200.0}; // mu - MC      
       fake_mm.setVariableBins( fake_mm_new_bins, array_fake_bin_size-1 );
       fake_mm.initialise();
       fake_mm.fit();

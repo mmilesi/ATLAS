@@ -944,10 +944,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 			  TEfficiency *teff(nullptr);
 
 			  hist  = get_object<TH1D>( *file,  histname );
-			  teff  = get_object<TEfficiency>( *file, this->str_replace( histname, "Efficiency", "TEfficiency" ).c_str() );
-
 			  hist->SetDirectory(0);
-			  teff->SetDirectory(0);
+			  
+			  if ( m_useTEfficiency ) { 
+			    teff  = get_object<TEfficiency>( *file, this->str_replace( histname, "Efficiency", "TEfficiency" ).c_str() );
+			    teff->SetDirectory(0);
+                          }
 
 			  if ( m_useTrigMatchingInfo ) {
 
@@ -1010,21 +1012,29 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 			  // Calculate normalisation factor for (pT * eta) 1D efficiencies case.
 			  //
 			  // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
-			  // ---> get the TH1 objects that were used for measuring efficiency directly from the TRfficiency object
-
-			  if ( var.compare("Pt") == 0 ) {
-			      if ( lep.compare("El") == 0 && eff.compare("Real") == 0 ) {
-				  m_el_reff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-			      }
-			      if ( lep.compare("El") == 0 && eff.compare("Fake") == 0 ) {
-				  m_el_feff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-			      }
-			      if ( lep.compare("Mu") == 0 && eff.compare("Real") == 0 ) {
-				  m_mu_reff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-			      }
-			      if ( lep.compare("Mu") == 0 && eff.compare("Fake") == 0 ) {
-				  m_mu_feff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-			      }
+			  // ---> get the TH1 objects that were used for measuring efficiency directly from the TEfficiency object
+                          
+			  if ( m_useEtaParametrisation ) {
+			  
+			    if ( !teff ) {
+			      Error("readRFEfficiencies()", "Need TEfficiency object if using eta parametrisation (THIS WILL CHANGE). Aborting" );
+			      return EL::StatusCode::FAILURE;
+			    }
+			  
+			    if ( var.compare("Pt") == 0 ) {
+			    	if ( lep.compare("El") == 0 && eff.compare("Real") == 0 ) {
+			  	    m_el_reff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
+			    	}
+			    	if ( lep.compare("El") == 0 && eff.compare("Fake") == 0 ) {
+			  	    m_el_feff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
+			    	}
+			    	if ( lep.compare("Mu") == 0 && eff.compare("Real") == 0 ) {
+			  	    m_mu_reff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
+			    	}
+			    	if ( lep.compare("Mu") == 0 && eff.compare("Fake") == 0 ) {
+			  	    m_mu_feff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
+			    	}
+			    }
 			  }
 
 			  Info("readRFEfficiencies()", "\t\t%s %s efficiency - %s TH1D name: %s ", lep.c_str(), eff.c_str(), var.c_str(), histname.c_str() );
