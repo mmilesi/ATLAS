@@ -211,6 +211,7 @@ private:
 
   /** Other private members */
 
+  unsigned int m_effectiveTotEntries; //!
   unsigned int m_numEntry;   //!
   unsigned int m_count_inf;  //!
 

@@ -418,7 +418,7 @@ if __name__ == "__main__":
         vardb.registerCut( Cut('2Lep_NBJet',                  '( nJets_OR_T_MV2c10_70 >= 0 )') )
     else:
         vardb.registerCut( Cut('2Lep_NBJet',                  '( nJets_OR_T_MV2c10_70 > 0 )') )
-    
+
     vardb.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 > 0 )') )
     vardb.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T > 1 )') )
     vardb.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T > 4 )') )
@@ -454,7 +454,7 @@ if __name__ == "__main__":
     	vardb.registerCut( Cut('2Lep_MuProbe',  	      '( TMath::Abs( lep_Probe_ID ) == 13 )') )
     	vardb.registerCut( Cut('2Lep_ProbeTight',	      '( lep_Probe_isTightSelected == 1 )') )
     	vardb.registerCut( Cut('2Lep_ProbeAntiTight',	      '( lep_Probe_isTightSelected == 0 )') )
-    	
+
 	gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/passBabar.cxx+")
     	from ROOT import passBabar
 
@@ -544,9 +544,9 @@ if __name__ == "__main__":
     # -------------------------------------------------------------------------------
 
     if args.useMoriondTruth:
-        
+
 	if "v19" in args.inputDir or "v20" in args.inputDir:
-        
+
 	    vardb.registerCut( Cut('2Lep_TRUTH_PurePromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) && ( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) ) )') )
             vardb.registerCut( Cut('2Lep_TRUTH_NonPromptEvent',  '( ( mc_channel_number == 0 ) || ( ( ( !( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) || !( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) && !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )') )
             vardb.registerCut( Cut('2Lep_TRUTH_QMisIDVeto',    '( ( mc_channel_number == 0 ) || ( ( !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )') )
@@ -625,11 +625,11 @@ if __name__ == "__main__":
              vardb.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_isPrompt == 0 && !( lep_Probe_isBrems == 1 && lep_Probe_isQMisID == 0 ) ) && lep_Probe_isQMisID == 0 ) ) )') )
              vardb.registerCut( Cut('2Lep_TRUTH_ProbeQMisIDEvent',    '( ( mc_channel_number == 0 ) || ( ( lep_Probe_isQMisID == 1 ) ) )') )
              vardb.registerCut( Cut('2Lep_TRUTH_ProbeLepFromPhEvent', '( ( mc_channel_number == 0 ) || ( ( lep_Probe_isConvPh == 1 || lep_Probe_isISRFSRPh_0 == 1 ) ) )') )
-        
+
 	elif "v21" in args.inputDir:
-	     
+
 	     if "SLT" in args.trigger:
-             
+
 	     	 #vardb.registerCut( Cut('2Lep_TRUTH_ProbePromptEvent',  '( ( mc_channel_number == 0 ) || ( ( lep_Probe_SLT_isPrompt == 1 && lep_Probe_SLT_isQMisID == 0 ) ) )') )
              	 vardb.registerCut( Cut('2Lep_TRUTH_ProbePromptEvent',    '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_SLT_isPrompt == 1 || ( lep_Probe_SLT_isBrems == 1 && lep_Probe_SLT_isQMisID == 0 ) ) && lep_Probe_SLT_isQMisID == 0 ) ) )') )
              	 #vardb.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( lep_Probe_SLT_isPrompt == 0 || lep_Probe_SLT_isQMisID == 1 ) ) )') )
@@ -637,9 +637,9 @@ if __name__ == "__main__":
              	 vardb.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_SLT_isPrompt == 0 && !( lep_Probe_SLT_isBrems == 1 && lep_Probe_SLT_isQMisID == 0 ) ) && lep_Probe_SLT_isQMisID == 0 ) ) )') )
              	 vardb.registerCut( Cut('2Lep_TRUTH_ProbeQMisIDEvent',    '( ( mc_channel_number == 0 ) || ( ( lep_Probe_SLT_isQMisID == 1 ) ) )') )
              	 vardb.registerCut( Cut('2Lep_TRUTH_ProbeLepFromPhEvent', '( ( mc_channel_number == 0 ) || ( ( lep_Probe_SLT_isConvPh == 1 || lep_Probe_SLT_isISRFSRPh_0 == 1 ) ) )') )
-	     
+
 	     elif "DLT" in args.trigger:
-	
+
 	     	 #vardb.registerCut( Cut('2Lep_TRUTH_ProbePromptEvent',  '( ( mc_channel_number == 0 ) || ( ( lep_Probe_DLT_isPrompt == 1 && lep_Probe_DLT_isQMisID == 0 ) ) )') )
              	 vardb.registerCut( Cut('2Lep_TRUTH_ProbePromptEvent',    '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_DLT_isPrompt == 1 || ( lep_Probe_DLT_isBrems == 1 && lep_Probe_DLT_isQMisID == 0 ) ) && lep_Probe_DLT_isQMisID == 0 ) ) )') )
              	 #vardb.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( lep_Probe_DLT_isPrompt == 0 || lep_Probe_DLT_isQMisID == 1 ) ) )') )
@@ -647,7 +647,7 @@ if __name__ == "__main__":
              	 vardb.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_DLT_isPrompt == 0 && !( lep_Probe_DLT_isBrems == 1 && lep_Probe_DLT_isQMisID == 0 ) ) && lep_Probe_DLT_isQMisID == 0 ) ) )') )
              	 vardb.registerCut( Cut('2Lep_TRUTH_ProbeQMisIDEvent',    '( ( mc_channel_number == 0 ) || ( ( lep_Probe_DLT_isQMisID == 1 ) ) )') )
              	 vardb.registerCut( Cut('2Lep_TRUTH_ProbeLepFromPhEvent', '( ( mc_channel_number == 0 ) || ( ( lep_Probe_DLT_isConvPh == 1 || lep_Probe_DLT_isISRFSRPh_0 == 1 ) ) )') )
-	
+
     # ---------------------
     # 3lep cuts
     # ---------------------
@@ -839,7 +839,7 @@ if __name__ == "__main__":
         #vardb.registerSystematics( Systematics(name='JES_Total',      treename='JES_Total') )
         #vardb.registerSystematics( Systematics(name='JER',            treename='JER') )
 
-        if doMMDataRates:
+        if doMMRates and "DATA" in args.channel:
             vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight='QMisIDWeight_', process='QMisID') )
 
         # Efficiency binning for ICHEP - v19
@@ -1359,7 +1359,7 @@ if __name__ == "__main__":
         # ----------------------
 
         if not "LH" in args.channel:
-        
+
             tag   = "lep_Tag_"
             probe = "lep_Probe_"
 
@@ -1570,7 +1570,7 @@ if __name__ == "__main__":
         # ------------------------
 	# Likelihood fit selection
         # ------------------------
-	        
+
 	elif "LH" in args.channel:
 
             vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', bins = 40, minval = 10.0, maxval = 210.0, typeval = TH2D) )
@@ -1652,8 +1652,8 @@ if __name__ == "__main__":
             	vardb.registerCategory( MyCategory('SS_MuEl_LL', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuEl_Event','LL','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_SR_CR ) )
             	vardb.registerCategory( MyCategory('SS_ElMu_LL', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElMu_Event','LL','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_SR_CR ) )
             	#"""
-    
-    
+
+
     if doMMClosureTest:
         print ''
 
@@ -2230,7 +2230,7 @@ if __name__ == "__main__":
 
 
             # If this option is set True, the last visible bin of the histogram will contain ALSO the overflow
-	    
+
             wantooverflow = True
 
             list_formats = [ plotname + ".png", plotname + ".eps" ]

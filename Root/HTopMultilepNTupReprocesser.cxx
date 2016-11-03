@@ -290,6 +290,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
       }
 
   }
+ 
+  // ---------------------------------------------------------------------------------------------------------------
+
+  m_outputNTuple->tree()->SetName( m_outputNTupName.c_str() );
+
+  // ---------------------------------------------------------------------------------------------------------------
+
+  // Copy input TTree weight to output TTree
+
+  m_outputNTuple->tree()->SetWeight( m_inputNTuple->GetWeight() );
+
 
   // ---------------------------------------------------------------------------------------------------------------
 
@@ -301,15 +312,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
   //
   m_count_inf = 0;
 
-  // ---------------------------------------------------------------------------------------------------------------
+  m_effectiveTotEntries = m_inputNTuple->GetEntries();
 
-  m_outputNTuple->tree()->SetName( m_outputNTupName.c_str() );
-
-  // ---------------------------------------------------------------------------------------------------------------
-
-  // Copy input TTree weight to output TTree
-
-  m_outputNTuple->tree()->SetWeight( m_inputNTuple->GetWeight() );
+  unsigned int maxEvents = static_cast<int>( wk()->metaData()->castDouble("nc_EventLoop_MaxEvents") );
+  
+  if ( maxEvents > 0 ) {
+    m_effectiveTotEntries = maxEvents;
+  }
+    
+  Info("initialize()", "Name of input TTree : %s", m_inputNTuple->GetName() ); 
+  Info("initialize()", "Total events to run on: %u", m_effectiveTotEntries );
 
   // ---------------------------------------------------------------------------------------------------------------
 
@@ -333,12 +345,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   m_inputNTuple->GetEntry( wk()->treeEntry() );
 
-  if ( m_debug ) { Info("execute()", "\n\n****************************************\n===> Entry %u - EventNumber = %u\n****************************************\n", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) ); }
-
+  if ( m_debug ) { 
+    std::cout << "" << std::endl;
+    Info("execute()", "===> Entry %u - EventNumber = %u ", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) ); 
+  }
+  
   ++m_numEntry;
 
-  if ( m_numEntry > 0 && ( static_cast<int>(m_numEntry) % 20000 == 0 ) ) { Info("execute()","Processed %u entries", static_cast<uint32_t>(m_numEntry)); }
-
+  if ( m_numEntry >= 10000 && m_numEntry % 10000 == 0 ) {
+    std::cout << "Processed " << std::setprecision(3) << ( (float) m_numEntry / m_effectiveTotEntries ) * 1e2 << " % of total entries" << std::endl;
+  }
+  
   // ------------------------------------------------------------------------
 
   // Need to ensure all weight branches are reset to their default values
