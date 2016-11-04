@@ -48,7 +48,8 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMClosureRates_25ns_v20_04_ICHEPBinning",
 				    #
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_LHFit_NoCorr_DLT_25ns_v21",
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_25ns_v21",
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_25ns_v21",
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_25ns_v21",
 				    #
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v19/OutputPlots_MMRates_25ns_v19_DDQMisID",
 				    #

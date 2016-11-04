@@ -23,6 +23,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
+#include "TRandom3.h"
 
 namespace MiniNTupMaker {
 
@@ -31,7 +32,7 @@ struct Branch_Types {
   char c;
   int i;
 };
-  
+
 class eventObj {
 
   public:
@@ -98,7 +99,7 @@ class eventObj {
     int  truthOrigin;
     char tag_SLT;
     char tag_DLT;
-    
+
 
     float SFIDLoose;
     float SFIDTight;
@@ -136,6 +137,9 @@ public:
 
   /** Add an output stream (aka, directory) for the histogram containing the total number of generated raw/weighted events */
   bool         m_addStreamEventsHist;
+
+  /** Activate if want to define T&P leptons based on truth matching (NB: do this only on TTBar!)  */
+  bool m_useTruthTP;
 
 private:
 
@@ -310,9 +314,9 @@ private:
   Float_t         m_totalEventsWeighted;
 
   /** Trigger match decision per-lepton (for each chain) - BEFORE overlap removal! */
-  
+
   // 2015
-  
+
   std::vector<int> *m_electron_match_HLT_e24_lhmedium_L1EM20VH        = nullptr; //!
   std::vector<int> *m_electron_match_HLT_e60_lhmedium                 = nullptr; //!
   std::vector<int> *m_electron_match_HLT_e120_lhloose                 = nullptr; //!
@@ -323,9 +327,9 @@ private:
   std::vector<int> *m_muon_match_HLT_mu18_mu8noL1                     = nullptr; //!
   std::vector<int> *m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1     = nullptr; //!
   std::vector<int> *m_muon_match_HLT_e7_medium_mu24                   = nullptr; //!
-  
+
   // 2016
-  
+
   std::vector<int> *m_electron_match_HLT_e26_lhtight_nod0_ivarloose = nullptr; //!
   std::vector<int> *m_electron_match_HLT_e60_lhmedium_nod0          = nullptr; //!
   std::vector<int> *m_electron_match_HLT_e140_lhloose_nod0          = nullptr; //!
@@ -337,13 +341,13 @@ private:
   std::vector<int> *m_muon_match_HLT_mu22_mu8noL1                   = nullptr; //!
   std::vector<int> *m_muon_match_HLT_e17_lhloose_mu14               = nullptr; //!
   std::vector<int> *m_muon_match_HLT_e17_lhloose_nod0_mu14          = nullptr; //!
-   
+
   // 2015 & 2016
-  
+
   std::vector<int> *m_muon_match_HLT_mu50 = nullptr; //!
 
   /** Index of leptons which passed the overlap removal */
-  
+
   std::vector<char> *m_electron_passOR = nullptr; //!
   std::vector<char> *m_muon_passOR     = nullptr; //!
 
@@ -394,7 +398,7 @@ private:
   int       m_nmuons;
   int       m_nelectrons;
   int       m_nleptons;
-  
+
   float     m_el_Pt_0;
   float     m_el_Pt_1;
   float     m_mu_Pt_0;
@@ -408,16 +412,16 @@ private:
   char	    m_lep_isTrigMatch_SLT_1;
   char	    m_lep_isTrigMatch_DLT_0;
   char	    m_lep_isTrigMatch_DLT_1;
-  
+
   char	    m_event_isTrigMatch_DLT;
 
   /** Tag & Probe variables */
-  
+
   char m_isBadTPEvent_SLT; /**No T&TM (SLT) leptons found */
   char m_isBadTPEvent_DLT; /**No T&TM (DLT) leptons found */
-  
+
   std::map< std::string, MiniNTupMaker::Branch_Types > m_TagProbe_branches;
-  
+
   std::vector<float> m_lep_Pt;
   std::vector<float> m_lep_Eta;
   std::vector<float> m_lep_EtaBE2;
@@ -450,6 +454,8 @@ private:
 
   std::shared_ptr<MiniNTupMaker::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<MiniNTupMaker::leptonObj> > m_leptons; //!
+
+  TRandom3* m_rand; //!
 
 public:
 

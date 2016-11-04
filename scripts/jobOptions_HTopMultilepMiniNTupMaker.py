@@ -258,6 +258,7 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
 				  "m_inputBranches"        : branches_to_activate_str,
 	                          "m_useAlgSelect"         : True,
 				  "m_addStreamEventsHist"  : False,
+				  "m_useTruthTP"           : True,
                                 }
 
 # Instantiate the NTupleSvc algorithm

@@ -2899,12 +2899,8 @@ int main( int argc, char **argv ) {
 
     // DO THE FIT ON TTBAR MC
 
-    //const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/");
-    //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v7_FinalSelection_NominalBinning/");
-    //const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v14_DLT_2015/");
-    //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_25ns_v14_DLT_2015/");
-    
-    const std::string tp_path("../OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_25ns_v21/");
+    //const std::string tp_path("../OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_25ns_v21/");
+    const std::string tp_path("../OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_25ns_v21/");    
     const std::string input_path("../OutputPlots_MMClosureRates_LHFit_NoCorr_DLT_25ns_v21/");
     LHFitter::useMC();
 

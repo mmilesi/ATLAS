@@ -119,6 +119,10 @@ public:
 
   bool m_useScaledFakeEfficiency;
 
+  /** Use pT correlated variations of efficiency for each systematic */
+  
+  bool m_correlatedMMWeights;
+
   /** The path to the QMisID rates file directory */
 
   std::string m_QMisIDRates_dir;
@@ -272,6 +276,8 @@ private:
 
   EL::StatusCode tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list );
 
+  void printWeights( const std::string& in_out );
+  
   EL::StatusCode readRFEfficiencies ();
   EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
   					   std::vector<float>& efficiency,

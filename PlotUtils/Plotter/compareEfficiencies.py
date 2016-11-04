@@ -294,7 +294,7 @@ def plotter_r_flavours():
   #file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
   
   # CLOSURE
-  file_TP_path = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_25ns_v21/LeptonEfficiencies.root"
+  file_TP_path = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_25ns_v21/LeptonEfficiencies.root"
 
   file_TP = TFile(file_TP_path)
 
@@ -447,8 +447,8 @@ def plotter_f_flavours():
   #file_TP_path = "./OutputPlots_MMRates_25ns_v7_FinalSelection_DDQmisID/Rates.root"
  
   # CLOSURE
-  #file_TP_path = "$HOME/ttH/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v7_FinalSelection_NominalBinning/Rates_YesSub_LHInput/Rates.root"
-  file_TP_path = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_25ns_v21/LeptonEfficiencies.root"
+
+  file_TP_path = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_25ns_v21/LeptonEfficiencies.root"
 
   file_TP = TFile(file_TP_path)
 

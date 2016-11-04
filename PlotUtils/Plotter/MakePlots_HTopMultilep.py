@@ -392,7 +392,7 @@ if __name__ == "__main__":
     if "SLT" in args.trigger:
 
         vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
-        #vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_SLT_0 || lep_isTrigMatch_SLT_1 )') ) # <------------------- need to understand why GN branch is different sometimes
+        #vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_SLT_0 || lep_isTrigMatch_SLT_1 )') ) # <----- GN branch is buggy (ATLASTTHML-69)
 
     elif "DLT" in args.trigger:
 
@@ -406,12 +406,11 @@ if __name__ == "__main__":
 
             # use DLT for all categories
             #
-            #vardb.registerCut( Cut('2Lep_TrigMatch', '( event_isTrigMatch_DLT )') ) # event_isTrigMatch_DLT --> BOTH leptons DLT-matched
-            vardb.registerCut( Cut('2Lep_TrigMatch', '( lep_isTrigMatch_DLT_0 || lep_isTrigMatch_DLT_1 )') )
+            vardb.registerCut( Cut('2Lep_TrigMatch', '( event_isTrigMatch_DLT == 1 )') ) # event_isTrigMatch_DLT --> BOTH leptons DLT-matched
             #
             # use DLT for ee, mm, OR of SLT for OF
             #
-            #vardb.registerCut( Cut('2Lep_TrigMatch', '( ( ( dilep_type == 1 || dilep_type == 3 ) && ( lep_isTrigMatch_DLT_0 || lep_isTrigMatch_DLT_1 ) ) || ( dilep_type == 2 && ( lep_isTrigMatch_0 || lep_isTrigMatch_1 ) ) )') ) # event_isTrigMatch_DLT --> BOTH leptons DLT-matched
+            #vardb.registerCut( Cut('2Lep_TrigMatch', '( ( ( dilep_type == 1 || dilep_type == 3 ) && event_isTrigMatch_DLT == 1 ) || ( dilep_type == 2 && event_isTrigMatch_DLT == 1 ) )') ) # event_isTrigMatch_DLT == 1 --> BOTH leptons DLT-matched
 
     if doRelaxedBJetCut:
         print("\nUsing relaxed nbjet cut: be INCLUSIVE in bjet multiplicity...\n")
@@ -463,21 +462,34 @@ if __name__ == "__main__":
     if "v21" in args.inputDir:
 
         if "SLT" in args.trigger:
-            vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_SLT_isTightSelected == 1 && lep_Tag_SLT_isTrigMatch == 1 )') )
+            
+	    if "CLOSURE" in args.channel:
+	        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( 1 )') )
+	    else:
+	        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_SLT_isTightSelected == 1 && lep_Tag_SLT_isTrigMatch == 1 )') )
+	    
+	    #vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_SLT_isTightSelected == 1 && lep_Tag_SLT_isTrigMatch == 1 )') )
             vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_SLT_isTrigMatch == 1 )') )
             vardb.registerCut( Cut('2Lep_ElProbe',		    '( TMath::Abs( lep_Probe_SLT_ID ) == 11 )') )
             vardb.registerCut( Cut('2Lep_MuProbe',		    '( TMath::Abs( lep_Probe_SLT_ID ) == 13 )') )
             vardb.registerCut( Cut('2Lep_ProbeTight',		    '( lep_Probe_SLT_isTightSelected == 1 )') )
             vardb.registerCut( Cut('2Lep_ProbeAntiTight',	    '( lep_Probe_SLT_isTightSelected == 0 )') )
+	    vardb.registerCut( Cut('2Lep_TagAndProbe_GoodEvent',    '( event_isBadTP_SLT == 0 )') )
 
         elif "DLT" in args.trigger:
 
-	    vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_DLT_isTightSelected == 1 && lep_Tag_DLT_isTrigMatch == 1 )') )
+	    if "CLOSURE" in args.channel:
+	        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( 1 )') )
+	    else:
+	        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_SLT_isTightSelected == 1 && lep_Tag_SLT_isTrigMatch == 1 )') )
+
+	    #vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_DLT_isTightSelected == 1 && lep_Tag_DLT_isTrigMatch == 1 )') )
             vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_DLT_isTrigMatch == 1 )') )
             vardb.registerCut( Cut('2Lep_ElProbe',		    '( TMath::Abs( lep_Probe_DLT_ID ) == 11 )') )
             vardb.registerCut( Cut('2Lep_MuProbe',		    '( TMath::Abs( lep_Probe_DLT_ID ) == 13 )') )
             vardb.registerCut( Cut('2Lep_ProbeTight',		    '( lep_Probe_DLT_isTightSelected == 1 )') )
             vardb.registerCut( Cut('2Lep_ProbeAntiTight',	    '( lep_Probe_DLT_isTightSelected == 0 )') )
+	    vardb.registerCut( Cut('2Lep_TagAndProbe_GoodEvent',    '( event_isBadTP_DLT == 0 )') )
 
 
     if not args.trigAcceptance:
@@ -739,14 +751,14 @@ if __name__ == "__main__":
             vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
         #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename ='nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
         #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
-	#vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 18, minval = 25.0, maxval = 205.0) )
-        #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 6, minval = 25.0, maxval = 145.0) )
+	vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 18, minval = 25.0, maxval = 205.0) )
+        vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 6, minval = 25.0, maxval = 145.0) )
 	#vardb.registerVar( Variable(shortname = 'Lep0Pt_ElBinning', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 18, minval = 25.0, maxval = 205.0, manualbins = [25,40,60,100,200]) )
         #vardb.registerVar( Variable(shortname = 'Lep1Pt_ElBinning', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 18, minval = 25.0, maxval = 205.0, manualbins = [25,40,60,100,200]) )
         #vardb.registerVar( Variable(shortname = 'Lep0Pt_MuBinning', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 18, minval = 25.0, maxval = 205.0, manualbins = [25,35,200]) )
         #vardb.registerVar( Variable(shortname = 'Lep1Pt_MuBinning', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 18, minval = 25.0, maxval = 205.0, manualbins = [25,35,200]) )
         #vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} (FinalTrk) [GeV]', ntuplename = 'MET_RefFinal_et/1e3', bins = 9, minval = 0.0, maxval = 180.0,) )
-        #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
+        vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
 
     if doZSSpeakCR:
         print ''
@@ -1461,8 +1473,17 @@ if __name__ == "__main__":
             #
             if ( "CLOSURE" in args.channel or args.ratesMC ) :
 
-            	truth_sub_OS = ( vardb.getCut('2Lep_TRUTH_PurePromptEvent') & vardb.getCut('2Lep_TRUTH_QMisIDVeto') )
-            	truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
+            	#truth_sub_OS = ( vardb.getCut('2Lep_TRUTH_PurePromptEvent') & vardb.getCut('2Lep_TRUTH_QMisIDVeto') )
+            	#truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
+
+                # NEW! Now T&P defined at truth level in skimming code.
+		# Simply ensure event is not "bad" and nothing else.
+		#
+		#
+                if "SLT" in args.trigger:
+		     truth_sub_OS = truth_sub_SS = vardb.getCut("2Lep_TagAndProbe_GoodEvent")
+                elif "DLT" in args.trigger:
+		     truth_sub_OS = truth_sub_SS = vardb.getCut("2Lep_TagAndProbe_GoodEvent")
 
             	if args.ratesMC:
             	    print ('\n*********************************\nMeasuring efficiencies from MC simulation! \n*********************************\n')
