@@ -640,15 +640,49 @@ class RealFakeEffTagAndProbe:
                 append = "denominator"
                 h_pass = self.tight_hists[nominal_key]
                 h_tot  = self.tight_hists[nominal_key] + self.antitight_hists[key]
+	   
+	    # ----------------------------------------------------------------------------------
 
-           
-	    # Make sure overflow bin will return same efficiency as last bin before overflow
+	    # Make sure last bin before overflow contains ALSO the events of the overflow bin
+	    # Then set the overflow bin to the same content of the *modified* last bin before overflow
             
-	    h_pass.SetBinContent( h_pass.GetNbinsX()+1, h_pass.GetBinContent( h_pass.GetNbinsX() ) )
-	    h_pass.SetBinError( h_pass.GetNbinsX()+1, h_pass.GetBinError( h_pass.GetNbinsX() )  )
+            # 1. Merge OFlow w/ last bin
 	    
-	    h_tot.SetBinContent( h_tot.GetNbinsX()+1, h_tot.GetBinContent( h_tot.GetNbinsX() ) )
-	    h_tot.SetBinError( h_tot.GetNbinsX()+1, h_tot.GetBinError( h_tot.GetNbinsX() )  )	    
+	    h_pass_last_idx  = h_pass.GetNbinsX()
+	    h_pass_oflow_idx = h_pass.GetNbinsX()+1
+	    h_pass_last      = h_pass.GetBinContent( h_pass_last_idx )
+	    h_pass_oflow     = h_pass.GetBinContent( h_pass_oflow_idx )
+	    h_pass_last_err  = h_pass.GetBinError( h_pass_last_idx )
+	    h_pass_oflow_err = h_pass.GetBinError( h_pass_oflow_idx )
+	    
+	    h_pass_merged     = h_pass_last + h_pass_oflow
+	    h_pass_merged_err = math.sqrt( pow(h_pass_last_err,2.0) + pow(h_pass_oflow_err,2.0) )
+	    
+	    h_pass.SetBinContent( h_pass_last_idx, h_pass_merged )
+	    h_pass.SetBinError( h_pass_last_idx, h_pass_merged_err )
+
+	    h_tot_last_idx  = h_tot.GetNbinsX()
+	    h_tot_oflow_idx = h_tot.GetNbinsX()+1
+	    h_tot_last      = h_tot.GetBinContent( h_tot_last_idx )
+	    h_tot_oflow     = h_tot.GetBinContent( h_tot_oflow_idx )
+	    h_tot_last_err  = h_tot.GetBinError( h_tot_last_idx )
+	    h_tot_oflow_err = h_tot.GetBinError( h_tot_oflow_idx )
+	    
+	    h_tot_merged     = h_tot_last + h_tot_oflow
+	    h_tot_merged_err = math.sqrt( pow(h_tot_last_err,2.0) + pow(h_tot_oflow_err,2.0) )
+	    
+	    h_tot.SetBinContent( h_tot_last_idx, h_tot_merged )
+	    h_tot.SetBinError( h_tot_last_idx, h_tot_merged_err )
+	    
+	    # 2. Set OFlow bin value and error to modified last bin value and error
+
+	    h_pass.SetBinContent( h_pass_oflow_idx, h_pass.GetBinContent( h_pass_last_idx ) )
+	    h_pass.SetBinError( h_pass_oflow_idx, h_pass.GetBinError( h_pass_last_idx )  )
+
+	    h_tot.SetBinContent( h_tot_oflow_idx, h_tot.GetBinContent( h_tot_last_idx ) )
+	    h_tot.SetBinError( h_tot_oflow_idx, h_tot.GetBinError( h_tot_last_idx )  )
+
+            # ----------------------------------------------------------------------------------
 
 	    ratiolist = []
 	    for idx, elem in enumerate(self.tight_yields[key]):
@@ -795,6 +829,49 @@ class RealFakeEffTagAndProbe:
                 append = "denominator"
                 h_pass     = self.tight_hists[nominal_key]
                 h_notpass  = self.antitight_hists[key]
+
+	    # ----------------------------------------------------------------------------------
+
+	    # Make sure last bin before overflow contains ALSO the events of the overflow bin
+	    # Then set the overflow bin to the same content of the *modified* last bin before overflow
+            
+            # 1. Merge OFlow w/ last bin
+	    
+	    h_pass_last_idx  = h_pass.GetNbinsX()
+	    h_pass_oflow_idx = h_pass.GetNbinsX()+1
+	    h_pass_last      = h_pass.GetBinContent( h_pass_last_idx )
+	    h_pass_oflow     = h_pass.GetBinContent( h_pass_oflow_idx )
+	    h_pass_last_err  = h_pass.GetBinError( h_pass_last_idx )
+	    h_pass_oflow_err = h_pass.GetBinError( h_pass_oflow_idx )
+	    
+	    h_pass_merged     = h_pass_last + h_pass_oflow
+	    h_pass_merged_err = math.sqrt( pow(h_pass_last_err,2.0) + pow(h_pass_oflow_err,2.0) )
+	    
+	    h_pass.SetBinContent( h_pass_last_idx, h_pass_merged )
+	    h_pass.SetBinError( h_pass_last_idx, h_pass_merged_err )
+
+	    h_notpass_last_idx  = h_notpass.GetNbinsX()
+	    h_notpass_oflow_idx = h_notpass.GetNbinsX()+1
+	    h_notpass_last      = h_notpass.GetBinContent( h_notpass_last_idx )
+	    h_notpass_oflow     = h_notpass.GetBinContent( h_notpass_oflow_idx )
+	    h_notpass_last_err  = h_notpass.GetBinError( h_notpass_last_idx )
+	    h_notpass_oflow_err = h_notpass.GetBinError( h_notpass_oflow_idx )
+	    
+	    h_notpass_merged     = h_notpass_last + h_notpass_oflow
+	    h_notpass_merged_err = math.sqrt( pow(h_notpass_last_err,2.0) + pow(h_notpass_oflow_err,2.0) )
+	    
+	    h_notpass.SetBinContent( h_notpass_last_idx, h_notpass_merged )
+	    h_notpass.SetBinError( h_notpass_last_idx, h_notpass_merged_err )
+	    
+	    # 2. Set OFlow bin value and error to modified last bin value and error
+
+	    h_pass.SetBinContent( h_pass_oflow_idx, h_pass.GetBinContent( h_pass_last_idx ) )
+	    h_pass.SetBinError( h_pass_oflow_idx, h_pass.GetBinError( h_pass_last_idx )  )
+
+	    h_notpass.SetBinContent( h_notpass_oflow_idx, h_notpass.GetBinContent( h_notpass_last_idx ) )
+	    h_notpass.SetBinError( h_notpass_oflow_idx, h_notpass.GetBinError( h_notpass_last_idx )  )
+
+            # ----------------------------------------------------------------------------------
 
 	    ratiolist = []
 	    for idx, elem in enumerate(self.tight_yields[key]):
@@ -1351,8 +1428,8 @@ class RealFakeEffTagAndProbe:
 		    hist_allsys.Draw("E2")
 		    hist_nominal.Draw("E0 SAME")
                     legend_allsys.Draw()
-		    leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
+		    leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
+                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi))
 		    
 		    print("NOMINAL: bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinContent(ibin) for ibin in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
 		    print("NOMINAL: binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinError(ibin) for ibin in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
@@ -1383,16 +1460,16 @@ class RealFakeEffTagAndProbe:
     def __set_fancy_2D_style( self ):
 
          icol = 0
-         gStyle.SetFrameBorderMode(icol);
-         gStyle.SetFrameFillColor(icol);
-         gStyle.SetCanvasBorderMode(icol);
-         gStyle.SetCanvasColor(icol);
-         gStyle.SetPadBorderMode(icol);
-         gStyle.SetPadColor(icol);
-         gStyle.SetStatColor(icol);
-         gStyle.SetOptTitle(0);
-         gStyle.SetOptStat(0);
-         gStyle.SetOptFit(0);
+         gStyle.SetFrameBorderMode(icol)
+         gStyle.SetFrameFillColor(icol)
+         gStyle.SetCanvasBorderMode(icol)
+         gStyle.SetCanvasColor(icol)
+         gStyle.SetPadBorderMode(icol)
+         gStyle.SetPadColor(icol)
+         gStyle.SetStatColor(icol)
+         gStyle.SetOptTitle(0)
+         gStyle.SetOptStat(0)
+         gStyle.SetOptFit(0)
 
          ncontours=999
 

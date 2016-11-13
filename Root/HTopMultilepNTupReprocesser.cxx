@@ -214,7 +214,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
       for ( const auto& sys : m_systematics ) {
 
         if ( m_correlatedMMWeights ) {
-        
+
 	  m_MMWeight_in[sys] = std::vector<float>(8);
 
 	  std::string branchname_0 = "MMWeight_lep0_r_" + sys + "_up";
@@ -297,7 +297,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
       m_outputNTuple->tree()->Branch("MMWeight", &m_MMWeight_NOMINAL_out, "MMWeight/F");
 
       if ( m_correlatedMMWeights ) {
-      
+
           // Initialise the map containing the variations of MM weights for each input systematics.
 
           for ( const auto& sys : m_systematics ) {
@@ -330,7 +330,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
       	       m_outputNTuple->tree()->Branch( (branchname_7).c_str(), &(weight_sys.second.at(7)) );
 
           }
-      
+
       } else {
 
           // Initialise the map containing the variations of MM weights for each input systematics.
@@ -352,11 +352,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
       	       m_outputNTuple->tree()->Branch( (branchname_1).c_str(), &(m_MMWeight_out[sys].at(1)) );
 
           }
-      
+
       }
-  
+
   }
- 
+
   // ---------------------------------------------------------------------------------------------------------------
 
   m_outputNTuple->tree()->SetName( m_outputNTupName.c_str() );
@@ -381,12 +381,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
   m_effectiveTotEntries = m_inputNTuple->GetEntries();
 
   unsigned int maxEvents = static_cast<int>( wk()->metaData()->castDouble("nc_EventLoop_MaxEvents") );
-  
+
   if ( maxEvents > 0 ) {
     m_effectiveTotEntries = maxEvents;
   }
-    
-  Info("initialize()", "Name of input TTree : %s", m_inputNTuple->GetName() ); 
+
+  Info("initialize()", "Name of input TTree : %s", m_inputNTuple->GetName() );
   Info("initialize()", "Total events to run on: %u", m_effectiveTotEntries );
 
   // ---------------------------------------------------------------------------------------------------------------
@@ -414,7 +414,7 @@ void HTopMultilepNTupReprocesser :: printWeights ( const std::string& in_out ) {
 	      Info("execute()","\t\tIN QMisIDWeight (dn) * nominal = %.3f ( not rescaled = %.3f )", m_QMisIDWeight_NOMINAL_in * m_QMisIDWeight_DN_in, m_QMisIDWeight_DN_in  );
 	  }
       }
-  
+
       if ( m_doMMWeighting ) {
 	  if ( !m_isMMBranchIn ) {
 	      Info("execute()","\t\tNominal Default MMWeight = %.3f", m_MMWeight_NOMINAL_out );
@@ -428,7 +428,7 @@ void HTopMultilepNTupReprocesser :: printWeights ( const std::string& in_out ) {
 	              Info("execute()","\t\tSys: %s ==> Default MMWeight (lep0 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(5), m_MMWeight_out[sys].at(5) );
 	              Info("execute()","\t\tSys: %s ==> Default MMWeight (lep1 f up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(6), m_MMWeight_out[sys].at(6) );
 	              Info("execute()","\t\tSys: %s ==> Default MMWeight (lep1 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(7), m_MMWeight_out[sys].at(7) );
-		  } else { 	  
+		  } else {
 		      if ( sys.find("Nominal") != std::string::npos ) { continue; }
 		      Info("execute()","\t\tSys: %s ==> Default MMWeight (up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(0), m_MMWeight_out[sys].at(0) );
 		      Info("execute()","\t\tSys: %s ==> Default MMWeight (dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_out * m_MMWeight_out[sys].at(1), m_MMWeight_out[sys].at(1) );
@@ -446,24 +446,24 @@ void HTopMultilepNTupReprocesser :: printWeights ( const std::string& in_out ) {
 	              Info("execute()","\t\tSys: %s ==> IN MMWeight (lep0 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(5), m_MMWeight_in[sys].at(5) );
 	              Info("execute()","\t\tSys: %s ==> IN MMWeight (lep1 f up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(6), m_MMWeight_in[sys].at(6) );
 	              Info("execute()","\t\tSys: %s ==> IN MMWeight (lep1 f dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(7), m_MMWeight_in[sys].at(7) );
-		  } else { 	  
+		  } else {
 		      if ( sys.find("Nominal") != std::string::npos ) { continue; }
 		      Info("execute()","\t\tSys: %s ==> IN MMWeight (up) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(0), m_MMWeight_in[sys].at(0) );
 		      Info("execute()","\t\tSys: %s ==> IN MMWeight (dn) * nominal = %.3f ( not rescaled = %.3f )", sys.c_str(), m_MMWeight_NOMINAL_in * m_MMWeight_in[sys].at(1), m_MMWeight_in[sys].at(1) );
 	          }
-	         
+
 	      }
 	  }
       }
-  
+
   } else if ( in_out.compare("OUT" ) == 0 ) {
-      
+
       if ( m_doQMisIDWeighting ) {
 	  Info("execute()","\t\tOUT QMisIDWeight = %.3f",      m_QMisIDWeight_NOMINAL_out );
 	  Info("execute()","\t\tOUT QMisIDWeight (up) * nominal = %.3f ( not rescaled = %.3f )", m_QMisIDWeight_NOMINAL_out * m_QMisIDWeight_UP_out, m_QMisIDWeight_UP_out );
 	  Info("execute()","\t\tOUT QMisIDWeight (dn) * nominal = %.3f ( not rescaled = %.3f )", m_QMisIDWeight_NOMINAL_out * m_QMisIDWeight_DN_out, m_QMisIDWeight_DN_out );
       }
-      
+
       if ( m_doMMWeighting ) {
 	  Info("execute()","\t\tNominal OUT MMWeight = %.3f", m_MMWeight_NOMINAL_out );
 	  for ( const auto& sys : m_systematics ) {
@@ -502,17 +502,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   m_inputNTuple->GetEntry( wk()->treeEntry() );
 
-  if ( m_debug ) { 
+  if ( m_debug ) {
     std::cout << "" << std::endl;
-    Info("execute()", "===> Entry %u - EventNumber = %u ", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) ); 
+    Info("execute()", "===> Entry %u - EventNumber = %u ", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) );
   }
-  
+
   ++m_numEntry;
 
   if ( m_numEntry >= 10000 && m_numEntry % 10000 == 0 ) {
     std::cout << "Processed " << std::setprecision(3) << ( (float) m_numEntry / m_effectiveTotEntries ) * 1e2 << " % of total entries" << std::endl;
   }
-  
+
   // ------------------------------------------------------------------------
 
   // Need to ensure all weight branches are reset to their default values
@@ -572,11 +572,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
       Info("execute()","lep1:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched? %i", lep1.get()->pt/1e3, lep1.get()->etaBE2, lep1.get()->eta, lep1.get()->flavour, lep1.get()->tightselected, lep1.get()->trigmatched );
       Info("execute()","event:\n TT ? %i, TAntiT ? %i, AntiTT ? %i, AntiTAntiT ? %i", m_event.get()->TT, m_event.get()->TAntiT, m_event.get()->AntiTT, m_event.get()->AntiTAntiT );
   }
- 
+
   // ------------------------------------------------------------------------
 
   this->printWeights( "IN" );
-  
+
   // ------------------------------------------------------------------------
 
   if ( m_doQMisIDWeighting ) {
@@ -1078,8 +1078,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 			  hist  = get_object<TH1D>( *file,  histname );
 			  hist->SetDirectory(0);
-			  
-			  if ( m_useTEfficiency ) { 
+
+			  if ( m_useTEfficiency ) {
 			    teff  = get_object<TEfficiency>( *file, this->str_replace( histname, "Efficiency", "TEfficiency" ).c_str() );
 			    teff->SetDirectory(0);
                           }
@@ -1146,14 +1146,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 			  //
 			  // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
 			  // ---> get the TH1 objects that were used for measuring efficiency directly from the TEfficiency object
-                          
+
 			  if ( m_useEtaParametrisation ) {
-			  
+
 			    if ( !teff ) {
 			      Error("readRFEfficiencies()", "Need TEfficiency object if using eta parametrisation (THIS WILL CHANGE). Aborting" );
 			      return EL::StatusCode::FAILURE;
 			    }
-			  
+
 			    if ( var.compare("Pt") == 0 ) {
 			    	if ( lep.compare("El") == 0 && eff.compare("Real") == 0 ) {
 			  	    m_el_reff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
@@ -1771,9 +1771,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
 	 (r1.at(0) <= f1.at(0))
 	)
     {
-    	Warning("getMMWeightAndError()", "Warning! The Matrix Method cannot be applied to EventNumber %u because:", static_cast<uint32_t>(m_EventNumber) );
-    	std::cout << "r0 = " << r0.at(0) << ", f0 = " << f0.at(0) <<  "\nr1 = " << r1.at(0) << ", f1 = " << f1.at(0) << std::endl;
-    	Warning("getMMWeightAndError()", "Will make sure this event is removed by setting MMWeight (nominal) = 0 ...");
+
+        if ( m_debug ) {
+	    Warning("getMMWeightAndError()", "Warning! The Matrix Method cannot be applied to EventNumber %u because:", static_cast<uint32_t>(m_EventNumber) );
+	    std::cout << "r0 = " << r0.at(0) << ", f0 = " << f0.at(0) <<  "\nr1 = " << r1.at(0) << ", f1 = " << f1.at(0) << std::endl;
+	    Warning("getMMWeightAndError()", "Will make sure this event is removed by setting MMWeight (nominal) = 0 ...");
+	}
         return EL::StatusCode::SUCCESS;
     }
 
