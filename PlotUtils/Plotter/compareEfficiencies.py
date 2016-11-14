@@ -28,10 +28,12 @@ parser.add_argument('--lumi', dest='lumi', action='store', type=float, default=l
                     help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in luminosities.iteritems() ) + ". Default is {0}".format(luminosities["ICHEP 2015+2016 DS"] ) )
 parser.add_argument('--trigger', dest='trigger', action='store', default=triggers[0], type=str, nargs='+',
                     help='The trigger strategy to be used. Choose one of:\n{0}.\nIf this option is not specified, default is {1}'.format(triggers,triggers[0]))
+parser.add_argument("--triggerEff", dest="triggerEff", action="store_true", default=False,
+                    help="Make comparison plots for trigger efficiency.")
 		    
 args = parser.parse_args()
 
-from ROOT import gROOT, gDirectory, gStyle, gPad, TH1D, TH2D, TFile, TCanvas, TColor, TLegend, TLatex, TLine, kRed, kBlue, kAzure, kCyan, kBlack
+from ROOT import gROOT, gDirectory, gStyle, gPad, TPad, TH1, TH1D, TH2D, TFile, TCanvas, TColor, TLegend, TLatex, TLine, kRed, kBlue, kAzure, kCyan, kBlack
 
 gROOT.Reset()
 gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
@@ -39,6 +41,8 @@ from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
 gROOT.SetBatch(True)
+
+TH1.SetDefaultSumw2()
 
 # ---------------------------
 # for fancy 2-dim histograms!
@@ -353,10 +357,189 @@ def plotter_flavours( eff_type ):
   canvasname = ( eff_type + "_eff_el_TP_LH", eff_type + "_eff_mu_TP_LH" )[bool(args.flavour == "mu")]
   c.SaveAs( canvasname + "_" + args.trigger[0] + ".png" )
 
+
+def plotter_triggereff( eff_type ):
+    
+    if "SLT" in args.trigger:
+        basepath = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_TTbar_RealFakeLep_TriggerEff_SLT/EfficiencyPlots_TriggerEff/BasicPlots/"
+    elif "DLT" in args.trigger:
+        basepath = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_TTbar_RealFakeLep_TriggerEff_DLT/EfficiencyPlots_TriggerEff/BasicPlots/"
+
+    filename_L     = "RealFake_L_TriggerEfficiency.root"
+    filename_T     = "RealFake_T_TriggerEfficiency.root"
+    filename_AntiT = "RealFake_AntiT_TriggerEfficiency.root"
+    
+    file_L     = TFile(basepath + filename_L)
+    file_T     = TFile(basepath + filename_T)
+    file_AntiT = TFile(basepath + filename_AntiT)
+    
+    if   args.flavour == "mu": flavour = "Mu"
+    elif args.flavour == "el": flavour = "El"
+   
+    if   eff_type == "real": efficiency = "Real"
+    elif eff_type == "fake": efficiency = "Fake"
+    
+    variable = "Pt"
+    
+    append = ("_observed_sub","_expectedbkg")[bool(args.closure)]
+
+    histname_L     = efficiency + "_" + flavour + "_" + variable + "_L_TriggerEfficiency" + append
+    histname_T     = efficiency + "_" + flavour + "_" + variable + "_T_TriggerEfficiency" + append
+    histname_AntiT = efficiency + "_" + flavour + "_" + variable + "_AntiT_TriggerEfficiency" + append
+
+    print("Try to get histogram:\n{0}\nfrom file:\n{1}\n".format(histname_L,basepath + filename_L))
+    print("Try to get histogram:\n{0}\nfrom file:\n{1}\n".format(histname_T,basepath + filename_T))
+    print("Try to get histogram:\n{0}\nfrom file:\n{1}\n".format(histname_AntiT,basepath + filename_AntiT))
+
+    file_L.cd()
+    hist_L = file_L.Get(histname_L)    
+    hist_L.SetDirectory(0)
+    
+    file_T.cd()
+    hist_T = file_T.Get(histname_T)   
+    hist_T.SetDirectory(0)
+    
+    file_AntiT.cd()
+    hist_AntiT = file_AntiT.Get(histname_AntiT) 
+    hist_AntiT.SetDirectory(0)
+    
+    hist_L.SetLineStyle(1)
+    hist_L.SetLineColor(kBlack)
+    
+    hist_T.SetLineStyle(2)
+    hist_T.SetLineColor(kBlack)
+    hist_T.SetMarkerStyle(24)
+    
+    delta_eff = hist_L.Clone("DeltaEff")
+    delta_eff.SetXTitle(hist_L.GetXaxis().GetTitle())
+    delta_eff.SetYTitle("#Delta#varepsilon/#varepsilon [%]")
+    delta_eff.GetXaxis().SetTitleSize(0.15)
+    delta_eff.GetYaxis().SetTitleSize(0.15)
+    delta_eff.GetXaxis().SetTitleOffset(0.90)
+    delta_eff.GetYaxis().SetTitleOffset(0.35)
+    delta_eff.GetXaxis().SetLabelSize(0.15)
+    delta_eff.GetYaxis().SetLabelSize(0.12)
+    delta_eff.GetYaxis().SetRangeUser(-50.0,20.0)
+    delta_eff.GetYaxis().SetNdivisions(505) #(5)
+    delta_eff.SetLineColor(kRed)
+    delta_eff.SetMarkerColor(kRed)
+    delta_eff.SetMarkerSize(1)
+    
+    delta_eff.Add(hist_T, -1)
+    delta_eff.Divide(hist_T)
+    delta_eff.Scale(100.0)
+
+    legend = TLegend(0.6,0.4,0.8,0.55) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+    legend.SetHeader(flavour + " - " + efficiency)
+    legend.SetBorderSize(0)	# no border
+    legend.SetFillStyle(0)	# Legend transparent background
+    legend.SetTextSize(0.04)	# Increase entry font size!
+    legend.SetTextFont(42)	# Helvetica
+
+    legend.AddEntry(hist_T, "Trigger efficiency - T", "P")
+    legend.AddEntry(hist_L, "Trigger efficiency - L", "P")
+
+    leg_ATLAS = TLatex()
+    leg_lumi  = TLatex()
+    leg_ATLAS.SetTextSize(0.04)
+    leg_ATLAS.SetNDC()
+    leg_lumi.SetTextSize(0.04)
+    leg_lumi.SetNDC()
+
+    # ---------------------------------------------------------------
+        
+    c = TCanvas("c1","Temp",50,50,800,600)
+
+    pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
+    pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
+    pad1.SetBottomMargin(0.02)
+    pad2.SetBottomMargin(0.4)
+    pad1.Draw()
+    pad2.Draw()
+
+    pad1.cd()
+    
+    hist_L.GetXaxis().SetLabelSize(0)
+    hist_L.GetXaxis().SetLabelOffset(999)
+    
+    hist_L.Draw("E0")
+    hist_T.Draw("E0 SAME") 
+    
+    if "SLT" in args.trigger:
+    
+        if args.flavour == "el": 
+            
+	    refl_vert0 = TLine(26.0,hist_L.GetMinimum(),26.0,hist_L.GetMaximum())
+            refl_vert0.SetLineStyle(2)
+            refl_vert0.SetLineWidth(2)
+            refl_vert0.Draw("SAME")
+    
+            refl_vert1 = TLine(60.0,hist_L.GetMinimum(),60.0,hist_L.GetMaximum())
+            refl_vert1.SetLineStyle(2)
+            refl_vert1.SetLineWidth(2)
+            refl_vert1.Draw("SAME")
+	    
+            refl_vert2 = TLine(140.0,hist_L.GetMinimum(),140.0,hist_L.GetMaximum())
+            refl_vert2.SetLineStyle(2)
+            refl_vert2.SetLineWidth(2)
+            refl_vert2.Draw("SAME")
+        
+	elif args.flavour == "mu": 
+	   
+	    refl_vert0 = TLine(26.0,hist_L.GetMinimum(),26.0,hist_L.GetMaximum())
+            refl_vert0.SetLineStyle(2)
+            refl_vert0.SetLineWidth(2)
+            refl_vert0.Draw("SAME")
+            
+	    refl_vert1 = TLine(50.0,hist_L.GetMinimum(),50.0,hist_L.GetMaximum())
+            refl_vert1.SetLineStyle(2)
+            refl_vert1.SetLineWidth(2)
+            refl_vert1.Draw("SAME")
+	    
+    elif "DLT" in args.trigger:
+        
+	if args.flavour == "el": 
+       
+	    refl_vert0 = TLine(17.0,hist_L.GetMinimum(),17.0,hist_L.GetMaximum())
+            refl_vert0.SetLineStyle(2)
+            refl_vert0.SetLineWidth(2)
+            refl_vert0.Draw("SAME")
+	
+	elif args.flavour == "mu": 
+	    
+	    refl_vert0 = TLine(22.0,hist_L.GetMinimum(),22.0,hist_L.GetMaximum())
+            refl_vert0.SetLineStyle(2)
+            refl_vert0.SetLineWidth(2)
+            refl_vert0.Draw("SAME")
+
+    legend.Draw()
+    leg_ATLAS.DrawLatex(0.6,0.27,"#bf{#it{ATLAS}} Work In Progress")
+    leg_lumi.DrawLatex(0.6,0.2,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
+
+    pad2.cd()
+    
+    delta_eff.Draw("E0")
+    
+    refl = TLine(delta_eff.GetBinLowEdge(1), 0.0, delta_eff.GetBinLowEdge(delta_eff.GetNbinsX()+1), 0.0)
+    refl.SetLineStyle(2)
+    refl.SetLineWidth(2)
+    refl.Draw("SAME")
+    
+    outpath = basepath
+    if outpath[-1] == '/':
+      outpath = outpath[:-1]
+
+    c.SaveAs( outpath + "/TriggerEfficiencyRatio_" + efficiency + "_" + flavour + "_" + variable + ".png" )
+
 # ----------------
 
 if __name__ == "__main__":
 
-    plotter_flavours("real")
-    plotter_flavours("fake")
+    if args.triggerEff:
+        plotter_triggereff("real")
+        plotter_triggereff("fake")
+    else:
+        plotter_flavours("real")
+        plotter_flavours("fake")
+    
     #plot2Dhist()
