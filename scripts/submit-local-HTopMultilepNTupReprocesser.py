@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import glob, os, sys, subprocess, shutil, argparse
+import glob, os, sys, subprocess, shutil, argparse, time
 
 parser = argparse.ArgumentParser(description='Run HTopMultilepNTupReprocesser algorithm interactively')
 
@@ -43,12 +43,20 @@ configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMult
 treename   = args.treename
 nevents    = args.nevents
 
+current_time = time.strftime("%a_%b_%d_%H_%M_%S") 
+
 for infile in infilelist:
 
   xAH_run = None
 
   outdir = ( infile.split("/") )[-1]
   outdir = ( outdir.split(".") )[-2]
+
+  # Add the current timestamp to the submission directory name
+  # In this way, multiple processes w/ same sample can be run at the same time.
+  
+  outdir += ( "___" +  current_time ) # NB: this assumes a triple underscore will NEVER appear in a sample name
+  
   xAH_run = "xAH_run.py -vv --files {0} --config {1} --treeName {2} --submitDir {3} --nevents {4} --force direct".format(infile,configpath,treename,outdir,nevents)
 
   print("Executing command:\n{0}".format(xAH_run))
@@ -56,10 +64,14 @@ for infile in infilelist:
 
   # Move output file(s) from job directory to the proper one,
   # but first, change the file name to be readable in KG's FW!
-  #
+  
+  # Get the submission dir name w/o the appended timestamp
+  
+  timestripped_outdir = outdir[:outdir.find("___")]
+  
   for s in sampledict:
 
-     if outdir == s["name"]:
+     if timestripped_outdir == s["name"]:
 
 	outputfilepath = outdir +"/data-output"
 

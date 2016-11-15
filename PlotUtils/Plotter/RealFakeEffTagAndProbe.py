@@ -34,7 +34,9 @@ g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
                    "ICHEP 2015+2016 DS":13.20768,       # August 2016
                    "POST-ICHEP 2015+2016 DS":22.07036   # October 2016
                  }
-		 
+
+g_selections = ["L","T","AntiT"]
+
 parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["ICHEP 2015+2016 DS"],
                     help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) )
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
@@ -65,7 +67,9 @@ parser.add_argument("--outpath", metavar="outpath", default=None, type=str,
                   help="Name of directory where to store outputs. If unspecified, default is the input directory.")
 parser.add_argument("--plots", dest="plots", action="store_true", default=False,
                   help="Produce efficiency plots.")
-
+parser.add_argument("--triggerEff", dest="triggerEff", action="store", default=None, const=g_selections[0], type=str, nargs="?",
+                  help="Measure trigger efficiency for a given lepton selection. The lepton selection can be specified as an optional command line argument to this option (Choose between [" + ",".join( "{0}".format( s ) for s in g_selections ) + "]). If no option is specified, default selection will be {0}".format(g_selections[0]))
+		  
 args = parser.parse_args()
 
 from ROOT import ROOT, gROOT, Double, TPad, TLine, TH1, TH1D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
@@ -81,24 +85,24 @@ class RealFakeEffTagAndProbe:
 
     def __init__( self, closure=False, factors=False, variables=[], systematics=[], efficiency=None, nosub=False ):
 
-	self.closure = closure
-	self.nosub   = nosub
-	self.factors = factors
+	self.closure    = closure
+	self.nosub      = nosub
+	self.factors    = factors
+	self.triggerEff = None
 
         self.tp_lep = "Probe"
 
-    	self.__channels     = {"" : ["El","Mu"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
-    	#self.__channels     = {"" : ["El"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
-        self.__leptons      = []
-    	self.__efficiencies = ["Real","Fake"]
-    	#self.__efficiencies = ["Fake"]
-    	self.__variables    = ["Pt"]
-    	self.__selections   = ["L","T","AntiT"]
+    	self.selections   = {"D":"L","N":"T","AntiN":"AntiT"}
+
+    	self.__channels       = {"" : ["El","Mu"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
+    	#self.__channels      = {"" : ["El"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
+        self.__leptons        = []
+    	self.__efficiencies   = ["Real","Fake"] # ["Fake"]
+    	self.__variables      = ["Pt"]
     	self.__processes      = []
     	self.__processes_sub  = []
     	self.__systematics    = [""]
     	self.__systematicsdirections = ["","up","dn"]
-
 
 	self.leptons_greek = {"El":"e","Mu":"#mu"}
 	self.leptons_full  = {"El":"Electrons","Mu":"Muons"}
@@ -106,6 +110,8 @@ class RealFakeEffTagAndProbe:
         self.__outputpath = os.path.abspath(os.path.curdir)
         self.__outputfile = None
         self.__outputfile_yields = None
+
+	self.__averagehists = False
 
 	if not self.closure:
 	    self.__processes.append("observed")
@@ -129,9 +135,9 @@ class RealFakeEffTagAndProbe:
         # The following dictionary associates a known process to a list of affecting systematics
 
         self.__process_syst_dict = {"qmisidbkg":["QMisID"], "allsimbkg":["AllSimStat"]}
-	
+
         self.__syst_color_dict = {"QMisID_N":kGreen+3,
-	                          "QMisID_D":kGreen-7, 
+	                          "QMisID_D":kGreen-7,
 	                          "AllSimStat_N":kAzure,
 				  "AllSimStat_D":kAzure+6}
 
@@ -141,12 +147,12 @@ class RealFakeEffTagAndProbe:
 
         self.histkeys = []
 
-        self.loose_hists      = {}
-        self.tight_hists      = {}
-        self.antitight_hists  = {}
-    	self.loose_yields     = {}
-    	self.tight_yields     = {}
-    	self.antitight_yields = {}
+        self.denominator_hists    = {}
+        self.numerator_hists      = {}
+        self.antinumerator_hists  = {}
+    	self.denominator_yields   = {}
+    	self.numerator_yields     = {}
+    	self.antinumerator_yields = {}
 
     	# -----------------------------------------
     	# these dictionaries will store the outputs
@@ -161,9 +167,9 @@ class RealFakeEffTagAndProbe:
     	# General options
     	# ---------------
 
-	self.debug = False
+	self.debug   = False
         self.verbose = False
-	self.log   = False
+	self.log     = False
 
         self.lumi = 13.2
 	self.extensionlist = ["eps","png","root"]
@@ -173,12 +179,12 @@ class RealFakeEffTagAndProbe:
 
     def __fillNDHistDicts__( self, key, sel, hist ):
 
-        if sel == "T":
-            self.tight_hists[key] = hist
-        elif sel == "L":
-            self.loose_hists[key] = hist
-        elif sel == "AntiT":
-            self.antitight_hists[key] = hist
+        if sel == "N":
+            self.numerator_hists[key] = hist
+        elif sel == "D":
+            self.denominator_hists[key] = hist
+        elif sel == "AntiN":
+            self.antinumerator_hists[key] = hist
 
 
     def __getStatsVariedHist__( self, hist, var_direction ):
@@ -229,9 +235,9 @@ class RealFakeEffTagAndProbe:
 
                 for var in self.__variables:
 
-                    for sel in self.__selections:
+                    for sel_key, sel_value in self.selections.iteritems():
 
-                        filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel + "_" + lep + self.tp_lep + var + ".root" )
+                        filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel_value + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel_value + "_" + lep + self.tp_lep + var + ".root" )
 
                         thisfile = TFile(filename)
                         if not thisfile:
@@ -248,7 +254,7 @@ class RealFakeEffTagAndProbe:
 
                             thishist.SetName(key)
                             thishist.SetDirectory(0)
-			    self.__fillNDHistDicts__(key, sel, thishist)
+			    self.__fillNDHistDicts__(key, sel_key, thishist)
 
                         for subproc in self.__processes_sub:
 
@@ -277,7 +283,7 @@ class RealFakeEffTagAndProbe:
 
 			    		thissyshist.SetName(syskey)
 			    		thissyshist.SetDirectory(0)
-			    		self.__fillNDHistDicts__(syskey, sel, thissyshist)
+			    		self.__fillNDHistDicts__(syskey, sel_key, thissyshist)
 
 
     def __subtract__ ( self, sel, proc_key, proc_sub_key, bin_idx=None, proc_sub_base_key=None ):
@@ -291,15 +297,15 @@ class RealFakeEffTagAndProbe:
 
         if ( bin_idx == None and not proc_sub_base_key ) or ( bin_idx != None and  proc_sub_key == proc_sub_base_key ):
 
-           if sel == "T":
-	       hist    = self.tight_hists.get(proc_key)
-	       sub_hist = self.tight_hists.get(proc_sub_key)
-	   elif sel == "L":
-	       hist    = self.loose_hists.get(proc_key)
-	       sub_hist = self.loose_hists.get(proc_sub_key)
-	   elif sel == "AntiT":
-	       hist    = self.antitight_hists.get(proc_key)
-	       sub_hist = self.antitight_hists.get(proc_sub_key)
+           if sel == "N":
+	       hist     = self.numerator_hists.get(proc_key)
+	       sub_hist = self.numerator_hists.get(proc_sub_key)
+	   elif sel == "D":
+	       hist     = self.denominator_hists.get(proc_key)
+	       sub_hist = self.denominator_hists.get(proc_sub_key)
+	   elif sel == "AntiN":
+	       hist     = self.antinumerator_hists.get(proc_key)
+	       sub_hist = self.antinumerator_hists.get(proc_sub_key)
 	   if sub_hist:
 	       if self.verbose:
 	           print("\t{0:.3f} ({1}) - {2:.3f} ({3})".format(hist.Integral(0,hist.GetNbinsX()+1),hist.GetName(),sub_hist.Integral(0,sub_hist.GetNbinsX()+1),sub_hist.GetName()))
@@ -314,18 +320,18 @@ class RealFakeEffTagAndProbe:
 
 	elif ( bin_idx != None and proc_sub_key != proc_sub_base_key ):
 
-           if sel == "T":
-	       hist        = self.tight_hists.get(proc_key)
-	       sub_hist     = self.tight_hists.get(proc_sub_key)
-	       sub_basehist = self.tight_hists.get(proc_sub_base_key)
-	   elif sel == "L":
-	       hist        = self.loose_hists.get(proc_key)
-	       sub_hist     = self.loose_hists.get(proc_sub_key)
-	       sub_basehist = self.loose_hists.get(proc_sub_base_key)
-	   elif sel == "AntiT":
-	       hist        = self.antitight_hists.get(proc_key)
-	       sub_hist     = self.antitight_hists.get(proc_sub_key)
-	       sub_basehist = self.antitight_hists.get(proc_sub_base_key)
+           if sel == "N":
+	       hist         = self.numerator_hists.get(proc_key)
+	       sub_hist     = self.numerator_hists.get(proc_sub_key)
+	       sub_basehist = self.numerator_hists.get(proc_sub_base_key)
+	   elif sel == "D":
+	       hist         = self.denominator_hists.get(proc_key)
+	       sub_hist     = self.denominator_hists.get(proc_sub_key)
+	       sub_basehist = self.denominator_hists.get(proc_sub_base_key)
+	   elif sel == "AntiN":
+	       hist         = self.antinumerator_hists.get(proc_key)
+	       sub_hist     = self.antinumerator_hists.get(proc_sub_key)
+	       sub_basehist = self.antinumerator_hists.get(proc_sub_base_key)
 
 	   if sub_hist and sub_basehist:
 	       if self.verbose:
@@ -388,21 +394,21 @@ class RealFakeEffTagAndProbe:
                         if not subkeysys in self.histkeys:
                             self.histkeys.append(subkeysys)
 
-	    	        self.tight_hists[subkeysys]	= self.tight_hists[key].Clone(subkeysys)
-	    	        self.loose_hists[subkeysys]	= self.loose_hists[key].Clone(subkeysys)
-	    	        self.antitight_hists[subkeysys] = self.antitight_hists[key].Clone(subkeysys)
+	    	        self.numerator_hists[subkeysys]	    = self.numerator_hists[key].Clone(subkeysys)
+	    	        self.denominator_hists[subkeysys]   = self.denominator_hists[key].Clone(subkeysys)
+	    	        self.antinumerator_hists[subkeysys] = self.antinumerator_hists[key].Clone(subkeysys)
 
 		    else:
-		    	for ibin in range(1,self.tight_hists[key].GetNbinsX()+2):
+		    	for ibin in range(1,self.numerator_hists[key].GetNbinsX()+2):
 
 		     	    subkeysys_ibin = subkeysys + "_" + str(ibin)
 
                             if not subkeysys_ibin in self.histkeys:
                                 self.histkeys.append(subkeysys_ibin)
 
-	    	    	    self.tight_hists[subkeysys_ibin]	 = self.tight_hists[key].Clone(subkeysys_ibin)
-	    	    	    self.loose_hists[subkeysys_ibin]	 = self.loose_hists[key].Clone(subkeysys_ibin)
-	    	    	    self.antitight_hists[subkeysys_ibin] = self.antitight_hists[key].Clone(subkeysys_ibin)
+	    	    	    self.numerator_hists[subkeysys_ibin]     = self.numerator_hists[key].Clone(subkeysys_ibin)
+	    	    	    self.denominator_hists[subkeysys_ibin]   = self.denominator_hists[key].Clone(subkeysys_ibin)
+	    	    	    self.antinumerator_hists[subkeysys_ibin] = self.antinumerator_hists[key].Clone(subkeysys_ibin)
 
 	            for subproc in self.__processes_sub:
 
@@ -425,13 +431,13 @@ class RealFakeEffTagAndProbe:
                                 print "subkeysys (A): ", subkeysys
                                 print "subprockey (B): ", subprockey_sys_sysdir
 
-		    	    self.tight_hists[subkeysys]     = self.__subtract__( "T",     subkeysys, subprockey_sys_sysdir )
-            	    	    self.loose_hists[subkeysys]     = self.__subtract__( "L",     subkeysys, subprockey_sys_sysdir )
-            	    	    self.antitight_hists[subkeysys] = self.__subtract__( "AntiT", subkeysys, subprockey_sys_sysdir )
+		    	    self.numerator_hists[subkeysys]     = self.__subtract__( "N",     subkeysys, subprockey_sys_sysdir )
+            	    	    self.denominator_hists[subkeysys]   = self.__subtract__( "D",     subkeysys, subprockey_sys_sysdir )
+            	    	    self.antinumerator_hists[subkeysys] = self.__subtract__( "AntiN", subkeysys, subprockey_sys_sysdir )
 
 			else:
 
-			    for ibin in range(1,self.tight_hists[key].GetNbinsX()+2):
+			    for ibin in range(1,self.numerator_hists[key].GetNbinsX()+2):
 
 				subkeysys_ibin = subkeysys + "_" + str(ibin)
 
@@ -440,9 +446,9 @@ class RealFakeEffTagAndProbe:
                                     print "\tsubkeysys (A): ", subkeysys_ibin
                                     print "\tsubprockey (B): ", subprockey_sys_sysdir
 
-		    	   	self.tight_hists[subkeysys_ibin]     = self.__subtract__( "T",     subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
-            	    	   	self.loose_hists[subkeysys_ibin]     = self.__subtract__( "L",     subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
-            	    	   	self.antitight_hists[subkeysys_ibin] = self.__subtract__( "AntiT", subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
+		    	   	self.numerator_hists[subkeysys_ibin]     = self.__subtract__( "N",     subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
+            	    	   	self.denominator_hists[subkeysys_ibin]   = self.__subtract__( "D",     subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
+            	    	   	self.antinumerator_hists[subkeysys_ibin] = self.__subtract__( "AntiN", subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
 
 
 	    if self.verbose:
@@ -492,12 +498,15 @@ class RealFakeEffTagAndProbe:
                         bins = [ float(binedge) for binedge in rebinitem[3:] ]
 	                arr_bins = array.array("d", bins)
 
-                        self.tight_hists[key]     = self.tight_hists[key].Rebin( nbins, key, arr_bins )
-                        self.loose_hists[key]     = self.loose_hists[key].Rebin( nbins, key, arr_bins )
-                        self.antitight_hists[key] = self.antitight_hists[key].Rebin( nbins, key, arr_bins )
+                        self.numerator_hists[key]     = self.numerator_hists[key].Rebin( nbins, key, arr_bins )
+                        self.denominator_hists[key]   = self.denominator_hists[key].Rebin( nbins, key, arr_bins )
+                        self.antinumerator_hists[key] = self.antinumerator_hists[key].Rebin( nbins, key, arr_bins )
 
         if averagehistlist:
-            for key in self.histkeys:
+
+	    self.__averagehists = True
+
+	    for key in self.histkeys:
 
 		tokens = key.split("_")
 
@@ -511,12 +520,12 @@ class RealFakeEffTagAndProbe:
 		    if ( averageitem[0] == "ALL" ) or ( ( tokens[0] in averageitem ) and ( tokens[1] in averageitem ) and ( tokens[2] in averageitem ) ):
 
 		        print("\t===> Taking average on whole bin range of matching histograms")
-                        nbins_tight      = self.tight_hists[key].GetNbinsX()
-                        nbins_loose      = self.loose_hists[key].GetNbinsX()
-                        nbins_antitight  = self.antitight_hists[key].GetNbinsX()
-                        self.tight_hists[key]     = self.tight_hists[key].Rebin( nbins_tight, key )
-                        self.loose_hists[key]     = self.loose_hists[key].Rebin( nbins_loose, key )
-                        self.antitight_hists[key] = self.antitight_hists[key].Rebin( nbins_antitight, key )
+                        nbins_numerator      = self.numerator_hists[key].GetNbinsX()
+                        nbins_denominator    = self.denominator_hists[key].GetNbinsX()
+                        nbins_antinumerator  = self.antinumerator_hists[key].GetNbinsX()
+                        self.numerator_hists[key]     = self.numerator_hists[key].Rebin( nbins_numerator, key )
+                        self.denominator_hists[key]   = self.denominator_hists[key].Rebin( nbins_denominator, key )
+                        self.antinumerator_hists[key] = self.antinumerator_hists[key].Rebin( nbins_antinumerator, key )
 
 
     def __yields_and_integral__( self, histogram ):
@@ -528,52 +537,52 @@ class RealFakeEffTagAndProbe:
 
     def storeYields ( self ):
 
-        # Make sure "tight" (numerator) bins have *never* more events
-	# than "loose" (denominator) bins. That is, set tight=loose in such cases.
+        # Make sure "numerator" (eg. TIGHT) bins have *never* more events
+	# than "denominator" (eg LOOSE) bins. That is, set numerator=denominator in such cases.
 	# Small fluctuations can happen b/c of subtraction and numerical precision (?)
 
-        for key, tight_hist in self.tight_hists.iteritems():
-             for ibin in range( 1, tight_hist.GetNbinsX()+2 ):
-	         tight_yield = tight_hist.GetBinContent(ibin)
-		 loose_yield = self.loose_hists[key].GetBinContent(ibin)
-		 if tight_yield > loose_yield:
-		     self.loose_hists[key].SetBinContent(ibin,tight_yield)
+        for key, numerator_hist in self.numerator_hists.iteritems():
+             for ibin in range( 1, numerator_hist.GetNbinsX()+2 ):
+	         numerator_yield   = numerator_hist.GetBinContent(ibin)
+		 denominator_yield = self.denominator_hists[key].GetBinContent(ibin)
+		 if numerator_yield > denominator_yield:
+		     self.denominator_hists[key].SetBinContent(ibin,numerator_yield)
 
         # Reset any bin which became negative after subtraction to zero,
         # then get the yields for every bin and the integarl, and store it in a list
 
-        for key, hist in self.tight_hists.iteritems():
+        for key, hist in self.numerator_hists.iteritems():
             for ibin in range( 1, hist.GetNbinsX()+2 ):
                 if hist.GetBinContent(ibin) < 0:
                     hist.SetBinContent(ibin,0.0)
-            self.tight_yields[key] = self.__yields_and_integral__(hist)
+            self.numerator_yields[key] = self.__yields_and_integral__(hist)
 
-        for key, hist in self.loose_hists.iteritems():
+        for key, hist in self.denominator_hists.iteritems():
             for ibin in range( 1, hist.GetNbinsX()+2 ):
                 if hist.GetBinContent(ibin) < 0:
                     hist.SetBinContent(ibin,0.0)
-            self.loose_yields[key] = self.__yields_and_integral__(hist)
+            self.denominator_yields[key] = self.__yields_and_integral__(hist)
 
-        for key, hist in self.antitight_hists.iteritems():
+        for key, hist in self.antinumerator_hists.iteritems():
             for ibin in range( 1, hist.GetNbinsX()+2 ):
                 if hist.GetBinContent(ibin) < 0:
                     hist.SetBinContent(ibin,0.0)
-            self.antitight_yields[key] = self.__yields_and_integral__(hist)
+            self.antinumerator_yields[key] = self.__yields_and_integral__(hist)
 
 
     def sanityCheck( self ):
     	print("\n\n")
-	for key, num_list in self.tight_yields.iteritems():
+	for key, num_list in self.numerator_yields.iteritems():
     	     numerator   = num_list[-1]
-    	     denominator = self.loose_yields[key][-1]
+    	     denominator = self.denominator_yields[key][-1]
     	     if denominator < numerator:
-    		 print("WARNING! Histogram:{0} ==> L = {1:.3f}, T = {2:.3f}, !T = {3:.3f} ==> L < T ??".format(key, denominator, numerator, self.antitight_yields[key][-1] ))
-                 print("Numerator T: integral = {0}".format(self.tight_yields[key][-1]))
-                 print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.tight_yields[key][:-1])))
-                 print("Denominator L: integral = {0}".format(self.loose_yields[key][-1]))
-                 print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.loose_yields[key][:-1])))
-                 print("Anti T: integral = {0}".format(self.antitight_yields[key][-1]))
-                 print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.antitight_yields[key][:-1])))
+    		 print("WARNING! Histogram:{0} ==> D = {1:.3f}, N = {2:.3f}, !N = {3:.3f} ==> D < N ??".format(key, denominator, numerator, self.antinumerator_yields[key][-1] ))
+                 print("Numerator : integral = {0}".format(self.numerator_yields[key][-1]))
+                 print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.numerator_yields[key][:-1])))
+                 print("Denominator : integral = {0}".format(self.denominator_yields[key][-1]))
+                 print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.denominator_yields[key][:-1])))
+                 print("AntiNumerator : integral = {0}".format(self.antinumerator_yields[key][-1]))
+                 print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.antinumerator_yields[key][:-1])))
 
 
     # NB: When computing an efficiency, need to make sure the errors are computed correctly!
@@ -597,13 +606,13 @@ class RealFakeEffTagAndProbe:
 		return
 
             tokens = key.split("_")
-	    
+
 	    min_tokens = True
 	    if self.closure or self.nosub:
 	        min_tokens = ( len(tokens) >= 4 )
 	    else:
 	        min_tokens = ( len(tokens) >= 5 )
-	    
+
             if ( not min_tokens or tokens[3] not in self.__processes ): continue
 
             if ( variation == "nominal"):
@@ -619,36 +628,70 @@ class RealFakeEffTagAndProbe:
             if self.debug:
                 print("\nnominal key: {0}\nvar key: {1}\n".format(nominal_key,key))
 
-            # Define numerator (pass) and denominator (total)
+            # Define pass (N) and total (D=N+!N)
 
             h_pass = h_tot = None
 
             append = ""
             if variation == "nominal":
-                h_pass = self.tight_hists[nominal_key]
-                h_tot  = self.tight_hists[nominal_key] + self.antitight_hists[nominal_key]
+                h_pass = self.numerator_hists[nominal_key]
+                h_tot  = self.numerator_hists[nominal_key] + self.antinumerator_hists[nominal_key]
             elif variation == "numerator":
                 append = "numerator"
-                h_pass = self.tight_hists[key]
-                h_tot  = self.tight_hists[key] + self.antitight_hists[nominal_key]
+                h_pass = self.numerator_hists[key]
+                h_tot  = self.numerator_hists[key] + self.antinumerator_hists[nominal_key]
             elif variation == "denominator":
                 append = "denominator"
-                h_pass = self.tight_hists[nominal_key]
-                h_tot  = self.tight_hists[nominal_key] + self.antitight_hists[key]
+                h_pass = self.numerator_hists[nominal_key]
+                h_tot  = self.numerator_hists[nominal_key] + self.antinumerator_hists[key]
 
-           
-	    # Make sure overflow bin will return same efficiency as last bin before overflow
-            
-	    h_pass.SetBinContent( h_pass.GetNbinsX()+1, h_pass.GetBinContent( h_pass.GetNbinsX() ) )
-	    h_pass.SetBinError( h_pass.GetNbinsX()+1, h_pass.GetBinError( h_pass.GetNbinsX() )  )
-	    
-	    h_tot.SetBinContent( h_tot.GetNbinsX()+1, h_tot.GetBinContent( h_tot.GetNbinsX() ) )
-	    h_tot.SetBinError( h_tot.GetNbinsX()+1, h_tot.GetBinError( h_tot.GetNbinsX() )  )	    
+	    # ----------------------------------------------------------------------------------
+
+	    # Make sure last bin before overflow contains ALSO the events of the overflow bin
+	    # Then set the overflow bin to the same content of the *modified* last bin before overflow
+
+            # 1. Merge OFlow w/ last bin
+
+	    h_pass_last_idx  = h_pass.GetNbinsX()
+	    h_pass_oflow_idx = h_pass.GetNbinsX()+1
+	    h_pass_last      = h_pass.GetBinContent( h_pass_last_idx )
+	    h_pass_oflow     = h_pass.GetBinContent( h_pass_oflow_idx )
+	    h_pass_last_err  = h_pass.GetBinError( h_pass_last_idx )
+	    h_pass_oflow_err = h_pass.GetBinError( h_pass_oflow_idx )
+
+	    h_pass_merged     = h_pass_last + h_pass_oflow
+	    h_pass_merged_err = math.sqrt( pow(h_pass_last_err,2.0) + pow(h_pass_oflow_err,2.0) )
+
+	    h_pass.SetBinContent( h_pass_last_idx, h_pass_merged )
+	    h_pass.SetBinError( h_pass_last_idx, h_pass_merged_err )
+
+	    h_tot_last_idx  = h_tot.GetNbinsX()
+	    h_tot_oflow_idx = h_tot.GetNbinsX()+1
+	    h_tot_last      = h_tot.GetBinContent( h_tot_last_idx )
+	    h_tot_oflow     = h_tot.GetBinContent( h_tot_oflow_idx )
+	    h_tot_last_err  = h_tot.GetBinError( h_tot_last_idx )
+	    h_tot_oflow_err = h_tot.GetBinError( h_tot_oflow_idx )
+
+	    h_tot_merged     = h_tot_last + h_tot_oflow
+	    h_tot_merged_err = math.sqrt( pow(h_tot_last_err,2.0) + pow(h_tot_oflow_err,2.0) )
+
+	    h_tot.SetBinContent( h_tot_last_idx, h_tot_merged )
+	    h_tot.SetBinError( h_tot_last_idx, h_tot_merged_err )
+
+	    # 2. Set OFlow bin value and error to modified last bin value and error
+
+	    h_pass.SetBinContent( h_pass_oflow_idx, h_pass.GetBinContent( h_pass_last_idx ) )
+	    h_pass.SetBinError( h_pass_oflow_idx, h_pass.GetBinError( h_pass_last_idx )  )
+
+	    h_tot.SetBinContent( h_tot_oflow_idx, h_tot.GetBinContent( h_tot_last_idx ) )
+	    h_tot.SetBinError( h_tot_oflow_idx, h_tot.GetBinError( h_tot_last_idx )  )
+
+            # ----------------------------------------------------------------------------------
 
 	    ratiolist = []
-	    for idx, elem in enumerate(self.tight_yields[key]):
+	    for idx, elem in enumerate(self.numerator_yields[key]):
 	        n = elem
-		d = self.loose_yields[key][idx]
+		d = self.denominator_yields[key][idx]
 		r = -1 # just an unphysical value
 		if d:
 		    r = n/d
@@ -657,13 +700,13 @@ class RealFakeEffTagAndProbe:
             if self.verbose:
                 print("*****************************************************")
                 print("Histogram: {0}\n".format(key))
-                print("Numerator T: integral = {0}".format(self.tight_yields[key][-1]))
-                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.tight_yields[key][:-1])))
-                print("Denominator L (AntiT+T): integral = {0}".format(self.loose_yields[key][-1]))
-                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.loose_yields[key][:-1])))
-                print("AntiT: integral = {0}".format(self.antitight_yields[key][-1]))
-                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.antitight_yields[key][:-1])))
-                print("Ratio T/L: integral = {0}".format(ratiolist[-1]))
+                print("Numerator : integral = {0}".format(self.numerator_yields[key][-1]))
+                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.numerator_yields[key][:-1])))
+                print("Denominator  (N+!N): integral = {0}".format(self.denominator_yields[key][-1]))
+                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.denominator_yields[key][:-1])))
+                print("AntiNumerator: integral = {0}".format(self.antinumerator_yields[key][-1]))
+                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.antinumerator_yields[key][:-1])))
+                print("Ratio N/D: integral = {0}".format(ratiolist[-1]))
                 print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(ratiolist[:-1])))
                 print("")
 
@@ -676,7 +719,7 @@ class RealFakeEffTagAndProbe:
                 key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3],append) )
             else:
 	        key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3],tokens[4],append) )
-	    
+
             if key_heff.endswith("_"):
                 key_heff = key_heff[:-1]
             if len(tokens) > 6:
@@ -757,7 +800,7 @@ class RealFakeEffTagAndProbe:
 	        min_tokens = ( len(tokens) >= 4 )
 	    else:
 	        min_tokens = ( len(tokens) >= 5 )
-	    
+
             if ( not min_tokens or tokens[3] not in self.__processes ): continue
 
             if ( variation == "nominal"):
@@ -780,21 +823,64 @@ class RealFakeEffTagAndProbe:
 
             append = ""
             if variation == "nominal":
-                h_pass     = self.tight_hists[nominal_key]
-                h_notpass  = self.antitight_hists[nominal_key]
+                h_pass     = self.numerator_hists[nominal_key]
+                h_notpass  = self.antinumerator_hists[nominal_key]
             elif variation == "numerator":
                 append = "numerator"
-                h_pass     = self.tight_hists[key]
-                h_notpass  = self.antitight_hists[nominal_key]
+                h_pass     = self.numerator_hists[key]
+                h_notpass  = self.antinumerator_hists[nominal_key]
             elif variation == "denominator":
                 append = "denominator"
-                h_pass     = self.tight_hists[nominal_key]
-                h_notpass  = self.antitight_hists[key]
+                h_pass     = self.numerator_hists[nominal_key]
+                h_notpass  = self.antinumerator_hists[key]
+
+	    # ----------------------------------------------------------------------------------
+
+	    # Make sure last bin before overflow contains ALSO the events of the overflow bin
+	    # Then set the overflow bin to the same content of the *modified* last bin before overflow
+
+            # 1. Merge OFlow w/ last bin
+
+	    h_pass_last_idx  = h_pass.GetNbinsX()
+	    h_pass_oflow_idx = h_pass.GetNbinsX()+1
+	    h_pass_last      = h_pass.GetBinContent( h_pass_last_idx )
+	    h_pass_oflow     = h_pass.GetBinContent( h_pass_oflow_idx )
+	    h_pass_last_err  = h_pass.GetBinError( h_pass_last_idx )
+	    h_pass_oflow_err = h_pass.GetBinError( h_pass_oflow_idx )
+
+	    h_pass_merged     = h_pass_last + h_pass_oflow
+	    h_pass_merged_err = math.sqrt( pow(h_pass_last_err,2.0) + pow(h_pass_oflow_err,2.0) )
+
+	    h_pass.SetBinContent( h_pass_last_idx, h_pass_merged )
+	    h_pass.SetBinError( h_pass_last_idx, h_pass_merged_err )
+
+	    h_notpass_last_idx  = h_notpass.GetNbinsX()
+	    h_notpass_oflow_idx = h_notpass.GetNbinsX()+1
+	    h_notpass_last      = h_notpass.GetBinContent( h_notpass_last_idx )
+	    h_notpass_oflow     = h_notpass.GetBinContent( h_notpass_oflow_idx )
+	    h_notpass_last_err  = h_notpass.GetBinError( h_notpass_last_idx )
+	    h_notpass_oflow_err = h_notpass.GetBinError( h_notpass_oflow_idx )
+
+	    h_notpass_merged     = h_notpass_last + h_notpass_oflow
+	    h_notpass_merged_err = math.sqrt( pow(h_notpass_last_err,2.0) + pow(h_notpass_oflow_err,2.0) )
+
+	    h_notpass.SetBinContent( h_notpass_last_idx, h_notpass_merged )
+	    h_notpass.SetBinError( h_notpass_last_idx, h_notpass_merged_err )
+
+	    # 2. Set OFlow bin value and error to modified last bin value and error
+
+	    h_pass.SetBinContent( h_pass_oflow_idx, h_pass.GetBinContent( h_pass_last_idx ) )
+	    h_pass.SetBinError( h_pass_oflow_idx, h_pass.GetBinError( h_pass_last_idx )  )
+
+	    h_notpass.SetBinContent( h_notpass_oflow_idx, h_notpass.GetBinContent( h_notpass_last_idx ) )
+	    h_notpass.SetBinError( h_notpass_oflow_idx, h_notpass.GetBinError( h_notpass_last_idx )  )
+
+            # ----------------------------------------------------------------------------------
 
 	    ratiolist = []
-	    for idx, elem in enumerate(self.tight_yields[key]):
+	    for idx, elem in enumerate(self.numerator_yields[key]):
 	        n = elem
-		d = self.antitight_yields[key][idx]
+		d = self.antinumerator_yields[key][idx]
 		r = -1 # just an unphysical value
 		if d:
 		    r = n/d
@@ -803,11 +889,11 @@ class RealFakeEffTagAndProbe:
 	    if self.verbose:
                 print("*****************************************************")
                 print("Histogram: {0}\n".format(key))
-                print("Numerator T: integral = {0}".format(self.tight_yields[key][-1]))
-                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.tight_yields[key][:-1])))
-                print("Denominator AntiT: integral = {0}".format(self.antitight_yields[key][-1]))
-                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.antitight_yields[key][:-1])))
-                print("Ratio T/AntiT: integral = {0}".format(ratiolist[-1]))
+                print("Numerator : integral = {0}".format(self.numerator_yields[key][-1]))
+                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.numerator_yields[key][:-1])))
+                print("AntiNumerator: integral = {0}".format(self.antinumerator_yields[key][-1]))
+                print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.antinumerator_yields[key][:-1])))
+                print("Ratio N/!N: integral = {0}".format(ratiolist[-1]))
                 print("\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(ratiolist[:-1])))
                 print("")
 
@@ -835,6 +921,9 @@ class RealFakeEffTagAndProbe:
 	    outputpath = self.__outputpath
 
 	self.__outputpath = outputpath
+
+        if self.__averagehists:
+	    filename += "Avg"
 
         print("\nStoring output files:\n{0}\n{1}\nin directory: {2}".format(filename+".root",filename+".txt",os.path.abspath(outputpath)))
 
@@ -911,23 +1000,23 @@ class RealFakeEffTagAndProbe:
 	        shifted_up = [ ( h.GetBinContent(bin) + h.GetBinError(bin)/2.0 ) if ( h.GetBinError(bin) ) else 1 for bin in range(1,h.GetNbinsX()+2) ]
 		this_ymin = min(shifted_dn)
 		this_ymax = max(shifted_up)
-	    
+
 	    if this_ymin < ymin:
 	        ymin = this_ymin
 	    if this_ymax >= ymax:
 	        ymax = this_ymax
-	
+
 	if not ratio:
 	    if ymin < 0: ymin = 0.0
 	    if ymax > 1: ymax = 1.0
 	else:
-	   if  abs( ymax - 1 ) <= 0.05: 
-	       ymax = 1.05   
+	   if  abs( ymax - 1 ) <= 0.05:
+	       ymax = 1.05
 	       shift_up = 0
-	   if  abs( ymin - 1 ) <= 0.05: 
-	       ymin = 0.95   
-	       shift_dn = 0	       
-	       
+	   if  abs( ymin - 1 ) <= 0.05:
+	       ymin = 0.95
+	       shift_dn = 0
+
 	return scale_dn * ( ymin - shift_dn ), scale_up * ( ymax + shift_up )
 
 
@@ -940,8 +1029,16 @@ class RealFakeEffTagAndProbe:
         sub = ("w/","w/o")[bool(self.nosub)]
         proc_dict = {"observed":"Data ({0} subtraction)".format(sub), "expectedbkg":"simulation"}
 
-        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/BasicPlots"):
-	    os.makedirs(self.__outputpath+"/EfficiencyPlots/BasicPlots")
+        savepath = self.__outputpath+"/EfficiencyPlots"+("","_Avg")[self.__averagehists]
+
+        if self.triggerEff:
+	    savepath += "_TriggerEff"
+
+	if not os.path.exists(savepath+"/BasicPlots"):
+	    os.makedirs(savepath+"/BasicPlots")
+
+	if self.triggerEff:
+            trigeff_file = TFile(savepath+"/BasicPlots/RealFake_"+self.triggerEff+"_TriggerEfficiency.root","RECREATE")
 
         for var in self.__variables:
 
@@ -965,13 +1062,13 @@ class RealFakeEffTagAndProbe:
                 leg_ATLAS.SetNDC()
                 leg_lumi.SetTextSize(0.04)
                 leg_lumi.SetNDC()
-
+		    
 	        for idx_eff, eff in enumerate(self.__efficiencies):
 
                     key  = "_".join((eff,lep,var,"Efficiency",proc,"sub"))
                     if self.closure or self.nosub:
 		        key  = "_".join((eff,lep,var,"Efficiency",proc))
-		   
+
 		    print("\tplotting histogram: {0}".format(key))
 
 		    hist = self.histefficiencies[key]
@@ -998,71 +1095,83 @@ class RealFakeEffTagAndProbe:
 		       hist.Draw("E0")
 		    else:
 		       hist.Draw("E0,SAME")
+		       
+		    if self.triggerEff:
+		       copy_hist_name = hist.GetName()
+		       copy_hist_name = copy_hist_name.replace("Efficiency",self.triggerEff+"_TriggerEfficiency")
+		       copy_hist = hist.Clone(copy_hist_name)
+		       trigeff_file.cd()
+		       copy_hist.Write()
 
                 legend.Draw()
                 leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
                 leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
 
                 canvas_filename = "_".join(("RealFake",lep,var,"Efficiency",proc))
-
+        
+	        if self.triggerEff:
+                    canvas_filename = canvas_filename.replace("Efficiency",self.triggerEff+"_TriggerEfficiency")
+		    
 		for extension in self.extensionlist:
-		    c.SaveAs(self.__outputpath+"/EfficiencyPlots/BasicPlots/"+canvas_filename+"."+extension)
+		    c.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"."+extension)
 
 
     def plotMakerSys( self ):
-        
+
 	proc = ("observed","expectedbkg")[bool(self.closure)]
 
         proc_dict = {"observed":"Data (w/ subtraction)", "expectedbkg":"simulation"}
 
-        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/SplitSys"):
-	    os.makedirs(self.__outputpath+"/EfficiencyPlots/SplitSys")
-        if not os.path.exists(self.__outputpath+"/EfficiencyPlots/CombinedSys"):
-	    os.makedirs(self.__outputpath+"/EfficiencyPlots/CombinedSys")
-	    
+	savepath = self.__outputpath+"/EfficiencyPlots"+("","_Avg")[self.__averagehists]
+
+        if not os.path.exists(savepath+"/SplitSys"):
+	    os.makedirs(savepath+"/SplitSys")
+        if not os.path.exists(savepath+"/CombinedSys"):
+	    os.makedirs(savepath+"/CombinedSys")
+
         for var in self.__variables:
 
   	    for lep in self.__leptons:
-      
+
 	        for idx_eff, eff in enumerate(self.__efficiencies):
-	
+
 	            key_nominal = "_".join( (eff,lep,var,"Efficiency",proc) )
 	            if not self.nosub:
 	                key_nominal += "_sub"
-		    
+
 	            hist_nominal = self.histefficiencies[key_nominal]
           	    hist_nominal.SetLineStyle(2)
 		    hist_nominal.SetLineWidth(2)
           	    hist_nominal.SetLineColor(kBlack)
 	  	    hist_nominal.SetMarkerStyle(kFullCircle)
           	    hist_nominal.SetMarkerColor(kBlack)
-                    
+
 		    # Store histograms in a list for future convenience
-		    
+
 		    histlist = [hist_nominal]
-		    
+
 		    if self.verbose:
     		        print("plotting nominal histogram: {0}".format(key_nominal))
-	           
+
 	            hists_sys_numerator   = []
 	            hists_sys_denominator = []
-  
+
   	     	    for sys in self.__systematics[1:]:
-			
+
 	     		for sysdir in self.__systematicsdirections[1:]:
-         			    
+
 			    for bin in range( 1, hist_nominal.GetNbinsX()+2):
-			    
+
 			        keyappend_num   = "_".join(("numerator",sys,sysdir,str(bin)))
 			        keyappend_denom = "_".join(("denominator",sys,sysdir,str(bin)))
-			        
+
 				if self.verbose:
 				    print "\tstoring efficiency: ", "_".join((key_nominal,keyappend_num))
-			     
+
 	                        hists_sys_numerator.append( self.histefficiencies["_".join((key_nominal,keyappend_num))] )
                                 hists_sys_denominator.append( self.histefficiencies["_".join((key_nominal,keyappend_denom))] )
 				histlist.extend([ self.histefficiencies["_".join((key_nominal,keyappend_num))], self.histefficiencies["_".join((key_nominal,keyappend_denom))] ])
-	 
+
           	    legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
                     legend.SetHeader(eff + " - " + self.leptons_full[lep])
           	    legend.SetBorderSize(0)	# no border
@@ -1076,36 +1185,36 @@ class RealFakeEffTagAndProbe:
                     leg_ATLAS.SetNDC()
                     leg_lumi.SetTextSize(0.04)
                     leg_lumi.SetNDC()
-	  	    
+
 	  	    legend.AddEntry(hist_nominal,"#varepsilon_{{{0}}} - nominal (stat. unc.)".format(eff), "P")
 
 	  	    # Store the sum in quadrature of all the UP and DN variations wrt nominal to eventually make a single sys error band
 		    # Assuming that all uncertainties in each bin are not correlated (which is the case!)
 
 		    all_sys = {} # for each bin nr. store the sum in quadrature of sys for that bin
-		    
+
 		    count_sys_num = [0 for i in range(len(self.__systematics[1:]))]
-	            
+
 	  	    for h in hists_sys_numerator:
-	  		
+
 			h.SetLineStyle(1)
 			h.SetLineWidth(2)
 	  		h.SetMarkerStyle(kCircle)
-			
+
 			for idx, sys in enumerate(self.__systematics[1:]):
 			    if sys in h.GetName():
-			        
+
 				#print "\tsys hist name: ", h.GetName()
 				bin = h.GetName()[-1] # get the bin number
 				sys_var = abs( hist_nominal.GetBinContent(int(bin)) - h.GetBinContent(int(bin)) )
 				#print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
-				
+
 				if not all_sys.get(bin):
 				    all_sys[bin] = pow(sys_var,2.0)
 				else:
 				    all_sys[bin] += pow(sys_var,2.0)
 				#print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
-				
+
 				h.SetLineColor(self.__syst_color_dict[sys+"_N"])
 			        h.SetMarkerColor(self.__syst_color_dict[sys+"_N"])
 			        if not count_sys_num[idx]:
@@ -1113,21 +1222,21 @@ class RealFakeEffTagAndProbe:
 				    count_sys_num[idx] += 1
 
 		    count_sys_denom = [0 for i in range(len(self.__systematics[1:]))]
-	            
+
 	  	    for h in hists_sys_denominator:
-	  		
+
 			h.SetLineStyle(1)
 			h.SetLineWidth(2)
 	  		h.SetMarkerStyle(kOpenTriangleUp)
-			
+
 			for idx, sys in enumerate(self.__systematics[1:]):
-			    if sys in h.GetName(): 
+			    if sys in h.GetName():
 
 				#print "\tsys hist name: ", h.GetName()
 				bin = h.GetName()[-1] # get the bin number
 				sys_var = abs( hist_nominal.GetBinContent(int(bin)) - h.GetBinContent(int(bin)) )
 				#print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
-				
+
 				if not all_sys.get(bin):
 				    all_sys[bin] = pow(sys_var,2.0)
 				else:
@@ -1139,18 +1248,18 @@ class RealFakeEffTagAndProbe:
 			        if not count_sys_denom[idx]:
 			            legend.AddEntry(h,"{0} subtraction sys (T#slash{{T}})".format(sys), "P")
 				    count_sys_denom[idx] += 1
-	 
+
 	            # Now get sqrt of sum in quadrature of systematics
-		    
+
 		    for key, sys_var in sorted(all_sys.iteritems()):
 		        all_sys[key] = math.sqrt(all_sys[key])
 			#print("\ttot sys bin[{0}] = {1}".format(key,all_sys[key]))
-	 
+
 	  	    c = TCanvas("c_"+ var + "_" + lep + "_" + eff,"Efficiencies")
           	    c.SetFrameFillColor(0)
           	    c.SetFrameFillStyle(0)
           	    c.SetFrameBorderMode(0)
-	  	    
+
           	    pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
           	    pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
           	    pad1.SetBottomMargin(0.02)
@@ -1158,28 +1267,28 @@ class RealFakeEffTagAndProbe:
           	    pad2.SetGridy(1)
           	    pad1.Draw()
           	    pad2.Draw()
-		    
+
 		    # Be smarter when setting y range
-		    
-		    scale_dn = scale_up = 1.0		    
+
+		    scale_dn = scale_up = 1.0
 		    if eff == "Fake":
-		        scale_dn = 0.80    
-		        scale_up = 1.20	    
+		        scale_dn = 0.80
+		        scale_up = 1.20
 		    elif eff == "Real":
-		        scale_dn = 0.95    
-		        scale_up = 1.05	    
+		        scale_dn = 0.95
+		        scale_up = 1.05
 		    ymin, ymax = self.__getLimits__(histlist, scale_up, scale_dn)
 		    hist_nominal.GetYaxis().SetRangeUser(ymin,ymax)
 
                     # Make a clone of nominal, and divide by itself
-		    
+
 		    rationom = hist_nominal.Clone(hist_nominal.GetName()+"_Ratio")
 		    rationom.Divide(hist_nominal)
 		    for bin in 	range(1,rationom.GetNbinsX()+2):
 		        error = 0.0
 			if hist_nominal.GetBinContent(bin) > 0:
 		            error = 2.0 * ( hist_nominal.GetBinError(bin) / hist_nominal.GetBinContent(bin) )
-		        rationom.SetBinError( bin, error )	    
+		        rationom.SetBinError( bin, error )
 
 		    rationom.SetLineStyle(1)
 		    rationom.SetLineWidth(2)
@@ -1191,11 +1300,11 @@ class RealFakeEffTagAndProbe:
              	    rationom.GetYaxis().SetTitleOffset(0.35)
              	    rationom.GetXaxis().SetLabelSize(0.15)
              	    rationom.GetYaxis().SetLabelSize(0.12)
-             	    rationom.GetYaxis().SetNdivisions(503)#(5) 
+             	    rationom.GetYaxis().SetNdivisions(503)#(5)
 	   	    rationom.SetFillColor(kGray+3)
            	    rationom.SetLineColor(10)
-           	    rationom.SetFillStyle(3004) 	
-		    		    
+           	    rationom.SetFillStyle(3004)
+
 		    ratiolist = []
 	  	    for h in hists_sys_numerator:
 			if self.verbose:
@@ -1218,10 +1327,10 @@ class RealFakeEffTagAndProbe:
 			if self.verbose:
 			    print("\t ratio = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio.GetBinContent(i) for i in range(1,ratio.GetNbinsX()+2) ] ) + "]" )
 			ratiolist.append(ratio)
-		    
+
 		    ratio_ymin, ratio_ymax = self.__getLimits__(ratiolist, ratio=True)
 		    rationom.GetYaxis().SetRangeUser(ratio_ymin, ratio_ymax)
-		    
+
 		    pad1.cd()
 		    # Remove X axis labels from top pad
 		    hist_nominal.GetXaxis().SetLabelSize(0)
@@ -1232,7 +1341,7 @@ class RealFakeEffTagAndProbe:
 	            legend.Draw()
                     leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
                     leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
-		    
+
 		    pad2.cd()
 		    rationom.Draw("E2")
 		    for r in ratiolist:
@@ -1242,19 +1351,19 @@ class RealFakeEffTagAndProbe:
 		    refl.SetLineColor(kBlack)
                     refl.SetLineWidth(2)
 		    refl.Draw("SAME")
-	 
+
 		    canvas_filename = "_".join((eff,lep,var,"Efficiency",proc,"Systematics"))
 
 		    for extension in self.extensionlist:
-		        c.SaveAs(self.__outputpath+"/EfficiencyPlots/SplitSys/"+canvas_filename+"."+extension)
+		        c.SaveAs(savepath+"/SplitSys/"+canvas_filename+"."+extension)
 
                     # Reset axis labels to default (otherwise next plots won't have labels)
-		    
+
 		    hist_nominal.GetXaxis().SetLabelSize()
-                    hist_nominal.GetXaxis().SetLabelOffset()		
-	
+                    hist_nominal.GetXaxis().SetLabelOffset()
+
 	            # ---------------------------------------------------------------------------------------------------------------
-	
+
 	            # Make a set of plots for nominal + *symmetrised* combination of systematic uncertainties
 
 	  	    c_allsys = TCanvas("c_"+ var + "_" + lep + "_" + eff + "_allsys","Efficiencies_CombinedSystematics")
@@ -1272,36 +1381,36 @@ class RealFakeEffTagAndProbe:
 		    hist_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_AllSys")
 	   	    hist_allsys.SetFillColor(kYellow-9)
            	    hist_allsys.SetLineColor(kYellow-9)
-           	    hist_allsys.SetFillStyle(1001) 	
-		    
+           	    hist_allsys.SetFillStyle(1001)
+
 	  	    legend_allsys.AddEntry(hist_nominal,"#varepsilon_{{{0}}} - nominal (stat. unc.)".format(eff), "P")
 		    legend_allsys.AddEntry(hist_allsys,"Combined systematics", "F")
-		    
+
 		    for bin in 	range(1,hist_allsys.GetNbinsX()+2):
 			# A dirty hack: if the error is zero, drawing w/ option E2 seems
 			# to be ingnored and HIST gets used instead.
 			# Thus, just set a tiny error on the hist
-			# 
-			error = 0.0001 
+			#
+			error = 0.0001
 			if all_sys[str(bin)]:
 			    error = all_sys[str(bin)]
-		        hist_allsys.SetBinError(bin,error)	    
+		        hist_allsys.SetBinError(bin,error)
 
 		    ymin_allsys, ymax_allsys = self.__getLimits__([hist_allsys,hist_nominal], scale_up, scale_dn)
 		    hist_allsys.GetYaxis().SetRangeUser(ymin_allsys,ymax_allsys)
-		    
-	    
+
+
 		    ratio_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_Ratio_AllSys")
 		    ratio_allsys.Divide(hist_nominal)
 		    for bin in 	range(1,ratio_allsys.GetNbinsX()+2):
 			# A dirty hack: if the error is zero, drawing w/ option E2 seems
 			# to be ingnored and HIST gets used instead.
 			# Thus, just set a tiny error on the hist
-			#		      
+			#
 			error = 0.0001
 			if hist_nominal.GetBinContent(bin) > 0 and all_sys[str(bin)]:
 			    error = 2.0 * ( all_sys[str(bin)] / hist_nominal.GetBinContent(bin) )
-		        ratio_allsys.SetBinError( bin, error )	    
+		        ratio_allsys.SetBinError( bin, error )
 
 		    ratio_allsys.SetLineStyle(1)
 		    ratio_allsys.SetLineWidth(2)
@@ -1313,17 +1422,17 @@ class RealFakeEffTagAndProbe:
              	    ratio_allsys.GetYaxis().SetTitleOffset(0.35)
              	    ratio_allsys.GetXaxis().SetLabelSize(0.15)
              	    ratio_allsys.GetYaxis().SetLabelSize(0.12)
-             	    ratio_allsys.GetYaxis().SetNdivisions(5)#(503)#(5) 
+             	    ratio_allsys.GetYaxis().SetNdivisions(5)#(503)#(5)
 	   	    ratio_allsys.SetFillColor(kYellow-9)
-           	    ratio_allsys.SetFillStyle(1001) 	
+           	    ratio_allsys.SetFillStyle(1001)
 
                     # Need to re-get the nominal ratio hist with stats errors
 
 		    ratio_ymin_allsys, ratio_ymax_allsys = self.__getLimits__([ratio_allsys,rationom], shift_up=0.2, shift_dn=0.2, ratio=True)
-		    
+
 		    print ("ratio_ymin_allsys = {0:.1f}, ratio_ymax_allsys = {1:.1f}".format(ratio_ymin_allsys, ratio_ymax_allsys))
 		    ratio_allsys.GetYaxis().SetRangeUser(round(ratio_ymin_allsys,1), round(ratio_ymax_allsys,1))
-	
+
           	    pad1_allsys = TPad("pad1", "", 0, 0.25, 1, 1)
           	    pad2_allsys = TPad("pad2", "", 0, 0,   1, 0.25)
           	    pad1_allsys.SetBottomMargin(0.02)
@@ -1331,7 +1440,7 @@ class RealFakeEffTagAndProbe:
           	    pad2_allsys.SetGridy(1)
           	    pad1_allsys.Draw()
           	    pad2_allsys.Draw()
-	
+
 		    pad1_allsys.cd()
 		    # Remove X axis labels from top pad
 		    hist_allsys.GetXaxis().SetLabelSize(0)
@@ -1339,48 +1448,48 @@ class RealFakeEffTagAndProbe:
 		    hist_allsys.Draw("E2")
 		    hist_nominal.Draw("E0 SAME")
                     legend_allsys.Draw()
-		    leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
-		    
+		    leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
+                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi))
+
 		    print("NOMINAL: bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinContent(ibin) for ibin in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
 		    print("NOMINAL: binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinError(ibin) for ibin in range(1,hist_nominal.GetNbinsX()+2) ] ) + "]" )
-		    print("ALLSYS:  bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_allsys.GetBinContent(ibin) for ibin in range(1,hist_allsys.GetNbinsX()+2) ] ) + "]" ) 
+		    print("ALLSYS:  bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_allsys.GetBinContent(ibin) for ibin in range(1,hist_allsys.GetNbinsX()+2) ] ) + "]" )
 		    print("ALLSYS:  binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_allsys.GetBinError(ibin) for ibin in range(1,hist_allsys.GetNbinsX()+2) ] ) + "]" )
-		    
+
 		    pad2_allsys.cd()
 		    ratio_allsys.Draw("E2")
 		    rationom.Draw("E2 SAME")
-                    
+
 		    print("RATIO NOMINAL: bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ rationom.GetBinContent(ibin) for ibin in range(1,rationom.GetNbinsX()+2) ] ) + "]" )
 		    print("RATIO NOMINAL: binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ rationom.GetBinError(ibin) for ibin in range(1,rationom.GetNbinsX()+2) ] ) + "]" )
-		    print("RATIO ALLSYS:  bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ ratio_allsys.GetBinContent(ibin) for ibin in range(1,ratio_allsys.GetNbinsX()+2) ] ) + "]" ) 
+		    print("RATIO ALLSYS:  bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ ratio_allsys.GetBinContent(ibin) for ibin in range(1,ratio_allsys.GetNbinsX()+2) ] ) + "]" )
 		    print("RATIO ALLSYS:  binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ ratio_allsys.GetBinError(ibin) for ibin in range(1,ratio_allsys.GetNbinsX()+2) ] ) + "]" )
-		    
+
 		    refl = TLine(rationom.GetBinLowEdge(1), 1., rationom.GetBinLowEdge(rationom.GetNbinsX()+1), 1.)
                     refl.SetLineStyle(2)
 		    refl.SetLineColor(kBlack)
                     refl.SetLineWidth(2)
 		    refl.Draw("SAME")
-	 
+
 		    canvas_allsys_filename = "_".join((eff,lep,var,"Efficiency",proc,"CombinedSystematics"))
 
 		    for extension in self.extensionlist:
-		        c_allsys.SaveAs(self.__outputpath+"/EfficiencyPlots/CombinedSys/"+canvas_allsys_filename+"."+extension)
-		
+		        c_allsys.SaveAs(savepath+"/CombinedSys/"+canvas_allsys_filename+"."+extension)
+
 
     def __set_fancy_2D_style( self ):
 
          icol = 0
-         gStyle.SetFrameBorderMode(icol);
-         gStyle.SetFrameFillColor(icol);
-         gStyle.SetCanvasBorderMode(icol);
-         gStyle.SetCanvasColor(icol);
-         gStyle.SetPadBorderMode(icol);
-         gStyle.SetPadColor(icol);
-         gStyle.SetStatColor(icol);
-         gStyle.SetOptTitle(0);
-         gStyle.SetOptStat(0);
-         gStyle.SetOptFit(0);
+         gStyle.SetFrameBorderMode(icol)
+         gStyle.SetFrameFillColor(icol)
+         gStyle.SetCanvasBorderMode(icol)
+         gStyle.SetCanvasColor(icol)
+         gStyle.SetPadBorderMode(icol)
+         gStyle.SetPadColor(icol)
+         gStyle.SetStatColor(icol)
+         gStyle.SetOptTitle(0)
+         gStyle.SetOptStat(0)
+         gStyle.SetOptFit(0)
 
          ncontours=999
 
@@ -1407,19 +1516,19 @@ class RealFakeEffTagAndProbe:
     def checkRebin(self):
 
     	if self.debug:
-    	    print("\n\nTIGHT histograms dictionary:\n")
+    	    print("\n\nNUMERATOR histograms dictionary:\n")
     	    print("\tkey\t\thistname\t\tnbins\n")
-    	    for key, value in sorted( self.tight_hists.iteritems() ):
+    	    for key, value in sorted( self.numerator_hists.iteritems() ):
     		print("\t{0}\t{1}\t{2}".format(key, value.GetName(), value.GetNbinsX()))
 
-    	    print("\n\nLOOSE histograms dictionary:\n")
+    	    print("\n\nDENOMINATOR histograms dictionary:\n")
     	    print("\tkey\t\thistname\t\tnbins\n")
-    	    for key, value in sorted( self.loose_hists.iteritems() ):
+    	    for key, value in sorted( self.denominator_hists.iteritems() ):
     		print("\t{0}\t{1}\t{2}".format(key, value.GetName(), value.GetNbinsX()))
 
-    	    print("\n\nANTI-TIGHT histograms dictionary:\n")
+    	    print("\n\nANTI-NUMERATOR histograms dictionary:\n")
     	    print("\tkey\t\thistname\t\tnbins\n")
-    	    for key, value in sorted( self.antitight_hists.iteritems() ):
+    	    for key, value in sorted( self.antinumerator_hists.iteritems() ):
     		print("\t{0}\t{1}\t{2}".format(key, value.GetName(), value.GetNbinsX()))
 
 
@@ -1430,19 +1539,19 @@ class RealFakeEffTagAndProbe:
 	    if debug_msg:
 	        print("\n{0}".format(debug_msg))
 
-    	    print("\n\nTIGHT yields dictionary:\n")
+    	    print("\n\nNUMERATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
-    	    for key, value in sorted( self.tight_yields.iteritems() ):
+    	    for key, value in sorted( self.numerator_yields.iteritems() ):
     		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.2f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.2f}".format(value[-1]) )
 
-    	    print("\n\nLOOSE yields dictionary:\n")
+    	    print("\n\nDENOMINATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
-    	    for key, value in sorted( self.loose_yields.iteritems() ):
+    	    for key, value in sorted( self.denominator_yields.iteritems() ):
     		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.2f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.2f}".format(value[-1]) )
 
-    	    print("\n\nANTI-TIGHT yields dictionary:\n")
+    	    print("\n\nANTI-NUMERATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
-    	    for key, value in sorted( self.antitight_yields.iteritems() ):
+    	    for key, value in sorted( self.antinumerator_yields.iteritems() ):
     		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.2f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.2f}".format(value[-1]) )
 
 
@@ -1453,8 +1562,13 @@ if __name__ == "__main__":
     for sys in args.systematics:
         if not sys in g_avaialble_systematics:
 	    print("\nWARNING!\nSystematic {0} is not supported!!".format(sys))
-	
+
     eff = RealFakeEffTagAndProbe( closure=args.closure, factors=args.factors, variables=args.variables, systematics=args.systematics, nosub=args.nosub )
+
+    if args.triggerEff:
+        print("Measuring trigger efficiency for selection {0} ...\n".format(args.triggerEff))
+	eff.triggerEff = args.triggerEff
+    	eff.selections = {"D":eff.triggerEff+"AnyTM","N":eff.triggerEff+"TM","AntiN":eff.triggerEff+"AntiTM"}
 
     eff.lumi  = args.lumi
     eff.debug = args.debug
@@ -1492,5 +1606,5 @@ if __name__ == "__main__":
 
     if args.plots:
         eff.plotMaker()
-        if args.systematics and not args.closure and not args.nosub: 
+        if args.systematics and not args.closure and not args.nosub:
 	    eff.plotMakerSys()

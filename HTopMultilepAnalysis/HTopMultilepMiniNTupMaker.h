@@ -23,8 +23,15 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
+#include "TRandom3.h"
 
 namespace MiniNTupMaker {
+
+struct Branch_Types {
+  float f;
+  char c;
+  int i;
+};
 
 class eventObj {
 
@@ -32,8 +39,7 @@ class eventObj {
     eventObj():
       isMC(0), isSS01(0), isSS12(0),
       dilep(0), trilep(0),
-      notightlep(0),
-  	  weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
+      weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
     { };
 
     char isMC;
@@ -41,7 +47,6 @@ class eventObj {
     char isSS12;
     char dilep;
     char trilep;
-    char notightlep;
 
     float weight_event;
     float weight_event_trig;
@@ -56,7 +61,7 @@ class eventObj {
   public:
     leptonObj():
       pt(-1.0),eta(-999.0),etaBE2(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
-  	  pid(0),isolated(0),tight(0),trigmatched(0),prompt(0),fake(0),brems(0),qmisid(0),convph(0),tag(0),
+      pid(0),isolated(0),tight(0),trigmatched(0),trigmatched_SLT(0),trigmatched_DLT(0),prompt(0),fake(0),brems(0),qmisid(0),convph(0),tag_SLT(0),tag_DLT(0),
       SFIDLoose(1.0),
       SFIDTight(1.0),
       SFTrigLoose(1.0),
@@ -83,6 +88,8 @@ class eventObj {
     char isolated;
     char tight;
     char trigmatched;
+    char trigmatched_SLT;
+    char trigmatched_DLT;
     char prompt;
     char fake;
     char brems;
@@ -90,7 +97,9 @@ class eventObj {
     char convph;
     int  truthType;
     int  truthOrigin;
-    char tag;
+    char tag_SLT;
+    char tag_DLT;
+
 
     float SFIDLoose;
     float SFIDTight;
@@ -128,6 +137,9 @@ public:
 
   /** Add an output stream (aka, directory) for the histogram containing the total number of generated raw/weighted events */
   bool         m_addStreamEventsHist;
+
+  /** Activate if want to define T&P leptons based on truth matching (NB: do this only on TTBar!)  */
+  bool m_useTruthTP;
 
 private:
 
@@ -301,26 +313,65 @@ private:
   ULong64_t       m_totalEvents;
   Float_t         m_totalEventsWeighted;
 
+  /** Trigger match decision per-lepton (for each chain) - BEFORE overlap removal! */
+
+  // 2015
+
+  std::vector<int> *m_electron_match_HLT_e24_lhmedium_L1EM20VH        = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e60_lhmedium                 = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e120_lhloose                 = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_2e12_lhloose_L12EM10VH       = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1 = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e7_medium_mu24               = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_mu20_iloose_L1MU15               = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_mu18_mu8noL1                     = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1     = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_e7_medium_mu24                   = nullptr; //!
+
+  // 2016
+
+  std::vector<int> *m_electron_match_HLT_e26_lhtight_nod0_ivarloose = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e60_lhmedium_nod0          = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e140_lhloose_nod0          = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_2e17_lhvloose_nod0         = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e17_lhloose_mu14           = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e17_lhloose_nod0_mu14      = nullptr; //!
+  std::vector<int> *m_electron_match_HLT_e7_lhmedium_mu24           = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_mu26_ivarmedium                = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_mu22_mu8noL1                   = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_e17_lhloose_mu14               = nullptr; //!
+  std::vector<int> *m_muon_match_HLT_e17_lhloose_nod0_mu14          = nullptr; //!
+
+  // 2015 & 2016
+
+  std::vector<int> *m_muon_match_HLT_mu50 = nullptr; //!
+
+  /** Index of leptons which passed the overlap removal */
+
+  std::vector<char> *m_electron_passOR = nullptr; //!
+  std::vector<char> *m_muon_passOR     = nullptr; //!
+
+
   /** Reco jets BEFORE overlap removal */
 
-  std::vector<float>   *m_jet_pt;  //!
-  std::vector<float>   *m_jet_eta; //!
-  std::vector<float>   *m_jet_phi; //!
-  std::vector<float>   *m_jet_E;   //!
-  std::vector<int>     *m_jet_flavor_truth_label;       //!
-  std::vector<int>     *m_jet_flavor_truth_label_ghost; //!
+  std::vector<float>   *m_jet_pt = nullptr;  //!
+  std::vector<float>   *m_jet_eta = nullptr; //!
+  std::vector<float>   *m_jet_phi = nullptr; //!
+  std::vector<float>   *m_jet_E = nullptr;   //!
+  std::vector<int>     *m_jet_flavor_truth_label = nullptr;       //!
+  std::vector<int>     *m_jet_flavor_truth_label_ghost = nullptr; //!
 
   /** Indexes of jets that pass overlap removal */
 
-  std::vector<short>   *m_selected_jets;   //!
-  std::vector<short>   *m_selected_jets_T; //!
+  std::vector<short>   *m_selected_jets = nullptr;   //!
+  std::vector<short>   *m_selected_jets_T = nullptr; //!
 
   /** Truth jets */
 
-  std::vector<float>   *m_truth_jet_pt;  //!
-  std::vector<float>   *m_truth_jet_eta; //!
-  std::vector<float>   *m_truth_jet_phi; //!
-  std::vector<float>   *m_truth_jet_e;   //!
+  std::vector<float>   *m_truth_jet_pt = nullptr;  //!
+  std::vector<float>   *m_truth_jet_eta = nullptr; //!
+  std::vector<float>   *m_truth_jet_phi = nullptr; //!
+  std::vector<float>   *m_truth_jet_e = nullptr;   //!
 
   /** Extra branches to be stored in output TTree */
 
@@ -347,7 +398,7 @@ private:
   int       m_nmuons;
   int       m_nelectrons;
   int       m_nleptons;
-  
+
   float     m_el_Pt_0;
   float     m_el_Pt_1;
   float     m_mu_Pt_0;
@@ -357,37 +408,19 @@ private:
   char	    m_lep_isTightSelected_1;
   char	    m_lep_isTightSelected_2;
 
-  float     m_lep_Tag_Pt;
-  float     m_lep_Tag_Eta;
-  float     m_lep_Tag_EtaBE2;
-  float     m_lep_Tag_sigd0PV;
-  float     m_lep_Tag_Z0SinTheta;
-  float	    m_lep_Tag_ID;
-  char	    m_lep_Tag_isTrigMatch;
-  char	    m_lep_Tag_isTightSelected;
-  char	    m_lep_Tag_isPrompt;
-  char	    m_lep_Tag_isBrems;
-  char	    m_lep_Tag_isFakeLep;
-  char	    m_lep_Tag_isQMisID;
-  char      m_lep_Tag_isConvPh;
-  int	    m_lep_Tag_truthType;
-  int	    m_lep_Tag_truthOrigin;
+  char	    m_lep_isTrigMatch_SLT_0;
+  char	    m_lep_isTrigMatch_SLT_1;
+  char	    m_lep_isTrigMatch_DLT_0;
+  char	    m_lep_isTrigMatch_DLT_1;
 
-  float     m_lep_Probe_Pt;
-  float     m_lep_Probe_Eta;
-  float     m_lep_Probe_EtaBE2;
-  float     m_lep_Probe_sigd0PV;
-  float     m_lep_Probe_Z0SinTheta;
-  float	    m_lep_Probe_ID;
-  char	    m_lep_Probe_isTrigMatch;
-  char	    m_lep_Probe_isTightSelected;
-  char	    m_lep_Probe_isPrompt;
-  char	    m_lep_Probe_isBrems;
-  char	    m_lep_Probe_isFakeLep;
-  char	    m_lep_Probe_isQMisID;
-  char      m_lep_Probe_isConvPh;
-  int	    m_lep_Probe_truthType;
-  int	    m_lep_Probe_truthOrigin;
+  char	    m_event_isTrigMatch_DLT;
+
+  /** Tag & Probe variables */
+
+  char m_isBadTPEvent_SLT; /**No T&TM (SLT) leptons found */
+  char m_isBadTPEvent_DLT; /**No T&TM (DLT) leptons found */
+
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_TagProbe_branches;
 
   std::vector<float> m_lep_Pt;
   std::vector<float> m_lep_Eta;
@@ -414,12 +447,15 @@ private:
 
   /** Other private members */
 
+  unsigned int m_effectiveTotEntries; //!
   unsigned int m_numEntry;   //!
   float        m_sumGenEvents;  //!
   float        m_sumGenEventsWeighted; //!
 
   std::shared_ptr<MiniNTupMaker::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<MiniNTupMaker::leptonObj> > m_leptons; //!
+
+  TRandom3* m_rand; //!
 
 public:
 
@@ -446,6 +482,9 @@ private:
   EL::StatusCode checkIsTightLep( std::shared_ptr<MiniNTupMaker::leptonObj> lep );
   EL::StatusCode decorateEvent ();
   EL::StatusCode decorateWeights ();
+
+  EL::StatusCode getPostOLRIndex( int& idx, const unsigned int& pos, const std::string& lep_type );
+  EL::StatusCode triggerMatching ();
 
   /**
     * @brief  Set which lepton is tag and which is probe for the r/f efficiency measurement

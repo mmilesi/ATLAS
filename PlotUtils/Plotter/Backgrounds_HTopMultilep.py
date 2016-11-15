@@ -2631,6 +2631,17 @@ class TTHBackgrounds(Background):
             LLcut  = ('','LL')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
             weight  = (1.0,'MMWeight')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
 
+            sp_TT_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(TTcut))
+            sp_TL_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(TLcut))
+            sp_LT_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(LTcut))
+            sp_LL_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(LLcut))
+            
+	    print(" ")
+            print("{0} - TT : TTBar Fakes (pre-weighting) = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_TT_preweight.numberstats()[0],sp_TT_preweight.numberstats()[1]))
+            print("{0} - TL : TTBar Fakes (pre-weighting) = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_TL_preweight.numberstats()[0],sp_TL_preweight.numberstats()[1]))
+            print("{0} - LT : TTBar Fakes (pre-weighting) = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_LT_preweight.numberstats()[0],sp_LT_preweight.numberstats()[1]))
+            print("{0} - LL : TTBar Fakes (pre-weighting) = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_LL_preweight.numberstats()[0],sp_LL_preweight.numberstats()[1]))
+
             sp_TT  = sp.subprocess(cut=category.cut & self.vardb.getCut(TTcut), eventweight=weight)
             sp_TL  = sp.subprocess(cut=category.cut & self.vardb.getCut(TLcut), eventweight=weight)
             sp_LT  = sp.subprocess(cut=category.cut & self.vardb.getCut(LTcut), eventweight=weight)
@@ -2641,6 +2652,12 @@ class TTHBackgrounds(Background):
             print("{0} - TL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
             print("{0} - LT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
             print("{0} - LL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
+		    
+	    print(" ")
+            print("{0} - TT : TTBar Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_TT.numberstats()[0],sp_TT.numberstats()[1]))
+            print("{0} - TL : TTBar Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_TL.numberstats()[0],sp_TL.numberstats()[1]))
+            print("{0} - LT : TTBar Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_LT.numberstats()[0],sp_LT.numberstats()[1]))
+            print("{0} - LL : TTBar Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_LL.numberstats()[0],sp_LL.numberstats()[1]))
 
             sp = sp_TT + sp_TL + sp_LT + sp_LL
 
