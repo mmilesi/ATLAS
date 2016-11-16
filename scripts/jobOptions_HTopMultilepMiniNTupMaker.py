@@ -258,7 +258,7 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
 				  "m_inputBranches"        : branches_to_activate_str,
 	                          "m_useAlgSelect"         : True,
 				  "m_addStreamEventsHist"  : False,
-				  "m_useTruthTP"           : True,
+				  "m_useTruthTP"           : False,
                                 }
 
 # Instantiate the NTupleSvc algorithm
@@ -277,7 +277,7 @@ for branch in branches_to_copy:
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
 algskim.addCut("passEventCleaning==1")
 algskim.addCut("dilep_type>0||trilep_type>0")
-algskim.addCut("(dilep_type>0&&nJets_OR_T>=2&&nJets_OR_T_MV2c10_70>=1)||(trilep_type>0&&nJets_OR>=2&&nJets_OR_MV2c10_70>=1)")
+#algskim.addCut("(dilep_type>0&&nJets_OR_T>=2&&nJets_OR_T_MV2c10_70>=1)||(trilep_type>0&&nJets_OR>=2&&nJets_OR_MV2c10_70>=1)")
 algskim.histName("cutflow")
 
 # Add the algorithms to the job.
