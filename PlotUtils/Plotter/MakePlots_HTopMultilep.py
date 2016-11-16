@@ -23,8 +23,8 @@ parser = argparse.ArgumentParser(description='Plotting script for the HTopMultil
 
 parser.add_argument('inputDir', metavar='inputDir',type=str,
                    help='Path to the directory containing input files')
-parser.add_argument('samplesCSV', metavar='samplesCSV',type=str,
-                   help='Path to the csv file containing the processes of interest with their cross sections and other metadata')
+#parser.add_argument('samplesCSV', metavar='samplesCSV',type=str,
+#                   help='Path to the csv file containing the processes of interest with their cross sections and other metadata')
 
 #*******************
 # optional arguments
@@ -47,10 +47,12 @@ luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
 
 triggers = ["SLT","DLT"]
 
+parser.add_argument('--samplesCSV', dest='samplesCSV',action='store',const='Files/samples_HTopMultilep_Priority1.csv',default='Files/samples_HTopMultilep_Priority1.csv',type=str,nargs='?',
+                    help='Path to the .csv file containing the processes of interest with their cross sections and other metadata. If this option is unspecified, or it is not followed by any command-line argument, default will be \"Files/samples_HTopMultilep_Priority1.csv\"')
 parser.add_argument('--debug', dest='debug', action='store_true', default=False,
                     help='Run in debug mode')
-parser.add_argument('--lumi', dest='lumi', action='store', type=float, default=luminosities["ICHEP 2015+2016 DS"],
-                    help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in luminosities.iteritems() ) + ". Default is {0}".format(luminosities["ICHEP 2015+2016 DS"] ) )
+parser.add_argument('--lumi', dest='lumi', action='store', type=float, default=luminosities["POST-ICHEP 2015+2016 DS"],
+                    help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in luminosities.iteritems() ) + ". Default is {0}".format(luminosities["POST-ICHEP 2015+2016 DS"] ) )
 parser.add_argument('--trigger', dest='trigger', action='store', default=triggers[0], type=str, nargs='+',
                     help='The trigger strategy to be used. Choose one of:\n{0}.\nIf this option is not specified, default is {1}'.format(triggers,triggers[0]))
 parser.add_argument('--channel', dest='channel', action='store', default='TwoLepSR', type=str, nargs='+',
@@ -350,7 +352,7 @@ if __name__ == "__main__":
 	e_SLT = "( ( RunYear == 2015 && ( HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_e24_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) )"
 	m_SLT = "( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 ) ) || ( RunYear == 2016 && ( HLT_mu24_ivarmedium || HLT_mu50 ) ) )"
 
-    if "v21" in args.inputDir:
+    if "v21" or "v23" in args.inputDir:
 
 	# Lowest unprescaled SLT in POST-ICHEP DS have 26 GeV threshold
 
@@ -393,7 +395,6 @@ if __name__ == "__main__":
     if "SLT" in args.trigger:
 
         vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
-        #vardb.registerCut( Cut('2Lep_TrigMatch','( lep_isTrigMatch_SLT_0 || lep_isTrigMatch_SLT_1 )') ) # <----- GN branch is buggy (ATLASTTHML-69)
 
     elif "DLT" in args.trigger:
 
@@ -403,7 +404,7 @@ if __name__ == "__main__":
 	    #
             vardb.registerCut( Cut('2Lep_TrigMatch', '( ( dilep_type == 1 && ( ( RunYear == 2015 && HLT_2mu10 == 1 && lep_Pt_0 > 11e3 && lep_Pt_1 > 11e3 ) || ( RunYear == 2016 && HLT_2mu14 == 1 && lep_Pt_0 > 15e3 && lep_Pt_1 > 15e3 ) ) ) || ( dilep_type == 2 && ( ( RunYear == 2015 && HLT_e17_loose_mu14 == 1 ) || ( RunYear == 2016 && HLT_e17_lhloose_mu14 == 1 ) ) && ( ( TMath::Abs( lep_ID_0 ) == 11 && lep_Pt_0 > 18e3 && lep_Pt_1 > 15e3 ) || (  TMath::Abs( lep_ID_0 ) == 13 && lep_Pt_0 > 15e3 && lep_Pt_1 > 18e3 ) ) ) || ( dilep_type == 3 && ( ( RunYear == 2015 && HLT_2e12_lhloose_L12EM10VH == 1 && lep_Pt_0 > 13e3 && lep_Pt_1 > 13e3 ) || ( RunYear == 2016 && HLT_2e15_lhvloose_nod0_L12EM13VH == 1 && lep_Pt_0 > 16e3 && lep_Pt_1 > 16e3 ) ) ) )') )
 
-	if "v21" in args.inputDir:
+	if "v21" or "v23" in args.inputDir:
 
             # use DLT for all categories
             #
@@ -460,7 +461,7 @@ if __name__ == "__main__":
 
     	vardb.registerCut( Cut('2Lep_passBabar',	    '( passBabar( dilep_type, lep_Probe_ID, lep_ID_0 ) == 1 )') )
 
-    if "v21" in args.inputDir:
+    if "v21" or "v23" in args.inputDir:
 
         if "SLT" in args.trigger:
 
@@ -639,7 +640,7 @@ if __name__ == "__main__":
              vardb.registerCut( Cut('2Lep_TRUTH_ProbeQMisIDEvent',    '( ( mc_channel_number == 0 ) || ( ( lep_Probe_isQMisID == 1 ) ) )') )
              vardb.registerCut( Cut('2Lep_TRUTH_ProbeLepFromPhEvent', '( ( mc_channel_number == 0 ) || ( ( lep_Probe_isConvPh == 1 || lep_Probe_isISRFSRPh_0 == 1 ) ) )') )
 
-	elif "v21" in args.inputDir:
+	elif "v21" or "v23" in args.inputDir:
 
 	     if "SLT" in args.trigger:
 
@@ -1358,7 +1359,7 @@ if __name__ == "__main__":
         tag   = "lep_Tag_"
         probe = "lep_Probe_"
 
-        if "v21" in args.inputDir:
+        if "v21" or "v23" in args.inputDir:
             if "SLT" in args.trigger:
                 tag   += "SLT_"
                 probe += "SLT_"
@@ -1468,7 +1469,7 @@ if __name__ == "__main__":
             tag   = "lep_Tag_"
             probe = "lep_Probe_"
 
-            if "v21" in args.inputDir:
+            if "v21" or "v23" in args.inputDir:
 	    	if "SLT" in args.trigger:
     	    	    tag   += "SLT_"
 	    	    probe += "SLT_"
@@ -1670,7 +1671,7 @@ if __name__ == "__main__":
             	vardb.registerCategory( MyCategory('FakeCRMuT',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
             	vardb.registerCategory( MyCategory('FakeCRElL',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_TP_MM ) )
             	vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('FakeCRElT',	    cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('FakeCRElT', 	   cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
 
             # OF only ( NB: no cuts on m(ll) are registered here, since there's no need for them...)
             #

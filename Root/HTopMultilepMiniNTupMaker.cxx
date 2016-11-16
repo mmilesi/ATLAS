@@ -902,6 +902,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching()
 
   // Get the indexes of leading/subleading leptons which passed the OLR
 
+  // NB: For the SLT case, we always consider the OR of the SLT chains. Hence the pT threshold cut should be just the one for the lowest pT chain 
+
   int el0_idx(-1), el1_idx(-1), mu0_idx(-1), mu1_idx(-1);
 
   if ( m_dilep_type == 1 ) { // 1) mumu
@@ -911,16 +913,16 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching()
 
     if ( m_RunYear == 2015 ) {
 
-      m_lep_isTrigMatch_SLT_0 = ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu0_idx) && lep0.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep0.get()->pt > 1.05*50e3 ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu1_idx) && lep1.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(mu1_idx) && lep1.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_SLT_0 = ( lep0.get()->pt > 1.05*20e3 && ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu0_idx) || m_muon_match_HLT_mu50->at(mu0_idx) ) );
+      m_lep_isTrigMatch_SLT_1 = ( lep1.get()->pt > 1.05*20e3 && ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu1_idx) || m_muon_match_HLT_mu50->at(mu1_idx) ) );
       m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu18_mu8noL1->at(mu0_idx) && lep0.get()->pt > 1.05*18e3 );
       m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu18_mu8noL1->at(mu1_idx) && lep1.get()->pt > 1.05*8e3 );
 
     } else if ( m_RunYear == 2016 ) {
 
 
-      m_lep_isTrigMatch_SLT_0 = ( ( m_muon_match_HLT_mu26_ivarmedium->at(mu0_idx) && lep0.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep0.get()->pt > 1.05*50e3 ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( m_muon_match_HLT_mu26_ivarmedium->at(mu1_idx) && lep1.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(mu1_idx) && lep1.get()->pt > 1.05*50e3 ) );
+      m_lep_isTrigMatch_SLT_0 = ( lep0.get()->pt > 1.05*26e3 && ( m_muon_match_HLT_mu26_ivarmedium->at(mu0_idx) || m_muon_match_HLT_mu50->at(mu0_idx) ) );
+      m_lep_isTrigMatch_SLT_1 = ( lep1.get()->pt > 1.05*26e3 && ( m_muon_match_HLT_mu26_ivarmedium->at(mu1_idx) || m_muon_match_HLT_mu50->at(mu1_idx) ) );
       m_lep_isTrigMatch_DLT_0 = ( m_muon_match_HLT_mu22_mu8noL1->at(mu0_idx) && lep0.get()->pt > 1.05*22e3 );
       m_lep_isTrigMatch_DLT_1 = ( m_muon_match_HLT_mu22_mu8noL1->at(mu1_idx) && lep1.get()->pt > 1.05*8e3 );
 
@@ -958,15 +960,15 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching()
 
     if ( m_RunYear == 2015 ) {
 
-      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el0_idx) && lep0.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(el0_idx) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(el0_idx) && lep0.get()->pt > 121e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu0_idx) && lep0.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep0.get()->pt > 1.05*50e3 ) ) ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el0_idx) && lep1.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(el0_idx) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(el0_idx) && lep1.get()->pt > 121e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu0_idx) && lep1.get()->pt > 1.05*20e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep1.get()->pt > 1.05*50e3 ) ) ) );
+      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && lep0.get()->pt > 25e3 && ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el0_idx) || m_electron_match_HLT_e60_lhmedium->at(el0_idx) || m_electron_match_HLT_e120_lhloose->at(el0_idx) ) ) || ( lep0.get()->flavour == 13 && lep0.get()->pt > 1.05*20e3 && ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu0_idx) || m_muon_match_HLT_mu50->at(mu0_idx) ) ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && lep1.get()->pt > 25e3 && ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el0_idx) || m_electron_match_HLT_e60_lhmedium->at(el0_idx) || m_electron_match_HLT_e120_lhloose->at(el0_idx) ) ) || ( lep1.get()->flavour == 13 && lep1.get()->pt > 1.05*20e3 && ( m_muon_match_HLT_mu20_iloose_L1MU15->at(mu0_idx) || m_muon_match_HLT_mu50->at(mu0_idx) ) ) );
       m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e7_medium_mu24->at(el0_idx) && lep0.get()->pt > 8e3 ) || ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(el0_idx) && lep0.get()->pt > 25e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_e7_medium_mu24->at(mu0_idx) && lep0.get()->pt > 1.05*24e3 ) || ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(mu0_idx) && lep0.get()->pt > 1.05*8e3 ) ) ) );
       m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e7_medium_mu24->at(el0_idx) && lep1.get()->pt > 8e3 ) || ( m_electron_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(el0_idx) && lep1.get()->pt > 25e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_e7_medium_mu24->at(mu0_idx) && lep1.get()->pt > 1.05*24e3 ) || ( m_muon_match_HLT_e24_medium_L1EM20VHI_mu8noL1->at(mu0_idx) && lep1.get()->pt > 1.05*8e3 ) ) ) );
 
     } else if ( m_RunYear == 2016 ) {
 
-      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el0_idx) && lep0.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(el0_idx) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(el0_idx) && lep0.get()->pt > 141e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_mu26_ivarmedium->at(mu0_idx) && lep0.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep0.get()->pt > 1.05*50e3 ) ) ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el0_idx) && lep1.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(el0_idx) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(el0_idx) && lep1.get()->pt > 141e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_mu26_ivarmedium->at(mu0_idx) && lep1.get()->pt > 1.05*26e3 ) || ( m_muon_match_HLT_mu50->at(mu0_idx) && lep1.get()->pt > 1.05*50e3 ) ) ) );
+      m_lep_isTrigMatch_SLT_0 = ( ( lep0.get()->flavour == 11 && lep0.get()->pt > 27e3 && ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el0_idx) || m_electron_match_HLT_e60_lhmedium_nod0->at(el0_idx) || m_electron_match_HLT_e140_lhloose_nod0->at(el0_idx) ) ) || ( lep0.get()->flavour == 13 && lep0.get()->pt > 1.05*26e3 && ( m_muon_match_HLT_mu26_ivarmedium->at(mu0_idx) || m_muon_match_HLT_mu50->at(mu0_idx) ) ) );
+      m_lep_isTrigMatch_SLT_1 = ( ( lep1.get()->flavour == 11 && lep1.get()->pt > 27e3 && ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el0_idx) || m_electron_match_HLT_e60_lhmedium_nod0->at(el0_idx) || m_electron_match_HLT_e140_lhloose_nod0->at(el0_idx) ) ) || ( lep1.get()->flavour == 13 && lep1.get()->pt > 1.05*26e3 && ( m_muon_match_HLT_mu26_ivarmedium->at(mu0_idx) || m_muon_match_HLT_mu50->at(mu0_idx) ) ) );
       m_lep_isTrigMatch_DLT_0 = ( ( lep0.get()->flavour == 11 && ( ( m_electron_match_HLT_e17_lhloose_mu14->at(el0_idx) && lep0.get()->pt > 18e3 ) || ( m_electron_match_HLT_e17_lhloose_nod0_mu14->at(el0_idx) && lep0.get()->pt > 18e3 ) ) ) || ( lep0.get()->flavour == 13 && ( ( m_muon_match_HLT_e17_lhloose_mu14->at(mu0_idx) && lep0.get()->pt > 1.05*14e3 ) || ( m_muon_match_HLT_e17_lhloose_nod0_mu14->at(mu0_idx) && lep0.get()->pt > 1.05*14e3 ) ) ) );
       m_lep_isTrigMatch_DLT_1 = ( ( lep1.get()->flavour == 11 && ( ( m_electron_match_HLT_e17_lhloose_mu14->at(el0_idx) && lep1.get()->pt > 18e3 ) || ( m_electron_match_HLT_e17_lhloose_nod0_mu14->at(el0_idx) && lep1.get()->pt > 18e3 ) ) ) || ( lep1.get()->flavour == 13 && ( ( m_muon_match_HLT_e17_lhloose_mu14->at(mu0_idx) && lep1.get()->pt > 1.05*14e3 ) || ( m_muon_match_HLT_e17_lhloose_nod0_mu14->at(mu0_idx) && lep1.get()->pt > 1.05*14e3 ) ) ) );
 
@@ -979,15 +981,15 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: triggerMatching()
 
     if ( m_RunYear == 2015 ) {
 
-      m_lep_isTrigMatch_SLT_0 = ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el0_idx) && lep0.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(el0_idx) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(el0_idx) && lep0.get()->pt > 121e3 ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el1_idx) && lep1.get()->pt > 25e3 ) || ( m_electron_match_HLT_e60_lhmedium->at(el1_idx) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e120_lhloose->at(el1_idx) && lep1.get()->pt > 121e3 ) );
+      m_lep_isTrigMatch_SLT_0 = ( lep0.get()->pt > 25e3 && ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el0_idx) || m_electron_match_HLT_e60_lhmedium->at(el0_idx) || m_electron_match_HLT_e120_lhloose->at(el0_idx) ) );
+      m_lep_isTrigMatch_SLT_1 = ( lep1.get()->pt > 25e3 && ( m_electron_match_HLT_e24_lhmedium_L1EM20VH->at(el1_idx) || m_electron_match_HLT_e60_lhmedium->at(el1_idx) || m_electron_match_HLT_e120_lhloose->at(el1_idx) ) );
       m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(el0_idx) && lep0.get()->pt > 13e3 );
       m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e12_lhloose_L12EM10VH->at(el1_idx) && lep1.get()->pt > 13e3 );
 
     } else if ( m_RunYear == 2016 ) {
 
-      m_lep_isTrigMatch_SLT_0 = ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el0_idx) && lep0.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(el0_idx) && lep0.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(el0_idx) && lep0.get()->pt > 141e3 ) );
-      m_lep_isTrigMatch_SLT_1 = ( ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el1_idx) && lep1.get()->pt > 27e3 ) || ( m_electron_match_HLT_e60_lhmedium_nod0->at(el1_idx) && lep1.get()->pt > 61e3 ) || ( m_electron_match_HLT_e140_lhloose_nod0->at(el1_idx) && lep1.get()->pt > 141e3 ) );
+      m_lep_isTrigMatch_SLT_0 = ( lep0.get()->pt > 27e3 && ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el0_idx) || m_electron_match_HLT_e60_lhmedium_nod0->at(el0_idx) || m_electron_match_HLT_e140_lhloose_nod0->at(el0_idx) ) );
+      m_lep_isTrigMatch_SLT_1 = ( lep1.get()->pt > 27e3 && ( m_electron_match_HLT_e26_lhtight_nod0_ivarloose->at(el1_idx) || m_electron_match_HLT_e60_lhmedium_nod0->at(el1_idx) || m_electron_match_HLT_e140_lhloose_nod0->at(el1_idx) ) );
       m_lep_isTrigMatch_DLT_0 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(el0_idx) && lep0.get()->pt > 18e3 );
       m_lep_isTrigMatch_DLT_1 = ( m_electron_match_HLT_2e17_lhvloose_nod0->at(el1_idx) && lep1.get()->pt > 18e3 );
 
@@ -1188,7 +1190,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
     if ( m_debug ) { Info("defineTagAndProbe()","lepton pT = %.2f", lep.get()->pt/1e3 ); }
 
-    if ( !found_tag_SLT && ( lep.get()->tight && lep.get()->trigmatched ) ) { // <---------- SHOULD use trigmatched_SLT (the Group NTup tm flag might be buggy!)
+    if ( !found_tag_SLT && ( lep.get()->tight && lep.get()->trigmatched ) ) { 
       lep.get()->tag_SLT = 1;
       found_tag_SLT = true;
       if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found tag (SLT matching)!"); }
@@ -1285,7 +1287,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 	m_TagProbe_branches["lep_Tag_SLT_sigd0PV"].f         = lep.get()->d0sig;
 	m_TagProbe_branches["lep_Tag_SLT_Z0SinTheta"].f      = lep.get()->z0sintheta;
 	m_TagProbe_branches["lep_Tag_SLT_ID"].f              = lep.get()->ID;
-	m_TagProbe_branches["lep_Tag_SLT_isTrigMatch"].c     = lep.get()->trigmatched; // <---------- SHOULD use trigmatched_SLT (the Group NTup tm flag might be buggy!)
+	m_TagProbe_branches["lep_Tag_SLT_isTrigMatch"].c     = lep.get()->trigmatched; 
 	m_TagProbe_branches["lep_Tag_SLT_isTightSelected"].c = lep.get()->tight;
 	m_TagProbe_branches["lep_Tag_SLT_isPrompt"].c        = lep.get()->prompt;
 	m_TagProbe_branches["lep_Tag_SLT_isBrems"].c         = lep.get()->brems;
@@ -1303,7 +1305,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 	m_TagProbe_branches["lep_Probe_SLT_sigd0PV"].f         = lep.get()->d0sig;
 	m_TagProbe_branches["lep_Probe_SLT_Z0SinTheta"].f      = lep.get()->z0sintheta;
 	m_TagProbe_branches["lep_Probe_SLT_ID"].f              = lep.get()->ID;
-	m_TagProbe_branches["lep_Probe_SLT_isTrigMatch"].c     = lep.get()->trigmatched; // <---------- SHOULD use trigmatched_SLT (the Group NTup tm flag might be buggy!)
+	m_TagProbe_branches["lep_Probe_SLT_isTrigMatch"].c     = lep.get()->trigmatched; 
 	m_TagProbe_branches["lep_Probe_SLT_isTightSelected"].c = lep.get()->tight;
 	m_TagProbe_branches["lep_Probe_SLT_isPrompt"].c        = lep.get()->prompt;
 	m_TagProbe_branches["lep_Probe_SLT_isBrems"].c         = lep.get()->brems;
