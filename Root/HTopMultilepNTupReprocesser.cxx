@@ -1131,14 +1131,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 			      m_el_hist_map[syskey][mapkeyhist] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff->GetCopyTotalHisto() ) : hist;
 			      if ( m_useTrigMatchingInfo ) {
 				  m_el_hist_map[syskey][mapkeyhist_yes_tm] = hist_YES_TM;
-				  m_el_hist_map[syskey][mapkeyhist_no_tm] = hist_NO_TM;
+				  m_el_hist_map[syskey][mapkeyhist_no_tm]  = hist_NO_TM;
 			      }
 			  } else if ( lep.compare("Mu") == 0 ) {
 			      m_mu_hist_map[syskey][mapkeyhist] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff->GetCopyTotalHisto() ) : hist;
 			      m_mu_teff_map[syskey][mapkey] = teff;
 			      if ( m_useTrigMatchingInfo ) {
 				  m_mu_hist_map[syskey][mapkeyhist_yes_tm] = hist_YES_TM;
-				  m_mu_hist_map[syskey][mapkeyhist_no_tm] = hist_NO_TM;
+				  m_mu_hist_map[syskey][mapkeyhist_no_tm]  = hist_NO_TM;
 			      }
 			  }
 
@@ -1231,6 +1231,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     TH1D* hist_nominal_pt  = (histograms->find("Nominal")->second).find(key_pt)->second;
     TH1D* hist_nominal_eta = (histograms->find("Nominal")->second).find(key_eta)->second;
 
+    TH1D* hist_nominal_pt_YES_TM(nullptr);
+    TH1D* hist_nominal_pt_NO_TM(nullptr);
+    
+    if ( m_useTrigMatchingInfo ) {
+
+        hist_nominal_pt_YES_TM = (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second;
+        hist_nominal_pt_NO_TM  = (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second;
+
+    }
+    
     // Get the number of bins. Use nominal
 
     int nbins_pt = hist_nominal_pt->GetNbinsX()+1;
@@ -1310,20 +1320,41 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 	    // If this bin is not corresponding to *this* systematic bin, then get an error of 0
 
 	    if ( !m_useTEfficiency ) {
-		eff_pt	      = hist_nominal_pt->GetBinContent(p);
+		
+		eff_pt = hist_nominal_pt->GetBinContent(p);
+		
+		if ( m_useTrigMatchingInfo ) {
+		  eff_pt = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinContent(p) : hist_nominal_pt_NO_TM->GetBinContent(p);
+		}
+		
 		if ( isStat ) {
+		  
 		  eff_pt_err_up = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
 		  eff_pt_err_dn = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
+		  
+		  if ( m_useTrigMatchingInfo ) {
+		  
+		    if ( readNominalPt ) { 
+		      eff_pt_err_up = eff_pt_err_dn = 0;
+		    } else {
+		      eff_pt_err_up = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinError(p) : hist_nominal_pt_NO_TM->GetBinError(p);
+		      eff_pt_err_dn = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinError(p) : hist_nominal_pt_NO_TM->GetBinError(p);
+		    }
+		  
+		  }
+		
 		} else {
+		
 		  eff_pt_err_up = (histograms->find(syskey_up_pt)->second).find(key_pt)->second->GetBinContent(p);
 		  eff_pt_err_dn = (histograms->find(syskey_dn_pt)->second).find(key_pt)->second->GetBinContent(p);
+		  
+		  if ( m_useTrigMatchingInfo ) {
+		    eff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find(syskey_up_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_up_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
+		    eff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find(syskey_dn_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_dn_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
+		  }
+		
 		}
-		// FIXME
-		if ( m_useTrigMatchingInfo ) {
-		    eff_pt	  = ( lep.get()->trigmatched ) ? (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second->GetBinContent(p);
-		    eff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second->GetBinError(p) : (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second->GetBinError(p);
-		    eff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second->GetBinError(p) : (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second->GetBinError(p);
-		}
+
 	    } else {
 		eff_pt	      = (tefficiencies->find("Nominal")->second).find(key_pt_teff)->second->GetEfficiency(p);
 		if ( isStat ) {

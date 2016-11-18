@@ -37,7 +37,7 @@ g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
 
 g_selections = ["L","T","AntiT"]
 
-parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["ICHEP 2015+2016 DS"],
+parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["POST-ICHEP 2015+2016 DS"],
                     help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) )
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
                   help='List of variables to be considered. Use a space-separated list. If unspecified, will consider pT only.')

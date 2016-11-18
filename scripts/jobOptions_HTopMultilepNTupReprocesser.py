@@ -47,11 +47,13 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMRates_25ns_v20_04_DDQMisID_ICHEPBinning",
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PlotVault/PLOTS_25ns_v20_04/OutputPlots_MMClosureRates_25ns_v20_04_ICHEPBinning",
 				    #
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21",
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21",
+                                    "m_EFF_YES_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_ProbeTM_25ns_v21",
+                                    "m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_ProbeNOTTM_25ns_v21",
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21",
 				    #
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21",
- 				    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21",
+ 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21",
 				    #
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/LeptonEfficiencies_LH/LeptonEfficiencies_Files/SF_mu_SF_el",
 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/LeptonEfficiencies_LH/LeptonEfficiencies_Files/SF_mu_SF_el",
@@ -75,7 +77,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
 				    #"m_systematics_list"           : "Nominal,Stat,numerator_QMisID,denominator_QMisID",
 				    "m_systematics_list"           : "Nominal,Stat",
-				    "m_useTrigMatchingInfo"        : False,
+				    "m_useTrigMatchingInfo"        : True,
 				    #
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
 				    #"m_Efficiency_Filename"        : "LeptonEfficiencies_LH.root",

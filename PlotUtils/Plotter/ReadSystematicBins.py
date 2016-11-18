@@ -438,6 +438,7 @@ if __name__ == '__main__':
 	        var_list.append("NJets")
 
     flavour_list = ["ElEl", "MuMu", "OF"]
+    #flavour_list = ["ElEl", "MuMu"]
 
     print("Looking at variables : [" + ",".join( "{0}".format(v) for v in var_list ) + "]")
 

@@ -23,8 +23,6 @@ parser = argparse.ArgumentParser(description='Plotting script for the HTopMultil
 
 parser.add_argument('inputDir', metavar='inputDir',type=str,
                    help='Path to the directory containing input files')
-#parser.add_argument('samplesCSV', metavar='samplesCSV',type=str,
-#                   help='Path to the csv file containing the processes of interest with their cross sections and other metadata')
 
 #*******************
 # optional arguments
@@ -94,7 +92,7 @@ parser.add_argument('--useMoriondTruth', dest='useMoriondTruth', action='store_t
 parser.add_argument('--optimisation', dest='optimisation', action='store', default=None, type=str, nargs='+',
                     help='Optimise cuts. At the moment, performs 1D optimisation on pT(lep1) only if \"SLT\" option is passed, 2D optimisation on pT(lep0),pT(lep1) if \"DLT\" option is passed')
 parser.add_argument('--trigAcceptance', action='store', dest='trigAcceptance', const='TIGHT', default=None, nargs='?',
-                    help='Use 2LepSS SR selection to make study on trigger acceptance. Can specify whether to use a \"TIGHT\" or \"LOOSE\" selection. If not specified, default is \"TIGHT\".')
+                    help='Use 2LepSS SR selection to make study on trigger acceptance. Can specify whether to use a \"TIGHT\" or \"LOOSE\" selection. If option string is present, but command-line argument is not specified, default is \"TIGHT\".')
 
 args = parser.parse_args()
 
@@ -345,7 +343,7 @@ if __name__ == "__main__":
     # Trigger
     # -------
 
-    if "v19" in args.inputDir or "v20" in args.inputDir:
+    if "v19" or "v20" in args.inputDir:
 
         # Lowest unprescaled SLT in ICHEP DS have 24 GeV threshold
 
@@ -398,7 +396,7 @@ if __name__ == "__main__":
 
     elif "DLT" in args.trigger:
 
-        if "v19" in args.inputDir or "v20" in args.inputDir:
+        if "v19" or "v20" in args.inputDir:
 
 	    # No trigger matching for DLT available: just require pT in efficiency plateau
 	    #
@@ -414,12 +412,7 @@ if __name__ == "__main__":
             #
             #vardb.registerCut( Cut('2Lep_TrigMatch', '( ( ( dilep_type == 1 || dilep_type == 3 ) && event_isTrigMatch_DLT == 1 ) || ( dilep_type == 2 && event_isTrigMatch_DLT == 1 ) )') ) # event_isTrigMatch_DLT == 1 --> BOTH leptons DLT-matched
 
-    if doRelaxedBJetCut:
-        print("\nUsing relaxed nbjet cut: be INCLUSIVE in bjet multiplicity...\n")
-        vardb.registerCut( Cut('2Lep_NBJet',                  '( nJets_OR_T_MV2c10_70 >= 0 )') )
-    else:
-        vardb.registerCut( Cut('2Lep_NBJet',                  '( nJets_OR_T_MV2c10_70 > 0 )') )
-
+    vardb.registerCut( Cut('2Lep_NBJet',                  '( nJets_OR_T_MV2c10_70 > 0 )') )
     vardb.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 > 0 )') )
     vardb.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T > 1 )') )
     vardb.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T > 4 )') )
@@ -438,6 +431,10 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_MuEl_Event',		  '( dilep_type == 2 && TMath::Abs( lep_ID_0 ) == 13  )') )
     vardb.registerCut( Cut('2Lep_ElMu_Event',		  '( dilep_type == 2 && TMath::Abs( lep_ID_0 ) == 11  )') )
 
+    if doRelaxedBJetCut:
+        print("\nUsing relaxed nbjet cut: be INCLUSIVE in bjet multiplicity...\n")
+        vardb.getCut('2Lep_NBJet').cutstr = '( nJets_OR_T_MV2c10_70 >= 0 )'
+
     gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/largeEtaEvent.cxx+")
     from ROOT import largeEtaEvent
 
@@ -448,7 +445,7 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_Zpeakcut',           '( ( dilep_type == 2 ) || ( TMath::Abs( Mll01 - 91.2e3 ) < 30e3  ) )' ) )       # Use this to require the 2 SF leptons to be around Z peak
     vardb.registerCut( Cut('2Lep_Zmincut',            '( ( dilep_type == 2 ) || ( Mll01  > 20e3 ) )' ) )   # Remove J/Psi, Upsilon peak
 
-    if "v19" in args.inputDir or "v20" in args.inputDir:
+    if "v19" or "v20" in args.inputDir:
         vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched', '( lep_Tag_isTightSelected == 1 && lep_Tag_isTrigMatch == 1 )') )
         vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',    '( lep_Probe_isTrigMatch == 1 )') )
     	vardb.registerCut( Cut('2Lep_ElProbe',  	      '( TMath::Abs( lep_Probe_ID ) == 11 )') )
@@ -464,13 +461,13 @@ if __name__ == "__main__":
     if "v21" or "v23" in args.inputDir:
 
         if "SLT" in args.trigger:
-
+            
+	    vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_SLT_isTightSelected == 1 && lep_Tag_SLT_isTrigMatch == 1 )') )
+	    
 	    if "CLOSURE" in args.channel and "TRUTH_TP" in args.channel:
-	        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_SLT_isTightSelected == 1 )') ) # no TM decision to define T&P in closure test
-	    else:
-	        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_SLT_isTightSelected == 1 && lep_Tag_SLT_isTrigMatch == 1 )') )
-
-            vardb.registerCut( Cut('2Lep_LepTagTrigMatched',        '( lep_Tag_SLT_isTrigMatch == 1 )') )
+	        vardb.getCut('2Lep_LepTagTightTrigMatched').cutstr = '( lep_Tag_SLT_isTightSelected == 1 )' # no TM decision to define T&P in closure test
+            
+	    vardb.registerCut( Cut('2Lep_LepTagTrigMatched',        '( lep_Tag_SLT_isTrigMatch == 1 )') )
             vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_SLT_isTrigMatch == 1 )') )
             vardb.registerCut( Cut('2Lep_ElProbe',		    '( TMath::Abs( lep_Probe_SLT_ID ) == 11 )') )
             vardb.registerCut( Cut('2Lep_MuProbe',		    '( TMath::Abs( lep_Probe_SLT_ID ) == 13 )') )
@@ -480,10 +477,10 @@ if __name__ == "__main__":
 
         elif "DLT" in args.trigger:
 
+	    vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_DLT_isTightSelected == 1 && lep_Tag_DLT_isTrigMatch == 1 )') )
+
 	    if "CLOSURE" in args.channel and "TRUTH_TP" in args.channel:
-	        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_DLT_isTightSelected == 1 )') ) # no TM decision to define T&P in closure test
-	    else:
-	        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_DLT_isTightSelected == 1 && lep_Tag_DLT_isTrigMatch == 1 )') )
+	        vardb.getCut('2Lep_LepTagTightTrigMatched').cutstr = '( lep_Tag_DLT_isTightSelected == 1 )' # no TM decision to define T&P in closure test
 
             vardb.registerCut( Cut('2Lep_LepTagTrigMatched',        '( lep_Tag_DLT_isTrigMatch == 1 )') )
             vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_DLT_isTrigMatch == 1 )') )
@@ -493,15 +490,8 @@ if __name__ == "__main__":
             vardb.registerCut( Cut('2Lep_ProbeAntiTight',	    '( lep_Probe_DLT_isTightSelected == 0 )') )
 	    vardb.registerCut( Cut('2Lep_TagAndProbe_GoodEvent',    '( event_isBadTP_DLT == 0 )') )
 
-
-    if not args.trigAcceptance:
-        vardb.registerCut( Cut('TT',      '( is_T_T == 1 )') )
-    else:
-        if args.trigAcceptance == "TIGHT":
-	    vardb.registerCut( Cut('TT',      '( is_T_T == 1 )') )
-        elif args.trigAcceptance == "LOOSE":
-	    vardb.registerCut( Cut('TT',      '( 1 )') )
-
+    
+    vardb.registerCut( Cut('TT',      '( is_T_T == 1 )') )
     vardb.registerCut( Cut('TL',      '( is_T_AntiT == 1 )') )
     vardb.registerCut( Cut('LT',      '( is_AntiT_T == 1 )') )
     vardb.registerCut( Cut('TL_LT',   '( is_T_AntiT == 1 || is_AntiT_T == 1 )') )
@@ -510,7 +500,10 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('LelTmu',  '( is_AntiTel_Tmu == 1 )') )
     vardb.registerCut( Cut('TmuLel',  '( is_Tmu_AntiTel == 1 )') )
     vardb.registerCut( Cut('LmuTel',  '( is_AntiTmu_Tel == 1 )') )
-
+    
+    if args.trigAcceptance == "LOOSE":
+        vardb.getCut('TT').cutstr = '( 1 )' 
+    
     # ---------------------------
     # Cuts for ttW Control Region
     # ---------------------------
@@ -559,7 +552,7 @@ if __name__ == "__main__":
 
     if args.useMoriondTruth:
 
-	if "v19" in args.inputDir or "v20" in args.inputDir:
+	if "v19" or "v20" in args.inputDir:
 
 	    vardb.registerCut( Cut('2Lep_TRUTH_PurePromptEvent', '( ( mc_channel_number == 0 ) || ( ( ( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) && ( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) ) )') )
             vardb.registerCut( Cut('2Lep_TRUTH_NonPromptEvent',  '( ( mc_channel_number == 0 ) || ( ( ( !( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) || !( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) && !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )') )
@@ -630,7 +623,7 @@ if __name__ == "__main__":
 
         # Truth requirement only on the probe lepton for T&P
         #
-        if "v19" in args.inputDir or "v20" in args.inputDir:
+        if "v19" or "v20" in args.inputDir:
 
              #vardb.registerCut( Cut('2Lep_TRUTH_ProbePromptEvent',  '( ( mc_channel_number == 0 ) || ( ( lep_Probe_isPrompt == 1 && lep_Probe_isQMisID == 0 ) ) )') )
              vardb.registerCut( Cut('2Lep_TRUTH_ProbePromptEvent',    '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_isPrompt == 1 || ( lep_Probe_isBrems == 1 && lep_Probe_isQMisID == 0 ) ) && lep_Probe_isQMisID == 0 ) ) )') )
@@ -1645,52 +1638,52 @@ if __name__ == "__main__":
             if ( args.lepFlavComp == "SF" ):
             	print ""
             	"""
-            	vardb.registerCategory( MyCategory('MuMuRealCRMuL',	cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('MuMuRealCRMuAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('MuMuRealCRMuT',	cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('ElElRealCRElL',	cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut']) & truth_sub_OS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('ElElRealCRElAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('ElElRealCRElT',	cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('MuMuRealCRMuL',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('MuMuRealCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('MuMuRealCRMuT',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('ElElRealCRElL',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut']) & truth_sub_OS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('ElElRealCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('ElElRealCRElT',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
 
-            	vardb.registerCategory( MyCategory('MuMuFakeCRMuL',	cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('MuMuFakeCRMuAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('MuMuFakeCRMuT',	cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('ElElFakeCRElL',	cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('ElElFakeCRElAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('ElElFakeCRElT',	cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('MuMuFakeCRMuL',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('MuMuFakeCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('MuMuFakeCRMuT',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('ElElFakeCRElL',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('ElElFakeCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('ElElFakeCRElT',	cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
             	"""
-           	vardb.registerCategory( MyCategory('RealCRMuL',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('RealCRMuT',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('RealCRElL',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut']) & truth_sub_OS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('RealCRElAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('RealCRElT',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+           	vardb.registerCategory( MyCategory('RealCRMuL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_OS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('RealCRMuT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('RealCRElL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut']) & truth_sub_OS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('RealCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('RealCRElT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
 
-            	vardb.registerCategory( MyCategory('FakeCRMuL',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('FakeCRMuT',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('FakeCRElL',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('FakeCRElT', 	   cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('FakeCRMuL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut']) & truth_sub_SS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('FakeCRMuT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('FakeCRElL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('FakeCRElT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
 
             # OF only ( NB: no cuts on m(ll) are registered here, since there's no need for them...)
             #
             if ( args.lepFlavComp == "OF" ):
             	print ""
             	#"""
-            	vardb.registerCategory( MyCategory('OFRealCRMuL',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut']) & truth_sub_OS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('OFRealCRMuAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('OFRealCRMuT',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('OFRealCRElL',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut']) & truth_sub_OS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('OFRealCRElAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('OFRealCRElT',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('OFRealCRMuL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut']) & truth_sub_OS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('OFRealCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('OFRealCRMuT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('OFRealCRElL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut']) & truth_sub_OS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('OFRealCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('OFRealCRElT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_OS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_OS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
 
-            	vardb.registerCategory( MyCategory('OFFakeCRMuL',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('OFFakeCRMuAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('OFFakeCRMuT',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('OFFakeCRElL',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_TP_MM ) )
-            	vardb.registerCategory( MyCategory('OFFakeCRElAntiT', cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
-            	vardb.registerCategory( MyCategory('OFFakeCRElT',     cut = ( vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('OFFakeCRMuL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('OFFakeCRMuAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('OFFakeCRMuT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_MuProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('OFFakeCRElL',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut']) & truth_sub_SS ), weight = weight_TP_MM ) )
+            	vardb.registerCategory( MyCategory('OFFakeCRElAntiT', cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeAntiTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
+            	vardb.registerCategory( MyCategory('OFFakeCRElT',     cut = ( probe_TM_cut & vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_SS','2Lep_NJet_CR','2Lep_ElProbe','2Lep_OF_Event','2Lep_ElEtaCut','2Lep_ProbeTight']) & truth_sub_SS ), weight = ( weight_TP_MM + " * weight_probe" ) ) )
             	#"""
 
         # ------------------------
@@ -1706,6 +1699,12 @@ if __name__ == "__main__":
             truth_sub_OS = ( vardb.getCut('2Lep_TRUTH_NonPromptEvent') )  # Subtract events w/ at least one non-prompt, and no QMisID
             truth_sub_SS = ( vardb.getCut('2Lep_TRUTH_PurePromptEvent') ) # Subtract events w/ both prompt leptons, and no QMisID. This assumes QMisID will be estimated from data on top of this
 
+# -------------------------------------------------------------------------------
+# TEMP!!!!!!!!            
+# -------------------------------------------------------------------------------
+#            vardb.getCut('2Lep_NBJet').cutstr   = '( 1 )'
+#            vardb.getCut('2Lep_NJet_CR').cutstr = '( nJets_OR_T <= 4 )'
+ 
             # For closure rates
             #
             # This is not really a subtraction --> it's really a truth selection

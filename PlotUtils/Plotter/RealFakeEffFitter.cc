@@ -2893,18 +2893,20 @@ int main( int argc, char **argv ) {
     //const std::string input_path("../blahblah/");
 
     // DO THE FIT ON TTBAR MC
-    
+
     // DLT
-    
+
     const std::string tp_path("../MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21/");
     //const std::string input_path("../MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/");
-    const std::string input_path("../MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuINCLel_DLT_25ns_v21/");
+    //const std::string input_path("../MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuINCLel_DLT_25ns_v21/");
+  
+    const std::string input_path("../MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuINCLel_DLT_25ns_v21_NoJetCuts/");
     
     // SLT
-    
+
     //const std::string tp_path("../MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21/");
     //const std::string input_path("../MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/");
-    
+
     LHFitter::useMC();
 
     // -------------
@@ -2916,7 +2918,7 @@ int main( int argc, char **argv ) {
       // real efficiency - e
 
       LHFitter real_ee( LHFitter::kFlavour::ELEL, LHFitter::kEfficiency::REAL );
-      real_ee.setVerbosity(LHFitter::kVerbosity::DEBUG);
+      //real_ee.setVerbosity(LHFitter::kVerbosity::DEBUG);
       real_ee.setTagAndProbePath(tp_path);
       real_ee.setInputHistPath(input_path);
       real_ee.m_doSubtraction = true;
@@ -2932,7 +2934,7 @@ int main( int argc, char **argv ) {
       // fake efficiency - e
 
       LHFitter fake_ee( LHFitter::kFlavour::ELEL, LHFitter::kEfficiency::FAKE );
-      fake_ee.setVerbosity(LHFitter::kVerbosity::DEBUG);
+      //fake_ee.setVerbosity(LHFitter::kVerbosity::DEBUG);
       fake_ee.setTagAndProbePath(tp_path);
       fake_ee.setInputHistPath(input_path);
       fake_ee.m_doSubtraction = true;
@@ -2952,7 +2954,7 @@ int main( int argc, char **argv ) {
       // real efficiency - mu
 
       LHFitter real_mm( LHFitter::kFlavour::MUMU, LHFitter::kEfficiency::REAL );
-      real_mm.setVerbosity(LHFitter::kVerbosity::DEBUG);
+      //real_mm.setVerbosity(LHFitter::kVerbosity::DEBUG);
       real_mm.setTagAndProbePath(tp_path);
       real_mm.setInputHistPath(input_path);
       real_mm.m_doSubtraction = true;
@@ -2968,7 +2970,7 @@ int main( int argc, char **argv ) {
       // fake efficiency - mu
 
       LHFitter fake_mm( LHFitter::kFlavour::MUMU, LHFitter::kEfficiency::FAKE );
-      fake_mm.setVerbosity(LHFitter::kVerbosity::DEBUG);
+      //fake_mm.setVerbosity(LHFitter::kVerbosity::DEBUG);
       fake_mm.setTagAndProbePath(tp_path);
       fake_mm.setInputHistPath(input_path);
       fake_mm.m_doSubtraction = true;
@@ -3032,7 +3034,7 @@ int main( int argc, char **argv ) {
       // real efficiency - e,mu
 
       LHFitter real_incl( LHFitter::kFlavour::INCLUSIVE, LHFitter::kEfficiency::REAL );
-      real_incl.setVerbosity(LHFitter::kVerbosity::DEBUG);
+      //real_incl.setVerbosity(LHFitter::kVerbosity::DEBUG);
       real_incl.setTagAndProbePath(tp_path);
       real_incl.setInputHistPath(input_path);
       real_incl.m_doSubtraction = true;
@@ -3046,7 +3048,7 @@ int main( int argc, char **argv ) {
       real_incl.fit();
 
       LHFitter fake_incl( LHFitter::kFlavour::INCLUSIVE, LHFitter::kEfficiency::FAKE );
-      fake_incl.setVerbosity(LHFitter::kVerbosity::DEBUG);
+      //fake_incl.setVerbosity(LHFitter::kVerbosity::DEBUG);
       fake_incl.setTagAndProbePath(tp_path);
       fake_incl.setInputHistPath(input_path);
       fake_incl.m_doSubtraction = true;
