@@ -79,6 +79,9 @@ lep_branches         = ["lep_ID_0",
 			"lep_isolationFixedCutTight_0",
 			"lep_isolationFixedCutTightTrackOnly_0",
 			"lep_isolationFixedCutLoose_0",
+	  		"lep_topoEtcone20_0",
+	  		"lep_ptVarcone20_0",
+	  		"lep_ptVarcone30_0",
                         "lep_isTrigMatch_0",
 			"lep_isPrompt_0",
 			"lep_isBrems_0",
@@ -134,6 +137,9 @@ lep_branches         = ["lep_ID_0",
 			"lep_isolationFixedCutTight_1",
 			"lep_isolationFixedCutTightTrackOnly_1",
 			"lep_isolationFixedCutLoose_1",
+	  		"lep_topoEtcone20_1",
+	  		"lep_ptVarcone20_1",
+	  		"lep_ptVarcone30_1",
                         "lep_isTrigMatch_1",
 			"lep_isPrompt_1",
 			"lep_isBrems_1",
@@ -189,6 +195,9 @@ lep_branches         = ["lep_ID_0",
 			"lep_isolationFixedCutTight_2",
 			"lep_isolationFixedCutTightTrackOnly_2",
 			"lep_isolationFixedCutLoose_2",
+	  		"lep_topoEtcone20_2",
+	  		"lep_ptVarcone20_2",
+	  		"lep_ptVarcone30_2",
                         "lep_isTrigMatch_2",
 			"lep_isPrompt_2",
 			"lep_isBrems_2",
@@ -224,6 +233,7 @@ lep_branches         = ["lep_ID_0",
 			"lep_SFObjLoose_2",
 			"lep_SFObjTight_2",			
                       ]
+		      
 tau_branches        = ["tau_pt_0","tau_eta_0","tau_phi_0","tau_charge_0","tau_BDTJetScore_0","tau_JetBDTSigLoose_0","tau_JetBDTSigMedium_0","tau_JetBDTSigTight_0","tau_numTrack_0","tau_SFTight_0","tau_SFLoose_0"]
 
 MET_truth_branches  = ["MET_Truth_px","MET_Truth_py","MET_Truth_phi","MET_Truth_sumet"]
@@ -259,6 +269,7 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
 	                          "m_useAlgSelect"         : True,
 				  "m_addStreamEventsHist"  : False,
 				  "m_useTruthTP"           : False,
+				  "m_useSUSYSSTP"          : True,
                                 }
 
 # Instantiate the NTupleSvc algorithm

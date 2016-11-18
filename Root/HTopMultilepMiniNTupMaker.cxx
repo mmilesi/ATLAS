@@ -7,10 +7,14 @@
 #include "TVector3.h"
 #include "TRandom3.h"
 
+// C++ include(s)
+#include<algorithm>
+
 using namespace MiniNTupMaker;
 
 // this is needed to distribute the algorithm to the workers
 ClassImp(HTopMultilepMiniNTupMaker)
+
 
 HTopMultilepMiniNTupMaker :: HTopMultilepMiniNTupMaker(std::string className) :
     Algorithm(className),
@@ -35,6 +39,7 @@ HTopMultilepMiniNTupMaker :: HTopMultilepMiniNTupMaker(std::string className) :
   m_useAlgSelect         = false;
   m_addStreamEventsHist  = false;
   m_useTruthTP           = false;
+  m_useSUSYSSTP          = false;
 }
 
 
@@ -160,6 +165,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTight_0",   	      &m_lep_isolationFixedCutTight_0);
   m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTightTrackOnly_0",   &m_lep_isolationFixedCutTightTrackOnly_0);
   m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutLoose_0",   	      &m_lep_isolationFixedCutLoose_0);
+  m_inputNTuple->SetBranchAddress ("lep_topoEtcone20_0",                      &m_lep_topoEtcone20_0);
+  m_inputNTuple->SetBranchAddress ("lep_ptVarcone20_0",                       &m_lep_ptVarcone20_0);
+  m_inputNTuple->SetBranchAddress ("lep_ptVarcone30_0",                       &m_lep_ptVarcone30_0);
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_0",   		      &m_lep_isTrigMatch_0);
   m_inputNTuple->SetBranchAddress ("lep_isPrompt_0",   			      &m_lep_isPrompt_0);
   m_inputNTuple->SetBranchAddress ("lep_isBrems_0",   		              &m_lep_isBrems_0);
@@ -200,6 +208,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTight_1",   	      &m_lep_isolationFixedCutTight_1);
   m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTightTrackOnly_1",   &m_lep_isolationFixedCutTightTrackOnly_1);
   m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutLoose_1",   	      &m_lep_isolationFixedCutLoose_1);
+  m_inputNTuple->SetBranchAddress ("lep_topoEtcone20_1",                      &m_lep_topoEtcone20_1);
+  m_inputNTuple->SetBranchAddress ("lep_ptVarcone20_1",                       &m_lep_ptVarcone20_1);
+  m_inputNTuple->SetBranchAddress ("lep_ptVarcone30_1",                       &m_lep_ptVarcone30_1);
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_1",   		      &m_lep_isTrigMatch_1);
   m_inputNTuple->SetBranchAddress ("lep_isPrompt_1",   			      &m_lep_isPrompt_1);
   m_inputNTuple->SetBranchAddress ("lep_isBrems_1",   		              &m_lep_isBrems_1);
@@ -240,6 +251,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTight_2",   	      &m_lep_isolationFixedCutTight_2);
   m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTightTrackOnly_2",   &m_lep_isolationFixedCutTightTrackOnly_2);
   m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutLoose_2",   	      &m_lep_isolationFixedCutLoose_2);
+  m_inputNTuple->SetBranchAddress ("lep_topoEtcone20_2",                      &m_lep_topoEtcone20_2);
+  m_inputNTuple->SetBranchAddress ("lep_ptVarcone20_2",                       &m_lep_ptVarcone20_2);
+  m_inputNTuple->SetBranchAddress ("lep_ptVarcone30_2",                       &m_lep_ptVarcone30_2);
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_2",   		      &m_lep_isTrigMatch_2);
   m_inputNTuple->SetBranchAddress ("lep_isPrompt_2",   			      &m_lep_isPrompt_2);
   m_inputNTuple->SetBranchAddress ("lep_isBrems_2",   		              &m_lep_isBrems_2);
@@ -410,6 +424,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("lep_Eta",		   	&m_lep_Eta);
   m_outputNTuple->tree()->Branch("lep_EtaBE2",  	   	&m_lep_EtaBE2);
 
+  m_outputNTuple->tree()->Branch("lep_TagVec_SLT_Pt",		&m_lep_TagVec_SLT_Pt);
+  m_outputNTuple->tree()->Branch("lep_ProbeVec_SLT_Pt",		&m_lep_ProbeVec_SLT_Pt);
+  m_outputNTuple->tree()->Branch("lep_TagVec_DLT_Pt",  	   	&m_lep_TagVec_DLT_Pt);
+  m_outputNTuple->tree()->Branch("lep_ProbeVec_DLT_Pt",		&m_lep_ProbeVec_DLT_Pt);
+
   m_outputNTuple->tree()->Branch("jet_OR_Pt",		   	        &m_jet_OR_Pt);
   m_outputNTuple->tree()->Branch("jet_OR_Eta",		   	        &m_jet_OR_Eta);
   m_outputNTuple->tree()->Branch("jet_OR_Phi",  	   	        &m_jet_OR_Phi);
@@ -531,7 +550,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep0.get()->d0sig       = m_lep_sigd0PV_0;
   lep0.get()->z0sintheta  = m_lep_Z0SinTheta_0;
   lep0.get()->pid         = m_lep_isTightLH_0;
-  lep0.get()->isolated    = ( fabs(m_lep_ID_0) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_0 : m_lep_isolationFixedCutTight_0;
+  lep0.get()->isolated       = ( fabs(m_lep_ID_0) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_0 : m_lep_isolationFixedCutTight_0;
+  lep0.get()->trackisooverpt = ( fabs(m_lep_ID_0) == 13 ) ?  m_lep_ptVarcone30_0/m_lep_Pt_0 : m_lep_ptVarcone20_0/m_lep_Pt_0;
+  lep0.get()->caloisooverpt  = ( fabs(m_lep_ID_0) == 13 ) ?  -1.0 : m_lep_topoEtcone20_0/m_lep_Pt_0;
   lep0.get()->trigmatched = m_lep_isTrigMatch_0;
   lep0.get()->prompt      = m_lep_isPrompt_0;
   lep0.get()->fake        = m_lep_isFakeLep_0;
@@ -568,7 +589,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep1.get()->d0sig       = m_lep_sigd0PV_1;
   lep1.get()->z0sintheta  = m_lep_Z0SinTheta_1;
   lep1.get()->pid         = m_lep_isTightLH_1;
-  lep1.get()->isolated    = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_1 : m_lep_isolationFixedCutTight_1;
+  lep1.get()->isolated       = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_1 : m_lep_isolationFixedCutTight_1;
+  lep1.get()->trackisooverpt = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_ptVarcone30_1/m_lep_Pt_1 : m_lep_ptVarcone20_1/m_lep_Pt_1;
+  lep1.get()->caloisooverpt  = ( fabs(m_lep_ID_1) == 13 ) ?  -1.0 : m_lep_topoEtcone20_1/m_lep_Pt_1;
   lep1.get()->trigmatched = m_lep_isTrigMatch_1;
   lep1.get()->prompt      = m_lep_isPrompt_1;
   lep1.get()->fake        = m_lep_isFakeLep_1;
@@ -618,7 +641,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
     lep2.get()->d0sig       = m_lep_sigd0PV_2;
     lep2.get()->z0sintheta  = m_lep_Z0SinTheta_2;
     lep2.get()->pid	    = m_lep_isTightLH_2;
-    lep2.get()->isolated    = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_2 : m_lep_isolationFixedCutTight_2;
+    lep2.get()->isolated       = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_2 : m_lep_isolationFixedCutTight_2;
+    lep2.get()->trackisooverpt = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_ptVarcone30_2/m_lep_Pt_2 : m_lep_ptVarcone20_2/m_lep_Pt_2;
+    lep2.get()->caloisooverpt  = ( fabs(m_lep_ID_2) == 13 ) ?  -1.0 : m_lep_topoEtcone20_2/m_lep_Pt_2;
     lep2.get()->trigmatched = m_lep_isTrigMatch_2;
     lep2.get()->prompt      = m_lep_isPrompt_2;
     lep2.get()->fake	    = m_lep_isFakeLep_2;
@@ -647,6 +672,23 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
     m_leptons.push_back(lep2);
   }
 
+  /*
+  std::sort( m_leptons.begin(), m_leptons.end(), MiniNTupMaker::SorterTrackIsoOverPt() );
+  bool badevt(false);
+  for ( auto lep : m_leptons ) {
+    if ( lep.get()->pt < 10e3 ) {
+      badevt = true;
+      break;
+    }
+  }
+  
+  if ( m_leptons.size() > 1 && m_RunYear != 0 && !badevt ) {
+    for ( unsigned int idx(0); idx < m_leptons.size(); ++idx ) {
+       std::cout << "lepton[" << idx << "] - track iso = " << m_leptons.at(idx).get()->trackisooverpt << ", pT = " << m_leptons.at(idx).get()->pt/1e3 << std::endl;
+    }
+  }
+  */
+  
   // ------------------------------------------------------------------------
 
   ANA_CHECK( this->decorateEvent() );
@@ -1112,10 +1154,18 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
 
 EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 {
+  
+  // Clear vector branches from previous event
+  //
+  ANA_CHECK( this->clearBranches("tag_and_probe") );
 
   // Do this only for dilepton events
   //
   if ( !m_event.get()->dilep ) { return EL::StatusCode::SUCCESS; }
+  
+  // Minimal requirement of pT = 10 GeV on all leptons
+  //
+  for ( auto lep : m_leptons ) {  if ( lep.get()->pt < 10e3 ) { return EL::StatusCode::SUCCESS; } }
 
   if ( m_useTruthTP ) {
 
@@ -1174,33 +1224,155 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
     return EL::StatusCode::SUCCESS;
   }
 
-  // The following should be used in general
 
-  // Case 1) - use SLT matching
-  // Case 2) - use SLT matching
+  if ( m_useSUSYSSTP ) {
+
+    // Tag-and-probe a-la-SUSY SS analysis:
+    //
+    // Ambiguous events where both leptons are T & T.M. are double counted --> 
+    // both leptons are alternatively considered as the possible tag/probe
+    // to avoid any bias in the choice of the tag and to increase the statistics
+  
+    m_isBadTPEvent_SLT = m_isBadTPEvent_DLT = 0; // be optimistic!
+
+    int tag_candidate_counter_SLT(0), tag_candidate_counter_DLT(0);
+    int idx(0);
+    int tag_idx_SLT(-1), tag_idx_DLT(-1), probe_idx_SLT(-1), probe_idx_DLT(-1);
+    
+    for ( auto lep : m_leptons ) {
+      
+      if ( m_debug ) { Info("defineTagAndProbe()","Checking lepton[%i] w/ pT = %.2f", idx, lep.get()->pt/1e3 ); }
+
+      if ( lep.get()->tight && lep.get()->trigmatched ) { 
+        ++tag_candidate_counter_SLT;
+	tag_idx_SLT = idx;
+        if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (SLT matching)! pT[%i] = %.2f", idx, lep.get()->pt/1e3 ); }
+      }
+      if ( lep.get()->tight && lep.get()->trigmatched_DLT ) { 
+        ++tag_candidate_counter_DLT;
+	tag_idx_DLT = idx;
+        if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (DLT matching)! pT[%i] = %.2f", idx, lep.get()->pt/1e3 ); }
+      }
+
+      ++idx;
+    }
+    
+    switch ( tag_candidate_counter_SLT ) {
+
+      case 0:
+      
+        m_lep_TagVec_SLT_Pt.push_back(-1.0);
+        m_lep_ProbeVec_SLT_Pt.push_back(-1.0);
+        
+        m_isBadTPEvent_SLT = 1;
+        
+        if ( m_debug ) { Info("defineTagAndProbe()","No lepton (T & TM) (SLT matching) was found - flag this event as bad" ); }
+        
+	break;
+      
+      case 1: // this is the non-ambiguous case: 1 tag and 1 probe per event
+        
+	probe_idx_SLT = abs( tag_idx_SLT - 1 ); // NB: this works since we only look at dilepton events (tag_idx can be 0 or 1 )
+	
+	m_lep_TagVec_SLT_Pt.push_back( m_leptons.at(tag_idx_SLT).get()->pt );
+	m_lep_ProbeVec_SLT_Pt.push_back( m_leptons.at(probe_idx_SLT).get()->pt );
+	
+	if ( m_debug ) { Info("defineTagAndProbe()","Unambiguous event (SLT matching) : tag lepton pT = %.2f, probe lepton pT = %.2f", m_leptons.at(tag_idx_SLT).get()->pt/1e3, m_leptons.at(probe_idx_SLT).get()->pt/1e3 ); }
+	
+	break;
+      
+      case 2: // this is the ambiguous case, where we consider both leptons as tag and probe (event will be double-counted)
+        
+        for ( auto lep : m_leptons ) {
+	  m_lep_TagVec_SLT_Pt.push_back( lep.get()->pt );
+	  m_lep_ProbeVec_SLT_Pt.push_back( lep.get()->pt );
+	}
+	
+	if ( m_debug ) { Info("defineTagAndProbe()","Ambiguous event (SLT matching): both leptons T & T.M. Will consider both as tag and probe"); }
+	
+	break;
+      
+      default:
+        
+	Error("defineTagAndProbe()","Number of tag lepton candidates (SLT matching) is %i...This shouldn't happen. Aborting.", tag_candidate_counter_SLT );
+        return EL::StatusCode::FAILURE;
+    
+    }    
+
+    switch ( tag_candidate_counter_DLT ) {
+
+      case 0:
+      
+        m_lep_TagVec_DLT_Pt.push_back(-1.0);
+        m_lep_ProbeVec_DLT_Pt.push_back(-1.0);
+        
+        m_isBadTPEvent_DLT = 1;
+        
+        if ( m_debug ) { Info("defineTagAndProbe()","No lepton (T & TM) (DLT matching) was found - flag this event as bad" ); }
+        
+	break;
+      
+      case 1: // this is the non-ambiguous case: 1 tag and 1 probe per event
+        
+	probe_idx_DLT = abs( tag_idx_DLT - 1 ); // NB: this works since we only look at dilepton events (tag_idx can be 0 or 1 )
+	
+	m_lep_TagVec_DLT_Pt.push_back( m_leptons.at(tag_idx_DLT).get()->pt );
+	m_lep_ProbeVec_DLT_Pt.push_back( m_leptons.at(probe_idx_DLT).get()->pt );
+	
+	if ( m_debug ) { Info("defineTagAndProbe()","Unambiguous event (DLT matching): tag lepton pT = %.2f, probe lepton pT = %.2f", m_leptons.at(tag_idx_DLT).get()->pt/1e3, m_leptons.at(probe_idx_DLT).get()->pt/1e3 ); }
+	
+	break;
+      
+      case 2: // this is the ambiguous case, where we consider both leptons as tag and probe (event will be double-counted)
+        
+        for ( auto lep : m_leptons ) {
+	  m_lep_TagVec_DLT_Pt.push_back( lep.get()->pt );
+	  m_lep_ProbeVec_DLT_Pt.push_back( lep.get()->pt );
+	}
+	
+	if ( m_debug ) { Info("defineTagAndProbe()","Ambiguous event (DLT matching): both leptons T & T.M. Will consider both as tag and probe"); }
+	
+	break;
+      
+      default:
+        
+	Error("defineTagAndProbe()","Number of tag lepton candidates (DLT matching) is %i...This shouldn't happen. Aborting.", tag_candidate_counter_DLT );
+        return EL::StatusCode::FAILURE;
+    
+    } 
+    
+    return EL::StatusCode::SUCCESS;
+  
+  }
+
 
   bool found_tag_SLT(false), found_tag_DLT(false);
 
   // The first trigger-matched. tight lepton encountered in the event will be the tag (NB: the lepton container is pT-ordered).
   // Events where no such lepton is found are flagged and will be discarded
 
+  // By construction, in the ambiguous case where both are (T & T.M.), the leading will be taken as the tag, the subleading will be the probe
+  
   m_isBadTPEvent_SLT = m_isBadTPEvent_DLT = 0; // be optimistic!
+  
+  int idx(0);
 
   for ( auto lep : m_leptons ) {
 
-    if ( m_debug ) { Info("defineTagAndProbe()","lepton pT = %.2f", lep.get()->pt/1e3 ); }
+    if ( m_debug ) { Info("defineTagAndProbe()","Checking lepton[%i] w/ pT = %.2f", idx, lep.get()->pt/1e3 ); }
 
     if ( !found_tag_SLT && ( lep.get()->tight && lep.get()->trigmatched ) ) { 
       lep.get()->tag_SLT = 1;
       found_tag_SLT = true;
-      if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found tag (SLT matching)!"); }
+      if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (SLT matching)! pT[%i] = %.2f", idx, lep.get()->pt/1e3 ); }
     }
     if ( !found_tag_DLT && ( lep.get()->tight && lep.get()->trigmatched_DLT ) ) {
       lep.get()->tag_DLT = 1;
       found_tag_DLT = true;
-      if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found tag (DLT matching)!"); }
+      if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (DLT matching)! pT[%i] = %.2f", idx, lep.get()->pt/1e3 ); }
     }
-
+    
+    ++idx;
   }
 
   if ( !found_tag_SLT ) {
@@ -1217,6 +1389,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
   return EL::StatusCode::SUCCESS;
 
 }
+
 
 EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 {
@@ -1372,11 +1545,14 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ( const std::string& t
 {
 
   if ( type.compare("leptons") == 0 ) {
-
     m_lep_Pt.clear();
     m_lep_Eta.clear();
     m_lep_EtaBE2.clear();
-
+  } else if ( type.compare("tag_and_probe") == 0 ) {
+    m_lep_TagVec_SLT_Pt.clear();
+    m_lep_ProbeVec_SLT_Pt.clear();
+    m_lep_TagVec_DLT_Pt.clear();
+    m_lep_ProbeVec_DLT_Pt.clear();  
   } else if ( type.compare("jets") == 0 ) {
     m_jet_OR_Pt.clear();
     m_jet_OR_Eta.clear();

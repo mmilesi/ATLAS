@@ -27,13 +27,13 @@
 
 namespace MiniNTupMaker {
 
-struct Branch_Types {
-  float f;
-  char c;
-  int i;
-};
+  struct Branch_Types {
+    float f;
+    char c;
+    int i;
+  };
 
-class eventObj {
+  class eventObj {
 
   public:
     eventObj():
@@ -61,7 +61,10 @@ class eventObj {
   public:
     leptonObj():
       pt(-1.0),eta(-999.0),etaBE2(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
-      pid(0),isolated(0),tight(0),trigmatched(0),trigmatched_SLT(0),trigmatched_DLT(0),prompt(0),fake(0),brems(0),qmisid(0),convph(0),tag_SLT(0),tag_DLT(0),
+      pid(0),isolated(0),trackisooverpt(-1.0),caloisooverpt(-1.0),tight(0),
+      trigmatched(0),trigmatched_SLT(0),trigmatched_DLT(0),
+      prompt(0),fake(0),brems(0),qmisid(0),convph(0),
+      tag_SLT(0),tag_DLT(0),
       SFIDLoose(1.0),
       SFIDTight(1.0),
       SFTrigLoose(1.0),
@@ -86,6 +89,8 @@ class eventObj {
     float z0sintheta;
     char pid;
     char isolated;
+    float trackisooverpt;
+    float caloisooverpt;
     char tight;
     char trigmatched;
     char trigmatched_SLT;
@@ -115,9 +120,32 @@ class eventObj {
     float SFObjTight;
 
   };
-
+ 
+  struct SorterEta {
+    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const { 
+       return  fabs(lep0.get()->eta) > fabs(lep1.get()->eta); /* sort in descending order of |eta| */
+    }
+  };
+  
+  struct SorterPt {
+    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const { 
+       return  lep0.get()->pt > lep1.get()->pt; /* sort in descending order of pT (get highest pT first) */
+    }
+  };  
+  
+  struct SorterTrackIsoOverPt {
+    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const { 
+       if ( lep0.get()->trackisooverpt == lep1.get()->trackisooverpt ) { /* if they have same iso (aka 0 ), use pT as criterion */
+         return lep0.get()->pt > lep1.get()->pt;
+       }
+       return  lep0.get()->trackisooverpt < lep1.get()->trackisooverpt; /* sort in ascending order of trackisooverpt (get more isolated first) */
+    }
+  };   
+    
 }
 
+
+  
 class HTopMultilepMiniNTupMaker : public xAH::Algorithm
 {
   // put your configuration variables here as public variables.
@@ -140,6 +168,9 @@ public:
 
   /** Activate if want to define T&P leptons based on truth matching (NB: do this only on TTBar!)  */
   bool m_useTruthTP;
+  
+  /** Activate if want to define T&P leptons as in SUSY SS analysis (different treatment of ambiguous case where both leptons are T & T.M.  */
+  bool m_useSUSYSSTP;
 
 private:
 
@@ -209,6 +240,9 @@ private:
   Int_t 	  m_lep_isolationFixedCutTight_0;
   Int_t 	  m_lep_isolationFixedCutTightTrackOnly_0;
   Int_t 	  m_lep_isolationFixedCutLoose_0;
+  Float_t	  m_lep_topoEtcone20_0;
+  Float_t	  m_lep_ptVarcone20_0;
+  Float_t	  m_lep_ptVarcone30_0;
   Char_t	  m_lep_isTrigMatch_0;
   Char_t	  m_lep_isPrompt_0;
   Char_t	  m_lep_isBrems_0;
@@ -249,6 +283,9 @@ private:
   Int_t 	  m_lep_isolationFixedCutTight_1;
   Int_t 	  m_lep_isolationFixedCutTightTrackOnly_1;
   Int_t 	  m_lep_isolationFixedCutLoose_1;
+  Float_t	  m_lep_topoEtcone20_1;
+  Float_t	  m_lep_ptVarcone20_1;
+  Float_t	  m_lep_ptVarcone30_1;
   Char_t	  m_lep_isTrigMatch_1;
   Char_t	  m_lep_isPrompt_1;
   Char_t	  m_lep_isBrems_1;
@@ -289,6 +326,9 @@ private:
   Int_t 	  m_lep_isolationFixedCutTight_2;
   Int_t 	  m_lep_isolationFixedCutTightTrackOnly_2;
   Int_t 	  m_lep_isolationFixedCutLoose_2;
+  Float_t	  m_lep_topoEtcone20_2;
+  Float_t	  m_lep_ptVarcone20_2;
+  Float_t	  m_lep_ptVarcone30_2;
   Char_t	  m_lep_isTrigMatch_2;
   Char_t	  m_lep_isPrompt_2;
   Char_t	  m_lep_isBrems_2;
@@ -363,15 +403,15 @@ private:
 
   /** Indexes of jets that pass overlap removal */
 
-  std::vector<short>   *m_selected_jets = nullptr;   //!
+  std::vector<short>   *m_selected_jets   = nullptr;   //!
   std::vector<short>   *m_selected_jets_T = nullptr; //!
 
   /** Truth jets */
 
-  std::vector<float>   *m_truth_jet_pt = nullptr;  //!
+  std::vector<float>   *m_truth_jet_pt  = nullptr;  //!
   std::vector<float>   *m_truth_jet_eta = nullptr; //!
   std::vector<float>   *m_truth_jet_phi = nullptr; //!
-  std::vector<float>   *m_truth_jet_e = nullptr;   //!
+  std::vector<float>   *m_truth_jet_e   = nullptr;   //!
 
   /** Extra branches to be stored in output TTree */
 
@@ -425,6 +465,11 @@ private:
   std::vector<float> m_lep_Pt;
   std::vector<float> m_lep_Eta;
   std::vector<float> m_lep_EtaBE2;
+
+  std::vector<float> m_lep_TagVec_SLT_Pt;
+  std::vector<float> m_lep_ProbeVec_SLT_Pt;
+  std::vector<float> m_lep_TagVec_DLT_Pt;
+  std::vector<float> m_lep_ProbeVec_DLT_Pt;  
 
   /** Jets AFTER overlap removal */
 
