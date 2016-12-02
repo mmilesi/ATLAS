@@ -33,7 +33,7 @@ parser.add_argument("--triggerEff", dest="triggerEff", action="store_true", defa
 		    
 args = parser.parse_args()
 
-from ROOT import gROOT, gDirectory, gStyle, gPad, TPad, TH1, TH1D, TH2D, TFile, TCanvas, TColor, TLegend, TLatex, TLine, kRed, kBlue, kAzure, kCyan, kBlack
+from ROOT import gROOT, gDirectory, gStyle, gPad, TPad, TH1, TH1D, TH2D, TFile, TCanvas, TColor, TLegend, TLatex, TLine, kRed, kBlue, kAzure, kCyan, kBlack, kMagenta
 
 gROOT.Reset()
 gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
@@ -125,6 +125,11 @@ def plot2Dhist():
 
 def plotter_flavours( eff_type ):
 
+  if eff_type == "real":
+      hist_eff_type = "Real"
+  elif eff_type == "fake":
+      hist_eff_type = "Fake"
+
   basepath = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/"
 
   # ----------------------
@@ -145,11 +150,6 @@ def plotter_flavours( eff_type ):
   print("------------------------------------------------------------------------------------------")
 
   file_TP = TFile(file_TP_path)
-  
-  if eff_type == "real":
-      hist_eff_type = "Real"
-  elif eff_type == "fake":
-      hist_eff_type = "Fake"
   
   if args.closure:
       hist_TP = ( file_TP.Get(hist_eff_type+"_El_Pt_Efficiency_expectedbkg"), file_TP.Get(hist_eff_type+"_Mu_Pt_Efficiency_expectedbkg") )[bool(args.flavour == "mu")]
@@ -200,6 +200,37 @@ def plotter_flavours( eff_type ):
   refl.SetLineStyle(2)
   refl.Draw("SAME")
 
+  # ---------------------------
+  # SUSY Tag & Probe efficiency
+  # ---------------------------
+
+  file_SUSY_TP_path = basepath + "blahblah"
+
+  if args.closure:
+      if "SLT" in args.trigger:
+          file_SUSY_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_25ns_v21_Retry/LeptonEfficiencies.root"
+      elif "DLT" in args.trigger:
+          file_SUSY_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_25ns_v21_Retry/LeptonEfficiencies.root"
+  
+  print("------------------------------------------------------------------------------------------")
+  print("SUSY Tag & Probe efficiency - Opening file:\n{0}".format(file_SUSY_TP_path))
+  print("------------------------------------------------------------------------------------------")
+
+  file_SUSY_TP = TFile(file_SUSY_TP_path)
+  
+  if args.closure:
+      hist_SUSY_TP = ( file_SUSY_TP.Get(hist_eff_type+"_El_Pt_Efficiency_expectedbkg"), file_SUSY_TP.Get(hist_eff_type+"_Mu_Pt_Efficiency_expectedbkg") )[bool(args.flavour == "mu")]
+  else:
+      hist_SUSY_TP = ( file_SUSY_TP.Get(hist_eff_type+"_El_Pt_Efficiency_observed_sub"), file_SUSY_TP.Get(hist_eff_type+"_Mu_Pt_Efficiency_observed_sub") )[bool(args.flavour == "mu")]
+
+  print("Reading histogram {0} from file {1}".format(hist_SUSY_TP.GetName(), file_SUSY_TP_path))
+
+  hist_SUSY_TP.SetLineColor(kMagenta)
+  hist_SUSY_TP.SetMarkerColor(kMagenta)
+
+  hist_SUSY_TP.Draw("E0 SAME")
+  legend.AddEntry(hist_SUSY_TP, "SUSY Tag & Probe", "P")
+
   # ----------------------------
   # TRUTH Tag & Probe efficiency
   # ----------------------------
@@ -217,11 +248,6 @@ def plotter_flavours( eff_type ):
   print("------------------------------------------------------------------------------------------")
 
   file_TRUTH_TP = TFile(file_TRUTH_TP_path)
-  
-  if eff_type == "real":
-      hist_eff_type = "Real"
-  elif eff_type == "fake":
-      hist_eff_type = "Fake"
   
   if args.closure:
       hist_TRUTH_TP = ( file_TRUTH_TP.Get(hist_eff_type+"_El_Pt_Efficiency_expectedbkg"), file_TRUTH_TP.Get(hist_eff_type+"_Mu_Pt_Efficiency_expectedbkg") )[bool(args.flavour == "mu")]

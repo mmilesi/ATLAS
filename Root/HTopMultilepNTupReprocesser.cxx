@@ -1233,14 +1233,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     TH1D* hist_nominal_pt_YES_TM(nullptr);
     TH1D* hist_nominal_pt_NO_TM(nullptr);
-    
+
     if ( m_useTrigMatchingInfo ) {
 
         hist_nominal_pt_YES_TM = (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second;
         hist_nominal_pt_NO_TM  = (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second;
 
     }
-    
+
     // Get the number of bins. Use nominal
 
     int nbins_pt = hist_nominal_pt->GetNbinsX()+1;
@@ -1320,39 +1320,39 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 	    // If this bin is not corresponding to *this* systematic bin, then get an error of 0
 
 	    if ( !m_useTEfficiency ) {
-		
+
 		eff_pt = hist_nominal_pt->GetBinContent(p);
-		
+
 		if ( m_useTrigMatchingInfo ) {
 		  eff_pt = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinContent(p) : hist_nominal_pt_NO_TM->GetBinContent(p);
 		}
-		
+
 		if ( isStat ) {
-		  
+
 		  eff_pt_err_up = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
 		  eff_pt_err_dn = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
-		  
+
 		  if ( m_useTrigMatchingInfo ) {
-		  
-		    if ( readNominalPt ) { 
+
+		    if ( readNominalPt ) {
 		      eff_pt_err_up = eff_pt_err_dn = 0;
 		    } else {
 		      eff_pt_err_up = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinError(p) : hist_nominal_pt_NO_TM->GetBinError(p);
 		      eff_pt_err_dn = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinError(p) : hist_nominal_pt_NO_TM->GetBinError(p);
 		    }
-		  
+
 		  }
-		
+
 		} else {
-		
+
 		  eff_pt_err_up = (histograms->find(syskey_up_pt)->second).find(key_pt)->second->GetBinContent(p);
 		  eff_pt_err_dn = (histograms->find(syskey_dn_pt)->second).find(key_pt)->second->GetBinContent(p);
-		  
+
 		  if ( m_useTrigMatchingInfo ) {
 		    eff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find(syskey_up_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_up_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
 		    eff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find(syskey_dn_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_dn_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
 		  }
-		
+
 		}
 
 	    } else {

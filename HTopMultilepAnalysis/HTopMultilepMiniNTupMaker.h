@@ -208,19 +208,6 @@ private:
   Int_t           m_nJets_OR_T;
   Int_t           m_nJets_OR_T_MV2c10_70;
 
-  UInt_t          m_HLT_mu20_iloose_L1MU15;
-  Float_t	  m_HLT_mu20_iloose_L1MU15_PS;
-  UInt_t	  m_HLT_mu50;
-  Float_t	  m_HLT_mu50_PS;
-  UInt_t	  m_HLT_e24_lhmedium_L1EM18VH;
-  Float_t	  m_HLT_e24_lhmedium_L1EM18VH_PS;
-  UInt_t	  m_HLT_e24_lhmedium_L1EM20VH;
-  Float_t	  m_HLT_e24_lhmedium_L1EM20VH_PS;
-  UInt_t	  m_HLT_e60_lhmedium;
-  Float_t	  m_HLT_e60_lhmedium_PS;
-  UInt_t	  m_HLT_e120_lhloose;
-  Float_t	  m_HLT_e120_lhloose_PS;
-
   Float_t	  m_lep_ID_0;
   Float_t	  m_lep_Pt_0;
   Float_t	  m_lep_E_0;
@@ -244,6 +231,7 @@ private:
   Float_t	  m_lep_ptVarcone20_0;
   Float_t	  m_lep_ptVarcone30_0;
   Char_t	  m_lep_isTrigMatch_0;
+  Char_t	  m_lep_isTrigMatchDLT_0;
   Char_t	  m_lep_isPrompt_0;
   Char_t	  m_lep_isBrems_0;
   Char_t	  m_lep_isFakeLep_0;
@@ -287,6 +275,7 @@ private:
   Float_t	  m_lep_ptVarcone20_1;
   Float_t	  m_lep_ptVarcone30_1;
   Char_t	  m_lep_isTrigMatch_1;
+  Char_t	  m_lep_isTrigMatchDLT_1;
   Char_t	  m_lep_isPrompt_1;
   Char_t	  m_lep_isBrems_1;
   Char_t	  m_lep_isFakeLep_1;
@@ -330,6 +319,7 @@ private:
   Float_t	  m_lep_ptVarcone20_2;
   Float_t	  m_lep_ptVarcone30_2;
   Char_t	  m_lep_isTrigMatch_2;
+  Char_t	  m_lep_isTrigMatchDLT_2;
   Char_t	  m_lep_isPrompt_2;
   Char_t	  m_lep_isBrems_2;
   Char_t	  m_lep_isFakeLep_2;
@@ -470,6 +460,16 @@ private:
   std::vector<float> m_lep_ProbeVec_SLT_Pt;
   std::vector<float> m_lep_TagVec_DLT_Pt;
   std::vector<float> m_lep_ProbeVec_DLT_Pt;  
+
+  std::vector<float> m_el_TagVec_SLT_Pt;
+  std::vector<float> m_el_ProbeVec_SLT_Pt;
+  std::vector<float> m_el_TagVec_DLT_Pt;
+  std::vector<float> m_el_ProbeVec_DLT_Pt;  
+
+  std::vector<float> m_mu_TagVec_SLT_Pt;
+  std::vector<float> m_mu_ProbeVec_SLT_Pt;
+  std::vector<float> m_mu_TagVec_DLT_Pt;
+  std::vector<float> m_mu_ProbeVec_DLT_Pt;  
 
   /** Jets AFTER overlap removal */
 
