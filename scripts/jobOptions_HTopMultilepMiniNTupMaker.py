@@ -28,7 +28,6 @@ trigbits_branches    = ["HLT_.*"]
 
 jet_branches         = ["lead_jetPt","lead_jetEta","lead_jetPhi","sublead_jetPt","sublead_jetEta","sublead_jetPhi"]
 
-
 trigmatch_branches   = [
         		# 2015
         		"electron_match_HLT_e24_lhmedium_L1EM20VH",
@@ -178,7 +177,7 @@ lep_branches         = ["lep_ID_0",
 			"lep_SFReco_1",
 			"lep_SFTTVA_1",
 			"lep_SFObjLoose_1",
-			"lep_SFObjTight_1",			
+			"lep_SFObjTight_1",
 			#
                         "lep_ID_2",
                         "lep_Index_2",
@@ -237,9 +236,9 @@ lep_branches         = ["lep_ID_0",
 			"lep_SFReco_2",
 			"lep_SFTTVA_2",
 			"lep_SFObjLoose_2",
-			"lep_SFObjTight_2",			
+			"lep_SFObjTight_2",
                       ]
-		      
+
 tau_branches        = ["tau_pt_0","tau_eta_0","tau_phi_0","tau_charge_0","tau_BDTJetScore_0","tau_JetBDTSigLoose_0","tau_JetBDTSigMedium_0","tau_JetBDTSigTight_0","tau_numTrack_0","tau_SFTight_0","tau_SFLoose_0"]
 
 MET_truth_branches  = ["MET_Truth_px","MET_Truth_py","MET_Truth_phi","MET_Truth_sumet"]
@@ -252,7 +251,7 @@ branches_to_copy = eventweight_branches + event_branches + trigbits_branches + j
 #
 # Add here branches that need to be used (hence activated), but not need to be copied over
 #
-jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_E","m_jet_flavor_truth_label","m_jet_flavor_truth_label_ghost"]
+jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_E","m_jet_flavor_weight_MV2c10","m_jet_flavor_truth_label","m_jet_flavor_truth_label_ghost"]
 jet_truth_vec_branches = ["m_truth_jet_pt","m_truth_jet_eta","m_truth_jet_phi","m_truth_jet_e"]
 
 branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches + trigmatch_branches + vec_lep_branches
@@ -292,8 +291,9 @@ for branch in branches_to_copy:
 # Instantiate the AlgSelect algorithm to skim the input ntuple
 #
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
+algskim.addCut("RunYear==2015 || RunYear==2016")
 algskim.addCut("passEventCleaning==1")
-algskim.addCut("dilep_type>0||trilep_type>0")
+algskim.addCut("(dilep_type>0 && lep_Pt_1>7e3) || (trilep_type>0 && lep_Pt_2>7e3)") # keep only dilepton and trilepton events, ensuring minimal pT > 7 GeV
 #algskim.addCut("(dilep_type>0&&nJets_OR_T>=2&&nJets_OR_T_MV2c10_70>=1)||(trilep_type>0&&nJets_OR>=2&&nJets_OR_MV2c10_70>=1)")
 algskim.histName("cutflow")
 

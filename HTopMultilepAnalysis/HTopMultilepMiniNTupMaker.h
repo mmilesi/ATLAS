@@ -39,6 +39,7 @@ namespace MiniNTupMaker {
     eventObj():
       isMC(0), isSS01(0), isSS12(0),
       dilep(0), trilep(0),
+      nbjets(0),
       weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
     { };
 
@@ -47,6 +48,7 @@ namespace MiniNTupMaker {
     char isSS12;
     char dilep;
     char trilep;
+    int  nbjets;
 
     float weight_event;
     float weight_event_trig;
@@ -56,15 +58,28 @@ namespace MiniNTupMaker {
 
   };
 
+  class bjetObj {
+
+  public:
+    bjetObj():
+      pt(-1.0),eta(-999.0),phi(-999.0)
+      { };
+
+      float pt;
+      float eta;
+      float phi;
+  };
+
   class leptonObj {
 
   public:
     leptonObj():
-      pt(-1.0),eta(-999.0),etaBE2(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
+      pt(-1.0),eta(-999.0),etaBE2(-999.0),phi(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
       pid(0),isolated(0),trackisooverpt(-1.0),caloisooverpt(-1.0),tight(0),
       trigmatched(0),trigmatched_SLT(0),trigmatched_DLT(0),
       prompt(0),fake(0),brems(0),qmisid(0),convph(0),
       tag_SLT(0),tag_DLT(0),
+      deltaRClosestBJet(-1.0),
       SFIDLoose(1.0),
       SFIDTight(1.0),
       SFTrigLoose(1.0),
@@ -82,6 +97,7 @@ namespace MiniNTupMaker {
     float pt;
     float eta;
     float etaBE2;
+    float phi;
     int ID;
     int flavour;
     float charge;
@@ -104,7 +120,7 @@ namespace MiniNTupMaker {
     int  truthOrigin;
     char tag_SLT;
     char tag_DLT;
-
+    float deltaRClosestBJet;
 
     float SFIDLoose;
     float SFIDTight;
@@ -120,32 +136,38 @@ namespace MiniNTupMaker {
     float SFObjTight;
 
   };
- 
+
   struct SorterEta {
-    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const { 
+    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
        return  fabs(lep0.get()->eta) > fabs(lep1.get()->eta); /* sort in descending order of |eta| */
     }
   };
-  
+
   struct SorterPt {
-    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const { 
+    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
        return  lep0.get()->pt > lep1.get()->pt; /* sort in descending order of pT (get highest pT first) */
     }
-  };  
-  
+  };
+
   struct SorterTrackIsoOverPt {
-    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const { 
+    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
        if ( lep0.get()->trackisooverpt == lep1.get()->trackisooverpt ) { /* if they have same iso (aka 0 ), use pT as criterion */
          return lep0.get()->pt > lep1.get()->pt;
        }
        return  lep0.get()->trackisooverpt < lep1.get()->trackisooverpt; /* sort in ascending order of trackisooverpt (get more isolated first) */
     }
-  };   
-    
+  };
+
+  struct SorterDistanceClosestBJet {
+    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
+       return  lep0.get()->deltaRClosestBJet > lep1.get()->deltaRClosestBJet; /* sort in descending order of DeltaR(lep, closest bjet) (get lep w/ maximal distance first) */
+    }
+  };
+
 }
 
 
-  
+
 class HTopMultilepMiniNTupMaker : public xAH::Algorithm
 {
   // put your configuration variables here as public variables.
@@ -168,7 +190,7 @@ public:
 
   /** Activate if want to define T&P leptons based on truth matching (NB: do this only on TTBar!)  */
   bool m_useTruthTP;
-  
+
   /** Activate if want to define T&P leptons as in SUSY SS analysis (different treatment of ambiguous case where both leptons are T & T.M.  */
   bool m_useSUSYSSTP;
 
@@ -205,6 +227,9 @@ private:
 
   Int_t 	  m_dilep_type;
   Int_t 	  m_trilep_type;
+
+  Int_t           m_nJets_OR;
+  Int_t           m_nJets_OR_MV2c10_70;
   Int_t           m_nJets_OR_T;
   Int_t           m_nJets_OR_T_MV2c10_70;
 
@@ -381,27 +406,27 @@ private:
   std::vector<char> *m_electron_passOR = nullptr; //!
   std::vector<char> *m_muon_passOR     = nullptr; //!
 
-
   /** Reco jets BEFORE overlap removal */
 
   std::vector<float>   *m_jet_pt = nullptr;  //!
   std::vector<float>   *m_jet_eta = nullptr; //!
   std::vector<float>   *m_jet_phi = nullptr; //!
   std::vector<float>   *m_jet_E = nullptr;   //!
+  std::vector<float>   *m_jet_flavor_weight_MV2c10 = nullptr;     //!
   std::vector<int>     *m_jet_flavor_truth_label = nullptr;       //!
   std::vector<int>     *m_jet_flavor_truth_label_ghost = nullptr; //!
 
   /** Indexes of jets that pass overlap removal */
 
-  std::vector<short>   *m_selected_jets   = nullptr;   //!
-  std::vector<short>   *m_selected_jets_T = nullptr; //!
+  std::vector<short>   *m_selected_jets   = nullptr;  //!
+  std::vector<short>   *m_selected_jets_T = nullptr;  //!
 
   /** Truth jets */
 
   std::vector<float>   *m_truth_jet_pt  = nullptr;  //!
-  std::vector<float>   *m_truth_jet_eta = nullptr; //!
-  std::vector<float>   *m_truth_jet_phi = nullptr; //!
-  std::vector<float>   *m_truth_jet_e   = nullptr;   //!
+  std::vector<float>   *m_truth_jet_eta = nullptr;  //!
+  std::vector<float>   *m_truth_jet_phi = nullptr;  //!
+  std::vector<float>   *m_truth_jet_e   = nullptr;  //!
 
   /** Extra branches to be stored in output TTree */
 
@@ -459,17 +484,17 @@ private:
   std::vector<float> m_lep_TagVec_SLT_Pt;
   std::vector<float> m_lep_ProbeVec_SLT_Pt;
   std::vector<float> m_lep_TagVec_DLT_Pt;
-  std::vector<float> m_lep_ProbeVec_DLT_Pt;  
+  std::vector<float> m_lep_ProbeVec_DLT_Pt;
 
   std::vector<float> m_el_TagVec_SLT_Pt;
   std::vector<float> m_el_ProbeVec_SLT_Pt;
   std::vector<float> m_el_TagVec_DLT_Pt;
-  std::vector<float> m_el_ProbeVec_DLT_Pt;  
+  std::vector<float> m_el_ProbeVec_DLT_Pt;
 
   std::vector<float> m_mu_TagVec_SLT_Pt;
   std::vector<float> m_mu_ProbeVec_SLT_Pt;
   std::vector<float> m_mu_TagVec_DLT_Pt;
-  std::vector<float> m_mu_ProbeVec_DLT_Pt;  
+  std::vector<float> m_mu_ProbeVec_DLT_Pt;
 
   /** Jets AFTER overlap removal */
 
@@ -499,6 +524,7 @@ private:
 
   std::shared_ptr<MiniNTupMaker::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<MiniNTupMaker::leptonObj> > m_leptons; //!
+  std::vector< std::shared_ptr<MiniNTupMaker::bjetObj> >   m_bjets;   //!
 
   TRandom3* m_rand; //!
 
@@ -530,6 +556,7 @@ private:
 
   EL::StatusCode getPostOLRIndex( int& idx, const unsigned int& pos, const std::string& lep_type );
   EL::StatusCode triggerMatching ();
+  EL::StatusCode findClosestBJetLep ();
 
   /**
     * @brief  Set which lepton is tag and which is probe for the r/f efficiency measurement
