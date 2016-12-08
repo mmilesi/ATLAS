@@ -20,6 +20,8 @@ parser.add_argument('--treename', dest='treename', action='store', default='nomi
                     help='The input TTree name (default: treename=\'nominal\')')
 parser.add_argument('--queue', dest='queue', action='store', default='short', type=str,
                     help='The PBS batch queue type to be used (\'short\',\'long\', default: queue=\'short\')')
+parser.add_argument('--tag', dest='tag', action='store', default=None, type=str,
+                    help='Add a tag identifier to the submission directory and the destination directory (default: None)')
 
 args = parser.parse_args()
 
@@ -325,18 +327,21 @@ exit 0
     release  = args.release
     treename = args.treename
     queue    = args.queue
+    tag      = args.tag
+    if tag:
+        tag = "_" + tag
 
     job_params = {
 	"release"     :  release,
 	"sample_list" :  samplelist,
 	"inlistcmd"   :  "", # An xAH_run commmand to specify to read an input .txt file with a list of samples --> will be set by the script to non-dummy value only for DATA
-	"sub_dir"     :  "/coepp/cephfs/mel/mmilesi/ttH/PBS/" + prod_ID[0] + "_PBS_HTopTP",  # The path to the submission node (NB: must NOT be under /home : PBS cannot read/write into it!!)
+	"sub_dir"     :  "/coepp/cephfs/mel/mmilesi/ttH/PBS/" + prod_ID[0] + "_PBS" + tag,  # The path to the submission node (NB: must NOT be under /home : PBS cannot read/write into it!!)
 	"inputpath"   :  "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID,
 	"configpath"  :  "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py",
 	"treename"    :  treename,
 	"nevents"     :  int(nevents),
 	"steer_job"   :  steer_job_script,
-	"dest"        :  "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/" + prod_ID[0] + "/" + prod_ID[0] + "_Skim_PBS",
+	"dest"        :  "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/" + prod_ID[0] + "/" + prod_ID[0] + "_Skim_PBS" + tag,
 	"queue"       :  queue,
     }
 

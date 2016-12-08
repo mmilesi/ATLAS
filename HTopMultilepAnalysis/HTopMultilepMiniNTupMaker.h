@@ -79,7 +79,7 @@ namespace MiniNTupMaker {
       trigmatched(0),trigmatched_SLT(0),trigmatched_DLT(0),
       prompt(0),fake(0),brems(0),qmisid(0),convph(0),
       tag_SLT(0),tag_DLT(0),
-      deltaRClosestBJet(-1.0),
+      deltaRClosestBJet(-1.0),massClosestBJet(-1.0),
       SFIDLoose(1.0),
       SFIDTight(1.0),
       SFTrigLoose(1.0),
@@ -121,6 +121,7 @@ namespace MiniNTupMaker {
     char tag_SLT;
     char tag_DLT;
     float deltaRClosestBJet;
+    float massClosestBJet;
 
     float SFIDLoose;
     float SFIDTight;
@@ -164,6 +165,12 @@ namespace MiniNTupMaker {
     }
   };
 
+  struct SorterMassClosestBJet {
+    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
+       return  lep0.get()->massClosestBJet > lep1.get()->massClosestBJet; /* sort in descending order of M(lep, closest bjet) (get lep w/ maximal mass w/ closest bjet first --> assume it's less likely to be fake) */
+    }
+  };
+
 }
 
 
@@ -193,6 +200,9 @@ public:
 
   /** Activate if want to define T&P leptons as in SUSY SS analysis (different treatment of ambiguous case where both leptons are T & T.M.  */
   bool m_useSUSYSSTP;
+
+  /** Choose which criterion to use to solve ambiguous case of both T (TM) leptons in T&P Fake SS CR */
+  std::string m_ambiSolvingCrit;
 
 private:
 

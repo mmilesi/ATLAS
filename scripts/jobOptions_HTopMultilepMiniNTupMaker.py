@@ -274,7 +274,10 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
 	                          "m_useAlgSelect"         : True,
 				  "m_addStreamEventsHist"  : False,
 				  "m_useTruthTP"           : False,
-				  "m_useSUSYSSTP"          : False,
+				  "m_useSUSYSSTP"          : True,
+                                  #"m_ambiSolvingCrit"      : "Pt",
+                                  #"m_ambiSolvingCrit"     : "deltaRClosestBJet",
+                                  "m_ambiSolvingCrit"     : "massClosestBJet",
                                 }
 
 # Instantiate the NTupleSvc algorithm
