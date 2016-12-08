@@ -141,11 +141,10 @@ def plotter_flavours( eff_type ):
 
   if args.closure:
       if "SLT" in args.trigger:
-          #file_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21/LeptonEfficiencies.root"
           file_TP_path = basepath + "MMClosure_v23_HTopTP/OutputPlots_MMClosureRates_HTopTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
       elif "DLT" in args.trigger:
-          #file_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21/LeptonEfficiencies.root"
-          file_TP_path = basepath + "MMClosure_v23_HTopTP/OutputPlots_MMClosureRates_HTopTagProbe_NoCorr_DLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          #file_TP_path = basepath + "MMClosure_v23_HTopTP/OutputPlots_MMClosureRates_HTopTagProbe_NoCorr_DLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          file_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
 
   print("------------------------------------------------------------------------------------------")
   print("HTop Tag & Probe efficiency - Opening file:\n{0}".format(file_TP_path))
@@ -210,11 +209,14 @@ def plotter_flavours( eff_type ):
 
   if args.closure:
       if "SLT" in args.trigger:
-          #file_SUSY_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_25ns_v21_Retry/LeptonEfficiencies.root"
-          file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_massClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_deltaRClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
       elif "DLT" in args.trigger:
-          #file_SUSY_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_25ns_v21_Retry/LeptonEfficiencies.root"
-          file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_massClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_deltaRClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+
 
   print("------------------------------------------------------------------------------------------")
   print("New Tag & Probe efficiency - Opening file:\n{0}".format(file_SUSY_TP_path))
@@ -243,11 +245,9 @@ def plotter_flavours( eff_type ):
 
   if args.closure:
       if "SLT" in args.trigger:
-          #file_TRUTH_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21/LeptonEfficiencies.root"
           file_TRUTH_TP_path = basepath + "MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
       elif "DLT" in args.trigger:
-          #file_TRUTH_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21/LeptonEfficiencies.root"
-          file_TRUTH_TP_path = basepath + "MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          file_TRUTH_TP_path = basepath + "MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_DLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
 
   print("------------------------------------------------------------------------------------------")
   print("TRUTH Tag & Probe efficiency - Opening file:\n{0}".format(file_TRUTH_TP_path))
@@ -276,15 +276,14 @@ def plotter_flavours( eff_type ):
   # Likelihood efficiency
   # ---------------------
 
-  """
+  #"""
   LH_init_path = basepath + "blahblah"
 
   if args.closure:
       if "SLT" in args.trigger:
-          LH_init_path = basepath + "MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/LeptonEfficiencies_LH/"
+          LH_init_path = basepath + "MMClosure_v23_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/LeptonEfficiencies_LH/"
       elif "DLT" in args.trigger:
-          LH_init_path = basepath + "MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/LeptonEfficiencies_LH/"
-          #LH_init_path = basepath + "MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuINCLel_DLT_25ns_v21/LeptonEfficiencies_LH/"
+          LH_init_path = basepath + "MMClosure_v23_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/LeptonEfficiencies_LH/"
 
   hist_LH_list = []
 
@@ -382,9 +381,9 @@ def plotter_flavours( eff_type ):
     histpair[1].Draw("E0,SAME")
 
     legend.AddEntry(histpair[1], "Likelihood - " +  histpair[0], "P")
-    legend.Draw()
+    #legend.Draw()
 
-  """
+  #"""
   legend.Draw()
 
   leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
