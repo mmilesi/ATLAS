@@ -10,7 +10,8 @@ list_flavCRs = ["mumu","elel","of","incl"]
 
 luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
                  "ICHEP 2015+2016 DS":13.20768,       # August 2016
-                 "POST-ICHEP 2015+2016 DS":22.07036   # October 2016
+                 "POST-ICHEP 2015+2016 DS":22.07036,  # October 2016
+                 "FULL 2015+2016 DS":36.4702          # December 2016
                }
 
 triggers = ["SLT","DLT"]
@@ -24,16 +25,16 @@ parser.add_argument("--flavFakeCR", dest="flavFakeCR", action="store", default="
                     help="The flavour composition of the CR where FAKE efficiencies were measured. Use space-separated args. Full list of available options:\n{0}".format(list_flavCRs))
 parser.add_argument("--closure", dest="closure", action="store_true", default=False,
                     help="Run on ttbar to perform MM closure test. Default is False, i.e., the code will run on data.")
-parser.add_argument('--lumi', dest='lumi', action='store', type=float, default=luminosities["ICHEP 2015+2016 DS"],
-                    help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in luminosities.iteritems() ) + ". Default is {0}".format(luminosities["ICHEP 2015+2016 DS"] ) )
+parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=luminosities["FULL 2015+2016 DS"],
+                    help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in luminosities.iteritems() ) + ". Default is {0}".format(luminosities["FULL 2015+2016 DS"] ) )
 parser.add_argument('--trigger', dest='trigger', action='store', default=triggers[0], type=str, nargs='+',
                     help='The trigger strategy to be used. Choose one of:\n{0}.\nIf this option is not specified, default is {1}'.format(triggers,triggers[0]))
 parser.add_argument("--triggerEff", dest="triggerEff", action="store_true", default=False,
                     help="Make comparison plots for trigger efficiency.")
-		    
+
 args = parser.parse_args()
 
-from ROOT import gROOT, gDirectory, gStyle, gPad, TPad, TH1, TH1D, TH2D, TFile, TCanvas, TColor, TLegend, TLatex, TLine, kRed, kBlue, kAzure, kCyan, kBlack
+from ROOT import gROOT, gDirectory, gStyle, gPad, TPad, TH1, TH1D, TH2D, TFile, TCanvas, TColor, TLegend, TLatex, TLine, kRed, kBlue, kAzure, kCyan, kBlack, kMagenta
 
 gROOT.Reset()
 gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
@@ -125,32 +126,32 @@ def plot2Dhist():
 
 def plotter_flavours( eff_type ):
 
+  if eff_type == "real":
+      hist_eff_type = "Real"
+  elif eff_type == "fake":
+      hist_eff_type = "Fake"
+
   basepath = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/"
 
-  # ----------------------
-  # Tag & Probe efficiency
-  # ----------------------
+  # ---------------------------
+  # HTop Tag & Probe efficiency
+  # ---------------------------
 
   file_TP_path = basepath + "blahblah"
 
   if args.closure:
       if "SLT" in args.trigger:
-          file_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21/LeptonEfficiencies.root"
-          print "here"
+          file_TP_path = basepath + "MMClosure_v23_HTopTP/OutputPlots_MMClosureRates_HTopTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
       elif "DLT" in args.trigger:
-          file_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21/LeptonEfficiencies.root"
+          #file_TP_path = basepath + "MMClosure_v23_HTopTP/OutputPlots_MMClosureRates_HTopTagProbe_NoCorr_DLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          file_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
 
   print("------------------------------------------------------------------------------------------")
-  print("Tag & Probe efficiency - Opening file:\n{0}".format(file_TP_path))
+  print("HTop Tag & Probe efficiency - Opening file:\n{0}".format(file_TP_path))
   print("------------------------------------------------------------------------------------------")
 
   file_TP = TFile(file_TP_path)
-  
-  if eff_type == "real":
-      hist_eff_type = "Real"
-  elif eff_type == "fake":
-      hist_eff_type = "Fake"
-  
+
   if args.closure:
       hist_TP = ( file_TP.Get(hist_eff_type+"_El_Pt_Efficiency_expectedbkg"), file_TP.Get(hist_eff_type+"_Mu_Pt_Efficiency_expectedbkg") )[bool(args.flavour == "mu")]
   else:
@@ -191,7 +192,7 @@ def plotter_flavours( eff_type ):
   leg_lumi.SetNDC()
 
   hist_TP.Draw("E0")
-  legend.AddEntry(hist_TP, "Tag & Probe", "P")
+  legend.AddEntry(hist_TP, "HTop Tag & Probe (ICHEP)", "P")
 
   # Add a vertical line to highlight relevant bins
 
@@ -199,6 +200,42 @@ def plotter_flavours( eff_type ):
   refl.SetLineWidth(2)
   refl.SetLineStyle(2)
   refl.Draw("SAME")
+
+  # ---------------------------
+  # New Tag & Probe efficiency
+  # ---------------------------
+
+  file_SUSY_TP_path = basepath + "blahblah"
+
+  if args.closure:
+      if "SLT" in args.trigger:
+          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_massClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_deltaRClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+      elif "DLT" in args.trigger:
+          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_massClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_deltaRClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+
+
+  print("------------------------------------------------------------------------------------------")
+  print("New Tag & Probe efficiency - Opening file:\n{0}".format(file_SUSY_TP_path))
+  print("------------------------------------------------------------------------------------------")
+
+  file_SUSY_TP = TFile(file_SUSY_TP_path)
+
+  if args.closure:
+      hist_SUSY_TP = ( file_SUSY_TP.Get(hist_eff_type+"_El_Pt_Efficiency_expectedbkg"), file_SUSY_TP.Get(hist_eff_type+"_Mu_Pt_Efficiency_expectedbkg") )[bool(args.flavour == "mu")]
+  else:
+      hist_SUSY_TP = ( file_SUSY_TP.Get(hist_eff_type+"_El_Pt_Efficiency_observed_sub"), file_SUSY_TP.Get(hist_eff_type+"_Mu_Pt_Efficiency_observed_sub") )[bool(args.flavour == "mu")]
+
+  print("Reading histogram {0} from file {1}".format(hist_SUSY_TP.GetName(), file_SUSY_TP_path))
+
+  hist_SUSY_TP.SetLineColor(kMagenta)
+  hist_SUSY_TP.SetMarkerColor(kMagenta)
+
+  hist_SUSY_TP.Draw("E0 SAME")
+  legend.AddEntry(hist_SUSY_TP, "HTop Tag & Probe (NEW)", "P")
 
   # ----------------------------
   # TRUTH Tag & Probe efficiency
@@ -208,21 +245,16 @@ def plotter_flavours( eff_type ):
 
   if args.closure:
       if "SLT" in args.trigger:
-          file_TRUTH_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21/LeptonEfficiencies.root"
+          file_TRUTH_TP_path = basepath + "MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
       elif "DLT" in args.trigger:
-          file_TRUTH_TP_path = basepath + "MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21/LeptonEfficiencies.root"
-  
+          file_TRUTH_TP_path = basepath + "MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_DLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+
   print("------------------------------------------------------------------------------------------")
   print("TRUTH Tag & Probe efficiency - Opening file:\n{0}".format(file_TRUTH_TP_path))
   print("------------------------------------------------------------------------------------------")
 
   file_TRUTH_TP = TFile(file_TRUTH_TP_path)
-  
-  if eff_type == "real":
-      hist_eff_type = "Real"
-  elif eff_type == "fake":
-      hist_eff_type = "Fake"
-  
+
   if args.closure:
       hist_TRUTH_TP = ( file_TRUTH_TP.Get(hist_eff_type+"_El_Pt_Efficiency_expectedbkg"), file_TRUTH_TP.Get(hist_eff_type+"_Mu_Pt_Efficiency_expectedbkg") )[bool(args.flavour == "mu")]
   else:
@@ -244,17 +276,17 @@ def plotter_flavours( eff_type ):
   # Likelihood efficiency
   # ---------------------
 
+  #"""
   LH_init_path = basepath + "blahblah"
 
   if args.closure:
       if "SLT" in args.trigger:
-          LH_init_path = basepath + "MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/LeptonEfficiencies_LH/"
+          LH_init_path = basepath + "MMClosure_v23_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/LeptonEfficiencies_LH/"
       elif "DLT" in args.trigger:
-          LH_init_path = basepath + "MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/LeptonEfficiencies_LH/"
-          #LH_init_path = basepath + "MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuINCLel_DLT_25ns_v21/LeptonEfficiencies_LH/"
-	  
+          LH_init_path = basepath + "MMClosure_v23_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/LeptonEfficiencies_LH/"
+
   hist_LH_list = []
-  
+
   flav_comp_list = args.flavFakeCR
 
   if ( args.flavour == "mu" and "elel" in flav_comp_list ): flav_comp_list.remove("elel")
@@ -274,7 +306,7 @@ def plotter_flavours( eff_type ):
          hist_LH_name = "r_hist"
     elif eff_type == "fake":
          hist_LH_name = "f_hist"
-	
+
     hist_LH = file_LH.Get(hist_LH_name)
 
     print("Reading histogram {0} from file {1} - index : {2}".format(hist_LH.GetName(), file_LH_path, idx))
@@ -349,7 +381,10 @@ def plotter_flavours( eff_type ):
     histpair[1].Draw("E0,SAME")
 
     legend.AddEntry(histpair[1], "Likelihood - " +  histpair[0], "P")
-    legend.Draw()
+    #legend.Draw()
+
+  #"""
+  legend.Draw()
 
   leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
   leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
@@ -359,7 +394,7 @@ def plotter_flavours( eff_type ):
 
 
 def plotter_triggereff( eff_type ):
-    
+
     if "SLT" in args.trigger:
         basepath = "$HOME/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/OutputPlots_TTbar_RealFakeLep_TriggerEff_SLT/EfficiencyPlots_TriggerEff/BasicPlots/"
     elif "DLT" in args.trigger:
@@ -368,19 +403,19 @@ def plotter_triggereff( eff_type ):
     filename_L     = "RealFake_L_TriggerEfficiency.root"
     filename_T     = "RealFake_T_TriggerEfficiency.root"
     filename_AntiT = "RealFake_AntiT_TriggerEfficiency.root"
-    
+
     file_L     = TFile(basepath + filename_L)
     file_T     = TFile(basepath + filename_T)
     file_AntiT = TFile(basepath + filename_AntiT)
-    
+
     if   args.flavour == "mu": flavour = "Mu"
     elif args.flavour == "el": flavour = "El"
-   
+
     if   eff_type == "real": efficiency = "Real"
     elif eff_type == "fake": efficiency = "Fake"
-    
+
     variable = "Pt"
-    
+
     append = ("_observed_sub","_expectedbkg")[bool(args.closure)]
 
     histname_L     = efficiency + "_" + flavour + "_" + variable + "_L_TriggerEfficiency" + append
@@ -392,24 +427,24 @@ def plotter_triggereff( eff_type ):
     print("Try to get histogram:\n{0}\nfrom file:\n{1}\n".format(histname_AntiT,basepath + filename_AntiT))
 
     file_L.cd()
-    hist_L = file_L.Get(histname_L)    
+    hist_L = file_L.Get(histname_L)
     hist_L.SetDirectory(0)
-    
+
     file_T.cd()
-    hist_T = file_T.Get(histname_T)   
+    hist_T = file_T.Get(histname_T)
     hist_T.SetDirectory(0)
-    
+
     file_AntiT.cd()
-    hist_AntiT = file_AntiT.Get(histname_AntiT) 
+    hist_AntiT = file_AntiT.Get(histname_AntiT)
     hist_AntiT.SetDirectory(0)
-    
+
     hist_L.SetLineStyle(1)
     hist_L.SetLineColor(kBlack)
-    
+
     hist_T.SetLineStyle(2)
     hist_T.SetLineColor(kBlack)
     hist_T.SetMarkerStyle(24)
-    
+
     delta_eff = hist_L.Clone("DeltaEff")
     delta_eff.SetXTitle(hist_L.GetXaxis().GetTitle())
     delta_eff.SetYTitle("#Delta#varepsilon/#varepsilon [%]")
@@ -424,7 +459,7 @@ def plotter_triggereff( eff_type ):
     delta_eff.SetLineColor(kRed)
     delta_eff.SetMarkerColor(kRed)
     delta_eff.SetMarkerSize(1)
-    
+
     delta_eff.Add(hist_T, -1)
     delta_eff.Divide(hist_T)
     delta_eff.Scale(100.0)
@@ -447,7 +482,7 @@ def plotter_triggereff( eff_type ):
     leg_lumi.SetNDC()
 
     # ---------------------------------------------------------------
-        
+
     c = TCanvas("c1","Temp",50,50,800,600)
 
     pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
@@ -458,55 +493,55 @@ def plotter_triggereff( eff_type ):
     pad2.Draw()
 
     pad1.cd()
-    
+
     hist_L.GetXaxis().SetLabelSize(0)
     hist_L.GetXaxis().SetLabelOffset(999)
-    
+
     hist_L.Draw("E0")
-    hist_T.Draw("E0 SAME") 
-    
+    hist_T.Draw("E0 SAME")
+
     if "SLT" in args.trigger:
-    
-        if args.flavour == "el": 
-            
+
+        if args.flavour == "el":
+
 	    refl_vert0 = TLine(26.0,hist_L.GetMinimum(),26.0,hist_L.GetMaximum())
             refl_vert0.SetLineStyle(2)
             refl_vert0.SetLineWidth(2)
             refl_vert0.Draw("SAME")
-    
+
             refl_vert1 = TLine(60.0,hist_L.GetMinimum(),60.0,hist_L.GetMaximum())
             refl_vert1.SetLineStyle(2)
             refl_vert1.SetLineWidth(2)
             refl_vert1.Draw("SAME")
-	    
+
             refl_vert2 = TLine(140.0,hist_L.GetMinimum(),140.0,hist_L.GetMaximum())
             refl_vert2.SetLineStyle(2)
             refl_vert2.SetLineWidth(2)
             refl_vert2.Draw("SAME")
-        
-	elif args.flavour == "mu": 
-	   
+
+	elif args.flavour == "mu":
+
 	    refl_vert0 = TLine(26.0,hist_L.GetMinimum(),26.0,hist_L.GetMaximum())
             refl_vert0.SetLineStyle(2)
             refl_vert0.SetLineWidth(2)
             refl_vert0.Draw("SAME")
-            
+
 	    refl_vert1 = TLine(50.0,hist_L.GetMinimum(),50.0,hist_L.GetMaximum())
             refl_vert1.SetLineStyle(2)
             refl_vert1.SetLineWidth(2)
             refl_vert1.Draw("SAME")
-	    
+
     elif "DLT" in args.trigger:
-        
-	if args.flavour == "el": 
-       
+
+	if args.flavour == "el":
+
 	    refl_vert0 = TLine(17.0,hist_L.GetMinimum(),17.0,hist_L.GetMaximum())
             refl_vert0.SetLineStyle(2)
             refl_vert0.SetLineWidth(2)
             refl_vert0.Draw("SAME")
-	
-	elif args.flavour == "mu": 
-	    
+
+	elif args.flavour == "mu":
+
 	    refl_vert0 = TLine(22.0,hist_L.GetMinimum(),22.0,hist_L.GetMaximum())
             refl_vert0.SetLineStyle(2)
             refl_vert0.SetLineWidth(2)
@@ -517,14 +552,14 @@ def plotter_triggereff( eff_type ):
     leg_lumi.DrawLatex(0.6,0.2,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
 
     pad2.cd()
-    
+
     delta_eff.Draw("E0")
-    
+
     refl = TLine(delta_eff.GetBinLowEdge(1), 0.0, delta_eff.GetBinLowEdge(delta_eff.GetNbinsX()+1), 0.0)
     refl.SetLineStyle(2)
     refl.SetLineWidth(2)
     refl.Draw("SAME")
-    
+
     outpath = basepath
     if outpath[-1] == '/':
       outpath = outpath[:-1]
@@ -541,5 +576,5 @@ if __name__ == "__main__":
     else:
         plotter_flavours("real")
         plotter_flavours("fake")
-    
+
     #plot2Dhist()

@@ -2,7 +2,7 @@
 
 import glob, os, sys, subprocess, shutil, argparse, datetime
 
-samplescsv = os.path.abspath(os.path.curdir) + "/HTopMultilepAnalysis/PlotUtils/Files/samples2015_HTopMultilep_25ns.csv"
+samplescsv = os.path.abspath(os.path.curdir) + "/HTopMultilepAnalysis/PlotUtils/Files/samples_HTopMultilep_Priority1.csv"
 
 sys.path.append(os.path.abspath(os.path.curdir)+"/HTopMultilepAnalysis/PlotUtils/")
 from Core import NTupleTools, DatasetManager, listifyInputFiles

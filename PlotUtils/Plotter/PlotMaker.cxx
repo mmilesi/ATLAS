@@ -270,7 +270,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
   lepton_flavours.push_back("Mu");
 
   vector<string> variables;
-  variables.push_back("Eta");
+  //variables.push_back("Eta");
   variables.push_back("Pt");
   //variables.push_back("NJets");
 
@@ -436,7 +436,7 @@ void PlotRateEff_DiffSamples( vector< pair<string,string> >& SAMPLE_LIST,
       legend->Draw();
 
       leg_ATLAS->DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 13.2 fb^{-1}");
+      leg_lumi->DrawLatex(0.6,0.27,"#sqrt{s} = 13 TeV, #int L dt = 22.1 fb^{-1}");
 
       string prepend = ( FLAV_COMP == "Inclusive" ) ? "" : ( FLAV_COMP + "_" );
       string outputname = prepend + lepton_flavours.at(iFlav) + "Probe" + variables.at(iVar) + "_RealFake" + "_" + RATE_OR_EFF + "_" + DATA_TYPE + "." + EXTENSION;
@@ -701,14 +701,18 @@ void execute_DiffSamples() {
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_25ns_v20_02/","t#bar{t} non allhad"));
   //vec.push_back(make_pair("../OutputPlots_MMClosureRates_NoCorrections_TTBarSemilep_25ns_v20_02/","t#bar{t} semilep"));
  
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v19_v20Setup_DDQMisID/","Data (w/sub.) - ICHEP (v19)"));
-  vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v20_04_DDQMisID_ICHEPBinning/","Data (w/sub.) - v20-04"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v19_v20Setup_DDQMisID/","Data (w/sub.) - ICHEP (v19)"));
+  //vec.push_back(make_pair("../OutputPlots_MMRates_25ns_v20_04_DDQMisID_ICHEPBinning/","Data (w/sub.) - v20-04"));
   
-  PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
-  PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","eps");
+  vec.push_back(make_pair("../MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21/","simulation"));
+  vec.push_back(make_pair("../MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_ProbeTM_25ns_v21/","simulation (Probe T.M.)"));
+  vec.push_back(make_pair("../MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_ProbeNOTTM_25ns_v21/","simulation (Probe !T.M.)"));
+  
+  //PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","png");
+  //PlotRateEff_DiffSamples(vec,"Data","Inclusive","Efficiency","eps");
 
-  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","png");
-  //PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","eps");
+  PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","png");
+  PlotRateEff_DiffSamples(vec, "MC","Inclusive","Efficiency","eps");
   
   //PlotRateEff_DiffSamples(vec,"Data","OF","Efficiency","png");
   //PlotRateEff_DiffSamples(vec,"Data","MuMu","Efficiency","png");

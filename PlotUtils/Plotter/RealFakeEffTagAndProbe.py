@@ -32,13 +32,14 @@ g_avaialble_systematics = ["QMisID","AllSimStat"]
 
 g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
                    "ICHEP 2015+2016 DS":13.20768,       # August 2016
-                   "POST-ICHEP 2015+2016 DS":22.07036   # October 2016
+                   "POST-ICHEP 2015+2016 DS":22.07036,  # October 2016
+                   "FULL 2015+2016 DS":36.4702          # December 2016
                  }
 
 g_selections = ["L","T","AntiT"]
 
-parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["ICHEP 2015+2016 DS"],
-                    help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) )
+parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["FULL 2015+2016 DS"],
+                  help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) + ". Default is {0}".format(g_luminosities["FULL 2015+2016 DS"] ) )
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
                   help='List of variables to be considered. Use a space-separated list. If unspecified, will consider pT only.')
 parser.add_argument("--channel", metavar="channel", default="", type=str,
@@ -69,7 +70,10 @@ parser.add_argument("--plots", dest="plots", action="store_true", default=False,
                   help="Produce efficiency plots.")
 parser.add_argument("--triggerEff", dest="triggerEff", action="store", default=None, const=g_selections[0], type=str, nargs="?",
                   help="Measure trigger efficiency for a given lepton selection. The lepton selection can be specified as an optional command line argument to this option (Choose between [" + ",".join( "{0}".format( s ) for s in g_selections ) + "]). If no option is specified, default selection will be {0}".format(g_selections[0]))
-		  
+parser.add_argument("--probeAssignEff", dest="probeAssignEff", action="store_true", default=False,
+                  help="Measure probe assignment efficiency.")
+
+
 args = parser.parse_args()
 
 from ROOT import ROOT, gROOT, Double, TPad, TLine, TH1, TH1D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
@@ -88,16 +92,17 @@ class RealFakeEffTagAndProbe:
 	self.closure    = closure
 	self.nosub      = nosub
 	self.factors    = factors
-	self.triggerEff = None
+	self.triggerEff     = None
+	self.probeAssignEff = None
 
         self.tp_lep = "Probe"
 
-    	self.selections   = {"D":"L","N":"T","AntiN":"AntiT"}
+    	self.selections       = {"D":"L","N":"T","AntiN":"AntiT"}
+        self.efficiencies     = ["Real","Fake"]
 
     	self.__channels       = {"" : ["El","Mu"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
     	#self.__channels      = {"" : ["El"], "ElEl": ["El"], "MuMu": ["Mu"], "OF" : ["El","Mu"]}
         self.__leptons        = []
-    	self.__efficiencies   = ["Real","Fake"] # ["Fake"]
     	self.__variables      = ["Pt"]
     	self.__processes      = []
     	self.__processes_sub  = []
@@ -219,7 +224,7 @@ class RealFakeEffTagAndProbe:
         print("\n".join("{0}".format(lep) for lep in self.__leptons))
         print("********************************************")
         print("Efficiencies to be considered:")
-        print("\n".join("{0}".format(eff) for eff in self.__efficiencies))
+        print("\n".join("{0}".format(eff) for eff in self.efficiencies))
         print("********************************************")
         print("Variables to be considered:")
         print("\n".join("{0}".format(var) for var in self.__variables))
@@ -229,7 +234,7 @@ class RealFakeEffTagAndProbe:
 
         for lep in self.__leptons:
 
-            for eff in self.__efficiencies:
+            for eff in self.efficiencies:
 
                 actual_eff = eff
 
@@ -1040,6 +1045,9 @@ class RealFakeEffTagAndProbe:
 	if self.triggerEff:
             trigeff_file = TFile(savepath+"/BasicPlots/RealFake_"+self.triggerEff+"_TriggerEfficiency.root","RECREATE")
 
+	if self.probeAssignEff:
+            probeassigneff_file = TFile(savepath+"/BasicPlots/RealFake_ProbeAssignEfficiency.root","RECREATE")
+
         for var in self.__variables:
 
 	    for lep in self.__leptons:
@@ -1062,8 +1070,8 @@ class RealFakeEffTagAndProbe:
                 leg_ATLAS.SetNDC()
                 leg_lumi.SetTextSize(0.04)
                 leg_lumi.SetNDC()
-		    
-	        for idx_eff, eff in enumerate(self.__efficiencies):
+
+	        for idx_eff, eff in enumerate(self.efficiencies):
 
                     key  = "_".join((eff,lep,var,"Efficiency",proc,"sub"))
                     if self.closure or self.nosub:
@@ -1095,7 +1103,7 @@ class RealFakeEffTagAndProbe:
 		       hist.Draw("E0")
 		    else:
 		       hist.Draw("E0,SAME")
-		       
+
 		    if self.triggerEff:
 		       copy_hist_name = hist.GetName()
 		       copy_hist_name = copy_hist_name.replace("Efficiency",self.triggerEff+"_TriggerEfficiency")
@@ -1103,15 +1111,25 @@ class RealFakeEffTagAndProbe:
 		       trigeff_file.cd()
 		       copy_hist.Write()
 
+		    if self.probeAssignEff:
+		       copy_hist_name = hist.GetName()
+		       copy_hist_name = copy_hist_name.replace("Efficiency","ProbeAssignEfficiency")
+		       copy_hist = hist.Clone(copy_hist_name)
+		       probeassigneff_file.cd()
+		       copy_hist.Write()
+
                 legend.Draw()
                 leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
                 leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
 
                 canvas_filename = "_".join(("RealFake",lep,var,"Efficiency",proc))
-        
+
 	        if self.triggerEff:
                     canvas_filename = canvas_filename.replace("Efficiency",self.triggerEff+"_TriggerEfficiency")
-		    
+
+	        if self.probeAssignEff:
+                    canvas_filename = canvas_filename.replace("Efficiency","ProbeAssignEfficiency")
+
 		for extension in self.extensionlist:
 		    c.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"."+extension)
 
@@ -1133,7 +1151,7 @@ class RealFakeEffTagAndProbe:
 
   	    for lep in self.__leptons:
 
-	        for idx_eff, eff in enumerate(self.__efficiencies):
+	        for idx_eff, eff in enumerate(self.efficiencies):
 
 	            key_nominal = "_".join( (eff,lep,var,"Efficiency",proc) )
 	            if not self.nosub:
@@ -1569,6 +1587,12 @@ if __name__ == "__main__":
         print("Measuring trigger efficiency for selection {0} ...\n".format(args.triggerEff))
 	eff.triggerEff = args.triggerEff
     	eff.selections = {"D":eff.triggerEff+"AnyTM","N":eff.triggerEff+"TM","AntiN":eff.triggerEff+"AntiTM"}
+
+    if args.probeAssignEff:
+        print("Measuring probe lepton assignment efficiency...\n")
+	eff.probeAssignEff = args.probeAssignEff
+        if "Real" in eff.efficiencies: eff.efficiencies.remove("Real")
+    	eff.selections = {"D":"ProbeTMatchedToAny","N":"ProbeTMatchedToFake","AntiN":"ProbeTMatchedToReal"}
 
     eff.lumi  = args.lumi
     eff.debug = args.debug

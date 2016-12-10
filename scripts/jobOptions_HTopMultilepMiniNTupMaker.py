@@ -28,7 +28,6 @@ trigbits_branches    = ["HLT_.*"]
 
 jet_branches         = ["lead_jetPt","lead_jetEta","lead_jetPhi","sublead_jetPt","sublead_jetEta","sublead_jetPhi"]
 
-
 trigmatch_branches   = [
         		# 2015
         		"electron_match_HLT_e24_lhmedium_L1EM20VH",
@@ -48,11 +47,14 @@ trigmatch_branches   = [
         		"electron_match_HLT_2e17_lhvloose_nod0",
 			"electron_match_HLT_e17_lhloose_mu14",
         		"electron_match_HLT_e17_lhloose_nod0_mu14",
+			"electron_match_HLT_e26_lhmedium_nod0_L1EM22VHI_mu8noL1",
         		"electron_match_HLT_e7_lhmedium_mu24",
         		"muon_match_HLT_mu26_ivarmedium",
         		"muon_match_HLT_mu22_mu8noL1",
 			"muon_match_HLT_e17_lhloose_mu14",
 			"muon_match_HLT_e17_lhloose_nod0_mu14",
+			"muon_match_HLT_e26_lhmedium_nod0_L1EM22VHI_mu8noL1",
+			"muon_match_HLT_e7_lhmedium_nod0_mu24",
         		 # 2015 & 2016
         		"muon_match_HLT_mu50",
                        ]
@@ -79,7 +81,11 @@ lep_branches         = ["lep_ID_0",
 			"lep_isolationFixedCutTight_0",
 			"lep_isolationFixedCutTightTrackOnly_0",
 			"lep_isolationFixedCutLoose_0",
+	  		"lep_topoEtcone20_0",
+	  		"lep_ptVarcone20_0",
+	  		"lep_ptVarcone30_0",
                         "lep_isTrigMatch_0",
+			"lep_isTrigMatchDLT_0",
 			"lep_isPrompt_0",
 			"lep_isBrems_0",
 			"lep_isFakeLep_0",
@@ -134,7 +140,11 @@ lep_branches         = ["lep_ID_0",
 			"lep_isolationFixedCutTight_1",
 			"lep_isolationFixedCutTightTrackOnly_1",
 			"lep_isolationFixedCutLoose_1",
+	  		"lep_topoEtcone20_1",
+	  		"lep_ptVarcone20_1",
+	  		"lep_ptVarcone30_1",
                         "lep_isTrigMatch_1",
+			"lep_isTrigMatchDLT_1",
 			"lep_isPrompt_1",
 			"lep_isBrems_1",
 			"lep_isFakeLep_1",
@@ -167,7 +177,7 @@ lep_branches         = ["lep_ID_0",
 			"lep_SFReco_1",
 			"lep_SFTTVA_1",
 			"lep_SFObjLoose_1",
-			"lep_SFObjTight_1",			
+			"lep_SFObjTight_1",
 			#
                         "lep_ID_2",
                         "lep_Index_2",
@@ -189,7 +199,11 @@ lep_branches         = ["lep_ID_0",
 			"lep_isolationFixedCutTight_2",
 			"lep_isolationFixedCutTightTrackOnly_2",
 			"lep_isolationFixedCutLoose_2",
+	  		"lep_topoEtcone20_2",
+	  		"lep_ptVarcone20_2",
+	  		"lep_ptVarcone30_2",
                         "lep_isTrigMatch_2",
+			"lep_isTrigMatchDLT_2",
 			"lep_isPrompt_2",
 			"lep_isBrems_2",
 			"lep_isFakeLep_2",
@@ -222,8 +236,9 @@ lep_branches         = ["lep_ID_0",
 			"lep_SFReco_2",
 			"lep_SFTTVA_2",
 			"lep_SFObjLoose_2",
-			"lep_SFObjTight_2",			
+			"lep_SFObjTight_2",
                       ]
+
 tau_branches        = ["tau_pt_0","tau_eta_0","tau_phi_0","tau_charge_0","tau_BDTJetScore_0","tau_JetBDTSigLoose_0","tau_JetBDTSigMedium_0","tau_JetBDTSigTight_0","tau_numTrack_0","tau_SFTight_0","tau_SFLoose_0"]
 
 MET_truth_branches  = ["MET_Truth_px","MET_Truth_py","MET_Truth_phi","MET_Truth_sumet"]
@@ -236,7 +251,7 @@ branches_to_copy = eventweight_branches + event_branches + trigbits_branches + j
 #
 # Add here branches that need to be used (hence activated), but not need to be copied over
 #
-jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_E","m_jet_flavor_truth_label","m_jet_flavor_truth_label_ghost"]
+jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_E","m_jet_flavor_weight_MV2c10","m_jet_flavor_truth_label","m_jet_flavor_truth_label_ghost"]
 jet_truth_vec_branches = ["m_truth_jet_pt","m_truth_jet_eta","m_truth_jet_phi","m_truth_jet_e"]
 
 branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches + trigmatch_branches + vec_lep_branches
@@ -258,7 +273,11 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
 				  "m_inputBranches"        : branches_to_activate_str,
 	                          "m_useAlgSelect"         : True,
 				  "m_addStreamEventsHist"  : False,
-				  "m_useTruthTP"           : True,
+				  "m_useTruthTP"           : False,
+				  "m_useSUSYSSTP"          : True,
+                                  #"m_ambiSolvingCrit"      : "Pt",
+                                  #"m_ambiSolvingCrit"     : "deltaRClosestBJet",
+                                  "m_ambiSolvingCrit"     : "massClosestBJet",
                                 }
 
 # Instantiate the NTupleSvc algorithm
@@ -275,9 +294,10 @@ for branch in branches_to_copy:
 # Instantiate the AlgSelect algorithm to skim the input ntuple
 #
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
+algskim.addCut("RunYear==2015 || RunYear==2016")
 algskim.addCut("passEventCleaning==1")
-algskim.addCut("dilep_type>0||trilep_type>0")
-algskim.addCut("(dilep_type>0&&nJets_OR_T>=2&&nJets_OR_T_MV2c10_70>=1)||(trilep_type>0&&nJets_OR>=2&&nJets_OR_MV2c10_70>=1)")
+algskim.addCut("(dilep_type>0 && lep_Pt_1>7e3) || (trilep_type>0 && lep_Pt_2>7e3)") # keep only dilepton and trilepton events, ensuring minimal pT > 7 GeV
+#algskim.addCut("(dilep_type>0&&nJets_OR_T>=2&&nJets_OR_T_MV2c10_70>=1)||(trilep_type>0&&nJets_OR>=2&&nJets_OR_MV2c10_70>=1)")
 algskim.histName("cutflow")
 
 # Add the algorithms to the job.

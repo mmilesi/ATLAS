@@ -17,7 +17,7 @@ parser.add_argument('--closure', dest='closure', action='store_true', default=Fa
 
 args = parser.parse_args()
 
-samplescsv = os.path.abspath(os.path.curdir) + "/HTopMultilepAnalysis/PlotUtils/Files/samples2015_HTopMultilep_25ns.csv"
+samplescsv = os.path.abspath(os.path.curdir) + "/HTopMultilepAnalysis/PlotUtils/Files/samples_HTopMultilep_Priority1.csv"
 
 sys.path.append(os.path.abspath(os.path.curdir)+"/HTopMultilepAnalysis/PlotUtils/")
 from Core import NTupleTools, DatasetManager, listifyInputFiles

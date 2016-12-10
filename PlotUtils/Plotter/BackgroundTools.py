@@ -1,7 +1,7 @@
 import sys, glob, os, array, inspect, math
 
 from ROOT import TFile, TH1, TH1D, TH1I, TH2D, TH2F, TH2I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
-from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
+from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kBlack, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
 
 # glob finds all the pathnames matching a specified pattern.glob.glob(pathname) Return a possibly-empty list of path names that match pathname in which unix wildcards can be used
 
@@ -1103,7 +1103,7 @@ class Background:
                 ratiomc.GetYaxis().SetRangeUser(0.75, 1.25)
                 if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
                     ratiomc.GetYaxis().SetRangeUser(0.3, 1.7)
-		
+
             #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
             pad2.cd()
             #pad2.SetLogy(2)
@@ -1164,6 +1164,13 @@ class Background:
 	      set_fancy_2D_style()
               gPad.SetRightMargin(0.2)
 	      stack.Draw("COLZ1") # The "1" does not plot empty bins even if there are bins w/ negative weights (in that case ROOT by default forces empty bins to be painted still!). See https://root.cern.ch/doc/master/classTHistPainter.html
+
+              diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
+              diagonal.SetLineStyle(2)
+              diagonal.SetLineColor(kBlack)
+              diagonal.SetLineWidth(2)
+
+              diagonal.Draw("SAME")
 
         if bkg:
             if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
