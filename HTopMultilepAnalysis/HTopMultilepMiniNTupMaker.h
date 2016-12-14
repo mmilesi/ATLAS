@@ -39,6 +39,7 @@ namespace MiniNTupMaker {
     eventObj():
       isMC(0), isSS01(0), isSS12(0),
       dilep(0), trilep(0),
+      dilep_type(0),
       nbjets(0),
       weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
     { };
@@ -48,6 +49,7 @@ namespace MiniNTupMaker {
     char isSS12;
     char dilep;
     char trilep;
+    int  dilep_type;
     int  nbjets;
 
     float weight_event;
@@ -74,10 +76,13 @@ namespace MiniNTupMaker {
 
   public:
     leptonObj():
-      pt(-1.0),eta(-999.0),etaBE2(-999.0),phi(-999.0),ID(0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
-      pid(0),isolated(0),trackisooverpt(-1.0),caloisooverpt(-1.0),tight(0),
+      pt(-1.0),eta(-999.0),etaBE2(-999.0),phi(-999.0),ID(0.0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
+      pid(0),isolated(0),trackisooverpt(-1.0),caloisooverpt(-1.0),
+      ptVarcone20(-1.0),ptVarcone30(-1.0),topoEtcone20(-1.0),
+      tight(0),
       trigmatched(0),trigmatched_SLT(0),trigmatched_DLT(0),
       prompt(0),fake(0),brems(0),qmisid(0),convph(0),
+      truthType(0),truthOrigin(0),
       tag_SLT(0),tag_DLT(0),
       deltaRClosestBJet(-1.0),massClosestBJet(-1.0),
       SFIDLoose(1.0),
@@ -107,6 +112,9 @@ namespace MiniNTupMaker {
     char isolated;
     float trackisooverpt;
     float caloisooverpt;
+    float ptVarcone20;
+    float ptVarcone30;
+    float topoEtcone20;
     char tight;
     char trigmatched;
     char trigmatched_SLT;
@@ -579,6 +587,8 @@ private:
     *
   */
   EL::StatusCode defineTagAndProbe ();
+
+  EL::StatusCode fillTPFlatBranches ( std::shared_ptr<MiniNTupMaker::leptonObj> lep, const std::string& trig );
 
   EL::StatusCode setOutputBranches ();
 
