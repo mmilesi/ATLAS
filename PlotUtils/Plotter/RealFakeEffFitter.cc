@@ -2896,16 +2896,18 @@ int main( int argc, char **argv ) {
 
     // DLT
 
-    const std::string tp_path("../MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21/");
-    //const std::string input_path("../MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/");
-    //const std::string input_path("../MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuINCLel_DLT_25ns_v21/");
-  
-    const std::string input_path("../MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuINCLel_DLT_25ns_v21_NoJetCuts/");
-    
+    const std::string tp_path("../PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagPt30/");
+    //const std::string input_path("../PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24/");
+    //const std::string input_path("../PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_TRIGMATCH_EFF/");
+    const std::string input_path("../PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_NOT_TRIGMATCH_EFF/");
+
     // SLT
 
     //const std::string tp_path("../MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21/");
     //const std::string input_path("../MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/");
+
+    //const std::string tp_path("../MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24/");
+    //const std::string input_path("../MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_SLT_25ns_v24/");
 
     LHFitter::useMC();
 
@@ -2961,8 +2963,8 @@ int main( int argc, char **argv ) {
       // REBINNING
       real_mm.m_doRebinning = true;
       //real_mm.setBinGrouping(2);
-      int array_real_bin_size(8);
-      double real_mm_new_bins[array_real_bin_size] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0};
+      int array_real_bin_size(10);
+      double real_mm_new_bins[array_real_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,80.0,100.0,140.0,200.0};
       real_mm.setVariableBins( real_mm_new_bins, array_real_bin_size-1 );
       real_mm.initialise();
       real_mm.fit();
@@ -2977,8 +2979,8 @@ int main( int argc, char **argv ) {
       // REBINNING
       fake_mm.m_doRebinning = true;
       //fake_mm.setBinGrouping(2);
-      int array_fake_bin_size(5);
-      double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,200.0};
+      int array_fake_bin_size(7);
+      double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,200.0};
       //int array_fake_bin_size(6);
       fake_mm.setVariableBins( fake_mm_new_bins, array_fake_bin_size-1 );
       fake_mm.initialise();
@@ -3002,8 +3004,9 @@ int main( int argc, char **argv ) {
       // REBINNING
       real_of.m_doRebinning = true;
       //real_of.setBinGrouping(2);
-      double real_of_new_bins[8] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0};
-      real_of.setVariableBins( real_of_new_bins, 7 );
+      int array_real_bin_size(10);
+      double real_of_new_bins[array_real_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,80.0,100.0,140.0,200.0};
+      real_of.setVariableBins( real_of_new_bins, array_real_bin_size-1 );
       real_of.initialise();
       real_of.fit();
 
@@ -3017,9 +3020,9 @@ int main( int argc, char **argv ) {
       // REBINNING
       fake_of.m_doRebinning = true;
       //fake_of.setBinGrouping(2);
-      //double fake_of_new_bins[6] = {10.0,15.0,20.0,25.0,40.0,200.0};
-      double fake_of_new_bins[6] = {10.0,15.0,20.0,25.0,35.0,200.0};
-      fake_of.setVariableBins( fake_of_new_bins, 5 );
+      int array_fake_bin_size(8);
+      double fake_of_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,60.0,140.0,200.0};
+      fake_of.setVariableBins( fake_of_new_bins, array_fake_bin_size-1 );
       fake_of.initialise();
       fake_of.fit();
 
