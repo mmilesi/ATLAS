@@ -33,13 +33,14 @@ namespace NTupReprocesser {
     eventObj():
     	  isMC(0),
     	  isSS01(0),
-    	  dilep(0),
+	  dilep_type(0),trilep_type(0),
   	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0)
     { };
 
     char isMC;
     char isSS01;
-    char dilep;
+    int  dilep_type;
+    int  trilep_type;
     char TT;
     char TAntiT;
     char AntiTT;
@@ -120,7 +121,7 @@ public:
   bool m_useScaledFakeEfficiency;
 
   /** Use pT correlated variations of efficiency for each systematic */
-  
+
   bool m_correlatedMMWeights;
 
   /** The path to the QMisID rates file directory */
@@ -277,7 +278,7 @@ private:
   EL::StatusCode tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list );
 
   void printWeights( const std::string& in_out );
-  
+
   EL::StatusCode readRFEfficiencies ();
   EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
   					   std::vector<float>& efficiency,
