@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     for s in sampledict:
 
-        if args.DSID == s["ID"] or ( args.DSID == "Data" and not s["ID"] ):
+        if args.DSID == s["ID"] or ( str(args.DSID[0:2]) == "00" and not s["ID"] ):
 
             knownDSID = True
 
@@ -47,12 +47,13 @@ if __name__ == '__main__':
 
             INTREE  = args.DSID + "/data-output" + "/" + args.DSID + ".root"
             INHIST  = args.DSID + "/hist-" + args.DSID + ".root"
-            if ( args.DSID == "Data" ):
-                INTREE  = args.DSID +"/data-output" + "/list-local-HTopGroupNTup.root"
-                INHIST  = args.DSID + "/hist-list-local-HTopGroupNTup.root"
 
-            OUTTREE = dest + "/" + s["group"] + "/" + s["ID"] + separator + s["name"] + ".root"
-            OUTHIST = dest + "/" + s["group"] + "/hist-" + s["ID"] + separator + s["name"] + ".root"
+	    if ( str(args.DSID[0:2]) == "00" ):
+                OUTTREE = dest + "/Data/" + args.DSID + ".physics_Main.root"
+                OUTHIST = dest + "/Data/hist-" + args.DSID + ".physics_Main.root"
+            else:
+                OUTTREE = dest + "/" + s["group"] + "/" + s["ID"] + separator + s["name"] + ".root"
+                OUTHIST = dest + "/" + s["group"] + "/hist-" + s["ID"] + separator + s["name"] + ".root"
 
             print("Moving :\n{0}\nto:\n{1}".format(INTREE,OUTTREE))
             print("Moving :\n{0}\nto:\n{1}".format(INHIST,OUTHIST))
@@ -60,7 +61,7 @@ if __name__ == '__main__':
             shutil.move(INTREE,OUTTREE)
             shutil.move(INHIST,OUTHIST)
 
-            normaliseTrees.applyWeight(OUTTREE,s,isdata=bool(args.DSID == "Data" and not s["ID"]))
+            normaliseTrees.applyWeight( OUTTREE, s, isdata = bool( str( args.DSID[0:2] == "00"  and not s["ID"] ) ) )
 
             break
 
