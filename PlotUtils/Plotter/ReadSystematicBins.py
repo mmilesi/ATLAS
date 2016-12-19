@@ -6,9 +6,10 @@ parser = argparse.ArgumentParser(description='Get yields and systematics for MM'
 
 list_channel = ['HIGHNJ','LOWNJ','ALLNJ']
 
-g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
-                   "ICHEP 2015+2016 DS":13.20768,       # August 2016
-                   "POST-ICHEP 2015+2016 DS":22.07036   # October 2016
+g_luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
+                 "ICHEP 2015+2016 DS":13.20768,       # August 2016
+                 "POST-ICHEP 2015+2016 DS":22.07036,  # October 2016
+                 "FULL 2015+2016 DS":36.4702          # December 2016
                  }
 
 parser.add_argument('inputDir', metavar='inputDir',type=str,
@@ -19,7 +20,7 @@ parser.add_argument('--variables', dest='variables', action='store', type=str, n
                     help='List of variables to be considered. Use a space-separated list. If unspecified, will consider Njets only.')
 parser.add_argument('--closure', dest='closure', action='store_true', default=False,
                     help="Check yields for MC closure test")
-parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["ICHEP 2015+2016 DS"],
+parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["FULL 2015+2016 DS"],
                     help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) )
 
 args = parser.parse_args()
@@ -438,7 +439,7 @@ if __name__ == '__main__':
 	        var_list.append("NJets")
 
     flavour_list = ["ElEl", "MuMu", "OF"]
-    #flavour_list = ["ElEl", "MuMu"]
+    #flavour_list = ["ElEl"]
 
     print("Looking at variables : [" + ",".join( "{0}".format(v) for v in var_list ) + "]")
 

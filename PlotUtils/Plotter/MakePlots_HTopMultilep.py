@@ -984,6 +984,7 @@ if __name__ == "__main__":
             vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
             vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
             vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+            #
             #vardb.registerCategory( MyCategory('TwoLepSSTau_SR', cut = common_cuts_2Lep1Tau & vardb.getCut('2Lep1Tau_NJet_SR') ), weight = weight_SR_CR )
 
         if doThreeLepSR:

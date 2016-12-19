@@ -556,9 +556,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
   m_leptons.push_back(lep1);
 
-  m_event.get()->isMC   = ( m_mc_channel_number > 0 );
-  m_event.get()->dilep  = ( m_dilep_type > 0 );
-  m_event.get()->isSS01 = ( m_isSS01 );
+  m_event.get()->isMC        = ( m_mc_channel_number > 0 );
+  m_event.get()->dilep_type  = m_dilep_type;
+  m_event.get()->trilep_type = m_trilep_type;
+  m_event.get()->isSS01      = m_isSS01;
 
   m_event.get()->TT         = m_is_T_T;
   m_event.get()->TAntiT     = m_is_T_AntiT;
@@ -768,18 +769,18 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
 
     // If is not a dileptonic event, return
     //
-    if ( m_dilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
+    if ( m_event.get()->dilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
 
     // If there are no electrons, return
     //
-    if ( m_dilep_type == 1 ) { return EL::StatusCode::SUCCESS; }
+    if ( m_event.get()->dilep_type == 1 ) { return EL::StatusCode::SUCCESS; }
 
     std::shared_ptr<leptonObj> el0;
     std::shared_ptr<leptonObj> el1;
 
-    if ( m_dilep_type == 2 ) { // OF events
+    if ( m_event.get()->dilep_type == 2 ) { // OF events
 	el0 = ( m_leptons.at(0).get()->flavour == 11 ) ? m_leptons.at(0) : m_leptons.at(1);
-    } else if ( m_dilep_type == 3 ) { // ee events
+    } else if ( m_event.get()->dilep_type == 3 ) { // ee events
 	el0 = m_leptons.at(0);
 	el1 = m_leptons.at(1);
     }
@@ -1886,7 +1887,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 
     // If is not a dileptonic/trileptonic event, return
     //
-    if ( m_dilep_type <= 0 && m_trilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
+    if ( m_event.get()->dilep_type <= 0 && m_event.get()->trilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
 
     std::shared_ptr<leptonObj> lep0 = m_leptons.at(0);
     std::shared_ptr<leptonObj> lep1 = m_leptons.at(1);

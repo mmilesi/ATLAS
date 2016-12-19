@@ -66,15 +66,17 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
                                     # v24
                                     #
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies/",
-                                    "m_EFF_YES_TM_dir" 	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies_TRIGMATCH_EFF/",
-                                    "m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies_NOT_TRIGMATCH_EFF",
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/MMClosure_v24_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_25ns_v24", # Truth-based efficiencies
+                                    #
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies",
+                                    #"m_EFF_YES_TM_dir" 	   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies_TRIGMATCH_EFF",
+                                    #"m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies_NOT_TRIGMATCH_EFF",
                                     #
                                     # ------------------------------------------------------------
                                     #
 				    #"m_systematics_list"           : "Nominal,Stat,numerator_QMisID,denominator_QMisID",
 				    "m_systematics_list"           : "Nominal,Stat",
-				    "m_useTrigMatchingInfo"        : True,
+				    "m_useTrigMatchingInfo"        : False,
 				    #
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
 				    #"m_Efficiency_Filename"        : "LeptonEfficiencies_LH.root",
