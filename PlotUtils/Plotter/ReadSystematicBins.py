@@ -6,11 +6,11 @@ parser = argparse.ArgumentParser(description='Get yields and systematics for MM'
 
 list_channel = ['HIGHNJ','LOWNJ','ALLNJ']
 
-g_luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
+luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
                  "ICHEP 2015+2016 DS":13.20768,       # August 2016
                  "POST-ICHEP 2015+2016 DS":22.07036,  # October 2016
                  "FULL 2015+2016 DS":36.4702          # December 2016
-                 }
+               }
 
 parser.add_argument('inputDir', metavar='inputDir',type=str,
                     help='Path to the directory containing input histograms')
@@ -20,8 +20,10 @@ parser.add_argument('--variables', dest='variables', action='store', type=str, n
                     help='List of variables to be considered. Use a space-separated list. If unspecified, will consider Njets only.')
 parser.add_argument('--closure', dest='closure', action='store_true', default=False,
                     help="Check yields for MC closure test")
-parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["FULL 2015+2016 DS"],
-                    help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) )
+parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=luminosities["FULL 2015+2016 DS"],
+                    help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in luminosities.iteritems() ) + ". Default is {0}".format(luminosities["FULL 2015+2016 DS"] ) )
+parser.add_argument("--mergeOverflow", dest="mergeOverflow", action="store_true", default=False,
+                    help="If this option is used, the script will assume the overflow has been merged already w/ the last visible bin. Default is False.")
 
 args = parser.parse_args()
 
@@ -34,31 +36,37 @@ SetAtlasStyle()
 
 
 # Store sys integral for each systematic name
+
 g_sys_dict = {}
 
 # Store for each histogram bin a list with the uncertainties for each source
 #
 # { bin_idx : [unc0, unc1, unc2,...] }
-#
+
 g_unc_bins = {}
+
 # Store for each histogram bin the sum in quadrature of all uncertainties
 #
 # { bin_idx : sq }
-#
+
 g_sq_unc_bins = {}
 
 # Store list of sys integrals for each sys group
+
 g_sysgroup_dict = {}
 
 def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
 
-    for bin in range(0,nominal.GetNbinsX()+1):
+    lower = 0
+    upper = nominal.GetNbinsX()+2
+    if args.mergeOverflow:
+        upper = nominal.GetNbinsX()+1
+
+    for bin in range(lower,upper):
         if not g_unc_bins.get(bin):
             g_unc_bins[bin] = []
 
-    # Pick also O-Flow bin (NB: the last bin contains also the OFlow! Thus, stop at bin before oflow)
-    #
-    for bin in range(0,nominal.GetNbinsX()+1):
+    for bin in range(lower,upper):
 
         nextbin = bin
 
@@ -85,65 +93,69 @@ def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
                 sys_dn = abs( delta_down )
 
 	    # Symmetrised systematic uncertainty
-	    #
+
             simm_sys_unc =  abs( sys_up + sys_dn ) / 2.0
 
             # Print yield, stat and syst uncertainty for each bin, for this systematic
-            #
+
             if False:
-                if nominal.IsBinOverflow(bin): # this condition should never be matched: here just for safety
+                if nominal.IsBinOverflow(bin):
+                    if args.mergeOverflow:
+                        print ("\nWARNING! Now checking the overflow bin content. This should not happen since you said in the script opt config that the last bin should already contain also the OFlow...check your input histograms.\n")
                     print ("\t\t{0}-jets bin (O-FLOW): integral = {1:.3f} +- {2:.3f} (stat) (+ {3:.3f}, - {4:.3f} --> +- {5:.3f}) (syst: {6})".format( bincenter, value_nominal, stat_error, sys_up, sys_dn, simm_sys_unc, sysname ))
                 else:
                     print ("\t\t{0}-jets bin: integral = {1:.3f} +- {2:.3f} (stat) (+ {3:.3f}, - {4:.3f} --> +- {5:.3f}) (syst: {6})".format( bincenter, value_nominal, stat_error, sys_up, sys_dn, simm_sys_unc, sysname ))
 
             # Store list of uncertainties for each bin
-	    #
+
             if ( float("{0:.3f}".format(stat_error)) ) and not stat_error in g_unc_bins[bin]:
                 g_unc_bins[bin].append(stat_error)
             if ( float("{0:.3f}".format(simm_sys_unc)) ) and not simm_sys_unc in g_unc_bins[bin]:
                 g_unc_bins[bin].append(simm_sys_unc)
 
         else:
-            if nominal.IsBinOverflow(bin): # this condition should never be matched: here just for safety
+            if nominal.IsBinOverflow(bin):
+                if args.mergeOverflow:
+                        print ("\nWARNING! Now checking the overflow bin content. This should not happen since you said in the script opt config that the last bin should already contain also the OFlow...check your input histograms.\n")
                 print ("\t\t{0}-jets bin (O-FLOW): integral = {1:.3f} +- {2:.3f} (stat)".format( bincenter, value_nominal, stat_error ))
             else:
                 print ("\t\t{0}-jets bin: integral = {1:.3f} +- {2:.3f} (stat)".format( bincenter, value_nominal, stat_error ))
 
     integral_stat_error = Double(0)
-    integral_nominal    = nominal.IntegralAndError(0,nominal.GetNbinsX(),integral_stat_error)
+    integral_nominal    = nominal.IntegralAndError(lower,upper-1,integral_stat_error)
 
     integral_total_error = integral_stat_error
 
     if ( up and down ):
 
-        integral_sys_up = abs( up.Integral(0,up.GetNbinsX()) - integral_nominal )
-        integral_sys_dn = abs( integral_nominal - down.Integral(0,down.GetNbinsX()) )
+        integral_sys_up = abs( up.Integral(lower,upper-1) - integral_nominal )
+        integral_sys_dn = abs( integral_nominal - down.Integral(lower,upper-1) )
 
 	# Symmetrised systematic uncertainty
-	#
+
 	integral_simm_sys_unc = abs( integral_sys_up + integral_sys_dn ) / 2.0
 
         g_sys_dict[sysname] = integral_simm_sys_unc
 
 	# Store the total syst uncertainty for later use
-	#
+
 	if not g_sysgroup_dict.get(sysgroup):
 	    g_sysgroup_dict[sysgroup] = [integral_simm_sys_unc]
         else:
 	    g_sysgroup_dict[sysgroup].append(integral_simm_sys_unc)
 
 	# Total uncertainty
-        #
+
         max_integral_sys   = max([integral_sys_up, integral_sys_dn])
         integral_tot_error = math.sqrt( ( integral_stat_error * integral_stat_error ) + ( max_integral_sys * max_integral_sys ) )
 
         # This will print the total yield w/ stat and syst error per each sys
-        #
+
         if False:
             print ("\t\tIntegral = {0:.3f} +- {1:.3f} (stat) ( +{2:.3f}, -{3:.3f} --> +- {4:.3f}) (syst: {5})".format(integral_nominal, integral_stat_error, integral_sys_up, integral_sys_dn, integral_simm_sys_unc,  sysname ))
 
         # This will sum in quadrature the stat & systematic uncertainties for each bin
-        #
+
         for bin, list_unc in g_unc_bins.iteritems():
             if False:
                 print("\t\tbin {0}".format(bin) + " list of uncertainties: [" + ",".join( "{0:.3f}".format(x) for x in list_unc ) + "]" )
@@ -177,11 +189,14 @@ def getTotFakeUncertainty( nominal, stat, flav ):
         if flav == "OF"   : non_closure = 0.22 * nominal
         if flav == "MuMu" : non_closure = 0.22 * nominal
 
+
+    # If you are doing closure, do not consider closure syst!
+
     if args.closure:
         non_closure = 0.0
 
     # This prints out sorting systematics from smaller to larger
-    #
+
     print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.4f} [{1:.4f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) + "\t\t+- {0:.2f} [{1:.2f} %] (non-closure)".format(non_closure, (non_closure/nominal)*100) )
 
     print("")
@@ -207,6 +222,7 @@ def getTotFakeUncertainty( nominal, stat, flav ):
 
 
 def clearDicts():
+
     g_sys_dict.clear()
     g_sysgroup_dict .clear()
     g_unc_bins.clear()
