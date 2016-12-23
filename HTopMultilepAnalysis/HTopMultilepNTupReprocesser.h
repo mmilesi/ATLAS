@@ -217,7 +217,7 @@ private:
   /** Other private members */
 
   unsigned int m_effectiveTotEntries; //!
-  unsigned int m_numEntry;   //!
+  int          m_numEntry;   //!
   unsigned int m_count_inf;  //!
 
   /** This will be updated when looping over the input systematics for a given event, so all the methods know about it */

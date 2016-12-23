@@ -467,7 +467,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
 
   // Initialise counter for input TTree entries processed
   //
-  m_numEntry = 0;
+  m_numEntry = -1;
 
   m_effectiveTotEntries = m_inputNTuple->GetEntries();
 
@@ -520,6 +520,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
   ANA_CHECK_SET_TYPE (EL::StatusCode);
 
+  ++m_numEntry;
+
   if ( m_numEntry < m_sumWeightsTree->GetEntries() ) {
 
     m_sumWeightsTree->GetEntry( m_numEntry );
@@ -535,8 +537,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
     std::cout << "" << std::endl;
     Info("execute()", "===> Entry %u - EventNumber = %u - RunYear = %i", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber), m_RunYear );
   }
-
-  ++m_numEntry;
 
   if ( m_numEntry >= 10000 && m_numEntry % 10000 == 0 ) {
     std::cout << "Processed " << std::setprecision(3) << ( (float) m_numEntry / m_effectiveTotEntries ) * 1e2 << " % of total entries" << std::endl;

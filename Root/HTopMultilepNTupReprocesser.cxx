@@ -367,12 +367,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 
   m_outputNTuple->tree()->SetWeight( m_inputNTuple->GetWeight() );
 
-
   // ---------------------------------------------------------------------------------------------------------------
 
   // Initialise counter for input TTree entries
   //
-  m_numEntry = 0;
+  m_numEntry = -1;
 
   // Initialise counter for events where inf/nan is read
   //
@@ -494,6 +493,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   // histograms and trees.  This is where most of your actual analysis
   // code will go.
 
+  ++m_numEntry;
+
   ANA_CHECK_SET_TYPE (EL::StatusCode);
 
   if ( m_numEntry == 0 ) { Info("execute()", "Processing input TTree : %s\n", m_inputNTuple->GetName() ); }
@@ -504,8 +505,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
     std::cout << "" << std::endl;
     Info("execute()", "===> Entry %u - EventNumber = %u ", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) );
   }
-
-  ++m_numEntry;
 
   if ( m_numEntry >= 10000 && m_numEntry % 10000 == 0 ) {
     std::cout << "Processed " << std::setprecision(3) << ( (float) m_numEntry / m_effectiveTotEntries ) * 1e2 << " % of total entries" << std::endl;
@@ -1238,7 +1237,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     TH1D* hist_nominal_pt_YES_TM(nullptr);
     TH1D* hist_nominal_pt_NO_TM(nullptr);
 
-    if ( m_useTrigMatchingInfo ) {
+    if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 
         hist_nominal_pt_YES_TM = (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second;
         hist_nominal_pt_NO_TM  = (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second;
@@ -1327,7 +1326,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
 		eff_pt = hist_nominal_pt->GetBinContent(p);
 
-		if ( m_useTrigMatchingInfo ) {
+		if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 		  eff_pt = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinContent(p) : hist_nominal_pt_NO_TM->GetBinContent(p);
 		}
 
@@ -1336,7 +1335,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		  eff_pt_err_up = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
 		  eff_pt_err_dn = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
 
-		  if ( m_useTrigMatchingInfo ) {
+		  if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 
 		    if ( readNominalPt ) {
 		      eff_pt_err_up = eff_pt_err_dn = 0;
@@ -1352,7 +1351,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		  eff_pt_err_up = (histograms->find(syskey_up_pt)->second).find(key_pt)->second->GetBinContent(p);
 		  eff_pt_err_dn = (histograms->find(syskey_dn_pt)->second).find(key_pt)->second->GetBinContent(p);
 
-		  if ( m_useTrigMatchingInfo ) {
+		  if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 		    eff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find(syskey_up_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_up_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
 		    eff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find(syskey_dn_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_dn_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
 		  }
@@ -1638,7 +1637,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		  eff_pt_err_dn = (histograms->find(syskey_dn_pt)->second).find(key_pt)->second->GetBinContent(p);
 		}
 		// FIXME
-		if ( m_useTrigMatchingInfo ) {
+		if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 		    eff_pt	  = ( lep.get()->trigmatched ) ? (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second->GetBinContent(p);
 		    eff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second->GetBinError(p) : (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second->GetBinError(p);
 		    eff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second->GetBinError(p) : (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second->GetBinError(p);
@@ -1807,11 +1806,21 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
 	)
     {
 
-        if ( m_debug ) {
-	    Warning("getMMWeightAndError()", "Warning! The Matrix Method cannot be applied to EventNumber %u because:", static_cast<uint32_t>(m_EventNumber) );
-	    std::cout << "r0 = " << r0.at(0) << ", f0 = " << f0.at(0) <<  "\nr1 = " << r1.at(0) << ", f1 = " << f1.at(0) << std::endl;
-	    Warning("getMMWeightAndError()", "Will make sure this event is removed by setting MMWeight (nominal) = 0 ...");
+	if ( m_debug ) { // TEMP! This should NOT be enclosed in debug opt!
+	    Warning("getMMWeightAndError()", "Warning! The Matrix Method cannot be applied to Entry: %u, EventNumber: %u because:\n", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) );
+
+	    if ( (r0.at(0) == 0) || (r1.at(0) == 0) ) {
+		std::cout << "r0 = " << r0.at(0) << ", r1 = " << r1.at(0) << std::endl;
+	    }
+	    if ( r0.at(0) <= f0.at(0) ) {
+		std::cout << "r0 = " << r0.at(0) << ", f0 = " << f0.at(0) <<  " ==> r0 <= f0 !! " << std::endl;
+	    }
+	    if ( r1.at(0) <= f1.at(0) ) {
+		std::cout << "r1 = " << r1.at(0) << ", f1 = " << f1.at(0) <<  " ==> r1 <= f1 !! " << std::endl;
+	    }
+	    Warning("getMMWeightAndError()", "Assigning MMWeight (nominal) = 0, aka will remove the event ...");
 	}
+
         return EL::StatusCode::SUCCESS;
     }
 

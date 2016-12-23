@@ -535,9 +535,9 @@ private:
 
   /** Other private members */
 
-  unsigned int m_effectiveTotEntries; //!
-  unsigned int m_numEntry;   //!
-  float        m_sumGenEvents;  //!
+  unsigned int m_effectiveTotEntries;  //!
+  int          m_numEntry;             //!
+  float        m_sumGenEvents;         //!
   float        m_sumGenEventsWeighted; //!
 
   std::shared_ptr<MiniNTupMaker::eventObj>                 m_event;   //!
