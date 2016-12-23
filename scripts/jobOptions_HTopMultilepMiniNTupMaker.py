@@ -1,3 +1,4 @@
+
 import ROOT
 from xAH_config import xAH_config
 import sys, os
@@ -275,9 +276,10 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
 				  "m_addStreamEventsHist"  : False,
 				  "m_useTruthTP"           : False,
 				  "m_useSUSYSSTP"          : True,
+                                  "m_ambiSolvingCrit"      : "OF",
                                   #"m_ambiSolvingCrit"      : "Pt",
                                   #"m_ambiSolvingCrit"     : "deltaRClosestBJet",
-                                  "m_ambiSolvingCrit"     : "massClosestBJet",
+                                  #"m_ambiSolvingCrit"     : "massClosestBJet",
                                 }
 
 # Instantiate the NTupleSvc algorithm
@@ -296,8 +298,8 @@ for branch in branches_to_copy:
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
 algskim.addCut("RunYear==2015 || RunYear==2016")
 algskim.addCut("passEventCleaning==1")
-algskim.addCut("(dilep_type>0 && lep_Pt_1>7e3) || (trilep_type>0 && lep_Pt_2>7e3)") # keep only dilepton and trilepton events, ensuring minimal pT > 7 GeV
-#algskim.addCut("(dilep_type>0&&nJets_OR_T>=2&&nJets_OR_T_MV2c10_70>=1)||(trilep_type>0&&nJets_OR>=2&&nJets_OR_MV2c10_70>=1)")
+algskim.addCut("(dilep_type>0 && lep_Pt_1>10e3) || (trilep_type>0 && lep_Pt_2>10e3)") # keep only dilepton and trilepton events, ensuring min(pT lep) > 10 GeV
+algskim.addCut("(dilep_type>0 && nJets_OR_T>=2 && nJets_OR_T_MV2c10_70>=1) || (trilep_type>0 && nJets_OR>=2 && nJets_OR_MV2c10_70>=1)") # minimal njet/nbjet skimming cut
 algskim.histName("cutflow")
 
 # Add the algorithms to the job.

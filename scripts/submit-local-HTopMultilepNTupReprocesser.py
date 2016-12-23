@@ -10,6 +10,8 @@ parser.add_argument('destination', metavar='destination', type=str,
                     help='The base directory where the output will be stored. Subdirectories for different sample groups will be created automatically by the job.')
 parser.add_argument('--nevents', dest='nevents', action='store', default=0, type=int,
                     help='The number of events to be processed. Default is 0 (i.e., ALL events)')
+parser.add_argument('--skip', dest='skip', action='store', default=0, type=int,
+                    help='Skip all entries before the one selected. Use in combination w/ --nevents=1 if you wish to debug a single event. Default is 0 (i.e., do NOT skip any entry)')
 parser.add_argument('--treename', dest='treename', action='store', default="physics", type=str,
                     help='The name of the input TTree. Default is \"physics\"')
 parser.add_argument('--closure', dest='closure', action='store_true', default=False,
@@ -42,8 +44,9 @@ else:
 configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepNTupReprocesser.py"
 treename   = args.treename
 nevents    = args.nevents
+skip       = args.skip
 
-current_time = time.strftime("%a_%b_%d_%H_%M_%S") 
+current_time = time.strftime("%a_%b_%d_%H_%M_%S")
 
 for infile in infilelist:
 
@@ -54,21 +57,21 @@ for infile in infilelist:
 
   # Add the current timestamp to the submission directory name
   # In this way, multiple processes w/ same sample can be run at the same time.
-  
+
   outdir += ( "___" +  current_time ) # NB: this assumes a triple underscore will NEVER appear in a sample name
-  
-  xAH_run = "xAH_run.py -vv --files {0} --config {1} --treeName {2} --submitDir {3} --nevents {4} --force direct".format(infile,configpath,treename,outdir,nevents)
+
+  xAH_run = "xAH_run.py -vv --files {0} --config {1} --treeName {2} --submitDir {3} --nevents {4} --skip {5} --force direct".format(infile,configpath,treename,outdir,nevents,skip)
 
   print("Executing command:\n{0}".format(xAH_run))
   subprocess.call(xAH_run,shell=True)
 
   # Move output file(s) from job directory to the proper one,
   # but first, change the file name to be readable in KG's FW!
-  
+
   # Get the submission dir name w/o the appended timestamp
-  
+
   timestripped_outdir = outdir[:outdir.find("___")]
-  
+
   for s in sampledict:
 
      if timestripped_outdir == s["name"]:

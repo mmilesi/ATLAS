@@ -367,12 +367,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 
   m_outputNTuple->tree()->SetWeight( m_inputNTuple->GetWeight() );
 
-
   // ---------------------------------------------------------------------------------------------------------------
 
   // Initialise counter for input TTree entries
   //
-  m_numEntry = 0;
+  m_numEntry = -1;
 
   // Initialise counter for events where inf/nan is read
   //
@@ -398,8 +397,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 
 
 void HTopMultilepNTupReprocesser :: printWeights ( const std::string& in_out ) {
-
-  if ( !m_debug ) { return; }
 
   if ( in_out.compare("IN" ) == 0 ) {
 
@@ -496,6 +493,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   // histograms and trees.  This is where most of your actual analysis
   // code will go.
 
+  ++m_numEntry;
+
   ANA_CHECK_SET_TYPE (EL::StatusCode);
 
   if ( m_numEntry == 0 ) { Info("execute()", "Processing input TTree : %s\n", m_inputNTuple->GetName() ); }
@@ -506,8 +505,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
     std::cout << "" << std::endl;
     Info("execute()", "===> Entry %u - EventNumber = %u ", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) );
   }
-
-  ++m_numEntry;
 
   if ( m_numEntry >= 10000 && m_numEntry % 10000 == 0 ) {
     std::cout << "Processed " << std::setprecision(3) << ( (float) m_numEntry / m_effectiveTotEntries ) * 1e2 << " % of total entries" << std::endl;
@@ -541,7 +538,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   lep0.get()->flavour       = abs(m_lep_ID_0);
   lep0.get()->charge        = m_lep_ID_0 / fabs(m_lep_ID_0);
   lep0.get()->tightselected = m_lep_isTightSelected_0;
-  lep0.get()->trigmatched   = m_lep_isTrigMatch_0;
+  lep0.get()->trigmatched   = m_lep_isTrigMatch_0; // SLT matching
 
   m_leptons.push_back(lep0);
 
@@ -554,13 +551,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   lep1.get()->flavour       = abs(m_lep_ID_1);
   lep1.get()->charge        = m_lep_ID_1 / fabs(m_lep_ID_1);
   lep1.get()->tightselected = m_lep_isTightSelected_1;
-  lep1.get()->trigmatched   = m_lep_isTrigMatch_1;
+  lep1.get()->trigmatched   = m_lep_isTrigMatch_1; // SLT matching
 
   m_leptons.push_back(lep1);
 
-  m_event.get()->isMC   = ( m_mc_channel_number > 0 );
-  m_event.get()->dilep  = ( m_dilep_type > 0 );
-  m_event.get()->isSS01 = ( m_isSS01 );
+  m_event.get()->isMC        = ( m_mc_channel_number > 0 );
+  m_event.get()->dilep_type  = m_dilep_type;
+  m_event.get()->trilep_type = m_trilep_type;
+  m_event.get()->isSS01      = m_isSS01;
 
   m_event.get()->TT         = m_is_T_T;
   m_event.get()->TAntiT     = m_is_T_AntiT;
@@ -568,34 +566,39 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   m_event.get()->AntiTAntiT = m_is_AntiT_AntiT;
 
   if ( m_debug ) {
-      Info("execute()","lep0:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched? %i", lep0.get()->pt/1e3, lep0.get()->etaBE2, lep0.get()->eta, lep0.get()->flavour, lep0.get()->tightselected, lep0.get()->trigmatched );
-      Info("execute()","lep1:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched? %i", lep1.get()->pt/1e3, lep1.get()->etaBE2, lep1.get()->eta, lep1.get()->flavour, lep1.get()->tightselected, lep1.get()->trigmatched );
+      Info("execute()","lep0:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched (SLT)? %i", lep0.get()->pt/1e3, lep0.get()->etaBE2, lep0.get()->eta, lep0.get()->flavour, lep0.get()->tightselected, lep0.get()->trigmatched );
+      Info("execute()","lep1:\n pT = %.2f\n etaBE2 = %.2f\n eta = %.2f\n flavour = %i\n tight? %i\n trigmatched (SLT)? %i", lep1.get()->pt/1e3, lep1.get()->etaBE2, lep1.get()->eta, lep1.get()->flavour, lep1.get()->tightselected, lep1.get()->trigmatched );
       Info("execute()","event:\n TT ? %i, TAntiT ? %i, AntiTT ? %i, AntiTAntiT ? %i", m_event.get()->TT, m_event.get()->TAntiT, m_event.get()->AntiTT, m_event.get()->AntiTAntiT );
   }
 
   // ------------------------------------------------------------------------
 
-  this->printWeights( "IN" );
+  if ( m_debug ) { this->printWeights( "IN" ); }
 
   // ------------------------------------------------------------------------
 
-  if ( m_doQMisIDWeighting ) {
-      ANA_CHECK( this->calculateQMisIDWeights () );
-  }
+  if ( m_doQMisIDWeighting ) { ANA_CHECK( this->calculateQMisIDWeights () ); }
+
   if ( m_doMMWeighting ) {
 
-      // Get a full set of MM weights with systematic variations
+      // Do this only when pT(l0), pT(l1) > 25 GeV
 
-      for ( const auto& sys : m_systematics ) {
-        m_this_syst = sys;
-        ANA_CHECK( this->calculateMMWeights () );
+      if ( lep0.get()->pt >= 25e3 && lep1.get()->pt >= 25e3 ) {
+
+	  // Get a full set of MM weights with systematic variations
+
+	  for ( const auto& sys : m_systematics ) {
+	      m_this_syst = sys;
+	      ANA_CHECK( this->calculateMMWeights () );
+	  }
+
       }
 
   }
 
   // ------------------------------------------------------------------------
 
-  this->printWeights( "OUT" );
+  if ( m_debug ) { this->printWeights( "OUT" ); }
 
   // ------------------------------------------------------------------------
 
@@ -765,18 +768,18 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
 
     // If is not a dileptonic event, return
     //
-    if ( m_dilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
+    if ( m_event.get()->dilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
 
     // If there are no electrons, return
     //
-    if ( m_dilep_type == 1 ) { return EL::StatusCode::SUCCESS; }
+    if ( m_event.get()->dilep_type == 1 ) { return EL::StatusCode::SUCCESS; }
 
     std::shared_ptr<leptonObj> el0;
     std::shared_ptr<leptonObj> el1;
 
-    if ( m_dilep_type == 2 ) { // OF events
+    if ( m_event.get()->dilep_type == 2 ) { // OF events
 	el0 = ( m_leptons.at(0).get()->flavour == 11 ) ? m_leptons.at(0) : m_leptons.at(1);
-    } else if ( m_dilep_type == 3 ) { // ee events
+    } else if ( m_event.get()->dilep_type == 3 ) { // ee events
 	el0 = m_leptons.at(0);
 	el1 = m_leptons.at(1);
     }
@@ -984,14 +987,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
       if ( m_EFF_YES_TM_dir.back() != '/' ) { m_EFF_YES_TM_dir += "/"; }
       if ( m_EFF_NO_TM_dir.back() != '/' )  { m_EFF_NO_TM_dir += "/"; }
 
-      Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe TRIGGER-MATCHED) from directory: %s ", m_EFF_YES_TM_dir.c_str() );
+      Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe SLT-TRIGGER-MATCHED) from directory: %s ", m_EFF_YES_TM_dir.c_str() );
 
       std::string path_YES_TM = m_EFF_YES_TM_dir + m_Efficiency_Filename;
       file_YES_TM = TFile::Open(path_YES_TM.c_str());
       HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file_YES_TM->IsOpen(), "Failed to open ROOT file" );
       Info("readRFEfficiencies()", "REAL/FAKE efficiency: %s ", path_YES_TM.c_str() );
 
-      Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe NOT TRIGGER-MATCHED) from directory: %s ", m_EFF_NO_TM_dir.c_str() );
+      Info("readRFEfficiencies()", "REAL/FAKE efficiency (probe NOT SLT-TRIGGER-MATCHED) from directory: %s ", m_EFF_NO_TM_dir.c_str() );
 
       std::string path_NO_TM = m_EFF_NO_TM_dir + m_Efficiency_Filename;
       file_NO_TM = TFile::Open(path_NO_TM.c_str());
@@ -1234,7 +1237,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     TH1D* hist_nominal_pt_YES_TM(nullptr);
     TH1D* hist_nominal_pt_NO_TM(nullptr);
 
-    if ( m_useTrigMatchingInfo ) {
+    if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 
         hist_nominal_pt_YES_TM = (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second;
         hist_nominal_pt_NO_TM  = (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second;
@@ -1323,7 +1326,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
 		eff_pt = hist_nominal_pt->GetBinContent(p);
 
-		if ( m_useTrigMatchingInfo ) {
+		if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 		  eff_pt = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinContent(p) : hist_nominal_pt_NO_TM->GetBinContent(p);
 		}
 
@@ -1332,7 +1335,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		  eff_pt_err_up = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
 		  eff_pt_err_dn = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
 
-		  if ( m_useTrigMatchingInfo ) {
+		  if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 
 		    if ( readNominalPt ) {
 		      eff_pt_err_up = eff_pt_err_dn = 0;
@@ -1348,7 +1351,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		  eff_pt_err_up = (histograms->find(syskey_up_pt)->second).find(key_pt)->second->GetBinContent(p);
 		  eff_pt_err_dn = (histograms->find(syskey_dn_pt)->second).find(key_pt)->second->GetBinContent(p);
 
-		  if ( m_useTrigMatchingInfo ) {
+		  if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 		    eff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find(syskey_up_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_up_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
 		    eff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find(syskey_dn_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_dn_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
 		  }
@@ -1634,7 +1637,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		  eff_pt_err_dn = (histograms->find(syskey_dn_pt)->second).find(key_pt)->second->GetBinContent(p);
 		}
 		// FIXME
-		if ( m_useTrigMatchingInfo ) {
+		if ( m_useTrigMatchingInfo  && m_event.get()->dilep_type != 1 ) {
 		    eff_pt	  = ( lep.get()->trigmatched ) ? (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second->GetBinContent(p);
 		    eff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second->GetBinError(p) : (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second->GetBinError(p);
 		    eff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second->GetBinError(p) : (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second->GetBinError(p);
@@ -1803,11 +1806,21 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<f
 	)
     {
 
-        if ( m_debug ) {
-	    Warning("getMMWeightAndError()", "Warning! The Matrix Method cannot be applied to EventNumber %u because:", static_cast<uint32_t>(m_EventNumber) );
-	    std::cout << "r0 = " << r0.at(0) << ", f0 = " << f0.at(0) <<  "\nr1 = " << r1.at(0) << ", f1 = " << f1.at(0) << std::endl;
-	    Warning("getMMWeightAndError()", "Will make sure this event is removed by setting MMWeight (nominal) = 0 ...");
+	if ( m_debug ) { // TEMP! This should NOT be enclosed in debug opt!
+	    Warning("getMMWeightAndError()", "Warning! The Matrix Method cannot be applied to Entry: %u, EventNumber: %u because:\n", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber) );
+
+	    if ( (r0.at(0) == 0) || (r1.at(0) == 0) ) {
+		std::cout << "r0 = " << r0.at(0) << ", r1 = " << r1.at(0) << std::endl;
+	    }
+	    if ( r0.at(0) <= f0.at(0) ) {
+		std::cout << "r0 = " << r0.at(0) << ", f0 = " << f0.at(0) <<  " ==> r0 <= f0 !! " << std::endl;
+	    }
+	    if ( r1.at(0) <= f1.at(0) ) {
+		std::cout << "r1 = " << r1.at(0) << ", f1 = " << f1.at(0) <<  " ==> r1 <= f1 !! " << std::endl;
+	    }
+	    Warning("getMMWeightAndError()", "Assigning MMWeight (nominal) = 0, aka will remove the event ...");
 	}
+
         return EL::StatusCode::SUCCESS;
     }
 
@@ -1883,7 +1896,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 
     // If is not a dileptonic/trileptonic event, return
     //
-    if ( m_dilep_type <= 0 && m_trilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
+    if ( m_event.get()->dilep_type <= 0 && m_event.get()->trilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
 
     std::shared_ptr<leptonObj> lep0 = m_leptons.at(0);
     std::shared_ptr<leptonObj> lep1 = m_leptons.at(1);

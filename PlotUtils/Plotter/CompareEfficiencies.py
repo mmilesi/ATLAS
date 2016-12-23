@@ -141,10 +141,10 @@ def plotter_flavours( eff_type ):
 
   if args.closure:
       if "SLT" in args.trigger:
-          file_TP_path = basepath + "MMClosure_v23_HTopTP/OutputPlots_MMClosureRates_HTopTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          file_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_HTopTP/OutputPlots_MMClosureRates_HTopTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
       elif "DLT" in args.trigger:
-          #file_TP_path = basepath + "MMClosure_v23_HTopTP/OutputPlots_MMClosureRates_HTopTagProbe_NoCorr_DLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
-          file_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_HTopTP/OutputPlots_MMClosureRates_HTopTagProbe_NoCorr_DLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          file_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
 
   print("------------------------------------------------------------------------------------------")
   print("HTop Tag & Probe efficiency - Opening file:\n{0}".format(file_TP_path))
@@ -179,7 +179,7 @@ def plotter_flavours( eff_type ):
   c = TCanvas("c1","Temp",50,50,1300,800)
 
   legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
-  legend.SetHeader("#epsilon_{fake}")
+  legend.SetHeader("#epsilon_{" + eff_type + "}")
   legend.SetBorderSize(0)  # no border
   legend.SetFillStyle(0) # Legend transparent background
   legend.SetTextSize(0.04) # Increase entry font size!
@@ -191,15 +191,8 @@ def plotter_flavours( eff_type ):
   leg_lumi.SetTextSize(0.03)
   leg_lumi.SetNDC()
 
-  hist_TP.Draw("E0")
-  legend.AddEntry(hist_TP, "HTop Tag & Probe (ICHEP)", "P")
-
-  # Add a vertical line to highlight relevant bins
-
-  refl = TLine(25.0,hist_TP.GetMinimum(),25.0,hist_TP.GetMaximum())
-  refl.SetLineWidth(2)
-  refl.SetLineStyle(2)
-  refl.Draw("SAME")
+  #hist_TP.Draw("E0")
+  #legend.AddEntry(hist_TP, "HTop Tag & Probe (ICHEP)", "P")
 
   # ---------------------------
   # New Tag & Probe efficiency
@@ -209,13 +202,22 @@ def plotter_flavours( eff_type ):
 
   if args.closure:
       if "SLT" in args.trigger:
-          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
-          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_massClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
-          file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_deltaRClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_OFmuOFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_massClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_deltaRClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v23_OLD_EL_BINNING/LeptonEfficiencies.root"
+          #
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIso/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagPt30/LeptonEfficiencies.root"
+          file_SUSY_TP_path = basepath + "PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagPt30_ForceProbeToBeFake/LeptonEfficiencies.root"
       elif "DLT" in args.trigger:
-          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
-          #file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_massClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
-          file_SUSY_TP_path = basepath + "MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_deltaRClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_Pt_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          #file_SUSY_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_massClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
+          file_SUSY_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_deltaRClosestBJet_AMBISOLVING_25ns_v23/LeptonEfficiencies.root"
 
 
   print("------------------------------------------------------------------------------------------")
@@ -234,8 +236,19 @@ def plotter_flavours( eff_type ):
   hist_SUSY_TP.SetLineColor(kMagenta)
   hist_SUSY_TP.SetMarkerColor(kMagenta)
 
-  hist_SUSY_TP.Draw("E0 SAME")
-  legend.AddEntry(hist_SUSY_TP, "HTop Tag & Probe (NEW)", "P")
+  hist_SUSY_TP.GetXaxis().SetTitle("p_{T}^{"+ lepton +"} [GeV]")
+  hist_SUSY_TP.GetYaxis().SetTitle("#varepsilon")
+
+  if eff_type == "real":
+    hist_SUSY_TP.GetYaxis().SetRangeUser(0.5,1.0)
+  elif eff_type == "fake":
+    if args.flavour == "el":
+      hist_SUSY_TP.GetYaxis().SetRangeUser(0.0,0.7)
+    if args.flavour == "mu":
+      hist_SUSY_TP.GetYaxis().SetRangeUser(0.0,0.5)
+
+  hist_SUSY_TP.Draw("E0")
+  legend.AddEntry(hist_SUSY_TP, "Tag & Probe", "P")
 
   # ----------------------------
   # TRUTH Tag & Probe efficiency
@@ -245,9 +258,14 @@ def plotter_flavours( eff_type ):
 
   if args.closure:
       if "SLT" in args.trigger:
-          file_TRUTH_TP_path = basepath + "MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          #file_TRUTH_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          #file_TRUTH_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_OFmuOFel_25ns_v23/LeptonEfficiencies.root"
+          #file_TRUTH_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_25ns_v23/LeptonEfficiencies.root"
+          #file_TRUTH_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_25ns_v23_OLD_EL_BINNING/LeptonEfficiencies.root"
+          #
+          file_TRUTH_TP_path = basepath + "PLOTS_25ns_v24/MMClosure_v24_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_25ns_v24/LeptonEfficiencies.root"
       elif "DLT" in args.trigger:
-          file_TRUTH_TP_path = basepath + "MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_DLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
+          file_TRUTH_TP_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_DLT_SFmuSFel_25ns_v23/LeptonEfficiencies.root"
 
   print("------------------------------------------------------------------------------------------")
   print("TRUTH Tag & Probe efficiency - Opening file:\n{0}".format(file_TRUTH_TP_path))
@@ -281,13 +299,18 @@ def plotter_flavours( eff_type ):
 
   if args.closure:
       if "SLT" in args.trigger:
-          LH_init_path = basepath + "MMClosure_v23_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/LeptonEfficiencies_LH/"
+          #LH_init_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/LeptonEfficiencies_LH/"
+          #LH_init_path = basepath + "PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_SLT_25ns_v24/LeptonEfficiencies_LH/"
+          LH_init_path = basepath + "PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24/LeptonEfficiencies_LH/"
       elif "DLT" in args.trigger:
-          LH_init_path = basepath + "MMClosure_v23_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/LeptonEfficiencies_LH/"
+          LH_init_path = basepath + "PLOTS_25ns_v23/MMClosure_v23_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/LeptonEfficiencies_LH/"
 
   hist_LH_list = []
 
-  flav_comp_list = args.flavFakeCR
+  if eff_type == "real":
+    flav_comp_list = args.flavRealCR
+  elif eff_type == "fake":
+    flav_comp_list = args.flavFakeCR
 
   if ( args.flavour == "mu" and "elel" in flav_comp_list ): flav_comp_list.remove("elel")
   if ( args.flavour == "el" and "mumu" in flav_comp_list ): flav_comp_list.remove("mumu")
@@ -369,25 +392,91 @@ def plotter_flavours( eff_type ):
     pair = (flavcomp,shiftedhist)
     hist_LH_list.append(pair)
 
-  gPad.SetLogx()
-  hist_TP.GetXaxis().SetMoreLogLabels()
+  #gPad.SetLogx()
+  #hist_TP.GetXaxis().SetMoreLogLabels()
 
   for idx, histpair in enumerate(hist_LH_list,start=0):
-    histpair[1].GetXaxis().SetMoreLogLabels()
+    #histpair[1].GetXaxis().SetMoreLogLabels()
     #if idx == 0:
     #  histpair[1].Draw("E0")
     #else:
     #  histpair[1].Draw("E0,SAME")
+
+    # TEMP: plot LH efficiency only for fake muon
+    if not ( eff_type == "fake" and args.flavour == "mu"): continue
+
     histpair[1].Draw("E0,SAME")
 
-    legend.AddEntry(histpair[1], "Likelihood - " +  histpair[0], "P")
-    #legend.Draw()
+    if histpair[0] == "mumu": flag = "#mu#mu"
+    else: flag = histpair[0]
+
+    legend.AddEntry(histpair[1], "Likelihood - " +  flag, "P")
 
   #"""
+
   legend.Draw()
 
   leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
   leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
+
+  # Add a vertical line to highlight relevant bins
+
+  if eff_type == "real":
+    low_y_edge = 0.5
+    up_y_edge  = 1.0
+  elif eff_type == "fake":
+    low_y_edge = 0.0
+    if args.flavour == "el":
+      up_y_edge  = 0.7
+    elif args.flavour == "mu":
+      up_y_edge  = 0.5
+
+  if "SLT" in args.trigger:
+
+      if args.flavour == "el":
+
+        refl_vert0 = TLine(26.0,0,26.0,up_y_edge)
+        refl_vert0.SetLineStyle(2)
+        refl_vert0.SetLineWidth(2)
+        refl_vert0.Draw("SAME")
+
+        refl_vert1 = TLine(60.0,low_y_edge,60.0,up_y_edge)
+        refl_vert1.SetLineStyle(2)
+        refl_vert1.SetLineWidth(2)
+        refl_vert1.Draw("SAME")
+
+        refl_vert2 = TLine(140.0,low_y_edge,140.0,up_y_edge)
+        refl_vert2.SetLineStyle(2)
+        refl_vert2.SetLineWidth(2)
+        refl_vert2.Draw("SAME")
+
+      elif args.flavour == "mu":
+
+        refl_vert0 = TLine(26.0,low_y_edge,26.0,up_y_edge)
+        refl_vert0.SetLineStyle(2)
+        refl_vert0.SetLineWidth(2)
+        refl_vert0.Draw("SAME")
+
+        refl_vert1 = TLine(50.0,low_y_edge,50.0,up_y_edge)
+        refl_vert1.SetLineStyle(2)
+        refl_vert1.SetLineWidth(2)
+        refl_vert1.Draw("SAME")
+
+  elif "DLT" in args.trigger:
+
+      if args.flavour == "el":
+
+        refl_vert0 = TLine(17.0,low_y_edge,17.0,up_y_edge)
+        refl_vert0.SetLineStyle(2)
+        refl_vert0.SetLineWidth(2)
+        refl_vert0.Draw("SAME")
+
+      elif args.flavour == "mu":
+
+        refl_vert0 = TLine(22.0,low_y_edge,22.0,up_y_edge)
+        refl_vert0.SetLineStyle(2)
+        refl_vert0.SetLineWidth(2)
+        refl_vert0.Draw("SAME")
 
   canvasname = ( eff_type + "_eff_el_TP_LH", eff_type + "_eff_mu_TP_LH" )[bool(args.flavour == "mu")]
   c.SaveAs( canvasname + "_" + args.trigger[0] + ".png" )

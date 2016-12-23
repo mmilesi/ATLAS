@@ -14,6 +14,8 @@ parser.add_argument('--nparallel', dest='nparallel', action='store', default=1, 
                     help='The maximum number of parallel processes to be executed. The number to choose depends on the features of the machine you are using. Default is 1 (i.e., no parallel jobs)')
 parser.add_argument('--nevents', dest='nevents', action='store', default=0, type=int,
                     help='The number of events to be processed. Default is 0 (i.e., ALL events)')
+parser.add_argument('--skip', dest='skip', action='store', default=0, type=int,
+                    help='Skip all entries before the one selected. Use in combination w/ --nevents=1 if you wish to debug a single event. Default is 0 (i.e., do NOT skip any entry)')
 parser.add_argument('--treename', dest='treename', action='store', default="nominal", type=str,
                     help='The name of the input TTree. Default is \"nominal\"')
 
@@ -42,11 +44,11 @@ def generateCmdList(samples):
         if sample[-4:] == ".txt":
             outdir = "Data"
 	    infile = sample
-    	    xAH_run = "xAH_run.py -vv --files {0} --config {1} --inputList --treeName {2} --submitDir {3} --nevents {4} --force direct".format(infile,configpath,treename,outdir,nevents)
+    	    xAH_run = "xAH_run.py -vv --files {0} --config {1} --inputList --treeName {2} --submitDir {3} --nevents {4} --skip {5} --force direct".format(infile,configpath,treename,outdir,nevents,skip)
         else :
 	    outdir = sample
 	    infile = sample_path + "/" + sample + "/" + sample + ".root"
-    	    xAH_run = "xAH_run.py -vv --files {0} --config {1} --treeName {2} --submitDir {3} --nevents {4} --force direct".format(infile,configpath,treename,outdir,nevents)
+    	    xAH_run = "xAH_run.py -vv --files {0} --config {1} --treeName {2} --submitDir {3} --nevents {4} --skip {5} --force direct".format(infile,configpath,treename,outdir,nevents,skip)
 
 	cmdlist.append(xAH_run)
 
@@ -272,6 +274,7 @@ if __name__ == '__main__':
     configpath = "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py"
     treename   = args.treename
     nevents    = args.nevents
+    skip       = args.skip
     motherdir  = args.destination
 
     if not os.path.exists(motherdir):

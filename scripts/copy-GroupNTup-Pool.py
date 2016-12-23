@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     username = "mmilesi"
 
-    version     = "25ns_v23/version_1"
+    version     = "25ns_v24_ElNoIso"
     sample_type = args.sample_type
 
     basedir = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + version + "/" + sample_type
