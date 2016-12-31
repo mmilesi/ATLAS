@@ -49,7 +49,7 @@ class TTHBackgrounds(Background):
     useEmbedding    = False
     useZCorrections = False
     useSherpaNNPDF30NNLO = False
-    
+
     RQCD = {
         'El': (1.00, 0.05),
         'Mu': (1.11, 0.08),
@@ -200,7 +200,7 @@ class TTHBackgrounds(Background):
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             return self.subprocess(trees=trees)
@@ -261,7 +261,7 @@ class TTHBackgrounds(Background):
                         ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -303,7 +303,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -344,7 +344,7 @@ class TTHBackgrounds(Background):
                         ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -384,7 +384,7 @@ class TTHBackgrounds(Background):
                         ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -426,7 +426,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -477,7 +477,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -532,7 +532,7 @@ class TTHBackgrounds(Background):
                 inputgroup += [ ('Z+jetsCVetoBVeto', 'ee'), ('Z+jetsCFilterBVeto', 'ee'), ('Z+jetsBFilter', 'ee') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -592,7 +592,7 @@ class TTHBackgrounds(Background):
                 inputgroup += [ ('Z+jetsCVetoBVeto', 'mumu'), ('Z+jetsCFilterBVeto', 'mumu'), ('Z+jetsBFilter', 'mumu') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -650,7 +650,7 @@ class TTHBackgrounds(Background):
                 inputgroup += [ ('Z+jetsCVetoBVeto', 'tautau'), ('Z+jetsCFilterBVeto', 'tautau'), ('Z+jetsBFilter', 'tautau') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -689,20 +689,12 @@ class TTHBackgrounds(Background):
         latexname = 'Z/#gamma* + jets'
         colour = kGreen
 
-        def base(self, treename='physics', category=None, options={}):
+        def __call__(self, treename='physics', category=None, options={}):
 
             print("\n{0}:\n".format(self.__class__.__name__))
 
-            zee = self.parent.procmap['Zeejets'].base(treename, category, options)
-            zmumu = self.parent.procmap['Zmumujets'].base(treename, category, options)
-            ztautau = self.parent.procmap['Ztautaujets'].base(treename, category, options)
-
-            return (zee + zmumu + ztautau)
-
-        def __call__(self, treename='physics', category=None, options={}):
-
-            zee = self.parent.procmap['Zeejets'](treename, category, options)
-            zmumu = self.parent.procmap['Zmumujets'](treename, category, options)
+            zee     = self.parent.procmap['Zeejets'](treename, category, options)
+            zmumu   = self.parent.procmap['Zmumujets'](treename, category, options)
             ztautau = self.parent.procmap['Ztautaujets'](treename, category, options)
 
             return (zee + zmumu + ztautau)
@@ -734,7 +726,7 @@ class TTHBackgrounds(Background):
                 inputgroup += [ ('Z+jetsCVetoBVeto', '*'), ('Z+jetsCFilterBVeto', '*'), ('Z+jetsBFilter', '*') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -760,10 +752,11 @@ class TTHBackgrounds(Background):
 
             # Plot only events where at least one lepton is charge flip.
 	    # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
-            #
+
 	    basecut = category.cut
 
-	    if ("2Lep_SS") in basecut.cutname:
+	    #if ("2Lep_SS") in basecut.cutname:
+	    if True:
 	        for CUT in basecut.cutlist:
 	            if ("TRUTH") in CUT.cutname:
 		        basecut = basecut.removeCut(CUT)
@@ -799,7 +792,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -845,7 +838,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -891,7 +884,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -924,20 +917,12 @@ class TTHBackgrounds(Background):
         latexname = 'W+jets'
         colour = kYellow
 
-        def base(self, treename='physics', category=None, options={}):
+        def __call__(self, treename='physics', category=None, options={}):
 
             print("\n{0}:\n".format(self.__class__.__name__))
 
-            wenu = self.parent.procmap['Wenujets'].base(treename, category, options)
-            wmunu = self.parent.procmap['Wmunujets'].base(treename, category, options)
-            wtaunu = self.parent.procmap['Wtaunujets'].base(treename, category, options)
-
-            return (wenu + wmunu + wtaunu)
-
-        def __call__(self, treename='physics', category=None, options={}):
-
-            wenu = self.parent.procmap['Wenujets'](treename, category, options)
-            wmunu = self.parent.procmap['Wmunujets'](treename, category, options)
+            wenu   = self.parent.procmap['Wenujets'](treename, category, options)
+            wmunu  = self.parent.procmap['Wmunujets'](treename, category, options)
             wtaunu = self.parent.procmap['Wtaunujets'](treename, category, options)
 
             return (wenu + wmunu + wtaunu)
@@ -960,7 +945,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -1002,7 +987,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -1035,18 +1020,9 @@ class TTHBackgrounds(Background):
         latexname = 'Others'
         colour = kGray
 
-        def base(self, treename='physics', category=None, options={}):
+        def __call__(self, treename='physics', category=None, options={}):
 
             print("\n{0}:\n".format(self.__class__.__name__))
-
-            rare_top = self.parent.procmap['RareTop'].base(treename, category, options)
-            triboson = self.parent.procmap['Triboson'].base(treename, category, options)
-            tHbj     = self.parent.procmap['THbj'].base(treename, category, options)
-            WtH      = self.parent.procmap['WtH'].base(treename, category, options)
-
-            return (rare_top + triboson + tHbj + WtH)
-
-        def __call__(self, treename='physics', category=None, options={}):
 
             rare_top = self.parent.procmap['RareTop'](treename, category, options)
             triboson = self.parent.procmap['Triboson'](treename, category, options)
@@ -1070,6 +1046,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -1118,7 +1095,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -1139,10 +1116,11 @@ class TTHBackgrounds(Background):
 
             # Plot only events where at least one lepton is charge flip.
 	    # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
-            #
+
 	    basecut = category.cut
 
-	    if ("2Lep_SS") in basecut.cutname:
+	    #if ("2Lep_SS") in basecut.cutname:
+	    if True:
 	        for CUT in basecut.cutlist:
 	            if ("TRUTH") in CUT.cutname:
 		        basecut = basecut.removeCut(CUT)
@@ -1191,7 +1169,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -1250,7 +1228,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -1271,10 +1249,11 @@ class TTHBackgrounds(Background):
 
             # Plot only events where at least one lepton is charge flip.
 	    # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
-            #
+
 	    basecut = category.cut
 
-	    if ("2Lep_SS") in basecut.cutname:
+	    #if ("2Lep_SS") in basecut.cutname:
+	    if True:
 	        for CUT in basecut.cutlist:
 	            if ("TRUTH") in CUT.cutname:
 		        basecut = basecut.removeCut(CUT)
@@ -1304,7 +1283,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -1338,31 +1317,36 @@ class TTHBackgrounds(Background):
         latexname = 'Prompt'
         colour = kYellow - 9
 
-        def base(self, treename='physics', category=None, options={}):
+        def __call__(self, treename='physics', category=None, options={}):
 
             print("\n{0}:\n".format(self.__class__.__name__))
 
-            diboson  = self.parent.procmap['Diboson'].base(treename, category, options)
-            triboson = self.parent.procmap['Triboson'].base(treename, category, options)
-            rare_top = self.parent.procmap['RareTop'].base(treename, category, options)
-            ttbarw   = self.parent.procmap['TTBarW'].base(treename, category, options)
-            ttbarz   = self.parent.procmap['TTBarZ'].base(treename, category, options)
-            tHbj     = self.parent.procmap['THbj'].base(treename, category, options)
-            WtH      = self.parent.procmap['WtH'].base(treename, category, options)
+            diboson   = self.parent.procmap['Diboson'](treename, category, options)
+            triboson  = self.parent.procmap['Triboson'](treename, category, options)
+            rare_top  = self.parent.procmap['RareTop'](treename, category, options)
+            ttbarw    = self.parent.procmap['TTBarW'](treename, category, options)
+            ttbarz    = self.parent.procmap['TTBarZ'](treename, category, options)
+            tHbj      = self.parent.procmap['THbj'](treename, category, options)
+            WtH       = self.parent.procmap['WtH'](treename, category, options)
+            #
+            ttbar     = self.parent.procmap['TTBar'](treename, category, options)
+            singletop = self.parent.procmap['SingleTop'](treename, category, options)
+            zjets     = self.parent.procmap['Zjets'](treename, category, options)
+            wjets     = self.parent.procmap['Wjets'](treename, category, options)
 
-	    return (diboson + triboson + rare_top + ttbarw + ttbarz + tHbj + WtH)
+	    basecut = category.cut
 
-        def __call__(self, treename='physics', category=None, options={}):
+            # Clean up from any truth cut
 
-            diboson  = self.parent.procmap['Diboson'](treename, category, options)
-            triboson = self.parent.procmap['Triboson'](treename, category, options)
-            rare_top = self.parent.procmap['RareTop'](treename, category, options)
-            ttbarw   = self.parent.procmap['TTBarW'](treename, category, options)
-            ttbarz   = self.parent.procmap['TTBarZ'](treename, category, options)
-            tHbj     = self.parent.procmap['THbj'](treename, category, options)
-            WtH      = self.parent.procmap['WtH'](treename, category, options)
+	    for CUT in basecut.cutlist:
+	    	if ("TRUTH") in CUT.cutname:
+	    	    basecut = basecut.removeCut(CUT)
 
-	    return (diboson + rare_top + ttbarw + ttbarz)
+            # Require all lepton be prompt, and veto on QMisID
+
+            truthcut = basecut & self.vardb.getCut('2Lep_TRUTH_PurePromptEvent')
+
+	    return ( diboson.subprocess(cut=truthcut) + rare_top.subprocess(cut=truthcut) + ttbarw.subprocess(cut=truthcut) + ttbarz.subprocess(cut=truthcut) + ttbar.subprocess(cut=truthcut) + singletop.subprocess(cut=truthcut) + zjets.subprocess(cut=truthcut) + wjets.subprocess(cut=truthcut) )
 
 
     class QMisIDMC(Process):
@@ -1370,30 +1354,15 @@ class TTHBackgrounds(Background):
         latexname = 'QMisID (MC)'
         colour = kAzure - 4
 
-        def base(self, treename='physics', category=None, options={}):
+        def __call__(self, treename='physics', category=None, options={}):
 
             print("\n{0}:\n".format(self.__class__.__name__))
-
-            dibosoncf = self.parent.procmap['DibosonCF'].base(treename, category, options)
-            topcf     = self.parent.procmap['TopCF'].base(treename, category, options)
-            zjetscf   = self.parent.procmap['ZjetsCF'].base(treename, category, options)
-
-	    return (dibosoncf + topcf + zjetscf)
-
-        def __call__(self, treename='physics', category=None, options={}):
 
             dibosoncf = self.parent.procmap['DibosonCF'](treename, category, options)
             topcf     = self.parent.procmap['TopCF'](treename, category, options)
             zjetscf   = self.parent.procmap['ZjetsCF'](treename, category, options)
 
             weight = 1.0
-
-	    #  DD/MC factors to rescale MC
-	    #
-            #if ("2Lep_ElEl_Event") in category.cut.cutname:
-	    #	weight = 0.6
-	    #if ("2Lep_OF_Event") in category.cut.cutname:
-	    #   weight = 0.7
 
 	    return ( dibosoncf.subprocess(eventweight=weight) + topcf.subprocess(eventweight=weight) + zjetscf.subprocess(eventweight=weight))
 
@@ -1410,7 +1379,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
@@ -1510,7 +1479,7 @@ class TTHBackgrounds(Background):
 
                     print("\nQMisID sp_SF - cuts: {0}, process weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
                     print("\nQMisID sp_OF - cuts: {0}, process weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
- 
+
                 else:
 
                     cut_elel = basecut & self.vardb.getCut('2Lep_ElEl_Event')
@@ -1545,7 +1514,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
@@ -1571,55 +1540,35 @@ class TTHBackgrounds(Background):
         latexname = 'Fakes (MC)'
         colour = kCyan -9
 
-        def base(self, treename='physics', category=None, options={}):
-
-	    inputgroup = [
-                ('tops', 'ttbar_nonallhad'),
-		('tops', 'singlet'),
-                ('tops', 'tW'),
-                         ]
-
-            print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
-
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) * self.parent.norm_factor
-            return sp
-
         def __call__(self, treename='physics', category=None, options={}):
 
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
+            print("\n{0}:\n".format(self.__class__.__name__))
 
-            weight=1.0
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            diboson   = self.parent.procmap['Diboson'](treename, category, options)
+            triboson  = self.parent.procmap['Triboson'](treename, category, options)
+            rare_top  = self.parent.procmap['RareTop'](treename, category, options)
+            ttbarw    = self.parent.procmap['TTBarW'](treename, category, options)
+            ttbarz    = self.parent.procmap['TTBarZ'](treename, category, options)
+            tHbj      = self.parent.procmap['THbj'](treename, category, options)
+            WtH       = self.parent.procmap['WtH'](treename, category, options)
+            ttbar     = self.parent.procmap['TTBar'](treename, category, options)
+            singletop = self.parent.procmap['SingleTop'](treename, category, options)
+            zjets     = self.parent.procmap['Zjets'](treename, category, options)
+            wjets     = self.parent.procmap['Wjets'](treename, category, options)
 
-	    #  DD/MC factors to rescale MC
-	    #
-            #if ("2Lep_ElEl_Event") in category.cut.cutname:
-	    #	weight = 2.3
-	    #if ("2Lep_OF_Event") in category.cut.cutname:
-	    #	weight = 1.6
-	    #if ("2Lep_MuMu_Event") in category.cut.cutname:
-	    #	weight = 2.1
-
-            # Require >= truth-matched non-prompt lepton and veto on QMisID
-	    #
 	    basecut = category.cut
-            truthcut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_NonPromptEvent'))
-            sp = sp.subprocess(cut=truthcut,eventweight=weight)
 
-            if TTcut:
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+            # Clean up from any truth cut
 
-            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+	    for CUT in basecut.cutlist:
+	    	if ("TRUTH") in CUT.cutname:
+	    	    basecut = basecut.removeCut(CUT)
 
-            return sp
+            # Require at least one !prompt lepton, and veto on QMisID
+
+            truthcut = basecut & self.vardb.getCut('2Lep_TRUTH_NonPromptEvent')
+
+	    return ( diboson.subprocess(cut=truthcut) + rare_top.subprocess(cut=truthcut) + ttbarw.subprocess(cut=truthcut) + ttbarz.subprocess(cut=truthcut) + ttbar.subprocess(cut=truthcut) + singletop.subprocess(cut=truthcut) + zjets.subprocess(cut=truthcut) + wjets.subprocess(cut=truthcut) )
 
 
     class FakesFF(Process):
@@ -1634,7 +1583,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
@@ -1694,7 +1643,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees)
@@ -1857,7 +1806,7 @@ class TTHBackgrounds(Background):
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             return self.subprocess(trees=trees)
@@ -2238,7 +2187,7 @@ class TTHBackgrounds(Background):
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             return self.subprocess(trees=trees)
@@ -2609,7 +2558,7 @@ class TTHBackgrounds(Background):
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             sp = self.subprocess(trees=trees) * self.parent.norm_factor
@@ -2635,7 +2584,7 @@ class TTHBackgrounds(Background):
             sp_TL_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(TLcut))
             sp_LT_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(LTcut))
             sp_LL_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(LLcut))
-            
+
 	    print(" ")
             print("{0} - TT : TTBar Fakes (pre-weighting) = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_TT_preweight.numberstats()[0],sp_TT_preweight.numberstats()[1]))
             print("{0} - TL : TTBar Fakes (pre-weighting) = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_TL_preweight.numberstats()[0],sp_TL_preweight.numberstats()[1]))
@@ -2652,7 +2601,7 @@ class TTHBackgrounds(Background):
             print("{0} - TL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
             print("{0} - LT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
             print("{0} - LL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
-		    
+
 	    print(" ")
             print("{0} - TT : TTBar Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_TT.numberstats()[0],sp_TT.numberstats()[1]))
             print("{0} - TL : TTBar Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp_TL.numberstats()[0],sp_TL.numberstats()[1]))
@@ -2676,7 +2625,7 @@ class TTHBackgrounds(Background):
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             return self.subprocess(trees=trees) * self.parent.norm_factor
@@ -2853,7 +2802,7 @@ class TTHBackgrounds(Background):
 
     # Check Data vs. TTBar MC in low njet, TL,LT, e-mu region
     # Use the theta factors derived in data to reweight TTBar MC
-    #
+
     class FakesClosureDataTHETA(Process):
 
         latexname = 'Fakes #theta method'
@@ -2866,7 +2815,7 @@ class TTHBackgrounds(Background):
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1}".format(idx,sample[1]) for idx, sample in enumerate(inputgroup)))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
 
             trees = self.inputs.getTrees(treename, inputgroup)
             return self.subprocess(trees=trees) * self.parent.norm_factor
