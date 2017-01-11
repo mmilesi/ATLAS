@@ -157,7 +157,27 @@ class Inputs:
     def getSubGroupList(self, group=''):
         return self.alltrees[self.nomtree][group].keys()
 
+    def getSysIndexes(self, sampleID, branchID):
+
+        sampletree = self.getTree(sampleid=sampleID)
+        branches_array = sampletree.GetListOfBranches()
+        idxlist = []
+        for b in range(0,branches_array.GetEntries()):
+            branchname = branches_array.At(b).GetName()
+            if not all( s in branchname for s in [branchID,"_up"] ): continue
+            tokens = branchname.split("_")
+            # The bin index is supposed to be the second to last token in the branch name
+            idx = tokens[-2]
+            try:
+                int(idx)
+            except ValueError:
+                print("\nERROR! String token: {0} cannot be converted to an integer\n".format(idx))
+                raise
+            idxlist.append(idx)
+        return idxlist
+
 class Variable:
+
     def __init__(self, **kw):
         self.latexname          = kw.get('latexname',   "Variable_{Plot}^{Name} [Units]")
         self.latexnameX         = kw.get('latexnameX',  self.latexname)
@@ -180,6 +200,7 @@ class Variable:
         self.logaxisX           = kw.get('logaxisX',    False)
         self.basecut            = kw.get('basecut',     None)
         self.weight             = kw.get('weight',      None)
+        self.sysvar             = kw.get('sysvar',      False)
 
         if '[' in self.latexname and ']' in self.latexname:
             self.unit = self.latexname[self.latexname.index('[')+1:self.latexname.index(']')]
@@ -279,8 +300,8 @@ class Cut:
             newliststr = []
             newlist = []
             for c in sorted(self.cutlist + othercut.cutlist, key=lambda x: x.cutname):
-                #c is in the list of cuts sum of the teo elements that are added sorted by the cutname
-                if c.cutname in newlistnames: continue #don't put two time the same cut
+                # c is in the list of cuts sum of the teo elements that are added sorted by the cutname
+                if c.cutname in newlistnames: continue # don't put twice time the same cut
                 newlistnames.append(c.cutname)
                 newliststr.append(c.cutstr)
                 newlist.append(c)
@@ -413,7 +434,9 @@ class SubProcess:
             name = name.replace(c, '_')
         return name
 
-    def subprocess(self, tree=None, cut=None, weight=1.0, eventweight=None):
+    def subprocess(self, tree=None, cut=None, weight=1.0, eventweight=None, clearbasecut=False):
+        if clearbasecut:
+            self.basecut = None
         if tree is None:
             tree = self.tree
         if self.eventweight and eventweight:
@@ -559,6 +582,8 @@ class OperatorProcess(SubProcess):
         else:
             rightname = right.name
         self.basecut = left.basecut
+        self.baseweight = left.baseweight
+        self.eventweight = left.eventweight
         self.name = '('+leftname+operator+rightname+')'
         self.left = left
         self.operator = operator
@@ -567,13 +592,13 @@ class OperatorProcess(SubProcess):
     def __str__(self):
         return 'OperatorProcess:(' + self.left.__str__() + ' ' + self.operator + ' ' + self.right.__str__() + ')'
 
-    def subprocess(self, tree=None, cut=None, weight=1.0, eventweight=None):
+    def subprocess(self, tree=None, cut=None, weight=1.0, eventweight=None, clearbasecut=False):
     	if hasattr(self.left, 'subprocess'):
-    	    left = self.left.subprocess(tree, cut, weight, eventweight)
+    	    left = self.left.subprocess(tree, cut, weight, eventweight, clearbasecut)
     	else:
     	    left = self.left
     	if hasattr(self.right, 'subprocess'):
-    	    right = self.right.subprocess(tree, cut, weight, eventweight)
+    	    right = self.right.subprocess(tree, cut, weight, eventweight, clearbasecut)
     	else:
     	    right = self.right
 
@@ -700,6 +725,7 @@ class Process:
         pass
 
     def subprocess(self, trees=[], basecut=None, baseweight=1.0, eventweight=None):
+
         if self.parent.eventweight and eventweight:
             eventweight = '%s * %s' % (self.parent.eventweight, eventweight)
         elif self.parent.eventweight:
@@ -709,9 +735,7 @@ class Process:
         sp = None
         for tree in trees:
             weight = baseweight
-            #
 	    # Make sure eventweight is reset to 1.0 if Data
-	    #
 	    if not tree.GetTitle().startswith('$ISMC$'):
 	        eventweight = '1.0'
             if tree.GetTitle().startswith('$ISMC$') or tree.GetTitle().startswith('$ISEMBED$'):

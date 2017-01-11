@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     gROOT.SetBatch(True)
 
-    import EfficiencyPlotter, EfficiencyPlotter_ElNoIso, EfficiencyPlotter_ElNoIso_Rebinned
+    import EfficiencyPlotter, EfficiencyPlotter_ElNoIso, EfficiencyPlotter_ElNoIso_Rebinned_1, EfficiencyPlotter_ElNoIso_Rebinned_2, EfficiencyPlotter_ElNoIso_Rebinned_3
 
     if False:
         EfficiencyPlotter.plotFakeElectron()
@@ -30,7 +30,14 @@ if __name__ == "__main__":
         EfficiencyPlotter_ElNoIso.plotRealElectron()
         EfficiencyPlotter_ElNoIso.plotRealElectron_BaselineElIso()
 
+    if False:
+        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron()
+        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_anyProbe()
+        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_BaselineElIso()
+
+    if False:
+        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeElectron()
+
     if True:
-        EfficiencyPlotter_ElNoIso_Rebinned.plotFakeElectron()
-        EfficiencyPlotter_ElNoIso_Rebinned.plotFakeElectron_anyProbe()
-        EfficiencyPlotter_ElNoIso_Rebinned.plotFakeElectron_BaselineElIso()
+        EfficiencyPlotter_ElNoIso_Rebinned_3.plotFakeElectron()
+

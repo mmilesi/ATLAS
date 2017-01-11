@@ -14,7 +14,6 @@ parser.add_argument("--triggerMatching", dest="triggerMatching", action="store",
 args = parser.parse_args()
 
 from ROOT import ROOT, TFile
-
 print("\nRunning w/ option:\n--triggerMatching={0}\n".format(args.triggerMatching))
 
 
@@ -59,14 +58,20 @@ def copyElectron():
   # Real electron eff from T&P (OS, em,me, SLT)
 
   if ( args.triggerMatching == "UNBIASED" ) :
-    #path_r_el = "./PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake_REBINNED/"
-    path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_REBINNED/"
+    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake/"
+    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_REBINNED_1/"
+    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_REBINNED_2/"
+    path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_REBINNED_3/"
   elif ( args.triggerMatching == "YES_TM" ):
-    #path_r_el = "./PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake_TRIGMATCH_EFF_REBINNED/"
-    path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_TRIGMATCH_EFF_REBINNED/"
+    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_TRIGMATCH_EFF/"
+    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_TRIGMATCH_EFF_REBINNED_1/"
+    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_TRIGMATCH_EFF_REBINNED_2/"
+    path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_TRIGMATCH_EFF_REBINNED_3/"
   elif ( args.triggerMatching == "NOT_TM" ):
-    #path_r_el = "./PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake_NOT_TRIGMATCH_EFF_REBINNED/"
-    path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_NOT_TRIGMATCH_EFF_REBINNED/"
+    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_NOT_TRIGMATCH_EFF/"
+    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_NOT_TRIGMATCH_EFF_REBINNED_1/"
+    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_NOT_TRIGMATCH_EFF_REBINNED_2/"
+    path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_NOT_TRIGMATCH_EFF_REBINNED_3/"
 
   file_r_el = TFile(path_r_el + "LeptonEfficiencies.root")
 
@@ -101,6 +106,7 @@ if __name__ == "__main__":
 
   outputpath = basedir + append
   if not os.path.exists(outputpath):
+    print("Creating directory: {0}".format(outputpath))
     os.makedirs(outputpath)
 
   outputfile = outputpath + "/" + "LeptonEfficiencies.root"
