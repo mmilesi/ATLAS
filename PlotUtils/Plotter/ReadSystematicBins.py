@@ -455,7 +455,7 @@ if __name__ == '__main__':
 	        var_list.append("NJets")
 
     flavour_list = ["ElEl", "MuMu", "OF"]
-    #flavour_list = ["ElEl"]
+    #flavour_list = ["ElEl","MuMu"]
 
     print("Looking at variables : [" + ",".join( "{0}".format(v) for v in var_list ) + "]")
 
@@ -479,6 +479,10 @@ if __name__ == '__main__':
     	    for key in myfile.GetListOfKeys():
     		keyname = key.GetName()
     		if not ( "fakesbkg_" in keyname ): continue
+
+                # HACK
+                if "Mu_Pt_Stat_7" in keyname: continue
+
     		keyname = keyname.replace("fakesbkg_","")
     		keyname = keyname.replace("_dn","")
     		keyname = keyname.replace("_up","")
