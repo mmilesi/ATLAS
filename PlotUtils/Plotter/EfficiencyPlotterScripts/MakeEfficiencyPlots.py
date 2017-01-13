@@ -35,9 +35,13 @@ if __name__ == "__main__":
         EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_anyProbe()
         EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_BaselineElIso()
 
-    if False:
-        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeElectron()
-
+    # Use this one (has the right binning)
     if True:
+        EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealElectron()
+        EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealMuon()
+        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeElectron()
+        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeMuon()
+
+    if False:
         EfficiencyPlotter_ElNoIso_Rebinned_3.plotFakeElectron()
 

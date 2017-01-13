@@ -374,3 +374,4 @@ def plotRealElectron_BaselineElIso():
     Plot.legend.Clear()
 
     del Plot.reflines[:]
+

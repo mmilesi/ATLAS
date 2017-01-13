@@ -1,3 +1,4 @@
+
 /**
  * @file   RealFakeEffFitter.cc
  * @author Marco Milesi <marco.milesi@cern.ch>
@@ -2894,14 +2895,14 @@ int main( int argc, char **argv ) {
 
     // DO THE FIT ON TTBAR MC
 
-    const std::string tp_path("../PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake/"); // will read *average* efficiency from T&P as an eductaed guess for the fit
+    //const std::string tp_path("../PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake/"); // will read *average* efficiency from T&P as an eductaed guess for the fit
+    const std::string tp_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake/");
 
     // DLT
 
-    const std::string input_path("../OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24/");
-    //const std::string input_path("../PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24/");
-    //const std::string input_path("../PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_TRIGMATCH_EFF/");
-    //const std::string input_path("../PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_NOT_TRIGMATCH_EFF/");
+    //const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso/");
+    const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso_TRIGMATCH_EFF/");
+    //const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso_NOT_TRIGMATCH_EFF/");
 
     // SLT
 
@@ -2915,7 +2916,7 @@ int main( int argc, char **argv ) {
 
     if ( strcmp( FLAV_COMB, "ELEL" ) == 0 ) {
 
-      // real efficiency - e
+      // fit for real efficiency - e
 
       LHFitter real_ee( LHFitter::kFlavour::ELEL, LHFitter::kEfficiency::REAL );
       //real_ee.setVerbosity(LHFitter::kVerbosity::DEBUG);
@@ -2931,7 +2932,7 @@ int main( int argc, char **argv ) {
       real_ee.initialise();
       real_ee.fit();
 
-      // fake efficiency - e
+      // fit for fake efficiency - e
 
       LHFitter fake_ee( LHFitter::kFlavour::ELEL, LHFitter::kEfficiency::FAKE );
       //fake_ee.setVerbosity(LHFitter::kVerbosity::DEBUG);
@@ -2951,7 +2952,7 @@ int main( int argc, char **argv ) {
 
     if ( strcmp( FLAV_COMB, "MUMU" ) == 0 ) {
 
-      // real efficiency - mu
+      // fit for real efficiency - mu
 
       LHFitter real_mm( LHFitter::kFlavour::MUMU, LHFitter::kEfficiency::REAL );
       //real_mm.setVerbosity(LHFitter::kVerbosity::DEBUG);
@@ -2967,7 +2968,7 @@ int main( int argc, char **argv ) {
       real_mm.initialise();
       real_mm.fit();
 
-      // fake efficiency - mu
+      // fit for fake efficiency - mu
 
       LHFitter fake_mm( LHFitter::kFlavour::MUMU, LHFitter::kEfficiency::FAKE );
       //fake_mm.setVerbosity(LHFitter::kVerbosity::DEBUG);
@@ -2992,7 +2993,7 @@ int main( int argc, char **argv ) {
 
     if ( strcmp( FLAV_COMB, "OF" ) == 0 ) {
 
-      // real efficiency - e,mu
+      // fit for real efficiency - e,mu
 
       LHFitter real_of( LHFitter::kFlavour::OF, LHFitter::kEfficiency::REAL );
       real_of.setVerbosity(LHFitter::kVerbosity::DEBUG);
@@ -3008,7 +3009,7 @@ int main( int argc, char **argv ) {
       real_of.initialise();
       real_of.fit();
 
-      // fake efficiency - e,mu
+      // fit for fake efficiency - e,mu
 
       LHFitter fake_of( LHFitter::kFlavour::OF, LHFitter::kEfficiency::FAKE );
       fake_of.setVerbosity(LHFitter::kVerbosity::DEBUG);
@@ -3032,7 +3033,7 @@ int main( int argc, char **argv ) {
 
     if ( strcmp( FLAV_COMB, "INCLUSIVE" ) == 0 ) {
 
-      // real efficiency - e,mu
+      // fit for real efficiency - e,mu
 
       LHFitter real_incl( LHFitter::kFlavour::INCLUSIVE, LHFitter::kEfficiency::REAL );
       //real_incl.setVerbosity(LHFitter::kVerbosity::DEBUG);
@@ -3048,6 +3049,8 @@ int main( int argc, char **argv ) {
       real_incl.initialise();
       real_incl.fit();
 
+      // fit for fake efficiency - e,mu
+
       LHFitter fake_incl( LHFitter::kFlavour::INCLUSIVE, LHFitter::kEfficiency::FAKE );
       //fake_incl.setVerbosity(LHFitter::kVerbosity::DEBUG);
       fake_incl.setTagAndProbePath(tp_path);
@@ -3056,8 +3059,8 @@ int main( int argc, char **argv ) {
       // REBINNING
       fake_incl.m_doRebinning = true;
       //fake_incl.setBinGrouping(2);
-      int array_fake_bin_size(6);
-      double fake_incl_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,40.0,200.0}; // e -DATA, MC
+      int array_fake_bin_size(7);
+      double fake_incl_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,200.0}; // mu - DATA, MC
       fake_incl.setVariableBins( fake_incl_new_bins, array_fake_bin_size-1 );
       fake_incl.initialise();
       fake_incl.fit();

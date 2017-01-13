@@ -49,12 +49,20 @@ class Plot:
 
 	self.__props  = properties
 
+        # Set here default properties (if they were not set by the user)
 
-    def setPropery( self, propID, propValue ):
+        if not self.__props.get("drawOpt"): self.__props["drawOpt"] = "E0"
+
+    def setProperty( self, propID, propValue ):
 
         self.__props[propID] = propValue
 
-    def makePlot( self, canvas, drawOpt ):
+    def getProperty( self, propID ):
+
+        if self.__props.get(propID):
+            return self.__props[propID]
+
+    def makePlot( self, canvas ):
 
         canvas.cd()
 
@@ -76,7 +84,14 @@ class Plot:
 
         if self.__props.get("legend")      : Plot.legend.AddEntry(self.__hist, self.__props["legend"], "P")
 
-	self.__hist.Draw( drawOpt )
+        if self.__props.get("setBinVals")  :
+            for tup in self.__props["setBinVals"]:
+                self.__hist.SetBinContent(tup[0],tup[1])
+        if self.__props.get("setBinErrs")  :
+            for tup in self.__props["setBinErrs"]:
+                self.__hist.SetBinError(tup[0],tup[1])
+
+	self.__hist.Draw( self.__props["drawOpt"] )
 
 
 class MultiPlot:
@@ -94,9 +109,10 @@ class MultiPlot:
         for idx, plot in enumerate(self.__plotlist):
 
 	    if idx == 0:
-                plot.makePlot( c, "E0")
+                plot.makePlot(c)
 	    else:
-                plot.makePlot( c, "E0 SAME")
+                plot.setProperty("drawOpt", str(plot.getProperty("drawOpt")) + " SAME" )
+                plot.makePlot(c)
 
         for refl in Plot.reflines:
             refl.SetLineStyle(2)
