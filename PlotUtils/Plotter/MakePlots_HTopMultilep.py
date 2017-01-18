@@ -1385,7 +1385,6 @@ if __name__ == "__main__":
 
                     # Probe fake assignment efficiency
 
-                    #"""
                     midstr = "ProbeTMatchedTo"
                     vardb.registerCategory( MyCategory('FakeCRMu' + midstr + 'Fake', cut = probe_sel_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = ( weight_TP_MM + " * weight_probe" ) ) )
                     vardb.registerCategory( MyCategory('FakeCRMu' + midstr + 'Real', cut = probe_sel_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = ( weight_TP_MM + " * weight_probe" ) ) )
@@ -1393,7 +1392,6 @@ if __name__ == "__main__":
                     vardb.registerCategory( MyCategory('FakeCREl' + midstr + 'Fake', cut = probe_sel_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = ( weight_TP_MM + " * weight_probe" ) ) )
                     vardb.registerCategory( MyCategory('FakeCREl' + midstr + 'Real', cut = probe_sel_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = ( weight_TP_MM + " * weight_probe" ) ) )
                     vardb.registerCategory( MyCategory('FakeCREl' + midstr + 'Any',  cut = probe_sel_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = ( weight_TP_MM + " * weight_probe" ) ) )
-                    #"""
 
             if ( args.lepFlavComp == "ICHEP_2016" ): # Real CR: OF, Fake CR: INCLUSIVE(el), SF(mu)
 
@@ -1650,7 +1648,7 @@ if __name__ == "__main__":
 
     ttH.lumi_units = 'fb-1'
 
-    print ("\nNormalising to lumi ==> {0} [{1}]\n".format( args.lumi, ttH.lumi_units ) )
+    print ("\nNormalising MC to lumi : {0} [{1}]\n".format( args.lumi, ttH.lumi_units ) )
 
     # ----------------------------------
     # Set the global event weight for MC
@@ -1658,9 +1656,11 @@ if __name__ == "__main__":
 
     ttH.eventweight = "mcWeightOrg * pileupEventWeight_090"
 
+    # This will reset the global event weight, and will reset the Xsec and lumi weight to be 1
+    # (Needed when looking at RAW cutflow)
+
     if args.noWeights:
-        ttH.eventweight = "1.0"
-        ttH.luminosity  = 1.0
+        ttH.eventweight = None
         ttH.rescaleXsecAndLumi = True
 
     if doMMClosureTest or "CLOSURE" in args.channel:
@@ -1796,11 +1796,7 @@ if __name__ == "__main__":
 
         if doMM:
 
-            # ---> all the MC backgrounds use a truth selection of only prompt leptons in the event (and QMisID veto)
-            #      to avoid double counting with
-            #      data-driven/MC-based charge flip and fakes estimate
-
-            ttH.backgrounds.extend(['TTBarW','TTBarZ','Diboson','Rare','FakesMM'])
+            ttH.backgrounds.extend(['TTBarW','TTBarZ','Diboson','Rare','FakesMM']) # NB: if using this list, make sure only prompt MC events are selected (and QMisID veto), to avoid double counting w/ QMisID and Fakes estimate...
             #ttH.backgrounds.extend(['Prompt','FakesMM'])
 
             if args.useMCQMisID:
@@ -1857,20 +1853,26 @@ if __name__ == "__main__":
             ttH.observed = []
         ttH.backgrounds = []
 
-        #ttH.backgrounds.extend(['Prompt','FakesMC']) # This includes all the following processes: ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
-        ttH.backgrounds.extend(['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']) # NB: if using this list, make sure a QMisID veto is applied (in SS CR), since QMisID is added separately below
-        #
-        # TEMP!
-        # Use the following for 25ns_v24_ElNoIso (missing Triboson, tHbj, WtH in "Rare"):
-        #
-        ttH.observed = []
-        #ttH.backgrounds.extend(['TTBar','SingleTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson'])
-        ttH.backgrounds.remove("Rare")
+        if "DATAMC" in args.channel:
+            ttH.backgrounds.extend(['Prompt','FakesMC']) # This includes all the following processes: ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']. Truth cuts are redefined in the 'Prompt' and 'FakesMC' classes...
+            ttH.debugprocs = ['Prompt','FakesMC']
+        else:
+            ttH.backgrounds.extend(['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']) # NB: if using this list, make sure a QMisID veto is applied (in SS CR), since QMisID is added separately below
+            # -------------------------------------------------------------------------------
+            # TEMP!
+            # Use the following for 25ns_v24_ElNoIso (missing Triboson, tHbj, WtH in "Rare"):
+            #
+            ttH.observed = []
+            ttH.backgrounds.remove("Rare")
+            #
+            # -------------------------------------------------------------------------------
 
         if args.useMCQMisID:
             ttH.backgrounds.append('QMisIDMC')
         else:
             ttH.backgrounds.append('QMisID')
+
+        ttH.debugprocs = ['Observed','TTBar','QMisID','QMisIDMC']
 
         if "CLOSURE" in args.channel:
             ttH.signals     = []
@@ -1921,6 +1923,7 @@ if __name__ == "__main__":
             ttH.signals     = [] # ['FakesClosureTHETA']
             ttH.observed    = ['TTBar']
             ttH.backgrounds = ['FakesClosureMM']
+            ttH.debugprocs  = ['TTBar','FakesClosureMM']
         elif doFF:
             ttH.signals     = []
             ttH.observed    = ['TTBar']
@@ -1998,13 +2001,13 @@ if __name__ == "__main__":
         print ("\n*********************************************\n\n")
         print ("Making plots in category:\t{0}\n".format( category.name ))
 
-        # ----------------------------------------------------
-        # Reset the weight for *this* category to 1 if neeeded
-        # ----------------------------------------------------
+        # -------------------------------------------------------
+        # Reset the weight for *this* category to None if neeeded
+        # -------------------------------------------------------
 
         if args.noWeights or "NO_CORR" in args.channel:
-	    print("Resetting category weight to 1...\n")
-            category.weight = "1.0"
+	    print("Resetting category weight to None...\n")
+            category.weight = None
 
         # TEMP!
         # For DLT, trigger SF not available in yet...
@@ -2020,12 +2023,13 @@ if __name__ == "__main__":
 
         for idx,var in enumerate(vardb.varlist, start=0):
 
-            # ----------------------------------------------------
-            # Reset the weight for *this* variable to 1 if neeeded
-            # ----------------------------------------------------
+            # -------------------------------------------------------
+            # Reset the weight for *this* variable to None if neeeded
+            # -------------------------------------------------------
 
             if args.noWeights or "NO_CORR" in args.channel and var.weight:
-                var.weight = "1.0"
+                print("\tResetting variable weight to None...\n")
+                var.weight = None
 
             # --------------------------
             # Avoid making useless plots
@@ -2060,10 +2064,11 @@ if __name__ == "__main__":
             print ("\tPlotting variable:\t{0}\n\tNTup name:\t{1}\n".format(var.shortname, var.ntuplename))
 
             total_weight = ttH.eventweight
-            if category.weight:
-                total_weight += ( " * " + category.weight )
-            if var.weight and not var.weight in category.weight:
-                total_weight += ( " * " + var.weight )
+            if isinstance(total_weight, basestring):
+                if category.weight:
+                    total_weight += ( " * " + category.weight )
+                if var.weight and not var.weight in category.weight:
+                    total_weight += ( " * " + var.weight )
 
             print ("\t-----------------------------------------------------------------------------------------------------------------------------\n")
             print ("\tMC event weight for this (category, variable):\n\n\t\t{0}\n".format( total_weight ) )

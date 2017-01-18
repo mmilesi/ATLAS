@@ -1,9 +1,13 @@
+""" BackgroundsTools.py: base classes to define variables, cuts, processes operations and load input samples """
+
+__author__     = "KG, Marco Milesi, Francesco Nuti"
+__email__      = "Kong.Guan.Tan@cern.ch, marco.milesi@cern.ch, francesco.nuti@cern.ch"
+__maintainer__ = "Marco Milesi"
+
 import sys, glob, os, array, inspect, math
 
 from ROOT import TFile, TH1, TH1D, TH1I, TH2D, TH2F, TH2I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
 from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kBlack, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
-
-# glob finds all the pathnames matching a specified pattern.glob.glob(pathname) Return a possibly-empty list of path names that match pathname in which unix wildcards can be used
 
 sys.path.append(os.path.abspath(os.path.curdir))
 from Core import NTupleTools, DatasetManager, listifyInputFiles
@@ -29,14 +33,13 @@ class Inputs:
 	# In this dictionary each group and subgroup is separated and has its proper TChain.
 	# This function create the TChain for the group specified if not exist and if already exist add the tree founded to this chain.
 	# I'm not very sure of the role of the sampleid variable. Can do this for many samples (all those in filegroup) and for many trees (for the nominal and for all those in systrees)
-	#
 
 	sampleid = sample["ID"]
 	group    = sample["group"]
 	subgroup = sample["subgroup"]
 
         self.nomtree = nomtree
-        self.systrees = systrees # are the names of the tree which contains the samples with shifted systematics
+        self.systrees = systrees # These are the names of the trees with systematics
         syslist = []
         for t in systrees:
             syslist.append('SystematicsUP/'+t)
@@ -57,7 +60,7 @@ class Inputs:
             return False
 
         # If not already done, set the Xsec weight to each (MC) TTree
-	#
+
         for filepath in filelist:
 	    f = TFile.Open(filepath,"UPDATE")
 	    for treename in treelist:
@@ -67,7 +70,7 @@ class Inputs:
                   return False
 	       if ismc and ( t.GetWeight() == 1.0 or resetTreeWeight ):
 		  print("Weighting tree w/ Xsec weight...")
-		  weight = float(sample['xsection']) * float(sample['efficiency']) * float(sample['kfactor']) * 1e3 # to get the weight in fb (the Xsec is in pb)
+		  weight = float(sample['xsection']) * float(sample['efficiency']) * float(sample['kfactor']) * 1e3 # To get the weight in fb (assuming the Xsec is in pb)
 		  h = f.Get("TotalEventsW")
 		  if not h:
 		     print ("WARNING: histogram named TotalEventsW in file {1} couldn't be found!".format(filepath))
@@ -78,7 +81,7 @@ class Inputs:
 	    f.Close()
 
         # Add the TTrees into a TChain
-	#
+
         for filepath in filelist:
 	    for treename in treelist:
                 if not treename in self.alltrees:
@@ -94,39 +97,39 @@ class Inputs:
                     processes[group][subgroup].SetTitle(processes[group][subgroup].GetTitle()+'_'+sampleid)
                     if not treename in self.sampleids:
                         self.sampleids[treename] = {}
-                    self.sampleids[treename][sampleid] = (group, subgroup) #seems that using sampleid you can then recover the info about the group and the subgroup
+                    self.sampleids[treename][sampleid] = (group, subgroup) # Seems that using sampleid you can then recover the info about the group and the subgroup...
 
         return True
 
-    # Load a tree from the alltrees list
-    #
+    # Load a tree from the list of all trees
+
     def getTree(self, treename='physics', group='', subgroup='', sampleid=None):
 
 	if sampleid:
             group, subgroup = self.sampleids[self.nomtree][sampleid]
 
         if treename.startswith('SystematicsUP/') or treename.startswith('SystematicsDOWN/'):
-            if self.getTree(self.nomtree, group, subgroup).GetTitle().startswith('$ISDATA$'):
-                treename = self.nomtree #in case of data the tree to be considered is the nominal
+            if self.getTree(self.nomtree, group, subgroup).GetTitle().startswith('$ISDATA$'): # In case of data the tree to be considered is the nominal
+                treename = self.nomtree
 
         try:
             tree = self.alltrees[treename][group][subgroup]
         except:
             tree = None
-            print("ERROR: Could not reach tree {0} in group {1}, subgroup {2}".format(treename, group, subgroup))
+            print("WARNING: Could not reach tree {0} in group {1}, subgroup {2}".format(treename, group, subgroup))
 
 	#print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
 
-    # Group list is a list of tuple with two elements (strings), e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards.
+    # Group list is a list of tuple with two elements (strings),
+    # e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards.
     # The entire list of trees is returned, one tree for each tuple.
-    #
+
     def getTrees(self, treename='physics', grouplist=[]):
 
 	newGroupList = []
         for group, subgroup in grouplist:
-            #In case of wildcards the functions getGroupList and/or getSubGroupList are colled to solve the *
-            if group == '*' and subgroup == '*':
+            if group == '*' and subgroup == '*': # If using wildcard, the functions getGroupList and/or getSubGroupList are called to parse the '*' symbol
                 for g in self.getGroupList():
                     for sg in self.getSubGroupList(g):
                         newGroupList.append( (g, sg) )
@@ -257,21 +260,22 @@ class Variable:
         h.Sumw2()
         return h
 
-
-# A Cut is defined by a name and a set of rules defined in cut string,
-# but can be also the composition of a series of cuts specified in the cut list
-
 class Cut:
+
+    # A Cut is defined by a name and a set of rules defined in cut string,
+    # but can be also the composition of a series of cuts specified in the cut list.
+
     def __init__(self, cutname, cutstr, cutlist=None):
         self.cutname    = cutname
         self.cutstr     = cutstr
         if cutlist is None:
             cutlist = [self]
-        self.cutlist        = cutlist
-        self.cutnamelist    = [c.cutname for c in cutlist]
+        self.cutlist     = cutlist
+        self.cutnamelist = [c.cutname for c in cutlist]
+
+    # Removes a cut, provided it's in the list of cuts
 
     def removeCut(self, cut):
-        #removes if it's present a cut from the list of cuts
         newlistnames = []
         newliststr = []
         newlist = []
@@ -284,13 +288,16 @@ class Cut:
         newstr = ' && '.join(newliststr)
         return Cut(newname, newstr, newlist)
 
+    # Substitute a cut w/ another cut
+
     def swapCut(self, cutremove, cutadd):
-        #substitute a cut
         cut = self.removeCut(cutremove)
         return cut & cutadd
 
+    # Bitwise AND of cuts. Should be called in this way: cut1 & cut2
+    # This works also for concatenating lists of cuts.
+
     def __and__(self, othercut):
-        # bitwise AND of two cuts. Can be called in this way: cut1 & cut2
         if not othercut:
             newname = self.cutname
             newstr = self.cutstr
@@ -300,31 +307,33 @@ class Cut:
             newliststr = []
             newlist = []
             for c in sorted(self.cutlist + othercut.cutlist, key=lambda x: x.cutname):
-                # c is in the list of cuts sum of the teo elements that are added sorted by the cutname
-                if c.cutname in newlistnames: continue # don't put twice time the same cut
+                if c.cutname in newlistnames: continue # Don't use the same cut more than once!
                 newlistnames.append(c.cutname)
                 newliststr.append(c.cutstr)
                 newlist.append(c)
             newname = ' AND '.join(newlistnames)
-            newstr = ' && '.join(newliststr)
+            newstr  = ' && '.join(newliststr)
         return Cut(newname, newstr, newlist)
 
+    # Bitwise OR of two cuts. Should be called in this way: cut1 | cut2
+
     def __or__(self, othercut):
-        # bitwise OR of two cuts. Can be called in this way: cut1 | cut2
         if not othercut:
             newname = self.cutname
             newstr = self.cutstr
             newlist = self.cutlist
         else:
             cut1, cut2 = sorted([self, othercut], key=lambda x: x.cutname)
-            newname = '((%s) OR (%s))' % (cut1.cutname, cut2.cutname)
-            newstr = '((%s) || (%s))' % (cut1.cutstr, cut2.cutstr)
-            newlist = None# this
+            newname = '( ( %s ) OR ( %s ) )' % (cut1.cutname, cut2.cutname)
+            newstr  = '( ( %s ) || ( %s ) )' % (cut1.cutstr, cut2.cutstr)
+            newlist = None
         return Cut(newname, newstr, newlist)
 
+    # Negation of a cut. Should be called in this way: -cut
+
     def __neg__(self):
-        newname = 'NOT (%s)' % (self.cutname)
-        newstr = '!(%s)' % (self.cutstr)
+        newname = 'NOT ( %s )' % (self.cutname)
+        newstr = '!( %s )' % (self.cutstr)
         return Cut(newname, newstr)
 
 class Systematics:
@@ -342,7 +351,11 @@ class Category:
         self.overridebins = overridebins
 
 class VariableDB:
-    #this class contains the list of all the variables, cuts, systematics and categories which we want to consider and to use to analyse data. You can get from any place one of these info using the functtions get... the info are registered using the command register. To see the structure of the infos look at the classes above
+
+    # This class contains the list of all the variables, cuts, systematics and categories to be used to analyse our data.
+    # Info are registered using the register methods.
+    # Info stored in this DB can be retrieved at any time using the getter methods...
+
     def __init__(self):
         self.vardb = {}
         self.cutdb = {}
@@ -397,7 +410,7 @@ class SubProcess:
     histcache = {}
     numcache = {}
 
-    def __init__(self, tree, basecut=None, baseweight=1.0, eventweight=None):
+    def __init__(self, tree, basecut=None, baseweight=1.0, eventweight=None, debug=False):
         treename = tree.GetName()
         self.name = 'SubProcess:'+tree.GetTitle()+'_EVTWGT_'+str(eventweight)
         self.tree = tree
@@ -406,6 +419,7 @@ class SubProcess:
         self.basecut = basecut
         self.baseweight = baseweight
         self.eventweight = eventweight
+        self.debug = debug
 
     def __str__(self):
         if self.basecut:
@@ -434,7 +448,7 @@ class SubProcess:
             name = name.replace(c, '_')
         return name
 
-    def subprocess(self, tree=None, cut=None, weight=1.0, eventweight=None, clearbasecut=False):
+    def subprocess(self, tree=None, cut=None, weight=1.0, eventweight=None, clearbasecut=False, debug=False):
         if clearbasecut:
             self.basecut = None
         if tree is None:
@@ -448,7 +462,7 @@ class SubProcess:
         elif self.basecut and not cut:
             cut = self.basecut
 
-        sp = SubProcess(tree=tree, basecut=cut, baseweight=self.baseweight*weight, eventweight=eventweight)
+        sp = SubProcess(tree=tree, basecut=cut, baseweight=self.baseweight*weight, eventweight=eventweight, debug=debug)
         return sp
 
     def numberstats(self, cut=None, weight=None, eventweight=None, category=None):
@@ -478,22 +492,16 @@ class SubProcess:
         h.Sumw2()
         if self.eventweight and  eventweight:
             self.tree.Project('NUM'+cachename, '1.0', '%s * %s * (%s)' % (self.eventweight, eventweight, cutstr))
-            #
-            # Debug
-            #
-            #print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * %s * (%s)'% (self.baseweight, self.eventweight, eventweight, cutstr)
+            if self.debug:
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * {4} * ( {5} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, eventweight, cutstr))
         elif self.eventweight :
             self.tree.Project('NUM'+cachename, '1.0', '%s * (%s)' % (self.eventweight, cutstr))
-            #
-            # Debug
-            #
-            #print '\nAdding eventweight to baseweight - ROOT cut string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            if self.debug:
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * ( {4} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, cutstr))
         else:
             self.tree.Project('NUM'+cachename, '1.0', '%s' % (cutstr))
-            #
-            # Debug
-            #
-            #print '\nOnly baseweight - ROOT cut string: %s * (%s)'% (self.baseweight, cutstr)
+            if self.debug:
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * ( {3} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, cutstr))
         self.numcache[cachename] = h.GetBinContent(1), h.GetBinError(1)
         del h
 
@@ -507,6 +515,7 @@ class SubProcess:
         return self.numberstats(cut, weight, eventweight, category)[1]
 
     def hist(self, var, cut = None, weight = None, category = None):
+
         if weight is None:
             weight = 1.0
 
@@ -520,7 +529,7 @@ class SubProcess:
             cut = cut & var.basecut
         elif var.basecut and not cut:
             cut = var.basecut
-        if not ("$ISDATA$") in self.name:
+        if not "$ISDATA$" in self.name:
 	    if type(var.weight) is str:
                 if not var.weight in self.eventweight:
             	    self = self.subprocess(eventweight=var.weight)
@@ -548,25 +557,20 @@ class SubProcess:
             return h
 
         self.histcache[cachename] = var.makeHist('HIST'+cachename, 'HIST'+cachename, category)
+
         if self.eventweight:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s * (%s)' % (self.eventweight, cutstr))
-            #
-            # Debug
-            #
-            #print '\nAdding eventweight to baseweight - ROOT plotting string: %s * %s * (%s)'% (self.baseweight, self.eventweight, cutstr)
+            if self.debug:
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * ( {4} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, cutstr))
 	else:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s' % (cutstr))
-            #
-            # Debug
-            #
-            #print '\nOnly baseweight - ROOT plotting string: %s * (%s)'% (self.baseweight, cutstr)
+            if self.debug:
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * ( {3} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, cutstr))
 
         h = self.histcache[cachename].Clone()
         h.SetName(self.histcache[cachename].GetName()+str(weight))
         h.SetTitle(self.histcache[cachename].GetTitle()+str(weight))
         h.__imul__(self.baseweight * weight)
-
-	#print("\nHistogram name: {0}\nHistogram integral: {1}\nHistogram type: {2}\n N bins X: {3} - N bins Y: {4}".format(h.GetName(),h.Integral(),type(h), h.GetNbinsX(), h.GetNbinsY()))
 
         return h
 
@@ -588,17 +592,18 @@ class OperatorProcess(SubProcess):
         self.left = left
         self.operator = operator
         self.right = right
+        self.debug = left.debug
 
     def __str__(self):
         return 'OperatorProcess:(' + self.left.__str__() + ' ' + self.operator + ' ' + self.right.__str__() + ')'
 
-    def subprocess(self, tree=None, cut=None, weight=1.0, eventweight=None, clearbasecut=False):
+    def subprocess(self, tree=None, cut=None, weight=1.0, eventweight=None, clearbasecut=False, debug=False):
     	if hasattr(self.left, 'subprocess'):
-    	    left = self.left.subprocess(tree, cut, weight, eventweight, clearbasecut)
+    	    left = self.left.subprocess(tree, cut, weight, eventweight, clearbasecut, debug)
     	else:
     	    left = self.left
     	if hasattr(self.right, 'subprocess'):
-    	    right = self.right.subprocess(tree, cut, weight, eventweight, clearbasecut)
+    	    right = self.right.subprocess(tree, cut, weight, eventweight, clearbasecut, debug)
     	else:
     	    right = self.right
 
@@ -648,8 +653,10 @@ class OperatorProcess(SubProcess):
         print "ERROR: Invalid operator", self.operator
 
     def hist(self, var, cut = None, weight = None, category = None):
+
         if weight is None:
             weight = 1.0
+
         if type(cut) is str:
             cut = Cut(cut, cut)
 
@@ -718,7 +725,7 @@ class Process:
 
     def __init__(self, inputs, vardb, parent):
         self.inputs = inputs
-        self.vardb = vardb
+        self.vardb  = vardb
         self.parent = parent
 
     def __call__(self, treename='physics', category=None, options={}):
@@ -731,16 +738,14 @@ class Process:
         elif self.parent.eventweight:
             eventweight = self.parent.eventweight
         elif not self.parent.eventweight and not eventweight:
-            eventweight = '1.0'
+            eventweight = 1.0
         sp = None
         for tree in trees:
             weight = baseweight
-	    # Make sure eventweight is reset to 1.0 if Data
-	    if not tree.GetTitle().startswith('$ISMC$'):
-	        eventweight = '1.0'
+	    if tree.GetTitle().startswith('$ISDATA$'): # Make sure no eventweight is applied if looking at data...
+	        eventweight = None
             if tree.GetTitle().startswith('$ISMC$') or tree.GetTitle().startswith('$ISEMBED$'):
                 weight *= self.parent.luminosity
-
 		if self.parent.rescaleXsecAndLumi:
 		    weight /= tree.GetWeight()
 		    weight /= self.parent.luminosity
@@ -753,17 +758,18 @@ class Process:
 class Background:
 
     backgrounds = []
-    signals = []
-    observed = []
-    luminosity = 1.0
+    signals     = []
+    observed    = []
+    luminosity  = 1.0
     eventweight = '1.0'
     rescaleXsecAndLumi = False
     style = {}
 
     def __init__(self, inputs, vardb):
-        self.inputs = inputs
-        self.vardb = vardb
-        self.procmap = {}
+        self.inputs      = inputs
+        self.vardb       = vardb
+        self.procmap     = {}
+        self.debugprocs  = []
         self.colourcache = self.colours()
 
         for key in dir(self):
@@ -867,6 +873,7 @@ class Background:
         bkg = (0., 0.)
         for name in overridebackground:
             process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection)
+            process = process.subprocess(debug=any( proc in self.debugprocs for proc in [name,"ALL"]))
             events, stats = process.numberstats(cut=cut, eventweight=eventweight)
             hbkg[name] = (events, stats)
             bkg = bkg[0] + events, math.sqrt(bkg[1]**2. + stats**2.)
@@ -878,12 +885,13 @@ class Background:
         obs = (0., 0.)
         for name in self.observed:
             process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection)
-            events, stats = process.numberstats(cut=cut) # no extra event weight for data!
+            process = process.subprocess(debug=any( proc in self.debugprocs for proc in [name,"ALL"]))
+            events, stats = process.numberstats(cut=cut) # No extra event weight for data!
             hobs[name] = (events, stats)
             obs = obs[0] + events, math.sqrt(obs[1]**2. + stats**2.)
             if show: print "%40s : %.2f +- %.2f (stat)" % (name, round(events, 2), round(stats, 2))
         hobs['TOTAL'] = obs
-        #if show: print "%40s : %.1f +- %.1f (stat)\n" % ('TOTAL OBSERVED', round(obs[0], 1), round(obs[1], 1))
+        if show: print "%40s : %.1f +- %.1f (stat)\n" % ('TOTAL OBSERVED', round(obs[0], 1), round(obs[1], 1))
 
         hsig = {}
         for h in hmass:
@@ -891,6 +899,7 @@ class Background:
             for name in self.signals:
                 options = {'hmass': h}
                 process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection, options=options)
+                process = process.subprocess(debug=any( proc in self.debugprocs for proc in [name,"ALL"]))
                 events, stats = process.numberstats(cut=cut, eventweight=eventweight)
                 sig = sig[0] + events, math.sqrt(sig[2]**2. + stats**2.)
                 if show: print "%36s %3s : %.2f +- %.2f (stat)" % (name, h, round(events, 2), round(stats, 2))
@@ -905,20 +914,26 @@ class Background:
         histlist = []
 
         for name in processes:
+
             process = self.getProcess(name, category=category, systematics=systematics, systematicsdirection=systematicsdirection, options=options) * scale
+
             if eventweight:
-		if ("$ISDATA$") in process.name:
-		  process = process.subprocess(eventweight=1.0)
-		else:
-		  process = process.subprocess(eventweight=eventweight)
+                weight = eventweight
+                if "$ISDATA$" in process.name: # Make sure no eventweight is applied if looking at data...
+                    weight = None
+                process = process.subprocess(eventweight=weight)
+
+            # Check whether debug flag should be activated for *this* process
+
+            process = process.subprocess(debug=any( proc in self.debugprocs for proc in [name,"ALL"]))
 
             h = process.hist(var, cut=cut, category=category)
+
             if overflowbins:
                 lastbin = h.GetNbinsX()
                 over, overerror = h.GetBinContent(lastbin+1), h.GetBinError(lastbin+1)
                 under, undererror = h.GetBinContent(0), h.GetBinError(0)
-                if '_ext' in var.shortname:
-                    #THIS IS ACTUALLY BAD CODING USED BECAUSE IN THE HISTOGRAM EXTENDED I WANT TO PLOT THE OVERFLOW BUT NOT THE UNDERFLOW
+                if '_ext' in var.shortname: # Convention for "extended" histograms: plot overflow, but not underflow
                     under, undererror = 0., 0.
                 h.SetBinContent(lastbin, h.GetBinContent(lastbin) + over)
                 h.SetBinError(lastbin, math.sqrt( h.GetBinError(lastbin)**2. + overerror**2.))
@@ -937,6 +952,7 @@ class Background:
             else:
                 tSum.Add(h)
             histlist.append( (h, self.procmap[name]) )
+
         return tSum, histlist
 
     def plot(self, var, cut = None, eventweight=None, category = None, signal = '125', signalfactor = 1., systematics = None, systematicsdirection = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps'], options = {}, normalise = False, log=False, logx=False):
@@ -947,7 +963,7 @@ class Background:
         if type(var) is str:
             var = self.vardb.getVar(var)
 
-        if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
+        if not var.typeval in [TH2I,TH2F,TH2D]:
             c = TCanvas("c1","Temp",50,50,600,600)
 	else:
 	    c = TCanvas("c1","Temp",50,50,800,600)
@@ -957,14 +973,11 @@ class Background:
         obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
 
 	if obs:
-	    if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
+	    if not var.typeval in [TH2I,TH2F,TH2D]:
             	process = obslist[0][1]
             	datagr = None
-	    	if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
-	    	    # the two lines below are actually equivalent...
-	    	    #
-	    	    #datagr = makeMCErrors(obs)
-	    	    datagr = TH1D(obs)
+	    	if not ( "$ISDATA$" in obslist[0][0].GetName() ):
+	    	    datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
 		    datagr.SetLineStyle(2)
 	    	else :
 	    	    datagr = makePoissonErrors(obs)
@@ -977,7 +990,7 @@ class Background:
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
 
         if obs and bkglist and normalise:
-            if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
+            if not var.typeval in [TH2I,TH2F,TH2D]:
 	    	num_data = obs.GetEntries()
             	num_mc = 0.0
             	for b, bname in bkglist:
@@ -1033,7 +1046,7 @@ class Background:
             legs.append([sig, h_name, 'f'])
 
 
-        if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
+        if showratio and obs and bkg and not var.typeval in [TH2I,TH2F,TH2D]:
             pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
             pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
             pad1.SetBottomMargin(0.02)
@@ -1055,7 +1068,7 @@ class Background:
             if logx or var.logaxisX:
                 gPad.SetLogx()
 
-        if showratio and obs and bkg and not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
+        if showratio and obs and bkg and not var.typeval in [TH2I,TH2F,TH2D]:
             if var.typeval is TH1D:
                 ratiomc = tSum.Clone("RatioMC")
                 ratiodata = obs.Clone("RatioData")
@@ -1070,7 +1083,7 @@ class Background:
                     ratiodata.SetBinContent(i, obs.GetBinContent(i))
 
             ratiomc.SetXTitle(var.latexname)
-	    if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
+	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
                 ratiomc.SetYTitle("")
 	    else:
                 ratiomc.SetYTitle("Data/Bkg")
@@ -1090,7 +1103,7 @@ class Background:
 
             #ratiodata.SetMarkerSize(0.3)
             ratiodata.SetMarkerSize(0.8)
-	    if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
+	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
 	         ratiodata.SetLineStyle(2)
             ratiodata.SetLineWidth(1)
             ratiodata.Divide(tSum)
@@ -1125,7 +1138,7 @@ class Background:
                 ratiomc.GetYaxis().SetRangeUser(showratio[0], showratio[1])
             else:
                 ratiomc.GetYaxis().SetRangeUser(0.75, 1.25)
-                if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
+                if not ( "$ISDATA$" in obslist[0][0].GetName() ):
                     ratiomc.GetYaxis().SetRangeUser(0.3, 1.7)
 
             #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
@@ -1143,9 +1156,9 @@ class Background:
         lower, labels = self.labels(legs, showratio and obs and bkg)
 
         # Trick to rescale:
-	#
+
 	if stack:
-	   if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
+	   if not var.typeval in [TH2I,TH2F,TH2D]:
 	      ymax_new = stack.GetMaximum()
 	      if obs and obs.GetMaximum() > ymax_new:
 	          ymax_new = obs.GetMaximum()
@@ -1197,11 +1210,11 @@ class Background:
               diagonal.Draw("SAME")
 
         if bkg:
-            if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
-	       tSum.Draw("E2 SAME")
+            if not var.typeval in [TH2I,TH2F,TH2D]:
+                tSum.Draw("E2 SAME")
 
         if obs:
-	   if not ( var.typeval is TH2D or var.typeval is TH2F or var.typeval is TH2I ):
+	   if not var.typeval in [TH2I,TH2F,TH2D]:
               if stack:
                  datagr.Draw("PE SAME")
                  #obs.Draw("SAME")
@@ -1270,12 +1283,8 @@ class Background:
 
         if obs:
             process = obslist[0][1]
-	    if not ( ("$ISDATA$") in obslist[0][0].GetName() ):
-		#
-		# the two lines below are actually equivalent...
-		#
-		#datagr = makeMCErrors(obs)
-		datagr = TH1D(obs)
+	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
+		datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
 		datagr.SetLineStyle(2)
 	    else :
 	        datagr = makePoissonErrors(obs)
@@ -1391,8 +1400,8 @@ class Background:
             #pad2.SetLogy(2)
             #ratioup.Draw()
             #ratiodown.Draw("SAME")
-            ratioup.Draw("HIST")        # do not draw error bars
-            ratiodown.Draw("HIST SAME")	# do not draw error bars
+            ratioup.Draw("HIST")        # Do not draw error bars
+            ratiodown.Draw("HIST SAME")	# Do not draw error bars
             #ratioobs.Draw("SAME")
             refl = TLine(ratioup.GetBinLowEdge(1), 1., ratioup.GetBinLowEdge(ratioup.GetNbinsX()+1), 1.)
             #refl.SetLineColor(kRed)
@@ -1405,7 +1414,7 @@ class Background:
         lower, labels = self.labels(legs, showratio)
 
         # Trick to rescale:
-	#
+
         ymax_new = up.GetMaximum()
         if down and down.GetMaximum() > ymax_new:
             ymax_new = down.GetMaximum()
@@ -1434,8 +1443,8 @@ class Background:
                 up.GetXaxis().SetNdivisions(up.GetNbinsX())
                 up.GetXaxis().CenterLabels(True)
 
-        # A trick to draw statistical error bars as well
-        #
+        # A trick to draw statistical error bars
+
 	nom_stat_err = nom.Clone("nom_stat_err")
 	nom_stat_err.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
         nom_stat_err.SetLineColor(self.style.get('SumErrorLineColour', 10))
@@ -1518,7 +1527,6 @@ def makeMCErrors(hist):
     ipoint=0
     for ibin in range(0,hist.GetNbinsX()+1):
         bincontent= hist.GetBinContent(ibin)
-        #print 'bin content: ', bincontent, ' - bin error: ', hist.GetBinError(ibin)
         if(bincontent!=0):
             EY = hist.GetBinError(ibin)
             EX = 0.5 * (hist.GetBinWidth(ibin))
@@ -1529,24 +1537,27 @@ def makeMCErrors(hist):
     return graph
 
 
+# This function loads the samples metadata from the .csv file info
+
 def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', systrees=[]):
 
-    # The datasat manager is the code that takes in care the reading of the sample.csv files.
-    #
+    # The datasat manager takes care of parsing the sample.csv files.
+
     datasets = DatasetManager.DatasetManager()
 
     # This returns a list of dictionaries which contain the features for each sample:
     # ID,category,xsection,kfactor,efficiency,name,group,subgroup
-    #
+
     samples = datasets.getListSamples(samplesfile=samplescsv)
 
     inputs = Inputs()
+
     for s in samples:
 
 	sampleid = s['ID']
-        name = s['name']
+        name     = s['name']
         category = s['category']
-        group = s['group']
+        group    = s['group']
         subgroup = s['subgroup']
 
         separator = '.'
@@ -1555,9 +1566,9 @@ def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', sys
 
         filename = inputdir + '/' + group + '/' + sampleid + separator + name + '.root'
 
-	ismc = not category == 'Data' and not group == 'Embedding'
-        isembedding = group == 'Embedding'
-        isdata = category == 'Data'
+	ismc        = ( not category == 'Data' and not group == 'Embedding' )
+        isembedding = ( group == 'Embedding' )
+        isdata      = ( category == 'Data' )
 
 	inputs.registerTree(filename, nomtree, systrees, ismc, isembedding, isdata, s)
 
