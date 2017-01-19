@@ -28,9 +28,12 @@
 namespace MiniNTupMaker {
 
   struct Branch_Types {
-    float f;
-    char c;
-    int i;
+      float f;
+      char c;
+      int i;
+      std::vector<float> vec_f;
+      std::vector<char> vec_c;
+      std::vector<int> vec_i;
   };
 
   class eventObj {
@@ -61,7 +64,6 @@ namespace MiniNTupMaker {
   };
 
   class bjetObj {
-
   public:
     bjetObj():
       pt(-1.0),eta(-999.0),phi(-999.0)
@@ -424,6 +426,28 @@ private:
   std::vector<char> *m_electron_passOR = nullptr; //!
   std::vector<char> *m_muon_passOR     = nullptr; //!
 
+  /** Some other lepton vector branches */
+
+  std::vector<float> *m_electron_pt	      = nullptr; //!
+  std::vector<float> *m_electron_eta	      = nullptr; //!
+  std::vector<float> *m_electron_EtaBE2       = nullptr; //!
+  std::vector<float> *m_electron_phi	      = nullptr; //!
+  std::vector<float> *m_electron_E	      = nullptr; //!
+  std::vector<float> *m_electron_sigd0PV      = nullptr; //!
+  std::vector<float> *m_electron_z0SinTheta   = nullptr; //!
+  std::vector<float> *m_electron_topoetcone20 = nullptr; //!
+  std::vector<float> *m_electron_ptvarcone20  = nullptr; //!
+  std::vector<int>   *m_electron_truthType    = nullptr; //!
+  std::vector<int>   *m_electron_truthOrigin  = nullptr; //!
+  std::vector<float> *m_muon_pt	              = nullptr; //!
+  std::vector<float> *m_muon_eta	      = nullptr; //!
+  std::vector<float> *m_muon_phi	      = nullptr; //!
+  std::vector<float> *m_muon_sigd0PV	      = nullptr; //!
+  std::vector<float> *m_muon_z0SinTheta       = nullptr; //!
+  std::vector<float> *m_muon_ptvarcone30      = nullptr; //!
+  std::vector<int>   *m_muon_truthType        = nullptr; //!
+  std::vector<int>   *m_muon_truthOrigin      = nullptr; //!
+
   /** Reco jets BEFORE overlap removal */
 
   std::vector<float>   *m_jet_pt = nullptr;  //!
@@ -472,11 +496,6 @@ private:
   int       m_nelectrons;
   int       m_nleptons;
 
-  float     m_el_Pt_0;
-  float     m_el_Pt_1;
-  float     m_mu_Pt_0;
-  float     m_mu_Pt_1;
-
   char	    m_lep_isTightSelected_0;
   char	    m_lep_isTightSelected_1;
   char	    m_lep_isTightSelected_2;
@@ -488,31 +507,26 @@ private:
 
   char	    m_event_isTrigMatch_DLT;
 
-  /** Tag & Probe variables */
+  /** Some vector branches for leptons after OLR (pT-ordered) */
 
-  char m_isBadTPEvent_SLT; /**No T&TM (SLT) leptons found */
-  char m_isBadTPEvent_DLT; /**No T&TM (DLT) leptons found */
+  std::vector<std::string> m_EL_VEC_VARS  = { "pt/F", "eta/F", "EtaBE2/F", "phi/F", "isTightSelected/B", "sigd0PV/F", "z0SinTheta/F", "deltaRClosestBJet/F", "ptvarcone20/F", "topoetcone20/F", "truthType/I", "truthOrigin/I" };
+  std::vector<std::string> m_MU_VEC_VARS  = { "pt/F", "eta/F", "phi/F", "isTightSelected/B", "sigd0PV/F", "z0SinTheta/F", "deltaRClosestBJet/F", "ptvarcone30/F", "truthType/I", "truthOrigin/I" };
+  std::vector<std::string> m_LEP_VEC_VARS  = { "Pt/F", "Eta/F", "EtaBE2/F", "deltaRClosestBJet/F"};
+
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_electron_OR_branches;
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_muon_OR_branches;
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep_OR_branches;
+
+  /** Tag & Probe vector branches */
+
+  std::vector<std::string> m_TPS      = { "Tag", "Probe" };
+  std::vector<std::string> m_TRIGS    = { "SLT", "DLT" };
+  std::vector<std::string> m_TP_VARS  = { "Pt/F", "Pt/VECF", "Eta/F", "Eta/VECF", "EtaBE2/F", "EtaBE2/VECF", "ptVarcone20/F", "ptVarcone30/F", "topoEtcone20/F", "sigd0PV/F", "Z0SinTheta/F", "ID/F", "deltaRClosestBJet/F", "deltaRClosestBJet/VECF", "massClosestBJet/F", "isTrigMatch/B", "isTightSelected/B", "isPrompt/B", "isBrems/B", "isFakeLep/B", "isQMisID/B", "isConvPh/B", "truthType/I", "truthType/VECI", "truthOrigin/I", "truthOrigin/VECI" };
+
+  char m_isBadTPEvent_SLT; /** No T&TM (SLT) leptons found */
+  char m_isBadTPEvent_DLT; /** No T&TM (DLT) leptons found */
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_TagProbe_branches;
-
-  std::vector<float> m_lep_Pt;
-  std::vector<float> m_lep_Eta;
-  std::vector<float> m_lep_EtaBE2;
-
-  std::vector<float> m_lep_TagVec_SLT_Pt;
-  std::vector<float> m_lep_ProbeVec_SLT_Pt;
-  std::vector<float> m_lep_TagVec_DLT_Pt;
-  std::vector<float> m_lep_ProbeVec_DLT_Pt;
-
-  std::vector<float> m_el_TagVec_SLT_Pt;
-  std::vector<float> m_el_ProbeVec_SLT_Pt;
-  std::vector<float> m_el_TagVec_DLT_Pt;
-  std::vector<float> m_el_ProbeVec_DLT_Pt;
-
-  std::vector<float> m_mu_TagVec_SLT_Pt;
-  std::vector<float> m_mu_ProbeVec_SLT_Pt;
-  std::vector<float> m_mu_TagVec_DLT_Pt;
-  std::vector<float> m_mu_ProbeVec_DLT_Pt;
 
   /** Jets AFTER overlap removal */
 
@@ -579,19 +593,12 @@ private:
   /**
     * @brief  Set which lepton is tag and which is probe for the r/f efficiency measurement
     *
-    * The first lepton found that is tight && trigger-matched will be the tag, the other the probe
-    * Note that the lepton container is sorted, so in case both are T & TM, the leading will be the tag and the subleading the probe
-    * If none satisfies the above, choose the leading as tight and the subleading as probe, but flag the event as "bad"
-    *
-    * Use the same logic for OS and SS events
-    *
   */
   EL::StatusCode defineTagAndProbe ();
 
   EL::StatusCode fillTPFlatBranches ( std::shared_ptr<MiniNTupMaker::leptonObj> lep, const std::string& trig );
-
+  EL::StatusCode storeLeptonBranches ();
   EL::StatusCode setOutputBranches ();
-
   EL::StatusCode clearBranches ( const std::string& type );
 
   EL::StatusCode jetTruthMatching();
