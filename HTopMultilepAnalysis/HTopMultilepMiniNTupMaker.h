@@ -40,14 +40,19 @@ namespace MiniNTupMaker {
 
   public:
     eventObj():
-      isMC(0), isSS01(0), isSS12(0),
+      isSS01(0), isSS12(0),
       dilep(0), trilep(0),
       dilep_type(0),
       nbjets(0),
-      weight_event(1.0),weight_event_trig(1.0),weight_event_lep(1.0),weight_tag(1.0),weight_probe(1.0)
+      isBadTPEvent_SLT(1), /** Be pesimistic */
+      isBadTPEvent_DLT(1), /** Be pesimistic */
+      weight_event(1.0),
+      weight_event_trig_SLT(1.0),
+      weight_event_lep(1.0),
+      weight_lep_tag(1.0),weight_lep_probe(1.0),
+      weight_trig_tag(1.0),weight_trig_probe(1.0)
     { };
 
-    char isMC;
     char isSS01;
     char isSS12;
     char dilep;
@@ -55,11 +60,17 @@ namespace MiniNTupMaker {
     int  dilep_type;
     int  nbjets;
 
+    char isBadTPEvent_SLT; /** No T&TM (SLT) leptons found */
+    char isBadTPEvent_DLT; /** No T&TM (DLT) leptons found */
+
     float weight_event;
-    float weight_event_trig;
+    float weight_event_trig_SLT;
     float weight_event_lep;
-    float weight_tag;
-    float weight_probe;
+
+    float weight_lep_tag;
+    float weight_lep_probe;
+    float weight_trig_tag;
+    float weight_trig_probe;
 
   };
 
@@ -472,13 +483,14 @@ private:
 
   /** Extra branches to be stored in output TTree */
 
-  char      m_isMC;
-
   float     m_weight_event;
-  float     m_weight_event_trig;
+  float     m_weight_event_trig_SLT;
   float     m_weight_event_lep;
-  float     m_weight_tag;
-  float     m_weight_probe;
+
+  float     m_weight_lep_tag;
+  float     m_weight_trig_tag;
+  float     m_weight_lep_probe;
+  float     m_weight_trig_probe;
 
   char	    m_isSS01;
   char	    m_isSS12;
@@ -499,6 +511,10 @@ private:
   char	    m_lep_isTightSelected_0;
   char	    m_lep_isTightSelected_1;
   char	    m_lep_isTightSelected_2;
+
+  float     m_lep_deltaRClosestBJet_0;
+  float     m_lep_deltaRClosestBJet_1;
+  float     m_lep_deltaRClosestBJet_2;
 
   char	    m_lep_isTrigMatch_SLT_0;
   char	    m_lep_isTrigMatch_SLT_1;

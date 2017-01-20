@@ -290,7 +290,7 @@ for branch in branches_to_activate:
 # Instantiate the main algorithm
 
 HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNTupMaker",
-                                  "m_debug"                : True,
+                                  "m_debug"                : False,
 				  "m_outputNTupName"       : "physics",
                                   "m_outputNTupStreamName" : "output",
 				  "m_inputBranches"        : branches_to_activate_str,

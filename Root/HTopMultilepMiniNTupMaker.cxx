@@ -125,13 +125,13 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   Info("changeInput()", "Calling changeInput. Now reading file : %s", wk()->inputFile()->GetName() );
 
   // Get the pointer to the main input TTree
-  //
+
   m_inputNTuple = wk()->tree();
 
   ANA_CHECK( this->enableSelectedBranches() );
 
   // Connect the branches of the input tree to the algorithm members
-  //
+
   m_inputNTuple->SetBranchAddress ("EventNumber",   			      &m_EventNumber);
   m_inputNTuple->SetBranchAddress ("RunNumber",   			      &m_RunNumber);
   m_inputNTuple->SetBranchAddress ("RunYear",   			      &m_RunYear);
@@ -344,7 +344,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("m_truth_jet_e",   &m_truth_jet_e);
 
   // Get the pointer to the sumWeights TTree
-  //
+
   m_sumWeightsTree = dynamic_cast<TTree*>(wk()->inputFile()->Get("sumWeights"));
 
   m_sumWeightsTree->SetBranchAddress ("totalEvents", &m_totalEvents);
@@ -375,13 +375,14 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
 
   // Set new branches for output TTree
 
-  m_outputNTuple->tree()->Branch("isMC",               	        &m_isMC, "isMC/B");
-
   m_outputNTuple->tree()->Branch("weight_event", 	    	&m_weight_event, "weight_event/F");
-  m_outputNTuple->tree()->Branch("weight_event_trig", 	    	&m_weight_event_trig, "weight_event_trig/F");
+  m_outputNTuple->tree()->Branch("weight_event_trig_SLT", 	&m_weight_event_trig_SLT, "weight_event_trig_SLT/F");
   m_outputNTuple->tree()->Branch("weight_event_lep", 	    	&m_weight_event_lep, "weight_event_lep/F");
-  m_outputNTuple->tree()->Branch("weight_tag",		    	&m_weight_tag,   "weight_tag/F");
-  m_outputNTuple->tree()->Branch("weight_probe", 	    	&m_weight_probe, "weight_probe/F");
+
+  m_outputNTuple->tree()->Branch("weight_lep_tag",		&m_weight_lep_tag,    "weight_lep_tag/F");
+  m_outputNTuple->tree()->Branch("weight_trig_tag",		&m_weight_trig_tag,   "weight_trig_tag/F");
+  m_outputNTuple->tree()->Branch("weight_lep_probe", 	    	&m_weight_lep_probe,  "weight_lep_probe/F");
+  m_outputNTuple->tree()->Branch("weight_trig_probe", 	    	&m_weight_trig_probe, "weight_trig_probe/F");
 
   m_outputNTuple->tree()->Branch("isSS01",               	&m_isSS01, "isSS01/B");
   m_outputNTuple->tree()->Branch("isSS12",               	&m_isSS12, "isSS12/B");
@@ -513,7 +514,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   // ---------------------------------------------------------------------------------------------------------------
 
   // Initialise counter for input TTree entries processed
-  //
+
   m_numEntry = -1;
 
   m_effectiveTotEntries = m_inputNTuple->GetEntries();
@@ -530,7 +531,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   // ---------------------------------------------------------------------------------------------------------------
 
   // Print whether we are using an EL::AlgSelect algorithm in our job
-  //
+
   if ( m_useAlgSelect ) { Info("initialize()", "Will be using an EL::AlgSelect algorithm for event skimming" ); }
 
   // ---------------------------------------------------------------------------------------------------------------
@@ -653,31 +654,31 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
   auto lep1 = std::make_shared<leptonObj>();
 
-  lep1.get()->pt          = m_lep_Pt_1;
-  lep1.get()->eta         = m_lep_Eta_1;
-  lep1.get()->etaBE2      = m_lep_EtaBE2_1;
-  lep1.get()->phi         = m_lep_Phi_1;
-  lep1.get()->ID          = m_lep_ID_1;
-  lep1.get()->flavour     = fabs(m_lep_ID_1);
-  lep1.get()->charge      = m_lep_ID_1 / fabs(m_lep_ID_1);
-  lep1.get()->d0sig       = m_lep_sigd0PV_1;
-  lep1.get()->z0sintheta  = m_lep_Z0SinTheta_1;
-  lep1.get()->pid         = m_lep_isTightLH_1;
-  lep1.get()->isolated       = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_1 : m_lep_isolationFixedCutTight_1;
-  lep1.get()->ptVarcone20    = m_lep_ptVarcone20_1;
-  lep1.get()->ptVarcone30    = m_lep_ptVarcone30_1;
-  lep1.get()->topoEtcone20   = m_lep_topoEtcone20_1;
-  lep1.get()->trackisooverpt = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_ptVarcone30_1/m_lep_Pt_1 : m_lep_ptVarcone20_1/m_lep_Pt_1;
-  lep1.get()->caloisooverpt  = ( fabs(m_lep_ID_1) == 13 ) ?  -1.0 : m_lep_topoEtcone20_1/m_lep_Pt_1;
+  lep1.get()->pt              = m_lep_Pt_1;
+  lep1.get()->eta             = m_lep_Eta_1;
+  lep1.get()->etaBE2          = m_lep_EtaBE2_1;
+  lep1.get()->phi             = m_lep_Phi_1;
+  lep1.get()->ID              = m_lep_ID_1;
+  lep1.get()->flavour         = fabs(m_lep_ID_1);
+  lep1.get()->charge          = m_lep_ID_1 / fabs(m_lep_ID_1);
+  lep1.get()->d0sig           = m_lep_sigd0PV_1;
+  lep1.get()->z0sintheta      = m_lep_Z0SinTheta_1;
+  lep1.get()->pid             = m_lep_isTightLH_1;
+  lep1.get()->isolated        = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_1 : m_lep_isolationFixedCutTight_1;
+  lep1.get()->ptVarcone20     = m_lep_ptVarcone20_1;
+  lep1.get()->ptVarcone30     = m_lep_ptVarcone30_1;
+  lep1.get()->topoEtcone20    = m_lep_topoEtcone20_1;
+  lep1.get()->trackisooverpt  = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_ptVarcone30_1/m_lep_Pt_1 : m_lep_ptVarcone20_1/m_lep_Pt_1;
+  lep1.get()->caloisooverpt   = ( fabs(m_lep_ID_1) == 13 ) ?  -1.0 : m_lep_topoEtcone20_1/m_lep_Pt_1;
   lep1.get()->trigmatched     = m_lep_isTrigMatch_1;
   lep1.get()->trigmatched_DLT = m_lep_isTrigMatchDLT_1;
-  lep1.get()->prompt      = m_lep_isPrompt_1;
-  lep1.get()->fake        = m_lep_isFakeLep_1;
-  lep1.get()->brems       = m_lep_isBrems_1;
-  lep1.get()->qmisid      = m_lep_isQMisID_1;
-  lep1.get()->convph      = m_lep_isConvPh_1;
-  lep1.get()->truthType   = m_lep_truthType_1;
-  lep1.get()->truthOrigin = m_lep_truthOrigin_1;
+  lep1.get()->prompt          = m_lep_isPrompt_1;
+  lep1.get()->fake            = m_lep_isFakeLep_1;
+  lep1.get()->brems           = m_lep_isBrems_1;
+  lep1.get()->qmisid          = m_lep_isQMisID_1;
+  lep1.get()->convph          = m_lep_isConvPh_1;
+  lep1.get()->truthType       = m_lep_truthType_1;
+  lep1.get()->truthOrigin     = m_lep_truthOrigin_1;
   ANA_CHECK( this->checkIsTightLep( lep1 ) );
 
   lep1.get()->SFIDLoose    = m_lep_SFIDLoose_1;
@@ -696,45 +697,39 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   m_leptons.push_back(lep1);
 
   if ( m_debug ) {
-    Info("execute()","lep0 pT = %.2f", lep0.get()->pt/1e3 );
-    Info("execute()","lep1 pT = %.2f", lep1.get()->pt/1e3 );
-    Info("execute()","lep0 SFTrigTight = %.2f - SFTrigLoose = %.2f ", lep0.get()->SFTrigTight, lep0.get()->SFTrigLoose );
-    Info("execute()","lep1 SFTrigTight = %.2f - SFTrigLoose = %.2f ", lep1.get()->SFTrigTight, lep1.get()->SFTrigLoose );
-    Info("execute()","lep0 EffTrigTight = %.2f - EffTrigLoose = %.2f ", lep0.get()->EffTrigTight, lep0.get()->EffTrigLoose );
-    Info("execute()","lep1 EffTrigTight = %.2f - EffTrigLoose = %.2f ", lep1.get()->EffTrigTight, lep1.get()->EffTrigLoose );
-    Info("execute()","lep0 SFObjTight = %.2f - SFObjLoose = %.2f", lep0.get()->SFObjTight, lep0.get()->SFObjLoose );
-    Info("execute()","lep1 SFObjTight = %.2f - SFObjLoose = %.2f", lep1.get()->SFObjTight, lep1.get()->SFObjLoose );
+      Info("execute()","lep0 pT = %.2f", lep0.get()->pt/1e3 );
+      Info("execute()","lep1 pT = %.2f", lep1.get()->pt/1e3 );
   }
 
   if ( m_trilep_type ) {
 
     auto lep2 = std::make_shared<leptonObj>();
 
-    lep2.get()->pt	    = m_lep_Pt_2;
-    lep2.get()->eta	    = m_lep_Eta_2;
-    lep2.get()->etaBE2      = m_lep_EtaBE2_2;
-    lep2.get()->phi         = m_lep_Phi_2;
-    lep2.get()->ID          = m_lep_ID_2;
-    lep2.get()->flavour     = fabs(m_lep_ID_2);
-    lep2.get()->charge      = m_lep_ID_2 / fabs(m_lep_ID_2);
-    lep2.get()->d0sig       = m_lep_sigd0PV_2;
-    lep2.get()->z0sintheta  = m_lep_Z0SinTheta_2;
-    lep2.get()->pid	    = m_lep_isTightLH_2;
-    lep2.get()->isolated       = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_2 : m_lep_isolationFixedCutTight_2;
-    lep2.get()->ptVarcone20    = m_lep_ptVarcone20_2;
-    lep2.get()->ptVarcone30    = m_lep_ptVarcone30_2;
-    lep2.get()->topoEtcone20   = m_lep_topoEtcone20_2;
-    lep2.get()->trackisooverpt = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_ptVarcone30_2/m_lep_Pt_2 : m_lep_ptVarcone20_2/m_lep_Pt_2;
-    lep2.get()->caloisooverpt  = ( fabs(m_lep_ID_2) == 13 ) ?  -1.0 : m_lep_topoEtcone20_2/m_lep_Pt_2;
+    lep2.get()->pt	        = m_lep_Pt_2;
+    lep2.get()->eta	        = m_lep_Eta_2;
+    lep2.get()->etaBE2          = m_lep_EtaBE2_2;
+    lep2.get()->phi             = m_lep_Phi_2;
+    lep2.get()->ID              = m_lep_ID_2;
+    lep2.get()->flavour         = fabs(m_lep_ID_2);
+    lep2.get()->charge          = m_lep_ID_2 / fabs(m_lep_ID_2);
+    lep2.get()->d0sig           = m_lep_sigd0PV_2;
+    lep2.get()->z0sintheta      = m_lep_Z0SinTheta_2;
+    lep2.get()->pid	        = m_lep_isTightLH_2;
+    lep2.get()->isolated        = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_2 : m_lep_isolationFixedCutTight_2;
+    lep2.get()->ptVarcone20     = m_lep_ptVarcone20_2;
+    lep2.get()->ptVarcone30     = m_lep_ptVarcone30_2;
+    lep2.get()->topoEtcone20    = m_lep_topoEtcone20_2;
+    lep2.get()->trackisooverpt  = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_ptVarcone30_2/m_lep_Pt_2 : m_lep_ptVarcone20_2/m_lep_Pt_2;
+    lep2.get()->caloisooverpt   = ( fabs(m_lep_ID_2) == 13 ) ?  -1.0 : m_lep_topoEtcone20_2/m_lep_Pt_2;
     lep2.get()->trigmatched     = m_lep_isTrigMatch_2;
     lep2.get()->trigmatched_DLT = m_lep_isTrigMatchDLT_2;
-    lep2.get()->prompt      = m_lep_isPrompt_2;
-    lep2.get()->fake	    = m_lep_isFakeLep_2;
-    lep2.get()->brems       = m_lep_isBrems_2;
-    lep2.get()->qmisid      = m_lep_isQMisID_2;
-    lep2.get()->convph      = m_lep_isConvPh_2;
-    lep2.get()->truthType   = m_lep_truthType_2;
-    lep2.get()->truthOrigin = m_lep_truthOrigin_2;
+    lep2.get()->prompt          = m_lep_isPrompt_2;
+    lep2.get()->fake	        = m_lep_isFakeLep_2;
+    lep2.get()->brems           = m_lep_isBrems_2;
+    lep2.get()->qmisid          = m_lep_isQMisID_2;
+    lep2.get()->convph          = m_lep_isConvPh_2;
+    lep2.get()->truthType       = m_lep_truthType_2;
+    lep2.get()->truthOrigin     = m_lep_truthOrigin_2;
     ANA_CHECK( this->checkIsTightLep( lep2 ) );
 
     lep2.get()->SFIDLoose    = m_lep_SFIDLoose_2;
@@ -753,6 +748,15 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
     if ( m_debug ) { Info("execute()","lep2 pT = %.2f", lep2.get()->pt/1e3 ); }
 
     m_leptons.push_back(lep2);
+  }
+
+  if ( m_debug ) {
+      Info("execute()","lep0 SFTrigTight = %.2f - SFTrigLoose = %.2f ", lep0.get()->SFTrigTight, lep0.get()->SFTrigLoose );
+      Info("execute()","lep1 SFTrigTight = %.2f - SFTrigLoose = %.2f ", lep1.get()->SFTrigTight, lep1.get()->SFTrigLoose );
+      Info("execute()","lep0 EffTrigTight = %.2f - EffTrigLoose = %.2f ", lep0.get()->EffTrigTight, lep0.get()->EffTrigLoose );
+      Info("execute()","lep1 EffTrigTight = %.2f - EffTrigLoose = %.2f ", lep1.get()->EffTrigTight, lep1.get()->EffTrigLoose );
+      Info("execute()","lep0 SFObjTight = %.2f - SFObjLoose = %.2f", lep0.get()->SFObjTight, lep0.get()->SFObjLoose );
+      Info("execute()","lep1 SFObjTight = %.2f - SFObjLoose = %.2f", lep1.get()->SFObjTight, lep1.get()->SFObjLoose );
   }
 
   // ------------------------------------------------------------------------
@@ -856,19 +860,19 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: enableSelectedBranches ()
   }
 
   // Firstly, disable all branches
-  //
+
   m_inputNTuple->SetBranchStatus ("*", 0);
 
   std::vector<std::string> branch_vec;
 
   // Parse input list, split by comma, and put into a vector
-  //
+
   std::string token;
   std::istringstream ss( m_inputBranches );
   while ( std::getline(ss, token, ',') ) { branch_vec.push_back(token); }
 
   // Re-enable the branches we are going to use
-  //
+
   for ( const auto& branch : branch_vec ) {
 
     size_t found_regexp = branch.find(".*");
@@ -913,7 +917,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker ::  checkIsTightLep( std::shared_ptr<le
 EL::StatusCode HTopMultilepMiniNTupMaker :: decorateEvent ( )
 {
 
-  m_event.get()->isMC        = ( m_mc_channel_number > 0 );
   m_event.get()->dilep       = ( m_leptons.size() == 2 );
   m_event.get()->trilep      = ( m_leptons.size() == 3 );
   m_event.get()->dilep_type  = ( m_dilep_type );
@@ -1237,7 +1240,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
 {
 
   // Compute the event weights
-  //
+
   m_event.get()->weight_event = m_mcWeightOrg * m_pileupEventWeight_090 * m_MV2c10_70_EventWeight * m_JVT_EventWeight;
 
   float weight_lep(1.0);
@@ -1247,49 +1250,75 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
   }
   m_event.get()->weight_event_lep = weight_lep;
 
-  if ( m_event.get()->dilep ) {
+  // Set the weights (trigger and lepton reco, iso...) for tag and probe leptons.
+  // Do it for SLT-only selection.
+
+  if ( m_event.get()->dilep && !m_event.get()->isBadTPEvent_SLT ) {
 
     auto lep0 = m_leptons.at(0);
     auto lep1 = m_leptons.at(1);
 
-    if ( lep0.get()->tight && lep1.get()->tight ) {
+    // We assume events at this stage will have exactly 1 lepton flagged TAG and 1 flagged probe
+    // (NB: in the code this is the case also for those ambiguous events where both leptons are effectively counted as tag candidates in the vector branches. The "tag" flag is chosen at random...).
+    //
+    // Since we always will require the tag to be tight and trigger-matched, the tag weight will account for the SFTrigTight and SFObjTight contributions.
+    //
+    // As for the probe, in the baseline case the user will need to apply *only* the "weight_lep_probe" to correct for the reco,ID... efficiency.
+    // In fact, we don't mind about the trigger for the probe lepton.
+    // This weight will be SFObjTight or SFObjLoose depending on which selection the probe passes.
+    // We save also the "weight_trig_probe" weight for the special case when one wants to measure (SLT) trigger-dependent efficiencies. In that case, also the probe
+    // will be explicitly requested to fire the trigger. If it does, the weight will be "SFTrigTight" or "SFTrigLoose", depending on the offline selection on the probe.
 
-      if ( lep0.get()->trigmatched && lep1.get()->trigmatched ) { // I believe this is wrong...
+    if ( lep0.get()->tag_SLT && !lep1.get()->tag_SLT ) {
 
-        m_event.get()->weight_tag   = lep0.get()->SFObjTight * lep0.get()->SFTrigTight;
-        m_event.get()->weight_probe = lep1.get()->SFObjTight;
+	// Trigger efficiency
 
-      } else if ( lep0.get()->trigmatched && !lep1.get()->trigmatched ) {
+	m_event.get()->weight_trig_tag   = lep0.get()->SFTrigTight;
+	if ( lep1.get()->trigmatched ) {
+	    m_event.get()->weight_trig_probe = ( lep1.get()->tight ) ? lep1.get()->SFTrigTight : lep1.get()->SFTrigLoose;
+	}
 
-        m_event.get()->weight_tag   = lep0.get()->SFObjTight * lep0.get()->SFTrigTight;
-        m_event.get()->weight_probe = lep1.get()->SFObjTight;
+	// Lepton reco, iso, ID... efficiency
 
-      } else if ( !lep0.get()->trigmatched && lep1.get()->trigmatched ) {
+ 	m_event.get()->weight_lep_tag    = lep0.get()->SFObjTight;
+	m_event.get()->weight_lep_probe  = ( lep1.get()->tight ) ? lep1.get()->SFObjTight : lep1.get()->SFObjLoose;
 
-        m_event.get()->weight_tag   = lep1.get()->SFObjTight * lep1.get()->SFTrigTight;
-        m_event.get()->weight_probe = lep0.get()->SFObjTight;
+    } else if ( !lep0.get()->tag_SLT && lep1.get()->tag_SLT ) {
 
-      }
+	// Trigger efficiency
 
-    } else if ( lep0.get()->tight && !lep1.get()->tight ) { // I believe this is wrong...what if both are trigger matched?
+	m_event.get()->weight_trig_tag   = lep1.get()->SFTrigTight;
+	if ( lep0.get()->trigmatched ) {
+	    m_event.get()->weight_trig_probe = ( lep0.get()->tight ) ? lep0.get()->SFTrigTight : lep0.get()->SFTrigLoose;
+	}
 
-      m_event.get()->weight_tag   = lep0.get()->SFObjTight * lep0.get()->SFTrigTight;
-      m_event.get()->weight_probe = lep1.get()->SFObjLoose;
+	// Lepton reco, iso, ID... efficiency
 
+	m_event.get()->weight_lep_tag    = lep1.get()->SFObjTight;
+	m_event.get()->weight_lep_probe  = ( lep0.get()->tight ) ? lep0.get()->SFObjTight : lep0.get()->SFObjLoose;
 
-    } else if ( !lep0.get()->tight && lep1.get()->tight ) { // I believe this is wrong...what if both are trigger matched?
+    } else if ( lep0.get()->tag_SLT && lep1.get()->tag_SLT ) {
 
-      m_event.get()->weight_tag   = lep1.get()->SFObjTight * lep1.get()->SFTrigTight;
-      m_event.get()->weight_probe = lep0.get()->SFObjLoose;
+	Error("decorateWeights()", "Entry %u - EventNumber = %u - RunYear = %i - has TWO leptons flagged TAG. This shouldn't happen. Aborting...", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber), m_RunYear );
+	return EL::StatusCode::FAILURE;
+
+    } else if ( !lep0.get()->tag_SLT && !lep1.get()->tag_SLT ) {
+
+	Error("decorateWeights()", "Entry %u - EventNumber = %u - RunYear = %i - has ZERO leptons flagged TAG. This shouldn't happen. Aborting...", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber), m_RunYear );
+	return EL::StatusCode::FAILURE;
 
     }
 
   }
 
-  // Calculate lepton trigger SF for the event
+  // Calculate *single* lepton trigger SF for the event.
+  //
+  // The following is based on the assumption that one OR the other lepton will fire the SLT:
+  //
+  // ( lep_isTrigMatch_0 || lep_isTrigMatch_1 )
   //
   // The CP tools do not calculate the final event SF. Rather, they give back the SF and MC efficiency *per lepton*.
-  // With such ingredients in hand, the HTop way to compute the event SF is the following:
+  // With such ingredients in hand, the HTop way to compute the event SF (for SLT lep0 OR lep1 selection) is the following:
   //
   // eventSF = ( 1 - prod( 1 - SF(i)*eff(i) ) ) / ( 1 - prod ( 1 - eff(i) ) );
   //
@@ -1298,6 +1327,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
   //
   // The SF systematics are obtained by coherently varying the SF for each object (i.e. assume full correlation).
   // The MC efficiency is assumed to have negligible uncertainty.
+
+  // This should roughly correspond to the weights "lepSFTrigTight", "lepSFTrigLoose" in the Group NTup.
 
   float trig_weight_N(1.0), trig_weight_D(1.0);
   float this_SF(1.0), this_eff(0.0);
@@ -1318,15 +1349,15 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
 
   // Update numerator and denominator
   // Make sure the SF in the 0/0 case (i.e, when efficiency=0) will be set equal to 1
-  //
+
   trig_weight_N = ( trig_weight_N != 1.0 ) ? trig_weight_N : 0.0;
   trig_weight_D = ( trig_weight_D != 1.0 ) ? trig_weight_D : 0.0;
 
-  m_event.get()->weight_event_trig = ( 1.0 - trig_weight_N ) / ( 1.0 - trig_weight_D );
+  m_event.get()->weight_event_trig_SLT = ( 1.0 - trig_weight_N ) / ( 1.0 - trig_weight_D );
 
   if ( m_debug ) {
     Info("decorateWeights()", "N = %.2f - D = %.2f", trig_weight_N, trig_weight_D );
-    Info("decorateWeights()", "per-event trigger weight = %.2f", m_event.get()->weight_event_trig );
+    Info("decorateWeights()", "per-event trigger weight = %.2f", m_event.get()->weight_event_trig_SLT );
   }
 
   return EL::StatusCode::SUCCESS;
@@ -1337,24 +1368,16 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 {
 
   // Clear vector branches from previous event
-  //
+
   ANA_CHECK( this->clearBranches("tag_and_probe") );
 
   // Do this only for dilepton events
-  //
+
   if ( !m_event.get()->dilep ) { return EL::StatusCode::SUCCESS; }
 
   // Minimal requirement of pT = 10 GeV on all leptons
-  //
-  for ( auto lep : m_leptons ) {  if ( lep.get()->pt < 10e3 ) { return EL::StatusCode::SUCCESS; } }
 
-  /*
-  if ( m_event.get()->isSS01 ) {
-    std::cout << "" << std::endl;
-    Info("execute()", "===> Entry %u - EventNumber = %u - RunYear = %i", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber), m_RunYear );
-    m_debug = true;
-  }
-  */
+  for ( auto lep : m_leptons ) {  if ( lep.get()->pt < 10e3 ) { return EL::StatusCode::SUCCESS; } }
 
   if ( m_useTruthTP ) {
 
@@ -1384,7 +1407,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
       }
       int probe_idx = ( tag_idx ) ? 0 : 1; // Our lepton vector has only 2 components ;-)
 
-      m_isBadTPEvent_SLT = m_isBadTPEvent_DLT = ( !found_tag || m_leptons.at(probe_idx).get()->qmisid == 1 || m_leptons.at(probe_idx).get()->prompt == 1 || ( m_leptons.at(probe_idx).get()->brems == 1 && m_leptons.at(probe_idx).get()->qmisid == 0 ) );
+      m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = ( !found_tag || m_leptons.at(probe_idx).get()->qmisid == 1 || m_leptons.at(probe_idx).get()->prompt == 1 || ( m_leptons.at(probe_idx).get()->brems == 1 && m_leptons.at(probe_idx).get()->qmisid == 0 ) );
 
     } else {
 
@@ -1395,11 +1418,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
       // -) tag: choose randomly
       // -) probe: the other lepton.
 
-      m_isBadTPEvent_SLT = m_isBadTPEvent_DLT = 0;  // be optimistic!
+      m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = 0;  // be optimistic!
 
       for ( auto lep : m_leptons ) {
 	  if ( lep.get()->prompt == 0 || lep.get()->qmisid == 1 ) {
-	      m_isBadTPEvent_SLT = m_isBadTPEvent_DLT = 1;
+	      m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = 1;
 	      return EL::StatusCode::SUCCESS;
 	  }
       }
@@ -1421,7 +1444,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
     // both leptons are alternatively considered as the possible tag/probe
     // to avoid any bias in the choice of the tag and to increase the statistics
 
-    m_isBadTPEvent_SLT = m_isBadTPEvent_DLT = 0; // be optimistic!
+    m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = 0; // be optimistic!
 
     int tag_candidate_counter_SLT(0), tag_candidate_counter_DLT(0);
     int idx(0);
@@ -1467,7 +1490,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	case 0:
 
-	    m_isBadTPEvent_SLT = 1;
+	    m_event.get()->isBadTPEvent_SLT = 1;
 
 	    if ( m_debug ) { Info("defineTagAndProbe()","No lepton (T & TM) (SLT matching) was found - flag this event as bad" ); }
 
@@ -1616,7 +1639,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    //
 	    // For convenience, choose the tag and probe randomly
 	    //
-	    // This has to be done b/c at plotting level we ask for the probe to be T/L/!T and/or TM/!TM to define the N and D for efficiency,
+	    // This has to be done b/c at plotting level we ask for the probe to be T/L to define the N and D for efficiency,
 	    // but in these events both are T and T.M., so it doesn't really matter which lepton we picked as tag/probe
 	    // In fact, in this case, when plotting the vector branch "lep_ProbeVec_*", both leptons will be considered effectively as the probe
 
@@ -1641,7 +1664,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	case 0:
 
-	    m_isBadTPEvent_DLT = 1;
+	    m_event.get()->isBadTPEvent_DLT = 1;
 
 	    if ( m_debug ) { Info("defineTagAndProbe()","No lepton (T & TM) (DLT matching) was found - flag this event as bad" ); }
 
@@ -1790,7 +1813,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    //
 	    // For convenience, choose the tag and probe randomly
 	    //
-	    // This has to be done b/c at plotting level we ask for the probe to be T/L/!T and/or TM/!TM to define the N and D for efficiency,
+	    // This has to be done b/c at plotting level we ask for the probe to be T/L to define the N and D for efficiency,
 	    // but in these events both are T and T.M., so it doesn't really matter which lepton we picked as tag/probe
 	    // In fact, in this case, when plotting the vector branch "lep_ProbeVec_*", both leptons will be considered effectively as the probe
 
@@ -1809,7 +1832,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	} // close switch DLT
 
-    } else {
+    } else { // closes OS case
 
 	// In SS, even in the ambiguous case we still need to tell which is tag and which is probe,
 	// since we really do want to take the fake as the probe! (unlike OS, where we require both leptons be real, in SS we have 1 real and 1 fake)
@@ -1856,7 +1879,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	    if ( !muon_tag_candidate_counter_SLT ) {
 
-		m_isBadTPEvent_SLT = 1;
+		m_event.get()->isBadTPEvent_SLT = 1;
 
 		if ( m_debug ) { Info("defineTagAndProbe()","No muon (T & TM) (SLT matching) was found - flag this event as bad" ); }
 
@@ -1962,7 +1985,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	    if ( !muon_tag_candidate_counter_DLT ) {
 
-		m_isBadTPEvent_DLT = 1;
+		m_event.get()->isBadTPEvent_DLT = 1;
 
 		if ( m_debug ) { Info("defineTagAndProbe()","No muon (T & TM) (DLT matching) was found - flag this event as bad" ); }
 
@@ -2064,7 +2087,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	case 0:
 
-	    m_isBadTPEvent_SLT = 1;
+	    m_event.get()->isBadTPEvent_SLT = 1;
 
 	    if ( m_debug ) { Info("defineTagAndProbe()","No lepton (T & TM) (SLT matching) was found - flag this event as bad" ); }
 
@@ -2181,7 +2204,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 		if ( m_event.get()->nbjets < 1 ) {
 
-		    m_isBadTPEvent_SLT = 1;
+		    m_event.get()->isBadTPEvent_SLT = 1;
 
 		    break;
 		}
@@ -2210,7 +2233,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 		if ( m_event.get()->nbjets < 1 ) {
 
-		    m_isBadTPEvent_SLT = 1;
+		    m_event.get()->isBadTPEvent_SLT = 1;
 
 		    break;
 		}
@@ -2324,7 +2347,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	case 0:
 
-	    m_isBadTPEvent_DLT = 1;
+	    m_event.get()->isBadTPEvent_DLT = 1;
 
 	    if ( m_debug ) { Info("defineTagAndProbe()","No lepton (T & TM) (DLT matching) was found - flag this event as bad" ); }
 
@@ -2441,7 +2464,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 		if ( m_event.get()->nbjets < 1 ) {
 
-		    m_isBadTPEvent_DLT = 1;
+		    m_event.get()->isBadTPEvent_DLT = 1;
 
 		    break;
 		}
@@ -2470,7 +2493,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 		if ( m_event.get()->nbjets < 1 ) {
 
-		    m_isBadTPEvent_DLT = 1;
+		    m_event.get()->isBadTPEvent_DLT = 1;
 
 		    break;
 		}
@@ -2591,7 +2614,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
   // By construction, in the ambiguous case where both are (T & T.M.), the leading will be taken as the tag, the subleading will be the probe
 
-  m_isBadTPEvent_SLT = m_isBadTPEvent_DLT = 0; // be optimistic!
+  m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = 0; // be optimistic!
 
   int idx(0);
 
@@ -2615,12 +2638,12 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
   if ( !found_tag_SLT ) {
     m_leptons.at(0).get()->tag_SLT = 1;
-    m_isBadTPEvent_SLT = 1;
+    m_event.get()->isBadTPEvent_SLT = 1;
     if ( m_debug ) { Info("defineTagAndProbe()","None lepton is T & TM (SLT matching) - choose leading as tag (pT = %.2f) and flag this event as bad", m_leptons.at(0).get()->pt/1e3 ); }
   }
   if ( !found_tag_DLT ) {
     m_leptons.at(0).get()->tag_DLT = 1;
-    m_isBadTPEvent_DLT = 1;
+    m_event.get()->isBadTPEvent_DLT = 1;
     if ( m_debug ) { Info("defineTagAndProbe()","None lepton is T & TM (DLT matching) - choose leading as tag (pT = %.2f) and flag this event as bad", m_leptons.at(0).get()->pt/1e3 ); }
   }
 
@@ -2639,7 +2662,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: fillTPFlatBranches ( std::shared_ptr
     if ( trig.compare("SLT") == 0 ) {
 	isTag = lep.get()->tag_SLT;
 	this_tp_trig = ( isTag ) ?  "Tag_SLT" : "Probe_SLT";
-	isBadTPEvent = m_isBadTPEvent_SLT;
+	isBadTPEvent = m_event.get()->isBadTPEvent_SLT;
 	if ( isBadTPEvent ) {
 	    tp_trigs.push_back("Tag_SLT");
 	    tp_trigs.push_back("Probe_SLT");
@@ -2649,7 +2672,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: fillTPFlatBranches ( std::shared_ptr
     } else if ( trig.compare("DLT") == 0 ) {
 	isTag = lep.get()->tag_DLT;
 	this_tp_trig = ( isTag ) ?  "Tag_DLT" : "Probe_DLT";
-	isBadTPEvent = m_isBadTPEvent_DLT;
+	isBadTPEvent = m_event.get()->isBadTPEvent_DLT;
 	if ( isBadTPEvent ) {
 	    tp_trigs.push_back("Tag_DLT");
 	    tp_trigs.push_back("Probe_DLT");
@@ -2768,7 +2791,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: storeLeptonBranches()
 EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 {
 
-    m_isMC   = m_event.get()->isMC;
     m_isSS01 = m_event.get()->isSS01;
     m_isSS12 = m_event.get()->isSS12;
 
@@ -2784,6 +2806,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 
     ANA_CHECK( this->storeLeptonBranches() );
 
+    m_isBadTPEvent_SLT = m_event.get()->isBadTPEvent_SLT;
+    m_isBadTPEvent_DLT = m_event.get()->isBadTPEvent_DLT;
+
     for ( const auto lep : m_leptons ) {
 
 	// Fill flat variables for tag/probe leptons
@@ -2795,11 +2820,14 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 
     }
 
-    m_weight_event      = m_event.get()->weight_event;
-    m_weight_event_lep  = m_event.get()->weight_event_lep;
-    m_weight_event_trig = m_event.get()->weight_event_trig;
-    m_weight_tag        = m_event.get()->weight_tag;
-    m_weight_probe      = m_event.get()->weight_probe;
+    m_weight_event            = m_event.get()->weight_event;
+    m_weight_event_lep        = m_event.get()->weight_event_lep;
+    m_weight_event_trig_SLT   = m_event.get()->weight_event_trig_SLT;
+
+    m_weight_lep_tag          = m_event.get()->weight_lep_tag;
+    m_weight_trig_tag         = m_event.get()->weight_trig_tag;
+    m_weight_lep_probe        = m_event.get()->weight_lep_probe;
+    m_weight_trig_probe       = m_event.get()->weight_trig_probe;
 
     return EL::StatusCode::SUCCESS;
 
