@@ -61,7 +61,7 @@ if __name__ == '__main__':
             shutil.move(INTREE,OUTTREE)
             shutil.move(INHIST,OUTHIST)
 
-            normaliseTrees.applyWeight( OUTTREE, s, isdata = bool( str( args.DSID[0:2] == "00"  and not s["ID"] ) ) )
+            normaliseTrees.applyWeight( OUTTREE, s, isdata = bool( str( args.DSID[0:2] ) == "00" and not s["ID"] ) )
 
             break
 
