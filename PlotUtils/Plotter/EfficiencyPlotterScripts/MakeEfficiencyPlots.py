@@ -36,7 +36,7 @@ if __name__ == "__main__":
         EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_BaselineElIso()
 
     # Use this one (has the right binning)
-    if True:
+    if False:
         EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealElectron()
         EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealMuon()
         EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeElectron()
@@ -45,3 +45,13 @@ if __name__ == "__main__":
     if False:
         EfficiencyPlotter_ElNoIso_Rebinned_3.plotFakeElectron()
 
+    import TypeAndOriginPlots
+
+    if True:
+        TypeAndOriginPlots.plotTypeVSOrigin("25ns_v24")
+        TypeAndOriginPlots.plotTypeVSNjets("25ns_v24")
+        TypeAndOriginPlots.plotOriginVSNjets("25ns_v24")
+
+        TypeAndOriginPlots.plotTypeVSOrigin("25ns_v24_ElNoIso")
+        TypeAndOriginPlots.plotTypeVSNjets("25ns_v24_ElNoIso")
+        TypeAndOriginPlots.plotOriginVSNjets("25ns_v24_ElNoIso")
