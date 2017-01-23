@@ -45,7 +45,6 @@ namespace MiniNTupMaker {
       dilep_type(0),
       nbjets(0),
       isBadTPEvent_SLT(1), /** Be pesimistic */
-      isBadTPEvent_DLT(1), /** Be pesimistic */
       weight_event(1.0),
       weight_event_trig_SLT(1.0),
       weight_event_lep(1.0),
@@ -61,7 +60,6 @@ namespace MiniNTupMaker {
     int  nbjets;
 
     char isBadTPEvent_SLT; /** No T&TM (SLT) leptons found */
-    char isBadTPEvent_DLT; /** No T&TM (DLT) leptons found */
 
     float weight_event;
     float weight_event_trig_SLT;
@@ -536,11 +534,10 @@ private:
   /** Tag & Probe vector branches */
 
   std::vector<std::string> m_TPS      = { "Tag", "Probe" };
-  std::vector<std::string> m_TRIGS    = { "SLT", "DLT" };
+  std::vector<std::string> m_TRIGS    = { "SLT" /*, "DLT"*/ };
   std::vector<std::string> m_TP_VARS  = { "Pt/F", "Pt/VECF", "Eta/F", "Eta/VECF", "EtaBE2/F", "EtaBE2/VECF", "ptVarcone20/F", "ptVarcone30/F", "topoEtcone20/F", "sigd0PV/F", "Z0SinTheta/F", "ID/F", "deltaRClosestBJet/F", "deltaRClosestBJet/VECF", "massClosestBJet/F", "isTrigMatch/B", "isTightSelected/B", "isPrompt/B", "isBrems/B", "isFakeLep/B", "isQMisID/B", "isConvPh/B", "truthType/I", "truthType/VECI", "truthOrigin/I", "truthOrigin/VECI" };
 
   char m_isBadTPEvent_SLT; /** No T&TM (SLT) leptons found */
-  char m_isBadTPEvent_DLT; /** No T&TM (DLT) leptons found */
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_TagProbe_branches;
 

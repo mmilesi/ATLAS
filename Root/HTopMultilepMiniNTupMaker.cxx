@@ -453,7 +453,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("event_isTrigMatch_DLT",       &m_event_isTrigMatch_DLT, "event_isTrigMatch_DLT/B");
 
   m_outputNTuple->tree()->Branch("event_isBadTP_SLT", &m_isBadTPEvent_SLT, "event_isBadTP_SLT/B");
-  m_outputNTuple->tree()->Branch("event_isBadTP_DLT", &m_isBadTPEvent_DLT, "event_isBadTP_DLT/B");
 
   std::string branchname_el, branchname_mu;
 
@@ -1399,7 +1398,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
       int tag_idx(0);
       for ( auto lep : m_leptons ) {
 	  if ( ( lep.get()->prompt == 1 || ( lep.get()->brems == 1 && lep.get()->qmisid == 0 ) ) && ( lep.get()->qmisid == 0 ) ) {
-	      lep.get()->tag_SLT = lep.get()->tag_DLT = 1;
+	      lep.get()->tag_SLT = 1;
 	      found_tag = true;
 	      break;
 	  }
@@ -1407,7 +1406,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
       }
       int probe_idx = ( tag_idx ) ? 0 : 1; // Our lepton vector has only 2 components ;-)
 
-      m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = ( !found_tag || m_leptons.at(probe_idx).get()->qmisid == 1 || m_leptons.at(probe_idx).get()->prompt == 1 || ( m_leptons.at(probe_idx).get()->brems == 1 && m_leptons.at(probe_idx).get()->qmisid == 0 ) );
+      m_event.get()->isBadTPEvent_SLT = ( !found_tag || m_leptons.at(probe_idx).get()->qmisid == 1 || m_leptons.at(probe_idx).get()->prompt == 1 || ( m_leptons.at(probe_idx).get()->brems == 1 && m_leptons.at(probe_idx).get()->qmisid == 0 ) );
 
     } else {
 
@@ -1418,18 +1417,18 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
       // -) tag: choose randomly
       // -) probe: the other lepton.
 
-      m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = 0;  // be optimistic!
+      m_event.get()->isBadTPEvent_SLT = 0;  // be optimistic!
 
       for ( auto lep : m_leptons ) {
 	  if ( lep.get()->prompt == 0 || lep.get()->qmisid == 1 ) {
-	      m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = 1;
+	      m_event.get()->isBadTPEvent_SLT = 1;
 	      return EL::StatusCode::SUCCESS;
 	  }
       }
 
       int tag_idx = ( m_rand->Rndm() > 0.5 ); // will pick index 0 or 1 in lepton vector randomly
 
-      m_leptons.at(tag_idx).get()->tag_SLT = m_leptons.at(tag_idx).get()->tag_DLT = 1;
+      m_leptons.at(tag_idx).get()->tag_SLT = 1;
 
     }
 
@@ -1444,13 +1443,13 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
     // both leptons are alternatively considered as the possible tag/probe
     // to avoid any bias in the choice of the tag and to increase the statistics
 
-    m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = 0; // be optimistic!
+    m_event.get()->isBadTPEvent_SLT = 0; // be optimistic!
 
-    int tag_candidate_counter_SLT(0), tag_candidate_counter_DLT(0);
+    int tag_candidate_counter_SLT(0);
     int idx(0);
-    int tag_idx_SLT(-1), tag_idx_DLT(-1), probe_idx_SLT(-1), probe_idx_DLT(-1);
+    int tag_idx_SLT(-1), probe_idx_SLT(-1);
 
-    // Count the number of tag lepton candidates, for both SLT and DLT
+    // Count the number of tag lepton candidates
 
     if ( m_debug ) { std::cout << "Looking for tag candidates:\n" << std::endl; }
 
@@ -1462,11 +1461,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
         ++tag_candidate_counter_SLT;
 	tag_idx_SLT = idx;
         if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (SLT matching)! pT[%i] = %.2f, flavour = %i", idx, lep.get()->pt/1e3, lep.get()->flavour ); }
-      }
-      if ( lep.get()->tight && lep.get()->trigmatched_DLT ) {
-        ++tag_candidate_counter_DLT;
-	tag_idx_DLT = idx;
-        if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (DLT matching)! pT[%i] = %.2f, flavour = %i", idx, lep.get()->pt/1e3, lep.get()->flavour ); }
       }
 
       ++idx;
@@ -1658,180 +1652,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	} // close switch SLT
 
-	// DLT
-
-	switch ( tag_candidate_counter_DLT ) {
-
-	case 0:
-
-	    m_event.get()->isBadTPEvent_DLT = 1;
-
-	    if ( m_debug ) { Info("defineTagAndProbe()","No lepton (T & TM) (DLT matching) was found - flag this event as bad" ); }
-
-	    break;
-
-	case 1: // this is the non-ambiguous case: 1 tag and 1 probe per event
-
-	    probe_idx_DLT = abs( tag_idx_DLT - 1 ); // NB: this works since we only look at dilepton events (tag_idx can be 0 or 1 )
-
- 	    tag_pt                  = m_leptons.at(tag_idx_DLT).get()->pt;
-	    probe_pt                = m_leptons.at(probe_idx_DLT).get()->pt;
- 	    tag_eta                 = m_leptons.at(tag_idx_DLT).get()->eta;
-	    probe_eta               = m_leptons.at(probe_idx_DLT).get()->eta;
- 	    tag_etaBE2              = m_leptons.at(tag_idx_DLT).get()->etaBE2;
-	    probe_etaBE2            = m_leptons.at(probe_idx_DLT).get()->etaBE2;
- 	    tag_deltaRClosestBJet   = m_leptons.at(tag_idx_DLT).get()->deltaRClosestBJet;
-	    probe_deltaRClosestBJet = m_leptons.at(probe_idx_DLT).get()->deltaRClosestBJet;
- 	    tag_truthType           = m_leptons.at(tag_idx_DLT).get()->truthType;
-	    probe_truthType         = m_leptons.at(probe_idx_DLT).get()->truthType;
- 	    tag_truthOrigin         = m_leptons.at(tag_idx_DLT).get()->truthOrigin;
-	    probe_truthOrigin       = m_leptons.at(probe_idx_DLT).get()->truthOrigin;
-
-	    m_TagProbe_branches["lep_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-	    m_TagProbe_branches["lep_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-	    m_TagProbe_branches["lep_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-	    m_TagProbe_branches["lep_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-	    m_TagProbe_branches["lep_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-	    m_TagProbe_branches["lep_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-	    if ( m_leptons.at(tag_idx_DLT).get()->flavour == 11 ) {
-
-		m_TagProbe_branches["electron_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		m_TagProbe_branches["electron_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		m_TagProbe_branches["electron_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		m_TagProbe_branches["electron_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		m_TagProbe_branches["electron_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		m_TagProbe_branches["electron_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-
-	    } else if ( m_leptons.at(tag_idx_DLT).get()->flavour == 13 ) {
-
-		m_TagProbe_branches["muon_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		m_TagProbe_branches["muon_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		m_TagProbe_branches["muon_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		m_TagProbe_branches["muon_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		m_TagProbe_branches["muon_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		m_TagProbe_branches["muon_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-
-	    }
-
-	    if ( m_leptons.at(probe_idx_DLT).get()->flavour == 11 ) {
-
-		m_TagProbe_branches["electron_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		m_TagProbe_branches["electron_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		m_TagProbe_branches["electron_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		m_TagProbe_branches["electron_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		m_TagProbe_branches["electron_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		m_TagProbe_branches["electron_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-	    } else if ( m_leptons.at(probe_idx_DLT).get()->flavour == 13 ) {
-
-		m_TagProbe_branches["muon_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		m_TagProbe_branches["muon_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		m_TagProbe_branches["muon_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		m_TagProbe_branches["muon_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		m_TagProbe_branches["muon_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		m_TagProbe_branches["muon_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-	    }
-
-	    // This will set the flat branch as well for tag and probe later on (needed to define cuts in plotting tools)
-
-	    m_leptons.at(tag_idx_DLT).get()->tag_DLT = 1;
-
-	    if ( m_debug ) { Info("defineTagAndProbe()","Unambiguous event (DLT matching) : tag lepton pT = %.2f, probe lepton pT = %.2f", m_leptons.at(tag_idx_DLT).get()->pt/1e3, m_leptons.at(probe_idx_DLT).get()->pt/1e3 ); }
-
-	    break;
-
-	case 2: // this is the ambiguous case: both T & TM
-
-	    // In OS, we consider both leptons as tag and probe (event will be double-counted). The reason is b/c we require
-	    // both leptons be real in this region (in data we will subtract backgrounds), so here there's really no distinction possible
-
-	    for ( auto lep : m_leptons ) {
-
-		tag_pt                  = probe_pt = lep.get()->pt;
-		tag_eta                 = probe_eta = lep.get()->eta;
-		tag_etaBE2              = probe_etaBE2 = lep.get()->etaBE2;
-		tag_deltaRClosestBJet   = probe_deltaRClosestBJet = lep.get()->deltaRClosestBJet;
-		tag_truthType           = probe_truthType = lep.get()->truthType;
-		tag_truthOrigin         = probe_truthOrigin = lep.get()->truthOrigin;
-
-		m_TagProbe_branches["lep_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		m_TagProbe_branches["lep_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		m_TagProbe_branches["lep_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		m_TagProbe_branches["lep_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		m_TagProbe_branches["lep_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		m_TagProbe_branches["lep_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		m_TagProbe_branches["lep_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		m_TagProbe_branches["lep_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		m_TagProbe_branches["lep_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		m_TagProbe_branches["lep_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		m_TagProbe_branches["lep_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-		m_TagProbe_branches["lep_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-		if ( lep.get()->flavour == 11 ) {
-
-		    m_TagProbe_branches["electron_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		    m_TagProbe_branches["electron_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		    m_TagProbe_branches["electron_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		    m_TagProbe_branches["electron_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		    m_TagProbe_branches["electron_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		    m_TagProbe_branches["electron_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-		} else if ( lep.get()->flavour == 13 ) {
-
-		    m_TagProbe_branches["muon_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		    m_TagProbe_branches["muon_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		    m_TagProbe_branches["muon_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		    m_TagProbe_branches["muon_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		    m_TagProbe_branches["muon_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		    m_TagProbe_branches["muon_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-		}
-
-	    }
-
-	    // This will allow to set the flat branch as well for tag and probe later on
-	    //
-	    // For convenience, choose the tag and probe randomly
-	    //
-	    // This has to be done b/c at plotting level we ask for the probe to be T/L to define the N and D for efficiency,
-	    // but in these events both are T and T.M., so it doesn't really matter which lepton we picked as tag/probe
-	    // In fact, in this case, when plotting the vector branch "lep_ProbeVec_*", both leptons will be considered effectively as the probe
-
-	    tag_idx_DLT = ( m_rand->Rndm() > 0.5 );
-
-	    m_leptons.at( tag_idx_DLT ).get()->tag_DLT = 1;
-
-	    if ( m_debug ) { Info("defineTagAndProbe()","Ambiguous event (DLT matching): both leptons T & T.M. Event is OS --> will consider both as tag and probe"); }
-
-	    break;
-
-	default:
-
-	    Error("defineTagAndProbe()","Number of tag lepton candidates (DLT matching) is %i...This shouldn't happen. Aborting.", tag_candidate_counter_DLT );
-	    return EL::StatusCode::FAILURE;
-
-	} // close switch DLT
-
     } else { // closes OS case
 
 	// In SS, even in the ambiguous case we still need to tell which is tag and which is probe,
@@ -1851,7 +1671,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    //
 	    // This works b/c if the muon is T (& TM) is less likely to be a fake. The electron probe will then be completely unbiased.
 
-	    int muon_tag_candidate_counter_SLT(0), muon_tag_candidate_counter_DLT(0);
+	    int muon_tag_candidate_counter_SLT(0);
 
 	    if ( m_debug ) { Info("defineTagAndProbe()","Looking at OF event..." ); }
 
@@ -1958,112 +1778,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_leptons.at(tag_idx_SLT).get()->tag_SLT = 1;
 
 		if ( m_debug ) { Info("defineTagAndProbe()","Good OF event (SLT matching) : tag lepton pT = %.2f, flavour = %i, probe lepton pT = %.2f, flavour = %i", m_leptons.at(tag_idx_SLT).get()->pt/1e3, m_leptons.at(tag_idx_SLT).get()->flavour, m_leptons.at(probe_idx_SLT).get()->pt/1e3, m_leptons.at(probe_idx_SLT).get()->flavour ); }
-
-	    }
-
-	    // DLT
-
-	    int i_DLT(0);
-	    for ( auto lep : m_leptons ) {
-
-		if ( m_debug ) { Info("defineTagAndProbe()","Checking lepton[%i] w/ pT = %.2f, flavour = %i", i_DLT, lep.get()->pt/1e3, lep.get()->flavour ); }
-
-		if ( lep.get()->flavour == 13 && lep.get()->tight && lep.get()->trigmatched_DLT ) {
-
-		    tag_idx_DLT = i_DLT;
-
-		    if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a muon tag candidate (DLT matching)! pT[%i] = %.2f", i_DLT, lep.get()->pt/1e3 ); }
-
-		    ++muon_tag_candidate_counter_DLT;
-
-		    break;
-
-		}
-
-		++i_DLT;
-	    }
-
-	    if ( !muon_tag_candidate_counter_DLT ) {
-
-		m_event.get()->isBadTPEvent_DLT = 1;
-
-		if ( m_debug ) { Info("defineTagAndProbe()","No muon (T & TM) (DLT matching) was found - flag this event as bad" ); }
-
-	    } else {
-
-		probe_idx_DLT = ( tag_idx_DLT ) ? 0 : 1; // Our lepton vector has only 2 components ;-)
-
-		tag_pt                  = m_leptons.at(tag_idx_DLT).get()->pt;
-		probe_pt                = m_leptons.at(probe_idx_DLT).get()->pt;
-		tag_eta                 = m_leptons.at(tag_idx_DLT).get()->eta;
-		probe_eta               = m_leptons.at(probe_idx_DLT).get()->eta;
-		tag_etaBE2              = m_leptons.at(tag_idx_DLT).get()->etaBE2;
-		probe_etaBE2            = m_leptons.at(probe_idx_DLT).get()->etaBE2;
-		tag_deltaRClosestBJet   = m_leptons.at(tag_idx_DLT).get()->deltaRClosestBJet;
-		probe_deltaRClosestBJet = m_leptons.at(probe_idx_DLT).get()->deltaRClosestBJet;
-		tag_truthType           = m_leptons.at(tag_idx_DLT).get()->truthType;
-		probe_truthType         = m_leptons.at(probe_idx_DLT).get()->truthType;
-		tag_truthOrigin         = m_leptons.at(tag_idx_DLT).get()->truthOrigin;
-		probe_truthOrigin       = m_leptons.at(probe_idx_DLT).get()->truthOrigin;
-
-		m_TagProbe_branches["lep_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		m_TagProbe_branches["lep_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		m_TagProbe_branches["lep_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		m_TagProbe_branches["lep_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		m_TagProbe_branches["lep_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		m_TagProbe_branches["lep_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		m_TagProbe_branches["lep_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		m_TagProbe_branches["lep_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		m_TagProbe_branches["lep_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		m_TagProbe_branches["lep_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		m_TagProbe_branches["lep_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-		m_TagProbe_branches["lep_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-		if ( m_leptons.at(tag_idx_DLT).get()->flavour == 11 ) {
-
-		    m_TagProbe_branches["electron_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		    m_TagProbe_branches["electron_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		    m_TagProbe_branches["electron_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		    m_TagProbe_branches["electron_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		    m_TagProbe_branches["electron_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		    m_TagProbe_branches["electron_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-
-		} else if ( m_leptons.at(tag_idx_DLT).get()->flavour == 13 ) {
-
-		    m_TagProbe_branches["muon_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		    m_TagProbe_branches["muon_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		    m_TagProbe_branches["muon_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		    m_TagProbe_branches["muon_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		    m_TagProbe_branches["muon_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		    m_TagProbe_branches["muon_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-
-		}
-
-		if ( m_leptons.at(probe_idx_DLT).get()->flavour == 11 ) {
-
-		    m_TagProbe_branches["electron_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		    m_TagProbe_branches["electron_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-		} else if ( m_leptons.at(probe_idx_DLT).get()->flavour == 13 ) {
-
-		    m_TagProbe_branches["muon_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		    m_TagProbe_branches["muon_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-		}
-
-		// This will set the flat branch as well for tag and probe later on (needed to define cuts in plotting tools)
-
-		m_leptons.at(tag_idx_DLT).get()->tag_DLT = 1;
-
-		if ( m_debug ) { Info("defineTagAndProbe()","Good OF event (DLT matching) : tag lepton pT = %.2f, flavour = %i, probe lepton pT = %.2f, flavour = %i", m_leptons.at(tag_idx_DLT).get()->pt/1e3, m_leptons.at(tag_idx_DLT).get()->flavour, m_leptons.at(probe_idx_DLT).get()->pt/1e3, m_leptons.at(probe_idx_DLT).get()->flavour ); }
 
 	    }
 
@@ -2341,280 +2055,27 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	} // close switch SLT
 
-	// DLT
-
-	switch ( tag_candidate_counter_DLT ) {
-
-	case 0:
-
-	    m_event.get()->isBadTPEvent_DLT = 1;
-
-	    if ( m_debug ) { Info("defineTagAndProbe()","No lepton (T & TM) (DLT matching) was found - flag this event as bad" ); }
-
-	    break;
-
-	case 1: // this is the non-ambiguous case: 1 tag and 1 probe per event
-
-	    probe_idx_DLT = abs( tag_idx_DLT - 1 ); // NB: this works since we only look at dilepton events (tag_idx can be 0 or 1 )
-
-	    tag_pt                  = m_leptons.at(tag_idx_DLT).get()->pt;
-	    probe_pt                = m_leptons.at(probe_idx_DLT).get()->pt;
-	    tag_eta                 = m_leptons.at(tag_idx_DLT).get()->eta;
-	    probe_eta               = m_leptons.at(probe_idx_DLT).get()->eta;
-	    tag_etaBE2              = m_leptons.at(tag_idx_DLT).get()->etaBE2;
-	    probe_etaBE2            = m_leptons.at(probe_idx_DLT).get()->etaBE2;
-	    tag_deltaRClosestBJet   = m_leptons.at(tag_idx_DLT).get()->deltaRClosestBJet;
-	    probe_deltaRClosestBJet = m_leptons.at(probe_idx_DLT).get()->deltaRClosestBJet;
-	    tag_truthType           = m_leptons.at(tag_idx_DLT).get()->truthType;
-	    probe_truthType         = m_leptons.at(probe_idx_DLT).get()->truthType;
-	    tag_truthOrigin         = m_leptons.at(tag_idx_DLT).get()->truthOrigin;
-	    probe_truthOrigin       = m_leptons.at(probe_idx_DLT).get()->truthOrigin;
-
-	    m_TagProbe_branches["lep_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-	    m_TagProbe_branches["lep_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-	    m_TagProbe_branches["lep_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-	    m_TagProbe_branches["lep_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-	    m_TagProbe_branches["lep_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-	    m_TagProbe_branches["lep_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-	    if ( m_leptons.at(tag_idx_DLT).get()->flavour == 11 ) {
-
-		m_TagProbe_branches["electron_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		m_TagProbe_branches["electron_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		m_TagProbe_branches["electron_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		m_TagProbe_branches["electron_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		m_TagProbe_branches["electron_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		m_TagProbe_branches["electron_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-
-	    } else if ( m_leptons.at(tag_idx_DLT).get()->flavour == 13 ) {
-
-		m_TagProbe_branches["muon_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		m_TagProbe_branches["muon_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		m_TagProbe_branches["muon_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		m_TagProbe_branches["muon_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		m_TagProbe_branches["muon_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		m_TagProbe_branches["muon_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-
-	    }
-
-	    if ( m_leptons.at(probe_idx_DLT).get()->flavour == 11 ) {
-
-		m_TagProbe_branches["electron_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		m_TagProbe_branches["electron_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		m_TagProbe_branches["electron_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		m_TagProbe_branches["electron_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		m_TagProbe_branches["electron_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		m_TagProbe_branches["electron_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-	    } else if ( m_leptons.at(probe_idx_DLT).get()->flavour == 13 ) {
-
-		m_TagProbe_branches["muon_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		m_TagProbe_branches["muon_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		m_TagProbe_branches["muon_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		m_TagProbe_branches["muon_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		m_TagProbe_branches["muon_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		m_TagProbe_branches["muon_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-	    }
-
-	    // This will set the flat branch as well for tag and probe later on (needed to define cuts in plotting tools)
-
-	    m_leptons.at(tag_idx_DLT).get()->tag_DLT = 1;
-
-	    if ( m_debug ) { Info("defineTagAndProbe()","Unambiguous event (DLT matching) : tag lepton pT = %.2f, probe lepton pT = %.2f", m_leptons.at(tag_idx_DLT).get()->pt/1e3, m_leptons.at(probe_idx_DLT).get()->pt/1e3 ); }
-
-	    break;
-
-	case 2: // this is the ambiguous case: both T & TM
-
-	    // In SS, even in the ambiguous case we still need to tell which is tag and which is probe,
-	    // since we really do want to take the fake as the probe! (unlike OS, where we require both leptons be real, in SS we have 1 real and 1 fake)
-
-	    if ( m_ambiSolvingCrit.compare("Pt") == 0 ||  m_ambiSolvingCrit.compare("OF") == 0 ) { // this will be used also when the solving criterion is OF, but the event is SF
-
-		// Make sure lepton container is sorted in descending order of lepton pt
-
-		std::sort( m_leptons.begin(), m_leptons.end(), MiniNTupMaker::SorterPt() );
-		if ( m_debug ) {
-		    std:: cout << "\nLepton container ( descending pT sorting ):\n" << std::endl;
-		    for ( unsigned int idx(0); idx < m_leptons.size(); ++idx ) {
-			std::cout << "lepton[" << idx << "] - DeltaR(lep, closest bjet) = " << m_leptons.at(idx).get()->deltaRClosestBJet << ", pT = " << m_leptons.at(idx).get()->pt/1e3 << std::endl;
-		    }
-		    std::cout << "" << std::endl;
-		}
-
-		// Take the leading as the tag, the subleading as the probe
-
-		tag_idx_DLT   = 0;
-		probe_idx_DLT = 1;
-
-	    } else if ( m_ambiSolvingCrit.compare("deltaRClosestBJet") == 0 ) {
-
-		// Try an event topology-based approach to select the tag and probe:
-		//
-		// -) take the lepton that is further apart from the closest bjet as the tag, the other will be the probe
-
-		// Require *at least* one bjet, otherwise flag the event as bad
-
-		if ( m_event.get()->nbjets < 1 ) {
-
-		    m_event.get()->isBadTPEvent_DLT = 1;
-
-		    break;
-		}
-
-		// Sort lepton container in descending order of distance to closest bjet
-
-		std::sort( m_leptons.begin(), m_leptons.end(), MiniNTupMaker::SorterDistanceClosestBJet() );
-		if ( m_debug ) {
-		    std:: cout << "\nLepton container ( descending DeltaR(lep, closest bjet) sorting ):\n" << std::endl;
-		    for ( unsigned int idx(0); idx < m_leptons.size(); ++idx ) {
-			std::cout << "lepton[" << idx << "] - DeltaR(lep, closest bjet) = " << m_leptons.at(idx).get()->deltaRClosestBJet << ", pT = " << m_leptons.at(idx).get()->pt/1e3 << std::endl;
-		    }
-		    std::cout << "" << std::endl;
-		}
-
-		tag_idx_DLT   = 0;
-		probe_idx_DLT = 1;
-
-	    } else if ( m_ambiSolvingCrit.compare("massClosestBJet") == 0  ) {
-
-		// Try an event topology-based approach to select the tag and probe:
-		//
-		// -) take the lepton forming the largest invariant mass w/ the closest bjet as the tag, the other will be the probe
-
-		// Require *at least* one bjet, otherwise flag the event as bad
-
-		if ( m_event.get()->nbjets < 1 ) {
-
-		    m_event.get()->isBadTPEvent_DLT = 1;
-
-		    break;
-		}
-
-		// Sort lepton container in descending order of mass w/ closest bjet
-
-		std::sort( m_leptons.begin(), m_leptons.end(), MiniNTupMaker::SorterMassClosestBJet() );
-		if ( m_debug ) {
-		    std:: cout << "\nLepton container ( descending M(lep, closest bjet) sorting ):\n" << std::endl;
-		    for ( unsigned int idx(0); idx < m_leptons.size(); ++idx ) {
-			std::cout << "lepton[" << idx << "] - M(lep, closest bjet) = " << m_leptons.at(idx).get()->massClosestBJet/1e3 << ", pT = " << m_leptons.at(idx).get()->pt/1e3 << std::endl;
-		    }
-		    std::cout << "" << std::endl;
-		}
-
-		tag_idx_DLT   = 0;
-		probe_idx_DLT = 1;
-
-	    }
-
-	    // Flag the tag lepton (used afterwards to define flat branches)
-
-	    m_leptons.at( tag_idx_DLT ).get()->tag_DLT = 1;
-
-	    tag_pt                  = m_leptons.at(tag_idx_DLT).get()->pt;
-	    probe_pt                = m_leptons.at(probe_idx_DLT).get()->pt;
-	    tag_eta                 = m_leptons.at(tag_idx_DLT).get()->eta;
-	    probe_eta               = m_leptons.at(probe_idx_DLT).get()->eta;
-	    tag_etaBE2              = m_leptons.at(tag_idx_DLT).get()->etaBE2;
-	    probe_etaBE2            = m_leptons.at(probe_idx_DLT).get()->etaBE2;
-	    tag_deltaRClosestBJet   = m_leptons.at(tag_idx_DLT).get()->deltaRClosestBJet;
-	    probe_deltaRClosestBJet = m_leptons.at(probe_idx_DLT).get()->deltaRClosestBJet;
-	    tag_truthType           = m_leptons.at(tag_idx_DLT).get()->truthType;
-	    probe_truthType         = m_leptons.at(probe_idx_DLT).get()->truthType;
-	    tag_truthOrigin         = m_leptons.at(tag_idx_DLT).get()->truthOrigin;
-	    probe_truthOrigin       = m_leptons.at(probe_idx_DLT).get()->truthOrigin;
-
-	    m_TagProbe_branches["lep_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-	    m_TagProbe_branches["lep_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-	    m_TagProbe_branches["lep_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-	    m_TagProbe_branches["lep_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-	    m_TagProbe_branches["lep_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-	    m_TagProbe_branches["lep_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-	    m_TagProbe_branches["lep_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-	    if ( m_leptons.at(tag_idx_DLT).get()->flavour == 11 ) {
-
-		m_TagProbe_branches["electron_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		m_TagProbe_branches["electron_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		m_TagProbe_branches["electron_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		m_TagProbe_branches["electron_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		m_TagProbe_branches["electron_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		m_TagProbe_branches["electron_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-
-	    } else if ( m_leptons.at(tag_idx_DLT).get()->flavour == 13 ) {
-
-		m_TagProbe_branches["muon_TagVec_DLT_Pt"].vec_f.push_back(tag_pt);
-		m_TagProbe_branches["muon_TagVec_DLT_Eta"].vec_f.push_back(tag_eta);
-		m_TagProbe_branches["muon_TagVec_DLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
-		m_TagProbe_branches["muon_TagVec_DLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
-		m_TagProbe_branches["muon_TagVec_DLT_truthType"].vec_i.push_back(tag_truthType);
-		m_TagProbe_branches["muon_TagVec_DLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
-
-	    }
-
-	    if ( m_leptons.at(probe_idx_DLT).get()->flavour == 11 ) {
-
-		m_TagProbe_branches["electron_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		m_TagProbe_branches["electron_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		m_TagProbe_branches["electron_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		m_TagProbe_branches["electron_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		m_TagProbe_branches["electron_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		m_TagProbe_branches["electron_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-	    } else if ( m_leptons.at(probe_idx_DLT).get()->flavour == 13 ) {
-
-		m_TagProbe_branches["muon_ProbeVec_DLT_Pt"].vec_f.push_back(probe_pt);
-		m_TagProbe_branches["muon_ProbeVec_DLT_Eta"].vec_f.push_back(probe_eta);
-		m_TagProbe_branches["muon_ProbeVec_DLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
-		m_TagProbe_branches["muon_ProbeVec_DLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
-		m_TagProbe_branches["muon_ProbeVec_DLT_truthType"].vec_i.push_back(probe_truthType);
-		m_TagProbe_branches["muon_ProbeVec_DLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
-
-	    }
-
-	    if ( m_debug && m_ambiSolvingCrit.compare("Pt") == 0  )               { Info("defineTagAndProbe()","Ambiguous event (DLT matching): both leptons T & T.M. Event is SS --> tag lepton pT = %.2f, probe lepton pT = %.2f", tag_pt/1e3, probe_pt/1e3 ); }
-	    if ( m_debug && m_ambiSolvingCrit.compare("deltaRClosestBJet") == 0 ) { Info("defineTagAndProbe()","Ambiguous event (DLT matching): both leptons T & T.M. Event is SS --> tag lepton pT = %.2f, DeltaR(lep, closest bjet) = %.3f, probe lepton pT = %.2f, DeltaR(lep, closest bjet) = %.3f", tag_pt/1e3, m_leptons.at(tag_idx_DLT).get()->deltaRClosestBJet, probe_pt/1e3 , m_leptons.at(probe_idx_DLT).get()->deltaRClosestBJet ); }
-	    if ( m_debug && m_ambiSolvingCrit.compare("massClosestBJet") == 0 )   { Info("defineTagAndProbe()","Ambiguous event (DLT matching): both leptons T & T.M. Event is SS --> tag lepton pT = %.2f, M(lep, closest bjet) = %.3f, probe lepton pT = %.2f, M(lep, closest bjet) = %.3f", tag_pt/1e3, m_leptons.at(tag_idx_DLT).get()->massClosestBJet/1e3, probe_pt/1e3 , m_leptons.at(probe_idx_DLT).get()->massClosestBJet/1e3 ); }
-
-	    // Revert back to pT-sorting (which is the default)
-
-	    std::sort( m_leptons.begin(), m_leptons.end(), MiniNTupMaker::SorterPt() );
-
-	    break;
-
-	default:
-
-	    Error("defineTagAndProbe()","Number of tag lepton candidates (DLT matching) is %i...This shouldn't happen. Aborting.", tag_candidate_counter_DLT );
-	    return EL::StatusCode::FAILURE;
-
-	} // close switch DLT
-
     } // close OS-SS cases
 
     return EL::StatusCode::SUCCESS;
 
   } // close SUSYTP
 
-  bool found_tag_SLT(false), found_tag_DLT(false);
+
+  // ********************************
+  //
+  // THE FOLLOWING IS FUCKING WRONG!!
+  //
+  // ********************************
+
+  bool found_tag_SLT(false);
 
   // The first trigger-matched. tight lepton encountered in the event will be the tag (NB: the lepton container is pT-ordered).
   // Events where no such lepton is found are flagged and will be discarded
 
   // By construction, in the ambiguous case where both are (T & T.M.), the leading will be taken as the tag, the subleading will be the probe
 
-  m_event.get()->isBadTPEvent_SLT = m_event.get()->isBadTPEvent_DLT = 0; // be optimistic!
+  m_event.get()->isBadTPEvent_SLT = 0; // be optimistic!
 
   int idx(0);
 
@@ -2627,11 +2088,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
       found_tag_SLT = true;
       if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (SLT matching)! pT[%i] = %.2f", idx, lep.get()->pt/1e3 ); }
     }
-    if ( !found_tag_DLT && ( lep.get()->tight && lep.get()->trigmatched_DLT ) ) {
-      lep.get()->tag_DLT = 1;
-      found_tag_DLT = true;
-      if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (DLT matching)! pT[%i] = %.2f", idx, lep.get()->pt/1e3 ); }
-    }
 
     ++idx;
   }
@@ -2640,11 +2096,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
     m_leptons.at(0).get()->tag_SLT = 1;
     m_event.get()->isBadTPEvent_SLT = 1;
     if ( m_debug ) { Info("defineTagAndProbe()","None lepton is T & TM (SLT matching) - choose leading as tag (pT = %.2f) and flag this event as bad", m_leptons.at(0).get()->pt/1e3 ); }
-  }
-  if ( !found_tag_DLT ) {
-    m_leptons.at(0).get()->tag_DLT = 1;
-    m_event.get()->isBadTPEvent_DLT = 1;
-    if ( m_debug ) { Info("defineTagAndProbe()","None lepton is T & TM (DLT matching) - choose leading as tag (pT = %.2f) and flag this event as bad", m_leptons.at(0).get()->pt/1e3 ); }
   }
 
   return EL::StatusCode::SUCCESS;
@@ -2666,16 +2117,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: fillTPFlatBranches ( std::shared_ptr
 	if ( isBadTPEvent ) {
 	    tp_trigs.push_back("Tag_SLT");
 	    tp_trigs.push_back("Probe_SLT");
-	} else {
-	    tp_trigs.push_back(this_tp_trig);
-	}
-    } else if ( trig.compare("DLT") == 0 ) {
-	isTag = lep.get()->tag_DLT;
-	this_tp_trig = ( isTag ) ?  "Tag_DLT" : "Probe_DLT";
-	isBadTPEvent = m_event.get()->isBadTPEvent_DLT;
-	if ( isBadTPEvent ) {
-	    tp_trigs.push_back("Tag_DLT");
-	    tp_trigs.push_back("Probe_DLT");
 	} else {
 	    tp_trigs.push_back(this_tp_trig);
 	}
@@ -2807,7 +2248,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
     ANA_CHECK( this->storeLeptonBranches() );
 
     m_isBadTPEvent_SLT = m_event.get()->isBadTPEvent_SLT;
-    m_isBadTPEvent_DLT = m_event.get()->isBadTPEvent_DLT;
 
     for ( const auto lep : m_leptons ) {
 
@@ -2815,7 +2255,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 
 	if ( m_event.get()->dilep ) {
 	    ANA_CHECK( this->fillTPFlatBranches( lep, "SLT" ) );
-	    ANA_CHECK( this->fillTPFlatBranches( lep, "DLT" ) );
 	}
 
     }
