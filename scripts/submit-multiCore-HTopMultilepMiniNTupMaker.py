@@ -40,7 +40,7 @@ def generateCmdList(samples):
         infile  = None
 
         # In case of DATA, read the list of infiles from a txt file and execute one single job
-        #
+
         if sample[-4:] == ".txt":
             outdir = "Data"
 	    infile = sample
@@ -67,11 +67,11 @@ def miniNTuplise(sample):
 
     # Move output file(s) from job directory to the proper one,
     # but first, change the file name to be readable in KG's FW!
-    #
+
     knownDSID = False
 
     # Get output directory name from the executed command string
-    #
+
     outdir = sample[sample.find("--submitDir")+len("--submitDir")+1:sample.find("--nevents")-1]
 
     for s in sampledict:

@@ -8,7 +8,7 @@ sys.path.insert(0, os.environ['ROOTCOREBIN']+"/user_scripts/HTopMultilepAnalysis
 c = xAH_config()
 
 # List the branches to be copied over from the input TTree
-#
+
 eventweight_branches = ["mcWeightOrg","SherpaNJetWeight","pileupEventWeight_090",
                         "MV2c10_70_EventWeight","MV2c10_77_EventWeight","JVT_EventWeight",
 			"lepSFTrigLoose","lepSFTrigTight",
@@ -60,7 +60,29 @@ trigmatch_branches   = [
         		"muon_match_HLT_mu50",
                        ]
 
-vec_lep_branches     = ["electron_passOR","muon_passOR"]
+vec_lep_branches     = ["electron_passOR",
+                        "electron_pt",
+                        "electron_eta",
+                        "electron_EtaBE2",
+                        "electron_phi",
+                        "electron_E",
+                        "electron_sigd0PV",
+                        "electron_z0SinTheta",
+                        "electron_topoetcone20",
+                        "electron_ptvarcone20",
+                        "electron_truthType",
+                        "electron_truthOrigin",
+                        #
+                        "muon_passOR",
+                        "muon_pt",
+                        "muon_eta",
+                        "muon_phi",
+                        "muon_sigd0PV",
+                        "muon_z0SinTheta",
+                        "muon_ptvarcone30",
+                        "muon_truthType",
+                        "muon_truthOrigin",
+                       ]
 
 lep_branches         = ["lep_ID_0",
                         "lep_Index_0",
@@ -249,16 +271,16 @@ mc_truth_branches   = [] # ["m_truth_m","m_truth_pt","m_truth_eta","m_truth_phi"
 branches_to_copy = eventweight_branches + event_branches + trigbits_branches + jet_branches + lep_branches + tau_branches + mc_truth_branches + MET_truth_branches
 
 # ---------------------------
-#
+
 # Add here branches that need to be used (hence activated), but not need to be copied over
-#
+
 jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_E","m_jet_flavor_weight_MV2c10","m_jet_flavor_truth_label","m_jet_flavor_truth_label_ghost"]
 jet_truth_vec_branches = ["m_truth_jet_pt","m_truth_jet_eta","m_truth_jet_phi","m_truth_jet_e"]
 
 branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches + trigmatch_branches + vec_lep_branches
 
 # Trick to pass the list as a comma-separated string to the C++ algorithm
-#
+
 branches_to_activate_str = ",".join(branches_to_activate)
 
 print("Activating branches from input TTree:")
@@ -266,7 +288,7 @@ for branch in branches_to_activate:
    print("\t{0}".format(branch))
 
 # Instantiate the main algorithm
-#
+
 HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNTupMaker",
                                   "m_debug"                : False,
 				  "m_outputNTupName"       : "physics",
@@ -283,18 +305,18 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
                                 }
 
 # Instantiate the NTupleSvc algorithm
-#
+
 ntuplesvc = ROOT.EL.NTupleSvc(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
 
 # Set the branches to be copied over from the input TTree
-#
+
 print("Copying branches from input TTree to output:")
 for branch in branches_to_copy:
    print("\t{0}".format(branch))
    ntuplesvc.copyBranch(branch)
 
 # Instantiate the AlgSelect algorithm to skim the input ntuple
-#
+
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
 algskim.addCut("RunYear==2015 || RunYear==2016")
 algskim.addCut("passEventCleaning==1")
@@ -303,9 +325,8 @@ algskim.addCut("(dilep_type>0 && nJets_OR_T>=2 && nJets_OR_T_MV2c10_70>=1) || (t
 algskim.histName("cutflow")
 
 # Add the algorithms to the job.
-#
 # Here order matters!
-#
+
 c._algorithms.append(ntuplesvc)
 if ( HTopMultilepMiniNTupMakerDict["m_useAlgSelect"] ):
   c._algorithms.append(algskim)

@@ -6,6 +6,8 @@ parser = argparse.ArgumentParser(description='Get yields and systematics for MM'
 
 list_channel = ['HIGHNJ','LOWNJ','ALLNJ']
 
+categories   = ["ALL","ElEl","MuMu","OF"]
+
 luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
                  "ICHEP 2015+2016 DS":13.20768,       # August 2016
                  "POST-ICHEP 2015+2016 DS":22.07036,  # October 2016
@@ -16,6 +18,8 @@ parser.add_argument('inputDir', metavar='inputDir',type=str,
                     help='Path to the directory containing input histograms')
 parser.add_argument('--channel', dest='channel', action='store', default='HIGHNJ', type=str, nargs='+',
                     help='The channel chosen. Full list of available options:\n{0}'.format(list_channel))
+parser.add_argument('--category', dest='category', action='store', default=categories[0], type=str, nargs='+', choices=categories,
+                    help='The category chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). If this option is not specified, default will be \'{0}\''.format(categories[0]))
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
                     help='List of variables to be considered. Use a space-separated list. If unspecified, will consider Njets only.')
 parser.add_argument('--closure', dest='closure', action='store_true', default=False,
@@ -454,8 +458,11 @@ if __name__ == '__main__':
 	    if not "NJets" in var_list:
 	        var_list.append("NJets")
 
-    flavour_list = ["ElEl", "MuMu", "OF"]
-    #flavour_list = ["ElEl"]
+    flavour_list = []
+    if "ALL" in args.category:
+        flavour_list.extend(["ElEl", "MuMu", "OF"])
+    else:
+        flavour_list.extend(args.category)
 
     print("Looking at variables : [" + ",".join( "{0}".format(v) for v in var_list ) + "]")
 
@@ -479,6 +486,10 @@ if __name__ == '__main__':
     	    for key in myfile.GetListOfKeys():
     		keyname = key.GetName()
     		if not ( "fakesbkg_" in keyname ): continue
+
+                # HACK
+                if "Mu_Pt_Stat_7" in keyname: continue
+
     		keyname = keyname.replace("fakesbkg_","")
     		keyname = keyname.replace("_dn","")
     		keyname = keyname.replace("_up","")

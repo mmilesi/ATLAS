@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     gROOT.SetBatch(True)
 
-    import EfficiencyPlotter, EfficiencyPlotter_ElNoIso, EfficiencyPlotter_ElNoIso_Rebinned
+    import EfficiencyPlotter, EfficiencyPlotter_ElNoIso, EfficiencyPlotter_ElNoIso_Rebinned_1, EfficiencyPlotter_ElNoIso_Rebinned_2, EfficiencyPlotter_ElNoIso_Rebinned_3
 
     if False:
         EfficiencyPlotter.plotFakeElectron()
@@ -30,7 +30,37 @@ if __name__ == "__main__":
         EfficiencyPlotter_ElNoIso.plotRealElectron()
         EfficiencyPlotter_ElNoIso.plotRealElectron_BaselineElIso()
 
+    if False:
+        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron()
+        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_anyProbe()
+        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_BaselineElIso()
+
+    # Use this one (has the right binning)
+    if False:
+        EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealElectron()
+        EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealMuon()
+        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeElectron()
+        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeMuon()
+
+    if False:
+        EfficiencyPlotter_ElNoIso_Rebinned_3.plotFakeElectron()
+
+    import TypeAndOriginPlots
+
     if True:
-        EfficiencyPlotter_ElNoIso_Rebinned.plotFakeElectron()
-        EfficiencyPlotter_ElNoIso_Rebinned.plotFakeElectron_anyProbe()
-        EfficiencyPlotter_ElNoIso_Rebinned.plotFakeElectron_BaselineElIso()
+
+        samples       = ["ttbarbkg","wjetsbkg"]
+        jetSelections = ["ALLNJ","LOWNJ","HIGHNJ"]
+        prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
+        normFactor    = 1.0#0
+
+        for s in samples:
+            print("\nLooking at sample: {0}".format(s))
+            for js in jetSelections:
+                print("\n\tjet selection: {0}".format(js))
+                for pid in prodIDs:
+                    print("\n\t\tprodID: {0}\n".format(pid))
+                    TypeAndOriginPlots.plotTypeVSOrigin(prodID=pid, sample=s, jetSelection=js, normFactor=normFactor)
+                    TypeAndOriginPlots.plotTypeVSNjets(prodID=pid, sample=s, jetSelection=js, normFactor=normFactor)
+                    TypeAndOriginPlots.plotOriginVSNjets(prodID=pid, sample=s, jetSelection=js, normFactor=normFactor)
+

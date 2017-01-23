@@ -16,11 +16,10 @@ lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","
 branches_to_activate = event_branches + lep_branches
 
 # Trick to pass the list as a comma-separated string to the C++ algorithm
-#
+
 branches_to_activate_str = ",".join(branches_to_activate)
 
 # Instantiate the main algorithm
-#
 
 base_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/"
 #base_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk"
@@ -73,12 +72,22 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #"m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies_NOT_TRIGMATCH_EFF",
                                     #
                                     # Removed isolation on baseline electrons
+                                    #
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies",
                                     #"m_EFF_YES_TM_dir" 	   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_TRIGMATCH_EFF",
                                     #"m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_NOT_TRIGMATCH_EFF",
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED",
-                                    "m_EFF_YES_TM_dir" 	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_TRIGMATCH_EFF",
-                                    "m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_NOT_TRIGMATCH_EFF",
+                                    #
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_1",
+                                    #"m_EFF_YES_TM_dir" 	   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_1_TRIGMATCH_EFF",
+                                    #"m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_1_NOT_TRIGMATCH_EFF",
+                                    #
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_2",
+                                    "m_EFF_YES_TM_dir" 	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_2_TRIGMATCH_EFF",
+                                    "m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_2_NOT_TRIGMATCH_EFF",
+                                    #
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_3",
+                                    #"m_EFF_YES_TM_dir" 	   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_3_TRIGMATCH_EFF",
+                                    #"m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_3_NOT_TRIGMATCH_EFF",
                                     #
                                     # ------------------------------------------------------------
                                     #
@@ -95,17 +104,17 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                   }
 
 # Instantiate the NTupleSvc algorithm
-#
+
 ntuplesvc = ROOT.EL.NTupleSvc(HTopMultilepNTupReprocesserDict["m_outputNTupStreamName"])
 
 # Copy ALL branches over from the input TTree
-#
+
 print("Copying branches from input TTree to output:")
 ntuplesvc.copyBranch(".*")
 
 # Add the algorithms to the job.
 #
 # Here order matters!
-#
+
 c._algorithms.append(ntuplesvc)
 c.setalg("HTopMultilepNTupReprocesser", HTopMultilepNTupReprocesserDict)
