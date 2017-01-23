@@ -48,10 +48,19 @@ if __name__ == "__main__":
     import TypeAndOriginPlots
 
     if True:
-        TypeAndOriginPlots.plotTypeVSOrigin("25ns_v24")
-        TypeAndOriginPlots.plotTypeVSNjets("25ns_v24")
-        TypeAndOriginPlots.plotOriginVSNjets("25ns_v24")
 
-        TypeAndOriginPlots.plotTypeVSOrigin("25ns_v24_ElNoIso")
-        TypeAndOriginPlots.plotTypeVSNjets("25ns_v24_ElNoIso")
-        TypeAndOriginPlots.plotOriginVSNjets("25ns_v24_ElNoIso")
+        samples       = ["ttbarbkg","wjetsbkg"]
+        jetSelections = ["ALLNJ","LOWNJ","HIGHNJ"]
+        prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
+        normFactor    = 1.0#0
+
+        for s in samples:
+            print("\nLooking at sample: {0}".format(s))
+            for js in jetSelections:
+                print("\n\tjet selection: {0}".format(js))
+                for pid in prodIDs:
+                    print("\n\t\tprodID: {0}\n".format(pid))
+                    TypeAndOriginPlots.plotTypeVSOrigin(prodID=pid, sample=s, jetSelection=js, normFactor=normFactor)
+                    TypeAndOriginPlots.plotTypeVSNjets(prodID=pid, sample=s, jetSelection=js, normFactor=normFactor)
+                    TypeAndOriginPlots.plotOriginVSNjets(prodID=pid, sample=s, jetSelection=js, normFactor=normFactor)
+

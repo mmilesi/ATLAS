@@ -146,7 +146,7 @@ class Plot:
 
         if self.__props.get("normFactor"):
             normfactor = self.__props["normFactor"]
-            self.__hist.Scale( normfactor / self.__hist.Integral() )
+            if normfactor: self.__hist.Scale( normfactor / self.__hist.Integral() )
 
         if self.__props.get("legend")      : Plot.legend.AddEntry(self.__hist, self.__props["legend"], "P")
 
