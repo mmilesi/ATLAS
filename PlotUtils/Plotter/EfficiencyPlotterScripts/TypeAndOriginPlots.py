@@ -9,17 +9,16 @@ from EfficiencyPlotterClasses import Plot, MultiPlot
 
 Plot.luminosity = 36.4702
 
-def plotTypeVSOrigin( prodID, sample, jetSelection, normFactor=0 ):
+def plotTypeVSOrigin( normFactor=0, **kwargs ):
 
     plotlist = []
 
     Plot.legend.SetHeader("Fake electrons")
 
-    lepSelection = "FakeCRElL"
     variable = "ElProbeType_VS_ElProbeOrigin"
 
-    inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + prodID + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + prodID + "_" + jetSelection + "/" + lepSelection + "/"
-    inputName = lepSelection + "_" + variable + ".root"
+    inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/" + kwargs["lepSelection"] + "/"
+    inputName = kwargs["lepSelection"] + "_" + variable + ".root"
 
     p0_props = {
                 #"legend"      : "t#bar{t} - Loose sel.",
@@ -31,25 +30,24 @@ def plotTypeVSOrigin( prodID, sample, jetSelection, normFactor=0 ):
                 "drawGrid"     : True,
                }
 
-    p0 = Plot(sample, inputPath  + inputName, p0_props)
+    p0 = Plot(kwargs["sample"], inputPath  + inputName, p0_props)
 
     extension = ""
     if "normFactor" in p0_props:
         if p0_props["normFactor"]:
             extension = "_NORM"
 
-    canvasID = lepSelection + "_" + variable + "_" + sample + "_" + prodID + "_" + jetSelection + extension
+    canvasID = kwargs["lepSelection"] + "_" + variable + "_" + kwargs["sample"] + "_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + extension
 
     c = TCanvas(canvasID,canvasID,50,50,800,900)
-
-    p0.makePlot(c)
+    c.cd()
+    p0.makePlot()
 
     #Plot.legend.Draw()
-
     #Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
     #Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
 
-    savePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + prodID + "/MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + prodID + "_" + jetSelection + "/TypeOriginPlots_" + prodID + "/"
+    savePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
     saveName = canvasID
 
     for ext in ["png","eps","root"]:
@@ -58,17 +56,16 @@ def plotTypeVSOrigin( prodID, sample, jetSelection, normFactor=0 ):
     Plot.legend.Clear()
 
 
-def plotTypeVSNjets( prodID, sample, jetSelection, normFactor=0  ):
+def plotTypeVSNjets( normFactor=0, **kwargs ):
 
     plotlist = []
 
     Plot.legend.SetHeader("Fake electrons")
 
-    lepSelection = "FakeCRElL"
     variable = "ElProbeType_VS_NJets"
 
-    inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + prodID + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + prodID + "_" + jetSelection + "/" + lepSelection + "/"
-    inputName = lepSelection + "_" + variable + ".root"
+    inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/" + kwargs["lepSelection"] + "/"
+    inputName = kwargs["lepSelection"] + "_" + variable + ".root"
 
     p0_props = {
                 #"legend"      : "t#bar{t} - Loose sel.",
@@ -79,25 +76,24 @@ def plotTypeVSNjets( prodID, sample, jetSelection, normFactor=0  ):
                 "drawGrid"     : True,
                }
 
-    p0 = Plot(sample, inputPath  + inputName, p0_props)
+    p0 = Plot(kwargs["sample"], inputPath  + inputName, p0_props)
 
     extension = ""
     if "normFactor" in p0_props:
         if p0_props["normFactor"]:
             extension = "_NORM"
 
-    canvasID = lepSelection + "_" + variable + "_" + sample + "_" + prodID + "_" + jetSelection + extension
+    canvasID = kwargs["lepSelection"] + "_" + variable + "_" + kwargs["sample"] + "_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + extension
 
     c = TCanvas(canvasID,canvasID,50,50,900,700)
-
-    p0.makePlot(c)
+    c.cd()
+    p0.makePlot()
 
     #Plot.legend.Draw()
-
     #Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
     #Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
 
-    savePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + prodID + "/MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + prodID + "_" + jetSelection + "/TypeOriginPlots_" + prodID + "/"
+    savePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
     saveName = canvasID
 
     for ext in ["png","eps","root"]:
@@ -106,17 +102,16 @@ def plotTypeVSNjets( prodID, sample, jetSelection, normFactor=0  ):
     Plot.legend.Clear()
 
 
-def plotOriginVSNjets( prodID, sample, jetSelection, normFactor=0  ):
+def plotOriginVSNjets( normFactor=0, **kwargs ):
 
     plotlist = []
 
     Plot.legend.SetHeader("Fake electrons")
 
-    lepSelection = "FakeCRElL"
     variable = "ElProbeOrigin_VS_NJets"
 
-    inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + prodID + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + prodID + "_" + jetSelection + "/" + lepSelection + "/"
-    inputName = lepSelection + "_" + variable + ".root"
+    inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/" + kwargs["lepSelection"] + "/"
+    inputName = kwargs["lepSelection"] + "_" + variable + ".root"
 
     p0_props = {
                 #"legend"      : "t#bar{t} - Loose sel.",
@@ -127,29 +122,42 @@ def plotOriginVSNjets( prodID, sample, jetSelection, normFactor=0  ):
                 "drawGrid"     : True,
                }
 
-    p0 = Plot(sample, inputPath  + inputName, p0_props)
+    p0 = Plot(kwargs["sample"], inputPath  + inputName, p0_props)
 
     extension = ""
     if "normFactor" in p0_props:
         if p0_props["normFactor"]:
             extension = "_NORM"
 
-    canvasID = lepSelection + "_" + variable + "_" + sample + "_" + prodID + "_" + jetSelection + extension
-
+    canvasID = kwargs["lepSelection"] + "_" + variable + "_" + kwargs["sample"] + "_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + extension
     c = TCanvas(canvasID,canvasID,50,50,1000,700)
+    c.cd()
+    p0.makePlot()
 
-    p0.makePlot(c)
+    doLeptonOriginFracPlots = ( not "normFactor" in p0_props or not p0_props["normFactor"] )
+    if doLeptonOriginFracPlots:
+        canvasID_stack = kwargs["lepSelection"] + "_LepOriginFrac_VS_NJets_" + kwargs["sample"] + "_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + extension
+        cstack = TCanvas(canvasID_stack,canvasID_stack,50,50,1000,700)
+        cstack.cd()
+        mystack, mystackleg = p0.makeLeptonOriginFracPlots(canvasID_stack)
+        mystack.Draw()
+        mystack.GetXaxis().SetTitle("Jet multiplicity")
+        mystack.GetYaxis().SetTitle("Fake lepton origin fraction")
+        mystack.GetXaxis().SetRangeUser(2,mystack.GetHistogram().GetNbinsX()-1)
+        mystackleg.Draw()
+        saveName_stack = canvasID_stack
 
     #Plot.legend.Draw()
-
     #Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
     #Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
 
-    savePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + prodID + "/MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + prodID + "_" + jetSelection + "/TypeOriginPlots_" + prodID + "/"
+    savePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
     saveName = canvasID
 
     for ext in ["png","eps","root"]:
         c.SaveAs( savePath + saveName + "." + ext )
+        if doLeptonOriginFracPlots:
+            cstack.SaveAs( savePath + saveName_stack + "." + ext )
 
     Plot.legend.Clear()
 
