@@ -14,6 +14,8 @@ parser = argparse.ArgumentParser(description="parallelise xrdcp copy via multipr
 
 parser.add_argument("sample_type", metavar="sample_type",type=str,
                     help="The sample type. Choose between \'Data\' and \'Nominal\'")
+parser.add_argument("--prod_ID", dest="prod_ID", action="store", default="25ns_v19", type=str,
+                    help="The NTup production tag, e.g. 25ns_v19, 25ns_v24/02, ...  (default: prod_ID=25ns_v19)")
 
 args = parser.parse_args()
 
