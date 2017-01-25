@@ -337,7 +337,7 @@ class Cut:
         return Cut(newname, newstr)
 
 class Systematics:
-    def __init__(self, name, treename=None, eventweight=None, process=None, categorytokens=None):
+    def __init__(self, name, treename=None, eventweight=None, process=[], categorytokens=None):
         self.name           = name
         self.treename       = treename
         self.eventweight    = eventweight
@@ -830,13 +830,19 @@ class Background:
                         treename = 'SystematicsUP/' + systematics.treename
                     elif systematicsdirection == 'DOWN':
                         treename = 'SystematicsDOWN/' + systematics.treename
-                if systematics.eventweight and systematics.process == name:
+                if systematics.eventweight and name in systematics.process:
 		    if systematicsdirection == 'UP':
-                        eventweight = systematics.eventweight + 'up'
+                        if type(systematics.eventweight) is str:
+                            eventweight = systematics.eventweight + 'up'
+                        else:
+                            eventweight = 1.0 + systematics.eventweight
                     elif systematicsdirection == 'DOWN':
-                        eventweight = systematics.eventweight + 'dn'
+                        if type(systematics.eventweight) is str:
+                            eventweight = systematics.eventweight + 'dn'
+                        else:
+                            eventweight = 1.0 - systematics.eventweight
 
-        if systematics and (systematics.process == name or not systematics.process):
+        if systematics and (name in systematics.process or not systematics.process):
             options['systematics'] = systematics
             options['systematicsdirection'] = systematicsdirection
         process = self.procmap[name](treename=treename, category=category, options=options)
