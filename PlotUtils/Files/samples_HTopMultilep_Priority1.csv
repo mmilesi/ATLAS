@@ -135,6 +135,7 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 361626,Background,1,9.9467e-05,1.0,Sherpa_ZZZ_4l2v,Triboson,ZZZ_4l2v
 361627,Background,1,0.000199561,1.0,Sherpa_ZZZ_2l4v,Triboson,ZZZ_2l4v
 410000,Background,696.12,1.1949,0.543,PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad,tops,ttbar_nonallhad
+410501,Background,396.49,1.1391,1.0,PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_nonallhad,tops,ttbar_nonallhad_Pythia8
 410011,Background,43.739,1.0,1.0094,PowhegPythiaEvtGen_P2012_singletop_tchan_lept_top,tops,singlet
 410012,Background,25.778,1.0,1.0193,PowhegPythiaEvtGen_P2012_singletop_tchan_lept_antitop,tops,singlet
 410013,Background,34.009,1.0,1.054,PowhegPythiaEvtGen_P2012_Wt_inclusive_top,tops,tW
