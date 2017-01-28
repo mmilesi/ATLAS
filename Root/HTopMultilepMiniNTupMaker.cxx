@@ -4,9 +4,12 @@
 #include <AsgTools/MessageCheck.h>
 
 // ROOT include(s)
+#include "TObjArray.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
 #include "TRandom3.h"
+#include "TRegexp.h"
+#include "TString.h"
 
 // C++ include(s)
 #include<algorithm>
@@ -42,6 +45,7 @@ HTopMultilepMiniNTupMaker :: HTopMultilepMiniNTupMaker(std::string className) :
   m_useTruthTP           = false;
   m_useSUSYSSTP          = false;
   m_ambiSolvingCrit      = "Pt";
+  m_jetTruthMatching     = false;
 }
 
 
@@ -145,6 +149,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
 
   m_inputNTuple->SetBranchAddress ("dilep_type",  			      &m_dilep_type);
   m_inputNTuple->SetBranchAddress ("trilep_type",  			      &m_trilep_type);
+  m_inputNTuple->SetBranchAddress ("quadlep_type",  			      &m_quadlep_type);
 
   m_inputNTuple->SetBranchAddress ("nJets_OR", 			              &m_nJets_OR);
   m_inputNTuple->SetBranchAddress ("nJets_OR_MV2c10_70", 		      &m_nJets_OR_MV2c10_70);
@@ -283,18 +288,67 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_SFObjLoose_2",   		      &m_lep_SFObjLoose_2);
   m_inputNTuple->SetBranchAddress ("lep_SFObjTight_2",   		      &m_lep_SFObjTight_2);
 
+  m_inputNTuple->SetBranchAddress ("lep_ID_3",   			      &m_lep_ID_3);
+  m_inputNTuple->SetBranchAddress ("lep_Pt_3",  			      &m_lep_Pt_3);
+  m_inputNTuple->SetBranchAddress ("lep_E_3",   			      &m_lep_E_3);
+  m_inputNTuple->SetBranchAddress ("lep_Eta_3",  			      &m_lep_Eta_3);
+  m_inputNTuple->SetBranchAddress ("lep_Phi_3",   			      &m_lep_Phi_3);
+  m_inputNTuple->SetBranchAddress ("lep_EtaBE2_3",   			      &m_lep_EtaBE2_3);
+  m_inputNTuple->SetBranchAddress ("lep_sigd0PV_3",   			      &m_lep_sigd0PV_3);
+  m_inputNTuple->SetBranchAddress ("lep_Z0SinTheta_3",   		      &m_lep_Z0SinTheta_3);
+  m_inputNTuple->SetBranchAddress ("lep_isTightLH_3",   		      &m_lep_isTightLH_3);
+  m_inputNTuple->SetBranchAddress ("lep_isMediumLH_3",   		      &m_lep_isMediumLH_3);
+  m_inputNTuple->SetBranchAddress ("lep_isLooseLH_3",   		      &m_lep_isLooseLH_3);
+  m_inputNTuple->SetBranchAddress ("lep_isTight_3",   			      &m_lep_isTight_3);
+  m_inputNTuple->SetBranchAddress ("lep_isMedium_3",   			      &m_lep_isMedium_3);
+  m_inputNTuple->SetBranchAddress ("lep_isLoose_3",   			      &m_lep_isLoose_3);
+  m_inputNTuple->SetBranchAddress ("lep_isolationLooseTrackOnly_3",   	      &m_lep_isolationLooseTrackOnly_3);
+  m_inputNTuple->SetBranchAddress ("lep_isolationLoose_3",   		      &m_lep_isolationLoose_3);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTight_3",   	      &m_lep_isolationFixedCutTight_3);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutTightTrackOnly_3",   &m_lep_isolationFixedCutTightTrackOnly_3);
+  m_inputNTuple->SetBranchAddress ("lep_isolationFixedCutLoose_3",   	      &m_lep_isolationFixedCutLoose_3);
+  m_inputNTuple->SetBranchAddress ("lep_topoEtcone20_3",                      &m_lep_topoEtcone20_3);
+  m_inputNTuple->SetBranchAddress ("lep_ptVarcone20_3",                       &m_lep_ptVarcone20_3);
+  m_inputNTuple->SetBranchAddress ("lep_ptVarcone30_3",                       &m_lep_ptVarcone30_3);
+  m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_3",   		      &m_lep_isTrigMatch_3);
+  m_inputNTuple->SetBranchAddress ("lep_isTrigMatchDLT_3",   		      &m_lep_isTrigMatchDLT_3);
+  m_inputNTuple->SetBranchAddress ("lep_isPrompt_3",   			      &m_lep_isPrompt_3);
+  m_inputNTuple->SetBranchAddress ("lep_isBrems_3",   		              &m_lep_isBrems_3);
+  m_inputNTuple->SetBranchAddress ("lep_isFakeLep_3",   		      &m_lep_isFakeLep_3);
+  m_inputNTuple->SetBranchAddress ("lep_isQMisID_3",   		              &m_lep_isQMisID_3);
+  m_inputNTuple->SetBranchAddress ("lep_isConvPh_3",   		              &m_lep_isConvPh_3);
+  m_inputNTuple->SetBranchAddress ("lep_truthType_3",   		      &m_lep_truthType_3);
+  m_inputNTuple->SetBranchAddress ("lep_truthOrigin_3",   		      &m_lep_truthOrigin_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFIDLoose_3",   		      &m_lep_SFIDLoose_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFIDTight_3",   		      &m_lep_SFIDTight_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFTrigLoose_3",   		      &m_lep_SFTrigLoose_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFTrigTight_3",   		      &m_lep_SFTrigTight_3);
+  m_inputNTuple->SetBranchAddress ("lep_EffTrigLoose_3",                      &m_lep_EffTrigLoose_3);
+  m_inputNTuple->SetBranchAddress ("lep_EffTrigTight_3",                      &m_lep_EffTrigTight_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFIsoLoose_3",   		      &m_lep_SFIsoLoose_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFIsoTight_3",   		      &m_lep_SFIsoTight_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFReco_3",   			      &m_lep_SFReco_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFTTVA_3",   			      &m_lep_SFTTVA_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFObjLoose_3",   		      &m_lep_SFObjLoose_3);
+  m_inputNTuple->SetBranchAddress ("lep_SFObjTight_3",   		      &m_lep_SFObjTight_3);
+
   m_inputNTuple->SetBranchAddress ("electron_passOR",                                 &m_electron_passOR);
   m_inputNTuple->SetBranchAddress ("electron_pt", 	                              &m_electron_pt);
   m_inputNTuple->SetBranchAddress ("electron_eta",	      		              &m_electron_eta);
   m_inputNTuple->SetBranchAddress ("electron_EtaBE2",	                              &m_electron_EtaBE2);
   m_inputNTuple->SetBranchAddress ("electron_phi",  	                              &m_electron_phi);
   m_inputNTuple->SetBranchAddress ("electron_E",	      		              &m_electron_E);
+  m_inputNTuple->SetBranchAddress ("electron_ID", 	                              &m_electron_ID);
   m_inputNTuple->SetBranchAddress ("electron_sigd0PV",	                              &m_electron_sigd0PV);
   m_inputNTuple->SetBranchAddress ("electron_z0SinTheta",     		              &m_electron_z0SinTheta);
   m_inputNTuple->SetBranchAddress ("electron_topoetcone20",   		              &m_electron_topoetcone20);
   m_inputNTuple->SetBranchAddress ("electron_ptvarcone20",    		              &m_electron_ptvarcone20);
   m_inputNTuple->SetBranchAddress ("electron_truthType",      		              &m_electron_truthType);
   m_inputNTuple->SetBranchAddress ("electron_truthOrigin",    		              &m_electron_truthOrigin);
+  m_inputNTuple->SetBranchAddress ("electron_PromptLeptonIso_TagWeight",    	      &m_electron_PromptLeptonIso_TagWeight);
+  m_inputNTuple->SetBranchAddress ("electron_ChargeIDBDTLoose",    		      &m_electron_ChargeIDBDTLoose);
+  m_inputNTuple->SetBranchAddress ("electron_ChargeIDBDTMedium",    		      &m_electron_ChargeIDBDTMedium);
+  m_inputNTuple->SetBranchAddress ("electron_ChargeIDBDTTight",    		      &m_electron_ChargeIDBDTTight);
   m_inputNTuple->SetBranchAddress ("electron_match_HLT_e24_lhmedium_L1EM20VH",        &m_electron_match_HLT_e24_lhmedium_L1EM20VH);
   m_inputNTuple->SetBranchAddress ("electron_match_HLT_e26_lhtight_nod0_ivarloose",   &m_electron_match_HLT_e26_lhtight_nod0_ivarloose);
   m_inputNTuple->SetBranchAddress ("electron_match_HLT_e60_lhmedium",		      &m_electron_match_HLT_e60_lhmedium);
@@ -312,11 +366,13 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("muon_pt", 	                                      &m_muon_pt);
   m_inputNTuple->SetBranchAddress ("muon_eta",		                              &m_muon_eta);
   m_inputNTuple->SetBranchAddress ("muon_phi",  	                              &m_muon_phi);
+  m_inputNTuple->SetBranchAddress ("muon_ID", 	                                      &m_muon_ID);
   m_inputNTuple->SetBranchAddress ("muon_sigd0PV",	                              &m_muon_sigd0PV);
   m_inputNTuple->SetBranchAddress ("muon_z0SinTheta",  	                              &m_muon_z0SinTheta);
   m_inputNTuple->SetBranchAddress ("muon_ptvarcone30",  	                      &m_muon_ptvarcone30);
   m_inputNTuple->SetBranchAddress ("muon_truthType",  	                              &m_muon_truthType);
   m_inputNTuple->SetBranchAddress ("muon_truthOrigin",  	                      &m_muon_truthOrigin);
+  m_inputNTuple->SetBranchAddress ("muon_PromptLeptonIso_TagWeight",    	      &m_muon_PromptLeptonIso_TagWeight);
   m_inputNTuple->SetBranchAddress ("muon_match_HLT_mu20_iloose_L1MU15", 	      &m_muon_match_HLT_mu20_iloose_L1MU15);
   m_inputNTuple->SetBranchAddress ("muon_match_HLT_mu26_ivarmedium",		      &m_muon_match_HLT_mu26_ivarmedium);
   m_inputNTuple->SetBranchAddress ("muon_match_HLT_mu50",			      &m_muon_match_HLT_mu50);
@@ -394,17 +450,44 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("is_AntiTel_Tmu",      	&m_is_AntiTel_Tmu, "is_AntiTel_Tmu/B");
   m_outputNTuple->tree()->Branch("is_Tmu_AntiTel",      	&m_is_Tmu_AntiTel, "is_Tmu_AntiTel/B");
   m_outputNTuple->tree()->Branch("is_AntiTmu_Tel",      	&m_is_AntiTmu_Tel, "is_AntiTmu_Tel/B");
+  m_outputNTuple->tree()->Branch("is_TMVA_AntiTMVA",            &m_is_TMVA_AntiTMVA, "is_TMVA_AntiTMVA/B");
+  m_outputNTuple->tree()->Branch("is_AntiTMVA_TMVA",            &m_is_AntiTMVA_TMVA, "is_AntiTMVA_TMVA/B");
+  m_outputNTuple->tree()->Branch("is_AntiTMVA_AntiTMVA",        &m_is_AntiTMVA_AntiTMVA, "is_AntiTMVA_AntiTMVA/B");
+  m_outputNTuple->tree()->Branch("is_TMVAel_AntiTMVAmu",      	&m_is_TMVAel_AntiTMVAmu, "is_TMVAel_AntiTMVAmu/B");
+  m_outputNTuple->tree()->Branch("is_AntiTMVAel_TMVAmu",      	&m_is_AntiTMVAel_TMVAmu, "is_AntiTMVAel_TMVAmu/B");
+  m_outputNTuple->tree()->Branch("is_TMVAmu_AntiTMVAel",      	&m_is_TMVAmu_AntiTMVAel, "is_TMVAmu_AntiTMVAel/B");
+  m_outputNTuple->tree()->Branch("is_AntiTMVAmu_TMVAel",      	&m_is_AntiTMVAmu_TMVAel, "is_AntiTMVAmu_TMVAel/B");
 
   m_outputNTuple->tree()->Branch("nmuons",               	&m_nmuons, "nmuons/I");
   m_outputNTuple->tree()->Branch("nelectrons",               	&m_nelectrons, "nelectrons/I");
   m_outputNTuple->tree()->Branch("nleptons",               	&m_nleptons, "nleptons/I");
 
-  m_outputNTuple->tree()->Branch("lep_isTightSelected_0",       &m_lep_isTightSelected_0, "lep_isTightSelected_0/B");
-  m_outputNTuple->tree()->Branch("lep_deltaRClosestBJet_0",     &m_lep_deltaRClosestBJet_0, "lep_deltaRClosestBJet_0/F");
-  m_outputNTuple->tree()->Branch("lep_isTightSelected_1",       &m_lep_isTightSelected_1, "lep_isTightSelected_1/B");
-  m_outputNTuple->tree()->Branch("lep_deltaRClosestBJet_1",     &m_lep_deltaRClosestBJet_1, "lep_deltaRClosestBJet_1/F");
-  m_outputNTuple->tree()->Branch("lep_isTightSelected_2",       &m_lep_isTightSelected_2, "lep_isTightSelected_2/B");
-  m_outputNTuple->tree()->Branch("lep_deltaRClosestBJet_2",     &m_lep_deltaRClosestBJet_2, "lep_deltaRClosestBJet_2/F");
+  m_outputNTuple->tree()->Branch("lep_isTightSelected_0",           &m_lep_isTightSelected_0, "lep_isTightSelected_0/B");
+  m_outputNTuple->tree()->Branch("lep_isTightSelectedMVA_0",        &m_lep_isTightSelectedMVA_0, "lep_isTightSelectedMVA_0/B");
+  m_outputNTuple->tree()->Branch("lep_PromptLeptonIso_TagWeight_0", &m_lep_PromptLeptonIso_TagWeight_0, "lep_PromptLeptonIso_TagWeight_0/F");
+  m_outputNTuple->tree()->Branch("lep_ChargeIDBDTLoose_0",          &m_lep_ChargeIDBDTLoose_0, "lep_ChargeIDBDTLoose_0/F");
+  m_outputNTuple->tree()->Branch("lep_ChargeIDBDTMedium_0",         &m_lep_ChargeIDBDTMedium_0, "lep_ChargeIDBDTMedium_0/F");
+  m_outputNTuple->tree()->Branch("lep_ChargeIDBDTTight_0",          &m_lep_ChargeIDBDTTight_0, "lep_ChargeIDBDTTight_0/F");
+  m_outputNTuple->tree()->Branch("lep_deltaRClosestJet_0",          &m_lep_deltaRClosestJet_0, "lep_deltaRClosestJet_0/F");
+  m_outputNTuple->tree()->Branch("lep_deltaRClosestBJet_0",         &m_lep_deltaRClosestBJet_0, "lep_deltaRClosestBJet_0/F");
+
+  m_outputNTuple->tree()->Branch("lep_isTightSelected_1",           &m_lep_isTightSelected_1, "lep_isTightSelected_1/B");
+  m_outputNTuple->tree()->Branch("lep_isTightSelectedMVA_1",        &m_lep_isTightSelectedMVA_1, "lep_isTightSelectedMVA_1/B");
+  m_outputNTuple->tree()->Branch("lep_PromptLeptonIso_TagWeight_1", &m_lep_PromptLeptonIso_TagWeight_1, "lep_PromptLeptonIso_TagWeight_1/F");
+  m_outputNTuple->tree()->Branch("lep_ChargeIDBDTLoose_1",          &m_lep_ChargeIDBDTLoose_1, "lep_ChargeIDBDTLoose_1/F");
+  m_outputNTuple->tree()->Branch("lep_ChargeIDBDTMedium_1",         &m_lep_ChargeIDBDTMedium_1, "lep_ChargeIDBDTMedium_1/F");
+  m_outputNTuple->tree()->Branch("lep_ChargeIDBDTTight_1",          &m_lep_ChargeIDBDTTight_1, "lep_ChargeIDBDTTight_1/F");
+  m_outputNTuple->tree()->Branch("lep_deltaRClosestJet_1",          &m_lep_deltaRClosestJet_1, "lep_deltaRClosestJet_1/F");
+  m_outputNTuple->tree()->Branch("lep_deltaRClosestBJet_1",         &m_lep_deltaRClosestBJet_1, "lep_deltaRClosestBJet_1/F");
+
+  m_outputNTuple->tree()->Branch("lep_isTightSelected_2",           &m_lep_isTightSelected_2, "lep_isTightSelected_2/B");
+  m_outputNTuple->tree()->Branch("lep_isTightSelectedMVA_2",        &m_lep_isTightSelectedMVA_2, "lep_isTightSelectedMVA_2/B");
+  m_outputNTuple->tree()->Branch("lep_PromptLeptonIso_TagWeight_2", &m_lep_PromptLeptonIso_TagWeight_2, "lep_PromptLeptonIso_TagWeight_2/F");
+  m_outputNTuple->tree()->Branch("lep_ChargeIDBDTLoose_2",          &m_lep_ChargeIDBDTLoose_2, "lep_ChargeIDBDTLoose_2/F");
+  m_outputNTuple->tree()->Branch("lep_ChargeIDBDTMedium_2",         &m_lep_ChargeIDBDTMedium_2, "lep_ChargeIDBDTMedium_2/F");
+  m_outputNTuple->tree()->Branch("lep_ChargeIDBDTTight_2",          &m_lep_ChargeIDBDTTight_2, "lep_ChargeIDBDTTight_2/F");
+  m_outputNTuple->tree()->Branch("lep_deltaRClosestJet_2",          &m_lep_deltaRClosestJet_2, "lep_deltaRClosestJet_2/F");
+  m_outputNTuple->tree()->Branch("lep_deltaRClosestBJet_2",         &m_lep_deltaRClosestBJet_2, "lep_deltaRClosestBJet_2/F");
 
   // Store some vector branches for electrons and muons passing OLR (pT-ordered)
 
@@ -429,17 +512,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
       if ( branchtype.compare("F") == 0 )      { m_outputNTuple->tree()->Branch( branchname.c_str(), &( m_muon_OR_branches[branchname].vec_f ) ); }
       else if ( branchtype.compare("B") == 0 ) { m_outputNTuple->tree()->Branch( branchname.c_str(), &( m_muon_OR_branches[branchname].vec_c ) ); }
       else if ( branchtype.compare("I") == 0 ) { m_outputNTuple->tree()->Branch( branchname.c_str(), &( m_muon_OR_branches[branchname].vec_i ) ); }
-
-  }
-
-  for ( const auto& var : m_LEP_VEC_VARS ) {
-
-      branchtype = var.substr( var.length() - 1 );
-      branchname = "lep_" + var.substr( 0, var.length() - 2 );
-
-      if ( branchtype.compare("F") == 0 )      { m_outputNTuple->tree()->Branch( branchname.c_str(), &( m_lep_OR_branches[branchname].vec_f ) ); }
-      else if ( branchtype.compare("B") == 0 ) { m_outputNTuple->tree()->Branch( branchname.c_str(), &( m_lep_OR_branches[branchname].vec_c ) ); }
-      else if ( branchtype.compare("I") == 0 ) { m_outputNTuple->tree()->Branch( branchname.c_str(), &( m_lep_OR_branches[branchname].vec_i ) ); }
 
   }
 
@@ -501,14 +573,17 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("jet_OR_Eta",		   	        &m_jet_OR_Eta);
   m_outputNTuple->tree()->Branch("jet_OR_Phi",  	   	        &m_jet_OR_Phi);
   m_outputNTuple->tree()->Branch("jet_OR_E",		   	        &m_jet_OR_E);
-  m_outputNTuple->tree()->Branch("jet_OR_truthMatch_Pt",		&m_jet_OR_truthMatch_Pt);
-  m_outputNTuple->tree()->Branch("jet_OR_truthMatch_Eta",  	   	&m_jet_OR_truthMatch_Eta);
-  m_outputNTuple->tree()->Branch("jet_OR_truthMatch_Phi",		&m_jet_OR_truthMatch_Phi);
-  m_outputNTuple->tree()->Branch("jet_OR_truthMatch_E",		        &m_jet_OR_truthMatch_E);
-  m_outputNTuple->tree()->Branch("jet_OR_truthMatch_isBJet",  	        &m_jet_OR_truthMatch_isBJet);
-  m_outputNTuple->tree()->Branch("jet_OR_truthMatch_isCJet",		&m_jet_OR_truthMatch_isCJet);
-  m_outputNTuple->tree()->Branch("jet_OR_truthMatch_isLFJet",	        &m_jet_OR_truthMatch_isLFJet);
-  m_outputNTuple->tree()->Branch("jet_OR_truthMatch_isGluonJet",        &m_jet_OR_truthMatch_isGluonJet);
+
+  if ( m_jetTruthMatching ) {
+      m_outputNTuple->tree()->Branch("jet_OR_truthMatch_Pt",		&m_jet_OR_truthMatch_Pt);
+      m_outputNTuple->tree()->Branch("jet_OR_truthMatch_Eta",  	   	&m_jet_OR_truthMatch_Eta);
+      m_outputNTuple->tree()->Branch("jet_OR_truthMatch_Phi",		&m_jet_OR_truthMatch_Phi);
+      m_outputNTuple->tree()->Branch("jet_OR_truthMatch_E",		&m_jet_OR_truthMatch_E);
+      m_outputNTuple->tree()->Branch("jet_OR_truthMatch_isBJet",  	&m_jet_OR_truthMatch_isBJet);
+      m_outputNTuple->tree()->Branch("jet_OR_truthMatch_isCJet",	&m_jet_OR_truthMatch_isCJet);
+      m_outputNTuple->tree()->Branch("jet_OR_truthMatch_isLFJet",	&m_jet_OR_truthMatch_isLFJet);
+      m_outputNTuple->tree()->Branch("jet_OR_truthMatch_isGluonJet",    &m_jet_OR_truthMatch_isGluonJet);
+  }
 
   // ---------------------------------------------------------------------------------------------------------------
 
@@ -583,6 +658,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   if ( m_debug ) {
     std::cout << "" << std::endl;
     Info("execute()", "===> Entry %u - EventNumber = %u - RunYear = %i", static_cast<uint32_t>(m_numEntry), static_cast<uint32_t>(m_EventNumber), m_RunYear );
+    std::cout << "" << std::endl;
   }
 
   if ( m_numEntry >= 10000 && m_numEntry % 10000 == 0 ) {
@@ -605,6 +681,12 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
   m_event = std::make_shared<eventObj>();
 
+  m_event.get()->dilep_type   = m_dilep_type;
+  m_event.get()->trilep_type  = m_trilep_type;
+  m_event.get()->quadlep_type = m_quadlep_type;
+
+  if ( !m_event.get()->dilep_type && !m_event.get()->trilep_type && !m_event.get()->quadlep_type ) { return EL::StatusCode::SUCCESS; }
+
   // ------------------------------------------------------------------------
 
   auto lep0 = std::make_shared<leptonObj>();
@@ -619,6 +701,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep0.get()->d0sig           = m_lep_sigd0PV_0;
   lep0.get()->z0sintheta      = m_lep_Z0SinTheta_0;
   lep0.get()->pid             = m_lep_isTightLH_0;
+  lep0.get()->looseisolated   = m_lep_isolationLoose_0;
   lep0.get()->isolated        = ( fabs(m_lep_ID_0) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_0 : m_lep_isolationFixedCutTight_0;
   lep0.get()->ptVarcone20     = m_lep_ptVarcone20_0;
   lep0.get()->ptVarcone30     = m_lep_ptVarcone30_0;
@@ -635,6 +718,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep0.get()->truthType       = m_lep_truthType_0;
   lep0.get()->truthOrigin     = m_lep_truthOrigin_0;
   ANA_CHECK( this->checkIsTightLep( lep0 ) );
+  // ANA_CHECK( this->checkIsTightLep( lep0, "MVA" ) );
 
   lep0.get()->SFIDLoose    = m_lep_SFIDLoose_0;
   lep0.get()->SFIDTight    = m_lep_SFIDTight_0;
@@ -663,6 +747,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep1.get()->d0sig           = m_lep_sigd0PV_1;
   lep1.get()->z0sintheta      = m_lep_Z0SinTheta_1;
   lep1.get()->pid             = m_lep_isTightLH_1;
+  lep1.get()->looseisolated   = m_lep_isolationLoose_1;
   lep1.get()->isolated        = ( fabs(m_lep_ID_1) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_1 : m_lep_isolationFixedCutTight_1;
   lep1.get()->ptVarcone20     = m_lep_ptVarcone20_1;
   lep1.get()->ptVarcone30     = m_lep_ptVarcone30_1;
@@ -679,6 +764,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   lep1.get()->truthType       = m_lep_truthType_1;
   lep1.get()->truthOrigin     = m_lep_truthOrigin_1;
   ANA_CHECK( this->checkIsTightLep( lep1 ) );
+  // ANA_CHECK( this->checkIsTightLep( lep1, "MVA" ) );
 
   lep1.get()->SFIDLoose    = m_lep_SFIDLoose_1;
   lep1.get()->SFIDTight    = m_lep_SFIDTight_1;
@@ -696,66 +782,111 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
   m_leptons.push_back(lep1);
 
   if ( m_debug ) {
-      Info("execute()","lep0 pT = %.2f", lep0.get()->pt/1e3 );
-      Info("execute()","lep1 pT = %.2f", lep1.get()->pt/1e3 );
+      Info("execute()","lep0 pT = %.2f - flavour = %i", lep0.get()->pt/1e3, lep0.get()->flavour );
+      Info("execute()","lep1 pT = %.2f - flavour = %i", lep1.get()->pt/1e3, lep1.get()->flavour );
   }
 
-  if ( m_trilep_type ) {
+  if ( m_event.get()->trilep_type || m_event.get()->quadlep_type) {
 
-    auto lep2 = std::make_shared<leptonObj>();
+      auto lep2 = std::make_shared<leptonObj>();
 
-    lep2.get()->pt	        = m_lep_Pt_2;
-    lep2.get()->eta	        = m_lep_Eta_2;
-    lep2.get()->etaBE2          = m_lep_EtaBE2_2;
-    lep2.get()->phi             = m_lep_Phi_2;
-    lep2.get()->ID              = m_lep_ID_2;
-    lep2.get()->flavour         = fabs(m_lep_ID_2);
-    lep2.get()->charge          = m_lep_ID_2 / fabs(m_lep_ID_2);
-    lep2.get()->d0sig           = m_lep_sigd0PV_2;
-    lep2.get()->z0sintheta      = m_lep_Z0SinTheta_2;
-    lep2.get()->pid	        = m_lep_isTightLH_2;
-    lep2.get()->isolated        = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_2 : m_lep_isolationFixedCutTight_2;
-    lep2.get()->ptVarcone20     = m_lep_ptVarcone20_2;
-    lep2.get()->ptVarcone30     = m_lep_ptVarcone30_2;
-    lep2.get()->topoEtcone20    = m_lep_topoEtcone20_2;
-    lep2.get()->trackisooverpt  = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_ptVarcone30_2/m_lep_Pt_2 : m_lep_ptVarcone20_2/m_lep_Pt_2;
-    lep2.get()->caloisooverpt   = ( fabs(m_lep_ID_2) == 13 ) ?  -1.0 : m_lep_topoEtcone20_2/m_lep_Pt_2;
-    lep2.get()->trigmatched     = m_lep_isTrigMatch_2;
-    lep2.get()->trigmatched_DLT = m_lep_isTrigMatchDLT_2;
-    lep2.get()->prompt          = m_lep_isPrompt_2;
-    lep2.get()->fake	        = m_lep_isFakeLep_2;
-    lep2.get()->brems           = m_lep_isBrems_2;
-    lep2.get()->qmisid          = m_lep_isQMisID_2;
-    lep2.get()->convph          = m_lep_isConvPh_2;
-    lep2.get()->truthType       = m_lep_truthType_2;
-    lep2.get()->truthOrigin     = m_lep_truthOrigin_2;
-    ANA_CHECK( this->checkIsTightLep( lep2 ) );
+      lep2.get()->pt	          = m_lep_Pt_2;
+      lep2.get()->eta	          = m_lep_Eta_2;
+      lep2.get()->etaBE2          = m_lep_EtaBE2_2;
+      lep2.get()->phi             = m_lep_Phi_2;
+      lep2.get()->ID              = m_lep_ID_2;
+      lep2.get()->flavour         = fabs(m_lep_ID_2);
+      lep2.get()->charge          = m_lep_ID_2 / fabs(m_lep_ID_2);
+      lep2.get()->d0sig           = m_lep_sigd0PV_2;
+      lep2.get()->z0sintheta      = m_lep_Z0SinTheta_2;
+      lep2.get()->pid	          = m_lep_isTightLH_2;
+      lep2.get()->looseisolated   = m_lep_isolationLoose_2;
+      lep2.get()->isolated        = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_2 : m_lep_isolationFixedCutTight_2;
+      lep2.get()->ptVarcone20     = m_lep_ptVarcone20_2;
+      lep2.get()->ptVarcone30     = m_lep_ptVarcone30_2;
+      lep2.get()->topoEtcone20    = m_lep_topoEtcone20_2;
+      lep2.get()->trackisooverpt  = ( fabs(m_lep_ID_2) == 13 ) ?  m_lep_ptVarcone30_2/m_lep_Pt_2 : m_lep_ptVarcone20_2/m_lep_Pt_2;
+      lep2.get()->caloisooverpt   = ( fabs(m_lep_ID_2) == 13 ) ?  -1.0 : m_lep_topoEtcone20_2/m_lep_Pt_2;
+      lep2.get()->trigmatched     = m_lep_isTrigMatch_2;
+      lep2.get()->trigmatched_DLT = m_lep_isTrigMatchDLT_2;
+      lep2.get()->prompt          = m_lep_isPrompt_2;
+      lep2.get()->fake	        = m_lep_isFakeLep_2;
+      lep2.get()->brems           = m_lep_isBrems_2;
+      lep2.get()->qmisid          = m_lep_isQMisID_2;
+      lep2.get()->convph          = m_lep_isConvPh_2;
+      lep2.get()->truthType       = m_lep_truthType_2;
+      lep2.get()->truthOrigin     = m_lep_truthOrigin_2;
+      ANA_CHECK( this->checkIsTightLep( lep2 ) );
+      // ANA_CHECK( this->checkIsTightLep( lep2, "MVA" ) );
 
-    lep2.get()->SFIDLoose    = m_lep_SFIDLoose_2;
-    lep2.get()->SFIDTight    = m_lep_SFIDTight_2;
-    lep2.get()->SFTrigLoose  = m_lep_SFTrigLoose_2;
-    lep2.get()->SFTrigTight  = m_lep_SFTrigTight_2;
-    lep2.get()->EffTrigLoose = m_lep_EffTrigLoose_2;
-    lep2.get()->EffTrigTight = m_lep_EffTrigTight_2;
-    lep2.get()->SFIsoLoose   = m_lep_SFIsoLoose_2;
-    lep2.get()->SFIsoTight   = m_lep_SFIsoTight_2;
-    lep2.get()->SFReco       = m_lep_SFReco_2;
-    lep2.get()->SFTTVA       = m_lep_SFTTVA_2;
-    lep2.get()->SFObjLoose   = m_lep_SFObjLoose_2;
-    lep2.get()->SFObjTight   = m_lep_SFObjTight_2;
+      lep2.get()->SFIDLoose    = m_lep_SFIDLoose_2;
+      lep2.get()->SFIDTight    = m_lep_SFIDTight_2;
+      lep2.get()->SFTrigLoose  = m_lep_SFTrigLoose_2;
+      lep2.get()->SFTrigTight  = m_lep_SFTrigTight_2;
+      lep2.get()->EffTrigLoose = m_lep_EffTrigLoose_2;
+      lep2.get()->EffTrigTight = m_lep_EffTrigTight_2;
+      lep2.get()->SFIsoLoose   = m_lep_SFIsoLoose_2;
+      lep2.get()->SFIsoTight   = m_lep_SFIsoTight_2;
+      lep2.get()->SFReco       = m_lep_SFReco_2;
+      lep2.get()->SFTTVA       = m_lep_SFTTVA_2;
+      lep2.get()->SFObjLoose   = m_lep_SFObjLoose_2;
+      lep2.get()->SFObjTight   = m_lep_SFObjTight_2;
 
-    if ( m_debug ) { Info("execute()","lep2 pT = %.2f", lep2.get()->pt/1e3 ); }
+      if ( m_debug ) { Info("execute()","lep2 pT = %.2f - flavour = %i", lep2.get()->pt/1e3, lep2.get()->flavour ); }
 
-    m_leptons.push_back(lep2);
-  }
+      m_leptons.push_back(lep2);
 
-  if ( m_debug ) {
-      Info("execute()","lep0 SFTrigTight = %.2f - SFTrigLoose = %.2f ", lep0.get()->SFTrigTight, lep0.get()->SFTrigLoose );
-      Info("execute()","lep1 SFTrigTight = %.2f - SFTrigLoose = %.2f ", lep1.get()->SFTrigTight, lep1.get()->SFTrigLoose );
-      Info("execute()","lep0 EffTrigTight = %.2f - EffTrigLoose = %.2f ", lep0.get()->EffTrigTight, lep0.get()->EffTrigLoose );
-      Info("execute()","lep1 EffTrigTight = %.2f - EffTrigLoose = %.2f ", lep1.get()->EffTrigTight, lep1.get()->EffTrigLoose );
-      Info("execute()","lep0 SFObjTight = %.2f - SFObjLoose = %.2f", lep0.get()->SFObjTight, lep0.get()->SFObjLoose );
-      Info("execute()","lep1 SFObjTight = %.2f - SFObjLoose = %.2f", lep1.get()->SFObjTight, lep1.get()->SFObjLoose );
+      if ( m_event.get()->quadlep_type ) {
+
+	  auto lep3 = std::make_shared<leptonObj>();
+
+	  lep3.get()->pt	        = m_lep_Pt_3;
+	  lep3.get()->eta	        = m_lep_Eta_3;
+	  lep3.get()->etaBE2          = m_lep_EtaBE2_3;
+	  lep3.get()->phi             = m_lep_Phi_3;
+	  lep3.get()->ID              = m_lep_ID_3;
+	  lep3.get()->flavour         = fabs(m_lep_ID_3);
+	  lep3.get()->charge          = m_lep_ID_3 / fabs(m_lep_ID_3);
+	  lep3.get()->d0sig           = m_lep_sigd0PV_3;
+	  lep3.get()->z0sintheta      = m_lep_Z0SinTheta_3;
+	  lep3.get()->pid	        = m_lep_isTightLH_3;
+	  lep3.get()->looseisolated   = m_lep_isolationLoose_3;
+	  lep3.get()->isolated        = ( fabs(m_lep_ID_3) == 13 ) ?  m_lep_isolationFixedCutTightTrackOnly_3 : m_lep_isolationFixedCutTight_3;
+	  lep3.get()->ptVarcone20     = m_lep_ptVarcone20_3;
+	  lep3.get()->ptVarcone30     = m_lep_ptVarcone30_3;
+	  lep3.get()->topoEtcone20    = m_lep_topoEtcone20_3;
+	  lep3.get()->trackisooverpt  = ( fabs(m_lep_ID_3) == 13 ) ?  m_lep_ptVarcone30_3/m_lep_Pt_3 : m_lep_ptVarcone20_3/m_lep_Pt_3;
+	  lep3.get()->caloisooverpt   = ( fabs(m_lep_ID_3) == 13 ) ?  -1.0 : m_lep_topoEtcone20_3/m_lep_Pt_3;
+	  lep3.get()->trigmatched     = m_lep_isTrigMatch_3;
+	  lep3.get()->trigmatched_DLT = m_lep_isTrigMatchDLT_3;
+	  lep3.get()->prompt          = m_lep_isPrompt_3;
+	  lep3.get()->fake	        = m_lep_isFakeLep_3;
+	  lep3.get()->brems           = m_lep_isBrems_3;
+	  lep3.get()->qmisid          = m_lep_isQMisID_3;
+	  lep3.get()->convph          = m_lep_isConvPh_3;
+	  lep3.get()->truthType       = m_lep_truthType_3;
+	  lep3.get()->truthOrigin     = m_lep_truthOrigin_3;
+	  ANA_CHECK( this->checkIsTightLep( lep3 ) );
+	  // ANA_CHECK( this->checkIsTightLep( lep3, "MVA" ) );
+
+	  lep3.get()->SFIDLoose    = m_lep_SFIDLoose_3;
+	  lep3.get()->SFIDTight    = m_lep_SFIDTight_3;
+	  lep3.get()->SFTrigLoose  = m_lep_SFTrigLoose_3;
+	  lep3.get()->SFTrigTight  = m_lep_SFTrigTight_3;
+	  lep3.get()->EffTrigLoose = m_lep_EffTrigLoose_3;
+	  lep3.get()->EffTrigTight = m_lep_EffTrigTight_3;
+	  lep3.get()->SFIsoLoose   = m_lep_SFIsoLoose_3;
+	  lep3.get()->SFIsoTight   = m_lep_SFIsoTight_3;
+	  lep3.get()->SFReco       = m_lep_SFReco_3;
+	  lep3.get()->SFTTVA       = m_lep_SFTTVA_3;
+	  lep3.get()->SFObjLoose   = m_lep_SFObjLoose_3;
+	  lep3.get()->SFObjTight   = m_lep_SFObjTight_3;
+
+	  if ( m_debug ) { Info("execute()","lep3 pT = %.3f - flavour = %i", lep3.get()->pt/1e3, lep3.get()->flavour ); }
+
+	  m_leptons.push_back(lep3);
+      }
+
   }
 
   // ------------------------------------------------------------------------
@@ -772,7 +903,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
   // ------------------------------------------------------------------------
 
-  ANA_CHECK( this->jetTruthMatching() );
+  ANA_CHECK( this->jetKinematics() );
+
+  // ------------------------------------------------------------------------
+
+  if ( m_jetTruthMatching ) { ANA_CHECK( this->jetTruthMatching() ); }
 
   // ------------------------------------------------------------------------
 
@@ -780,10 +915,10 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
   // ------------------------------------------------------------------------
 
-  // Don't forget to clear object containers before going to next event!
+  // Don't forget to clear object containers before moving to next event!
 
   m_leptons.clear();
-  m_bjets.clear();
+  m_jets.clear();
 
   return EL::StatusCode::SUCCESS;
 }
@@ -854,8 +989,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: enableSelectedBranches ()
 {
 
   if ( m_inputBranches.empty() ) {
-    Info("enableSelectedBranches()", "Keeping all input branches enabled...");
-    return EL::StatusCode::SUCCESS;
+      Info("enableSelectedBranches()", "Keeping all input branches enabled...");
+      return EL::StatusCode::SUCCESS;
   }
 
   // Firstly, disable all branches
@@ -870,57 +1005,68 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: enableSelectedBranches ()
   std::istringstream ss( m_inputBranches );
   while ( std::getline(ss, token, ',') ) { branch_vec.push_back(token); }
 
-  // Re-enable the branches we are going to use
+  // Re-enable only the branches we are going to use
+
+  TObjArray* arraybranches = m_inputNTuple->GetListOfBranches();
 
   for ( const auto& branch : branch_vec ) {
 
-    size_t found_regexp = branch.find(".*");
-    if (  found_regexp != std::string::npos ) {
-      std::string wildcarded_branch(branch);
-      wildcarded_branch =  wildcarded_branch.replace( found_regexp, 2, "*" ); // replace ".*" with "*"
-      m_inputNTuple->SetBranchStatus (wildcarded_branch.c_str(), 1);
-    } else {
-      m_inputNTuple->SetBranchStatus (branch.c_str(), 1);
-    }
+      TString rgxp_branch(branch);
+      TRegexp pattern(rgxp_branch);
+
+      // If this branch name's regexp matches a name in the list of branches, then activate the branch
+
+      for ( int idx(0); idx < arraybranches->GetEntries(); ++idx ) {
+      	  TString str( arraybranches->At(idx)->GetName() );
+	  Ssiz_t len(0);
+      	  if ( str.Index(pattern,&len) != kNPOS && len == str.Length() ) {
+	      m_inputNTuple->SetBranchStatus (str.Data(), 1);
+	  }
+      }
   }
 
   return EL::StatusCode::SUCCESS;
 
 }
 
-EL::StatusCode HTopMultilepMiniNTupMaker ::  checkIsTightLep( std::shared_ptr<leptonObj> lep )
+EL::StatusCode HTopMultilepMiniNTupMaker ::  checkIsTightLep( std::shared_ptr<leptonObj> lep, const std::string& strategy )
 {
 
-  bool isTight(false);
+    bool useMVA = ( strategy.compare("MVA") == 0 );
 
-  if ( m_debug ) { Info("checkIsTightLep()", "Lepton flavour = %i", lep.get()->flavour ); }
+    bool isTight(false);
 
-  switch ( lep.get()->flavour )
-  {
-     case 11:
-       if ( lep.get()->isolated && lep.get()->pid && fabs(lep.get()->d0sig) < 5.0 && fabs(lep.get()->z0sintheta) < 0.5 ) { isTight = true; }
-       break;
-     case 13:
-       if ( lep.get()->isolated && fabs(lep.get()->d0sig) < 3.0 && fabs(lep.get()->z0sintheta) < 0.5 ) { isTight = true; }
-       break;
-     default:
-       break;
-  }
+    switch ( lep.get()->flavour )
+    {
+    case 11:
+	if ( useMVA ) {
+	    isTight = ( lep.get()->looseisolated && lep.get()->pid && fabs(lep.get()->d0sig) < 5.0 && fabs(lep.get()->z0sintheta) < 0.5 && lep.get()->chargeidbdttight > 0.0670415 && lep.get()->promptleptoniso_tagweight < -0.50 );
+	} else {
+	    isTight = ( lep.get()->isolated && lep.get()->pid && fabs(lep.get()->d0sig) < 5.0 && fabs(lep.get()->z0sintheta) < 0.5 );
+	}
+	break;
+    case 13:
+	if ( useMVA ) {
+	    isTight = ( lep.get()->looseisolated && fabs(lep.get()->d0sig) < 3.0 && fabs(lep.get()->z0sintheta) < 0.5 && lep.get()->promptleptoniso_tagweight < -0.50 );
+	} else {
+	    isTight = ( lep.get()->isolated && fabs(lep.get()->d0sig) < 3.0 && fabs(lep.get()->z0sintheta) < 0.5 );
+	}
+	break;
+    default:
+	break;
+    }
 
-  lep.get()->tight = isTight;
+    if ( useMVA ) { lep.get()->tightMVA = isTight; }
+    else          { lep.get()->tight = isTight; }
 
-  return EL::StatusCode::SUCCESS;
+    return EL::StatusCode::SUCCESS;
 }
 
 
 EL::StatusCode HTopMultilepMiniNTupMaker :: decorateEvent ( )
 {
 
-  m_event.get()->dilep       = ( m_leptons.size() == 2 );
-  m_event.get()->trilep      = ( m_leptons.size() == 3 );
-  m_event.get()->dilep_type  = ( m_dilep_type );
-
-  if ( m_event.get()->dilep ) {
+  if ( m_event.get()->dilep_type ) {
 
      int prod_lep_charge(1);
      for ( const auto& lep : m_leptons ) { prod_lep_charge *= lep.get()->charge; }
@@ -934,54 +1080,66 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateEvent ( )
 
      m_event_isTrigMatch_DLT = ( m_lep_isTrigMatchDLT_0 && m_lep_isTrigMatchDLT_1 );
 
-  } else if ( m_event.get()->trilep ) {
+  } else if ( m_event.get()->trilep_type ) {
 
      m_event.get()->isSS12 = ( fabs( m_leptons.at(0).get()->charge + m_leptons.at(1).get()->charge + m_leptons.at(2).get()->charge ) != 3 );
 
   }
 
-  // Store b-tagged jets (for dilepton events, use jets after OLR w/ taus)
+  // Flatten lepton vars which are not flat yet in the GN
 
-  unsigned int njets = ( m_event.get()->dilep ) ? m_selected_jets_T->size() : m_selected_jets->size();
+  ANA_CHECK( this->flatLepVars() );
+
+  // Set the lepton MVA tight WP
+
+  for ( auto lep : m_leptons ) { ANA_CHECK( this->checkIsTightLep( lep, "MVA" ) ); }
+
+  // Store jet objects w/ some properties (e.g., isbtag). For dilepton events, use jets after OLR w/ taus.
+
+  unsigned int njets = ( m_event.get()->dilep_type ) ? m_selected_jets_T->size() : m_selected_jets->size();
 
   for ( unsigned int j_idx(0); j_idx < njets; ++j_idx ) {
 
-      short j = ( m_event.get()->dilep ) ? m_selected_jets_T->at(j_idx) : m_selected_jets->at(j_idx);
+      short j = ( m_event.get()->dilep_type ) ? m_selected_jets_T->at(j_idx) : m_selected_jets->at(j_idx);
 
-      if ( m_jet_flavor_weight_MV2c10->at(j) < 0.8244273 ) { continue; } // MV2c10, FixedCutBEff_70 : https://twiki.cern.ch/twiki/bin/view/AtlasProtected/BTaggingBenchmarks#MV2c20_tagger
+      auto jet = std::make_shared<jetObj>();
 
-      auto bjet = std::make_shared<bjetObj>();
+      jet.get()->pt     = m_jet_pt->at(j);
+      jet.get()->eta    = m_jet_eta->at(j);
+      jet.get()->phi    = m_jet_phi->at(j);
+      jet.get()->isbtag = !( m_jet_flavor_weight_MV2c10->at(j) < 0.8244273 ); // MV2c10, FixedCutBEff_70 : https://twiki.cern.ch/twiki/bin/view/AtlasProtected/BTaggingBenchmarks#MV2c20_tagger
 
-      bjet.get()->pt  = m_jet_pt->at(j);
-      bjet.get()->eta = m_jet_eta->at(j);
-      bjet.get()->phi = m_jet_phi->at(j);
-
-      m_bjets.push_back(bjet);
+      m_jets.push_back(jet);
 
   }
 
-  m_event.get()->nbjets = ( m_event.get()->dilep ) ? m_nJets_OR_T_MV2c10_70 : m_nJets_OR_MV2c10_70;
+  m_event.get()->njets  = njets;
+  m_event.get()->nbjets = ( m_event.get()->dilep_type ) ? m_nJets_OR_T_MV2c10_70 : m_nJets_OR_MV2c10_70;
 
-  if ( m_debug ) { Info("decorateEvent()","Number of bjets (MV2c10, 70 WP) = %i", m_event.get()->nbjets); }
+  if ( m_debug ) { Info("decorateEvent()","Number of jets = %i - Number of bjets (MV2c10, 70 WP) = %i", m_event.get()->njets, m_event.get()->nbjets); }
 
-  // Find closest b-tagged jet to each lepton
+  // Find closest jet/b-tagged jet to each lepton
 
-  ANA_CHECK( this->findClosestBJetLep() );
+  ANA_CHECK( this->findClosestJetLep() );
+  ANA_CHECK( this->findClosestJetLep("bjets") );
 
   return EL::StatusCode::SUCCESS;
 
 }
 
-EL::StatusCode HTopMultilepMiniNTupMaker :: findClosestBJetLep() {
+EL::StatusCode HTopMultilepMiniNTupMaker :: findClosestJetLep( const std::string& jetCollection ) {
 
-    if ( ! m_event.get()->dilep && ! m_event.get()->trilep ) { return EL::StatusCode::SUCCESS;  }
+    if ( !m_event.get()->dilep_type && !m_event.get()->trilep_type && !m_event.get()->quadlep_type ) { return EL::StatusCode::SUCCESS;  }
 
     unsigned int idx_lep(0);
 
     int lep_flavour(0);
     float lep_pt(-1.0), lep_eta(-999.0), lep_phi(-999.0), lep_m(-1.0);
 
-    TLorentzVector lepTLV, bjetTLV, closestbjetTLV, lepbjetTLV;
+    TLorentzVector lepTLV, jetTLV, closestjetTLV, lepjetTLV;
+
+    bool useBJets =  ( jetCollection.compare("bjets") == 0 );
+    std::string jet_flag = ( useBJets ) ? "b" : "";
 
     for ( auto lep : m_leptons ) {
 
@@ -993,58 +1151,66 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: findClosestBJetLep() {
 
 	lepTLV.SetPtEtaPhiM( lep_pt, lep_eta, lep_phi, lep_m );
 
-	if ( m_debug ) { Info("findClosestBJetLep()","Checking lepton[%i] w/ flavour = %i, pT = %.2f [GeV], eta = %.2f, phi = %.2f, m = %.3f [GeV]", idx_lep, lep_flavour, lep_pt/1e3, lep_eta, lep_phi, lep_m/1e3 ); }
+	if ( m_debug ) { Info("findClosestJetLep()","Checking lepton[%i] w/ flavour = %i, pT = %.2f [GeV], eta = %.2f, phi = %.2f, m = %.3f [GeV]", idx_lep, lep_flavour, lep_pt/1e3, lep_eta, lep_phi, lep_m/1e3 ); }
 
-	// Now find closest bjet to this lepton
+	// Now find closest jet to this lepton
 
-	unsigned int idx_bj(0);
+	unsigned int idx_j(0);
 
-	int idx_closest_bj(-1);
+	int idx_closest_j(-1);
 
-	float bjet_pt(-.0),  bjet_eta(-999.0), bjet_phi(-999.0);
+	float jet_pt(-.0),  jet_eta(-999.0), jet_phi(-999.0);
+	float jet_m = ( useBJets ) ? 418.0 : 0.0; // use mass of b quark [MeV]
 
-        float dist_to_closest_bj(9e9), this_dist(-1.0);
-	float mass_lep_closest_bj(-1.0);
+        float dist_to_closest_j(9e9), this_dist(-1.0);
+	float mass_lep_closest_j(-1.0);
 
-	for ( auto bjet : m_bjets ) {
+	for ( auto jet : m_jets ) {
 
-	    bjet_pt  = bjet.get()->pt;
-	    bjet_eta = bjet.get()->eta;
-	    bjet_phi = bjet.get()->phi;
+	    if ( useBJets && !jet.get()->isbtag ) { continue; } // Make sure to look only at bjets if requested.
 
-	    bjetTLV.SetPtEtaPhiM( bjet_pt, bjet_eta, bjet_phi, 418.0 ); // use mass of b quark [MeV]
+	    jet_pt  = jet.get()->pt;
+	    jet_eta = jet.get()->eta;
+	    jet_phi = jet.get()->phi;
 
-	    this_dist = lepTLV.DeltaR(bjetTLV);
+	    jetTLV.SetPtEtaPhiM( jet_pt, jet_eta, jet_phi, jet_m );
 
-	    if ( m_debug ) { Info("findClosestBJetLep()","\t bjet[%i] w/ pT = %.2f [GeV], eta = %.2f, phi = %.2f, DeltaR(lep[%i],bjet[%i]) = %.3f", idx_bj, bjet_pt/1e3, bjet_eta, bjet_phi, idx_lep, idx_bj, this_dist ); }
+	    this_dist = lepTLV.DeltaR(jetTLV);
 
-	    if ( this_dist < dist_to_closest_bj ) {
-		dist_to_closest_bj = this_dist;
-		idx_closest_bj     = idx_bj;
+	    if ( m_debug ) { Info("findClosestJetLep()","\t %sjet[%i] w/ pT = %.2f [GeV], eta = %.2f, phi = %.2f, DeltaR(lep[%i],%sjet[%i]) = %.3f", jet_flag.c_str(), idx_j, jet_pt/1e3, jet_eta, jet_phi, idx_lep, jet_flag.c_str(), idx_j, this_dist ); }
+
+	    if ( this_dist < dist_to_closest_j ) {
+		dist_to_closest_j = this_dist;
+		idx_closest_j     = idx_j;
 	    }
 
-	    ++idx_bj;
+	    ++idx_j;
 
 	}
 
-	// Get invariant mass of lepton and closest bjet
+	// Get invariant mass of lepton and closest jet
 
-	if ( m_event.get()->nbjets > 0 && idx_closest_bj > -1 ) {
+	if ( m_event.get()->njets > 0 && idx_closest_j > -1 ) {
 
-	    closestbjetTLV.SetPtEtaPhiM( m_bjets.at(idx_closest_bj).get()->pt, m_bjets.at(idx_closest_bj).get()->eta, m_bjets.at(idx_closest_bj).get()->phi, 418.0  );
+	    closestjetTLV.SetPtEtaPhiM( m_jets.at(idx_closest_j).get()->pt, m_jets.at(idx_closest_j).get()->eta, m_jets.at(idx_closest_j).get()->phi, 418.0  );
 
-	    lepbjetTLV = lepTLV + closestbjetTLV;
+	    lepjetTLV = lepTLV + closestjetTLV;
 
-	    mass_lep_closest_bj = lepbjetTLV.M();
+	    mass_lep_closest_j = lepjetTLV.M();
 
 	}
 
-	// Decorate lepton (set a dummy negative decorator if there are no bjets in event)
+	// Decorate lepton (Set a dummy negative decorator if there are no jets/bjets in event)
 
-	lep.get()->massClosestBJet   = mass_lep_closest_bj;
-	lep.get()->deltaRClosestBJet = ( m_event.get()->nbjets > 0 ) ? dist_to_closest_bj : -1.0;
+	if ( useBJets ) {
+	    lep.get()->massClosestBJet   = mass_lep_closest_j;
+	    lep.get()->deltaRClosestBJet = ( m_event.get()->nbjets > 0 ) ? dist_to_closest_j : -1.0;
+	} else {
+	    lep.get()->massClosestJet   = mass_lep_closest_j;
+	    lep.get()->deltaRClosestJet = ( m_event.get()->njets > 0 ) ? dist_to_closest_j : -1.0;
+	}
 
-	if ( m_debug ) { Info("findClosestBJetLep()","==> DeltaR(lep[%i],closest bjet[%i]) = %.3f, M(lep[%i],closest bjet[%i]) = %.3f [GeV]", idx_lep, idx_closest_bj, dist_to_closest_bj, idx_lep, idx_closest_bj, mass_lep_closest_bj/1e3 ); }
+	if ( m_debug ) { Info("findClosestJetLep()","==> DeltaR(lep[%i],closest %sjet[%i]) = %.3f, M(lep[%i],closest %sjet[%i]) = %.3f [GeV]", idx_lep, jet_flag.c_str(), idx_closest_j, dist_to_closest_j, idx_lep, jet_flag.c_str(), idx_closest_j, mass_lep_closest_j/1e3 ); }
 
 	++idx_lep;
     }
@@ -1052,6 +1218,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: findClosestBJetLep() {
   return EL::StatusCode::SUCCESS;
 
 }
+
 
 EL::StatusCode  HTopMultilepMiniNTupMaker :: getPostOLRIndex( int& idx, const unsigned int& pos, const std::string& lep_type ) {
 
@@ -1110,6 +1277,210 @@ EL::StatusCode  HTopMultilepMiniNTupMaker :: getPostOLRIndex( int& idx, const un
   }
 
   return EL::StatusCode::SUCCESS;
+
+}
+
+EL::StatusCode HTopMultilepMiniNTupMaker :: flatLepVars()
+{
+
+  if ( !m_event.get()->dilep_type && !m_event.get()->trilep_type &&  !m_event.get()->quadlep_type ) { return EL::StatusCode::SUCCESS; }
+
+  if ( m_debug ) { Info("flatLepVars()","Getting lepton flat branches from electron/muon vector branches..." ); }
+
+  // 0.
+  // Create a vector of lepton objects
+
+  std::vector< std::shared_ptr<MiniNTupMaker::leptonObj> > allleptons;
+
+  char passOLR(0);
+
+  // 1.
+  // Fill the vector of lepton objects w/ info taken from the electron/muon vector branches.
+  // Make sure only leptons that pass the OLR are used.
+  // Store the pt (needed to sort afterwards!), and all the branches of interest that we wish to "flatten"
+
+  if ( m_debug ) { std::cout << "Electrons:" << std::endl; }
+  for ( unsigned int e(0); e < m_electron_passOR->size(); ++e ) { // electrons
+
+      passOLR = m_electron_passOR->at(e);
+      if ( !passOLR ) {
+	  if ( m_debug ) { std::cout << "\tpassOLR[" << e << "] = " << static_cast<int>(passOLR) << " - skip..." << std::endl; }
+	  continue;
+      }
+
+      auto lep = std::make_shared<leptonObj>();
+
+      lep.get()->pt                        = m_electron_pt->at(e);
+      lep.get()->etaBE2                    = m_electron_EtaBE2->at(e);
+      lep.get()->flavour                   = fabs(m_electron_ID->at(e));
+      lep.get()->charge                    = m_electron_ID->at(e) / fabs(m_electron_ID->at(e));
+      lep.get()->promptleptoniso_tagweight = m_electron_PromptLeptonIso_TagWeight->at(e);
+      lep.get()->chargeidbdtloose          = m_electron_ChargeIDBDTLoose->at(e);
+      lep.get()->chargeidbdtmedium         = m_electron_ChargeIDBDTMedium->at(e);
+      lep.get()->chargeidbdttight          = m_electron_ChargeIDBDTTight->at(e);
+
+      if ( m_debug ) { std::cout << "\tpT[" << e << "] = " <<  lep.get()->pt/1e3 << std::endl; }
+
+      allleptons.push_back(lep);
+  }
+  if ( m_debug ) { std::cout << "Muons:" << std::endl; }
+  for ( unsigned int m(0); m < m_muon_passOR->size(); ++m ) { // muons
+
+      passOLR = m_muon_passOR->at(m);
+      if ( !passOLR ) {
+	  if ( m_debug ) { std::cout << "\tpassOLR[" << m << "] = " << static_cast<int>(passOLR) << " - skip..." << std::endl; }
+	  continue;
+      }
+
+      auto lep = std::make_shared<leptonObj>();
+
+      lep.get()->pt                        = m_muon_pt->at(m);
+      lep.get()->eta                       = m_muon_eta->at(m);
+      lep.get()->flavour                   = fabs(m_muon_ID->at(m));
+      lep.get()->charge                    = m_muon_ID->at(m) / fabs(m_muon_ID->at(m));
+      lep.get()->promptleptoniso_tagweight = m_muon_PromptLeptonIso_TagWeight->at(m);
+
+      if ( m_debug ) { std::cout << "\tpT[" << m << "] = " <<  lep.get()->pt/1e3 << std::endl; }
+
+      allleptons.push_back(lep);
+  }
+
+
+  if ( m_event.get()->dilep_type || m_event.get()->quadlep_type ) {
+
+      // 2.
+      // Sort the vector of leptons by pT
+
+      std::sort( allleptons.begin(), allleptons.end(), MiniNTupMaker::SorterPt() );
+
+      if ( m_debug ) {
+	  std::cout << "pT sorted lepton container:" << std::endl;
+	  unsigned int idx(0);
+	  for ( auto lep : allleptons ) {
+	      std::cout << "\tpT[" << idx << "] = " <<  lep.get()->pt/1e3 << " - flavour = " << lep.get()->flavour << std::endl;
+	      ++idx;
+	  }
+      }
+
+  } else if ( m_event.get()->trilep_type ) {
+
+      // 2.
+      // Set the 3L ranking, and then sort the vector of leptons by the 3L ranking itself.
+
+      ANA_CHECK( this->classify3L(allleptons) );
+
+      std::sort( allleptons.begin(), allleptons.end(), MiniNTupMaker::Sorter3L() );
+
+      if ( m_debug ) {
+	  std::cout << "3L ranking idx sorted lepton container:" << std::endl;
+	  unsigned int idx(0);
+	  for ( auto lep : allleptons ) {
+	      std::cout << "\trank = " << lep.get()->rank3L << " - pT[" << idx << "] = " <<  lep.get()->pt/1e3 << " - flavour = " << lep.get()->flavour << std::endl;
+	      ++idx;
+	  }
+      }
+
+  }
+
+  // 3.
+  // Finally, save the relevant information into the global m_lepton conatiner
+
+  if ( m_debug ) { Info("flatLepVars()","Flattening additional variables:" ); }
+  for ( unsigned int idx(0); idx < m_leptons.size(); ++idx ) {
+
+      if ( m_debug ) {
+	  std::cout << "\tpT[" << idx << "] = " <<  allleptons.at(idx).get()->pt/1e3 << " - (NTup pT = " << m_leptons.at(idx).get()->pt/1e3 << " )" << std::endl;
+	  std::cout << "\tpromptleptoniso_tagweight[" << idx << "] = " <<  allleptons.at(idx).get()->promptleptoniso_tagweight << std::endl;
+	  std::cout << "\tchargeidbdtloose[" << idx << "] = " << allleptons.at(idx).get()->chargeidbdtloose << std::endl;
+	  std::cout << "\tchargeidbdtmedium[" << idx << "] = " << allleptons.at(idx).get()->chargeidbdtmedium << std::endl;
+	  std::cout << "\tchargeidbdttight[" << idx << "] = " << allleptons.at(idx).get()->chargeidbdttight << std::endl;
+      }
+
+      m_leptons.at(idx).get()->promptleptoniso_tagweight = allleptons.at(idx).get()->promptleptoniso_tagweight;
+      m_leptons.at(idx).get()->chargeidbdtloose          = allleptons.at(idx).get()->chargeidbdtloose;
+      m_leptons.at(idx).get()->chargeidbdtmedium         = allleptons.at(idx).get()->chargeidbdtmedium;
+      m_leptons.at(idx).get()->chargeidbdttight          = allleptons.at(idx).get()->chargeidbdttight;
+  }
+
+  allleptons.clear();
+
+  return EL::StatusCode::SUCCESS;
+
+}
+
+EL::StatusCode HTopMultilepMiniNTupMaker :: classify3L( std::vector< std::shared_ptr<MiniNTupMaker::leptonObj> >& leptons )
+{
+
+    if ( leptons.size() != 3 ) {
+	Warning("Sorter3L()","Trying to apply 3L lepton sorting to an event which has %i leptons. Will do nothing...", static_cast<int>(leptons.size()) );
+	return EL::StatusCode::SUCCESS;
+    }
+
+    int sumcharge(0);
+    for ( auto lep : leptons ) { sumcharge += lep.get()->charge; }
+
+    if ( abs(sumcharge) != 1 ) {
+	if ( m_debug ) { Info("Sorter3L()","3L event has total charge = %i. Returning...", sumcharge ); }
+	return EL::StatusCode::SUCCESS;
+    }
+
+    // 1.
+    // Find the OS lepton
+    // NB. The total charge for 3L SR will be +-1, always. Hence lep0 is the one which is OS to the total charge sign.
+
+    TLorentzVector lep0TLV, lepTLV;
+    float eta0(-999.0), eta(-999.0);
+
+    for ( auto& lep : leptons ) {
+	if  ( lep.get()->charge * sumcharge < 0 ) {
+	    lep.get()->rank3L = 0;
+	    eta0 = ( lep.get()->flavour == 13 ) ?  lep.get()->eta :  lep.get()->etaBE2;
+	    lep0TLV.SetPtEtaPhiM(lep.get()->pt,eta0,lep.get()->phi,0.0);
+	    break;
+	}
+    }
+
+    // 2.
+    // Find the closest lepton to lep0
+
+    float min_dRLep0(999.0), this_dRLep0(999.0);
+    int idx(-1), idxLep1(-1);
+    for ( auto& lep : leptons ) {
+	++idx;
+	if ( lep.get()->rank3L == 0 ) { continue; }
+
+	eta = ( lep.get()->flavour == 13 ) ?  lep.get()->eta : lep.get()->etaBE2;
+	lepTLV.SetPtEtaPhiM(lep.get()->pt,eta,lep.get()->phi,0.0);
+
+	this_dRLep0 = lepTLV.DeltaR(lep0TLV);
+
+	if ( this_dRLep0 < min_dRLep0 ) {
+	    min_dRLep0 = this_dRLep0;
+	    idxLep1 = idx;
+	}
+    }
+
+    leptons.at(idxLep1).get()->rank3L = 1;
+
+    // 3.
+    // Flag the other lepton
+
+    for ( auto& lep : leptons ) {
+	if ( lep.get()->rank3L == 0 ) { continue; }
+	if ( lep.get()->rank3L == 1 ) { continue; }
+	lep.get()->rank3L = 2;
+    }
+
+    if ( m_debug ) {
+	Info("Sorter3L()","3L event lepton ranking:" );
+	for ( auto lep : leptons ) {
+	    if ( lep.get()->rank3L == 0 ) { std::cout << "Lepton 0 - pT = " << lep.get()->pt/1e3 << " (NTuple pT = " << m_lep_Pt_0/1e3 << " )" << std::endl; }
+	    if ( lep.get()->rank3L == 1 ) { std::cout << "Lepton 1 - pT = " << lep.get()->pt/1e3 << " (NTuple pT = " << m_lep_Pt_1/1e3 << " )" << std::endl; }
+	    if ( lep.get()->rank3L == 2 ) { std::cout << "Lepton 2 - pT = " << lep.get()->pt/1e3 << " (NTuple pT = " << m_lep_Pt_2/1e3 << " )" << std::endl; }
+	}
+    }
+
+    return EL::StatusCode::SUCCESS;
 
 }
 
@@ -1252,7 +1623,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateWeights ()
   // Set the weights (trigger and lepton reco, iso...) for tag and probe leptons.
   // Do it for SLT-only selection.
 
-  if ( m_event.get()->dilep && !m_event.get()->isBadTPEvent_SLT ) {
+  if ( m_event.get()->dilep_type && !m_event.get()->isBadTPEvent_SLT ) {
 
     auto lep0 = m_leptons.at(0);
     auto lep1 = m_leptons.at(1);
@@ -1372,7 +1743,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
   // Do this only for dilepton events
 
-  if ( !m_event.get()->dilep ) { return EL::StatusCode::SUCCESS; }
+  if ( !m_event.get()->dilep_type ) { return EL::StatusCode::SUCCESS; }
 
   // Minimal requirement of pT = 10 GeV on all leptons
 
@@ -1470,6 +1841,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
     float tag_pt(-1.0), probe_pt(-1.0);
     float tag_eta(-999.0), probe_eta(-999.0);
     float tag_etaBE2(-999.0), probe_etaBE2(-999.0);
+    float tag_deltaRClosestJet(-1.0), probe_deltaRClosestJet(-1.0);
     float tag_deltaRClosestBJet(-1.0), probe_deltaRClosestBJet(-1.0);
     float tag_truthType(-1), probe_truthType(-1);
     float tag_truthOrigin(-1), probe_truthOrigin(-1);
@@ -1500,6 +1872,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    probe_eta               = m_leptons.at(probe_idx_SLT).get()->eta;
  	    tag_etaBE2              = m_leptons.at(tag_idx_SLT).get()->etaBE2;
 	    probe_etaBE2            = m_leptons.at(probe_idx_SLT).get()->etaBE2;
+ 	    tag_deltaRClosestJet    = m_leptons.at(tag_idx_SLT).get()->deltaRClosestJet;
+	    probe_deltaRClosestJet  = m_leptons.at(probe_idx_SLT).get()->deltaRClosestJet;
  	    tag_deltaRClosestBJet   = m_leptons.at(tag_idx_SLT).get()->deltaRClosestBJet;
 	    probe_deltaRClosestBJet = m_leptons.at(probe_idx_SLT).get()->deltaRClosestBJet;
  	    tag_truthType           = m_leptons.at(tag_idx_SLT).get()->truthType;
@@ -1513,6 +1887,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    m_TagProbe_branches["lep_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 	    m_TagProbe_branches["lep_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
 	    m_TagProbe_branches["lep_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+	    m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
+	    m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 	    m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 	    m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 	    m_TagProbe_branches["lep_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
@@ -1525,6 +1901,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["electron_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		m_TagProbe_branches["electron_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		m_TagProbe_branches["electron_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		m_TagProbe_branches["electron_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		m_TagProbe_branches["electron_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
@@ -1534,6 +1911,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["muon_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		m_TagProbe_branches["muon_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		m_TagProbe_branches["muon_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		m_TagProbe_branches["muon_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		m_TagProbe_branches["muon_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
@@ -1545,6 +1923,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["electron_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		m_TagProbe_branches["electron_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		m_TagProbe_branches["electron_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		m_TagProbe_branches["electron_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		m_TagProbe_branches["electron_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -1554,6 +1933,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["muon_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		m_TagProbe_branches["muon_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		m_TagProbe_branches["muon_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		m_TagProbe_branches["muon_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		m_TagProbe_branches["muon_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -1578,6 +1958,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		tag_pt                  = probe_pt = lep.get()->pt;
 		tag_eta                 = probe_eta = lep.get()->eta;
 		tag_etaBE2              = probe_etaBE2 = lep.get()->etaBE2;
+		tag_deltaRClosestJet    = probe_deltaRClosestJet = lep.get()->deltaRClosestJet;
 		tag_deltaRClosestBJet   = probe_deltaRClosestBJet = lep.get()->deltaRClosestBJet;
 		tag_truthType           = probe_truthType = lep.get()->truthType;
 		tag_truthOrigin         = probe_truthOrigin = lep.get()->truthOrigin;
@@ -1588,6 +1969,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["lep_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		m_TagProbe_branches["lep_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
 		m_TagProbe_branches["lep_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
+		m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		m_TagProbe_branches["lep_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
@@ -1600,12 +1983,14 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		    m_TagProbe_branches["electron_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		    m_TagProbe_branches["electron_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		    m_TagProbe_branches["electron_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		    m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		    m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		    m_TagProbe_branches["electron_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		    m_TagProbe_branches["electron_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		    m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -1615,12 +2000,14 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		    m_TagProbe_branches["muon_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		    m_TagProbe_branches["muon_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		    m_TagProbe_branches["muon_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		    m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		    m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		    m_TagProbe_branches["muon_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		    m_TagProbe_branches["muon_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		    m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -1713,6 +2100,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		probe_eta               = m_leptons.at(probe_idx_SLT).get()->eta;
 		tag_etaBE2              = m_leptons.at(tag_idx_SLT).get()->etaBE2;
 		probe_etaBE2            = m_leptons.at(probe_idx_SLT).get()->etaBE2;
+		tag_deltaRClosestJet    = m_leptons.at(tag_idx_SLT).get()->deltaRClosestJet;
+		probe_deltaRClosestJet  = m_leptons.at(probe_idx_SLT).get()->deltaRClosestJet;
 		tag_deltaRClosestBJet   = m_leptons.at(tag_idx_SLT).get()->deltaRClosestBJet;
 		probe_deltaRClosestBJet = m_leptons.at(probe_idx_SLT).get()->deltaRClosestBJet;
 		tag_truthType           = m_leptons.at(tag_idx_SLT).get()->truthType;
@@ -1726,6 +2115,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["lep_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		m_TagProbe_branches["lep_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
 		m_TagProbe_branches["lep_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
+		m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		m_TagProbe_branches["lep_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
@@ -1738,6 +2129,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		    m_TagProbe_branches["electron_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		    m_TagProbe_branches["electron_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		    m_TagProbe_branches["electron_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		    m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		    m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		    m_TagProbe_branches["electron_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		    m_TagProbe_branches["electron_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
@@ -1747,6 +2139,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		    m_TagProbe_branches["muon_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		    m_TagProbe_branches["muon_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		    m_TagProbe_branches["muon_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		    m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		    m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		    m_TagProbe_branches["muon_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		    m_TagProbe_branches["muon_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
@@ -1758,6 +2151,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		    m_TagProbe_branches["electron_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		    m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		    m_TagProbe_branches["electron_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -1767,6 +2161,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		    m_TagProbe_branches["muon_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		    m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		    m_TagProbe_branches["muon_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -1830,6 +2225,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    m_TagProbe_branches["lep_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 	    m_TagProbe_branches["lep_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
 	    m_TagProbe_branches["lep_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+	    m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
+	    m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 	    m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 	    m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 	    m_TagProbe_branches["lep_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
@@ -1842,6 +2239,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["electron_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		m_TagProbe_branches["electron_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		m_TagProbe_branches["electron_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		m_TagProbe_branches["electron_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		m_TagProbe_branches["electron_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
@@ -1851,6 +2249,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["muon_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		m_TagProbe_branches["muon_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		m_TagProbe_branches["muon_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		m_TagProbe_branches["muon_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		m_TagProbe_branches["muon_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
@@ -1862,6 +2261,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["electron_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		m_TagProbe_branches["electron_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		m_TagProbe_branches["electron_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		m_TagProbe_branches["electron_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		m_TagProbe_branches["electron_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -1871,6 +2271,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["muon_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		m_TagProbe_branches["muon_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		m_TagProbe_branches["muon_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		m_TagProbe_branches["muon_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		m_TagProbe_branches["muon_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -1978,6 +2379,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    probe_eta               = m_leptons.at(probe_idx_SLT).get()->eta;
 	    tag_etaBE2              = m_leptons.at(tag_idx_SLT).get()->etaBE2;
 	    probe_etaBE2            = m_leptons.at(probe_idx_SLT).get()->etaBE2;
+	    tag_deltaRClosestJet   = m_leptons.at(tag_idx_SLT).get()->deltaRClosestJet;
+	    probe_deltaRClosestJet = m_leptons.at(probe_idx_SLT).get()->deltaRClosestJet;
 	    tag_deltaRClosestBJet   = m_leptons.at(tag_idx_SLT).get()->deltaRClosestBJet;
 	    probe_deltaRClosestBJet = m_leptons.at(probe_idx_SLT).get()->deltaRClosestBJet;
 	    tag_truthType           = m_leptons.at(tag_idx_SLT).get()->truthType;
@@ -1991,6 +2394,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    m_TagProbe_branches["lep_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 	    m_TagProbe_branches["lep_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
 	    m_TagProbe_branches["lep_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+	    m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
+	    m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 	    m_TagProbe_branches["lep_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 	    m_TagProbe_branches["lep_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 	    m_TagProbe_branches["lep_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
@@ -2003,6 +2408,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["electron_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		m_TagProbe_branches["electron_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		m_TagProbe_branches["electron_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		m_TagProbe_branches["electron_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		m_TagProbe_branches["electron_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		m_TagProbe_branches["electron_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
@@ -2012,6 +2418,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["muon_TagVec_SLT_Pt"].vec_f.push_back(tag_pt);
 		m_TagProbe_branches["muon_TagVec_SLT_Eta"].vec_f.push_back(tag_eta);
 		m_TagProbe_branches["muon_TagVec_SLT_EtaBE2"].vec_f.push_back(tag_etaBE2);
+		m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestJet"].vec_f.push_back(tag_deltaRClosestJet);
 		m_TagProbe_branches["muon_TagVec_SLT_deltaRClosestBJet"].vec_f.push_back(tag_deltaRClosestBJet);
 		m_TagProbe_branches["muon_TagVec_SLT_truthType"].vec_i.push_back(tag_truthType);
 		m_TagProbe_branches["muon_TagVec_SLT_truthOrigin"].vec_i.push_back(tag_truthOrigin);
@@ -2023,6 +2430,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["electron_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		m_TagProbe_branches["electron_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		m_TagProbe_branches["electron_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		m_TagProbe_branches["electron_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		m_TagProbe_branches["electron_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		m_TagProbe_branches["electron_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -2032,6 +2440,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 		m_TagProbe_branches["muon_ProbeVec_SLT_Pt"].vec_f.push_back(probe_pt);
 		m_TagProbe_branches["muon_ProbeVec_SLT_Eta"].vec_f.push_back(probe_eta);
 		m_TagProbe_branches["muon_ProbeVec_SLT_EtaBE2"].vec_f.push_back(probe_etaBE2);
+		m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestJet"].vec_f.push_back(probe_deltaRClosestJet);
 		m_TagProbe_branches["muon_ProbeVec_SLT_deltaRClosestBJet"].vec_f.push_back(probe_deltaRClosestBJet);
 		m_TagProbe_branches["muon_ProbeVec_SLT_truthType"].vec_i.push_back(probe_truthType);
 		m_TagProbe_branches["muon_ProbeVec_SLT_truthOrigin"].vec_i.push_back(probe_truthOrigin);
@@ -2134,11 +2543,13 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: fillTPFlatBranches ( std::shared_ptr
 	m_TagProbe_branches["lep_" + tp_trig + "_topoEtcone20"].f    = ( !isBadTPEvent ) ? lep.get()->topoEtcone20 : -1.0;
 	m_TagProbe_branches["lep_" + tp_trig + "_sigd0PV"].f         = ( !isBadTPEvent ) ? lep.get()->d0sig : -1.0;
 	m_TagProbe_branches["lep_" + tp_trig + "_Z0SinTheta"].f      = ( !isBadTPEvent ) ? lep.get()->z0sintheta : -1.0;
+	m_TagProbe_branches["lep_" + tp_trig + "_deltaRClosestJet"].f   = ( !isBadTPEvent ) ? lep.get()->deltaRClosestJet : -1.0;
 	m_TagProbe_branches["lep_" + tp_trig + "_deltaRClosestBJet"].f  = ( !isBadTPEvent ) ? lep.get()->deltaRClosestBJet : -1.0;
 	m_TagProbe_branches["lep_" + tp_trig + "_massClosestBJet"].f    = ( !isBadTPEvent ) ? lep.get()->massClosestBJet : -1.0;
 	m_TagProbe_branches["lep_" + tp_trig + "_ID"].f              = ( !isBadTPEvent ) ? lep.get()->ID : 0.0;
 	m_TagProbe_branches["lep_" + tp_trig + "_isTrigMatch"].c     = ( !isBadTPEvent ) ? lep.get()->trigmatched : 0;
 	m_TagProbe_branches["lep_" + tp_trig + "_isTightSelected"].c = ( !isBadTPEvent ) ? lep.get()->tight : 0;
+	m_TagProbe_branches["lep_" + tp_trig + "_isTightSelectedMVA"].c = ( !isBadTPEvent ) ? lep.get()->tightMVA : 0;
 	m_TagProbe_branches["lep_" + tp_trig + "_isPrompt"].c        = ( !isBadTPEvent ) ? lep.get()->prompt : 0;
 	m_TagProbe_branches["lep_" + tp_trig + "_isBrems"].c         = ( !isBadTPEvent ) ? lep.get()->brems : 0;
 	m_TagProbe_branches["lep_" + tp_trig + "_isFakeLep"].c       = ( !isBadTPEvent ) ? lep.get()->fake : 0;
@@ -2165,11 +2576,19 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: storeLeptonBranches()
 
     m_lep_isTightSelected_0 = m_leptons.at(0).get()->tight;
     m_lep_isTightSelected_1 = m_leptons.at(1).get()->tight;
-    m_lep_isTightSelected_2 = ( m_event.get()->trilep ) ? m_leptons.at(2).get()->tight : -1;
+    m_lep_isTightSelected_2 = ( m_event.get()->trilep_type ) ? m_leptons.at(2).get()->tight : -1;
+
+    m_lep_isTightSelectedMVA_0 = m_leptons.at(0).get()->tightMVA;
+    m_lep_isTightSelectedMVA_1 = m_leptons.at(1).get()->tightMVA;
+    m_lep_isTightSelectedMVA_2 = ( m_event.get()->trilep_type ) ? m_leptons.at(2).get()->tightMVA : -1;
+
+    m_lep_deltaRClosestJet_0 = m_leptons.at(0).get()->deltaRClosestJet;
+    m_lep_deltaRClosestJet_1 = m_leptons.at(1).get()->deltaRClosestJet;
+    m_lep_deltaRClosestJet_2 = ( m_event.get()->trilep_type ) ? m_leptons.at(2).get()->deltaRClosestJet : -1;
 
     m_lep_deltaRClosestBJet_0 = m_leptons.at(0).get()->deltaRClosestBJet;
     m_lep_deltaRClosestBJet_1 = m_leptons.at(1).get()->deltaRClosestBJet;
-    m_lep_deltaRClosestBJet_2 = ( m_event.get()->trilep ) ? m_leptons.at(2).get()->deltaRClosestBJet : -1;
+    m_lep_deltaRClosestBJet_2 = ( m_event.get()->trilep_type ) ? m_leptons.at(2).get()->deltaRClosestBJet : -1;
 
     int lep_flavour;
 
@@ -2179,13 +2598,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: storeLeptonBranches()
     for ( auto lep : m_leptons ) {
 
 	lep_flavour = lep.get()->flavour;
-
-	// Fill lepton vector branches
-
-	m_lep_OR_branches["lep_Pt"].vec_f.push_back(lep.get()->pt);
-	m_lep_OR_branches["lep_Eta"].vec_f.push_back(lep.get()->eta);
-	m_lep_OR_branches["lep_EtaBE2"].vec_f.push_back(lep.get()->etaBE2);
-	m_lep_OR_branches["lep_deltaRClosestBJet"].vec_f.push_back(lep.get()->deltaRClosestBJet);
 
 	// Fill electron and muon post OLR vector branches
 
@@ -2198,8 +2610,10 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: storeLeptonBranches()
 	    m_electron_OR_branches["electron_EtaBE2"].vec_f.push_back(lep.get()->etaBE2);
 	    m_electron_OR_branches["electron_phi"].vec_f.push_back(lep.get()->phi);
 	    m_electron_OR_branches["electron_isTightSelected"].vec_c.push_back(lep.get()->tight);
+	    m_electron_OR_branches["electron_isTightSelectedMVA"].vec_c.push_back(lep.get()->tightMVA);
 	    m_electron_OR_branches["electron_sigd0PV"].vec_f.push_back(lep.get()->d0sig);
 	    m_electron_OR_branches["electron_z0SinTheta"].vec_f.push_back(lep.get()->z0sintheta);
+	    m_electron_OR_branches["electron_deltaRClosestJet"].vec_f.push_back(lep.get()->deltaRClosestJet);
 	    m_electron_OR_branches["electron_deltaRClosestBJet"].vec_f.push_back(lep.get()->deltaRClosestBJet);
 	    m_electron_OR_branches["electron_ptvarcone20"].vec_f.push_back(lep.get()->ptVarcone20);
 	    m_electron_OR_branches["electron_topoetcone20"].vec_f.push_back(lep.get()->topoEtcone20);
@@ -2214,8 +2628,10 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: storeLeptonBranches()
 	    m_muon_OR_branches["muon_eta"].vec_f.push_back(lep.get()->eta);
 	    m_muon_OR_branches["muon_phi"].vec_f.push_back(lep.get()->phi);
 	    m_muon_OR_branches["muon_isTightSelected"].vec_c.push_back(lep.get()->tight);
+	    m_muon_OR_branches["muon_isTightSelectedMVA"].vec_c.push_back(lep.get()->tightMVA);
 	    m_muon_OR_branches["muon_sigd0PV"].vec_f.push_back(lep.get()->d0sig);
 	    m_muon_OR_branches["muon_z0SinTheta"].vec_f.push_back(lep.get()->z0sintheta);
+	    m_muon_OR_branches["muon_deltaRClosestJet"].vec_f.push_back(lep.get()->deltaRClosestJet);
 	    m_muon_OR_branches["muon_deltaRClosestBJet"].vec_f.push_back(lep.get()->deltaRClosestBJet);
 	    m_muon_OR_branches["muon_ptvarcone30"].vec_f.push_back(lep.get()->ptVarcone30);
 	    m_muon_OR_branches["muon_truthType"].vec_i.push_back(lep.get()->truthType);
@@ -2245,6 +2661,16 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
     m_is_AntiTel_Tmu = ( ( m_leptons.at(0).get()->flavour == 11 && !m_leptons.at(0).get()->tight ) && ( m_leptons.at(1).get()->flavour == 13 && m_leptons.at(1).get()->tight ) );
     m_is_AntiTmu_Tel = ( ( m_leptons.at(0).get()->flavour == 13 && !m_leptons.at(0).get()->tight ) && ( m_leptons.at(1).get()->flavour == 11 && m_leptons.at(1).get()->tight ) );
 
+    m_is_TMVA_TMVA	   = (  m_leptons.at(0).get()->tightMVA &&  m_leptons.at(1).get()->tightMVA );
+    m_is_TMVA_AntiTMVA     = (  m_leptons.at(0).get()->tightMVA && !m_leptons.at(1).get()->tightMVA );
+    m_is_AntiTMVA_TMVA     = ( !m_leptons.at(0).get()->tightMVA &&  m_leptons.at(1).get()->tightMVA );
+    m_is_AntiTMVA_AntiTMVA = ( !m_leptons.at(0).get()->tightMVA && !m_leptons.at(1).get()->tightMVA );
+
+    m_is_TMVAel_AntiTMVAmu = ( ( m_leptons.at(0).get()->flavour == 11 && m_leptons.at(0).get()->tightMVA )  && ( m_leptons.at(1).get()->flavour == 13 && !m_leptons.at(1).get()->tightMVA ) );
+    m_is_TMVAmu_AntiTMVAel = ( ( m_leptons.at(0).get()->flavour == 13 && m_leptons.at(0).get()->tightMVA )  && ( m_leptons.at(1).get()->flavour == 11 && !m_leptons.at(1).get()->tightMVA ) );
+    m_is_AntiTMVAel_TMVAmu = ( ( m_leptons.at(0).get()->flavour == 11 && !m_leptons.at(0).get()->tightMVA ) && ( m_leptons.at(1).get()->flavour == 13 && m_leptons.at(1).get()->tightMVA ) );
+    m_is_AntiTMVAmu_TMVAel = ( ( m_leptons.at(0).get()->flavour == 13 && !m_leptons.at(0).get()->tightMVA ) && ( m_leptons.at(1).get()->flavour == 11 && m_leptons.at(1).get()->tightMVA ) );
+
     ANA_CHECK( this->storeLeptonBranches() );
 
     m_isBadTPEvent_SLT = m_event.get()->isBadTPEvent_SLT;
@@ -2253,7 +2679,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 
 	// Fill flat variables for tag/probe leptons
 
-	if ( m_event.get()->dilep ) {
+	if ( m_event.get()->dilep_type ) {
 	    ANA_CHECK( this->fillTPFlatBranches( lep, "SLT" ) );
 	}
 
@@ -2287,11 +2713,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ( const std::string& t
 	  elem.second.vec_c.clear();
 	  elem.second.vec_i.clear();
       }
-      for ( auto& elem : m_lep_OR_branches ) {
-	  elem.second.vec_f.clear();
-	  elem.second.vec_c.clear();
-	  elem.second.vec_i.clear();
-      }
 
   } else if ( type.compare("tag_and_probe") == 0 ) {
 
@@ -2301,11 +2722,12 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ( const std::string& t
 	  elem.second.vec_i.clear();
       }
 
-  } else if ( type.compare("jets") == 0 ) {
+  } else if ( type.compare("jets_kin") == 0 ) {
       m_jet_OR_Pt.clear();
       m_jet_OR_Eta.clear();
       m_jet_OR_Phi.clear();
       m_jet_OR_E.clear();
+  } else if ( type.compare("jets_truth") == 0 ) {
       m_jet_OR_truthMatch_Pt.clear();
       m_jet_OR_truthMatch_Eta.clear();
       m_jet_OR_truthMatch_Phi.clear();
@@ -2323,12 +2745,38 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ( const std::string& t
 
 }
 
+EL::StatusCode HTopMultilepMiniNTupMaker :: jetKinematics ()
+{
+
+    // Clear vector branches from previous event
+    //
+    ANA_CHECK( this->clearBranches("jets_kin") );
+
+    for ( unsigned int j_idx(0); j_idx < m_selected_jets_T->size(); ++j_idx ) {
+
+	short j = m_selected_jets_T->at(j_idx);
+
+	// Read the jet branches from the vector *before* OR via the index
+
+	if ( m_debug ) { Info("jetKinematics()","reco jet[%i], pT = %.2f, eta = %.2f, phi = %.2f, E = %.2f",j, m_jet_pt->at(j)/1e3, m_jet_eta->at(j), m_jet_phi->at(j), m_jet_E->at(j)/1e3 ); }
+
+	m_jet_OR_Pt.push_back( m_jet_pt->at(j) );
+	m_jet_OR_Eta.push_back( m_jet_eta->at(j) );
+	m_jet_OR_Phi.push_back( m_jet_phi->at(j) );
+	m_jet_OR_E.push_back( m_jet_E->at(j) );
+
+    }
+
+    return EL::StatusCode::SUCCESS;
+
+}
+
 EL::StatusCode HTopMultilepMiniNTupMaker :: jetTruthMatching ()
 {
 
   // Clear vector branches from previous event
   //
-  ANA_CHECK( this->clearBranches("jets") );
+  ANA_CHECK( this->clearBranches("jets_truth") );
 
   float DRCONE(0.4);
 
@@ -2343,12 +2791,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: jetTruthMatching ()
     //
     jet.SetPtEtaPhi( m_jet_pt->at(j), m_jet_eta->at(j), m_jet_phi->at(j) );
 
-    if ( m_debug ) { Info("jetTruthMatching()","reco jet - idx = %i, pT = %.2f, eta = %.2f, phi = %.2f",j, jet.Pt()/1e3, jet.Eta(), jet.Phi() ); }
-
-    m_jet_OR_Pt.push_back( m_jet_pt->at(j) );
-    m_jet_OR_Eta.push_back( m_jet_eta->at(j) );
-    m_jet_OR_Phi.push_back( m_jet_phi->at(j) );
-    m_jet_OR_E.push_back( m_jet_E->at(j) );
+    if ( m_debug ) { Info("jetTruthMatching()","reco jet[%i], pT = %.2f, eta = %.2f, phi = %.2f",j, jet.Pt()/1e3, jet.Eta(), jet.Phi() ); }
 
     float minDR(999.0), thisDR(999.0);
     int best_tj(-1);

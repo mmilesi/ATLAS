@@ -41,9 +41,10 @@ namespace MiniNTupMaker {
   public:
     eventObj():
       isSS01(0), isSS12(0),
-      dilep(0), trilep(0),
       dilep_type(0),
-      nbjets(0),
+      trilep_type(0),
+      quadlep_type(0),
+      njets(0),nbjets(0),
       isBadTPEvent_SLT(1), /** Be pesimistic */
       weight_event(1.0),
       weight_event_trig_SLT(1.0),
@@ -54,9 +55,10 @@ namespace MiniNTupMaker {
 
     char isSS01;
     char isSS12;
-    char dilep;
-    char trilep;
     int  dilep_type;
+    int  trilep_type;
+    int  quadlep_type;
+    int  njets;
     int  nbjets;
 
     char isBadTPEvent_SLT; /** No T&TM (SLT) leptons found */
@@ -72,15 +74,16 @@ namespace MiniNTupMaker {
 
   };
 
-  class bjetObj {
+  class jetObj {
   public:
-    bjetObj():
-      pt(-1.0),eta(-999.0),phi(-999.0)
+    jetObj():
+      pt(-1.0),eta(-999.0),phi(-999.0),isbtag(0)
       { };
 
       float pt;
       float eta;
       float phi;
+      char  isbtag;
   };
 
   class leptonObj {
@@ -88,13 +91,19 @@ namespace MiniNTupMaker {
   public:
     leptonObj():
       pt(-1.0),eta(-999.0),etaBE2(-999.0),phi(-999.0),ID(0.0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
-      pid(0),isolated(0),trackisooverpt(-1.0),caloisooverpt(-1.0),
+      pid(0),looseisolated(0),isolated(0),trackisooverpt(-1.0),caloisooverpt(-1.0),
       ptVarcone20(-1.0),ptVarcone30(-1.0),topoEtcone20(-1.0),
-      tight(0),
+      promptleptoniso_tagweight(999.0),
+      chargeidbdtloose(-999.0),
+      chargeidbdtmedium(-999.0),
+      chargeidbdttight(-999.0),
+      tight(0),tightMVA(0),
       trigmatched(0),trigmatched_SLT(0),trigmatched_DLT(0),
+      rank3L(999),
       prompt(0),fake(0),brems(0),qmisid(0),convph(0),
       truthType(0),truthOrigin(0),
       tag_SLT(0),tag_DLT(0),
+      deltaRClosestJet(-1.0),massClosestJet(-1.0),
       deltaRClosestBJet(-1.0),massClosestBJet(-1.0),
       SFIDLoose(1.0),
       SFIDTight(1.0),
@@ -120,16 +129,27 @@ namespace MiniNTupMaker {
     float d0sig;
     float z0sintheta;
     char pid;
+    char looseisolated;
     char isolated;
     float trackisooverpt;
     float caloisooverpt;
     float ptVarcone20;
     float ptVarcone30;
     float topoEtcone20;
+    float promptleptoniso_tagweight;
+    float chargeidbdtloose;
+    float chargeidbdtmedium;
+    float chargeidbdttight;
     char tight;
+    char tightMVA;
     char trigmatched;
     char trigmatched_SLT;
     char trigmatched_DLT;
+    int  rank3L; /** Lepton ranking for 3L:
+		     0 : the lepton which is OS wrt. the other two
+		     1 : the lepton closets in DR to 0
+		     2 : the other lepton
+		  */
     char prompt;
     char fake;
     char brems;
@@ -139,6 +159,8 @@ namespace MiniNTupMaker {
     int  truthOrigin;
     char tag_SLT;
     char tag_DLT;
+    float deltaRClosestJet;
+    float massClosestJet;
     float deltaRClosestBJet;
     float massClosestBJet;
 
@@ -190,6 +212,12 @@ namespace MiniNTupMaker {
     }
   };
 
+  struct Sorter3L {
+    bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
+       return  lep0.get()->rank3L < lep1.get()->rank3L; /* sort in ascending order of 3L ranking (get lowest rank idx first) */
+    }
+  };
+
 }
 
 
@@ -222,6 +250,9 @@ public:
 
   /** Choose which criterion to use to solve ambiguous case of both T (TM) leptons in T&P Fake SS CR */
   std::string m_ambiSolvingCrit;
+
+  /** Activate if want to perform reco jet truth matching */
+  bool m_jetTruthMatching;
 
 private:
 
@@ -256,6 +287,7 @@ private:
 
   Int_t 	  m_dilep_type;
   Int_t 	  m_trilep_type;
+  Int_t 	  m_quadlep_type;
 
   Int_t           m_nJets_OR;
   Int_t           m_nJets_OR_MV2c10_70;
@@ -394,6 +426,50 @@ private:
   Float_t	  m_lep_SFObjLoose_2;
   Float_t	  m_lep_SFObjTight_2;
 
+  Float_t	  m_lep_ID_3;
+  Float_t	  m_lep_Pt_3;
+  Float_t	  m_lep_E_3;
+  Float_t	  m_lep_Eta_3;
+  Float_t	  m_lep_Phi_3;
+  Float_t	  m_lep_EtaBE2_3;
+  Float_t	  m_lep_sigd0PV_3;
+  Float_t	  m_lep_Z0SinTheta_3;
+  Char_t	  m_lep_isTightLH_3;
+  Char_t	  m_lep_isMediumLH_3;
+  Char_t	  m_lep_isLooseLH_3;
+  Char_t	  m_lep_isTight_3;
+  Char_t	  m_lep_isMedium_3;
+  Char_t	  m_lep_isLoose_3;
+  Int_t 	  m_lep_isolationLooseTrackOnly_3;
+  Int_t 	  m_lep_isolationLoose_3;
+  Int_t 	  m_lep_isolationFixedCutTight_3;
+  Int_t 	  m_lep_isolationFixedCutTightTrackOnly_3;
+  Int_t 	  m_lep_isolationFixedCutLoose_3;
+  Float_t	  m_lep_topoEtcone20_3;
+  Float_t	  m_lep_ptVarcone20_3;
+  Float_t	  m_lep_ptVarcone30_3;
+  Char_t	  m_lep_isTrigMatch_3;
+  Char_t	  m_lep_isTrigMatchDLT_3;
+  Char_t	  m_lep_isPrompt_3;
+  Char_t	  m_lep_isBrems_3;
+  Char_t	  m_lep_isFakeLep_3;
+  Char_t	  m_lep_isQMisID_3;
+  Char_t	  m_lep_isConvPh_3;
+  Int_t	          m_lep_truthType_3;
+  Int_t	          m_lep_truthOrigin_3;
+  Float_t	  m_lep_SFIDLoose_3;
+  Float_t	  m_lep_SFIDTight_3;
+  Float_t	  m_lep_SFTrigLoose_3;
+  Float_t	  m_lep_SFTrigTight_3;
+  Float_t         m_lep_EffTrigLoose_3;
+  Float_t         m_lep_EffTrigTight_3;
+  Float_t	  m_lep_SFIsoLoose_3;
+  Float_t	  m_lep_SFIsoTight_3;
+  Float_t	  m_lep_SFReco_3;
+  Float_t	  m_lep_SFTTVA_3;
+  Float_t	  m_lep_SFObjLoose_3;
+  Float_t	  m_lep_SFObjTight_3;
+
   ULong64_t       m_totalEvents;
   Float_t         m_totalEventsWeighted;
 
@@ -442,20 +518,28 @@ private:
   std::vector<float> *m_electron_EtaBE2       = nullptr; //!
   std::vector<float> *m_electron_phi	      = nullptr; //!
   std::vector<float> *m_electron_E	      = nullptr; //!
+  std::vector<int>   *m_electron_ID           = nullptr; //!
   std::vector<float> *m_electron_sigd0PV      = nullptr; //!
   std::vector<float> *m_electron_z0SinTheta   = nullptr; //!
   std::vector<float> *m_electron_topoetcone20 = nullptr; //!
   std::vector<float> *m_electron_ptvarcone20  = nullptr; //!
   std::vector<int>   *m_electron_truthType    = nullptr; //!
   std::vector<int>   *m_electron_truthOrigin  = nullptr; //!
+  std::vector<float> *m_electron_PromptLeptonIso_TagWeight  = nullptr; //!
+  std::vector<float> *m_electron_ChargeIDBDTLoose           = nullptr; //!
+  std::vector<float> *m_electron_ChargeIDBDTMedium          = nullptr; //!
+  std::vector<float> *m_electron_ChargeIDBDTTight           = nullptr; //!
+
   std::vector<float> *m_muon_pt	              = nullptr; //!
   std::vector<float> *m_muon_eta	      = nullptr; //!
   std::vector<float> *m_muon_phi	      = nullptr; //!
+  std::vector<int>   *m_muon_ID               = nullptr; //!
   std::vector<float> *m_muon_sigd0PV	      = nullptr; //!
   std::vector<float> *m_muon_z0SinTheta       = nullptr; //!
   std::vector<float> *m_muon_ptvarcone30      = nullptr; //!
   std::vector<int>   *m_muon_truthType        = nullptr; //!
   std::vector<int>   *m_muon_truthOrigin      = nullptr; //!
+  std::vector<float> *m_muon_PromptLeptonIso_TagWeight  = nullptr; //!
 
   /** Reco jets BEFORE overlap removal */
 
@@ -502,14 +586,43 @@ private:
   char      m_is_AntiTel_Tmu;
   char      m_is_AntiTmu_Tel;
 
+  char	    m_is_TMVA_TMVA;
+  char	    m_is_TMVA_AntiTMVA;
+  char	    m_is_AntiTMVA_TMVA;
+  char	    m_is_AntiTMVA_AntiTMVA;
+  char      m_is_TMVAel_AntiTMVAmu;
+  char      m_is_TMVAmu_AntiTMVAel;
+  char      m_is_AntiTMVAel_TMVAmu;
+  char      m_is_AntiTMVAmu_TMVAel;
+
   int       m_nmuons;
   int       m_nelectrons;
   int       m_nleptons;
+
+  float	    m_lep_PromptLeptonIso_TagWeight_0;
+  float	    m_lep_PromptLeptonIso_TagWeight_1;
+  float	    m_lep_PromptLeptonIso_TagWeight_2;
+  float	    m_lep_ChargeIDBDTLoose_0;
+  float	    m_lep_ChargeIDBDTLoose_1;
+  float	    m_lep_ChargeIDBDTLoose_2;
+  float	    m_lep_ChargeIDBDTMedium_0;
+  float	    m_lep_ChargeIDBDTMedium_1;
+  float	    m_lep_ChargeIDBDTMedium_2;
+  float	    m_lep_ChargeIDBDTTight_0;
+  float	    m_lep_ChargeIDBDTTight_1;
+  float	    m_lep_ChargeIDBDTTight_2;
+
+  char	    m_lep_isTightSelectedMVA_0;
+  char	    m_lep_isTightSelectedMVA_1;
+  char	    m_lep_isTightSelectedMVA_2;
 
   char	    m_lep_isTightSelected_0;
   char	    m_lep_isTightSelected_1;
   char	    m_lep_isTightSelected_2;
 
+  float     m_lep_deltaRClosestJet_0;
+  float     m_lep_deltaRClosestJet_1;
+  float     m_lep_deltaRClosestJet_2;
   float     m_lep_deltaRClosestBJet_0;
   float     m_lep_deltaRClosestBJet_1;
   float     m_lep_deltaRClosestBJet_2;
@@ -523,19 +636,17 @@ private:
 
   /** Some vector branches for leptons after OLR (pT-ordered) */
 
-  std::vector<std::string> m_EL_VEC_VARS  = { "pt/F", "eta/F", "EtaBE2/F", "phi/F", "isTightSelected/B", "sigd0PV/F", "z0SinTheta/F", "deltaRClosestBJet/F", "ptvarcone20/F", "topoetcone20/F", "truthType/I", "truthOrigin/I" };
-  std::vector<std::string> m_MU_VEC_VARS  = { "pt/F", "eta/F", "phi/F", "isTightSelected/B", "sigd0PV/F", "z0SinTheta/F", "deltaRClosestBJet/F", "ptvarcone30/F", "truthType/I", "truthOrigin/I" };
-  std::vector<std::string> m_LEP_VEC_VARS  = { "Pt/F", "Eta/F", "EtaBE2/F", "deltaRClosestBJet/F"};
+  std::vector<std::string> m_EL_VEC_VARS  = { "pt/F", "eta/F", "EtaBE2/F", "phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "sigd0PV/F", "z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptvarcone20/F", "topoetcone20/F", "truthType/I", "truthOrigin/I" };
+  std::vector<std::string> m_MU_VEC_VARS  = { "pt/F", "eta/F", "phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "sigd0PV/F", "z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptvarcone30/F", "truthType/I", "truthOrigin/I" };
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_electron_OR_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_muon_OR_branches;
-  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep_OR_branches;
 
   /** Tag & Probe vector branches */
 
   std::vector<std::string> m_TPS      = { "Tag", "Probe" };
   std::vector<std::string> m_TRIGS    = { "SLT" /*, "DLT"*/ };
-  std::vector<std::string> m_TP_VARS  = { "Pt/F", "Pt/VECF", "Eta/F", "Eta/VECF", "EtaBE2/F", "EtaBE2/VECF", "ptVarcone20/F", "ptVarcone30/F", "topoEtcone20/F", "sigd0PV/F", "Z0SinTheta/F", "ID/F", "deltaRClosestBJet/F", "deltaRClosestBJet/VECF", "massClosestBJet/F", "isTrigMatch/B", "isTightSelected/B", "isPrompt/B", "isBrems/B", "isFakeLep/B", "isQMisID/B", "isConvPh/B", "truthType/I", "truthType/VECI", "truthOrigin/I", "truthOrigin/VECI" };
+  std::vector<std::string> m_TP_VARS  = { "Pt/F", "Pt/VECF", "Eta/F", "Eta/VECF", "EtaBE2/F", "EtaBE2/VECF", "ptVarcone20/F", "ptVarcone30/F", "topoEtcone20/F", "sigd0PV/F", "Z0SinTheta/F", "ID/F", "deltaRClosestJet/F", "deltaRClosestJet/VECF", "deltaRClosestBJet/F", "deltaRClosestBJet/VECF", "massClosestBJet/F", "isTrigMatch/B", "isTightSelected/B", "isTightSelectedMVA/B", "isPrompt/B", "isBrems/B", "isFakeLep/B", "isQMisID/B", "isConvPh/B", "truthType/I", "truthType/VECI", "truthOrigin/I", "truthOrigin/VECI" };
 
   char m_isBadTPEvent_SLT; /** No T&TM (SLT) leptons found */
 
@@ -569,7 +680,7 @@ private:
 
   std::shared_ptr<MiniNTupMaker::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<MiniNTupMaker::leptonObj> > m_leptons; //!
-  std::vector< std::shared_ptr<MiniNTupMaker::bjetObj> >   m_bjets;   //!
+  std::vector< std::shared_ptr<MiniNTupMaker::jetObj> >    m_jets;    //!
 
   TRandom3* m_rand; //!
 
@@ -595,13 +706,17 @@ public:
 private:
 
   EL::StatusCode enableSelectedBranches ();
-  EL::StatusCode checkIsTightLep( std::shared_ptr<MiniNTupMaker::leptonObj> lep );
+  EL::StatusCode checkIsTightLep( std::shared_ptr<MiniNTupMaker::leptonObj> lep, const std::string& strategy = "CutBased" );
   EL::StatusCode decorateEvent ();
   EL::StatusCode decorateWeights ();
 
   EL::StatusCode getPostOLRIndex( int& idx, const unsigned int& pos, const std::string& lep_type );
+  EL::StatusCode flatLepVars ();
+
+  EL::StatusCode classify3L( std::vector< std::shared_ptr<MiniNTupMaker::leptonObj> >& leptons );
+
   EL::StatusCode triggerMatching ();
-  EL::StatusCode findClosestBJetLep ();
+  EL::StatusCode findClosestJetLep ( const std::string& jetCollection = "jets" );
 
   /**
     * @brief  Set which lepton is tag and which is probe for the r/f efficiency measurement
@@ -614,6 +729,7 @@ private:
   EL::StatusCode setOutputBranches ();
   EL::StatusCode clearBranches ( const std::string& type );
 
+  EL::StatusCode jetKinematics();
   EL::StatusCode jetTruthMatching();
 
 };
