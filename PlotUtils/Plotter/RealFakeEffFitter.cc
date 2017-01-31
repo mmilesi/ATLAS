@@ -156,7 +156,7 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
      //
 
      // This assumes real efficiencies are fitted first
-     // When fitting fake efficiencies, the previously fitted values for r are used
+     // When fitting fake efficiencies, the previously fitted values for r are fixed
 
      double fitted_r1el(0.0), fitted_r2el(0.0);
      double fitted_r1mu(0.0), fitted_r2mu(0.0);
@@ -924,8 +924,8 @@ void LHFitter :: initialise() {
     NCOMP = 1; // RR only
   }
   if ( m_efficiency == kEfficiency::FAKE ) {
-   //NCOMP = 3; // RF, FR, FF
-    NCOMP = 2; // RF, FR
+    // NCOMP = 3; // RR, RF, FR
+    NCOMP = 2; // RF, FR --> assumes RR are subtracted from MC
   }
 
   std::cout << "" << std::endl;
@@ -2900,8 +2900,8 @@ int main( int argc, char **argv ) {
 
     // DLT
 
-    //const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso/");
-    const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso_TRIGMATCH_EFF/");
+    const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso/");
+    //const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso_TRIGMATCH_EFF/");
     //const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso_NOT_TRIGMATCH_EFF/");
 
     // SLT

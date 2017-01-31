@@ -50,7 +50,9 @@ if __name__ == "__main__":
     if True:
 
         samples       = ["ttbarbkg","wjetsbkg"]
-        lepSelections = ["FakeCRElT"]#,"FakeCRElL"]
+        #lepSelections = ["FakeCRElT","FakeCRElL"]
+        flavour       = "Mu"
+        lepSelections = ["FakeCRMuT","FakeCRMuL"]
         jetSelections = ["ALLNJ","LOWNJ","HIGHNJ"]
         prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
         normFactor    = 0 # 1.0
@@ -63,7 +65,7 @@ if __name__ == "__main__":
                     print("\n\tjet selection: {0}".format(js))
                     for pid in prodIDs:
                         print("\n\t\tprodID: {0}\n".format(pid))
-                        kwargs = {"prodID":pid, "sample":s, "jetSelection":js, "lepSelection":ls}
+                        kwargs = {"flavour":flavour,"prodID":pid, "sample":s, "jetSelection":js, "lepSelection":ls}
                         TypeAndOriginPlots.plotTypeVSOrigin(normFactor=normFactor, **kwargs)
                         TypeAndOriginPlots.plotTypeVSNjets(normFactor=normFactor, **kwargs)
                         TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)

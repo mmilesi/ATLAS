@@ -13,9 +13,14 @@ def plotTypeVSOrigin( normFactor=0, **kwargs ):
 
     plotlist = []
 
-    Plot.legend.SetHeader("Fake electrons")
+    if kwargs["flavour"] == "Mu":
+        header   = "muons"
+    elif kwargs["flavour"] == "El":
+        header   = "electrons"
 
-    variable = "ElProbeType_VS_ElProbeOrigin"
+    Plot.legend.SetHeader("Fake {0}".format(header))
+
+    variable = "{0}ProbeType_VS_{1}ProbeOrigin".format(kwargs["flavour"],kwargs["flavour"])
 
     inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/" + kwargs["lepSelection"] + "/"
     inputName = kwargs["lepSelection"] + "_" + variable + ".root"
@@ -60,9 +65,14 @@ def plotTypeVSNjets( normFactor=0, **kwargs ):
 
     plotlist = []
 
-    Plot.legend.SetHeader("Fake electrons")
+    if kwargs["flavour"] == "Mu":
+        header   = "muons"
+    elif kwargs["flavour"] == "El":
+        header   = "electrons"
 
-    variable = "ElProbeType_VS_NJets"
+    Plot.legend.SetHeader("Fake {0}".format(header))
+
+    variable = "{0}ProbeType_VS_NJets".format(kwargs["flavour"])
 
     inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/" + kwargs["lepSelection"] + "/"
     inputName = kwargs["lepSelection"] + "_" + variable + ".root"
@@ -106,9 +116,14 @@ def plotOriginVSNjets( normFactor=0, **kwargs ):
 
     plotlist = []
 
-    Plot.legend.SetHeader("Fake electrons")
+    if kwargs["flavour"] == "Mu":
+        header   = "muons"
+    elif kwargs["flavour"] == "El":
+        header   = "electrons"
 
-    variable = "ElProbeOrigin_VS_NJets"
+    Plot.legend.SetHeader("Fake {0}".format(header))
+
+    variable = "{0}ProbeOrigin_VS_NJets".format(kwargs["flavour"])
 
     inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/" + kwargs["lepSelection"] + "/"
     inputName = kwargs["lepSelection"] + "_" + variable + ".root"
