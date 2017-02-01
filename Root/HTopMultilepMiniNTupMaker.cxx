@@ -450,6 +450,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("is_AntiTel_Tmu",      	&m_is_AntiTel_Tmu, "is_AntiTel_Tmu/B");
   m_outputNTuple->tree()->Branch("is_Tmu_AntiTel",      	&m_is_Tmu_AntiTel, "is_Tmu_AntiTel/B");
   m_outputNTuple->tree()->Branch("is_AntiTmu_Tel",      	&m_is_AntiTmu_Tel, "is_AntiTmu_Tel/B");
+  m_outputNTuple->tree()->Branch("is_TMVA_TMVA",               	&m_is_TMVA_TMVA, "is_TMVA_TMVA/B");
   m_outputNTuple->tree()->Branch("is_TMVA_AntiTMVA",            &m_is_TMVA_AntiTMVA, "is_TMVA_AntiTMVA/B");
   m_outputNTuple->tree()->Branch("is_AntiTMVA_TMVA",            &m_is_AntiTMVA_TMVA, "is_AntiTMVA_TMVA/B");
   m_outputNTuple->tree()->Branch("is_AntiTMVA_AntiTMVA",        &m_is_AntiTMVA_AntiTMVA, "is_AntiTMVA_AntiTMVA/B");
