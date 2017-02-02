@@ -32,6 +32,7 @@
 #include "TGraphAsymmErrors.h"
 #include "AtlasStyle.C"
 #include "TLine.h"
+#include "TKey.h"
 
 // -------------------------------------------------------------------------------------
 
@@ -462,6 +463,19 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
 */
 template<typename T>
 T* get_object( TFile& file, const std::string& name ) {
+
+    std::cout << "" << std::endl;
+    Info("get_object()","Getting TObject: %s from file %s...", name.c_str(), file.GetName() );
+
+    TIter next( file.GetListOfKeys() );
+    TKey* key;
+
+    Info("get_object()","List of keys:");
+    while( key = (TKey*)next() ) {
+	std::cout << "\tname: " << key->GetName() << " - type: " << key->GetClassName() << std::endl;
+    }
+    std::cout << "" << std::endl;
+
     T* obj = dynamic_cast<T*>( file.Get(name.c_str()) );
     if ( !obj ) { throw std::runtime_error("object " + name + " not found"); }
     return obj;
@@ -921,11 +935,11 @@ void LHFitter :: initialise() {
 
   int NCOMP(0);
   if ( m_efficiency == kEfficiency::REAL ) {
-    NCOMP = 1; // RR only
+      NCOMP = 1; // RR only
   }
   if ( m_efficiency == kEfficiency::FAKE ) {
-    // NCOMP = 3; // RR, RF, FR
-    NCOMP = 2; // RF, FR --> assumes RR are subtracted from MC
+      //NCOMP = 3; // RR, RF, FR
+      NCOMP = 2; // RF, FR --> assumes RR are subtracted from MC
   }
 
   std::cout << "" << std::endl;
@@ -2890,23 +2904,27 @@ int main( int argc, char **argv ) {
 
     // DO THE FIT ON DATA
 
+    // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
+
     //const std::string tp_path("../blahblah/");
+
+    // Input 2D pT histograms
+
     //const std::string input_path("../blahblah/");
 
     // DO THE FIT ON TTBAR MC
 
-    //const std::string tp_path("../PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake/"); // will read *average* efficiency from T&P as an eductaed guess for the fit
-    const std::string tp_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake/");
+    // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
 
-    // DLT
+    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA/");
+    const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonCutBased/");
 
-    const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso/");
-    //const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso_TRIGMATCH_EFF/");
-    //const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso_NOT_TRIGMATCH_EFF/");
+    // Input 2D pT histograms
 
-    // SLT
-
-    //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_SLT_25ns_v24/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA/");
+    const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonCutBased/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_TRIGMATCH_EFF/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_NOT_TRIGMATCH_EFF/");
 
     LHFitter::useMC();
 
