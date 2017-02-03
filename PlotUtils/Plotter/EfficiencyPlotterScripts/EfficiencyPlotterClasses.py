@@ -312,10 +312,12 @@ class MultiPlot:
                 continue
 
 	    if idx == 0:
-                plot.makePlot(c)
+                #plot.makePlot(c)
+                plot.makePlot()
 	    else:
                 plot.setProperty("drawOpt", str(plot.getProperty("drawOpt")) + " SAME" )
-                plot.makePlot(c)
+                #plot.makePlot(c)
+                plot.makePlot()
 
         for refl in Plot.reflines:
             refl.SetLineStyle(2)

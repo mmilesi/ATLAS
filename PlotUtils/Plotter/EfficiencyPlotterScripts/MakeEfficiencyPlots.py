@@ -12,42 +12,32 @@ if __name__ == "__main__":
 
     gROOT.SetBatch(True)
 
-    import EfficiencyPlotter, EfficiencyPlotter_ElNoIso, EfficiencyPlotter_ElNoIso_Rebinned_1, EfficiencyPlotter_ElNoIso_Rebinned_2, EfficiencyPlotter_ElNoIso_Rebinned_3
+    import EfficiencyPlotter_v24_ElNoIso
 
+    # Use this one for v24 (has the right binning)
     if False:
-        EfficiencyPlotter.plotFakeElectron()
-        EfficiencyPlotter.plotFakeElectron_anyProbe()
-        EfficiencyPlotter.plotFakeMuon()
-        EfficiencyPlotter.plotRealElectron()
-        EfficiencyPlotter.plotRealMuon()
-        EfficiencyPlotter.plotFakeElectron_diffTagSel()
-        EfficiencyPlotter.plotFakeElectronAssignEff()
+        EfficiencyPlotter_v24_ElNoIso.plotRealElectron()
+        EfficiencyPlotter_v24_ElNoIso.plotRealMuon()
+        EfficiencyPlotter_v24_ElNoIso.plotFakeElectron()
+        EfficiencyPlotter_v24_ElNoIso.plotFakeMuon()
 
-    if False:
-        EfficiencyPlotter_ElNoIso.plotFakeElectron()
-        EfficiencyPlotter_ElNoIso.plotFakeElectron_anyProbe()
-        EfficiencyPlotter_ElNoIso.plotFakeElectron_BaselineElIso()
-        EfficiencyPlotter_ElNoIso.plotRealElectron()
-        EfficiencyPlotter_ElNoIso.plotRealElectron_BaselineElIso()
+    import EfficiencyPlotter_v26
 
-    if False:
-        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron()
-        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_anyProbe()
-        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_BaselineElIso()
+    if True:
 
-    # Use this one (has the right binning)
-    if False:
-        EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealElectron()
-        EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealMuon()
-        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeElectron()
-        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeMuon()
+        EfficiencyPlotter_v26.plotRealElectron()
+        EfficiencyPlotter_v26.plotRealMuon()
+        EfficiencyPlotter_v26.plotFakeElectron()
+        EfficiencyPlotter_v26.plotFakeMuon()
 
-    if False:
-        EfficiencyPlotter_ElNoIso_Rebinned_3.plotFakeElectron()
+        EfficiencyPlotter_v26.plotRealElectron_CutBased()
+        EfficiencyPlotter_v26.plotRealMuon_CutBased()
+        EfficiencyPlotter_v26.plotFakeElectron_CutBased()
+        EfficiencyPlotter_v26.plotFakeMuon_CutBased()
 
     import TypeAndOriginPlots
 
-    if True:
+    if False:
 
         samples       = ["ttbarbkg","wjetsbkg"]
         #lepSelections = ["FakeCRElT","FakeCRElL"]

@@ -989,6 +989,7 @@ void LHFitter :: initialise() {
      if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fel_init, "Printing content of fel_init:" );
      if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_rmu_init, "Printing content of rmu_init:" );
      if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fmu_init, "Printing content of fmu_init:" );
+     //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
      if ( m_efficiency == kEfficiency::REAL ) {
 	 if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RelRel_init,"Printing content of RelRel_init:" );
 	 if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RmuRmu_init,"Printing content of RmuRmu_init:" );
@@ -1175,6 +1176,7 @@ void LHFitter :: initialise() {
   // Set parameters for RR
   // ---------------------
 
+  //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
   if ( m_efficiency == kEfficiency::REAL ) {
 
     g_RR = true;
@@ -1460,6 +1462,7 @@ void LHFitter :: initialise() {
 	    printContainer( g_f2mu_idxs, "Printing content of f2mu_idxs:" );
           }
       }
+      //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
       if ( m_efficiency == kEfficiency::REAL ) {
 	  if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RelRel_idxs, "Printing content of RelRel_idxs:" );
 	  if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RmuRmu_idxs, "Printing content of RmuRmu_idxs:" );
@@ -2481,7 +2484,7 @@ void LHFitter :: getParametersAndErrors() {
   // Get errors for RR
   // ---------------------
 
-  if ( m_efficiency == kEfficiency::REAL ) {
+  if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
 
     if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) {
       for ( auto idx(0); idx < m_RelRel_errs.size(); ++idx ) {

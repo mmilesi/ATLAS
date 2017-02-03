@@ -1592,7 +1592,8 @@ if __name__ == "__main__":
         print("Measuring probe lepton assignment efficiency...\n")
 	eff.probeAssignEff = args.probeAssignEff
         if "Real" in eff.efficiencies: eff.efficiencies.remove("Real")
-    	eff.selections = {"D":"ProbeTMatchedToAny","N":"ProbeTMatchedToFake","AntiN":"ProbeTMatchedToReal"}
+    	#eff.selections = {"D":"ProbeTTMMatchedToAny","N":"ProbeTTMMatchedToFake","AntiN":"ProbeTTMMatchedToReal"}
+    	eff.selections = {"D":"ProbeMatchedToAny","N":"ProbeMatchedToFake","AntiN":"ProbeMatchedToReal"}
 
     eff.lumi  = args.lumi
     eff.debug = args.debug
