@@ -1829,7 +1829,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	if ( m_debug ) { Info("defineTagAndProbe()","Checking lepton[%i] w/ pT = %.2f, flavour = %i", idx, lep.get()->pt/1e3, lep.get()->flavour ); }
 
-      if ( lep.get()->tight && lep.get()->trigmatched ) {
+      if ( lep.get()->tightMVA && lep.get()->trigmatched ) {
         ++tag_candidate_counter_SLT;
 	tag_idx_SLT = idx;
         if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (SLT matching)! pT[%i] = %.2f, flavour = %i", idx, lep.get()->pt/1e3, lep.get()->flavour ); }
@@ -2070,7 +2070,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 		if ( m_debug ) { Info("defineTagAndProbe()","Checking lepton[%i] w/ pT = %.2f, flavour = %i", i_SLT, lep.get()->pt/1e3, lep.get()->flavour ); }
 
-		if ( lep.get()->flavour == 13 && lep.get()->tight && lep.get()->trigmatched ) {
+		if ( lep.get()->flavour == 13 && lep.get()->tightMVA && lep.get()->trigmatched ) {
 
 		    tag_idx_SLT = i_SLT;
 
@@ -2493,7 +2493,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
     if ( m_debug ) { Info("defineTagAndProbe()","Checking lepton[%i] w/ pT = %.2f", idx, lep.get()->pt/1e3 ); }
 
-    if ( !found_tag_SLT && ( lep.get()->tight && lep.get()->trigmatched ) ) {
+    if ( !found_tag_SLT && ( lep.get()->tightMVA && lep.get()->trigmatched ) ) {
       lep.get()->tag_SLT = 1;
       found_tag_SLT = true;
       if ( m_debug ) { Info("defineTagAndProbe()","\t ===> found a tag candidate (SLT matching)! pT[%i] = %.2f", idx, lep.get()->pt/1e3 ); }
