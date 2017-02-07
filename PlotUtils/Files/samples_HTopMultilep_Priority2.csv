@@ -336,8 +336,9 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 410068,Background,0.1368,1.32,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttW_Np2,tops,ttW
 410069,Background,0.018103,1.2,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttZllonshell_Np0,tops,ttZllonshell
 410070,Background,0.030629,1.2,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttZllonshell_Np1,tops,ttZllonshell
-410080,Background,0.0091622,1.0042,1.0,MadGraphPythia8EvtGen_A14NNPDF23_4topSM,tops,4top
-410081,Background,0.0080975,1.2231,1.0,MadGraphPythia8EvtGen_A14NNPDF23_ttbarWW,tops,ttWW
+410073,Background,0.17321,1.47,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttZnnqq_Np0,tops,ttZnnqq
+410074,Background,0.16533,1.47,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttZnnqq_Np1,tops,ttZnnqq
+410075,Background,0.17427,1.47,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttZnnqq_Np2,tops,ttZnnqq
 410111,Background,0.0096235,1.51,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttee_Np0,tops,ttee
 410112,Background,0.017344,1.51,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttee_Np1,tops,ttee
 410113,Background,0.0096462,1.51,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttmumu_Np0,tops,ttmumu
