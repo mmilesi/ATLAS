@@ -28,6 +28,7 @@
 namespace MiniNTupMaker {
 
   struct Branch_Types {
+      Branch_Types() : f(-999.0), c(-1), i(-1) {};
       float f;
       char c;
       int i;
@@ -89,137 +90,111 @@ namespace MiniNTupMaker {
   class leptonObj {
 
   public:
-    leptonObj():
-      pt(-1.0),eta(-999.0),etaBE2(-999.0),phi(-999.0),ID(0.0),flavour(0),charge(-999.0),d0sig(-999.0),z0sintheta(-999.0),
-      pid(0),looseisolated(0),isolated(0),trackisooverpt(-1.0),caloisooverpt(-1.0),
-      ptVarcone20(-1.0),ptVarcone30(-1.0),topoEtcone20(-1.0),
-      promptleptoniso_tagweight(999.0),
-      chargeidbdtloose(-999.0),
-      chargeidbdtmedium(-999.0),
-      chargeidbdttight(-999.0),
-      tight(0),tightMVA(0),
-      trigmatched(0),trigmatched_SLT(0),trigmatched_DLT(0),
-      rank3L(999),
-      prompt(0),fake(0),brems(0),qmisid(0),convph(0),
-      truthType(0),truthOrigin(0),
-      tag_SLT(0),tag_DLT(0),
-      deltaRClosestJet(-1.0),massClosestJet(-1.0),
-      deltaRClosestBJet(-1.0),massClosestBJet(-1.0),
-      SFIDLoose(1.0),
-      SFIDTight(1.0),
-      SFTrigLoose(1.0),
-      SFTrigTight(1.0),
-      EffTrigLoose(0.0),
-      EffTrigTight(0.0),
-      SFIsoLoose(1.0),
-      SFIsoTight(1.0),
-      SFReco(1.0),
-      SFTTVA(1.0),
-      SFObjLoose(1.0),
-      SFObjTight(1.0)
-    { };
+    leptonObj()
+    {
 
-    float pt;
-    float eta;
-    float etaBE2;
-    float phi;
-    int ID;
-    int flavour;
-    float charge;
-    float d0sig;
-    float z0sintheta;
-    char pid;
-    char looseisolated;
-    char isolated;
-    float trackisooverpt;
-    float caloisooverpt;
-    float ptVarcone20;
-    float ptVarcone30;
-    float topoEtcone20;
-    float promptleptoniso_tagweight;
-    float chargeidbdtloose;
-    float chargeidbdtmedium;
-    float chargeidbdttight;
-    char tight;
-    char tightMVA;
-    char trigmatched;
-    char trigmatched_SLT;
-    char trigmatched_DLT;
-    int  rank3L; /** Lepton ranking for 3L:
-		     0 : the lepton which is OS wrt. the other two
-		     1 : the lepton closets in DR to 0
-		     2 : the other lepton
-		  */
-    char prompt;
-    char fake;
-    char brems;
-    char qmisid;
-    char convph;
-    int  truthType;
-    int  truthOrigin;
-    char tag_SLT;
-    char tag_DLT;
-    float deltaRClosestJet;
-    float massClosestJet;
-    float deltaRClosestBJet;
-    float massClosestBJet;
+	props.insert( std::make_pair( "Pt", Branch_Types() ) );	                  props["Pt"].f = -1.0;
+	props.insert( std::make_pair( "Eta", Branch_Types() ) );                  props["Eta"].f = -999.0;
+	props.insert( std::make_pair( "EtaBE2", Branch_Types() ) );	          props["EtaBE2"].f = -999.0;
+	props.insert( std::make_pair( "Phi", Branch_Types() ) );	          props["Phi"].f = -999.0;
+	props.insert( std::make_pair( "ID", Branch_Types() ) );	                  props["ID"].f = 0.0;
+	props.insert( std::make_pair( "Flavour", Branch_Types() ) );	          props["Flavour"].i = 0;
+	props.insert( std::make_pair( "Charge", Branch_Types() ) );	          props["Charge"].f = -999.0;
+	props.insert( std::make_pair( "sigd0PV", Branch_Types() ) );	          props["sigd0PV"].f = -999.0;
+	props.insert( std::make_pair( "Z0SinTheta", Branch_Types() ) );	          props["Z0SinTheta"].f = -999.0;
+	props.insert( std::make_pair( "PID", Branch_Types() ) );	          props["PID"].c = 0;
+	props.insert( std::make_pair( "LooseIsolated", Branch_Types() ) );	  props["LooseIsolated"].c = 0;
+	props.insert( std::make_pair( "Isolated", Branch_Types() ) );	          props["Isolated"].c = 0;
+	props.insert( std::make_pair( "TrackIsoOverPt", Branch_Types() ) );	  props["TrackIsoOverPt"].f = -1.0;
+	props.insert( std::make_pair( "CaloIsoOverPt", Branch_Types() ) );	  props["CaloIsoOverPt"].f = -1.0;
+	props.insert( std::make_pair( "ptVarcone20", Branch_Types() ) );	  props["ptVarcone20"].f = -1.0;
+	props.insert( std::make_pair( "ptVarcone30", Branch_Types() ) );	  props["ptVarcone30"].f = -1.0;
+	props.insert( std::make_pair( "topoEtcone20", Branch_Types() ) );	  props["topoEtcone20"].f = -1.0;
+	props.insert( std::make_pair( "PromptLeptonIso_TagWeight", Branch_Types() ) ); props["PromptLeptonIso_TagWeight"].f = 999.0;
+	props.insert( std::make_pair( "ChargeIDBDTLoose", Branch_Types() ) );	  props["ChargeIDBDTLoose"].f = -999.0;
+	props.insert( std::make_pair( "ChargeIDBDTMedium", Branch_Types() ) );    props["ChargeIDBDTMedium"].f = -999.0;
+	props.insert( std::make_pair( "ChargeIDBDTTight", Branch_Types() ) );	  props["ChargeIDBDTTight"].f = -999.0;
+	props.insert( std::make_pair( "isTightSelected", Branch_Types() ) );	  props["isTightSelected"].c = 0;
+	props.insert( std::make_pair( "isTightSelectedMVA", Branch_Types() ) );   props["isTightSelectedMVA"].c = 0;
+	props.insert( std::make_pair( "isTrigMatch", Branch_Types() ) );	  props["isTrigMatch"].c = 0;
+	props.insert( std::make_pair( "isTrigMatchDLT", Branch_Types() ) );	  props["isTrigMatchDLT"].c = 0;
+	props.insert( std::make_pair( "Rank3L", Branch_Types() ) );	          props["Rank3L"].i = 999; /** Lepton ranking for 3L:
+													       0 : the lepton which is OS wrt. the other two
+													       1 : the lepton closets in DR to 0
+													       2 : the other lepton
+													     */
+	props.insert( std::make_pair( "isPrompt", Branch_Types() ) );	          props["isPrompt"].c = 0;
+	props.insert( std::make_pair( "isBrems", Branch_Types() ) );	          props["isBrems"].c = 0;
+	props.insert( std::make_pair( "isFakeLep", Branch_Types() ) );	          props["isFakeLep"].c = 0;
+	props.insert( std::make_pair( "isQMisID", Branch_Types() ) );	          props["isQMisID"].c = 0;
+	props.insert( std::make_pair( "isConvPh", Branch_Types() ) );	          props["isConvPh"].c = 0;
+	props.insert( std::make_pair( "truthType", Branch_Types() ) );	          props["truthType"].i = 0;
+	props.insert( std::make_pair( "truthOrigin", Branch_Types() ) );	  props["truthOrigin"].i = 0;
+	props.insert( std::make_pair( "isTagSLT", Branch_Types() ) );	          props["isTagSLT"].c = 0;
+	props.insert( std::make_pair( "isTagDLT", Branch_Types() ) );	          props["isTagDLT"].c = 0;
+	props.insert( std::make_pair( "deltaRClosestJet", Branch_Types() ) );	  props["deltaRClosestJet"].f = -1.0;
+	props.insert( std::make_pair( "deltaRClosestBJet", Branch_Types() ) );    props["deltaRClosestBJet"].f = -1.0;
+	props.insert( std::make_pair( "massClosestJet", Branch_Types() ) );	  props["massClosestJet"].f = -1.0;
+	props.insert( std::make_pair( "massClosestBJet", Branch_Types() ) );	  props["massClosestBJet"].f = -1.0;
+	props.insert( std::make_pair( "SFIDLoose", Branch_Types() ) );	          props["SFIDLoose"].f = 1.0;
+	props.insert( std::make_pair( "SFIDTight", Branch_Types() ) );	          props["SFIDTight"].f = 1.0;
+	props.insert( std::make_pair( "SFTrigLoose", Branch_Types() ) );	  props["SFTrigLoose"].f = 1.0;
+	props.insert( std::make_pair( "SFTrigTight", Branch_Types() ) );	  props["SFTrigTight"].f = 1.0;
+	props.insert( std::make_pair( "EffTrigLoose", Branch_Types() ) );	  props["EffTrigLoose"].f = 1.0;
+	props.insert( std::make_pair( "EffTrigTight", Branch_Types() ) );	  props["EffTrigTight"].f = 1.0;
+	props.insert( std::make_pair( "SFIsoLoose", Branch_Types() ) );	          props["SFIsoLoose"].f = 1.0;
+	props.insert( std::make_pair( "SFIsoTight", Branch_Types() ) );	          props["SFIsoTight"].f = 1.0;
+	props.insert( std::make_pair( "SFReco", Branch_Types() ) );	          props["SFReco"].f = 1.0;
+	props.insert( std::make_pair( "SFTTVA", Branch_Types() ) );	          props["SFTTVA"].f = 1.0;
+	props.insert( std::make_pair( "SFObjLoose", Branch_Types() ) );	          props["SFObjLoose"].f = 1.0;
+	props.insert( std::make_pair( "SFObjTight", Branch_Types() ) );	          props["SFObjTight"].f = 1.0;
 
-    float SFIDLoose;
-    float SFIDTight;
-    float SFTrigLoose;
-    float SFTrigTight;
-    float EffTrigLoose;
-    float EffTrigTight;
-    float SFIsoLoose;
-    float SFIsoTight;
-    float SFReco;
-    float SFTTVA;
-    float SFObjLoose;
-    float SFObjTight;
+    };
+
+    std::map< std::string, MiniNTupMaker::Branch_Types > props;
 
   };
 
   struct SorterEta {
     bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
-       return  fabs(lep0.get()->eta) > fabs(lep1.get()->eta); /* sort in descending order of |eta| */
+       return  fabs(lep0.get()->props["Eta"].f) > fabs(lep1.get()->props["Eta"].f); /* sort in descending order of |eta| */
     }
   };
 
   struct SorterPt {
     bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
-       return  lep0.get()->pt > lep1.get()->pt; /* sort in descending order of pT (get highest pT first) */
+       return  lep0.get()->props["Pt"].f > lep1.get()->props["Pt"].f; /* sort in descending order of pT (get highest pT first) */
     }
   };
 
   struct SorterTrackIsoOverPt {
     bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
-       if ( lep0.get()->trackisooverpt == lep1.get()->trackisooverpt ) { /* if they have same iso (aka 0 ), use pT as criterion */
-         return lep0.get()->pt > lep1.get()->pt;
+       if ( lep0.get()->props["TrackIsoOverPt"].f == lep1.get()->props["TrackIsoOverPt"].f ) { /* if they have same iso (aka 0 ), use pT as criterion */
+         return lep0.get()->props["Pt"].f > lep1.get()->props["Pt"].f;
        }
-       return  lep0.get()->trackisooverpt < lep1.get()->trackisooverpt; /* sort in ascending order of trackisooverpt (get more isolated first) */
+       return  lep0.get()->props["TrackIsoOverPt"].f < lep1.get()->props["TrackIsoOverPt"].f; /* sort in ascending order of trackisooverpt (get more isolated first) */
     }
   };
 
   struct SorterDistanceClosestBJet {
     bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
-       return  lep0.get()->deltaRClosestBJet > lep1.get()->deltaRClosestBJet; /* sort in descending order of DeltaR(lep, closest bjet) (get lep w/ maximal distance first) */
+       return  lep0.get()->props["deltaRClosestBJet"].f > lep1.get()->props["deltaRClosestBJet"].f; /* sort in descending order of DeltaR(lep, closest bjet) (get lep w/ maximal distance first) */
     }
   };
 
   struct SorterMassClosestBJet {
     bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
-       return  lep0.get()->massClosestBJet > lep1.get()->massClosestBJet; /* sort in descending order of M(lep, closest bjet) (get lep w/ maximal mass w/ closest bjet first --> assume it's less likely to be fake) */
+       return  lep0.get()->props["massClosestBJet"].f > lep1.get()->props["massClosestBJet"].f; /* sort in descending order of M(lep, closest bjet) (get lep w/ maximal mass w/ closest bjet first --> assume it's less likely to be fake) */
     }
   };
 
   struct Sorter3L {
     bool operator() ( const std::shared_ptr<leptonObj>& lep0, const std::shared_ptr<leptonObj>& lep1 ) const {
-       return  lep0.get()->rank3L < lep1.get()->rank3L; /* sort in ascending order of 3L ranking (get lowest rank idx first) */
+       return  lep0.get()->props["Rank3L"].i < lep1.get()->props["Rank3L"].i; /* sort in ascending order of 3L ranking (get lowest rank idx first) */
     }
   };
 
 }
-
 
 
 class HTopMultilepMiniNTupMaker : public xAH::Algorithm
@@ -294,181 +269,12 @@ private:
   Int_t           m_nJets_OR_T;
   Int_t           m_nJets_OR_T_MV2c10_70;
 
-  Float_t	  m_lep_ID_0;
-  Float_t	  m_lep_Pt_0;
-  Float_t	  m_lep_E_0;
-  Float_t	  m_lep_Eta_0;
-  Float_t	  m_lep_Phi_0;
-  Float_t	  m_lep_EtaBE2_0;
-  Float_t	  m_lep_sigd0PV_0;
-  Float_t	  m_lep_Z0SinTheta_0;
-  Char_t	  m_lep_isTightLH_0;
-  Char_t	  m_lep_isMediumLH_0;
-  Char_t	  m_lep_isLooseLH_0;
-  Char_t	  m_lep_isTight_0;
-  Char_t	  m_lep_isMedium_0;
-  Char_t	  m_lep_isLoose_0;
-  Int_t 	  m_lep_isolationLooseTrackOnly_0;
-  Int_t 	  m_lep_isolationLoose_0;
-  Int_t 	  m_lep_isolationFixedCutTight_0;
-  Int_t 	  m_lep_isolationFixedCutTightTrackOnly_0;
-  Int_t 	  m_lep_isolationFixedCutLoose_0;
-  Float_t	  m_lep_topoEtcone20_0;
-  Float_t	  m_lep_ptVarcone20_0;
-  Float_t	  m_lep_ptVarcone30_0;
-  Char_t	  m_lep_isTrigMatch_0;
-  Char_t	  m_lep_isTrigMatchDLT_0;
-  Char_t	  m_lep_isPrompt_0;
-  Char_t	  m_lep_isBrems_0;
-  Char_t	  m_lep_isFakeLep_0;
-  Char_t	  m_lep_isQMisID_0;
-  Char_t	  m_lep_isConvPh_0;
-  Int_t	          m_lep_truthType_0;
-  Int_t	          m_lep_truthOrigin_0;
-  Float_t	  m_lep_SFIDLoose_0;
-  Float_t	  m_lep_SFIDTight_0;
-  Float_t	  m_lep_SFTrigLoose_0;
-  Float_t	  m_lep_SFTrigTight_0;
-  Float_t         m_lep_EffTrigLoose_0;
-  Float_t         m_lep_EffTrigTight_0;
-  Float_t	  m_lep_SFIsoLoose_0;
-  Float_t	  m_lep_SFIsoTight_0;
-  Float_t	  m_lep_SFReco_0;
-  Float_t	  m_lep_SFTTVA_0;
-  Float_t	  m_lep_SFObjLoose_0;
-  Float_t	  m_lep_SFObjTight_0;
+  std::vector<std::string> m_LEP_INPUT_VARS  = {"ID/F","Pt/F","E/F","Eta/F","Phi/F","EtaBE2/F","sigd0PV/F","Z0SinTheta/F","isTightLH/B","isMediumLH/B","isLooseLH/B","isTight/B","isMedium/B","isLoose/B","isolationLooseTrackOnly/I","isolationLoose/I","isolationFixedCutTight/I","isolationFixedCutTightTrackOnly/I","isolationFixedCutLoose/I","topoEtcone20/F","ptVarcone20/F","ptVarcone30/F","isTrigMatch/B","isTrigMatchDLT/B","isPrompt/B","isBrems/B","isFakeLep/B","isQMisID/B","isConvPh/B","truthType/I","truthOrigin/I","SFIDLoose/F","SFIDTight/F","SFTrigLoose/F","SFTrigTight/F","EffTrigLoose/F","EffTrigTight/F","SFIsoLoose/F","SFIsoTight/F","SFReco/F","SFTTVA/F","SFObjLoose/F","SFObjTight/F"};
 
-  Float_t	  m_lep_ID_1;
-  Float_t	  m_lep_Pt_1;
-  Float_t	  m_lep_E_1;
-  Float_t	  m_lep_Eta_1;
-  Float_t	  m_lep_Phi_1;
-  Float_t	  m_lep_EtaBE2_1;
-  Float_t	  m_lep_sigd0PV_1;
-  Float_t	  m_lep_Z0SinTheta_1;
-  Char_t	  m_lep_isTightLH_1;
-  Char_t	  m_lep_isMediumLH_1;
-  Char_t	  m_lep_isLooseLH_1;
-  Char_t	  m_lep_isTight_1;
-  Char_t	  m_lep_isMedium_1;
-  Char_t	  m_lep_isLoose_1;
-  Int_t 	  m_lep_isolationLooseTrackOnly_1;
-  Int_t 	  m_lep_isolationLoose_1;
-  Int_t 	  m_lep_isolationFixedCutTight_1;
-  Int_t 	  m_lep_isolationFixedCutTightTrackOnly_1;
-  Int_t 	  m_lep_isolationFixedCutLoose_1;
-  Float_t	  m_lep_topoEtcone20_1;
-  Float_t	  m_lep_ptVarcone20_1;
-  Float_t	  m_lep_ptVarcone30_1;
-  Char_t	  m_lep_isTrigMatch_1;
-  Char_t	  m_lep_isTrigMatchDLT_1;
-  Char_t	  m_lep_isPrompt_1;
-  Char_t	  m_lep_isBrems_1;
-  Char_t	  m_lep_isFakeLep_1;
-  Char_t	  m_lep_isQMisID_1;
-  Char_t	  m_lep_isConvPh_1;
-  Int_t	          m_lep_truthType_1;
-  Int_t	          m_lep_truthOrigin_1;
-  Float_t	  m_lep_SFIDLoose_1;
-  Float_t	  m_lep_SFIDTight_1;
-  Float_t	  m_lep_SFTrigLoose_1;
-  Float_t	  m_lep_SFTrigTight_1;
-  Float_t         m_lep_EffTrigLoose_1;
-  Float_t         m_lep_EffTrigTight_1;
-  Float_t	  m_lep_SFIsoLoose_1;
-  Float_t	  m_lep_SFIsoTight_1;
-  Float_t	  m_lep_SFReco_1;
-  Float_t	  m_lep_SFTTVA_1;
-  Float_t	  m_lep_SFObjLoose_1;
-  Float_t	  m_lep_SFObjTight_1;
-
-  Float_t	  m_lep_ID_2;
-  Float_t	  m_lep_Pt_2;
-  Float_t	  m_lep_E_2;
-  Float_t	  m_lep_Eta_2;
-  Float_t	  m_lep_Phi_2;
-  Float_t	  m_lep_EtaBE2_2;
-  Float_t	  m_lep_sigd0PV_2;
-  Float_t	  m_lep_Z0SinTheta_2;
-  Char_t	  m_lep_isTightLH_2;
-  Char_t	  m_lep_isMediumLH_2;
-  Char_t	  m_lep_isLooseLH_2;
-  Char_t	  m_lep_isTight_2;
-  Char_t	  m_lep_isMedium_2;
-  Char_t	  m_lep_isLoose_2;
-  Int_t 	  m_lep_isolationLooseTrackOnly_2;
-  Int_t 	  m_lep_isolationLoose_2;
-  Int_t 	  m_lep_isolationFixedCutTight_2;
-  Int_t 	  m_lep_isolationFixedCutTightTrackOnly_2;
-  Int_t 	  m_lep_isolationFixedCutLoose_2;
-  Float_t	  m_lep_topoEtcone20_2;
-  Float_t	  m_lep_ptVarcone20_2;
-  Float_t	  m_lep_ptVarcone30_2;
-  Char_t	  m_lep_isTrigMatch_2;
-  Char_t	  m_lep_isTrigMatchDLT_2;
-  Char_t	  m_lep_isPrompt_2;
-  Char_t	  m_lep_isBrems_2;
-  Char_t	  m_lep_isFakeLep_2;
-  Char_t	  m_lep_isQMisID_2;
-  Char_t	  m_lep_isConvPh_2;
-  Int_t	          m_lep_truthType_2;
-  Int_t	          m_lep_truthOrigin_2;
-  Float_t	  m_lep_SFIDLoose_2;
-  Float_t	  m_lep_SFIDTight_2;
-  Float_t	  m_lep_SFTrigLoose_2;
-  Float_t	  m_lep_SFTrigTight_2;
-  Float_t         m_lep_EffTrigLoose_2;
-  Float_t         m_lep_EffTrigTight_2;
-  Float_t	  m_lep_SFIsoLoose_2;
-  Float_t	  m_lep_SFIsoTight_2;
-  Float_t	  m_lep_SFReco_2;
-  Float_t	  m_lep_SFTTVA_2;
-  Float_t	  m_lep_SFObjLoose_2;
-  Float_t	  m_lep_SFObjTight_2;
-
-  Float_t	  m_lep_ID_3;
-  Float_t	  m_lep_Pt_3;
-  Float_t	  m_lep_E_3;
-  Float_t	  m_lep_Eta_3;
-  Float_t	  m_lep_Phi_3;
-  Float_t	  m_lep_EtaBE2_3;
-  Float_t	  m_lep_sigd0PV_3;
-  Float_t	  m_lep_Z0SinTheta_3;
-  Char_t	  m_lep_isTightLH_3;
-  Char_t	  m_lep_isMediumLH_3;
-  Char_t	  m_lep_isLooseLH_3;
-  Char_t	  m_lep_isTight_3;
-  Char_t	  m_lep_isMedium_3;
-  Char_t	  m_lep_isLoose_3;
-  Int_t 	  m_lep_isolationLooseTrackOnly_3;
-  Int_t 	  m_lep_isolationLoose_3;
-  Int_t 	  m_lep_isolationFixedCutTight_3;
-  Int_t 	  m_lep_isolationFixedCutTightTrackOnly_3;
-  Int_t 	  m_lep_isolationFixedCutLoose_3;
-  Float_t	  m_lep_topoEtcone20_3;
-  Float_t	  m_lep_ptVarcone20_3;
-  Float_t	  m_lep_ptVarcone30_3;
-  Char_t	  m_lep_isTrigMatch_3;
-  Char_t	  m_lep_isTrigMatchDLT_3;
-  Char_t	  m_lep_isPrompt_3;
-  Char_t	  m_lep_isBrems_3;
-  Char_t	  m_lep_isFakeLep_3;
-  Char_t	  m_lep_isQMisID_3;
-  Char_t	  m_lep_isConvPh_3;
-  Int_t	          m_lep_truthType_3;
-  Int_t	          m_lep_truthOrigin_3;
-  Float_t	  m_lep_SFIDLoose_3;
-  Float_t	  m_lep_SFIDTight_3;
-  Float_t	  m_lep_SFTrigLoose_3;
-  Float_t	  m_lep_SFTrigTight_3;
-  Float_t         m_lep_EffTrigLoose_3;
-  Float_t         m_lep_EffTrigTight_3;
-  Float_t	  m_lep_SFIsoLoose_3;
-  Float_t	  m_lep_SFIsoTight_3;
-  Float_t	  m_lep_SFReco_3;
-  Float_t	  m_lep_SFTTVA_3;
-  Float_t	  m_lep_SFObjLoose_3;
-  Float_t	  m_lep_SFObjTight_3;
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep0_INPUT_branches;
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep1_INPUT_branches;
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep2_INPUT_branches;
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep3_INPUT_branches;
 
   ULong64_t       m_totalEvents;
   Float_t         m_totalEventsWeighted;
@@ -599,38 +405,13 @@ private:
   int       m_nelectrons;
   int       m_nleptons;
 
-  float	    m_lep_PromptLeptonIso_TagWeight_0;
-  float	    m_lep_PromptLeptonIso_TagWeight_1;
-  float	    m_lep_PromptLeptonIso_TagWeight_2;
-  float	    m_lep_ChargeIDBDTLoose_0;
-  float	    m_lep_ChargeIDBDTLoose_1;
-  float	    m_lep_ChargeIDBDTLoose_2;
-  float	    m_lep_ChargeIDBDTMedium_0;
-  float	    m_lep_ChargeIDBDTMedium_1;
-  float	    m_lep_ChargeIDBDTMedium_2;
-  float	    m_lep_ChargeIDBDTTight_0;
-  float	    m_lep_ChargeIDBDTTight_1;
-  float	    m_lep_ChargeIDBDTTight_2;
+  /** Additional lepton flat branches */
 
-  char	    m_lep_isTightSelectedMVA_0;
-  char	    m_lep_isTightSelectedMVA_1;
-  char	    m_lep_isTightSelectedMVA_2;
+  std::vector<std::string> m_LEP_OUTPUT_VARS  = {"PromptLeptonIso_TagWeight/F","ChargeIDBDTLoose/F","ChargeIDBDTMedium/F","ChargeIDBDTTight/F","isTightSelectedMVA/B","isTightSelected/B","deltaRClosestJet/F","deltaRClosestBJet/F"};
 
-  char	    m_lep_isTightSelected_0;
-  char	    m_lep_isTightSelected_1;
-  char	    m_lep_isTightSelected_2;
-
-  float     m_lep_deltaRClosestJet_0;
-  float     m_lep_deltaRClosestJet_1;
-  float     m_lep_deltaRClosestJet_2;
-  float     m_lep_deltaRClosestBJet_0;
-  float     m_lep_deltaRClosestBJet_1;
-  float     m_lep_deltaRClosestBJet_2;
-
-  char	    m_lep_isTrigMatch_SLT_0;
-  char	    m_lep_isTrigMatch_SLT_1;
-  char	    m_lep_isTrigMatch_DLT_0;
-  char	    m_lep_isTrigMatch_DLT_1;
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep0_OUTPUT_branches;
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep1_OUTPUT_branches;
+  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep2_OUTPUT_branches;
 
   char	    m_event_isTrigMatch_DLT;
 
