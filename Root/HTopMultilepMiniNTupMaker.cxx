@@ -577,6 +577,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
       if ( key.compare("Isolated") == 0 )       { property.second.c = ( std::abs(m_lep0_INPUT_branches["ID"].f) == 13 ) ? m_lep0_INPUT_branches["isolationFixedCutTightTrackOnly"].i : m_lep0_INPUT_branches["isolationFixedCutTight"].i; continue; }
       if ( key.compare("TrackIsoOverPt") == 0 ) { property.second.f = ( std::abs(m_lep0_INPUT_branches["ID"].f) == 13 ) ? m_lep0_INPUT_branches["ptKeycone30"].f / m_lep0_INPUT_branches["Pt"].f : m_lep0_INPUT_branches["ptKeycone20"].f / m_lep0_INPUT_branches["Pt"].f; continue; }
       if ( key.compare("CaloIsoOverPt") == 0 )  { property.second.f = ( std::abs(m_lep0_INPUT_branches["ID"].f) == 13 ) ? -1.0 : m_lep0_INPUT_branches["topoEtcone20"].f / m_lep0_INPUT_branches["Pt"].f; continue; }
+      if ( key.compare("isQMisID") == 0 )       { property.second.c = m_lep0_INPUT_branches[key].c; continue; }
 
       if ( m_lep0_INPUT_branches[key].f != -999.0 ) { property.second.f = m_lep0_INPUT_branches[key].f; }
       if ( m_lep0_INPUT_branches[key].c != -1 )     { property.second.c = m_lep0_INPUT_branches[key].c; }
@@ -613,6 +614,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
       if ( key.compare("Isolated") == 0 )       { property.second.c = ( std::abs(m_lep1_INPUT_branches["ID"].f) == 13 ) ? m_lep1_INPUT_branches["isolationFixedCutTightTrackOnly"].i : m_lep1_INPUT_branches["isolationFixedCutTight"].i; continue; }
       if ( key.compare("TrackIsoOverPt") == 0 ) { property.second.f = ( std::abs(m_lep1_INPUT_branches["ID"].f) == 13 ) ? m_lep1_INPUT_branches["ptKeycone30"].f / m_lep1_INPUT_branches["Pt"].f : m_lep1_INPUT_branches["ptKeycone20"].f / m_lep1_INPUT_branches["Pt"].f; continue; }
       if ( key.compare("CaloIsoOverPt") == 0 )  { property.second.f = ( std::abs(m_lep1_INPUT_branches["ID"].f) == 13 ) ? -1.0 : m_lep1_INPUT_branches["topoEtcone20"].f / m_lep1_INPUT_branches["Pt"].f; continue; }
+      if ( key.compare("isQMisID") == 0 )       { property.second.c = m_lep1_INPUT_branches[key].c; continue; }
 
       if ( m_lep1_INPUT_branches[key].f != -999.0 ) { property.second.f = m_lep1_INPUT_branches[key].f; }
       if ( m_lep1_INPUT_branches[key].c != -1 )     { property.second.c = m_lep1_INPUT_branches[key].c; }
@@ -646,6 +648,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 	  if ( key.compare("Isolated") == 0 )       { property.second.c = ( std::abs(m_lep2_INPUT_branches["ID"].f) == 13 ) ? m_lep2_INPUT_branches["isolationFixedCutTightTrackOnly"].i : m_lep2_INPUT_branches["isolationFixedCutTight"].i; continue; }
 	  if ( key.compare("TrackIsoOverPt") == 0 ) { property.second.f = ( std::abs(m_lep2_INPUT_branches["ID"].f) == 13 ) ? m_lep2_INPUT_branches["ptKeycone30"].f / m_lep2_INPUT_branches["Pt"].f : m_lep2_INPUT_branches["ptKeycone20"].f / m_lep2_INPUT_branches["Pt"].f; continue; }
 	  if ( key.compare("CaloIsoOverPt") == 0 )  { property.second.f = ( std::abs(m_lep2_INPUT_branches["ID"].f) == 13 ) ? -1.0 : m_lep2_INPUT_branches["topoEtcone20"].f / m_lep2_INPUT_branches["Pt"].f; continue; }
+	  if ( key.compare("isQMisID") == 0 )       { property.second.c = m_lep2_INPUT_branches[key].c; continue; }
 
 	  if ( m_lep2_INPUT_branches[key].f != -999.0 ) { property.second.f = m_lep2_INPUT_branches[key].f; }
 	  if ( m_lep2_INPUT_branches[key].c != -1 )     { property.second.c = m_lep2_INPUT_branches[key].c; }
@@ -677,6 +680,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 	      if ( key.compare("Isolated") == 0 )       { property.second.c = ( std::abs(m_lep3_INPUT_branches["ID"].f) == 13 ) ? m_lep3_INPUT_branches["isolationFixedCutTightTrackOnly"].i : m_lep3_INPUT_branches["isolationFixedCutTight"].i; continue; }
 	      if ( key.compare("TrackIsoOverPt") == 0 ) { property.second.f = ( std::abs(m_lep3_INPUT_branches["ID"].f) == 13 ) ? m_lep3_INPUT_branches["ptKeycone30"].f / m_lep3_INPUT_branches["Pt"].f : m_lep3_INPUT_branches["ptKeycone20"].f / m_lep3_INPUT_branches["Pt"].f; continue; }
 	      if ( key.compare("CaloIsoOverPt") == 0 )  { property.second.f = ( std::abs(m_lep3_INPUT_branches["ID"].f) == 13 ) ? -1.0 : m_lep3_INPUT_branches["topoEtcone20"].f / m_lep3_INPUT_branches["Pt"].f; continue; }
+	      if ( key.compare("isQMisID") == 0 )       { property.second.c = m_lep3_INPUT_branches[key].c; continue; }
 
 	      if ( m_lep3_INPUT_branches[key].f != -999.0 ) { property.second.f = m_lep3_INPUT_branches[key].f; }
 	      if ( m_lep3_INPUT_branches[key].c != -1 )     { property.second.c = m_lep3_INPUT_branches[key].c; }
