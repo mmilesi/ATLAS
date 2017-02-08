@@ -138,6 +138,7 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 410080,Background,0.0091622,1.0042,1.0,MadGraphPythia8EvtGen_A14NNPDF23_4topSM,tops,4top
 410081,Background,0.0080975,1.2231,1.0,MadGraphPythia8EvtGen_A14NNPDF23_ttbarWW,tops,ttWW
 410501,Background,396.49,1.1391,1.0,PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_nonallhad,tops,ttbar_nonallhad_Pythia8
+410502,Background,249.81,1.5216,1.0,PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_allhad,tops,ttbar_allhad_Pythia8
 410011,Background,43.739,1.0,1.0094,PowhegPythiaEvtGen_P2012_singletop_tchan_lept_top,tops,singlet
 410012,Background,25.778,1.0,1.0193,PowhegPythiaEvtGen_P2012_singletop_tchan_lept_antitop,tops,singlet
 410013,Background,34.009,1.0,1.054,PowhegPythiaEvtGen_P2012_Wt_inclusive_top,tops,tW
