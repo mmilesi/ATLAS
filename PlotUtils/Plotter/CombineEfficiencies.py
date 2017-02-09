@@ -22,11 +22,11 @@ def copyMuon():
   # Real muon eff from T&P (OS, em,me, SLT)
 
   if ( args.triggerMatching == "UNBIASED" ):
-    path_r_mu = "./PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake_REBINNED/"
+    path_r_mu = "./PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA/"
   elif ( args.triggerMatching == "YES_TM" ):
-    path_r_mu = "./PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake_TRIGMATCH_EFF_REBINNED/"
+    path_r_mu = "./PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_TRIGMATCH_EFF/"
   elif ( args.triggerMatching == "NOT_TM" ):
-    path_r_mu = "./PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake_NOT_TRIGMATCH_EFF_REBINNED/"
+    path_r_mu = "./PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_NOT_TRIGMATCH_EFF/"
 
   file_r_mu = TFile(path_r_mu + "LeptonEfficiencies.root")
 
@@ -37,11 +37,11 @@ def copyMuon():
   # Fake muon eff from likelihood (SS, mm, DLT)
 
   if ( args.triggerMatching == "UNBIASED" ) :
-    path_f_mu = "./PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24/"
+    path_f_mu = "./PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA/"
   elif ( args.triggerMatching == "YES_TM" ):
-    path_f_mu = "./PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_TRIGMATCH_EFF/"
+    path_f_mu = "./PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA_TRIGMATCH_EFF/"
   elif ( args.triggerMatching == "NOT_TM" ):
-    path_f_mu = "./PLOTS_25ns_v24/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_NOT_TRIGMATCH_EFF/"
+    path_f_mu = "./PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA_NOT_TRIGMATCH_EFF/"
 
   file_f_mu = TFile(path_f_mu + "LeptonEfficiencies_LH/LH_mumu/LH_efficiencies_fake_mu_mumu.root")
 
@@ -57,21 +57,12 @@ def copyElectron():
 
   # Real electron eff from T&P (OS, em,me, SLT)
 
-  if ( args.triggerMatching == "UNBIASED" ) :
-    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake/"
-    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_REBINNED_1/"
-    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_REBINNED_2/"
-    path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_REBINNED_3/"
+  if ( args.triggerMatching == "UNBIASED" ):
+    path_r_el = "./PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA/"
   elif ( args.triggerMatching == "YES_TM" ):
-    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_TRIGMATCH_EFF/"
-    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_TRIGMATCH_EFF_REBINNED_1/"
-    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_TRIGMATCH_EFF_REBINNED_2/"
-    path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_TRIGMATCH_EFF_REBINNED_3/"
+    path_r_el = "./PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_TRIGMATCH_EFF/"
   elif ( args.triggerMatching == "NOT_TM" ):
-    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_NOT_TRIGMATCH_EFF/"
-    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_NOT_TRIGMATCH_EFF_REBINNED_1/"
-    #path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_NOT_TRIGMATCH_EFF_REBINNED_2/"
-    path_r_el = "./PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake_NOT_TRIGMATCH_EFF_REBINNED_3/"
+    path_r_el = "./PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_NOT_TRIGMATCH_EFF/"
 
   file_r_el = TFile(path_r_el + "LeptonEfficiencies.root")
 

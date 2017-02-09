@@ -57,6 +57,7 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
   m_useEtaParametrisation   = false;
   m_useTrigMatchingInfo     = false;
   m_useScaledFakeEfficiency = false;
+  m_useCutBasedLep          = false;
   m_useTEfficiency          = false;
 
   m_systematics_list        = "Stat";
@@ -178,10 +179,16 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("isSS01",                                  &m_isSS01);
   m_inputNTuple->SetBranchAddress ("dilep_type",  			      &m_dilep_type);
   m_inputNTuple->SetBranchAddress ("trilep_type",  			      &m_trilep_type);
+
   m_inputNTuple->SetBranchAddress ("is_T_T",				      &m_is_T_T);
   m_inputNTuple->SetBranchAddress ("is_T_AntiT",			      &m_is_T_AntiT);
   m_inputNTuple->SetBranchAddress ("is_AntiT_T",			      &m_is_AntiT_T);
   m_inputNTuple->SetBranchAddress ("is_AntiT_AntiT",			      &m_is_AntiT_AntiT);
+
+  m_inputNTuple->SetBranchAddress ("is_TMVA_TMVA",			      &m_is_TMVA_TMVA);
+  m_inputNTuple->SetBranchAddress ("is_TMVA_AntiTMVA",			      &m_is_TMVA_AntiTMVA);
+  m_inputNTuple->SetBranchAddress ("is_AntiTMVA_TMVA",			      &m_is_AntiTMVA_TMVA);
+  m_inputNTuple->SetBranchAddress ("is_AntiTMVA_AntiTMVA",		      &m_is_AntiTMVA_AntiTMVA);
 
   m_inputNTuple->SetBranchAddress ("lep_ID_0",   			      &m_lep_ID_0);
   m_inputNTuple->SetBranchAddress ("lep_Pt_0",  			      &m_lep_Pt_0);
@@ -190,6 +197,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_Phi_0",   			      &m_lep_Phi_0);
   m_inputNTuple->SetBranchAddress ("lep_EtaBE2_0",   			      &m_lep_EtaBE2_0);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_0",   		      &m_lep_isTightSelected_0);
+  m_inputNTuple->SetBranchAddress ("lep_isTightSelectedMVA_0", 		      &m_lep_isTightSelectedMVA_0);
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_0",   		      &m_lep_isTrigMatch_0);
 
   m_inputNTuple->SetBranchAddress ("lep_ID_1",   			      &m_lep_ID_1);
@@ -199,6 +207,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_Phi_1",   			      &m_lep_Phi_1);
   m_inputNTuple->SetBranchAddress ("lep_EtaBE2_1",   			      &m_lep_EtaBE2_1);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_1",   		      &m_lep_isTightSelected_1);
+  m_inputNTuple->SetBranchAddress ("lep_isTightSelectedMVA_1", 		      &m_lep_isTightSelectedMVA_1);
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_1",   		      &m_lep_isTrigMatch_1);
 
   if ( m_isQMisIDBranchIn ) {
@@ -537,7 +546,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   lep0.get()->ID            = m_lep_ID_0;
   lep0.get()->flavour       = abs(m_lep_ID_0);
   lep0.get()->charge        = m_lep_ID_0 / fabs(m_lep_ID_0);
-  lep0.get()->tightselected = m_lep_isTightSelected_0;
+  lep0.get()->tightselected = ( m_useCutBasedLep ) ? m_lep_isTightSelected_0 : m_lep_isTightSelectedMVA_0;
   lep0.get()->trigmatched   = m_lep_isTrigMatch_0; // SLT matching
 
   m_leptons.push_back(lep0);
@@ -550,7 +559,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   lep1.get()->ID            = m_lep_ID_1;
   lep1.get()->flavour       = abs(m_lep_ID_1);
   lep1.get()->charge        = m_lep_ID_1 / fabs(m_lep_ID_1);
-  lep1.get()->tightselected = m_lep_isTightSelected_1;
+  lep1.get()->tightselected = ( m_useCutBasedLep ) ? m_lep_isTightSelected_1 : m_lep_isTightSelectedMVA_1;
   lep1.get()->trigmatched   = m_lep_isTrigMatch_1; // SLT matching
 
   m_leptons.push_back(lep1);
@@ -560,10 +569,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   m_event.get()->trilep_type = m_trilep_type;
   m_event.get()->isSS01      = m_isSS01;
 
-  m_event.get()->TT         = m_is_T_T;
-  m_event.get()->TAntiT     = m_is_T_AntiT;
-  m_event.get()->AntiTT     = m_is_AntiT_T;
-  m_event.get()->AntiTAntiT = m_is_AntiT_AntiT;
+  m_event.get()->TT         = ( m_useCutBasedLep ) ? m_is_T_T : m_is_TMVA_TMVA;
+  m_event.get()->TAntiT     = ( m_useCutBasedLep ) ? m_is_T_AntiT : m_is_TMVA_AntiTMVA;
+  m_event.get()->AntiTT     = ( m_useCutBasedLep ) ? m_is_AntiT_T : m_is_AntiTMVA_TMVA;
+  m_event.get()->AntiTAntiT = ( m_useCutBasedLep ) ? m_is_AntiT_AntiT : m_is_AntiTMVA_AntiTMVA;
 
   // ------------------------------------------------------------------------
 
