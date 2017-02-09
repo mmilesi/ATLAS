@@ -28,7 +28,7 @@
 namespace MiniNTupMaker {
 
   struct Branch_Types {
-      Branch_Types() : f(-999.0), c(-1), i(-1) {};
+      Branch_Types() : f(-999.0), c(-1), i(-999) {};
       float f;
       char c;
       int i;
@@ -220,11 +220,19 @@ public:
   /** Activate if want to define T&P leptons based on truth matching (NB: do this only on TTBar!)  */
   bool m_useTruthTP;
 
-  /** Activate if want to define T&P leptons as in SUSY SS analysis (different treatment of ambiguous case where both leptons are T & T.M.  */
-  bool m_useSUSYSSTP;
+  /** Activate if want to define T&P leptons in the standard way (same criteria applied on data and MC). This is inspired by what done in the SUSY SS analysis */
+  bool m_useNominalTP;
 
-  /** Choose which criterion to use to solve ambiguous case of both T (TM) leptons in T&P Fake SS CR */
+  /** Choose which criterion to use to solve ambiguous case of both T (TM) leptons in T&P Fake SS CR
+
+      Default is "OF" :
+      -) for electrons, use only OF events where the muon is tagging the event (--> T & T.M.)
+      -) for muons, use SF events, and solve the ambiguity (when necessary) by taking the lowest pT muon as probe
+   */
   std::string m_ambiSolvingCrit;
+
+  /** Choose which tight selection method to use in T&P algorithm: "CutBased" or "MVA". Default is "MVA" */
+  std::string m_lepSelForTP;
 
   /** Activate if want to perform reco jet truth matching */
   bool m_jetTruthMatching;
