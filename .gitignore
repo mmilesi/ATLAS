@@ -21,3 +21,15 @@ output_*
 # Backup noise
 *.bak
 
+# ROOT files
+*.root
+
+# Useless .txt files
+util/*.txt
+Root/*.txt
+HTopMultilepAnalysis/*.txt
+
+# Directories w/ plots and/or NTuples
+PlotUtils/PLOTS_*
+PlotUtils/PlotVault
+PlotUtils/MiniNTup
