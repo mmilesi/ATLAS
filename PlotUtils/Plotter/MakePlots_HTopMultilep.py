@@ -440,7 +440,7 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_SS',			  '( lep_ID_0 * lep_ID_1 > 0 )') )
     vardb.registerCut( Cut('2Lep_OS',			  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
     vardb.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
-    vardb.registerCut( Cut('2Lep_pT',			  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 25e3 )') )
+    vardb.registerCut( Cut('2Lep_pT',			  '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
     vardb.registerCut( Cut('2Lep_pT_MMRates',		  '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
     vardb.registerCut( Cut('2Lep_pT_Relaxed',		  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 10e3 )') )
     vardb.registerCut( Cut('2Lep_SF_Event',		  '( dilep_type == 1 || dilep_type == 3 )') )
@@ -503,8 +503,8 @@ if __name__ == "__main__":
     # Event "tightness"
     # -----------------
 
-    #vardb.registerCut( Cut('TT',      '( is_TMVA_TMVA == 1 )') )
     vardb.registerCut( Cut('TT',      '( lep_isTightSelectedMVA_0 == 1 && lep_isTightSelectedMVA_1 == 1 )') )
+    # vardb.registerCut( Cut('TT',      '( is_TMVA_TMVA == 1 )') )
     vardb.registerCut( Cut('TL',      '( is_TMVA_AntiTMVA == 1 )') )
     vardb.registerCut( Cut('LT',      '( is_AntiTMVA_TMVA == 1 )') )
     vardb.registerCut( Cut('TL_LT',   '( is_TMVA_AntiTMVA == 1 || is_AntiTMVA_TMVA == 1 )') )
@@ -867,7 +867,8 @@ if __name__ == "__main__":
 
         sampleID = ""
         if doMMClosureTest:
-            sampleID = "410000"
+            #sampleID = "410000"
+            sampleID = "410501"
 
         if doMMClosureTest:
 
@@ -1221,6 +1222,9 @@ if __name__ == "__main__":
             # vardb.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
             # vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
 
+            if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
+                vardb.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", binsX = 26, minvalX = 0.0, maxvalX = 2.6, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
+
             if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
                 vardb.registerVar( Variable(shortname = "ElProbeType", latexname = "truthType^{e}", ntuplename = el_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
                 vardb.registerVar( Variable(shortname = "ElProbeOrigin", latexname = "truthOrigin^{e}", ntuplename = el_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
@@ -1333,13 +1337,6 @@ if __name__ == "__main__":
                 cc_list = [ cut.replace('2Lep_NJet_CR','2Lep_NJet_SR') for cut in cc_list ]
             elif "ALLNJ" in args.channel:
                 cc_list = [ cut.replace('2Lep_NJet_CR','2Lep_MinNJet') for cut in cc_list ]
-
-            # Remove electron eta cut if requested
-
-            # if "NOETACUT" in args.channel:
-            #    cc_list = [ cut for cut in cc_list if cut != '2Lep_ElEtaCut' ]
-
-            # Add trigger matching requirement on probe if requested
 
             if "TRIGMATCH_EFF" in args.channel:
             	cc_list.append('2Lep_LepProbeTrigMatched')
@@ -2175,7 +2172,7 @@ if __name__ == "__main__":
             # Creating a file with the observed and expected distributions and systematics.
 
             foutput = TFile(plotname + ".root","RECREATE")
-            if any( v in var.shortname for v in ["Mll01","NJets","ProbePt"] ) and not ( var.typeval in [TH2I,TH2D,TH2F] ):
+            if any( v in var.shortname for v in ["Mll01","NJets","ProbePt","Lep0Pt"] ) and not ( var.typeval in [TH2I,TH2D,TH2F] ):
                 outfile = open(plotname + "_yields.txt", "w")
 
             if args.doSyst and not var.sysvar:
@@ -2257,7 +2254,7 @@ if __name__ == "__main__":
                         histograms_syst[sample+"_"+syst.name+"_dn"].SetLineColor(histcolour[sample])
                         histograms_syst[sample+"_"+syst.name+"_dn"].Write()
 
-                    if any( v in var.shortname for v in ["Mll01","NJets","ProbePt"] ) and not ( var.typeval in [TH2I,TH2D,TH2F] ):
+                    if any( v in var.shortname for v in ["Mll01","NJets","ProbePt","Lep0Pt"] ) and not ( var.typeval in [TH2I,TH2D,TH2F] ):
                         outfile.write("Integral syst: \n")
                         outfile.write("syst %s up:   delta_yields = %.2f \n" %(syst.name,(systup.Integral()-systnom.Integral())))
                         outfile.write("syst %s down: delta_yields = %.2f \n" %(syst.name,(systdown.Integral()-systnom.Integral())))
@@ -2274,7 +2271,7 @@ if __name__ == "__main__":
                 total_syst_up   = math.sqrt(total_syst_up)
                 total_syst_down = math.sqrt(total_syst_down)
 
-                if any( v in var.shortname for v in ["Mll01","NJets","ProbePt"] ) and not ( var.typeval in [TH2I,TH2D,TH2F] ):
+                if any( v in var.shortname for v in ["Mll01","NJets","ProbePt","Lep0Pt"] ) and not ( var.typeval in [TH2I,TH2D,TH2F] ):
                     outfile.write("yields total syst UP: %.2f \n" %(total_syst_up))
                     outfile.write("yields total syst DN: %.2f \n" %(total_syst_down))
                     outfile.write("yields total syst: %.2f \n" %(total_syst))
@@ -2328,7 +2325,7 @@ if __name__ == "__main__":
 
                 outfile_exists = False
 
-                if any( v in var.shortname for v in ["Mll01","NJets","ProbePt"] ) and not ( var.typeval in [TH2I,TH2D,TH2F] ):
+                if any( v in var.shortname for v in ["Mll01","NJets","ProbePt","Lep0Pt"] ) and not ( var.typeval in [TH2I,TH2D,TH2F] ):
 
                     outfile_exists = True
 
@@ -2349,7 +2346,7 @@ if __name__ == "__main__":
                     b = histograms["Expected"].IntegralAndError(0,last_bin_idx_b,err_b)
 
                     Z = (-1,-1)
-                    if b:
+                    if b > 0:
                         Z = calculate_Z( s, b, err_s, err_b, method="SoverSqrtB" )
 
                     print (" ")

@@ -1711,7 +1711,7 @@ class TTHBackgrounds(Background):
 
         def __call__(self, treename='physics', category=None, options={}):
 
-            debugflag = any( proc in self.debugprocs for proc in [self.__class__.__name__,"ALL"])
+            debugflag = any( proc in self.parent.debugprocs for proc in [self.__class__.__name__,"ALL"])
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -2215,7 +2215,7 @@ class TTHBackgrounds(Background):
 
         def __call__(self, treename='physics', category=None, options={}):
 
-            debugflag = any( proc in self.debugprocs for proc in [self.__class__.__name__,"ALL"])
+            debugflag = any( proc in self.parent.debugprocs for proc in [self.__class__.__name__,"ALL"])
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')

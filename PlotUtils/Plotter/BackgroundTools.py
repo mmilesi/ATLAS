@@ -1208,12 +1208,12 @@ class Background:
               gPad.SetRightMargin(0.2)
 	      stack.Draw("COLZ1") # The "1" does not plot empty bins even if there are bins w/ negative weights (in that case ROOT by default forces empty bins to be painted still!). See https://root.cern.ch/doc/master/classTHistPainter.html
 
-              diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
-              diagonal.SetLineStyle(2)
-              diagonal.SetLineColor(kBlack)
-              diagonal.SetLineWidth(2)
-
-              diagonal.Draw("SAME")
+              if var.binsX == var.binsY:
+                  diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
+                  diagonal.SetLineStyle(2)
+                  diagonal.SetLineColor(kBlack)
+                  diagonal.SetLineWidth(2)
+                  diagonal.Draw("SAME")
 
         if bkg:
             if not var.typeval in [TH2I,TH2F,TH2D]:

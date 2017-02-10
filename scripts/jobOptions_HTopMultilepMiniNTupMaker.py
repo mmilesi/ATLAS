@@ -132,8 +132,8 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
                                   #"m_ambiSolvingCrit"     : "Pt",
                                   #"m_ambiSolvingCrit"     : "deltaRClosestBJet",
                                   #"m_ambiSolvingCrit"     : "massClosestBJet",
-                                  #"m_lepSelForTP"          : "MVA",
-                                  "m_lepSelForTP"          : "CutBased",
+                                  "m_lepSelForTP"          : "MVA",
+                                  #"m_lepSelForTP"          : "CutBased",
                                   "m_jetTruthMatching"     : False,
                                 }
 
