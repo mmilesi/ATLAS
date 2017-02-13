@@ -306,6 +306,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
 
   m_outputNTuple->tree()->Branch("isSS01",               	&m_isSS01, "isSS01/B");
   m_outputNTuple->tree()->Branch("isSS12",               	&m_isSS12, "isSS12/B");
+
   m_outputNTuple->tree()->Branch("is_T_T",               	&m_is_T_T, "is_T_T/B");
   m_outputNTuple->tree()->Branch("is_T_AntiT",               	&m_is_T_AntiT, "is_T_AntiT/B");
   m_outputNTuple->tree()->Branch("is_AntiT_T",               	&m_is_AntiT_T, "is_AntiT_T/B");
@@ -314,6 +315,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
   m_outputNTuple->tree()->Branch("is_AntiTel_Tmu",      	&m_is_AntiTel_Tmu, "is_AntiTel_Tmu/B");
   m_outputNTuple->tree()->Branch("is_Tmu_AntiTel",      	&m_is_Tmu_AntiTel, "is_Tmu_AntiTel/B");
   m_outputNTuple->tree()->Branch("is_AntiTmu_Tel",      	&m_is_AntiTmu_Tel, "is_AntiTmu_Tel/B");
+
   m_outputNTuple->tree()->Branch("is_TMVA_TMVA",               	&m_is_TMVA_TMVA, "is_TMVA_TMVA/B");
   m_outputNTuple->tree()->Branch("is_TMVA_AntiTMVA",            &m_is_TMVA_AntiTMVA, "is_TMVA_AntiTMVA/B");
   m_outputNTuple->tree()->Branch("is_AntiTMVA_TMVA",            &m_is_AntiTMVA_TMVA, "is_AntiTMVA_TMVA/B");

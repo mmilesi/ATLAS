@@ -257,7 +257,54 @@ class TTHBackgrounds(Background):
                 #('ttH', 'ttH_allhad'),
                 ('ttH', 'ttH_dil_Pythia8'),
                 ('ttH', 'ttH_semilep_Pythia8'),
-                #('ttH', 'ttH_allhad_Pythia8'),
+                ('ttH', 'ttH_allhad_Pythia8'),
+                        ]
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
+
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+
+            weight = None
+            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+
+            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+
+            if TTcut:
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+
+            return sp
+
+
+    class TTBarHSemilep(Process):
+
+        latexname = 't#bar{t} H (semilep)'
+        colour = kBlack
+
+        def base(self, treename='physics', category=None, options={}):
+
+	    # hmass = 300 is the default value if hmass is not in options.
+	    # hmass can be specified in the option "signal" passed to the main plot function in the plotting script
+
+            # hmass = options.get('hmass', '125')
+
+            inputgroup = [
+                #('ttH', 'ttH_semilep'),
+                ('ttH', 'ttH_semilep_Pythia8'),
                         ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -1039,8 +1086,8 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                ('tops', 'ttbar_nonallhad_Pythia8'),
-                #('tops', 'ttbar_nonallhad'),
+                #('tops', 'ttbar_nonallhad_Pythia8'),
+                ('tops', 'ttbar_nonallhad'),
                 #('tops', 'ttbar_dilep'),
                 #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
                 #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
@@ -2199,8 +2246,8 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                    ('tops', 'ttbar_nonallhad_Pythia8'),
-                    #('tops', 'ttbar_nonallhad'),
+                    #('tops', 'ttbar_nonallhad_Pythia8'),
+                    ('tops', 'ttbar_nonallhad'),
                     #('tops', 'ttbar_dilep'),
                     #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
                     #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
