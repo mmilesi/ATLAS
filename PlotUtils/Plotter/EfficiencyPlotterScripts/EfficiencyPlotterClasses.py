@@ -301,6 +301,10 @@ class MultiPlot:
 
     def makeMultiPlot( self, savePath, saveName ):
 
+        if not os.path.exists(savePath):
+            print("Creating directory: {0}".format(savePath))
+            os.makedirs(savePath)
+
         tokens = saveName.split('_')
 
         c = TCanvas("c_"+tokens[0]+"_"+tokens[1],"Efficiency",50,50,1300,800)

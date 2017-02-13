@@ -23,21 +23,29 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter_v26
 
+    if False:
+
+        EfficiencyPlotter_v26.plotRealElectron()
+        EfficiencyPlotter_v26.plotRealMuon()
+        EfficiencyPlotter_v26.plotFakeElectron()
+        EfficiencyPlotter_v26.plotFakeMuon()
+
+        EfficiencyPlotter_v26.plotRealElectron_CutBased()
+        EfficiencyPlotter_v26.plotRealMuon_CutBased()
+        EfficiencyPlotter_v26.plotFakeElectron_CutBased()
+        EfficiencyPlotter_v26.plotFakeMuon_CutBased()
+
+        # EfficiencyPlotter_v26.plotProbeElectronAssignEff_MVA()
+        # EfficiencyPlotter_v26.plotProbeElectronAssignEff_CutBased()
+
+    import EfficiencyPlotter_v26_VS_v24_ElNoIso
+
     if True:
 
-        # EfficiencyPlotter_v26.plotRealElectron()
-        # EfficiencyPlotter_v26.plotRealMuon()
-        # EfficiencyPlotter_v26.plotFakeElectron()
-        # EfficiencyPlotter_v26.plotFakeMuon()
-
-        # EfficiencyPlotter_v26.plotRealElectron_CutBased()
-        # EfficiencyPlotter_v26.plotRealMuon_CutBased()
-        # EfficiencyPlotter_v26.plotFakeElectron_CutBased()
-        # EfficiencyPlotter_v26.plotFakeMuon_CutBased()
-
-        EfficiencyPlotter_v26.plotProbeElectronAssignEff_MVA()
-        EfficiencyPlotter_v26.plotProbeElectronAssignEff_CutBased()
-
+        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealElectron()
+        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealMuon()
+        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron()
+        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeMuon()
 
     import TypeAndOriginPlots
 

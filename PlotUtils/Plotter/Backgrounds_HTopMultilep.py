@@ -2321,8 +2321,8 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                    ('tops', 'ttbar_nonallhad_Pythia8'),
-                    #('tops', 'ttbar_nonallhad'),
+                    #('tops', 'ttbar_nonallhad_Pythia8'),
+                    ('tops', 'ttbar_nonallhad'),
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -2512,8 +2512,8 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                    ('tops', 'ttbar_nonallhad_Pythia8'),
-                    #('tops', 'ttbar_nonallhad'),
+                    #('tops', 'ttbar_nonallhad_Pythia8'),
+                    ('tops', 'ttbar_nonallhad'),
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))

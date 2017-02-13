@@ -727,9 +727,9 @@ if __name__ == "__main__":
         #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
 
     if doMMSidebands:
-        #vardb.registerVar( Variable(shortname = 'MMWeight', latexname = 'MM weight', ntuplename = 'MMWeight', bins = 50, minval = -0.5, maxval = 0.5) )
-        #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 9, minval = 25.0, maxval = 205.0,) )
-        vardb.registerVar( Variable(shortname = 'Lep0TM_VS_Lep1TM', latexnameX = 'lead lep TM', latexnameY = '2nd lead lep TM', ntuplename = 'lep_isTrigMatch_1:lep_isTrigMatch_0', bins = 2, minval = -0.5, maxval = 1.5, typeval = TH2F) )
+        vardb.registerVar( Variable(shortname = 'MMWeight', latexname = 'MM weight', ntuplename = 'MMWeight', bins = 50, minval = -0.5, maxval = 0.5) )
+        # vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 9, minval = 25.0, maxval = 205.0,) )
+        # vardb.registerVar( Variable(shortname = 'Lep0TM_VS_Lep1TM', latexnameX = 'lead lep TM', latexnameY = '2nd lead lep TM', ntuplename = 'lep_isTrigMatch_1:lep_isTrigMatch_0', bins = 2, minval = -0.5, maxval = 1.5, typeval = TH2F) )
         if "HIGHNJ" in args.channel:
             vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "LOWNJ" in args.channel:
@@ -1941,7 +1941,7 @@ if __name__ == "__main__":
 
         if "CLOSURE" in args.channel:
             ttH.signals     = []
-            ttH.observed    = ['Observed']
+            ttH.observed    = [] # ['Observed']
             ttH.backgrounds = ['TTBar']
 
     if doDataMCCR:
@@ -1971,8 +1971,8 @@ if __name__ == "__main__":
         if doMM:
             ttH.signals     = [] # ['FakesClosureTHETA']
             ttH.observed    = ['TTBar']
-            ttH.backgrounds = ['TTBar'] # ['FakesClosureMM']
-            ttH.debugprocs  = ['TTBar'] #,'FakesClosureMM']
+            ttH.backgrounds = ['FakesClosureMM']
+            ttH.debugprocs  = ['TTBar','FakesClosureMM']
         elif doFF:
             ttH.signals     = []
             ttH.observed    = ['TTBar']
