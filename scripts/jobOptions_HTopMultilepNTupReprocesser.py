@@ -7,7 +7,8 @@ sys.path.insert(0, os.environ['ROOTCOREBIN']+"/user_scripts/HTopMultilepAnalysis
 c = xAH_config()
 
 event_branches = ["EventNumber","RunNumber","mc_channel_number","isSS01","dilep_type","trilep_type",
-                  "is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT"
+                  "is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT",
+                  "is_TMVA_TMVA","is_TMVA_AntiTMVA","is_AntiTMVA_TMVA","is_AntiTMVA_AntiTMVA",
                   ]
 
 lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0","lep_isTightSelectedMVA_0","lep_isTrigMatch_0",
@@ -98,7 +99,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_useCutBasedLep"             : False,
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonCutBased_410501",
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonCutBased_410000",
-                                    #"m_useCutBasedLep"            : True,
+                                    #"m_useCutBasedLep"             : True,
                                     #
                                     # ------------------------------------------------------------
                                     #
@@ -120,7 +121,7 @@ ntuplesvc = ROOT.EL.NTupleSvc(HTopMultilepNTupReprocesserDict["m_outputNTupStrea
 
 # Copy ALL branches over from the input TTree
 
-print("Copying branches from input TTree to output:")
+print("Copying all branches from input TTree to output...")
 ntuplesvc.copyBranch(".*")
 
 # Add the algorithms to the job.

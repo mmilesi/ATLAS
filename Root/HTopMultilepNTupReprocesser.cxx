@@ -147,11 +147,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   Info("changeInput()", "Calling changeInput. Now reading file : %s", wk()->inputFile()->GetName() );
 
   // Get the pointer to the main input TTree
-  //
+
   m_inputNTuple = wk()->tree();
 
   // Check content of input tree
-  //
+
   TObjArray* branches = m_inputNTuple->GetListOfBranches();
   int nbranches = branches->GetEntriesFast();
   for ( int idx(0); idx < nbranches; ++idx ) {
@@ -172,7 +172,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   ANA_CHECK( this->enableSelectedBranches() );
 
   // Connect the branches of the input tree to the algorithm members
-  //
+
   m_inputNTuple->SetBranchAddress ("EventNumber",   			      &m_EventNumber);
   m_inputNTuple->SetBranchAddress ("RunNumber",   			      &m_RunNumber);
   m_inputNTuple->SetBranchAddress ("mc_channel_number",                       &m_mc_channel_number);
@@ -686,23 +686,23 @@ EL::StatusCode HTopMultilepNTupReprocesser :: enableSelectedBranches ()
   }
 
   // Firstly, disable all branches
-  //
+
   m_inputNTuple->SetBranchStatus ("*", 0);
 
   // Parse input list, split by comma, and put into a vector
-  //
+
   std::vector<std::string> branch_vec;
   ANA_CHECK( this->tokenize( ',', branch_vec, m_inputBranches ) );
 
   // Re-enable only the branches we are going to use
-  //
+
   Info("enableSelectedBranches()", "Activating branches:\n");
   for ( const auto& branch : branch_vec ) {
 
     if ( !m_isQMisIDBranchIn && branch.find("QMisIDWeight") != std::string::npos ) { continue; }
     if ( !m_isMMBranchIn && branch.find("MMWeight") != std::string::npos )         { continue; }
 
-    std::cout << "SetBranchStatus(" << branch << ", 1)" << std::endl;
+    if ( m_debug ) { std::cout << "SetBranchStatus(" << branch << ", 1)" << std::endl; }
 
     m_inputNTuple->SetBranchStatus (branch.c_str(), 1);
 
@@ -764,8 +764,8 @@ EL::StatusCode HTopMultilepNTupReprocesser ::  readQMisIDRates()
     hist_QMisID_AntiT->SetDirectory(0);
     hist_QMisID_T->SetDirectory(0);
 
-    // fill a map for later usage
-    //
+    // Fill a map for later usage
+
     m_QMisID_hist_map["AntiT"] = hist_QMisID_AntiT;
     m_QMisID_hist_map["T"]     = hist_QMisID_T;
 
@@ -777,11 +777,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
     ANA_CHECK_SET_TYPE (EL::StatusCode);
 
     // If is not a dileptonic event, return
-    //
+
     if ( m_event.get()->dilep_type <= 0 ) { return EL::StatusCode::SUCCESS; }
 
     // If there are no electrons, return
-    //
+
     if ( m_event.get()->dilep_type == 1 ) { return EL::StatusCode::SUCCESS; }
 
     std::shared_ptr<leptonObj> el0;
@@ -795,7 +795,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
     }
 
     // Just a precaution...
-    //
+
     if ( el0 && !( fabs(el0.get()->eta) < 2.5 && el0.get()->pt >= 0.0 ) ) { return EL::StatusCode::SUCCESS; }
     if ( el1 && !( fabs(el1.get()->eta) < 2.5 && el1.get()->pt >= 0.0 ) ) { return EL::StatusCode::SUCCESS; }
 
@@ -822,14 +822,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
     } else {
 
 	// Look at el0 first...
-	//
+
 	if ( el0.get()->tightselected ) {
 	    ANA_CHECK( this->getQMisIDRatesAndError( el0, r0, r0_up, r0_dn, "TIGHT" ) );
 	} else {
 	    ANA_CHECK( this->getQMisIDRatesAndError( el0, r0, r0_up, r0_dn, "ANTI_TIGHT" ) );
 	}
+
 	// .. and now at el1 (if any...otherwise r1 weights will be default)
-	//
+
 	if ( el1 ) {
 	    if (  el1.get()->tightselected ) {
 		ANA_CHECK( this->getQMisIDRatesAndError( el1, r1, r1_up, r1_dn, "TIGHT" ) );
@@ -845,7 +846,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateQMisIDWeights ()
     }
 
     // Finally, store the event weight + (relative) variations
-    //
+
     if ( !( std::isnan(r0) ) && !( std::isnan(r1) ) && !( std::isinf(r0) ) && !( std::isinf(r1) ) ) {
 
         float nominal = ( r0 + r1 - 2.0 * r0 * r1 ) / ( 1.0 - r0 - r1 + 2.0 * r0 * r1 );
@@ -870,7 +871,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getQMisIDRatesAndError( std::share
 {
 
     // Get the 2D histogram from the map
-    //
+
     TH2D* rates_2D(nullptr);
     std::string name_eta(""), name_pt("");
 
@@ -885,7 +886,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getQMisIDRatesAndError( std::share
     }
 
     // Make (eta,pT) projections of the 2D histogram with the rates
-    //
+
     TH1D* proj_eta = rates_2D->ProjectionX(name_eta.c_str());
     TH1D* proj_pt  = rates_2D->ProjectionY(name_pt.c_str());
 
@@ -897,7 +898,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getQMisIDRatesAndError( std::share
     float pt  = lep.get()->pt;
 
     // Loop over the projections, and keep track of the bin number where (x,y) is found
-    //
+
     for ( int eta_bin = 0; eta_bin < proj_eta->GetNbinsX()+1; ++eta_bin  ) {
 
 	this_low_edge = proj_eta->GetXaxis()->GetBinLowEdge(eta_bin);
@@ -948,7 +949,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getQMisIDRatesAndError( std::share
     //
     // QUESTION: Why the hell ROOT has GetBinErrorUp and GetBinErrorLow for TH2 ??
     // They seem to give always the same result...
-    //
+
     r_up = r + rates_2D->GetBinErrorUp( rates_2D->GetBin( eta_bin_nr, pt_bin_nr ) );
     r_dn = r - rates_2D->GetBinErrorUp( rates_2D->GetBin( eta_bin_nr, pt_bin_nr ) );
     r_dn = ( r_dn > 0.0 ) ? r_dn : 0.0;

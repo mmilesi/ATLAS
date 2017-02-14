@@ -42,10 +42,12 @@ if __name__ == "__main__":
 
     if True:
 
-        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealElectron()
-        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealMuon()
-        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron()
-        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeMuon()
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealElectron()
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealMuon()
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron()
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeMuon()
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron_NO_TRUTH()
+        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron_EtaBarrel()
 
     import TypeAndOriginPlots
 

@@ -23,9 +23,9 @@ channels     = ["TwoLepSR(,NO_CORR)","ThreeLepSR","FourLepSR",
                 "TwoLepLowNJetCR(,NO_CORR)", "ThreeLepLowNJetCR",
                 "WZonCR", "WZoffCR", "WZHFonCR", "WZHFoffCR",
                 "ttWCR", "ttZCR","ZSSpeakCR", "DataMC",
-                "MMRates(,DATA,CLOSURE,NO_CORR,TP,LH,TRUTH_TP,SUSY_TP,TRUTH_ON_PROBE,DATAMC,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,HIGHNJ,ALLNJ)",
+                "MMRates(,DATA,CLOSURE,NO_CORR,TP,LH,TRUTH_TP,SUSY_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,HIGHNJ,ALLNJ)",
                 "MMClosureTest(,NO_CORR,HIGHNJ,LOWNJ,ALLNJ,LOWPT)",
-                "CutFlowChallenge(,MM,2LepSS,2LepSS1Tau,3Lep)","MMSidebands(,NO_CORR,CLOSURE,HIGHNJ,LOWNJ,ALLNJ)"]
+                "CutFlowChallenge(,MM,2LepSS,2LepSS1Tau,3Lep)","MMSidebands(,NO_CORR,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ)"]
 
 categories   = ["ALL","ee","mm","OF"]
 
@@ -1088,6 +1088,13 @@ if __name__ == "__main__":
                                  ["2Lep_TagAndProbe_GoodEvent", weight_CFC_MM + " * weight_tag"],
                                      ]
 
+            truth_sub_OS = vardb.getCut('2Lep_TRUTH_PurePromptEvent')
+            truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
+
+            if "NO_TRUTH_SEL" in args.channel:
+                print ("\nWARNING! All truth cuts being deactivated...\n")
+                truth_sub_OS = truth_sub_SS = vardb.getCut("DummyCut")
+
             tot_idx = 0
             for idx, cut in enumerate(basecutlistnames_CFC_MM):
                 prepend = str(idx)
@@ -1098,10 +1105,10 @@ if __name__ == "__main__":
 
             vardb.registerCategory( MyCategory( "A0_RealCR" + "_" + cat_name + "_" + 'OS',                      cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
             vardb.registerCategory( MyCategory( "A1_RealCR" + "_" + cat_name + "_" + 'OS_OF',                   cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
-            vardb.registerCategory( MyCategory( "A2_RealCR" + "_" + cat_name + "_" + 'OS_ProbeElT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeTight','2Lep_TRUTH_PurePromptEvent']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
-            vardb.registerCategory( MyCategory( "A3_RealCR" + "_" + cat_name + "_" + 'OS_ProbeMuT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_MuProbe','2Lep_ProbeTight','2Lep_TRUTH_PurePromptEvent']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" )  ) )
-            vardb.registerCategory( MyCategory( "A4_RealCR" + "_" + cat_name + "_" + 'OS_ProbeElAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeAntiTight','2Lep_TRUTH_PurePromptEvent']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" )  ) )
-            vardb.registerCategory( MyCategory( "A5_RealCR" + "_" + cat_name + "_" + 'OS_ProbeMuAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_MuProbe','2Lep_ProbeAntiTight','2Lep_TRUTH_PurePromptEvent']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            vardb.registerCategory( MyCategory( "A2_RealCR" + "_" + cat_name + "_" + 'OS_ProbeElT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            vardb.registerCategory( MyCategory( "A3_RealCR" + "_" + cat_name + "_" + 'OS_ProbeMuT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_MuProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" )  ) )
+            vardb.registerCategory( MyCategory( "A4_RealCR" + "_" + cat_name + "_" + 'OS_ProbeElAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" )  ) )
+            vardb.registerCategory( MyCategory( "A5_RealCR" + "_" + cat_name + "_" + 'OS_ProbeMuAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_MuProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
 
             vardb.registerCategory( MyCategory( "B0_FakeCR" + "_" + cat_name + "_" + 'SS',                      cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
             vardb.registerCategory( MyCategory( "B1_FakeCR" + "_" + cat_name + "_" + 'SS_Zmin',                 cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
@@ -1109,8 +1116,8 @@ if __name__ == "__main__":
             vardb.registerCategory( MyCategory( "B3_FakeCR" + "_" + cat_name + "_" + 'SS_OF',                   cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
             vardb.registerCategory( MyCategory( "B4_FakeCR" + "_" + cat_name + "_" + 'SS_TagVeryTightSelected', cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
             vardb.registerCategory( MyCategory( "B5_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeEl',              cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected','2Lep_ElProbe']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
-            vardb.registerCategory( MyCategory( "B6_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_ProbeTight','2Lep_TRUTH_ProbeNonPromptEvent']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
-            vardb.registerCategory( MyCategory( "B7_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_ProbeAntiTight','2Lep_TRUTH_ProbeNonPromptEvent']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            vardb.registerCategory( MyCategory( "B6_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            vardb.registerCategory( MyCategory( "B7_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
 
         if "2LepSS" in args.channel:
 
@@ -1236,8 +1243,8 @@ if __name__ == "__main__":
             # vardb.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
             # vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
 
-            if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
-                vardb.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", binsX = 26, minvalX = 0.0, maxvalX = 2.6, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
+            # if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
+            #     vardb.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", binsX = 26, minvalX = 0.0, maxvalX = 2.6, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
 
             if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
                 vardb.registerVar( Variable(shortname = "ElProbeType", latexname = "truthType^{e}", ntuplename = el_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
@@ -1323,7 +1330,7 @@ if __name__ == "__main__":
 		    truth_sub_OS = truth_sub_SS = vardb.getCut("2Lep_TagAndProbe_GoodEvent")
 
             	if args.doQMisIDRate:
-            	    print ("\n\Measuring efficiency/rate for QMisID leptons in MC!\n")
+            	    print ("\nMeasuring efficiency/rate for QMisID leptons in MC!\n")
             	    truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeQMisIDEvent')
 
                 # --------------------------------------------
@@ -1336,6 +1343,11 @@ if __name__ == "__main__":
 
                 probe_T_TM_cut = vardb.getCuts(['2Lep_ProbeTight','2Lep_LepProbeTrigMatched']) # This selects only ambiguous events where also the probe is T & TM
                 probe_ANY_cut  = vardb.getCut('DummyCut')                                      # This applies no selection on the probe (remembering that the tag lepton is always required to be T & TM)
+
+
+            if "NO_TRUTH_SEL" in args.channel:
+                print ("\nWARNING! All truth cuts being deactivated...\n")
+                truth_sub_OS = truth_sub_SS = vardb.getCut("DummyCut")
 
             # ------------------------------------------
             # Define common event weight and common cuts
@@ -1943,6 +1955,7 @@ if __name__ == "__main__":
             ttH.signals     = []
             ttH.observed    = [] # ['Observed']
             ttH.backgrounds = ['TTBar']
+            ttH.debugprocs  = ['TTBar']
 
     if doDataMCCR:
 
@@ -1960,10 +1973,10 @@ if __name__ == "__main__":
 
     if doCFChallenge:
 
-        ttH.signals     = ['TTBarHSemilep']
-        # ttH.observed    = ['Observed']
+        ttH.signals     = [] # ['TTBarHSemilep']
+        # ttH.observed  = ['Observed']
         ttH.observed    = []
-        ttH.backgrounds = ['TTBar','TTBarW']
+        ttH.backgrounds = ['TTBar'] # ,'TTBarW']
         ttH.debugprocs  = ['TTBar']
 
     if doMMClosureTest:
