@@ -198,7 +198,9 @@ class Variable:
         self.minvalY            = kw.get('minvalY',	self.minval)
         self.maxvalY            = kw.get('maxvalY',	self.maxval)
         self.typeval            = kw.get('typeval',     TH1D)
-        self.manualbins         = kw.get('manualbins',  None)
+        self.manualbins         = kw.get('manualbins',   None)
+        self.manualbinsX        = kw.get('manualbinsX',  None)
+        self.manualbinsY        = kw.get('manualbinsY',  None)
         self.logaxis            = kw.get('logaxis',     False)
         self.logaxisX           = kw.get('logaxisX',    False)
         self.basecut            = kw.get('basecut',     None)
@@ -212,6 +214,12 @@ class Variable:
         self.binarray = None
         if self.manualbins:
             self.binarray = array.array('d', self.manualbins)
+        self.binarrayX = None
+        if self.manualbinsX:
+            self.binarrayX = array.array('d', self.manualbinsX)
+        self.binarrayY = None
+        if self.manualbinsY:
+            self.binarrayY = array.array('d', self.manualbinsY)
 
     def ytitle(self, manualbins=None):
         if (manualbins and type(manualbins) is list) or self.typeval is TH1I:
@@ -233,10 +241,20 @@ class Variable:
         if title is None:
             title = self.latexname
 
-        if self.typeval is TH2D or self.typeval is TH2F or self.typeval is TH2I:
-	    h = self.typeval(name, title, self.binsX, self.minvalX, self.maxvalX, self.binsY, self.minvalY, self.maxvalY)
+        if any( self.typeval is t for t in [TH2D,TH2F,TH2I] ):
+
+            if not self.manualbinsX and not self.manualbinsY:
+                h = self.typeval(name, title, self.binsX, self.minvalX, self.maxvalX, self.binsY, self.minvalY, self.maxvalY)
+            elif self.manualbinsX and not self.manualbinsY:
+                h = self.typeval(name, title, len(self.manualbinsX)-1, self.binarrayX, self.binsY, self.minvalY, self.maxvalY)
+            elif not self.manualbinsX and self.manualbinsY:
+                h = self.typeval(name, title, self.binsX, self.minvalX, self.maxvalX, len(self.manualbinsY)-1, self.binarrayY)
+            else:
+                h = self.typeval(name, title, len(self.manualbinsX)-1, self.binarrayX, len(self.manualbinsY)-1, self.binarrayY)
+
             h.GetXaxis().SetTitle(self.latexnameX)
             h.GetYaxis().SetTitle(self.latexnameY)
+
         else :
 	    if category and category.overridebins and self.shortname in category.overridebins:
             	manualbins = category.overridebins[self.shortname]
@@ -257,6 +275,7 @@ class Variable:
             	h = self.typeval(name, title, self.bins, self.minval, self.maxval)
             h.SetXTitle(self.latexname)
             h.SetYTitle(self.ytitle(manualbins=manualbins))
+
         h.Sumw2()
         return h
 
@@ -1208,7 +1227,7 @@ class Background:
               gPad.SetRightMargin(0.2)
 	      stack.Draw("COLZ1") # The "1" does not plot empty bins even if there are bins w/ negative weights (in that case ROOT by default forces empty bins to be painted still!). See https://root.cern.ch/doc/master/classTHistPainter.html
 
-              if var.binsX == var.binsY:
+              if var.binsX == var.binsY and not var.binsX == var.bins:
                   diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
                   diagonal.SetLineStyle(2)
                   diagonal.SetLineColor(kBlack)
