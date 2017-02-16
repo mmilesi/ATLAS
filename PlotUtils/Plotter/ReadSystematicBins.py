@@ -21,7 +21,7 @@ parser.add_argument('--channel', dest='channel', action='store', default='HIGHNJ
 parser.add_argument('--category', dest='category', action='store', default=categories[0], type=str, nargs='+', choices=categories,
                     help='The category chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). If this option is not specified, default will be \'{0}\''.format(categories[0]))
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
-                    help='List of variables to be considered. Use a space-separated list. If unspecified, will consider Njets only.')
+                    help='List of variables to be considered. Use a space-separated list.')
 parser.add_argument('--closure', dest='closure', action='store_true', default=False,
                     help="Check yields for MC closure test")
 parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=luminosities["FULL 2015+2016 DS"],
@@ -106,9 +106,9 @@ def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
                 if nominal.IsBinOverflow(bin):
                     if args.mergeOverflow:
                         print ("\nWARNING! Now checking the overflow bin content. This should not happen since you said in the script opt config that the last bin should already contain also the OFlow...check your input histograms.\n")
-                    print ("\t\t{0}-jets bin (O-FLOW): integral = {1:.3f} +- {2:.3f} (stat) (+ {3:.3f}, - {4:.3f} --> +- {5:.3f}) (syst: {6})".format( bincenter, value_nominal, stat_error, sys_up, sys_dn, simm_sys_unc, sysname ))
+                    print ("\t\t{0}-th bin (O-FLOW), bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat) (+ {4:.3f}, - {5:.3f} --> +- {6:.3f}) (syst: {7})".format( bin, bincenter, value_nominal, stat_error, sys_up, sys_dn, simm_sys_unc, sysname ))
                 else:
-                    print ("\t\t{0}-jets bin: integral = {1:.3f} +- {2:.3f} (stat) (+ {3:.3f}, - {4:.3f} --> +- {5:.3f}) (syst: {6})".format( bincenter, value_nominal, stat_error, sys_up, sys_dn, simm_sys_unc, sysname ))
+                    print ("\t\t{0}-th bin, bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat) (+ {4:.3f}, - {5:.3f} --> +- {6:.3f}) (syst: {7})".format( bin, bincenter, value_nominal, stat_error, sys_up, sys_dn, simm_sys_unc, sysname ))
 
             # Store list of uncertainties for each bin
 
@@ -121,9 +121,9 @@ def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
             if nominal.IsBinOverflow(bin):
                 if args.mergeOverflow:
                         print ("\nWARNING! Now checking the overflow bin content. This should not happen since you said in the script opt config that the last bin should already contain also the OFlow...check your input histograms.\n")
-                print ("\t\t{0}-jets bin (O-FLOW): integral = {1:.3f} +- {2:.3f} (stat)".format( bincenter, value_nominal, stat_error ))
+                print ("\t\t{0}-th bin (O-FLOW), bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat)".format( bin, bincenter, value_nominal, stat_error ))
             else:
-                print ("\t\t{0}-jets bin: integral = {1:.3f} +- {2:.3f} (stat)".format( bincenter, value_nominal, stat_error ))
+                print ("\t\t{0}-th bin, bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat)".format( bin, bincenter, value_nominal, stat_error ))
 
     integral_stat_error = Double(0)
     integral_nominal    = nominal.IntegralAndError(lower,upper-1,integral_stat_error)
@@ -237,7 +237,7 @@ def makeSysPlots( flav, var, MC_hist, MM_hist ):
 
     gROOT.SetBatch(True)
 
-    c = TCanvas("c1","Temp",50,50,800,600)
+    c = TCanvas("c1","Temp",50,50,600,600)
 
     pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
     pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
@@ -248,8 +248,8 @@ def makeSysPlots( flav, var, MC_hist, MM_hist ):
 
     new_MM_hist = MM_hist.Clone(MM_hist.GetName())
 
-    # For MM hist, set the bin error as the sum quad of stat+syst
-    #
+    # For MM hist, set the bin error as the sum in quadrature of stat+syst
+
     for ibin in range(1,new_MM_hist.GetNbinsX()+1):
         new_MM_hist.SetBinError(ibin, g_sq_unc_bins[ibin] )
 
@@ -422,17 +422,8 @@ if __name__ == '__main__':
         # DATA-DRIVEN
         #------------
 
-        if ( "HIGHNJ" in args.channel ):
-
-            region    = "SS_SR_DataDriven"
-	    if not "NJets5j" in var_list:
-	        var_list.append("NJets5j")
-
-        elif ( "LOWNJ" in args.channel ):
-
-            region    = "SS_LowNJetCR_DataDriven"
-	    if not "NJets2j3j4j" in var_list:
-  	        var_list.append("NJets2j3j4j")
+        if ( "HIGHNJ" in args.channel ):  region = "SS_SR_DataDriven"
+        elif ( "LOWNJ" in args.channel ): region = "SS_LowNJetCR_DataDriven"
 
     else:
 
@@ -441,22 +432,11 @@ if __name__ == '__main__':
         #--------------
 
         if ( "LOWNJ" in args.channel ):
-
             region    = "SS_SR_LowJet_DataDriven_Closure"
-	    if not "NJets2j3j4j" in var_list:
-  	        var_list.append("NJets2j3j4j")
-
         elif ( "HIGHNJ" in args.channel ):
-
             region    = "SS_SR_HighJet_DataDriven_Closure"
-	    if not "NJets5j" in var_list:
-	        var_list.append("NJets5j")
-
         elif ( "ALLNJ" in args.channel ):
-
             region    = "SS_SR_AllJet_DataDriven_Closure"
-	    if not "NJets" in var_list:
-	        var_list.append("NJets")
 
     flavour_list = []
     if "ALL" in args.category:
@@ -468,18 +448,18 @@ if __name__ == '__main__':
 
     for var_name in var_list:
 
-	print ("\nVariable: {0}\n".format(var_name))
+	print ("\n\tVariable: {0}\n".format(var_name))
 
     	for flav in flavour_list:
 
     	    clearDicts()
 
-    	    print ("\nFlavour region: {0}\n".format(flav))
+    	    print ("\tFlavour region: {0}\n".format(flav))
 
     	    filename = inputpath + flav + region + "/" + flav + region + "_" + var_name + ".root"
     	    myfile = TFile(filename)
 
-    	    print("Looking at file: {0}".format(filename))
+    	    print("\tLooking at file: {0}".format(filename))
 
     	    fakes_nominal = myfile.Get("fakesbkg")
     	    fakes_syst = {}
@@ -488,7 +468,7 @@ if __name__ == '__main__':
     		if not ( "fakesbkg_" in keyname ): continue
 
                 # HACK
-                if "Mu_Pt_Stat_7" in keyname: continue
+                #if "Mu_Pt_Stat_7" in keyname: continue
 
     		keyname = keyname.replace("fakesbkg_","")
     		keyname = keyname.replace("_dn","")
@@ -502,7 +482,7 @@ if __name__ == '__main__':
     		if not fakes_syst.get(keyname):
     		    fakes_syst[keyname] = value
 
-    	    print ("\n\tFakes: \n")
+    	    print ("\tFakes: \n")
 
     	    for sys, sysgroup in fakes_syst.iteritems():
     	       fakes_up   = myfile.Get( "fakesbkg_" + sys + "_up")
@@ -523,7 +503,7 @@ if __name__ == '__main__':
 
     		makeSysPlots(flav,var_name,ttbar_nominal,fakes_nominal)
 
-    		print("\nNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
+    		print("\n\tNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
 
     	    expected_nominal = myfile.Get("expectedbkg")
 
