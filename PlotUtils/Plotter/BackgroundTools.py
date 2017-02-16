@@ -206,6 +206,7 @@ class Variable:
         self.basecut            = kw.get('basecut',     None)
         self.weight             = kw.get('weight',      None)
         self.sysvar             = kw.get('sysvar',      False)
+        self.drawOpt2D          = kw.get('drawOpt2D',   "COLZ1") # The "1" does not plot empty bins even if there are bins w/ negative weights (NB: ROOT by default forces empty bins to be painted if there are negative weights!). See https://root.cern.ch/doc/master/classTHistPainter.html
 
         if '[' in self.latexname and ']' in self.latexname:
             self.unit = self.latexname[self.latexname.index('[')+1:self.latexname.index(']')]
@@ -1222,10 +1223,9 @@ class Background:
 	              stack.GetHistogram().GetXaxis().SetNdivisions(tSum.GetNbinsX())
 	              stack.GetHistogram().GetXaxis().CenterLabels(True)
 	   else:
-	      #stack.Draw('lego1')
 	      set_fancy_2D_style()
               gPad.SetRightMargin(0.2)
-	      stack.Draw("COLZ1") # The "1" does not plot empty bins even if there are bins w/ negative weights (in that case ROOT by default forces empty bins to be painted still!). See https://root.cern.ch/doc/master/classTHistPainter.html
+	      stack.Draw(var.drawOpt2D)
 
               if var.binsX == var.binsY and not var.binsX == var.bins:
                   diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
