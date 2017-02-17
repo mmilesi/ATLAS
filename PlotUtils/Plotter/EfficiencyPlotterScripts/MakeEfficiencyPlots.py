@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter_v26
 
-    if False:
+    if True:
 
         EfficiencyPlotter_v26.plotRealElectron()
         EfficiencyPlotter_v26.plotRealMuon()
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter_v26_VS_v24_ElNoIso
 
-    if True:
+    if False:
 
         # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealElectron()
         # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealMuon()

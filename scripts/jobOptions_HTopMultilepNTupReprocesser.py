@@ -43,27 +43,6 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
                                     # ------------------------------------------------------------
                                     #
-                                    # v21
-                                    #
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21",
-                                    #"m_EFF_YES_TM_dir" 	   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_ProbeTM_25ns_v21",
-                                    #"m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_ProbeNOTTM_25ns_v21",
-				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_TruthTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21",
-				    #
-				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_SLT_SFmuSFel_25ns_v21",
- 				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_DataLikeTP/OutputPlots_MMClosureRates_TagProbe_NoCorr_DLT_SFmuSFel_25ns_v21",
-				    #
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_SLT_25ns_v21/LeptonEfficiencies_LH/LeptonEfficiencies_Files/SF_mu_SF_el",
-				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuSFel_DLT_25ns_v21/LeptonEfficiencies_LH/LeptonEfficiencies_Files/SF_mu_SF_el",
-				    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_SFmuINCLel_DLT_25ns_v21/LeptonEfficiencies_LH/LeptonEfficiencies_Files/SF_mu_INCL_el",
-				    #
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_25ns_v21",
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_25ns_v21",
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_SFmuSFel_25ns_v21_Retry",
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/MMClosure_v21_RightDLTTrigMatching_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_DLT_SFmuSFel_25ns_v21_Retry",
-                                    #
-                                    # ------------------------------------------------------------
-                                    #
                                     # v24
                                     #
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/MMClosure_v24_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_25ns_v24", # Truth-based efficiencies
@@ -95,11 +74,11 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     # v26
                                     #
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonMVA_410501",
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonMVA_410000",
-                                    "m_useCutBasedLep"             : False,
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonCutBased_410501",
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonCutBased_410000",
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonMVA_410000",
                                     #"m_useCutBasedLep"             : True,
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonCutBased_410501",
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonCutBased_410000",
+                                    "m_useCutBasedLep"             : True,
                                     #
                                     # ------------------------------------------------------------
                                     #
@@ -111,7 +90,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #"m_Efficiency_Filename"        : "LeptonEfficiencies_LH.root",
 				    #
                                     "m_doMMClosure"                : True,
-                                    "m_useEtaParametrisation"      : False,
+                                    "m_useEtaParametrisation"      : True,
 				    "m_useTEfficiency"             : False,
                                   }
 

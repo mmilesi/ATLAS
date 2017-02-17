@@ -1055,6 +1055,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 	  for ( const auto& var : variables ) {
 
+	      // Do not look at eta for muons
+
+	      if ( lep.compare("Mu") == 0 && var.compare("Eta") == 0 ) { continue; }
+
 	      std::string sys_append;
 
 	      bool nominal_read(false);
@@ -1064,6 +1068,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 	      n_sysbins = get_object<TH1D>( *file, histname )->GetNbinsX()+1;
 
 	      for ( const auto& sysgroup : systematic_groups ) {
+
+		  // For eta, just consider the nominal case
+
+		  if ( sysgroup.compare("Nominal") != 0 && var.compare("Eta") == 0 ) { continue; }
 
 		  std::cout << "" << std::endl;
 		  Info("readRFEfficiencies()", "Reading inputs for systematic group: ===> %s", sysgroup.c_str() );
@@ -1087,7 +1095,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 			  histname  = eff + "_" + lep + "_" + var + "_Efficiency_"  + rate_type + sys_append;
 
-			  TH1D *hist(nullptr), *hist_YES_TM(nullptr), *hist_NO_TM(nullptr);
+			  TH1D *hist(nullptr), *hist_avg(nullptr), *hist_YES_TM(nullptr), *hist_NO_TM(nullptr);
 			  TEfficiency *teff(nullptr);
 
 			  hist  = get_object<TH1D>( *file,  histname );
@@ -1159,28 +1167,34 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 			  // Calculate average efficiency to normalise (pT * eta) 1D efficiency (ignore this if using pT-only parametrisation).
 			  //
 			  // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
-			  // ---> get the TH1 objects that were used for measuring efficiency directly from the TEfficiency object
+			  // (If using TEfficiency, can get the TH1 objects that were used for measuring efficiency directly from the TEfficiency object.
+			  // Otherwise, the average efficiency histogram must be already in the input file)
 
-			  if ( m_useEtaParametrisation ) {
+			  // Store this only for electrons, as for muons there is no other dependency than on pT.
 
-			    if ( !teff ) {
-			      Error("readRFEfficiencies()", "Need TEfficiency object if using eta parametrisation (THIS WILL CHANGE). Aborting" );
-			      return EL::StatusCode::FAILURE;
-			    }
+			  if ( m_useEtaParametrisation && lep.compare("El") == 0 ) {
 
 			    if ( var.compare("Pt") == 0 ) {
-			    	if ( lep.compare("El") == 0 && eff.compare("Real") == 0 ) {
-			  	    m_el_reff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-			    	}
-			    	if ( lep.compare("El") == 0 && eff.compare("Fake") == 0 ) {
-			  	    m_el_feff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-			    	}
-			    	if ( lep.compare("Mu") == 0 && eff.compare("Real") == 0 ) {
-			  	    m_mu_reff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-			    	}
-			    	if ( lep.compare("Mu") == 0 && eff.compare("Fake") == 0 ) {
-			  	    m_mu_feff_tot[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-			    	}
+
+				if ( !teff ) {
+				    if ( eff.compare("Real") == 0 ) {
+					hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
+					hist_avg->SetDirectory(0);
+					m_el_reff_avg[syskey] = hist_avg->GetBinContent(1);
+				    }
+				    if ( eff.compare("Fake") == 0 ) {
+					hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
+					hist_avg->SetDirectory(0);
+					m_el_feff_avg[syskey] = hist_avg->GetBinContent(1);
+				    }
+				} else {
+				    if ( eff.compare("Real") == 0 ) {
+					m_el_reff_avg[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
+				    }
+				    if ( eff.compare("Fake") == 0 ) {
+					m_el_feff_avg[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
+				    }
+				}
 			    }
 			  }
 
@@ -1391,7 +1405,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
 	    float eff_eta(1.0), eff_eta_err_up(0.0), eff_eta_err_dn(0.0);
 
-	    if ( m_useEtaParametrisation ) {
+	    if ( m_useEtaParametrisation && lep.get()->flavour == 11 ) {
 
 		// Get the number of bins. Use nominal
 
@@ -1419,7 +1433,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
 	        	if ( ( isNominal ) ||
 	        	     ( e != std::stoi(tokens.back() ) ) ||
-	        	     ( ( lep.get()->flavour == 13 )  && ( m_this_syst.find("El") != std::string::npos ) )   ||
 	        	     ( ( lep.get()->flavour == 11 )  && ( m_this_syst.find("Mu") != std::string::npos ) )   ||
 	        	     ( ( type.compare("REAL") == 0 ) && ( m_this_syst.find("Fake") != std::string::npos ) ) ||
 	        	     ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.find("Real") != std::string::npos ) ) ||
@@ -1487,18 +1500,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 	    if ( eff_pt - error_dn > 0 ) { efficiency.at(2) = ( eff_pt - error_dn ); }
 	    else			 { efficiency.at(2) = 0.0; }
 
-	    if ( m_useEtaParametrisation ) {
+	    if ( m_useEtaParametrisation && lep.get()->flavour == 11 ) {
 
-		float eff_tot(1.0);
-		if ( type.compare("REAL") == 0 ) {
-		    eff_tot = ( lep.get()->flavour == 13 ) ? m_mu_reff_tot["Nominal"] : m_el_reff_tot["Nominal"];
-		} else if ( type.compare("FAKE") == 0 ) {
-		    eff_tot = ( lep.get()->flavour == 13 ) ? m_mu_feff_tot["Nominal"] : m_el_feff_tot["Nominal"];
-		}
+		float eff_avg(1.0);
+		if      ( type.compare("REAL") == 0 ) { eff_avg = m_el_reff_avg["Nominal"]; }
+		else if ( type.compare("FAKE") == 0 ) { eff_avg = m_el_feff_avg["Nominal"]; }
 
-		if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tnorm factor = %.3f", eff_tot ); }
+		if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tnormalisation factor (<eff>) = %.3f", eff_avg ); }
 
-		efficiency.at(0) = ( eff_pt * eff_eta ) / eff_tot;
+		efficiency.at(0) = ( eff_pt * eff_eta ) / eff_avg;
 
 		// Assuming  eff_pt,eff_eta are independent, this is the error on the product
 		// ( the constant factor at denominator will be put back later in the def of Efficiency...)
@@ -1509,8 +1519,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		error_up         = sqrt( (eff_eta*eff_pt_err_up)*(eff_eta*eff_pt_err_up) + (eff_pt*eff_eta_err_up)*(eff_pt*eff_eta_err_up) );
 		error_dn         = sqrt( (eff_eta*eff_pt_err_dn)*(eff_eta*eff_pt_err_dn) + (eff_pt*eff_eta_err_dn)*(eff_pt*eff_eta_err_dn) );
 
-		efficiency.at(1) = ( (eff_pt * eff_eta) + error_up ) / eff_tot;
-		if ( (eff_pt * eff_eta) - error_dn > 0 ) { efficiency.at(2) = ( (eff_pt * eff_eta) - error_dn ) / eff_tot;}
+		efficiency.at(1) = ( (eff_pt * eff_eta) + error_up ) / eff_avg;
+		if ( (eff_pt * eff_eta) - error_dn > 0 ) { efficiency.at(2) = ( (eff_pt * eff_eta) - error_dn ) / eff_avg;}
 		else				         { efficiency.at(2) = 0.0; }
 	    }
 

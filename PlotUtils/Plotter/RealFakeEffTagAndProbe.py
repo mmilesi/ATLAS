@@ -1241,6 +1241,8 @@ class RealFakeEffTagAndProbe:
 
     def __save1DProjections__( self, var, hist2Dkey, canvasname, savepath ):
 
+        if "AVG" in hist2Dkey: return
+
         c = TCanvas(canvasname+"_Projections","Projections",50,50,1000,600)
         c.SetFrameFillColor(0)
         c.SetFrameFillStyle(0)
@@ -1254,7 +1256,6 @@ class RealFakeEffTagAndProbe:
         legendx.SetTextSize(0.035)   # Increase entry font size!
         legendx.SetTextFont(42)      # Helvetica
 
-        #legendy = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
         legendy = TLegend(0.45,0.25,0.925,0.55) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
         legendy.SetBorderSize(0)     # no border
         legendy.SetFillStyle(0)      # Legend transparent background
@@ -1405,6 +1406,20 @@ class RealFakeEffTagAndProbe:
                             c.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"."+extension)
 
                         self.__save1DProjections__(var, key, canvas_filename, savepath)
+
+                        c.Clear()
+                        c_avg = c.Clone(c.GetName()+"_AVG")
+                        hist_avg = self.histefficiencies[key+"_AVG"]
+
+                        set_fancy_2D_style()
+                        gPad.SetRightMargin(0.2)
+                        hist_avg.Draw("COLZ1 text")
+
+                        c_avg.Update()
+
+                        for extension in self.extensionlist:
+                            c_avg.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"_AVG."+extension)
+
 
             else:
 

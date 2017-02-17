@@ -248,12 +248,10 @@ private:
   std::map< std::string, std::map< std::string, TEfficiency* > > m_el_teff_map; //!
   std::map< std::string, std::map< std::string, TEfficiency* > > m_mu_teff_map; //!
 
-  /** Normalisation factors for r/f efficiencies (different for each systematic) */
+  /** Normalisation factors (aka, the average efficiency) for r/f efficiencies (different for each systematic) */
 
-  std::map< std::string, float > m_el_reff_tot;
-  std::map< std::string, float > m_el_feff_tot;
-  std::map< std::string, float > m_mu_reff_tot;
-  std::map< std::string, float > m_mu_feff_tot;
+  std::map< std::string, float > m_el_reff_avg;
+  std::map< std::string, float > m_el_feff_avg;
 
 public:
 
