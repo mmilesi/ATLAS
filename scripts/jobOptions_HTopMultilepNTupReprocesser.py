@@ -48,7 +48,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/MMClosure_v24_TruthTP/OutputPlots_MMClosureRates_TruthTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_25ns_v24", # Truth-based efficiencies
                                     #
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies",
-                                    #"m_EFF_YES_TM_dir" 	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies_TRIGMATCH_EFF",
+                                    #"m_EFF_YES_TM_dir" 	   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies_TRIGMATCH_EFF",
                                     #"m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24/CombinedEfficiencies_NOT_TRIGMATCH_EFF",
                                     #
                                     # Removed isolation on baseline electrons
@@ -62,7 +62,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #"m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_1_NOT_TRIGMATCH_EFF",
                                     #
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_2",
-                                    #"m_EFF_YES_TM_dir" 	           : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_2_TRIGMATCH_EFF",
+                                    #"m_EFF_YES_TM_dir" 	   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_2_TRIGMATCH_EFF",
                                     #"m_EFF_NO_TM_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_2_NOT_TRIGMATCH_EFF",
                                     #
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v24_ElNoIso/CombinedEfficiencies_REBINNED_3",
@@ -87,12 +87,11 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    "m_useTrigMatchingInfo"        : False,
 				    #
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
-				    #"m_Efficiency_Filename"        : "LeptonEfficiencies_LH.root",
 				    #
                                     "m_doMMClosure"                : True,
-                                    "m_useEtaParametrisation"      : True,
+                                    "m_useEtaParametrisation"      : False,
 				    "m_useTEfficiency"             : False,
-                                    "m_correlatedMMWeights"        : True,
+                                    "m_correlatedMMWeights"        : False,
                                   }
 
 # Instantiate the NTupleSvc algorithm
