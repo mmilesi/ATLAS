@@ -198,12 +198,15 @@ class Variable:
         self.minvalY            = kw.get('minvalY',	self.minval)
         self.maxvalY            = kw.get('maxvalY',	self.maxval)
         self.typeval            = kw.get('typeval',     TH1D)
-        self.manualbins         = kw.get('manualbins',  None)
+        self.manualbins         = kw.get('manualbins',   None)
+        self.manualbinsX        = kw.get('manualbinsX',  None)
+        self.manualbinsY        = kw.get('manualbinsY',  None)
         self.logaxis            = kw.get('logaxis',     False)
         self.logaxisX           = kw.get('logaxisX',    False)
         self.basecut            = kw.get('basecut',     None)
         self.weight             = kw.get('weight',      None)
         self.sysvar             = kw.get('sysvar',      False)
+        self.drawOpt2D          = kw.get('drawOpt2D',   "COLZ1") # The "1" does not plot empty bins even if there are bins w/ negative weights (NB: ROOT by default forces empty bins to be painted if there are negative weights!). See https://root.cern.ch/doc/master/classTHistPainter.html
 
         if '[' in self.latexname and ']' in self.latexname:
             self.unit = self.latexname[self.latexname.index('[')+1:self.latexname.index(']')]
@@ -212,6 +215,12 @@ class Variable:
         self.binarray = None
         if self.manualbins:
             self.binarray = array.array('d', self.manualbins)
+        self.binarrayX = None
+        if self.manualbinsX:
+            self.binarrayX = array.array('d', self.manualbinsX)
+        self.binarrayY = None
+        if self.manualbinsY:
+            self.binarrayY = array.array('d', self.manualbinsY)
 
     def ytitle(self, manualbins=None):
         if (manualbins and type(manualbins) is list) or self.typeval is TH1I:
@@ -233,10 +242,20 @@ class Variable:
         if title is None:
             title = self.latexname
 
-        if self.typeval is TH2D or self.typeval is TH2F or self.typeval is TH2I:
-	    h = self.typeval(name, title, self.binsX, self.minvalX, self.maxvalX, self.binsY, self.minvalY, self.maxvalY)
+        if any( self.typeval is t for t in [TH2D,TH2F,TH2I] ):
+
+            if not self.manualbinsX and not self.manualbinsY:
+                h = self.typeval(name, title, self.binsX, self.minvalX, self.maxvalX, self.binsY, self.minvalY, self.maxvalY)
+            elif self.manualbinsX and not self.manualbinsY:
+                h = self.typeval(name, title, len(self.manualbinsX)-1, self.binarrayX, self.binsY, self.minvalY, self.maxvalY)
+            elif not self.manualbinsX and self.manualbinsY:
+                h = self.typeval(name, title, self.binsX, self.minvalX, self.maxvalX, len(self.manualbinsY)-1, self.binarrayY)
+            else:
+                h = self.typeval(name, title, len(self.manualbinsX)-1, self.binarrayX, len(self.manualbinsY)-1, self.binarrayY)
+
             h.GetXaxis().SetTitle(self.latexnameX)
             h.GetYaxis().SetTitle(self.latexnameY)
+
         else :
 	    if category and category.overridebins and self.shortname in category.overridebins:
             	manualbins = category.overridebins[self.shortname]
@@ -257,6 +276,7 @@ class Variable:
             	h = self.typeval(name, title, self.bins, self.minval, self.maxval)
             h.SetXTitle(self.latexname)
             h.SetYTitle(self.ytitle(manualbins=manualbins))
+
         h.Sumw2()
         return h
 
@@ -337,7 +357,7 @@ class Cut:
         return Cut(newname, newstr)
 
 class Systematics:
-    def __init__(self, name, treename=None, eventweight=None, process=None, categorytokens=None):
+    def __init__(self, name, treename=None, eventweight=None, process=[], categorytokens=None):
         self.name           = name
         self.treename       = treename
         self.eventweight    = eventweight
@@ -493,15 +513,15 @@ class SubProcess:
         if self.eventweight and  eventweight:
             self.tree.Project('NUM'+cachename, '1.0', '%s * %s * (%s)' % (self.eventweight, eventweight, cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * {4} * ( {5} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, eventweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * {4} * ( {5} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, eventweight, cutstr))
         elif self.eventweight :
             self.tree.Project('NUM'+cachename, '1.0', '%s * (%s)' % (self.eventweight, cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * ( {4} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * ( {4} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, cutstr))
         else:
             self.tree.Project('NUM'+cachename, '1.0', '%s' % (cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * ( {3} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * ( {3} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, cutstr))
         self.numcache[cachename] = h.GetBinContent(1), h.GetBinError(1)
         del h
 
@@ -561,11 +581,11 @@ class SubProcess:
         if self.eventweight:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s * (%s)' % (self.eventweight, cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * ( {4} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * ( {4} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, cutstr))
 	else:
             self.tree.Project('HIST'+cachename, var.ntuplename, '%s' % (cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * ( {3} )\"\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * ( {3} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, cutstr))
 
         h = self.histcache[cachename].Clone()
         h.SetName(self.histcache[cachename].GetName()+str(weight))
@@ -830,13 +850,19 @@ class Background:
                         treename = 'SystematicsUP/' + systematics.treename
                     elif systematicsdirection == 'DOWN':
                         treename = 'SystematicsDOWN/' + systematics.treename
-                if systematics.eventweight and systematics.process == name:
+                if systematics.eventweight and name in systematics.process:
 		    if systematicsdirection == 'UP':
-                        eventweight = systematics.eventweight + 'up'
+                        if type(systematics.eventweight) is str:
+                            eventweight = systematics.eventweight + 'up'
+                        else:
+                            eventweight = 1.0 + systematics.eventweight
                     elif systematicsdirection == 'DOWN':
-                        eventweight = systematics.eventweight + 'dn'
+                        if type(systematics.eventweight) is str:
+                            eventweight = systematics.eventweight + 'dn'
+                        else:
+                            eventweight = 1.0 - systematics.eventweight
 
-        if systematics and (systematics.process == name or not systematics.process):
+        if systematics and (name in systematics.process or not systematics.process):
             options['systematics'] = systematics
             options['systematicsdirection'] = systematicsdirection
         process = self.procmap[name](treename=treename, category=category, options=options)
@@ -1197,17 +1223,16 @@ class Background:
 	              stack.GetHistogram().GetXaxis().SetNdivisions(tSum.GetNbinsX())
 	              stack.GetHistogram().GetXaxis().CenterLabels(True)
 	   else:
-	      #stack.Draw('lego1')
 	      set_fancy_2D_style()
               gPad.SetRightMargin(0.2)
-	      stack.Draw("COLZ1") # The "1" does not plot empty bins even if there are bins w/ negative weights (in that case ROOT by default forces empty bins to be painted still!). See https://root.cern.ch/doc/master/classTHistPainter.html
+	      stack.Draw(var.drawOpt2D)
 
-              diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
-              diagonal.SetLineStyle(2)
-              diagonal.SetLineColor(kBlack)
-              diagonal.SetLineWidth(2)
-
-              diagonal.Draw("SAME")
+              if var.binsX == var.binsY and not var.binsX == var.bins:
+                  diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
+                  diagonal.SetLineStyle(2)
+                  diagonal.SetLineColor(kBlack)
+                  diagonal.SetLineWidth(2)
+                  diagonal.Draw("SAME")
 
         if bkg:
             if not var.typeval in [TH2I,TH2F,TH2D]:

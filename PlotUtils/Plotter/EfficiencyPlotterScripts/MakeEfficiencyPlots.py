@@ -12,55 +12,65 @@ if __name__ == "__main__":
 
     gROOT.SetBatch(True)
 
-    import EfficiencyPlotter, EfficiencyPlotter_ElNoIso, EfficiencyPlotter_ElNoIso_Rebinned_1, EfficiencyPlotter_ElNoIso_Rebinned_2, EfficiencyPlotter_ElNoIso_Rebinned_3
+    import EfficiencyPlotter_v24_ElNoIso
 
+    # Use this one for v24 (has the right binning)
     if False:
-        EfficiencyPlotter.plotFakeElectron()
-        EfficiencyPlotter.plotFakeElectron_anyProbe()
-        EfficiencyPlotter.plotFakeMuon()
-        EfficiencyPlotter.plotRealElectron()
-        EfficiencyPlotter.plotRealMuon()
-        EfficiencyPlotter.plotFakeElectron_diffTagSel()
-        EfficiencyPlotter.plotFakeElectronAssignEff()
+        EfficiencyPlotter_v24_ElNoIso.plotRealElectron()
+        EfficiencyPlotter_v24_ElNoIso.plotRealMuon()
+        EfficiencyPlotter_v24_ElNoIso.plotFakeElectron()
+        EfficiencyPlotter_v24_ElNoIso.plotFakeMuon()
 
-    if False:
-        EfficiencyPlotter_ElNoIso.plotFakeElectron()
-        EfficiencyPlotter_ElNoIso.plotFakeElectron_anyProbe()
-        EfficiencyPlotter_ElNoIso.plotFakeElectron_BaselineElIso()
-        EfficiencyPlotter_ElNoIso.plotRealElectron()
-        EfficiencyPlotter_ElNoIso.plotRealElectron_BaselineElIso()
-
-    if False:
-        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron()
-        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_anyProbe()
-        EfficiencyPlotter_ElNoIso_Rebinned_1.plotFakeElectron_BaselineElIso()
-
-    # Use this one (has the right binning)
-    if False:
-        EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealElectron()
-        EfficiencyPlotter_ElNoIso_Rebinned_2.plotRealMuon()
-        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeElectron()
-        EfficiencyPlotter_ElNoIso_Rebinned_2.plotFakeMuon()
-
-    if False:
-        EfficiencyPlotter_ElNoIso_Rebinned_3.plotFakeElectron()
-
-    import TypeAndOriginPlots
+    import EfficiencyPlotter_v26
 
     if True:
 
+        EfficiencyPlotter_v26.plotRealElectron()
+        EfficiencyPlotter_v26.plotRealMuon()
+        EfficiencyPlotter_v26.plotFakeElectron()
+        EfficiencyPlotter_v26.plotFakeMuon()
+
+        EfficiencyPlotter_v26.plotRealElectron_CutBased()
+        EfficiencyPlotter_v26.plotRealMuon_CutBased()
+        EfficiencyPlotter_v26.plotFakeElectron_CutBased()
+        EfficiencyPlotter_v26.plotFakeMuon_CutBased()
+
+        # EfficiencyPlotter_v26.plotProbeElectronAssignEff_MVA()
+        # EfficiencyPlotter_v26.plotProbeElectronAssignEff_CutBased()
+
+    import EfficiencyPlotter_v26_VS_v24_ElNoIso
+
+    if False:
+
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealElectron()
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealMuon()
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron()
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeMuon()
+        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron_NO_TRUTH()
+        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron_EtaBarrel()
+
+    import TypeAndOriginPlots
+
+    if False:
+
         samples       = ["ttbarbkg","wjetsbkg"]
+        #lepSelections = ["FakeCRElT","FakeCRElL"]
+        flavour       = "Mu"
+        lepSelections = ["FakeCRMuT","FakeCRMuL"]
         jetSelections = ["ALLNJ","LOWNJ","HIGHNJ"]
         prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
-        normFactor    = 1.0#0
+        normFactor    = 0 # 1.0
 
         for s in samples:
             print("\nLooking at sample: {0}".format(s))
-            for js in jetSelections:
-                print("\n\tjet selection: {0}".format(js))
-                for pid in prodIDs:
-                    print("\n\t\tprodID: {0}\n".format(pid))
-                    TypeAndOriginPlots.plotTypeVSOrigin(prodID=pid, sample=s, jetSelection=js, normFactor=normFactor)
-                    TypeAndOriginPlots.plotTypeVSNjets(prodID=pid, sample=s, jetSelection=js, normFactor=normFactor)
-                    TypeAndOriginPlots.plotOriginVSNjets(prodID=pid, sample=s, jetSelection=js, normFactor=normFactor)
+            for ls in lepSelections:
+                print("\n\tlepton selection: {0}".format(ls))
+                for js in jetSelections:
+                    print("\n\tjet selection: {0}".format(js))
+                    for pid in prodIDs:
+                        print("\n\t\tprodID: {0}\n".format(pid))
+                        kwargs = {"flavour":flavour,"prodID":pid, "sample":s, "jetSelection":js, "lepSelection":ls}
+                        TypeAndOriginPlots.plotTypeVSOrigin(normFactor=normFactor, **kwargs)
+                        TypeAndOriginPlots.plotTypeVSNjets(normFactor=normFactor, **kwargs)
+                        TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
 

@@ -32,6 +32,7 @@
 #include "TGraphAsymmErrors.h"
 #include "AtlasStyle.C"
 #include "TLine.h"
+#include "TKey.h"
 
 // -------------------------------------------------------------------------------------
 
@@ -156,7 +157,7 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
      //
 
      // This assumes real efficiencies are fitted first
-     // When fitting fake efficiencies, the previously fitted values for r are used
+     // When fitting fake efficiencies, the previously fitted values for r are fixed
 
      double fitted_r1el(0.0), fitted_r2el(0.0);
      double fitted_r1mu(0.0), fitted_r2mu(0.0);
@@ -462,6 +463,19 @@ void myLikelihood( int& nDim, double* gout, double& result, double par[], int fl
 */
 template<typename T>
 T* get_object( TFile& file, const std::string& name ) {
+
+    std::cout << "" << std::endl;
+    Info("get_object()","Getting TObject: %s from file %s...", name.c_str(), file.GetName() );
+
+    TIter next( file.GetListOfKeys() );
+    TKey* key;
+
+    Info("get_object()","List of keys:");
+    while( key = (TKey*)next() ) {
+	std::cout << "\tname: " << key->GetName() << " - type: " << key->GetClassName() << std::endl;
+    }
+    std::cout << "" << std::endl;
+
     T* obj = dynamic_cast<T*>( file.Get(name.c_str()) );
     if ( !obj ) { throw std::runtime_error("object " + name + " not found"); }
     return obj;
@@ -921,11 +935,11 @@ void LHFitter :: initialise() {
 
   int NCOMP(0);
   if ( m_efficiency == kEfficiency::REAL ) {
-    NCOMP = 1; // RR only
+      NCOMP = 1; // RR only
   }
   if ( m_efficiency == kEfficiency::FAKE ) {
-   //NCOMP = 3; // RF, FR, FF
-    NCOMP = 2; // RF, FR
+      //NCOMP = 3; // RR, RF, FR
+      NCOMP = 2; // RF, FR --> assumes RR are subtracted from MC
   }
 
   std::cout << "" << std::endl;
@@ -975,6 +989,7 @@ void LHFitter :: initialise() {
      if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fel_init, "Printing content of fel_init:" );
      if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_rmu_init, "Printing content of rmu_init:" );
      if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fmu_init, "Printing content of fmu_init:" );
+     //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
      if ( m_efficiency == kEfficiency::REAL ) {
 	 if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RelRel_init,"Printing content of RelRel_init:" );
 	 if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RmuRmu_init,"Printing content of RmuRmu_init:" );
@@ -1161,6 +1176,7 @@ void LHFitter :: initialise() {
   // Set parameters for RR
   // ---------------------
 
+  //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
   if ( m_efficiency == kEfficiency::REAL ) {
 
     g_RR = true;
@@ -1446,6 +1462,7 @@ void LHFitter :: initialise() {
 	    printContainer( g_f2mu_idxs, "Printing content of f2mu_idxs:" );
           }
       }
+      //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
       if ( m_efficiency == kEfficiency::REAL ) {
 	  if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RelRel_idxs, "Printing content of RelRel_idxs:" );
 	  if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RmuRmu_idxs, "Printing content of RmuRmu_idxs:" );
@@ -2467,7 +2484,7 @@ void LHFitter :: getParametersAndErrors() {
   // Get errors for RR
   // ---------------------
 
-  if ( m_efficiency == kEfficiency::REAL ) {
+  if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
 
     if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) {
       for ( auto idx(0); idx < m_RelRel_errs.size(); ++idx ) {
@@ -2890,23 +2907,31 @@ int main( int argc, char **argv ) {
 
     // DO THE FIT ON DATA
 
+    // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
+
     //const std::string tp_path("../blahblah/");
+
+    // Input 2D pT histograms
+
     //const std::string input_path("../blahblah/");
 
     // DO THE FIT ON TTBAR MC
 
-    //const std::string tp_path("../PLOTS_25ns_v24/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_TightTagIsoTagd0sig15_ForceProbeToBeFake/"); // will read *average* efficiency from T&P as an eductaed guess for the fit
-    const std::string tp_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_SUSYTP/OutputPlots_MMClosureRates_SUSYTagProbe_NoCorr_SLT_RealOFmuOFel_FakeSFmuOFel_OF_AMBISOLVING_25ns_v24_ForceProbeToBeFake/");
+    // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
 
-    // DLT
+    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA/");
+    const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_410000/");
+    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonCutBased/");
+    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonCutBased_410000/");
 
-    //const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso/");
-    const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso_TRIGMATCH_EFF/");
-    //const std::string input_path("../PLOTS_25ns_v24_ElNoIso/MMClosure_v24_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_DLT_25ns_v24_ElNoIso_NOT_TRIGMATCH_EFF/");
+    // Input 2D pT histograms
 
-    // SLT
-
-    //const std::string input_path("../OutputPlots_MMClosureRates_LHFit_NoCorr_INCLUSIVE_FLAV_SLT_25ns_v24/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA/");
+    const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA_410000/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonCutBased/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonCutBased_410000/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_TRIGMATCH_EFF/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_NOT_TRIGMATCH_EFF/");
 
     LHFitter::useMC();
 

@@ -107,6 +107,10 @@ public:
 
   bool m_useTrigMatchingInfo;
 
+  /** Use cut-based lepton definition */
+
+  bool m_useCutBasedLep;
+
   bool m_useTEfficiency;
 
   /** A list of systematics affecting the efficiency measurement, whoich will be eventually propagated to the final event weight.
@@ -151,10 +155,16 @@ private:
   Int_t      m_dilep_type;
   Int_t      m_trilep_type;
   Char_t     m_isSS01;
+
   Char_t     m_is_T_T;
   Char_t     m_is_T_AntiT;
   Char_t     m_is_AntiT_T;
   Char_t     m_is_AntiT_AntiT;
+
+  Char_t     m_is_TMVA_TMVA;
+  Char_t     m_is_TMVA_AntiTMVA;
+  Char_t     m_is_AntiTMVA_TMVA;
+  Char_t     m_is_AntiTMVA_AntiTMVA;
 
   Float_t    m_lep_ID_0;
   Float_t    m_lep_Pt_0;
@@ -163,6 +173,7 @@ private:
   Float_t    m_lep_Phi_0;
   Float_t    m_lep_EtaBE2_0;
   Char_t     m_lep_isTightSelected_0;
+  Char_t     m_lep_isTightSelectedMVA_0;
   Char_t     m_lep_isTrigMatch_0;
 
   Float_t    m_lep_ID_1;
@@ -172,6 +183,7 @@ private:
   Float_t    m_lep_Phi_1;
   Float_t    m_lep_EtaBE2_1;
   Char_t     m_lep_isTightSelected_1;
+  Char_t     m_lep_isTightSelectedMVA_1;
   Char_t     m_lep_isTrigMatch_1;
 
   Float_t    m_QMisIDWeight_NOMINAL_in;
@@ -236,12 +248,10 @@ private:
   std::map< std::string, std::map< std::string, TEfficiency* > > m_el_teff_map; //!
   std::map< std::string, std::map< std::string, TEfficiency* > > m_mu_teff_map; //!
 
-  /** Normalisation factors for r/f efficiencies (different for each systematic) */
+  /** Normalisation factors (aka, the average efficiency) for r/f efficiencies (different for each systematic) */
 
-  std::map< std::string, float > m_el_reff_tot;
-  std::map< std::string, float > m_el_feff_tot;
-  std::map< std::string, float > m_mu_reff_tot;
-  std::map< std::string, float > m_mu_feff_tot;
+  std::map< std::string, float > m_el_reff_avg;
+  std::map< std::string, float > m_el_feff_avg;
 
 public:
 

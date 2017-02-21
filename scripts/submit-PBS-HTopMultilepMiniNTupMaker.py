@@ -124,9 +124,9 @@ if __name__ == '__main__':
 # Run the job from current working directory
 cd $PBS_O_WORKDIR
 
-echo "Running on host" $(hostname)
-echo "Time is" $(date)
-echo "Current directory is" $(pwd)
+echo "Running on host:" $(hostname)
+echo "Time is:" $(date)
+echo "Current directory is:" $(pwd)
 echo "This jobs runs on the following processors:"
 NODES=$(cat $PBS_NODEFILE)
 echo $NODES
@@ -134,14 +134,15 @@ NPROCS=$(wc -l < $PBS_NODEFILE)
 echo "This job has allocated $NPROCS nodes"
 echo "Running batch job for sample {sample}"
 echo ""
-TMP=$PWD/tmp.{sample}
+TMP=`mktemp -d $TMPDIR/mmilesi.{sample}.XXXX`
 echo "Creating temporary directory for this job: $TMP"
 if [ -d "$TMP" ]; then
     echo "Directory already found! Removing it first..."
     rm -rf $TMP
 fi
 mkdir $TMP
-echo "Copying tarballed code and cd'ing into job directory..."
+echo "Copying tarballed code and cd'ing into temp job directory..."
+echo ""
 rsync -arvxSH xAH.tar.gz $TMP/
 cd $TMP/
 echo "Opening tarball..."

@@ -35,7 +35,8 @@ infilelist = []
 if not args.closure:
     infilelist.append(motherdir + "/Data/physics_Main.root")
 else:
-    infilelist.append(motherdir + "/tops/410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.root")
+    #infilelist.append(motherdir + "/tops/410000.PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad.root")
+    infilelist.append(motherdir + "/tops/410501.PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_nonallhad.root")
     #infilelist.append(motherdir + "/tops/410187.Sherpa_NNPDF30NNLO_ttbar_SingleLeptonP_MEPS_NLO.root")
     #infilelist.append(motherdir + "/tops/410188.Sherpa_NNPDF30NNLO_ttbar_SingleLeptonM_MEPS_NLO.root")
 
