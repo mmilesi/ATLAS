@@ -1907,7 +1907,7 @@ void LHFitter :: getHists() {
 
 	  // -) Do ( !prompt & charge flip ) subtraction in OS
 	  // -) Do ( prompt & charge flip ) subtraction in SS
-	  //
+
 	  if  ( !s_useMC && m_doSubtraction ) {
 
 	      Info("getHists()", "Subtracting bkgs to data...");
@@ -1916,7 +1916,7 @@ void LHFitter :: getHists() {
 	      hist->Add(hist_to_sub, -1.0);
 
 	      // Set bin content to 0 if subtraction gives negative yield
-	      //
+
 	      for ( int ibiny(0); ibiny < hist->GetNbinsX()+2; ++ibiny ) {
 		  for ( int ibinx(0); ibinx < hist->GetNbinsX()+2; ++ibinx ) {
 		      if ( hist->GetBinContent( hist->GetBin(ibinx,ibiny)  ) < 0 ) { hist->SetBinContent( hist->GetBin(ibinx,ibiny), 0.0); }
@@ -2909,31 +2909,31 @@ int main( int argc, char **argv ) {
 
     // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
 
-    //const std::string tp_path("../blahblah/");
+    const std::string tp_path("../PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_25ns_v26_LeptonMVA/");
 
     // Input 2D pT histograms
 
-    //const std::string input_path("../blahblah/");
+    const std::string input_path("../PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_LHFit_DLT_25ns_v26_LeptonMVA/");
 
     // DO THE FIT ON TTBAR MC
 
     // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
 
     //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA/");
-    const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_410000/");
+    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_410000/");
     //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonCutBased/");
     //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonCutBased_410000/");
 
     // Input 2D pT histograms
 
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA/");
-    const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA_410000/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA_410000/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonCutBased/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonCutBased_410000/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_TRIGMATCH_EFF/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_NOT_TRIGMATCH_EFF/");
 
-    LHFitter::useMC();
+    //LHFitter::useMC();
 
     // -------------
     // FIT SF events
