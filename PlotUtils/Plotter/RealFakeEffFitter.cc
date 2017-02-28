@@ -520,6 +520,7 @@ class LHFitter {
   public :
 
     bool m_doSubtraction;
+    bool m_useRRForFake;
     bool m_doRebinning;
 
     enum kFlavour {
@@ -820,6 +821,7 @@ LHFitter :: LHFitter( kFlavour FLAVOUR, kEfficiency EFFICIENCY ) :
   m_verbose(false),
   m_useInputFakeAvgEff(true),
   m_doSubtraction(false),
+  m_useRRForFake(false),
   m_doRebinning(false),
   m_nBinGroup(1),
   m_useVariableBins(false),
@@ -845,7 +847,7 @@ LHFitter :: LHFitter( kFlavour FLAVOUR, kEfficiency EFFICIENCY ) :
   Info("LHFitter()","Creating class instance to fit %s efficiency for %s... \n", m_efficiency_str.c_str(), m_flavour_str.c_str() );
 
   // Every time an instance is created, the global variables must be reset, no matter what
-  //
+
   this->resetGlobFlags();
 }
 
@@ -868,7 +870,7 @@ void LHFitter :: initialise() {
   this->getHists();
 
   // Reserve memory for (initial) parameter containers
-  //
+
   m_rel_init.reserve(m_nPtBins_Linear);
   m_fel_init.reserve(m_nPtBins_Linear);
   m_rmu_init.reserve(m_nPtBins_Linear);
@@ -921,7 +923,7 @@ void LHFitter :: initialise() {
   std::string flavour("");
 
   // Set the number of parameteres of the fit
-  //
+
   int NFLAV(0);
   if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::MUMU ) {
     NFLAV = 1; // elel(mumu)
@@ -938,8 +940,9 @@ void LHFitter :: initialise() {
       NCOMP = 1; // RR only
   }
   if ( m_efficiency == kEfficiency::FAKE ) {
-      //NCOMP = 3; // RR, RF, FR
-      NCOMP = 2; // RF, FR --> assumes RR are subtracted from MC
+      // NCOMP = 3; // RR, RF, FR
+      // NCOMP = 2; // RF, FR --> assumes RR are subtracted from MC
+      NCOMP = ( m_useRRForFake ) ? 3 : 2;
   }
 
   std::cout << "" << std::endl;
@@ -955,7 +958,7 @@ void LHFitter :: initialise() {
   //
   // 1st factor in sum: YIELDS
   // 2nd factor in sum: EFFICIENCIES
-  //
+
   const int NPAR_YIELDS = m_nPtBins_Squared * NFLAV * NCOMP;
   const int NPAR_EFF	= ( m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) ? m_nPtBins_Linear * 2 : m_nPtBins_Linear;
 
@@ -981,7 +984,7 @@ void LHFitter :: initialise() {
   // r(i), f(i)  ( in 1D bins of pT )
   //
   // RR(j,k), RF(j,k), FR(j,k), FF(j,k) ( in 2D bins of lead-sublead pT )
-  //
+
   this->getEducatedGuess();
 
   if ( m_debug ) {
@@ -989,8 +992,7 @@ void LHFitter :: initialise() {
      if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fel_init, "Printing content of fel_init:" );
      if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_rmu_init, "Printing content of rmu_init:" );
      if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fmu_init, "Printing content of fmu_init:" );
-     //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
-     if ( m_efficiency == kEfficiency::REAL ) {
+     if ( m_efficiency == kEfficiency::REAL || ( m_efficiency == kEfficiency::FAKE && m_useRRForFake ) ) {
 	 if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RelRel_init,"Printing content of RelRel_init:" );
 	 if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RmuRmu_init,"Printing content of RmuRmu_init:" );
 	 if ( m_flavour == kFlavour::INCLUSIVE || m_flavour == kFlavour::OF ) printContainer( m_RmuRel_init,"Printing content of RmuRel_init:" );
@@ -1176,8 +1178,7 @@ void LHFitter :: initialise() {
   // Set parameters for RR
   // ---------------------
 
-  //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
-  if ( m_efficiency == kEfficiency::REAL ) {
+  if ( m_efficiency == kEfficiency::REAL || ( m_efficiency == kEfficiency::FAKE && m_useRRForFake ) ) {
 
     g_RR = true;
 
@@ -1462,8 +1463,7 @@ void LHFitter :: initialise() {
 	    printContainer( g_f2mu_idxs, "Printing content of f2mu_idxs:" );
           }
       }
-      //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
-      if ( m_efficiency == kEfficiency::REAL ) {
+      if ( m_efficiency == kEfficiency::REAL || ( m_efficiency == kEfficiency::FAKE && m_useRRForFake ) ) {
 	  if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RelRel_idxs, "Printing content of RelRel_idxs:" );
 	  if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RmuRmu_idxs, "Printing content of RmuRmu_idxs:" );
 	  if ( m_flavour == kFlavour::INCLUSIVE || m_flavour == kFlavour::OF ) printContainer( g_RmuRel_idxs, "Printing content of RmuRel_idxs:" );
@@ -2484,7 +2484,7 @@ void LHFitter :: getParametersAndErrors() {
   // Get errors for RR
   // ---------------------
 
-  if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
+  if ( m_efficiency == kEfficiency::REAL || ( m_efficiency == kEfficiency::FAKE && m_useRRForFake ) ) {
 
     if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) {
       for ( auto idx(0); idx < m_RelRel_errs.size(); ++idx ) {
@@ -2987,6 +2987,8 @@ int main( int argc, char **argv ) {
       // REBINNING
       real_mm.m_doRebinning = true;
       //real_mm.setBinGrouping(2);
+      //int array_real_bin_size(2);
+      //double real_mm_new_bins[array_real_bin_size] = {10.0,200.0};
       int array_real_bin_size(10);
       double real_mm_new_bins[array_real_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,80.0,100.0,140.0,200.0};
       real_mm.setVariableBins( real_mm_new_bins, array_real_bin_size-1 );
@@ -2999,13 +3001,19 @@ int main( int argc, char **argv ) {
       //fake_mm.setVerbosity(LHFitter::kVerbosity::DEBUG);
       fake_mm.setTagAndProbePath(tp_path);
       fake_mm.setInputHistPath(input_path);
-      fake_mm.m_doSubtraction = true;
+      //fake_mm.m_doSubtraction = true;
+      fake_mm.m_useRRForFake = true;
       // REBINNING
       fake_mm.m_doRebinning = true;
       //fake_mm.setBinGrouping(2);
-      int array_fake_bin_size(7);
-      double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,200.0};
-      //int array_fake_bin_size(6);
+      //int array_fake_bin_size(2);
+      //double fake_mm_new_bins[array_fake_bin_size] = {10.0,200.0};
+
+      int array_fake_bin_size(4);
+      double fake_mm_new_bins[array_fake_bin_size] = {10.0,26.0,50.0,200.0};
+
+      //int array_fake_bin_size(7);
+      //double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,200.0};
       fake_mm.setVariableBins( fake_mm_new_bins, array_fake_bin_size-1 );
       fake_mm.initialise();
       fake_mm.fit();

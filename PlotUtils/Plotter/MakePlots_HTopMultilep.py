@@ -19,7 +19,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Plotting script for the HTopMultilep Run 2 analysis')
 
-channels     = ["TwoLepSR(,NO_CORR)","ThreeLepSR","FourLepSR",
+channels     = ["TwoLepSR(,NO_CORR, NN_ACCEPTANCE)","ThreeLepSR","FourLepSR",
                 "TwoLepLowNJetCR(,NO_CORR)", "ThreeLepLowNJetCR",
                 "WZonCR", "WZoffCR", "WZHFonCR", "WZHFoffCR",
                 "ttWCR", "ttZCR","ZSSpeakCR", "DataMC",
@@ -44,6 +44,8 @@ luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
                }
 
 triggers     = ["MIXED","SLT","DLT","SLT_OR_DLT"]
+
+syst_schemes=["CORRELATED_BINS","UNCORRELATED_BINS"]
 
 parser.add_argument('inputpath', metavar='inputpath',type=str,
                    help='Path to the directory containing input files')
@@ -85,8 +87,10 @@ parser.add_argument('--doLogScaleX', dest='doLogScaleX', action='store_true', de
                     help='Use log scale on the X axis')
 parser.add_argument('--doLogScaleY', dest='doLogScaleY', action='store_true', default=False,
                     help='Use log scale on the Y axis')
-parser.add_argument('--doSyst', dest='doSyst', action='store_true', default=False,
-                    help='Run systematics')
+# parser.add_argument('--doSyst', dest='doSyst', action='store_true', default=False,
+#                     help='Run systematics')
+parser.add_argument('--doSyst', dest='doSyst', action='store', default=None, const=syst_schemes[0], choices=syst_schemes, nargs='?',
+                    help='Run systematics. If the option is specified, but not followed by any of the allowed command-line arguments, default will be \'{0}\''.format(syst_schemes[0]))
 parser.add_argument('--noSignal', action='store_true', dest='noSignal',
                     help='Exclude signal')
 parser.add_argument('--noWeights', action='store_true', dest='noWeights', default=False,
@@ -437,6 +441,9 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 > 0 )') )
     vardb.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T > 1 )') )
     vardb.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T > 4 )') )
+    if "NN_ACCEPTANCE" in args.channel:
+        vardb.getCut('2Lep_NJet_SR').cutstr =  '( nJets_OR_T > 3 )'
+        # vardb.getCut('2Lep_NBJet_SR').cutstr =  '( 1 )'
     vardb.registerCut( Cut('2Lep_NJet_CR',		  '( nJets_OR_T > 1 && nJets_OR_T <= 4 )') )
     vardb.registerCut( Cut('2Lep_NJet_CR_SStt', 	  '( nJets_OR_T < 4 )') )
     vardb.registerCut( Cut('2Lep_SS',			  '( lep_ID_0 * lep_ID_1 > 0 )') )
@@ -719,15 +726,26 @@ if __name__ == "__main__":
         if doSR:
 	    vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = True) )
         elif doLowNJetCR:
-            vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = "JVT_EventWeight", sysvar = True) )
-        #vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
-        #vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 13, minval = 0.0, maxval = 260.0,) )
-        #vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_Eta_0', bins = 16, minval = -2.6, maxval = 2.6) )
-        #vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_Eta_1', bins = 16, minval = -2.6, maxval = 2.6) )
-        #vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 18, minval = 25.0, maxval = 205.0,) )
-        #vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 6, minval = 25.0, maxval = 145.0,) )
-        #vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} (FinalTrk) [GeV]', ntuplename = 'MET_RefFinal_et/1e3', bins = 9, minval = 0.0, maxval = 180.0,) )
-        #vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
+            vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = "JVT_EventWeight") )
+
+        vardb.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{lead lep} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 10, minval = 10.0, maxval = 210.0, sysvar = True) )
+        # vardb.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{2nd lead lep} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
+        # vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{lead e} [GeV]", ntuplename = "electron_pt[0]/1e3", bins = 10, minval = 10.0, maxval = 210.0) )
+        # vardb.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{2nd lead e} [GeV]", ntuplename = "electron_pt[1]/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
+        # vardb.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{lead #mu} [GeV]", ntuplename = "muon_pt[0]/1e3", bins = 10, minval = 10.0, maxval = 210.0) )
+        # vardb.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{2nd lead #mu} [GeV]", ntuplename = "muon_pt[1]/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
+        # vardb.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{lead e}", ntuplename = "TMath::Abs( electron_EtaBE2[0] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
+        # vardb.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{2nd lead e}", ntuplename = "TMath::Abs( electron_EtaBE2[1] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
+        # vardb.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{lead #mu}", ntuplename = "TMath::Abs( muon_eta[0] )", manualbins = [0.0,0.1,0.7,1.3,1.9,2.5]) )
+        # vardb.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{2nd lead #mu}", ntuplename = "TMath::Abs( muon_eta[1] )", manualbins =[0.0,0.1,0.7,1.3,1.9,2.5]) )
+        # vardb.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "#DeltaR{lead e, closest j}", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+        # vardb.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "#DeltaR{2nd lead e, closest j}", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+        # vardb.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "#DeltaR{lead #mu, closest j}", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+        # vardb.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "#DeltaR{2nd lead #mu, closest j}", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+        # vardb.registerVar( Variable(shortname = "NBJets", latexname = "BJet multiplicity", ntuplename ="nJets_OR_T_MV2c10_70", bins = 4, minval = -0.5, maxval = 3.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
+        # vardb.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0,) )
+        # vardb.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} (FinalTrk) [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 9, minval = 0.0, maxval = 180.0,) )
+        # vardb.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(lep_{0},lep_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
 
     if doMMSidebands:
         vardb.registerVar( Variable(shortname = 'MMWeight', latexname = 'MM weight', ntuplename = 'MMWeight', bins = 50, minval = -0.5, maxval = 0.5) )
@@ -865,91 +883,65 @@ if __name__ == "__main__":
 
         if doMMRates and "DATA" in args.channel:
             vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight='QMisIDWeight_', process=['QMisID']) )
+            vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['FakesMC']) )
+            vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['Prompt']) )
             # vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['TTBar','SingleTop','Zjets','Wjets']) )
             # vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']) )
             # vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['TTBar']) )
             # vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['TTBar','TTBarW']) )
-            vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['FakesMC']) )
-            vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['Prompt']) )
 
-        # Get the number of systematics shifts for the MMWeight systematics (aka, the number of bins of the r/f efficiency)
-        # from the reweighted tree.
-        # Use the Data sample. For MM closure test, use ttbar_nonallhad
-        # The number of indexes is by construction the same for any source of systematic uncertainty,
-        # thus we can use "Stat" to get the number of bins.
+        if doMM or doMMClosureTest:
 
-        sampleID = ""
-        if doMMClosureTest:
-            #sampleID = "410000"
-            sampleID = "410501"
+            flavours     = ["El","Mu"]
+            efficiencies = ["Real","Fake"]
+            variables    = ["Pt"]
 
-        if doMMClosureTest:
+            sampleID = ""
+            sys_sources = []
+            if doMM:
+                sys_process = "FakesMM"
+                sys_sources.extend(["Stat","N_PromptSS","D_PromptSS","N_FakesOS","D_FakesOS","N_QMisID","D_QMisID"])
+            elif doMMClosureTest:
+                sys_process = "FakesClosureMM"
+                sys_sources.extend(["Stat"])
+                # sampleID = "410000"
+                sampleID = "410501"
 
-            bins_real_el_pt = inputs.getSysIndexes( sampleID=sampleID, branchID="MMWeight_Real_El_Pt_Stat" )
-            bins_real_mu_pt = inputs.getSysIndexes( sampleID=sampleID, branchID="MMWeight_Real_Mu_Pt_Stat" )
-            bins_fake_el_pt = inputs.getSysIndexes( sampleID=sampleID, branchID="MMWeight_Fake_El_Pt_Stat" )
-            bins_fake_mu_pt = inputs.getSysIndexes( sampleID=sampleID, branchID="MMWeight_Fake_Mu_Pt_Stat" )
-
-            print "bins_real_el_pt", bins_real_el_pt
-            print "bins_real_mu_pt", bins_real_mu_pt
-            print "bins_fake_el_pt", bins_fake_el_pt
-            print "bins_fake_mu_pt", bins_fake_mu_pt
-
-	    if doMM:
-		for ibin in bins_real_el_pt:
-		   thiscat    = "MMsys_Real_El_Pt_Stat_" + str(ibin)
-		   thisweight = "MMWeight_Real_El_Pt_Stat_" + str(ibin) + "_"
-		   vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=["FakesClosureMM"]))
-		for ibin in bins_real_mu_pt:
-		   thiscat    = "MMsys_Real_Mu_Pt_Stat_" + str(ibin)
-		   thisweight = "MMWeight_Real_Mu_Pt_Stat_" + str(ibin) + "_"
-		   vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=["FakesClosureMM"]))
-		for ibin in bins_fake_el_pt:
-		   thiscat    = "MMsys_Fake_El_Pt_Stat_" + str(ibin)
-		   thisweight = "MMWeight_Fake_El_Pt_Stat_" + str(ibin) + "_"
-		   vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=["FakesClosureMM"]))
-		for ibin in bins_fake_mu_pt:
-		   thiscat    = "MMsys_Fake_Mu_Pt_Stat_" + str(ibin)
-		   thisweight = "MMWeight_Fake_Mu_Pt_Stat_" + str(ibin) + "_"
-		   vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=["FakesClosureMM"]))
-	    if doFF:
-                vardb.registerSystematics( Systematics(name="FFsys", eventweight="FFWeight_", process=["FakesClosureMM"]) )
-
-        if doTwoLepSR or doThreeLepSR or doTwoLepLowNJetCR or doThreeLepLowNJetCR:
-
-	    #vardb.registerSystematics( Systematics(name="QMisIDsys", eventweight="QMisIDWeight_") )
-
-	    if doMM:
-
-		#sys_sources = ["Stat","numerator_QMisID","denominator_QMisID"]
-		sys_sources = ["Stat"]
+            if args.doSyst == "CORRELATED_BINS":
 
 		for sys in sys_sources:
-		   for ibin in bins_real_el_pt:
-		       thiscat    = "MMsys_Real_El_Pt_" + sys + "_" + str(ibin)
-		       thisweight = "MMWeight_Real_El_Pt_" + sys + "_" + str(ibin) + "_"
-		       vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=["FakesMM"]))
-		   for ibin in bins_real_mu_pt:
-		       thiscat    = "MMsys_Real_Mu_Pt_" + sys + "_" + str(ibin)
-		       thisweight = "MMWeight_Real_Mu_Pt_" + sys + "_" + str(ibin) + "_"
-		       vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=["FakesMM"]))
-		   for ibin in bins_fake_el_pt:
-		       thiscat    = "MMsys_Fake_El_Pt_" + sys + "_" + str(ibin)
-		       thisweight = "MMWeight_Fake_El_Pt_" + sys + "_" + str(ibin) + "_"
-		       vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=["FakesMM"]))
-		   for ibin in bins_fake_mu_pt:
-		       thiscat    = "MMsys_Fake_Mu_Pt_" + sys + "_" + str(ibin)
-		       thisweight = "MMWeight_Fake_Mu_Pt_" + sys + "_" + str(ibin) + "_"
-		       vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=["FakesMM"]))
+                    for f in flavours:
+                        for e in efficiencies:
+                            for v in variables:
+                                thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys
+                                thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys + "_"
+                                vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
 
-            if doFF:
-                vardb.registerSystematics( Systematics(name="FFsys", eventweight="FFWeight_", process=["FakesMM"]) )
+            elif args.doSyst == "UNCORRELATED_BINS":
+
+                for idx, sys in enumerate(sys_sources):
+                    for f in flavours:
+                        for e in efficiencies:
+                            for v in variables:
+                                # Get the number of systematics shifts for the MMWeight systematics (aka, the number of bins of the r/f efficiency)
+                                # from the reweighted tree.
+                                # Use the Data sample. For MM closure test, use ttbar_nonallhad
+                                bins = inputs.getSysIndexes( sampleID=sampleID, branchID="MMWeight_" + e + "_" + f + "_" + v + "_" + sys )
+                                print("{0},{1},{2},{3} - Bins: {4}".format(sys,e,f,v,bins))
+                                for ibin in bins:
+                                    thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys + "_" + str(ibin)
+                                    thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys + "_" + str(ibin) + "_"
+                                    vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
+        if doFF:
+            vardb.registerSystematics( Systematics(name="FFsys", eventweight="FFWeight_", process=["FakesMM"]) )
+
 
     # -------------------------------------------------------------------
     # Definition of the categories for which one wants produce histograms
     # -------------------------------------------------------------------
 
-    weight_SR_CR = "tauSFTight * weight_event_trig * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
+    # weight_SR_CR = "tauSFTight * weight_event_trig_SLT * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
+    weight_SR_CR = "tauSFTight * JVT_EventWeight * MV2c10_70_EventWeight" # TEMP for v26 : no calibration of lepton MVA yet
 
     cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut']
     common_cuts_2Lep = vardb.getCuts(cc_2Lep_list)
@@ -1726,19 +1718,20 @@ if __name__ == "__main__":
 
     ttH.eventweight = "mcWeightOrg * pileupEventWeight_090"
 
+    # if doMMClosureTest or "CLOSURE" in args.channel:
+    #     # Closure w/o any correction (but keep MC evt weight!)
+    #     if "NO_CORR" in args.channel:
+    #         ttH.eventweight = "mcWeightOrg"
+
+    if "NO_CORR" in args.channel:
+        ttH.eventweight = "mcWeightOrg"
+
     # This will reset the global event weight, and will reset the Xsec and lumi weight to be 1
     # (Needed when looking at RAW cutflow)
 
     if args.noWeights:
         ttH.eventweight = None
         ttH.rescaleXsecAndLumi = True
-
-    if doMMClosureTest or "CLOSURE" in args.channel:
-
-        # Closure w/o any correction (but keep MC evt weight!)
-
-        if "NO_CORR" in args.channel:
-            ttH.eventweight = "mcWeightOrg"
 
     # ------------------------------------
 
@@ -1866,6 +1859,8 @@ if __name__ == "__main__":
         ttH.backgrounds = []
         ttH.sub_backgrounds = []
 
+        ttH.debugprocs  = ['TTBarW','TTBarH']
+
         if doMM:
 
             ttH.backgrounds.extend(['TTBarW','TTBarZ','Diboson','Rare','FakesMM']) # NB: if using this list, make sure only prompt MC events are selected (and QMisID veto), to avoid double counting w/ QMisID and Fakes estimate...
@@ -1904,7 +1899,9 @@ if __name__ == "__main__":
 
         else: # MC based estimate of fakes
 
-            ttH.backgrounds.extend(['Prompt','FakesMC']) # This includes all the following processes: ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Triboson','THbj','WtH']
+            # ttH.backgrounds.extend(['Prompt','FakesMC']) # This includes all the following processes: ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Triboson','THbj','WtH']
+
+            ttH.backgrounds.extend(['TTBarW','TTBarZ','Diboson','Rare','FakesMC']) # This includes all the following processes: ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Triboson','THbj','WtH']
 
             if args.useMCQMisID:
                 ttH.backgrounds.append('QMisIDMC')
@@ -1912,6 +1909,8 @@ if __name__ == "__main__":
             else:
                 ttH.backgrounds.append('QMisID')
                 ttH.sub_backgrounds.append('QMisID')
+
+            ttH.debugprocs.extend(['FakesMC','QMisID'])
 
         if doFourLepSR:
             # no fakes in 4lep
@@ -2076,9 +2075,9 @@ if __name__ == "__main__":
         # For DLT, trigger SF not available in yet...
         # Set trigger weight to 1
 
-        if "DLT" in args.trigger and "weight_event_trig" in category.weight:
+        if any( t in args.trigger for t in ["DLT","SLT_OR_DLT"]) and "weight_event_trig_SLT" in category.weight:
 	    print("Using DLT. Trigger SFs not available yet. Do not apply trigger SF...\n")
-            category.weight = category.weight.replace("weight_event_trig","1.0")
+            category.weight = category.weight.replace("weight_event_trig_SLT","1.0")
 
         # ------------------------------------------
         # Remove eta acceptance cut unless requested

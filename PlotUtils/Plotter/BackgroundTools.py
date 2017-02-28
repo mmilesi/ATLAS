@@ -162,7 +162,11 @@ class Inputs:
 
     def getSysIndexes(self, sampleID, branchID):
 
-        sampletree = self.getTree(sampleid=sampleID)
+        if sampleID:
+            sampletree = self.getTree(sampleid=sampleID)
+        else:
+            sampletree = self.getTree(group='Data',subgroup='physics_Main')
+
         branches_array = sampletree.GetListOfBranches()
         idxlist = []
         for b in range(0,branches_array.GetEntries()):

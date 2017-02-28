@@ -81,6 +81,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: setupJob (EL::Job& job)
 
   Info("setupJob()", "Calling setupJob");
 
+  job = job;
+
   return EL::StatusCode::SUCCESS;
 }
 
@@ -269,8 +271,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 
   if ( m_doQMisIDWeighting ) {
       m_outputNTuple->tree()->Branch("QMisIDWeight",     &m_QMisIDWeight_NOMINAL_out,    "QMisIDWeight/F");
-      m_outputNTuple->tree()->Branch("QMisIDWeight_up",  &m_QMisIDWeight_UP_out, "QMisIDWeight_up/F");
-      m_outputNTuple->tree()->Branch("QMisIDWeight_dn",  &m_QMisIDWeight_DN_out, "QMisIDWeight_dn/F");
+      m_outputNTuple->tree()->Branch("QMisIDWeight_up",  &m_QMisIDWeight_UP_out,         "QMisIDWeight_up/F");
+      m_outputNTuple->tree()->Branch("QMisIDWeight_dn",  &m_QMisIDWeight_DN_out,         "QMisIDWeight_dn/F");
   }
 
   if ( m_doMMWeighting ) {
@@ -503,7 +505,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 	  // (Make sure no other variables than pT are considered for systematic variations)
 
 	  for ( const auto& sys : m_systematics ) {
-	      if ( sys.find("Eta") != std::string::npos ) { continue; }
+	      if ( sys.find("Pt") == std::string::npos ) { continue; }
 	      m_this_syst = sys;
 	      ANA_CHECK( this->calculateMMWeights () );
 	  }
@@ -983,6 +985,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 		  if ( !isNominal && var.compare("Pt") != 0 ) { continue; }
 
+		  // Make sure only relevant systematic sources for this efficiency,flavour are read in
+
+		  if ( eff.compare("Real") == 0 ) {
+		      if ( sysgroup.find("PromptSS") != std::string::npos ) { continue; }
+		      if ( sysgroup.find("QMisID") != std::string::npos )   { continue; }
+		  }
+		  if ( eff.compare("Fake") == 0 ) {
+		      if ( sysgroup.find("FakesOS") != std::string::npos ) { continue; }
+		      if ( lep.compare("Mu") == 0 && sysgroup.find("QMisID") != std::string::npos )   { continue; }
+		  }
+
 		  std::cout << "" << std::endl;
 		  Info("readRFEfficiencies()", "Reading inputs for systematic group: ===> %s", sysgroup.c_str() );
 		  std::cout << "" << std::endl;
@@ -1362,10 +1375,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
             bool readNominalPt(false);
 
 	    if ( ( isNominal ) ||
-	         ( ( lep.get()->flavour == 13 )  && ( m_this_syst.find("El") != std::string::npos ) )   ||
-		 ( ( lep.get()->flavour == 11 )  && ( m_this_syst.find("Mu") != std::string::npos ) )   ||
-		 ( ( type.compare("REAL") == 0 ) && ( m_this_syst.find("Fake") != std::string::npos ) ) ||
-		 ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.find("Real") != std::string::npos ) ) ||
+	         ( ( lep.get()->flavour == 13 )  && ( m_this_syst.find("El_") != std::string::npos ) )   ||
+		 ( ( lep.get()->flavour == 11 )  && ( m_this_syst.find("Mu_") != std::string::npos ) )   ||
+		 ( ( type.compare("REAL") == 0 ) && ( m_this_syst.find("Fake_") != std::string::npos ) ) ||
+		 ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.find("Real_") != std::string::npos ) ) ||
 		 ( m_this_syst.find("Pt") == std::string::npos )
 		)
 	    {
@@ -1373,8 +1386,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		readNominalPt = true;
 	    } else {
 
+		// std::cout << "\t\ttokens for this syst: " << tokens.size() << std::endl;
+		// unsigned int idx(0);
+		// for ( const auto& t : tokens ) {
+		//     std::cout << "\t\t\tt[" << idx << "] = " << t << std::endl;
+		//     ++idx;
+		// }
+		// std::cout << "" << std::endl;
+
 		std::string addon("");
-		for ( unsigned int idx(3); idx < tokens.size()-1; ++idx ) { addon = addon + tokens.at(idx) + "_"; }
+		unsigned int endtoken = ( !m_correlatedMMWeights ) ? tokens.size() - 1 : tokens.size();
+		for ( unsigned int idx(3); idx < endtoken; ++idx ) { addon = addon + tokens.at(idx) + "_"; }
 
 		if ( !m_correlatedMMWeights ) {
 		    if ( p != std::stoi(tokens.back()) ) {
@@ -1486,9 +1508,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
                 	bool readNominalEta(false);
 
 	        	if ( ( !isStat ) || // Make sure to get the stat variation on eta eff only when this syst is "Stat". In all other cases, only the nominal eta eff value will be taken (error will be set to 0)
-	        	     ( ( lep.get()->flavour == 11 )  && ( m_this_syst.find("Mu") != std::string::npos ) )   ||
-	        	     ( ( type.compare("REAL") == 0 ) && ( m_this_syst.find("Fake") != std::string::npos ) ) ||
-	        	     ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.find("Real") != std::string::npos ) ) )
+	        	     ( ( lep.get()->flavour == 11 )  && ( m_this_syst.find("Mu_") != std::string::npos ) )   ||
+	        	     ( ( type.compare("REAL") == 0 ) && ( m_this_syst.find("Fake_") != std::string::npos ) ) ||
+	        	     ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.find("Real_") != std::string::npos ) ) )
 	        	{
 	        	    readNominalEta = true;
 	        	} else if ( isStat ) {

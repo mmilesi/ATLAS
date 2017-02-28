@@ -50,7 +50,6 @@ g_sys_dict = {}
 g_unc_bins = {}
 
 # Store for each histogram bin the sum in quadrature of all uncertainties
-#
 # { bin_idx : sq }
 
 g_sq_unc_bins = {}
@@ -59,7 +58,7 @@ g_sq_unc_bins = {}
 
 g_sysgroup_dict = {}
 
-def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
+def getYields(nominal, up=None, dn=None, sysname=None, sysgroup=None, debug=False):
 
     lower = 0
     upper = nominal.GetNbinsX()+2
@@ -79,36 +78,41 @@ def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
 
         bincenter = nominal.GetBinCenter(bin)
 
-        if ( up and down ):
+        if ( up and dn ):
 
-            dummy_err_up  = Double(0)
-            value_up = up.IntegralAndError(bin,nextbin,dummy_err_up)
-            dummy_err_down  = Double(0)
-            value_down = down.IntegralAndError(bin,nextbin,dummy_err_down)
+            dummy_err_up = Double(0)
+            value_up     = up.IntegralAndError(bin,nextbin,dummy_err_up)
+            dummy_err_dn = Double(0)
+            value_dn     = dn.IntegralAndError(bin,nextbin,dummy_err_dn)
 
-            delta_up   = value_up - value_nominal
-            delta_down = value_down - value_nominal
+            delta_up = value_up - value_nominal
+            delta_dn = value_dn - value_nominal
 
             sys_up = sys_dn = 0.0
 
-            if delta_up >= 0.0:
-                sys_up = abs( delta_up )
-            if delta_down <= 0.0:
-                sys_dn = abs( delta_down )
+            # if delta_up >= 0.0:
+            #     sys_up = abs( delta_up )
+            # if delta_dn <= 0.0:
+            #     sys_dn = abs( delta_dn )
 
-	    # Symmetrised systematic uncertainty
+            if abs(delta_up) != abs(value_nominal) and delta_up >= 0.0:
+                sys_up = abs( delta_up )
+            if abs(delta_dn) != abs(value_nominal) and delta_dn <= 0.0:
+                sys_dn = abs( delta_dn )
+
+	    # Symmetrised systematic uncertainty for this bin
 
             simm_sys_unc =  abs( sys_up + sys_dn ) / 2.0
 
-            # Print yield, stat and syst uncertainty for each bin, for this systematic
+            # Print yield, stat and syst uncertainty for this bin, for this systematic
 
-            if False:
+            if debug:
                 if nominal.IsBinOverflow(bin):
                     if args.mergeOverflow:
                         print ("\nWARNING! Now checking the overflow bin content. This should not happen since you said in the script opt config that the last bin should already contain also the OFlow...check your input histograms.\n")
-                    print ("\t\t{0}-th bin (O-FLOW), bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat) (+ {4:.3f}, - {5:.3f} --> +- {6:.3f}) (syst: {7})".format( bin, bincenter, value_nominal, stat_error, sys_up, sys_dn, simm_sys_unc, sysname ))
+                    print ("\t\t{0}-th bin (O-FLOW), bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat) +- {4:.3f} (syst: {5}) [ +{6:.3f}, -{7:.3f} ]".format( bin, bincenter, value_nominal, stat_error, simm_sys_unc, sysname, sys_up, sys_dn ))
                 else:
-                    print ("\t\t{0}-th bin, bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat) (+ {4:.3f}, - {5:.3f} --> +- {6:.3f}) (syst: {7})".format( bin, bincenter, value_nominal, stat_error, sys_up, sys_dn, simm_sys_unc, sysname ))
+                    print ("\t\t{0}-th bin, bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat) +- {4:.3f} (syst: {5}) [ +{6:.3f}, -{7:.3f} ]".format( bin, bincenter, value_nominal, stat_error, simm_sys_unc, sysname, sys_up, sys_dn ))
 
             # Store list of uncertainties for each bin
 
@@ -118,30 +122,36 @@ def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
                 g_unc_bins[bin].append(simm_sys_unc)
 
         else:
-            if nominal.IsBinOverflow(bin):
-                if args.mergeOverflow:
+            if debug:
+                if nominal.IsBinOverflow(bin):
+                    if args.mergeOverflow:
                         print ("\nWARNING! Now checking the overflow bin content. This should not happen since you said in the script opt config that the last bin should already contain also the OFlow...check your input histograms.\n")
-                print ("\t\t{0}-th bin (O-FLOW), bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat)".format( bin, bincenter, value_nominal, stat_error ))
-            else:
-                print ("\t\t{0}-th bin, bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat)".format( bin, bincenter, value_nominal, stat_error ))
+                    print ("\t\t{0}-th bin (O-FLOW), bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat)".format( bin, bincenter, value_nominal, stat_error ))
+                else:
+                    print ("\t\t{0}-th bin, bincenter {1} : integral = {2:.3f} +- {3:.3f} (stat)".format( bin, bincenter, value_nominal, stat_error ))
 
     integral_stat_error = Double(0)
     integral_nominal    = nominal.IntegralAndError(lower,upper-1,integral_stat_error)
 
     integral_total_error = integral_stat_error
 
-    if ( up and down ):
+    if ( up and dn ):
 
-        integral_sys_up = abs( up.Integral(lower,upper-1) - integral_nominal )
-        integral_sys_dn = abs( integral_nominal - down.Integral(lower,upper-1) )
+        integral_sys_up = integral_sys_dn = 0.0
 
-	# Symmetrised systematic uncertainty
+        if up.Integral(lower,upper-1):
+            integral_sys_up = abs( up.Integral(lower,upper-1) - integral_nominal )
+        if dn.Integral(lower,upper-1):
+            integral_sys_dn = abs( integral_nominal - dn.Integral(lower,upper-1) )
+
+	# Symmetrised total systematic uncertainty on yield for this sys source
 
 	integral_simm_sys_unc = abs( integral_sys_up + integral_sys_dn ) / 2.0
 
         g_sys_dict[sysname] = integral_simm_sys_unc
 
 	# Store the total syst uncertainty for later use
+        # NB: multiple systematics may belong to the same group, e.g. "Real_Mu_Pt_Stat", "Fake_El_Pt_Stat" are part of group "Stat"...
 
 	if not g_sysgroup_dict.get(sysgroup):
 	    g_sysgroup_dict[sysgroup] = [integral_simm_sys_unc]
@@ -155,19 +165,18 @@ def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
 
         # This will print the total yield w/ stat and syst error per each sys
 
-        if False:
-            print ("\t\tIntegral = {0:.3f} +- {1:.3f} (stat) ( +{2:.3f}, -{3:.3f} --> +- {4:.3f}) (syst: {5})".format(integral_nominal, integral_stat_error, integral_sys_up, integral_sys_dn, integral_simm_sys_unc,  sysname ))
+        if debug:
+            print ("\n\t\tIntegral = {0:.3f} +- {1:.3f} (stat) +- {2:.3f} (syst: {3}) [ +{4:.3f}, -{5:.3f} ]\n".format(integral_nominal, integral_stat_error, integral_simm_sys_unc, sysname, integral_sys_up, integral_sys_dn) )
 
         # This will sum in quadrature the stat & systematic uncertainties for each bin
 
         for bin, list_unc in g_unc_bins.iteritems():
-            if False:
-                print("\t\tbin {0}".format(bin) + " list of uncertainties: [" + ",".join( "{0:.3f}".format(x) for x in list_unc ) + "]" )
-            g_sq_unc_bins[bin] = sum_quad(list_unc)
+            g_sq_unc_bins[bin] = sumQuadrature(list_unc)
+            if debug:
+                print("\t\t{0}-th bin,".format(bin) + " list of uncertainties: [" + ",".join( "{0:.3f}".format(x) for x in list_unc ) + "]" + " - tot. uncertainty : {0:.3f}".format(g_sq_unc_bins[bin]) )
 
-        if False:
-            for bin, sq in g_sq_unc_bins.iteritems():
-                print("\t\tbin {0}".format(bin) + " sum quad: {0:.3f}".format(sq) )
+        if debug:
+            print("")
 
     else:
         print ("\t\tIntegral = {0:.3f} +- {1:.3f} (stat)".format(integral_nominal, integral_stat_error ))
@@ -175,7 +184,7 @@ def get_yields(nominal, up=None, down=None, sysname=None, sysgroup=None):
     return integral_nominal, integral_stat_error
 
 
-def sum_quad ( inlist ):
+def sumQuadrature ( inlist ):
     sq = 0
     for elem in inlist:
     	sq +=  pow(elem,2.0)
@@ -185,40 +194,42 @@ def sum_quad ( inlist ):
 def getTotFakeUncertainty( nominal, stat, flav ):
 
     if ( "HIGHNJ" in args.channel ):
-        if flav == "ElEl" : non_closure = 0.29 * nominal
-        if flav == "OF"   : non_closure = 0.27 * nominal
-        if flav == "MuMu" : non_closure = 0.20 * nominal
+        if flav == "ElEl" : non_closure = 0.2543 * nominal
+        if flav == "OF"   : non_closure = 0.1041 * nominal
+        if flav == "MuMu" : non_closure = 0.0080 * nominal
     elif ( "LOWNJ" in args.channel ):
-        if flav == "ElEl" : non_closure = 0.34 * nominal
-        if flav == "OF"   : non_closure = 0.22 * nominal
-        if flav == "MuMu" : non_closure = 0.22 * nominal
-
+        if flav == "ElEl" : non_closure = 0.1037 * nominal
+        if flav == "OF"   : non_closure = 0.0409 * nominal
+        if flav == "MuMu" : non_closure = 0.0010 * nominal
 
     # If you are doing closure, do not consider closure syst!
 
     if args.closure:
         non_closure = 0.0
 
+    g_sys_dict["Non_Closure"]      = non_closure
+    g_sysgroup_dict["Non_Closure"] = [non_closure]
+
     # This prints out sorting systematics from smaller to larger
 
-    print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.4f} [{1:.4f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) + "\t\t+- {0:.2f} [{1:.2f} %] (non-closure)".format(non_closure, (non_closure/nominal)*100) )
+    print("\t\tTot. yields w/ systematics (ungrouped):\n")
+    print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (Sidebands Stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) )
 
     print("")
 
     # Print sum in quadrature of syst for each syst group
 
-    print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (stat)".format(nominal, stat, (stat/nominal)*100) )
+    print("\t\tTot. yields w/ systematics (grouped):\n")
+    print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (Sidebands Stat)".format(nominal, stat, (stat/nominal)*100) )
     for sg, values in g_sysgroup_dict.iteritems():
-
-        print("\t\t+- {0:.2f} [{1:.2f} %] ({2})".format( sum_quad(values), (sum_quad(values)/nominal)*100, sg ) )
-
+        print("\t\t+- {0:.2f} [{1:.2f} %] ({2})".format( sumQuadrature(values), (sumQuadrature(values)/nominal)*100, sg ) )
     print("")
 
     # Print sum in quadrature of ALL syst + stat
 
     toterrlist = list(g_sys_dict.values())
     toterrlist.extend([stat,non_closure])
-    sq = sum_quad( toterrlist )
+    sq = sumQuadrature( toterrlist )
 
     print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (TOTAL UNCERTAINTY)".format(nominal, sq, (sq/nominal)*100))
 
@@ -464,31 +475,102 @@ if __name__ == '__main__':
     	    fakes_nominal = myfile.Get("fakesbkg")
     	    fakes_syst = {}
     	    for key in myfile.GetListOfKeys():
+
+                # fakesbkg_MMsys_Fake_El_Pt_D_QMisID_1_up
+
+                # fakesbkg
+                # fakesbkg_MMsys_Real_El_Pt_Stat_up
+                # fakesbkg_MMsys_Real_El_Pt_Stat_dn
+                # fakesbkg_MMsys_Fake_El_Pt_Stat_up
+                # fakesbkg_MMsys_Fake_El_Pt_Stat_dn
+                # fakesbkg_MMsys_Real_Mu_Pt_Stat_up
+                # fakesbkg_MMsys_Real_Mu_Pt_Stat_dn
+                # fakesbkg_MMsys_Fake_Mu_Pt_Stat_up
+                # fakesbkg_MMsys_Fake_Mu_Pt_Stat_dn
+                # fakesbkg_MMsys_Real_El_Pt_N_PromptSS_up
+                # fakesbkg_MMsys_Real_El_Pt_N_PromptSS_dn
+                # fakesbkg_MMsys_Fake_El_Pt_N_PromptSS_up
+                # fakesbkg_MMsys_Fake_El_Pt_N_PromptSS_dn
+                # fakesbkg_MMsys_Real_Mu_Pt_N_PromptSS_up
+                # fakesbkg_MMsys_Real_Mu_Pt_N_PromptSS_dn
+                # fakesbkg_MMsys_Fake_Mu_Pt_N_PromptSS_up
+                # fakesbkg_MMsys_Fake_Mu_Pt_N_PromptSS_dn
+                # fakesbkg_MMsys_Real_El_Pt_D_PromptSS_up
+                # fakesbkg_MMsys_Real_El_Pt_D_PromptSS_dn
+                # fakesbkg_MMsys_Fake_El_Pt_D_PromptSS_up
+                # fakesbkg_MMsys_Fake_El_Pt_D_PromptSS_dn
+                # fakesbkg_MMsys_Real_Mu_Pt_D_PromptSS_up
+                # fakesbkg_MMsys_Real_Mu_Pt_D_PromptSS_dn
+                # fakesbkg_MMsys_Fake_Mu_Pt_D_PromptSS_up
+                # fakesbkg_MMsys_Fake_Mu_Pt_D_PromptSS_dn
+                # fakesbkg_MMsys_Real_El_Pt_N_FakesOS_up
+                # fakesbkg_MMsys_Real_El_Pt_N_FakesOS_dn
+                # fakesbkg_MMsys_Fake_El_Pt_N_FakesOS_up
+                # fakesbkg_MMsys_Fake_El_Pt_N_FakesOS_dn
+                # fakesbkg_MMsys_Real_Mu_Pt_N_FakesOS_up
+                # fakesbkg_MMsys_Real_Mu_Pt_N_FakesOS_dn
+                # fakesbkg_MMsys_Fake_Mu_Pt_N_FakesOS_up
+                # fakesbkg_MMsys_Fake_Mu_Pt_N_FakesOS_dn
+                # fakesbkg_MMsys_Real_El_Pt_D_FakesOS_up
+                # fakesbkg_MMsys_Real_El_Pt_D_FakesOS_dn
+                # fakesbkg_MMsys_Fake_El_Pt_D_FakesOS_up
+                # fakesbkg_MMsys_Fake_El_Pt_D_FakesOS_dn
+                # fakesbkg_MMsys_Real_Mu_Pt_D_FakesOS_up
+                # fakesbkg_MMsys_Real_Mu_Pt_D_FakesOS_dn
+                # fakesbkg_MMsys_Fake_Mu_Pt_D_FakesOS_up
+                # fakesbkg_MMsys_Fake_Mu_Pt_D_FakesOS_dn
+                # fakesbkg_MMsys_Real_El_Pt_N_QMisID_up
+                # fakesbkg_MMsys_Real_El_Pt_N_QMisID_dn
+                # fakesbkg_MMsys_Fake_El_Pt_N_QMisID_up
+                # fakesbkg_MMsys_Fake_El_Pt_N_QMisID_dn
+                # fakesbkg_MMsys_Real_Mu_Pt_N_QMisID_up
+                # fakesbkg_MMsys_Real_Mu_Pt_N_QMisID_dn
+                # fakesbkg_MMsys_Fake_Mu_Pt_N_QMisID_up
+                # fakesbkg_MMsys_Fake_Mu_Pt_N_QMisID_dn
+                # fakesbkg_MMsys_Real_El_Pt_D_QMisID_up
+                # fakesbkg_MMsys_Real_El_Pt_D_QMisID_dn
+                # fakesbkg_MMsys_Fake_El_Pt_D_QMisID_up
+                # fakesbkg_MMsys_Fake_El_Pt_D_QMisID_dn
+                # fakesbkg_MMsys_Real_Mu_Pt_D_QMisID_up
+                # fakesbkg_MMsys_Real_Mu_Pt_D_QMisID_dn
+                # fakesbkg_MMsys_Fake_Mu_Pt_D_QMisID_up
+                # fakesbkg_MMsys_Fake_Mu_Pt_D_QMisID_dn
+
     		keyname = key.GetName()
     		if not ( "fakesbkg_" in keyname ): continue
 
-                # HACK
-                #if "Mu_Pt_Stat_7" in keyname: continue
+                # if not any( k == keyname for k in ["fakesbkg_MMsys_Fake_El_Pt_Stat_up","fakesbkg_MMsys_Fake_El_Pt_Stat_dn","fakesbkg_MMsys_Real_El_Pt_Stat_up","fakesbkg_MMsys_Real_El_Pt_Stat_dn"] ): continue
 
     		keyname = keyname.replace("fakesbkg_","")
     		keyname = keyname.replace("_dn","")
     		keyname = keyname.replace("_up","")
+
     		if "Stat" in keyname:
     		    value = "Stat"
-    		if "numerator_QMisID" in keyname:
-    		    value = "numerator_QMisID"
-    		if "denominator_QMisID" in keyname:
-    		    value = "denominator_QMisID"
+    		if "N_QMisID" in keyname:
+    		    value = "N_QMisID"
+    		if "D_QMisID" in keyname:
+    		    value = "D_QMisID"
+    		if "N_PromptSS" in keyname:
+    		    value = "N_PromptSS"
+    		if "D_PromptSS" in keyname:
+    		    value = "D_PromptSS"
+    		if "N_FakesOS" in keyname:
+    		    value = "N_FakesOS"
+    		if "D_FakesOS" in keyname:
+    		    value = "D_FakesOS"
+
     		if not fakes_syst.get(keyname):
     		    fakes_syst[keyname] = value
 
-    	    print ("\tFakes: \n")
+    	    print ("\tFakes:\n")
 
     	    for sys, sysgroup in fakes_syst.iteritems():
-    	       fakes_up   = myfile.Get( "fakesbkg_" + sys + "_up")
-    	       fakes_down = myfile.Get( "fakesbkg_" + sys + "_dn")
-    	       #print(" ==> sys: {0}, sysgroup: {1}\n".format(sys, sysgroup))
-    	       fakes, fakes_stat_err = get_yields(fakes_nominal,fakes_up,fakes_down, sys, sysgroup)
+                debugflag = False
+                fakes_up   = myfile.Get( "fakesbkg_" + sys + "_up")
+                fakes_dn = myfile.Get( "fakesbkg_" + sys + "_dn")
+                if debugflag: print("\tsys: {0}, sysgroup: {1}\n".format(sys, sysgroup))
+                fakes, fakes_stat_err = getYields(fakes_nominal,fakes_up,fakes_dn, sys, sysgroup, debug=debugflag)
 
     	    fakes_tot_err = getTotFakeUncertainty( fakes, fakes_stat_err, flav )
 
@@ -496,7 +578,7 @@ if __name__ == '__main__':
     		ttbar_nominal = myfile.Get("ttbarbkg")
 
     		print ("\n\tTTbar: \n")
-    		ttbar, ttbar_err = get_yields(ttbar_nominal)
+    		ttbar, ttbar_err = getYields(ttbar_nominal)
 
     		closure     = ( (fakes - ttbar) / (ttbar) ) * 100
     		closure_err = math.sqrt( ( ( math.pow(fakes,2.0) / math.pow(ttbar,4.0) ) * math.pow(ttbar_err,2.0) ) + ( math.pow(fakes_tot_err,2.0) / math.pow(ttbar,2.0) ) ) * 100
@@ -508,21 +590,21 @@ if __name__ == '__main__':
     	    expected_nominal = myfile.Get("expectedbkg")
 
     	    print ("\n\tExpected: \n")
-    	    exp, exp_err = get_yields(expected_nominal)
+    	    exp, exp_err = getYields(expected_nominal)
 
     	    if not args.closure:
 
     		chargemisid = myfile.Get("qmisidbkg")
     		if chargemisid:
     		    print ("\n\tQMisID: \n")
-    		    qmisid, qmisid_err = get_yields(chargemisid)
+    		    qmisid, qmisid_err = getYields(chargemisid)
 
     		observed = myfile.Get("observed")
     		if observed:
     		    print ("\n\tObserved: \n")
-    		    obs, obs_err = get_yields(observed)
+    		    obs, obs_err = getYields(observed)
 
     		signal = myfile.Get("signal")
 
     		print ("\n\tSignal: \n")
-    		sig, sig_err = get_yields(signal)
+    		sig, sig_err = getYields(signal)
