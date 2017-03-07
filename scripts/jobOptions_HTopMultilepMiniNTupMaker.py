@@ -153,7 +153,7 @@ for branch in branches_to_copy:
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
 algskim.addCut("RunYear==2015 || RunYear==2016")
 algskim.addCut("passEventCleaning==1")
-algskim.addCut("(dilep_type>0 && lep_Pt_1>10e3) || (trilep_type>0 && lep_Pt_2>10e3) || (quadlep_type>0 && lep_Pt_3>10e3)") # keep only dilepton,trilepton and quadlepton events, ensuring min(pT lep) > 10 GeV
+algskim.addCut("(dilep_type>0 && lep_Pt_1>10e3) || (trilep_type>0 && lep_Pt_0>10e3 && lep_Pt_1>10e3 && lep_Pt_2>10e3) || (quadlep_type>0 && lep_Pt_3>10e3)") # keep only dilepton,trilepton and quadlepton events, ensuring min(pT lep) > 10 GeV (NB: in 3L, flat branches are not pT-ranked, so we have to be explicit...)
 algskim.addCut("(dilep_type>0 && nJets_OR_T>=2 && nJets_OR_T_MV2c10_70>=1) || ( (trilep_type>0 || quadlep_type>0) && nJets_OR>=2 && nJets_OR_MV2c10_70>=1)") # minimal njet/nbjet skimming cut
 algskim.histName("cutflow")
 
