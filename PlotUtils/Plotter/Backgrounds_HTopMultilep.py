@@ -14,7 +14,7 @@ from ROOT import TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kGreen, kA
 
 class MyCategory(Category):
 
-    def __init__(self, name, cut=None, controlcut=None, weight=None, overridebins=None):
+    def __init__(self, name, cut=None, controlcut=None, weight=None, overridebins=None, ratiolims=None):
         self.name = name
         self.tokens = name.split(' ')
         self.cut = cut
@@ -25,6 +25,7 @@ class MyCategory(Category):
         self.streamname = '*'
         self.jet = name
         self.met = 'HMET'
+        self.ratiolims = ratiolims
 
         if len(self.tokens)>=3:
             self.stream = self.tokens[0]
@@ -68,8 +69,11 @@ class TTHBackgrounds(Background):
     # Returns the name and position in bkg list of the first background process which
     # is *not* data-driven
 
-    def getFirstSimulatedProc(self, category):
-	for idx, samplename in enumerate(self.backgrounds):
+    def getFirstSimulatedProc(self, category, mybackgrounds = None):
+        backgrounds = self.backgrounds
+        if mybackgrounds:
+            backgrounds = mybackgrounds
+	for idx, samplename in enumerate(mybackgrounds):
             subprocess = self.getProcess(samplename, category)
             if not ("$ISDATA$") in subprocess.name:
 	        return idx, samplename
@@ -1131,7 +1135,8 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                ('tops', 'ttbar_nonallhad'),
+                ('tops', 'ttbar_nonallhad_Pythia8'),
+                #('tops', 'ttbar_nonallhad'),
                 #('tops', 'ttbar_dilep'),
                 ('tops', 'tZ'),
                 ('tops', 'tW'),
@@ -1371,12 +1376,12 @@ class TTHBackgrounds(Background):
             # Pick the subprocesses from the DB
 
             diboson   = self.parent.procmap['Diboson'](treename, category, options)
-            #triboson  = self.parent.procmap['Triboson'](treename, category, options)
+            triboson  = self.parent.procmap['Triboson'](treename, category, options)
             rare_top  = self.parent.procmap['RareTop'](treename, category, options)
             ttbarw    = self.parent.procmap['TTBarW'](treename, category, options)
             ttbarz    = self.parent.procmap['TTBarZ'](treename, category, options)
-            #tHbj      = self.parent.procmap['THbj'](treename, category, options)
-            #WtH       = self.parent.procmap['WtH'](treename, category, options)
+            tHbj      = self.parent.procmap['THbj'](treename, category, options)
+            WtH       = self.parent.procmap['WtH'](treename, category, options)
             #
             ttbar     = self.parent.procmap['TTBar'](treename, category, options)
             singletop = self.parent.procmap['SingleTop'](treename, category, options)
@@ -1404,22 +1409,22 @@ class TTHBackgrounds(Background):
             # Reset the cut for the subprocesses, and apply the new one
 
             diboson   = diboson.subprocess(cut=updatedcut, clearbasecut=True)
-            #triboson   = triboson.subprocess(cut=updatedcut, clearbasecut=True)
+            triboson   = triboson.subprocess(cut=updatedcut, clearbasecut=True)
             rare_top  = rare_top.subprocess(cut=updatedcut, clearbasecut=True)
             ttbarw    = ttbarw.subprocess(cut=updatedcut, clearbasecut=True)
             ttbarz    = ttbarz.subprocess(cut=updatedcut, clearbasecut=True)
-            #tHbj      = tHbj.subprocess(cut=updatedcut, clearbasecut=True)
-            #WtH       = WtH.subprocess(cut=updatedcut, clearbasecut=True)
+            tHbj      = tHbj.subprocess(cut=updatedcut, clearbasecut=True)
+            WtH       = WtH.subprocess(cut=updatedcut, clearbasecut=True)
             ttbar     = ttbar.subprocess(cut=updatedcut, clearbasecut=True)
             singletop = singletop.subprocess(cut=updatedcut, clearbasecut=True)
             zjets     = zjets.subprocess(cut=updatedcut, clearbasecut=True)
             wjets     = wjets.subprocess(cut=updatedcut, clearbasecut=True)
 
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Diboson",diboson.basecut.cutnamelist, diboson.eventweight))
-            #print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Triboson",triboson.basecut.cutnamelist, triboson.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Triboson",triboson.basecut.cutnamelist, triboson.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("RareTop",rare_top.basecut.cutnamelist, rare_top.eventweight))
-            #print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("THbj",tHbj.basecut.cutnamelist, tHbj.eventweight))
-            #print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("WtH",WtH.basecut.cutnamelist, WtH.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("THbj",tHbj.basecut.cutnamelist, tHbj.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("WtH",WtH.basecut.cutnamelist, WtH.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBarW",ttbarw.basecut.cutnamelist, ttbarw.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBarZ",ttbarz.basecut.cutnamelist, ttbarz.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBar",ttbar.basecut.cutnamelist, ttbar.eventweight))
@@ -1427,7 +1432,7 @@ class TTHBackgrounds(Background):
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Zjets",zjets.basecut.cutnamelist, zjets.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Wjets",wjets.basecut.cutnamelist, wjets.eventweight))
 
-            return diboson + rare_top + ttbarw + ttbarz + ttbar + singletop + zjets + wjets # + triboson + tHbj + WtH
+            return diboson + rare_top + ttbarw + ttbarz + ttbar + singletop + zjets + wjets + triboson + tHbj + WtH
 
 
     class QMisIDMC(Process):
@@ -1787,11 +1792,12 @@ class TTHBackgrounds(Background):
             sp_LT  = sp.subprocess(cut=basecut & self.vardb.getCut(LTcut), eventweight=weight)
             sp_LL  = sp.subprocess(cut=basecut & self.vardb.getCut(LLcut), eventweight=weight)
 
-            print(" ")
-            print("{0} - TT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TT.basecut.cutnamelist, weight))
-            print("{0} - TL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
-            print("{0} - LT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
-            print("{0} - LL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
+            if debugflag:
+                print(" ")
+                print("{0} - TT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TT.basecut.cutnamelist, weight))
+                print("{0} - TL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
+                print("{0} - LT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
+                print("{0} - LL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
 
             # Perform QMisID per-event subtraction taking advantage of the linearity of MM equations (this was done in the SUSY SS analysis)
 

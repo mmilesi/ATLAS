@@ -519,7 +519,9 @@ class LHFitter {
 
   public :
 
-    bool m_doSubtraction;
+    std::string m_sublist; /** Process to be subtracted. By deault, this equals to "expectedbkg" */
+
+    bool m_useRRForFake;
     bool m_doRebinning;
 
     enum kFlavour {
@@ -550,6 +552,16 @@ class LHFitter {
       Class destructor:
     */
     ~LHFitter();
+
+    inline void clearSubList() {
+	Info("clearSubList()","Do NOT subtract any process from input histograms!");
+	m_sublist.clear();
+    };
+    inline void updateSubList( const std::string& proc ) {
+	this->clearSubList();
+	Info("clearSubList()","Will subtract the following process: %s", proc.c_str() );
+	m_sublist = proc;
+    };
 
     /**
       -) Read the yields for TT, TL, LT, LL, depending on the flavour and efficiency to be fit
@@ -819,7 +831,8 @@ LHFitter :: LHFitter( kFlavour FLAVOUR, kEfficiency EFFICIENCY ) :
   m_debug(false),
   m_verbose(false),
   m_useInputFakeAvgEff(true),
-  m_doSubtraction(false),
+  m_sublist("expectedbkg"),
+  m_useRRForFake(false),
   m_doRebinning(false),
   m_nBinGroup(1),
   m_useVariableBins(false),
@@ -845,7 +858,7 @@ LHFitter :: LHFitter( kFlavour FLAVOUR, kEfficiency EFFICIENCY ) :
   Info("LHFitter()","Creating class instance to fit %s efficiency for %s... \n", m_efficiency_str.c_str(), m_flavour_str.c_str() );
 
   // Every time an instance is created, the global variables must be reset, no matter what
-  //
+
   this->resetGlobFlags();
 }
 
@@ -868,7 +881,7 @@ void LHFitter :: initialise() {
   this->getHists();
 
   // Reserve memory for (initial) parameter containers
-  //
+
   m_rel_init.reserve(m_nPtBins_Linear);
   m_fel_init.reserve(m_nPtBins_Linear);
   m_rmu_init.reserve(m_nPtBins_Linear);
@@ -921,7 +934,7 @@ void LHFitter :: initialise() {
   std::string flavour("");
 
   // Set the number of parameteres of the fit
-  //
+
   int NFLAV(0);
   if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::MUMU ) {
     NFLAV = 1; // elel(mumu)
@@ -938,8 +951,9 @@ void LHFitter :: initialise() {
       NCOMP = 1; // RR only
   }
   if ( m_efficiency == kEfficiency::FAKE ) {
-      //NCOMP = 3; // RR, RF, FR
-      NCOMP = 2; // RF, FR --> assumes RR are subtracted from MC
+      // NCOMP = 3; // RR, RF, FR
+      // NCOMP = 2; // RF, FR --> assumes RR are subtracted from MC
+      NCOMP = ( m_useRRForFake ) ? 3 : 2;
   }
 
   std::cout << "" << std::endl;
@@ -955,7 +969,7 @@ void LHFitter :: initialise() {
   //
   // 1st factor in sum: YIELDS
   // 2nd factor in sum: EFFICIENCIES
-  //
+
   const int NPAR_YIELDS = m_nPtBins_Squared * NFLAV * NCOMP;
   const int NPAR_EFF	= ( m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) ? m_nPtBins_Linear * 2 : m_nPtBins_Linear;
 
@@ -969,11 +983,11 @@ void LHFitter :: initialise() {
   int ierflg(0);
 
   // Create the TMinuit object
-  //
+
   m_myFitter = new TMinuit(m_NPAR);
 
   // Set the fitting function
-  //
+
   m_myFitter->SetFCN(myLikelihood);
 
   // Get an educated guess for the initial parameters, from the tag-and-probe measurement:
@@ -981,7 +995,7 @@ void LHFitter :: initialise() {
   // r(i), f(i)  ( in 1D bins of pT )
   //
   // RR(j,k), RF(j,k), FR(j,k), FF(j,k) ( in 2D bins of lead-sublead pT )
-  //
+
   this->getEducatedGuess();
 
   if ( m_debug ) {
@@ -989,8 +1003,7 @@ void LHFitter :: initialise() {
      if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fel_init, "Printing content of fel_init:" );
      if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_rmu_init, "Printing content of rmu_init:" );
      if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::OF || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_fmu_init, "Printing content of fmu_init:" );
-     //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
-     if ( m_efficiency == kEfficiency::REAL ) {
+     if ( m_efficiency == kEfficiency::REAL || ( m_efficiency == kEfficiency::FAKE && m_useRRForFake ) ) {
 	 if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RelRel_init,"Printing content of RelRel_init:" );
 	 if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::INCLUSIVE ) printContainer( m_RmuRmu_init,"Printing content of RmuRmu_init:" );
 	 if ( m_flavour == kFlavour::INCLUSIVE || m_flavour == kFlavour::OF ) printContainer( m_RmuRel_init,"Printing content of RmuRel_init:" );
@@ -1176,8 +1189,7 @@ void LHFitter :: initialise() {
   // Set parameters for RR
   // ---------------------
 
-  //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
-  if ( m_efficiency == kEfficiency::REAL ) {
+  if ( m_efficiency == kEfficiency::REAL || ( m_efficiency == kEfficiency::FAKE && m_useRRForFake ) ) {
 
     g_RR = true;
 
@@ -1462,8 +1474,7 @@ void LHFitter :: initialise() {
 	    printContainer( g_f2mu_idxs, "Printing content of f2mu_idxs:" );
           }
       }
-      //if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
-      if ( m_efficiency == kEfficiency::REAL ) {
+      if ( m_efficiency == kEfficiency::REAL || ( m_efficiency == kEfficiency::FAKE && m_useRRForFake ) ) {
 	  if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RelRel_idxs, "Printing content of RelRel_idxs:" );
 	  if ( m_flavour == kFlavour::MUMU || m_flavour == kFlavour::INCLUSIVE ) printContainer( g_RmuRmu_idxs, "Printing content of RmuRmu_idxs:" );
 	  if ( m_flavour == kFlavour::INCLUSIVE || m_flavour == kFlavour::OF ) printContainer( g_RmuRel_idxs, "Printing content of RmuRel_idxs:" );
@@ -1907,16 +1918,25 @@ void LHFitter :: getHists() {
 
 	  // -) Do ( !prompt & charge flip ) subtraction in OS
 	  // -) Do ( prompt & charge flip ) subtraction in SS
-	  //
-	  if  ( !s_useMC && m_doSubtraction ) {
 
-	      Info("getHists()", "Subtracting bkgs to data...");
+	  if ( m_useRRForFake && ( !m_sublist.empty() && m_sublist.compare("qmisidbkg") != 0 ) ) {
+	      Error("getHists()", "Trying to subtract %s, but you are working in the assumption there are RR events in SS! Please make sure subtraction list is either empty, or just contains \'qmisidbkg\'. Aborting", m_sublist.c_str() );
+	      exit(-1);
+	  }
 
-	      TH2D *hist_to_sub = get_object<TH2D>( *file, "expectedbkg" );
+	  if  ( !s_useMC && !m_sublist.empty() ) {
+
+	      Info("getHists()", "Subtracting bkg: %s to data...", m_sublist.c_str() );
+
+	      TH2D *hist_to_sub = get_object<TH2D>( *file, m_sublist.c_str() ); // NB: by construction, for OS events: expectedbkg = fakesbkg. For SS events: expectedbkg = qmisidbkg + promptbkg
+	      if ( !hist_to_sub ) {
+		  Error("getHists()", "Histogram %s does not exist in file. Aborting", m_sublist.c_str() );
+		  exit(-1);
+	      }
 	      hist->Add(hist_to_sub, -1.0);
 
 	      // Set bin content to 0 if subtraction gives negative yield
-	      //
+
 	      for ( int ibiny(0); ibiny < hist->GetNbinsX()+2; ++ibiny ) {
 		  for ( int ibinx(0); ibinx < hist->GetNbinsX()+2; ++ibinx ) {
 		      if ( hist->GetBinContent( hist->GetBin(ibinx,ibiny)  ) < 0 ) { hist->SetBinContent( hist->GetBin(ibinx,ibiny), 0.0); }
@@ -2484,7 +2504,7 @@ void LHFitter :: getParametersAndErrors() {
   // Get errors for RR
   // ---------------------
 
-  if ( m_efficiency == kEfficiency::REAL || m_efficiency == kEfficiency::FAKE ) {
+  if ( m_efficiency == kEfficiency::REAL || ( m_efficiency == kEfficiency::FAKE && m_useRRForFake ) ) {
 
     if ( m_flavour == kFlavour::ELEL || m_flavour == kFlavour::INCLUSIVE ) {
       for ( auto idx(0); idx < m_RelRel_errs.size(); ++idx ) {
@@ -2768,18 +2788,19 @@ void  LHFitter :: saveEfficiencies() {
 
       TH1D *r_hist(nullptr);
       if ( m_doRebinning && m_useVariableBins ) {
-        r_hist = new TH1D( "r_hist", "real efficiency", m_newNBins, m_newBins );
+	  r_hist = new TH1D( "r_hist", "real efficiency", m_newNBins, m_newBins );
       } else {
-        double rmin = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(1);
-	double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
-	r_hist = new TH1D( "r_hist", "real efficiency", m_nPtBins_Linear-1, rmin, rmax );
+	  // double rmin = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(1);
+	  // double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
+	  // r_hist = new TH1D( "r_hist", "real efficiency", m_nPtBins_Linear-1, rmin, rmax );
+	  r_hist = dynamic_cast<TH1D*>(m_histograms.at(0)->ProjectionX()->Clone("r_hist")); // This will ensure the same axis properties of the input hist will be preserved (crucial if input TH2 had variable bin size axes)
       }
 
       r_hist->GetYaxis()->SetTitle("Real efficiency");
       r_hist->GetYaxis()->SetRangeUser(0.0,1.0);
 
-      if ( outfilename.find("_mu") != std::string::npos ) { xtitle = "muon pT [GeV]"; }
-      else if ( outfilename.find("_el") != std::string::npos ) { xtitle = "electron pT [GeV]"; }
+      if      ( outfilename.find("_mu") != std::string::npos ) { xtitle = "p_{T}^{#mu} [GeV]"; }
+      else if ( outfilename.find("_el") != std::string::npos ) { xtitle = "p_{T}^{e} [GeV]"; }
 
       r_hist->GetXaxis()->SetTitle(xtitle.c_str());
 
@@ -2822,16 +2843,17 @@ void  LHFitter :: saveEfficiencies() {
       if ( m_doRebinning && m_useVariableBins ) {
 	f_hist = new TH1D( "f_hist", "fake efficiency", m_newNBins, m_newBins );
       } else {
-        double rmin = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(1);
-	double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
-	f_hist = new TH1D( "f_hist", "fake efficiency", m_nPtBins_Linear-1, rmin, rmax );
+	  // double rmin = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge(1);
+	  // double rmax = ( m_histograms.at(0) )->GetXaxis()->GetBinLowEdge( ( m_histograms.at(0) )->GetNbinsX()+1 );
+	  // f_hist = new TH1D( "f_hist", "fake efficiency", m_nPtBins_Linear-1, rmin, rmax );
+	  f_hist = dynamic_cast<TH1D*>(m_histograms.at(0)->ProjectionX()->Clone("f_hist")); // This will ensure the same axis properties of the input hist will be preserved (crucial if input TH2 had variable bin size axes)
       }
 
       f_hist->GetYaxis()->SetTitle("Fake efficiency");
       f_hist->GetYaxis()->SetRangeUser(0.0,1.0);
 
-      if ( outfilename.find("_mu") != std::string::npos ) { xtitle = "muon pT [GeV]"; }
-      else if ( outfilename.find("_el") != std::string::npos ) { xtitle = "electron pT [GeV]"; }
+      if      ( outfilename.find("_mu") != std::string::npos ) { xtitle = "p_{T}^{#mu} [GeV]"; }
+      else if ( outfilename.find("_el") != std::string::npos ) { xtitle = "p_{T}^{e} [GeV]"; }
 
       f_hist->GetXaxis()->SetTitle(xtitle.c_str());
 
@@ -2909,31 +2931,34 @@ int main( int argc, char **argv ) {
 
     // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
 
-    //const std::string tp_path("../blahblah/");
+    const std::string tp_path("../PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_25ns_v26_LeptonMVA/");
 
     // Input 2D pT histograms
 
-    //const std::string input_path("../blahblah/");
+    const std::string input_path("../PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_LHFit_DLT_25ns_v26_LeptonMVA_Bin_10_26_50_210/");
+    // const std::string input_path("../PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_LHFit_DLT_25ns_v26_LeptonMVA_Bin_10_15_20_26_35_50_210/");
+    // const std::string input_path("../OutputPlots_MMRates_LHFit_DLT_25ns_v26_LeptonMVA_FixedBins/");
+    // const std::string input_path("../PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_LHFit_DLT_25ns_v26_LeptonMVA_Bin_10_50_210/");
 
     // DO THE FIT ON TTBAR MC
 
     // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
 
     //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA/");
-    const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_410000/");
+    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_410000/");
     //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonCutBased/");
     //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonCutBased_410000/");
 
     // Input 2D pT histograms
 
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA/");
-    const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA_410000/");
+    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA_410000/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonCutBased/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonCutBased_410000/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_TRIGMATCH_EFF/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_NOT_TRIGMATCH_EFF/");
 
-    LHFitter::useMC();
+    //LHFitter::useMC();
 
     // -------------
     // FIT SF events
@@ -2944,32 +2969,42 @@ int main( int argc, char **argv ) {
       // fit for real efficiency - e
 
       LHFitter real_ee( LHFitter::kFlavour::ELEL, LHFitter::kEfficiency::REAL );
+
       //real_ee.setVerbosity(LHFitter::kVerbosity::DEBUG);
       real_ee.setTagAndProbePath(tp_path);
       real_ee.setInputHistPath(input_path);
-      real_ee.m_doSubtraction = true;
+
+      // Uncomment this if want NO subtraction. By default, "expectedbkg" is subtracted
+      // real_ee.clearSubList();
+
       // REBINNING
       real_ee.m_doRebinning = true;
       //real_ee.setBinGrouping(2);
       int array_real_bin_size(8);
       double real_ee_new_bins[array_real_bin_size] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0};
       real_ee.setVariableBins( real_ee_new_bins, array_real_bin_size-1 );
+
       real_ee.initialise();
       real_ee.fit();
 
       // fit for fake efficiency - e
 
       LHFitter fake_ee( LHFitter::kFlavour::ELEL, LHFitter::kEfficiency::FAKE );
+
       //fake_ee.setVerbosity(LHFitter::kVerbosity::DEBUG);
       fake_ee.setTagAndProbePath(tp_path);
       fake_ee.setInputHistPath(input_path);
-      fake_ee.m_doSubtraction = true;
+
+      // Uncomment this if want NO subtraction. By default, "expectedbkg" is subtracted
+      // fake_ee.clearSubList();
+
       // REBINNING
       fake_ee.m_doRebinning = true;
       //fake_ee.setBinGrouping(2);
       int array_fake_bin_size(6);
       double fake_ee_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,25.0,40.0,200.0};
       fake_ee.setVariableBins( fake_ee_new_bins, array_fake_bin_size-1 );
+
       fake_ee.initialise();
       fake_ee.fit();
 
@@ -2980,33 +3015,43 @@ int main( int argc, char **argv ) {
       // fit for real efficiency - mu
 
       LHFitter real_mm( LHFitter::kFlavour::MUMU, LHFitter::kEfficiency::REAL );
+
       //real_mm.setVerbosity(LHFitter::kVerbosity::DEBUG);
       real_mm.setTagAndProbePath(tp_path);
       real_mm.setInputHistPath(input_path);
-      real_mm.m_doSubtraction = true;
+
+      // Uncomment this if want NO subtraction. By default, "expectedbkg" is subtracted
+      // real_mm.clearSubList();
+
       // REBINNING
-      real_mm.m_doRebinning = true;
-      //real_mm.setBinGrouping(2);
-      int array_real_bin_size(10);
-      double real_mm_new_bins[array_real_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,80.0,100.0,140.0,200.0};
-      real_mm.setVariableBins( real_mm_new_bins, array_real_bin_size-1 );
+      // real_mm.m_doRebinning = true;
+      //// real_mm.setBinGrouping(2); // uncomment this if want to use fixed bin size for rebinning
+      // int array_real_bin_size(7);
+      // double real_mm_new_bins[array_real_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,200.0};
+      // real_mm.setVariableBins( real_mm_new_bins, array_real_bin_size-1 );
+
       real_mm.initialise();
       real_mm.fit();
 
       // fit for fake efficiency - mu
 
       LHFitter fake_mm( LHFitter::kFlavour::MUMU, LHFitter::kEfficiency::FAKE );
+
       //fake_mm.setVerbosity(LHFitter::kVerbosity::DEBUG);
       fake_mm.setTagAndProbePath(tp_path);
       fake_mm.setInputHistPath(input_path);
-      fake_mm.m_doSubtraction = true;
+
+      // Uncomment this if want NO subtraction. By default, "expectedbkg" is subtracted
+      fake_mm.clearSubList();
+      fake_mm.m_useRRForFake = true; // NB: if m_useRRForFake = true, make sure NO processes other than QMisID are being subtracted!
+
       // REBINNING
-      fake_mm.m_doRebinning = true;
-      //fake_mm.setBinGrouping(2);
-      int array_fake_bin_size(7);
-      double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,200.0};
-      //int array_fake_bin_size(6);
-      fake_mm.setVariableBins( fake_mm_new_bins, array_fake_bin_size-1 );
+      // fake_mm.m_doRebinning = true;
+      // // fake_mm.setBinGrouping(2);
+      // int array_fake_bin_size(7);
+      // double fake_mm_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,200.0};
+      // fake_mm.setVariableBins( fake_mm_new_bins, array_fake_bin_size-1 );
+
       fake_mm.initialise();
       fake_mm.fit();
 
@@ -3021,32 +3066,42 @@ int main( int argc, char **argv ) {
       // fit for real efficiency - e,mu
 
       LHFitter real_of( LHFitter::kFlavour::OF, LHFitter::kEfficiency::REAL );
-      real_of.setVerbosity(LHFitter::kVerbosity::DEBUG);
+
+      // real_of.setVerbosity(LHFitter::kVerbosity::DEBUG);
       real_of.setTagAndProbePath(tp_path);
       real_of.setInputHistPath(input_path);
-      real_of.m_doSubtraction = true;
+
+      // Uncomment this if want NO subtraction. By default, "expectedbkg" is subtracted
+      // real_of.clearSubList();
+
       // REBINNING
       real_of.m_doRebinning = true;
       //real_of.setBinGrouping(2);
       int array_real_bin_size(10);
       double real_of_new_bins[array_real_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,80.0,100.0,140.0,200.0};
       real_of.setVariableBins( real_of_new_bins, array_real_bin_size-1 );
+
       real_of.initialise();
       real_of.fit();
 
       // fit for fake efficiency - e,mu
 
       LHFitter fake_of( LHFitter::kFlavour::OF, LHFitter::kEfficiency::FAKE );
+
       fake_of.setVerbosity(LHFitter::kVerbosity::DEBUG);
       fake_of.setTagAndProbePath(tp_path);
       fake_of.setInputHistPath(input_path);
-      fake_of.m_doSubtraction = true;
+
+      // Uncomment this if want NO subtraction. By default, "expectedbkg" is subtracted
+      // fake_of.clearSubList();
+
       // REBINNING
       fake_of.m_doRebinning = true;
       //fake_of.setBinGrouping(2);
       int array_fake_bin_size(8);
       double fake_of_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,60.0,140.0,200.0};
       fake_of.setVariableBins( fake_of_new_bins, array_fake_bin_size-1 );
+
       fake_of.initialise();
       fake_of.fit();
 
@@ -3061,32 +3116,44 @@ int main( int argc, char **argv ) {
       // fit for real efficiency - e,mu
 
       LHFitter real_incl( LHFitter::kFlavour::INCLUSIVE, LHFitter::kEfficiency::REAL );
+
       //real_incl.setVerbosity(LHFitter::kVerbosity::DEBUG);
       real_incl.setTagAndProbePath(tp_path);
       real_incl.setInputHistPath(input_path);
-      real_incl.m_doSubtraction = true;
+
+      // Uncomment this if want NO subtraction. By default, "expectedbkg" is subtracted
+      // real_incl.clearSubList();
+
       // REBINNING
-      real_incl.m_doRebinning = true;
-      //real_incl.setBinGrouping(2);
-      int array_real_bin_size(8);
-      double real_incl_new_bins[array_real_bin_size] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0}; // e,mu - DATA, MC
-      real_incl.setVariableBins( real_incl_new_bins, array_real_bin_size-1 );
+      // real_incl.m_doRebinning = true;
+      //// real_incl.setBinGrouping(2);
+      // int array_real_bin_size(8);
+      // double real_incl_new_bins[array_real_bin_size] = {10.0,15.0,20.0,25.0,30.0,40.0,60.0,200.0}; // e,mu - DATA, MC
+      // real_incl.setVariableBins( real_incl_new_bins, array_real_bin_size-1 );
+
       real_incl.initialise();
       real_incl.fit();
 
       // fit for fake efficiency - e,mu
 
       LHFitter fake_incl( LHFitter::kFlavour::INCLUSIVE, LHFitter::kEfficiency::FAKE );
+
       //fake_incl.setVerbosity(LHFitter::kVerbosity::DEBUG);
       fake_incl.setTagAndProbePath(tp_path);
       fake_incl.setInputHistPath(input_path);
-      fake_incl.m_doSubtraction = true;
+
+      // Uncomment this if want NO subtraction. By default, "expectedbkg" is subtracted
+      // fake_incl.clearSubList();
+      fake_incl.updateSubList("qmisidbkg"); // This will make sure "qmisidbkg" only is subtracted
+      fake_incl.m_useRRForFake = true; // NB: if m_useRRForFake = true, make sure NO processes other than QMisID are being subtracted!
+
       // REBINNING
-      fake_incl.m_doRebinning = true;
-      //fake_incl.setBinGrouping(2);
-      int array_fake_bin_size(7);
-      double fake_incl_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,200.0}; // mu - DATA, MC
-      fake_incl.setVariableBins( fake_incl_new_bins, array_fake_bin_size-1 );
+      // fake_incl.m_doRebinning = true;
+      //// fake_incl.setBinGrouping(2);
+      // int array_fake_bin_size(7);
+      // double fake_incl_new_bins[array_fake_bin_size] = {10.0,15.0,20.0,26.0,35.0,50.0,200.0}; // mu - DATA, MC
+      // fake_incl.setVariableBins( fake_incl_new_bins, array_fake_bin_size-1 );
+
       fake_incl.initialise();
       fake_incl.fit();
 

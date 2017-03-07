@@ -162,7 +162,11 @@ class Inputs:
 
     def getSysIndexes(self, sampleID, branchID):
 
-        sampletree = self.getTree(sampleid=sampleID)
+        if sampleID:
+            sampletree = self.getTree(sampleid=sampleID)
+        else:
+            sampletree = self.getTree(group='Data',subgroup='physics_Main')
+
         branches_array = sampletree.GetListOfBranches()
         idxlist = []
         for b in range(0,branches_array.GetEntries()):
@@ -979,6 +983,10 @@ class Background:
                 tSum.Add(h)
             histlist.append( (h, self.procmap[name]) )
 
+        # Sort histlist, from smallest yield to largest
+
+        histlist.sort( key=lambda x: x[0].Integral())
+
         return tSum, histlist
 
     def plot(self, var, cut = None, eventweight=None, category = None, signal = '125', signalfactor = 1., systematics = None, systematicsdirection = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps'], options = {}, normalise = False, log=False, logx=False):
@@ -1081,6 +1089,7 @@ class Background:
             #pad2.SetGridy(1)
             if log or var.logaxis:
                 pad1.SetLogy()
+                pad2.SetLogy()
                 stack.SetMinimum(0.1)
             if logx or var.logaxisX:
                 pad1.SetLogx()
@@ -1159,17 +1168,23 @@ class Background:
                 if (ratiomc.GetBinContent(i) + ratiomc.GetBinError(i)) != 0. and ratiomc.GetBinContent(i) > valYmax:
                     valYmax = ratiomc.GetBinContent(i) + ratiomc.GetBinError(i)
 
-            #ratiomc.GetYaxis().SetRangeUser(0.9*valYmin, 1.1*valYmax)
-            if type(showratio) is tuple:
-                ratiomc.GetYaxis().SetRangeUser(showratio[0], showratio[1])
-            else:
-                ratiomc.GetYaxis().SetRangeUser(0.75, 1.25)
-                if not ( "$ISDATA$" in obslist[0][0].GetName() ):
-                    ratiomc.GetYaxis().SetRangeUser(0.3, 1.7)
+            # ratiomc.SetMinimum(0.7*valYmin)
+            # ratiomc.SetMaximum(1.3*valYmax)
+            ratiomc.SetMinimum(0.75)
+            ratiomc.SetMaximum(1.25)
 
-            #ratiomc.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
+            if type(showratio) is tuple:
+                if showratio[0] == "MIN" and type(showratio[1]) is float:
+                    ratiomc.SetMinimum(0.7*valYmin)
+                    ratiomc.SetMaximum(showratio[1])
+                elif showratio[1] == "MAX" and type(showratio[0]) is float:
+                    ratiomc.SetMinimum(showratio[0])
+                    ratiomc.SetMaximum(1.3*valYmax)
+                else:
+                    ratiomc.SetMinimum(showratio[0])
+                    ratiomc.SetMaximum(showratio[1])
+
             pad2.cd()
-            #pad2.SetLogy(2)
             ratiomc.Draw("E2")
             refl = TLine(ratiomc.GetBinLowEdge(1), 1., ratiomc.GetBinLowEdge(ratiomc.GetNbinsX()+1), 1.)
             refl.SetLineColor(kRed)

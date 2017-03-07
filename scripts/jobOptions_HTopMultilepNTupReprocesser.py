@@ -32,14 +32,11 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_inputBranches"              : branches_to_activate_str,
                                     "m_weightToCalc"               : "MM", #"QMisID",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
-                                    "m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v21.root",
-                                    "m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_antiT_25ns_v21.root",
+                                    "m_QMisIDRates_Filename_T"     : "Rates_3D_Tot_v26_Tight.root",
+                                    "m_QMisIDRates_Filename_AntiT" : "Rates_3D_Tot_v26_Loose.root",
                                     "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
                                     "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPtLoose",
-				    #
-                                    #"m_QMisIDRates_Filename_T"     : "QMisIDRates_Data_2016_T_25ns_v19.root",
-                                    #"m_QMisIDRates_Filename_AntiT" : "QMisIDRates_Data_2016_TantiT_25ns_v19.root",
-                                    #"m_useTAntiTRates"             : True, # Set True for v19
+                                    "m_useTAntiTRates"             : False, # --> set this option to True if QMisID rates have NOT been measured independently for T and AntiT electrons - Set True for v19
                                     #
                                     # ------------------------------------------------------------
                                     #
@@ -73,25 +70,28 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
                                     # v26
                                     #
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonMVA_410501",
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonMVA_410501",
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonMVA_410000",
                                     #
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonCutBased_410501",
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonCutBased_410000",
                                     #"m_useCutBasedLep"             : True,
                                     #
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_25ns_v26_LeptonMVA_DDQMisID",
+                                    #
                                     # ------------------------------------------------------------
                                     #
-				    #"m_systematics_list"           : "Nominal,Stat,numerator_QMisID,denominator_QMisID",
-				    "m_systematics_list"           : "Nominal,Stat",
+				    "m_systematics_list"           : "Nominal,Stat,N_PromptSS,D_PromptSS,N_FakesOS,D_FakesOS,N_QMisID,D_QMisID",
+				    #"m_systematics_list"           : "Nominal,Stat",
+                                    "m_correlatedMMWeights"        : False,
+                                    #
 				    "m_useTrigMatchingInfo"        : False,
 				    #
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
 				    #
-                                    "m_doMMClosure"                : True,
+                                    "m_doMMClosure"                : False,
                                     "m_useEtaParametrisation"      : False,
 				    "m_useTEfficiency"             : False,
-                                    "m_correlatedMMWeights"        : False,
                                   }
 
 # Instantiate the NTupleSvc algorithm

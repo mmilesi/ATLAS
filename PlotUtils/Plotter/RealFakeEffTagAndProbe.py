@@ -28,7 +28,7 @@ parser.add_argument("inputpath", metavar="inputpath",type=str,
 # optional arguments
 #*******************
 
-g_avaialble_systematics = ["QMisID","AllSimStat"]
+g_avaialble_systematics = ["QMisID","PromptSS","FakesOS"]
 
 g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
                    "ICHEP 2015+2016 DS":13.20768,       # August 2016
@@ -130,9 +130,10 @@ class RealFakeEffTagAndProbe:
 
 	if not self.closure:
 	    self.__processes.append("observed")
-	    #self.__processes.extend(["expectedbkg","dibosonbkg","ttbarzbkg","raretopbkg","qmisidbkg","wjetsbkg","ttbarwbkg","ttbarbkg","zjetsbkg","singletopbkg","allsimbkg"])
             if not self.nosub:
-                self.__processes_sub.extend(["qmisidbkg","allsimbkg"])
+                #self.__processes_sub.extend(["qmisidbkg","allsimbkg"])
+                self.__processes_sub.extend(["qmisidbkg","promptbkg","fakesbkg"])
+                #self.__processes_sub.extend(["qmisidbkg","dibosonbkg","ttbarzbkg","raretopbkg","wjetsbkg","ttbarwbkg","ttbarbkg","zjetsbkg","singletopbkg"])
 	else:
 	    self.__processes.append("expectedbkg")
 
@@ -162,12 +163,14 @@ class RealFakeEffTagAndProbe:
 
         # The following dictionary associates a known process to a list of affecting systematics
 
-        self.__process_syst_dict = {"qmisidbkg":["QMisID"], "allsimbkg":["AllSimStat"]}
-
-        self.__syst_color_dict = {"QMisID_N":kGreen+3,
-	                          "QMisID_D":kGreen-7,
-	                          "AllSimStat_N":kAzure,
-				  "AllSimStat_D":kAzure+6}
+        self.__process_syst_dict = {"qmisidbkg":["QMisID"], "promptbkg":["PromptSS"],"fakesbkg":["FakesOS"]}
+        self.__syst_color_dict   = {"QMisID_N":kGreen+3,
+                                    "QMisID_D":kGreen-7,
+                                    "PromptSS_N":kAzure,
+                                    "PromptSS_D":kAzure+6,
+                                    "FakesOS_N":kRed,
+                                    "FakesOS_D":kMagenta,
+                                    }
 
     	# -----------------------------------------
     	# these dictionaries will store the inputs
@@ -209,6 +212,9 @@ class RealFakeEffTagAndProbe:
 
         if not key in self.histkeys:
             self.histkeys.append(key)
+
+        if self.verbose:
+            print("Saving histogram for N,D,AntiN w/ key: {0}".format(key))
 
         if eventset == "N":
             self.numerator_hists[key] = hist
@@ -295,20 +301,25 @@ class RealFakeEffTagAndProbe:
 
 			    for sys in self.__systematics:
 
+                                if sys == "QMisID" and not ( eff == "Fake" and lep == "El" ):
+                                    print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
+                                    continue
+                                if sys == "PromptSS" and not ( eff == "Fake" ):
+                                    print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
+                                    continue
+                                if sys == "FakesOS" and not ( eff == "Real" ):
+                                    print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
+                                    continue
+
 			    	for sysdir in self.__systematicsdirections:
 
 			    	    append = ("_" +sys + "sys" + "_" + sysdir,"")[bool(not sys and not sysdir)]
 
 				    sysprocname = subproc + append
 
-			    	    if thisfile.GetListOfKeys().Contains(sysprocname) or ( sys == "AllSimStat" and sysdir ):
+			    	    if thisfile.GetListOfKeys().Contains(sysprocname):
 
-                                        thissyshist = None
-
-                                        if sys == "AllSimStat":
-                                            thissyshist = self.__getStatsVariedHist__( thisfile.Get("allsimbkg"), sysdir )
-                                        else:
-                                            thissyshist = thisfile.Get(sysprocname)
+                                        thissyshist = thisfile.Get(sysprocname)
 
 					keyappend = ("_" + sys + "_" + sysdir,"")[bool(not sys and not sysdir)]
 			    		syskey = "_".join( (actual_eff,lep,var,subproc) ) + keyappend
@@ -330,7 +341,7 @@ class RealFakeEffTagAndProbe:
         # Case 1):
 	# Subtract the entire histogram (identified by "proc_sub_key") from the "proc_key" histogram
 
-        if ( bin_idx == None and not proc_sub_base_key ) or ( bin_idx != None and  proc_sub_key == proc_sub_base_key ):
+        if ( bin_idx == None and not proc_sub_base_key ) or ( bin_idx != None and proc_sub_key == proc_sub_base_key ):
 
            if sel == "N":
 	       hist     = self.numerator_hists.get(proc_key)
@@ -342,13 +353,12 @@ class RealFakeEffTagAndProbe:
 	       hist     = self.antinumerator_hists.get(proc_key)
 	       sub_hist = self.antinumerator_hists.get(proc_sub_key)
 	   if sub_hist:
-	       if self.verbose:
-	           print("\t{0:.3f} ({1}) - {2:.3f} ({3})".format(hist.Integral(0,hist.GetNbinsX()+1),hist.GetName(),sub_hist.Integral(0,sub_hist.GetNbinsX()+1),sub_hist.GetName()))
-
+               integral_pre_sub = hist.Integral(0,hist.GetNbinsX()+1)
                hist.Add( sub_hist, -1 )
-
+               integral_post_sub = hist.Integral(0,hist.GetNbinsX()+1)
 	       if self.verbose:
-	           print("\t ==> = {0:.3f}".format(hist.Integral(0,hist.GetNbinsX()+1)))
+	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),sub_hist.Integral(0,sub_hist.GetNbinsX()+1),sub_hist.GetName(),integral_post_sub))
+
 
         # Case 2):
 	# Make a specific subtraction for the bin in question
@@ -369,12 +379,12 @@ class RealFakeEffTagAndProbe:
 	       sub_basehist = self.antinumerator_hists.get(proc_sub_base_key)
 
 	   if sub_hist and sub_basehist:
-	       if self.verbose:
-	           print("\t{0:.3f} ({1}) - {2:.3f} ({3})".format(hist.Integral(0,hist.GetNbinsX()+1),hist.GetName(),sub_basehist.Integral(0,sub_basehist.GetNbinsX()+1),sub_basehist.GetName()))
-	           print("\tbin {0} - {1:.3f} ({2}) - {3:.3f} ({4})".format(bin_idx,hist.GetBinContent(bin_idx),hist.GetName(),sub_hist.GetBinContent(bin_idx),sub_hist.GetName()))
 
-               bin_idx_sub     = hist.GetBinContent(bin_idx) - sub_hist.GetBinContent(bin_idx)
-	       bin_idx_sub_err = math.sqrt( pow( hist.GetBinError(bin_idx),2.0) + pow( sub_hist.GetBinError(bin_idx),2.0 ) )
+               integral_pre_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               thisbin_pre_sub  = hist.GetBinContent(bin_idx)
+
+               bin_sub     = hist.GetBinContent(bin_idx) - sub_hist.GetBinContent(bin_idx)
+	       bin_sub_err = math.sqrt( pow( hist.GetBinError(bin_idx),2.0) + pow( sub_hist.GetBinError(bin_idx),2.0 ) )
 
 	       # Firstly, subtract the base histogram...
 
@@ -382,11 +392,21 @@ class RealFakeEffTagAndProbe:
 
 	       # ...then change the bin in question!
 
-	       hist.SetBinContent( bin_idx, bin_idx_sub )
-	       hist.SetBinError( bin_idx, bin_idx_sub_err )
+	       hist.SetBinContent( bin_idx, bin_sub )
+	       hist.SetBinError( bin_idx, bin_sub_err )
+
+               integral_post_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               thisbin_post_sub  = hist.GetBinContent(bin_idx)
 
 	       if self.verbose:
-	           print("\t ==> = {0:.3f}".format(hist.Integral(0,hist.GetNbinsX()+1)))
+	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),sub_basehist.Integral(0,sub_basehist.GetNbinsX()+1),sub_basehist.GetName(),integral_post_sub))
+	           print("\t\tbin {0} - {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(bin_idx,thisbin_pre_sub,hist.GetName(),sub_hist.GetBinContent(bin_idx),sub_hist.GetName(),thisbin_post_sub))
+
+	   else:
+               if not sub_hist:
+                   print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
+               if not sub_basehist:
+                   print("\tCouldn't find histogram for: proc_sub_base_key = {0}".format(proc_sub_base_key))
 
         return hist
 
@@ -401,12 +421,19 @@ class RealFakeEffTagAndProbe:
 
 	    if not ( len(tokens) == 4 and "observed" in tokens[3] ) : continue
 
-	    if self.verbose:
-	    	print("Subtracting to {0}...".format(key))
-
 	    base = "_".join( (tokens[0],tokens[1],tokens[2]) )
 
 	    for sys in self.__systematics:
+
+                if sys == "QMisID" and not all( s in key for s in ["Fake","El"] ):
+                    print("Skipping {0} systematics for {1}".format(sys,key))
+                    continue
+                if sys == "PromptSS" and not ( "Fake" in key ):
+                    print("Skipping {0} systematics for {1}".format(sys,key))
+                    continue
+                if sys == "FakesOS" and not ( "Real" in key ):
+                    print("Skipping {0} systematics for {1}".format(sys,key))
+                    continue
 
 	        keyappend_sys = ("_" + sys,"")[bool(not sys)]
 
@@ -424,26 +451,27 @@ class RealFakeEffTagAndProbe:
 
 	    	    subkeysys = key + "_sub" + keyappend_sys_sysdir
 
-		    if ( not sys and not sysdir):
+                    if self.verbose:
+                        print("\nSubtracting to {0}...".format(key+keyappend_sys_sysdir))
 
-                        if not subkeysys in self.histkeys:
-                            self.histkeys.append(subkeysys)
+                    if not subkeysys in self.histkeys:
+                        self.histkeys.append(subkeysys)
 
-	    	        self.numerator_hists[subkeysys]	    = self.numerator_hists[key].Clone(subkeysys)
-	    	        self.denominator_hists[subkeysys]   = self.denominator_hists[key].Clone(subkeysys)
-	    	        self.antinumerator_hists[subkeysys] = self.antinumerator_hists[key].Clone(subkeysys)
+	    	    self.numerator_hists[subkeysys]	= self.numerator_hists[key].Clone(subkeysys)
+	    	    self.denominator_hists[subkeysys]   = self.denominator_hists[key].Clone(subkeysys)
+	    	    self.antinumerator_hists[subkeysys] = self.antinumerator_hists[key].Clone(subkeysys)
 
-		    else:
-		    	for ibin in range(1,self.numerator_hists[key].GetSize()):
+                    if sys or sysdir:
+                        for ibin in range(1,self.numerator_hists[key].GetSize()):
 
-		     	    subkeysys_ibin = subkeysys + "_" + str(ibin)
+                            subkeysys_ibin = subkeysys + "_" + str(ibin)
 
                             if not subkeysys_ibin in self.histkeys:
                                 self.histkeys.append(subkeysys_ibin)
 
-	    	    	    self.numerator_hists[subkeysys_ibin]     = self.numerator_hists[key].Clone(subkeysys_ibin)
-	    	    	    self.denominator_hists[subkeysys_ibin]   = self.denominator_hists[key].Clone(subkeysys_ibin)
-	    	    	    self.antinumerator_hists[subkeysys_ibin] = self.antinumerator_hists[key].Clone(subkeysys_ibin)
+                                self.numerator_hists[subkeysys_ibin]     = self.numerator_hists[key].Clone(subkeysys_ibin)
+                                self.denominator_hists[subkeysys_ibin]   = self.denominator_hists[key].Clone(subkeysys_ibin)
+                                self.antinumerator_hists[subkeysys_ibin] = self.antinumerator_hists[key].Clone(subkeysys_ibin)
 
 	            for subproc in self.__processes_sub:
 
@@ -457,34 +485,25 @@ class RealFakeEffTagAndProbe:
 			if ( self.__process_syst_dict.get(subproc) ) and sys in self.__process_syst_dict.get(subproc):
 			    subprockey_sys_sysdir += keyappend_sys_sysdir
 
-			# Nominal subtraction
+                        if self.verbose: print("\n\tProcess to be subtracted: {0} (Base process: {1})".format(subprockey_sys_sysdir,subprockey_base))
 
-			if ( not sys and not sysdir):
+                        if self.verbose: print("")
+		    	self.numerator_hists[subkeysys]     = self.__subtract__( "N",     subkeysys, subprockey_sys_sysdir )
+            	    	self.denominator_hists[subkeysys]   = self.__subtract__( "D",     subkeysys, subprockey_sys_sysdir )
+            	    	self.antinumerator_hists[subkeysys] = self.__subtract__( "AntiN", subkeysys, subprockey_sys_sysdir )
 
-                            if self.verbose:
-                                print "A -B ==>"
-                                print "subkeysys (A): ", subkeysys
-                                print "subprockey (B): ", subprockey_sys_sysdir
+                        if sys or sysdir:
 
-		    	    self.numerator_hists[subkeysys]     = self.__subtract__( "N",     subkeysys, subprockey_sys_sysdir )
-            	    	    self.denominator_hists[subkeysys]   = self.__subtract__( "D",     subkeysys, subprockey_sys_sysdir )
-            	    	    self.antinumerator_hists[subkeysys] = self.__subtract__( "AntiN", subkeysys, subprockey_sys_sysdir )
+                            # Subtract sys bin by bin
 
-			else:
+                            for ibin in range(1,self.numerator_hists[key].GetSize()):
 
-			    for ibin in range(1,self.numerator_hists[key].GetSize()):
+                                subkeysys_ibin = subkeysys + "_" + str(ibin)
 
-				subkeysys_ibin = subkeysys + "_" + str(ibin)
-
-                                if self.verbose:
-                                    print "\n\tA -B ==>"
-                                    print "\tsubkeysys (A): ", subkeysys_ibin
-                                    print "\tsubprockey (B): ", subprockey_sys_sysdir
-
-		    	   	self.numerator_hists[subkeysys_ibin]     = self.__subtract__( "N",     subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
-            	    	   	self.denominator_hists[subkeysys_ibin]   = self.__subtract__( "D",     subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
-            	    	   	self.antinumerator_hists[subkeysys_ibin] = self.__subtract__( "AntiN", subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
-
+                                if self.verbose: print("")
+                                self.numerator_hists[subkeysys_ibin]     = self.__subtract__( "N",     subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
+                                self.denominator_hists[subkeysys_ibin]   = self.__subtract__( "D",     subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
+                                self.antinumerator_hists[subkeysys_ibin] = self.__subtract__( "AntiN", subkeysys_ibin, subprockey_sys_sysdir, ibin, subprockey_base )
 
             self.storeYields()
 
@@ -746,8 +765,6 @@ class RealFakeEffTagAndProbe:
 
     def __makeProjectionHists__( self, histogram, eventset ):
 
-        print("\n__makeProjectionHists__:: eventset = {0}\n".format(eventset))
-
         for key in sorted(self.histkeys):
 
             if not "&&" in key or "_proj" in key: continue
@@ -817,28 +834,28 @@ class RealFakeEffTagAndProbe:
 
     def computeEfficiencies( self, variation ):
 
+        if self.closure and variation != "nominal":
+            print("\n\tCLOSURE: do nominal only...")
+            return
+        if self.nosub and variation != "nominal":
+            print("\n\No subtraction activated: do nominal only...")
+            return
+
         for key in sorted(self.histkeys):
             if variation != "nominal": continue
             self.__makeProjectionHists__( self.numerator_hists[key], "N" )
             self.__makeProjectionHists__( self.denominator_hists[key], "D" )
             self.__makeProjectionHists__( self.antinumerator_hists[key], "AntiN" )
 
-        self.storeYields()
+        #self.storeYields()
 
-        print("\nCalculating EFFICIENCIES...")
+        print("\nCalculating EFFICIENCIES - {0}...".format(variation))
 
         nominal_key = None
 
         # NB: here is crucial to loop over the alphabetically-sorted keys!
 
         for key in sorted(self.histkeys):
-
-	    if self.closure and variation != "nominal":
-	        print("\n\tCLOSURE: do nominal only...")
-		return
-	    if self.nosub and variation != "nominal":
-	        print("\n\No subtraction activated: do nominal only...")
-		return
 
             tokens = key.split("_")
 
@@ -876,21 +893,23 @@ class RealFakeEffTagAndProbe:
 
             h_pass = h_tot = None
 
+            key_N = key_AntiN = nominal_key
             append = ""
-            if variation == "nominal":
-                h_pass = self.numerator_hists[nominal_key]
-                h_tot  = h_pass.Clone()
-                h_tot.Add(self.antinumerator_hists[nominal_key])
-            elif variation == "numerator":
-                append = "numerator"
-                h_pass = self.numerator_hists[key]
-                h_tot  = h_pass.Clone()
-                h_tot.Add(self.antinumerator_hists[key])
-            elif variation == "denominator":
-                append = "denominator"
-                h_pass = self.numerator_hists[key]
-                h_tot  = h_pass.Clone()
-                h_tot.Add(self.antinumerator_hists[key])
+
+            if variation == "N":
+                append = "N"
+                key_N     = key
+                key_AntiN = nominal_key
+            elif variation == "D":
+                append = "D"
+                key_N     = nominal_key
+                key_AntiN = key
+
+            # Crucial to clone histograms here!
+
+            h_pass = self.numerator_hists[key_N].Clone()
+            h_tot  = h_pass.Clone()
+            h_tot.Add(self.antinumerator_hists[key_AntiN].Clone())
 
 	    # ----------------------------------------------------------------------------------
 
@@ -907,9 +926,9 @@ class RealFakeEffTagAndProbe:
             # ----------------------------------------------------------------------------------
 
 	    ratiolist = []
-	    for idx, elem in enumerate(self.numerator_yields[key]):
+	    for idx, elem in enumerate(self.numerator_yields[key_N]):
 	        n = elem
-		d = self.denominator_yields[key][idx]
+		d = n + self.antinumerator_yields[key_AntiN][idx]
 		r = -1 # just an unphysical value
 		if d:
 		    r = n/d
@@ -918,13 +937,13 @@ class RealFakeEffTagAndProbe:
             if self.verbose:
                 print("\t-----------------------------------------------------")
                 print("\tHistogram: {0}\n".format(key))
-                print("\tNumerator : integral = {0}".format(self.numerator_yields[key][-1]))
-                print("\t\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.numerator_yields[key][:-1])))
-                print("\tDenominator  (N+!N): integral = {0}".format(self.denominator_yields[key][-1]))
-                print("\t\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.denominator_yields[key][:-1])))
-                print("\tAntiNumerator: integral = {0}".format(self.antinumerator_yields[key][-1]))
-                print("\t\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.antinumerator_yields[key][:-1])))
-                print("\tRatio N/D: integral = {0}".format(ratiolist[-1]))
+                print("\tNumerator : integral = {0:.3f}".format(self.numerator_yields[key_N][-1]))
+                print("\t\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.numerator_yields[key_N][:-1])))
+                print("\tDenominator  (N+!N): integral = {0:.3f}".format( self.numerator_yields[key_N][-1] + self.antinumerator_yields[key_AntiN][-1]))
+                print("\t\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate( [ sum(x) for x in zip(  self.numerator_yields[key_N][:-1], self.antinumerator_yields[key_AntiN][:-1] ) ] ) ) )
+                print("\tAntiNumerator: integral = {0:.3f}".format(self.antinumerator_yields[key_AntiN][-1]))
+                print("\t\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(self.antinumerator_yields[key_AntiN][:-1])))
+                print("\tRatio N/D (<eff>): integral = {0:.3f}".format(ratiolist[-1]))
                 print("\t\t" + " ; ".join( "({0},{1:.3f})".format(bin,value) for bin,value in enumerate(ratiolist[:-1])))
                 print("\t-----------------------------------------------------")
                 print("\t")
@@ -1054,12 +1073,12 @@ class RealFakeEffTagAndProbe:
             if variation == "nominal":
                 h_pass     = self.numerator_hists[nominal_key]
                 h_notpass  = self.antinumerator_hists[nominal_key]
-            elif variation == "numerator":
-                append = "numerator"
+            elif variation == "N":
+                append = "N"
                 h_pass     = self.numerator_hists[key]
                 h_notpass  = self.antinumerator_hists[nominal_key]
-            elif variation == "denominator":
-                append = "denominator"
+            elif variation == "D":
+                append = "D"
                 h_pass     = self.numerator_hists[nominal_key]
                 h_notpass  = self.antinumerator_hists[key]
 
@@ -1338,6 +1357,9 @@ class RealFakeEffTagAndProbe:
 
         savepath = self.__outputpath+"/EfficiencyPlots"+("","_Avg")[self.__averagehists]
 
+        if self.nosub:
+            savepath += "_NO_SUB"
+
         if self.triggerEff:
 	    savepath += "_TriggerEff"
 
@@ -1349,12 +1371,6 @@ class RealFakeEffTagAndProbe:
 
 	if self.probeAssignEff:
             probeassigneff_file = TFile(savepath+"/BasicPlots/RealFake_ProbeAssignEfficiency.root","RECREATE")
-
-        legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
-        legend.SetBorderSize(0)     # no border
-        legend.SetFillStyle(0)      # Legend transparent background
-        legend.SetTextSize(0.035)   # Increase entry font size!
-        legend.SetTextFont(42)      # Helvetica
 
         leg_ATLAS  = TLatex()
         leg_lumi   = TLatex()
@@ -1370,6 +1386,12 @@ class RealFakeEffTagAndProbe:
             if is2DHist:
 
                 for lep in self.__leptons:
+
+                    legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+                    legend.SetBorderSize(0)     # no border
+                    legend.SetFillStyle(0)      # Legend transparent background
+                    legend.SetTextSize(0.035)   # Increase entry font size!
+                    legend.SetTextFont(42)      # Helvetica
 
                     legend.SetHeader(self.leptons_full[lep])
 
@@ -1425,6 +1447,12 @@ class RealFakeEffTagAndProbe:
 
                 for lep in self.__leptons:
 
+                    legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+                    legend.SetBorderSize(0)     # no border
+                    legend.SetFillStyle(0)      # Legend transparent background
+                    legend.SetTextSize(0.035)   # Increase entry font size!
+                    legend.SetTextFont(42)      # Helvetica
+
                     legend.SetHeader(self.leptons_full[lep])
 
                     c = TCanvas("c_"+lep,"Efficiencies")
@@ -1469,6 +1497,7 @@ class RealFakeEffTagAndProbe:
                             hist_AVG.Draw("HIST SAME")
 
                         legend.AddEntry(hist,eff+" - "+proc_dict[proc], "P")
+                        legend.AddEntry(hist_AVG,eff+" - <#varepsilon> - "+proc_dict[proc], "L")
 
                         if self.triggerEff:
                             copy_hist_name = hist.GetName()
@@ -1545,12 +1574,22 @@ class RealFakeEffTagAndProbe:
 
   	     	    for sys in self.__systematics[1:]:
 
+                        if sys == "QMisID" and not all( s in key_nominal for s in ["Fake","El"] ):
+                            print("Skipping {0} systematics for {1}".format(sys,key_nominal))
+                            continue
+                        if sys == "PromptSS" and not ( "Fake" in key_nominal ):
+                            print("Skipping {0} systematics for {1}".format(sys,key_nominal))
+                            continue
+                        if sys == "FakesOS" and not ( "Real" in key_nominal ):
+                            print("Skipping {0} systematics for {1}".format(sys,key_nominal))
+                            continue
+
 	     		for sysdir in self.__systematicsdirections[1:]:
 
 			    for bin in range( 1, hist_nominal.GetSize()):
 
-			        keyappend_num   = "_".join(("numerator",sys,sysdir,str(bin)))
-			        keyappend_denom = "_".join(("denominator",sys,sysdir,str(bin)))
+			        keyappend_num   = "_".join(("N",sys,sysdir,str(bin)))
+			        keyappend_denom = "_".join(("D",sys,sysdir,str(bin)))
 
 				if self.verbose:
 				    print "\tstoring efficiency: ", "_".join((key_nominal,keyappend_num))
@@ -1591,16 +1630,17 @@ class RealFakeEffTagAndProbe:
 			for idx, sys in enumerate(self.__systematics[1:]):
 			    if sys in h.GetName():
 
-				#print "\tsys hist name: ", h.GetName()
-				bin = h.GetName()[-1] # get the bin number
+				# print "\tsys hist name: ", h.GetName()
+                                tokens = h.GetName().split("_")
+				bin = tokens[-1] # get the bin number
 				sys_var = abs( hist_nominal.GetBinContent(int(bin)) - h.GetBinContent(int(bin)) )
-				#print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
+				# print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
 
 				if not all_sys.get(bin):
 				    all_sys[bin] = pow(sys_var,2.0)
 				else:
 				    all_sys[bin] += pow(sys_var,2.0)
-				#print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
+				# print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
 
 				h.SetLineColor(self.__syst_color_dict[sys+"_N"])
 			        h.SetMarkerColor(self.__syst_color_dict[sys+"_N"])
@@ -1619,16 +1659,17 @@ class RealFakeEffTagAndProbe:
 			for idx, sys in enumerate(self.__systematics[1:]):
 			    if sys in h.GetName():
 
-				#print "\tsys hist name: ", h.GetName()
-				bin = h.GetName()[-1] # get the bin number
+				# print "\tsys hist name: ", h.GetName()
+                                tokens = h.GetName().split("_")
+				bin = tokens[-1] # get the bin number
 				sys_var = abs( hist_nominal.GetBinContent(int(bin)) - h.GetBinContent(int(bin)) )
-				#print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
+				# print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
 
 				if not all_sys.get(bin):
 				    all_sys[bin] = pow(sys_var,2.0)
 				else:
 				    all_sys[bin] += pow(sys_var,2.0)
-				#print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
+				# print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
 
 			        h.SetLineColor(self.__syst_color_dict[sys+"_D"])
 			        h.SetMarkerColor(self.__syst_color_dict[sys+"_D"])
@@ -1640,7 +1681,7 @@ class RealFakeEffTagAndProbe:
 
 		    for key, sys_var in sorted(all_sys.iteritems()):
 		        all_sys[key] = math.sqrt(all_sys[key])
-			#print("\ttot sys bin[{0}] = {1}".format(key,all_sys[key]))
+			# print("\ttot sys bin[{0}] = {1}".format(key,all_sys[key]))
 
 	  	    c = TCanvas("c_"+ var + "_" + lep + "_" + eff,"Efficiencies")
           	    c.SetFrameFillColor(0)
@@ -1907,17 +1948,17 @@ class RealFakeEffTagAndProbe:
     	    print("\n\tNUMERATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
     	    for key, value in sorted( self.numerator_yields.iteritems() ):
-    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.2f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.2f}".format(value[-1]) )
+    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.3f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.3f}".format(value[-1]) )
 
     	    print("\n\tDENOMINATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
     	    for key, value in sorted( self.denominator_yields.iteritems() ):
-    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.2f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.2f}".format(value[-1]) )
+    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.3f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.3f}".format(value[-1]) )
 
     	    print("\n\tANTI-NUMERATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
     	    for key, value in sorted( self.antinumerator_yields.iteritems() ):
-    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.2f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.2f}".format(value[-1]) )
+    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.3f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.3f}".format(value[-1]) )
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -1961,17 +2002,13 @@ if __name__ == "__main__":
     eff.checkYields("check event yields AFTER subtraction")
 
     eff.computeEfficiencies(variation="nominal")
-#    print("\n")
-#    eff.computeEfficiencies(variation="numerator")
-#    print("\n")
-#    eff.computeEfficiencies(variation="denominator")
+    eff.computeEfficiencies(variation="N")
+    eff.computeEfficiencies(variation="D")
 
     if eff.factors:
         eff.computeFactors("nominal")
-        print("\n")
-        eff.computeFactors("numerator")
-        print("\n")
-        eff.computeFactors("denominator")
+        eff.computeFactors("N")
+        eff.computeFactors("D")
 
     eff.saveOutputs( filename=args.outfilename, outputpath=args.outpath )
 
