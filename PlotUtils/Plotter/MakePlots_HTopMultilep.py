@@ -489,7 +489,7 @@ if __name__ == "__main__":
         vardb.registerCut( Cut('2Lep_ProbeAntiTight',           '( lep_Probe_' + trig_tag + '_isTightSelectedMVA == 0 )') )
         vardb.registerCut( Cut('2Lep_TagAndProbe_GoodEvent',    '( event_isBadTP_' + trig_tag + ' == 0 )') )
         vardb.registerCut( Cut('2Lep_ElTagEtaCut',              '( ( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 13 ) || ( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 11 && TMath::Abs( lep_Tag_' + trig_tag + '_EtaBE2 ) < 1.37 ) )') )
-        vardb.registerCut( Cut('2Lep_TagVeryTightSelected',     '( lep_Tag_' + trig_tag + '_ptVarcone30/lep_Tag_' + trig_tag + '_Pt < 0.01 )' ) ) # Tighten the track iso of the tag to increase fake purity for the probe
+        vardb.registerCut( Cut('2Lep_TagVeryTightSelected',     '( lep_Tag_' + trig_tag + '_ptVarcone30/lep_Tag_' + trig_tag + '_Pt < 0.01 )' ) ) # Tighten the track iso of the tag to increase fake purity for the probe (was used in v24)
 
         if args.cutBasedLepDef:
 
@@ -724,16 +724,22 @@ if __name__ == "__main__":
         print ''
         #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         if doSR:
-	    vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = True) )
+	    vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight") )
         elif doLowNJetCR:
             vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = "JVT_EventWeight") )
 
         vardb.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{lead lep} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 10, minval = 10.0, maxval = 210.0, sysvar = True) )
-        # vardb.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{2nd lead lep} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
+        vardb.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{2nd lead lep} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
         # vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{lead e} [GeV]", ntuplename = "electron_pt[0]/1e3", bins = 10, minval = 10.0, maxval = 210.0) )
         # vardb.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{2nd lead e} [GeV]", ntuplename = "electron_pt[1]/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
         # vardb.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{lead #mu} [GeV]", ntuplename = "muon_pt[0]/1e3", bins = 10, minval = 10.0, maxval = 210.0) )
         # vardb.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{2nd lead #mu} [GeV]", ntuplename = "muon_pt[1]/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
+
+        # vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{lead e} [GeV]", ntuplename = "electron_pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
+        # vardb.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{2nd lead e} [GeV]", ntuplename = "electron_pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
+        # vardb.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{lead #mu} [GeV]", ntuplename = "muon_pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
+        # vardb.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{2nd lead #mu} [GeV]", ntuplename = "muon_pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
+
         # vardb.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{lead e}", ntuplename = "TMath::Abs( electron_EtaBE2[0] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
         # vardb.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{2nd lead e}", ntuplename = "TMath::Abs( electron_EtaBE2[1] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
         # vardb.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{lead #mu}", ntuplename = "TMath::Abs( muon_eta[0] )", manualbins = [0.0,0.1,0.7,1.3,1.9,2.5]) )
@@ -1001,10 +1007,10 @@ if __name__ == "__main__":
         if ( doMM or doFF or doTHETA ):
             append_2Lep += "_DataDriven"
 
-        if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_CR']), weight = weight_SR_CR ) )
+        if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
         if not ( doTHETA ):
-            if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_CR']), weight = weight_SR_CR ) )
-            if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_CR']), weight = weight_SR_CR ) )
+            if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
         #vardb.registerCategory( MyCategory('TwoLepSSTau_LowNJetCR',  cut = common_cuts_2Lep1Tau & vardb.getCut('2Lep1Tau_NJet_CR'), weight = weight_SR_CR ) )
 
     if doThreeLepLowNJetCR:
@@ -1529,7 +1535,9 @@ if __name__ == "__main__":
 
 	elif "LH" in args.channel:
 
-            vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', bins = 40, minval = 10.0, maxval = 210.0, typeval = TH2D) )
+            #vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', bins = 40, minval = 10.0, maxval = 210.0, typeval = TH2D) )
+            #vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', manualbinsX = [10.0,15.0,20.0,26.0,35.0,50.0,210.0], manualbinsY = [10.0,15.0,20.0,26.0,35.0,50.0,210.0], typeval = TH2D) )
+            vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', manualbinsX = [10.0,26.0,50.0,210.0], manualbinsY = [10.0,26.0,50.0,210.0], typeval = TH2D) )
 
             # For measurement in data: select MC events to be subtracted afterwards
 
@@ -2193,9 +2201,12 @@ if __name__ == "__main__":
             # Here is where the plotting is actually performed!
 
             mybackgrounds = ttH.backgrounds
-            if "RealCR" in category.name:
+
+            # For some categories, make sure non-relevant processes are removed from the proc list!
+
+            if "RealCR" in category.name or ( "LH" in args.channel and "OS_" in category.name ):
                 mybackgrounds = [ bkg for bkg in mybackgrounds if not any( bkg == b for b in ["Prompt","QMisID","QMisIDMC"]) ]
-            if "FakeCR" in category.name:
+            if "FakeCR" in category.name or ( "LH" in args.channel and "SS_" in category.name ):
                 mybackgrounds = [ bkg for bkg in mybackgrounds if not bkg == "FakesMC" ]
 
             hists[category.name + ' ' + var.shortname] = ttH.plot( var,
@@ -2241,6 +2252,9 @@ if __name__ == "__main__":
 
                     if "RealCR" in category.name and any( s in syst.name for s in ["PromptSS","QMisID"] ): continue
                     if "FakeCR" in category.name and any( s in syst.name for s in ["FakesOS"] ): continue
+
+                    if "2Lep_MuMu_Event" in category.cut.cutname and "_El_" in syst.name: continue
+                    if "2Lep_ElEl_Event" in category.cut.cutname and "_Mu_" in syst.name: continue
 
                     if not os.path.exists(dirname):
                         os.makedirs(dirname)

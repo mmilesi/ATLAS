@@ -31,7 +31,7 @@ parser.add_argument("--mergeOverflow", dest="mergeOverflow", action="store_true"
 
 args = parser.parse_args()
 
-from ROOT import gROOT, TCanvas, TPad, TH1D, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray
+from ROOT import gROOT, TCanvas, TPad, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange
 
 gROOT.Reset()
 gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
@@ -45,14 +45,16 @@ g_sys_dict = {}
 
 # Store for each histogram bin a list with the uncertainties for each source
 #
-# { bin_idx : [unc0, unc1, unc2,...] }
+# { bin_idx : [ (unc0,sysname,sysgroup), (unc1,sysname,sysgroup), (unc2,sysname,sysgroup),...] }
 
 g_unc_bins = {}
+g_unc_bins_NO_STAT = {}
 
 # Store for each histogram bin the sum in quadrature of all uncertainties
 # { bin_idx : sq }
 
 g_sq_unc_bins = {}
+g_sq_unc_bins_NO_STAT = {}
 
 # Store list of sys integrals for each sys group
 
@@ -68,6 +70,7 @@ def getYields(nominal, up=None, dn=None, sysname=None, sysgroup=None, debug=Fals
     for bin in range(lower,upper):
         if not g_unc_bins.get(bin):
             g_unc_bins[bin] = []
+            g_unc_bins_NO_STAT[bin] = []
 
     for bin in range(lower,upper):
 
@@ -90,11 +93,6 @@ def getYields(nominal, up=None, dn=None, sysname=None, sysgroup=None, debug=Fals
 
             sys_up = sys_dn = 0.0
 
-            # if delta_up >= 0.0:
-            #     sys_up = abs( delta_up )
-            # if delta_dn <= 0.0:
-            #     sys_dn = abs( delta_dn )
-
             if abs(delta_up) != abs(value_nominal) and delta_up >= 0.0:
                 sys_up = abs( delta_up )
             if abs(delta_dn) != abs(value_nominal) and delta_dn <= 0.0:
@@ -116,11 +114,11 @@ def getYields(nominal, up=None, dn=None, sysname=None, sysgroup=None, debug=Fals
 
             # Store list of uncertainties for each bin
 
-            if ( float("{0:.3f}".format(stat_error)) ) and not stat_error in g_unc_bins[bin]:
-                g_unc_bins[bin].append(stat_error)
-            if ( float("{0:.3f}".format(simm_sys_unc)) ) and not simm_sys_unc in g_unc_bins[bin]:
-                g_unc_bins[bin].append(simm_sys_unc)
-
+            if ( float("{0:.3f}".format(stat_error)) ) and not (stat_error,"Statistical","Statistical") in g_unc_bins[bin]:
+                g_unc_bins[bin].append( (stat_error,"Statistical","Statistical") )
+            if ( float("{0:.3f}".format(simm_sys_unc)) ) and not (simm_sys_unc,sysname,sysgroup) in g_unc_bins[bin]:
+                g_unc_bins[bin].append( (simm_sys_unc,sysname,sysgroup) )
+                g_unc_bins_NO_STAT[bin].append( (simm_sys_unc,sysname,sysgroup) )
         else:
             if debug:
                 if nominal.IsBinOverflow(bin):
@@ -171,9 +169,16 @@ def getYields(nominal, up=None, dn=None, sysname=None, sysgroup=None, debug=Fals
         # This will sum in quadrature the stat & systematic uncertainties for each bin
 
         for bin, list_unc in g_unc_bins.iteritems():
-            g_sq_unc_bins[bin] = sumQuadrature(list_unc)
+            g_sq_unc_bins[bin] = sumQuadrature([x[0] for x in list_unc])
             if debug:
-                print("\t\t{0}-th bin,".format(bin) + " list of uncertainties: [" + ",".join( "{0:.3f}".format(x) for x in list_unc ) + "]" + " - tot. uncertainty : {0:.3f}".format(g_sq_unc_bins[bin]) )
+                print("\t\t{0}-th bin,".format(bin) + " list of uncertainties: [" + ",".join( "{0:.3f} ({1},{2})".format(x[0],x[1],x[2]) for x in list_unc ) + "]" + " - tot. uncertainty : {0:.3f}".format(g_sq_unc_bins[bin]) )
+
+        # This will sum in quadrature the systematic uncertainties (excluding the statistical) for each bin
+
+        for bin, list_unc in g_unc_bins_NO_STAT.iteritems():
+            g_sq_unc_bins_NO_STAT[bin] = sumQuadrature([x[0] for x in list_unc])
+            if debug:
+                print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (excluded stat): [" + ",".join( "{0:.3f} ({1},{2})".format(x[0],x[1],x[2]) for x in list_unc ) + "]" + " - tot. uncertainty (excluded stat): {0:.3f}".format(g_sq_unc_bins_NO_STAT[bin]) )
 
         if debug:
             print("")
@@ -210,30 +215,54 @@ def getTotFakeUncertainty( nominal, stat, flav ):
     g_sys_dict["Non_Closure"]      = non_closure
     g_sysgroup_dict["Non_Closure"] = [non_closure]
 
-    # This prints out sorting systematics from smaller to larger
+    # This prints out sorting systematics from smallest to largest
 
     print("\t\tTot. yields w/ systematics (ungrouped):\n")
     print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (Sidebands Stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) )
 
     print("")
 
-    # Print sum in quadrature of syst for each syst group
+    # Print sum in quadrature of syst for each syst group from smallest to largest
+
+    sq_list = []
+    for sg, values in g_sysgroup_dict.iteritems():
+        tup = ( sg, sumQuadrature(values), (sumQuadrature(values)/nominal)*100 )
+        sq_list.append(tup)
 
     print("\t\tTot. yields w/ systematics (grouped):\n")
     print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (Sidebands Stat)".format(nominal, stat, (stat/nominal)*100) )
-    for sg, values in g_sysgroup_dict.iteritems():
-        print("\t\t+- {0:.2f} [{1:.2f} %] ({2})".format( sumQuadrature(values), (sumQuadrature(values)/nominal)*100, sg ) )
+    for s in sorted( sq_list, key = lambda sq : sq[2] ):
+        print("\t\t+- {0:.2f} [{1:.2f} %] ({2})".format( s[1], s[2], s[0] ) )
     print("")
 
     # Print sum in quadrature of ALL syst + stat
 
     toterrlist = list(g_sys_dict.values())
-    toterrlist.extend([stat,non_closure])
+    toterrlist.extend([stat])
     sq = sumQuadrature( toterrlist )
 
-    print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (TOTAL UNCERTAINTY)".format(nominal, sq, (sq/nominal)*100))
+    sq_NO_STAT = sumQuadrature( list(g_sys_dict.values()) )
 
-    return sq
+    print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (TOTAL UNCERTAINTY)".format(nominal, sq, (sq/nominal)*100))
+    print ("\t\t                   +- {0:.2f} [{1:.2f} %] (TOTAL SYST. UNCERTAINTY)".format(sq_NO_STAT, (sq_NO_STAT/nominal)*100))
+
+    # Print out results in LaTeX friendly format!
+
+    print("\\begin{{table}}\n\\begin{{center}}\n\\begin{{tabular}}{{ll}}\n\\toprule\n\\multicolumn{{2}}{{c}}{{MY_FLAVOUR - $2\\leq N_{{jets}} \\leq 4$ VR, SR}} \\\\ \n\\midrule\nFakes (MM) = & {0:.2f} $\\pm$ \\\\\n & {1:.2f} $[{2:.2f}\%]$ (Sidebands stat.) $\pm$ \\\\".format(nominal, stat, (stat/nominal)*100))
+    for s in sorted( sq_list, key = lambda sq : sq[2] ):
+        proc = "?Unknown Process?"
+        if s[0] == "Non_Closure": proc = "Non closure"
+        if s[0] == "D_FakesOS"  : proc = "Fakes OS sub., $T\\bar{T}$"
+        if s[0] == "N_FakesOS"  : proc = "Fakes OS sub., $TT$"
+        if s[0] == "D_PromptSS" : proc = "Prompt SS sub., $T\\bar{T}$"
+        if s[0] == "N_PromptSS" : proc = "Prompt SS sub. $TT$"
+        if s[0] == "D_QMisID"   : proc = "QMisID sub., $T\\bar{T}$"
+        if s[0] == "N_QMisID"   : proc = "QMisID sub., $TT$"
+        if s[0] == "Stat"       : proc = "$\\varepsilon$ stat. unc."
+        print(" & {0:.2f} $[{1:.2f}\%]$ ({2}) $\pm$ \\\\".format( s[1], s[2], proc ) )
+    print("\\midrule\nFakes (MM) = &{0:.2f} $\pm$ \\\\\n & {1:.2f} $[{2:.2f}\%]$ (Tot. uncertainty) \\\\\n\\bottomrule\n\\end{{tabular}}\n\\end{{center}}\n\\end{{table}}".format(nominal, sq, (sq/nominal)*100))
+
+    return sq, sq_NO_STAT
 
 
 def clearDicts():
@@ -241,8 +270,113 @@ def clearDicts():
     g_sys_dict.clear()
     g_sysgroup_dict .clear()
     g_unc_bins.clear()
+    g_unc_bins_NO_STAT.clear()
     g_sq_unc_bins.clear()
+    g_sq_unc_bins_NO_STAT.clear()
 
+def saveSystHistogram( flav, var, nominalhist, tot_syst ):
+
+    gROOT.SetBatch(True)
+
+    nbins = nominalhist.GetSize()-2
+    lowest_edge  = nominalhist.GetXaxis().GetBinLowEdge(0)
+    highest_edge = nominalhist.GetXaxis().GetBinUpEdge(nominalhist.GetNbinsX())
+
+    if nominalhist.GetSize() != len(g_unc_bins_NO_STAT):
+        sys.exit("ERROR: nominal hist nbins: {0}, g_unc_bins_NO_STAT size: {1}".format(nbins,len(g_unc_bins_NO_STAT)))
+
+    sysstack = THStack("fakessys_stack_"+flav+"_"+var,"AllSys;"+nominalhist.GetXaxis().GetTitle()+";Sys./Nom.")
+
+    legend = TLegend(0.22,0.7,0.45,0.9) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+    legend.SetBorderSize(0)     # no border
+    legend.SetFillStyle(0)      # Legend transparent background
+    legend.SetTextSize(0.025)   # Increase entry font size!
+    legend.SetTextFont(42)      # Helvetica
+
+    # By construction, each bin has got the same number of systematic sources contributing.
+    # We need to create an histogram for each one of them.
+    # Pick the 1st bin by convention, and store the histograms that we're going to stack up.
+
+    systhists = []
+    for idx, elem in enumerate( sorted( g_unc_bins_NO_STAT[1], key = lambda elem : elem[0], reverse = True ) ):
+        sysvalue = elem[0]
+        sysname  = elem[1]
+        sysgroup = elem[2]
+        #print("\tsysvalue: {0:.3f}, sysname: {1}, sysgroup: {2}".format(sysvalue,sysname,sysgroup))
+        hist = TH1D(sysname,sysname,nbins,lowest_edge,highest_edge)
+        hist.SetLineColor(kBlack)
+        hist.SetFillColor(idx+2)
+        hist.SetFillStyle(1001)
+        hist.SetDirectory(0)
+        legend.AddEntry(hist,"{0}".format(sysname), "F")
+        systhists.append(hist)
+
+    # Loop over the histograms just created, and assign to every bin the corresponding systematic value
+
+    for hist in systhists:
+        thissystname = hist.GetName()
+        #print("\tsysname: {0}:".format(thissystname))
+        for bin in range(1,hist.GetSize()):
+            thisbin_syslist = g_unc_bins_NO_STAT[bin]
+            thistuple = [ tup for tup in thisbin_syslist if tup[1] == thissystname ]
+            #print("\t\tthistuple: {0}".format(thistuple))
+            if thistuple:
+                #print("\t\t{0}-th bin, sysvalue: {1:.3f}".format(bin,thistuple[0][0]))
+                if thistuple[0][0] < 0 or nominalhist.Integral(bin,bin) < 0:
+                    hist.SetBinContent(bin,0)
+                else:
+                    hist.SetBinContent(bin,thistuple[0][0]/nominalhist.Integral(bin,bin))
+            else:
+                #print("\t\t{0}-th bin, sysvalue: 0".format(bin))
+                hist.SetBinContent(bin,0)
+
+    # Ok, now add the histograms to the stack
+
+    for hist in systhists:
+        sysstack.Add(hist)
+
+    # Now draw the stack, and on the same canvas draw the tot. systematic (i.e., the sum in quadrature of all systematics)
+
+    c = TCanvas("cstack","Systematic Stack",50,50,600,600)
+
+    sysstack.Draw("HIST")
+
+    syssumquadhist = TH1D("sumquadsyshist","sumquadsyshist",nbins,lowest_edge,highest_edge)
+    syssumquadhist.SetLineWidth(3)
+    syssumquadhist.SetLineColor(1)
+    syssumquadhist.SetLineStyle(2)
+    for bin, sq in g_sq_unc_bins_NO_STAT.iteritems():
+        if bin == 0 or nominalhist.Integral(bin,bin) < 0:
+            syssumquadhist.SetBinContent(bin,0)
+        else:
+            syssumquadhist.SetBinContent(bin,sq/nominalhist.Integral(bin,bin))
+    legend.AddEntry(syssumquadhist,"TOT. SYST. (sum. quad.)", "L")
+    syssumquadhist.Draw("HIST SAME")
+
+    # Draw also the total systematic for the integral
+
+    syssumquadhist_integral = TH1D("sumquadsyshist_integral","sumquadsyshist_integral",1,lowest_edge,highest_edge)
+    syssumquadhist_integral.SetLineWidth(3)
+    syssumquadhist_integral.SetLineColor(kOrange+7)
+    syssumquadhist_integral.SetLineStyle(2)
+    syssumquadhist_integral.SetBinContent(1,tot_syst/nominalhist.Integral(0,nominalhist.GetNbinsX()+1))
+    legend.AddEntry(syssumquadhist_integral,"TOT. SYST. (sum. quad.) - Integral", "L")
+    syssumquadhist_integral.Draw("HIST SAME")
+
+    legend.Draw()
+
+    outpath = args.inputDir
+    if outpath[-1] == '/':
+      outpath = outpath[:-1]
+
+    extensions = [".png",".eps"]
+    for ext in extensions:
+        c.SaveAs( outpath + "/" + flav + "_" + var + "_SysUncertStackHist" + ext )
+
+    foutput = TFile(outpath+"/"+flav+"_"+var+"_SysUncertHists"+".root","RECREATE")
+    for hist in systhists:
+        hist.Write()
+    foutput.Close()
 
 def makeSysPlots( flav, var, MC_hist, MM_hist ):
 
@@ -567,12 +701,14 @@ if __name__ == '__main__':
 
     	    for sys, sysgroup in fakes_syst.iteritems():
                 debugflag = False
-                fakes_up   = myfile.Get( "fakesbkg_" + sys + "_up")
+                fakes_up = myfile.Get( "fakesbkg_" + sys + "_up")
                 fakes_dn = myfile.Get( "fakesbkg_" + sys + "_dn")
                 if debugflag: print("\tsys: {0}, sysgroup: {1}\n".format(sys, sysgroup))
                 fakes, fakes_stat_err = getYields(fakes_nominal,fakes_up,fakes_dn, sys, sysgroup, debug=debugflag)
 
-    	    fakes_tot_err = getTotFakeUncertainty( fakes, fakes_stat_err, flav )
+    	    fakes_tot_err, fakes_tot_err_NO_STAT = getTotFakeUncertainty( fakes, fakes_stat_err, flav )
+
+            saveSystHistogram(flav,var_name,fakes_nominal,fakes_tot_err_NO_STAT)
 
     	    if args.closure:
     		ttbar_nominal = myfile.Get("ttbarbkg")
