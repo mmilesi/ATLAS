@@ -33,7 +33,7 @@ g_avaialble_systematics = ["QMisID","PromptSS","FakesOS"]
 g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
                    "ICHEP 2015+2016 DS":13.20768,       # August 2016
                    "POST-ICHEP 2015+2016 DS":22.07036,  # October 2016
-                   "FULL 2015+2016 DS":36.4702          # December 2016
+                   "FULL 2015+2016 DS":36.0746          # December 2016
                  }
 
 g_selections   = ["L","T","AntiT"]
@@ -132,7 +132,7 @@ class RealFakeEffTagAndProbe:
 	    self.__processes.append("observed")
             if not self.nosub:
                 #self.__processes_sub.extend(["qmisidbkg","allsimbkg"])
-                self.__processes_sub.extend(["qmisidbkg","promptbkg","fakesbkg"])
+                self.__processes_sub.extend(["qmisidbkg","promptbkg","ttbarbkg","fakesbkg"])
                 #self.__processes_sub.extend(["qmisidbkg","dibosonbkg","ttbarzbkg","raretopbkg","wjetsbkg","ttbarwbkg","ttbarbkg","zjetsbkg","singletopbkg"])
 	else:
 	    self.__processes.append("expectedbkg")
@@ -163,7 +163,7 @@ class RealFakeEffTagAndProbe:
 
         # The following dictionary associates a known process to a list of affecting systematics
 
-        self.__process_syst_dict = {"qmisidbkg":["QMisID"], "promptbkg":["PromptSS"],"fakesbkg":["FakesOS"]}
+        self.__process_syst_dict = {"qmisidbkg":["QMisID"], "promptbkg":["PromptSS"],"ttbarbkg":["PromptSS"],"fakesbkg":["FakesOS"]}
         self.__syst_color_dict   = {"QMisID_N":kGreen+3,
                                     "QMisID_D":kGreen-7,
                                     "PromptSS_N":kAzure,
@@ -358,6 +358,8 @@ class RealFakeEffTagAndProbe:
                integral_post_sub = hist.Integral(0,hist.GetNbinsX()+1)
 	       if self.verbose:
 	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),sub_hist.Integral(0,sub_hist.GetNbinsX()+1),sub_hist.GetName(),integral_post_sub))
+	   else:
+               print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
 
 
         # Case 2):
@@ -412,6 +414,8 @@ class RealFakeEffTagAndProbe:
 
 
     def subtractHistograms ( self ):
+
+        if self.nosub: return
 
         for key in self.histkeys:
 
@@ -485,9 +489,10 @@ class RealFakeEffTagAndProbe:
 			if ( self.__process_syst_dict.get(subproc) ) and sys in self.__process_syst_dict.get(subproc):
 			    subprockey_sys_sysdir += keyappend_sys_sysdir
 
-                        if self.verbose: print("\n\tProcess to be subtracted: {0} (Base process: {1})".format(subprockey_sys_sysdir,subprockey_base))
+                        if self.verbose:
+                            print("\n\tProcess to be subtracted: {0} (Base process: {1})".format(subprockey_sys_sysdir,subprockey_base))
+                            print("")
 
-                        if self.verbose: print("")
 		    	self.numerator_hists[subkeysys]     = self.__subtract__( "N",     subkeysys, subprockey_sys_sysdir )
             	    	self.denominator_hists[subkeysys]   = self.__subtract__( "D",     subkeysys, subprockey_sys_sysdir )
             	    	self.antinumerator_hists[subkeysys] = self.__subtract__( "AntiN", subkeysys, subprockey_sys_sysdir )
@@ -508,7 +513,7 @@ class RealFakeEffTagAndProbe:
             self.storeYields()
 
 	    if self.verbose:
-            	print("**********************************************************")
+            	print("**********************************************************\n")
 
 
     def rebinHistograms ( self, rebinlist=None, averagehistlist=None ):
@@ -519,9 +524,14 @@ class RealFakeEffTagAndProbe:
 
         if rebinlist or averagehistlist:
             print("\nWARNING!\n")
-	    print("(From TH1 docs) If ngroup is not an exact divider of the number of bins, the top limit of the rebinned histogram is reduced to the upper edge of the last bin that can make a complete group.")
-            print("The remaining bins are added to the overflow bin. Statistics will be recomputed from the new bin contents.\n")
-            print("If rebinning to one single bin, this might lead to an \"empty\" histogram (as everything will end up in the overflow bin)\n")
+            print("Will be calling:\n\nTH1::Rebin(Int_t ngroup = 2, const char * newname = \"\", const Double_t * xbins = 0 )\n")
+	    print("(From TH1 docs):\n")
+            print("1) If ngroup is not an exact divider of the number of bins, the top limit of the rebinned histogram is reduced to the upper edge of the last bin that can make a complete group.")
+            print("   The remaining bins are added to the overflow bin. Statistics will be recomputed from the new bin contents.")
+            print("   If rebinning to one single bin, this might lead to an \"empty\" histogram (as everything will end up in the overflow bin)\n")
+            print("2) If rebinning to variable bin size (i.e., xbins != 0), the bin edges specified in xbins should correspond to bin edges in the original histogram.")
+            print("   If a bin edge in the new histogram is in the middle of a bin in the original histogram, all entries in the split bin in the original histogram will be transfered to the lower of the two possible bins in the new histogram. This is probably not what you want.")
+            print("   Therefore, make sure the new binning is compatible w/ the binning of the input histogram!\n")
 
         if rebinlist:
             for key in self.histkeys:
@@ -923,6 +933,9 @@ class RealFakeEffTagAndProbe:
             h_pass_AVG = self.__getAverageHist__(h_pass)
             h_tot_AVG  = self.__getAverageHist__(h_tot)
 
+            h_pass_AVG = self.__manageBoundaries__(h_pass_AVG)
+            h_tot_AVG  = self.__manageBoundaries__(h_tot_AVG)
+
             # ----------------------------------------------------------------------------------
 
 	    ratiolist = []
@@ -1143,6 +1156,9 @@ class RealFakeEffTagAndProbe:
         if self.__averagehists:
 	    filename += "Avg"
 
+        if self.nosub:
+            filename += "_NO_SUB"
+
         print("\nStoring output files:\n{0}\n{1}\nin directory: {2}\n".format(filename+".root",filename+".txt",os.path.abspath(outputpath)))
 
         self.__outputfile_yields = open(self.__outputpath+"/"+filename+".txt","w")
@@ -1183,32 +1199,32 @@ class RealFakeEffTagAndProbe:
                 else:
                     self.__outputfile_yields.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + ", efficiency (from TH1::Divide(\"B\")) = " + str(round(myset[1],3)) + " +- " + str(round(myset[2],3)) ) )
 
-    	for key, t in sorted(self.tefficiencies.iteritems()):
-    	    if not t: continue
-    	    # if self.debug: print("\nSaving TEfficiency: {0}".format(key))
-    	    t.Write()
-    	    teff=[]
-    	    for ibin in range( 1, t.GetTotalHistogram().GetSize() ):
-    	    	myset = [ ibin, t.GetTotalHistogram().GetBinLowEdge(ibin), t.GetTotalHistogram().GetBinLowEdge(ibin+1), t.GetEfficiency(ibin), t.GetEfficiencyErrorUp(ibin), t.GetEfficiencyErrorLow(ibin)]
-    	    	teff.append( myset )
-    	    self.__outputfile_yields.write("%s:\n" %(key) )
-    	    for myset in teff:
-    	    	self.__outputfile_yields.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + " [" + str(round(myset[1],3)) + "," + str(round(myset[2],3)) + "], efficiency (from TEfficiency) = " + str(round(myset[3],3)) + " + " + str(round(myset[4],3)) + " - " + str(round(myset[5],3)) ) )
+    	# for key, t in sorted(self.tefficiencies.iteritems()):
+    	#     if not t: continue
+    	#     if self.debug: print("\nSaving TEfficiency: {0}".format(key))
+    	#     t.Write()
+    	#     teff=[]
+    	#     for ibin in range( 1, t.GetTotalHistogram().GetSize() ):
+    	#     	myset = [ ibin, t.GetTotalHistogram().GetBinLowEdge(ibin), t.GetTotalHistogram().GetBinLowEdge(ibin+1), t.GetEfficiency(ibin), t.GetEfficiencyErrorUp(ibin), t.GetEfficiencyErrorLow(ibin)]
+    	#     	teff.append( myset )
+    	#     self.__outputfile_yields.write("%s:\n" %(key) )
+    	#     for myset in teff:
+    	#     	self.__outputfile_yields.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + " [" + str(round(myset[1],3)) + "," + str(round(myset[2],3)) + "], efficiency (from TEfficiency) = " + str(round(myset[3],3)) + " + " + str(round(myset[4],3)) + " - " + str(round(myset[5],3)) ) )
 
-    	for key, g in sorted(self.graphefficiencies.iteritems()):
-    	    if not g: continue
-    	    # if self.debug: print("\nSaving graph: {0}".format(key))
-    	    g.Write()
-    	    geff=[]
-    	    for ipoint in range( 0, g.GetN()+1 ):
-    	    	x = Double(0)
-    	    	y = Double(0)
-    	    	g.GetPoint(ipoint,x,y)
-    	    	myset = [ ipoint+1, y, g.GetErrorYhigh(ipoint), g.GetErrorYlow(ipoint) ]
-    	    	geff.append( myset )
-    	    self.__outputfile_yields.write("%s:\n" %(key) )
-    	    for myset in geff:
-    	    	self.__outputfile_yields.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + ", efficiency (from TGraphAsymmErrors) = " + str(round(myset[1],3)) + " + " + str(round(myset[2],3)) + " - " + str(round(myset[3],3)) ) )
+    	# for key, g in sorted(self.graphefficiencies.iteritems()):
+    	#     if not g: continue
+    	#     if self.debug: print("\nSaving graph: {0}".format(key))
+    	#     g.Write()
+    	#     geff=[]
+    	#     for ipoint in range( 0, g.GetN()+1 ):
+    	#     	x = Double(0)
+    	#     	y = Double(0)
+    	#     	g.GetPoint(ipoint,x,y)
+    	#     	myset = [ ipoint+1, y, g.GetErrorYhigh(ipoint), g.GetErrorYlow(ipoint) ]
+    	#     	geff.append( myset )
+    	#     self.__outputfile_yields.write("%s:\n" %(key) )
+    	#     for myset in geff:
+    	#     	self.__outputfile_yields.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + ", efficiency (from TGraphAsymmErrors) = " + str(round(myset[1],3)) + " + " + str(round(myset[2],3)) + " - " + str(round(myset[3],3)) ) )
 
 	if self.factors:
     	    for key, h in sorted(self.histfactors.iteritems()):
@@ -1999,7 +2015,8 @@ if __name__ == "__main__":
 
     eff.checkYields("check event yields BEFORE subtraction")
     eff.subtractHistograms()
-    eff.checkYields("check event yields AFTER subtraction")
+    if not args.nosub:
+        eff.checkYields("check event yields AFTER subtraction")
 
     eff.computeEfficiencies(variation="nominal")
     eff.computeEfficiencies(variation="N")

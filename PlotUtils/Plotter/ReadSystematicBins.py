@@ -11,7 +11,7 @@ categories   = ["ALL","ElEl","MuMu","OF"]
 luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
                  "ICHEP 2015+2016 DS":13.20768,       # August 2016
                  "POST-ICHEP 2015+2016 DS":22.07036,  # October 2016
-                 "FULL 2015+2016 DS":36.4702          # December 2016
+                 "FULL 2015+2016 DS":36.0746          # December 2016
                }
 
 parser.add_argument('inputDir', metavar='inputDir',type=str,
