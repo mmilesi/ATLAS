@@ -19,11 +19,11 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Plotting script for the HTopMultilep Run 2 analysis')
 
-channels     = ["TwoLepSR(,NO_CORR, NN_ACCEPTANCE)","ThreeLepSR","FourLepSR",
+channels     = ["TwoLepSR(,NO_CORR)","ThreeLepSR","FourLepSR",
                 "TwoLepLowNJetCR(,NO_CORR)", "ThreeLepLowNJetCR",
                 "WZonCR", "WZoffCR", "WZHFonCR", "WZHFoffCR",
                 "ttWCR", "ttZCR","ZSSpeakCR", "DataMC",
-                "MMRates(,DATA,CLOSURE,NO_CORR,TP,LH,TRUTH_TP,SUSY_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,HIGHNJ,ALLNJ)",
+                "MMRates(,DATA,CLOSURE,NO_CORR,TP,LH,TRUTH_TP,SUSY_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
                 "MMClosureTest(,NO_CORR,HIGHNJ,LOWNJ,ALLNJ,LOWPT)",
                 "CutFlowChallenge(,MM,2LepSS,2LepSS1Tau,3Lep)","MMSidebands(,NO_CORR,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ)"]
 
@@ -40,7 +40,7 @@ efficiencies = ["ALL_EFF","REAL_EFF","FAKE_EFF"]
 luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
                  "ICHEP 2015+2016 DS":13.20768,       # August 2016
                  "POST-ICHEP 2015+2016 DS":22.07036,  # October 2016
-                 "FULL 2015+2016 DS":36.4702          # December 2016 (full 2015+2016 DS)
+                 "FULL 2015+2016 DS":36.0746          # December 2016 (full 2015+2016 DS)
                }
 
 triggers     = ["MIXED","SLT","DLT","SLT_OR_DLT"]
@@ -87,8 +87,6 @@ parser.add_argument('--doLogScaleX', dest='doLogScaleX', action='store_true', de
                     help='Use log scale on the X axis')
 parser.add_argument('--doLogScaleY', dest='doLogScaleY', action='store_true', default=False,
                     help='Use log scale on the Y axis')
-# parser.add_argument('--doSyst', dest='doSyst', action='store_true', default=False,
-#                     help='Run systematics')
 parser.add_argument('--doSyst', dest='doSyst', action='store', default=None, const=syst_schemes[0], choices=syst_schemes, nargs='?',
                     help='Run systematics. If the option is specified, but not followed by any of the allowed command-line arguments, default will be \'{0}\''.format(syst_schemes[0]))
 parser.add_argument('--noSignal', action='store_true', dest='noSignal',
@@ -440,11 +438,8 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_NBJet',                  '( nJets_OR_T_MV2c10_70 > 0 )') )
     vardb.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 > 0 )') )
     vardb.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T > 1 )') )
-    vardb.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T > 4 )') )
-    if "NN_ACCEPTANCE" in args.channel:
-        vardb.getCut('2Lep_NJet_SR').cutstr =  '( nJets_OR_T > 3 )'
-        # vardb.getCut('2Lep_NBJet_SR').cutstr =  '( 1 )'
-    vardb.registerCut( Cut('2Lep_NJet_CR',		  '( nJets_OR_T > 1 && nJets_OR_T <= 4 )') )
+    vardb.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T > 3 )') )
+    vardb.registerCut( Cut('2Lep_NJet_CR',		  '( nJets_OR_T >= 2 && nJets_OR_T <= 3 )') )
     vardb.registerCut( Cut('2Lep_NJet_CR_SStt', 	  '( nJets_OR_T < 4 )') )
     vardb.registerCut( Cut('2Lep_SS',			  '( lep_ID_0 * lep_ID_1 > 0 )') )
     vardb.registerCut( Cut('2Lep_OS',			  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
@@ -890,7 +885,7 @@ if __name__ == "__main__":
         if doMMRates and "DATA" in args.channel:
             vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight='QMisIDWeight_', process=['QMisID']) )
             vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['FakesMC']) )
-            vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['Prompt']) )
+            vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['Prompt','TTBar']) )
             # vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['TTBar','SingleTop','Zjets','Wjets']) )
             # vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']) )
             # vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['TTBar']) )
@@ -946,8 +941,8 @@ if __name__ == "__main__":
     # Definition of the categories for which one wants produce histograms
     # -------------------------------------------------------------------
 
-    # weight_SR_CR = "tauSFTight * weight_event_trig_SLT * weight_event_lep * JVT_EventWeight * MV2c10_70_EventWeight"
-    weight_SR_CR = "tauSFTight * JVT_EventWeight * MV2c10_70_EventWeight" # TEMP for v26 : no calibration of lepton MVA yet
+    # weight_SR_CR = "tauSFTight * lepSFTrigTight * lepSFObjTight * JVT_EventWeight * MV2c10_70_EventWeight"
+    weight_SR_CR = "tauSFTight * lepSFTrigTight * JVT_EventWeight * MV2c10_70_EventWeight" # TEMP for v26 : no calibration of lepton MVA yet
 
     cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut']
     common_cuts_2Lep = vardb.getCuts(cc_2Lep_list)
@@ -1122,10 +1117,9 @@ if __name__ == "__main__":
             vardb.registerCategory( MyCategory( "B1_FakeCR" + "_" + cat_name + "_" + 'SS_Zmin',                 cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
             vardb.registerCategory( MyCategory( "B2_FakeCR" + "_" + cat_name + "_" + 'SS_Zveto',                cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
             vardb.registerCategory( MyCategory( "B3_FakeCR" + "_" + cat_name + "_" + 'SS_OF',                   cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
-            vardb.registerCategory( MyCategory( "B4_FakeCR" + "_" + cat_name + "_" + 'SS_TagVeryTightSelected', cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
-            vardb.registerCategory( MyCategory( "B5_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeEl',              cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected','2Lep_ElProbe']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
-            vardb.registerCategory( MyCategory( "B6_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
-            vardb.registerCategory( MyCategory( "B7_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            vardb.registerCategory( MyCategory( "B4_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeEl',              cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            vardb.registerCategory( MyCategory( "B5_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            vardb.registerCategory( MyCategory( "B6_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
 
         if "2LepSS" in args.channel:
 
@@ -1160,7 +1154,6 @@ if __name__ == "__main__":
             vardb.registerCategory( MyCategory( str(tot_idx) + "_" + cat_name + "_" + "ee",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_ElEl_Event']), weight = weight_CFC ) )
             vardb.registerCategory( MyCategory( str(tot_idx) + "_" + cat_name + "_" + "mm",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_MuMu_Event']), weight = weight_CFC ) )
             vardb.registerCategory( MyCategory( str(tot_idx) + "_" + cat_name + "_" + "of",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_OF_Event']), weight = weight_CFC ) )
-
 
         if "2LepSS1Tau" in args.channel:
 
@@ -1245,10 +1238,9 @@ if __name__ == "__main__":
             # Special plots for MM real/fake eff CRs
             # ---------------------------------------
 
-            vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0, sysvar = True) )
-            # vardb.registerVar( Variable(shortname = "ElProbePtAVG", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10.0,200.0], sysvar = True) )
-            vardb.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10.0,15.0,20.0,26.0,35.0,45.0,60.0,80.0,100.0,140.0,200.0]) )
-            vardb.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10.0,15.0,20.0,26.0,35.0,60.0,80.0,140.0,200.0]) )
+            vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
+            # vardb.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210]) )
+            # vardb.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210]) )
             # vardb.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", bins = 26, minval = 0.0,  maxval = 2.6) )
             # vardb.registerVar( Variable(shortname = "ElProbeDistanceClosestJet", latexname = '#DeltaR(e, closest jet)', ntuplename = el_probe + "deltaRClosestJet", bins = 20, minval = 0.0, maxval = 5.0) )
             # vardb.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
@@ -1258,30 +1250,29 @@ if __name__ == "__main__":
                 # vardb.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,1.37,1.52,2.6], manualbinsY = [10.0,50.0,210.0], typeval = TH2D, drawOpt2D = "COLZ1 text") )
                 # vardb.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,0.5,0.8,1.37,1.52,2.0,2.6], manualbinsY = [10.0,15.0,20.0,26.0,35.0,45.0,60.0,80.0,100.0,140.0,200.0], typeval = TH2D, drawOpt2D = "COLZ1 text") )
 
-            # if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
-            #     vardb.registerVar( Variable(shortname = "ElProbeType", latexname = "truthType^{e}", ntuplename = el_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
-            #     vardb.registerVar( Variable(shortname = "ElProbeOrigin", latexname = "truthOrigin^{e}", ntuplename = el_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbeOrigin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = el_probe + "truthOrigin" + ":" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_NJets', latexnameX = 'truthType^{e}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{e}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + el_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbePt', latexnameX = 'truthType^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "truthType" + ":" + el_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
+            if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
+                vardb.registerVar( Variable(shortname = "ElProbeType", latexname = "truthType^{e}", ntuplename = el_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
+                vardb.registerVar( Variable(shortname = "ElProbeOrigin", latexname = "truthOrigin^{e}", ntuplename = el_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+                vardb.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbeOrigin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = el_probe + "truthOrigin" + ":" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
+                vardb.registerVar( Variable(shortname = 'ElProbeType_VS_NJets', latexnameX = 'truthType^{e}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+                vardb.registerVar( Variable(shortname = 'ElProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{e}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + el_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+                vardb.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbePt', latexnameX = 'truthType^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "truthType" + ":" + el_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
 
-            vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0, sysvar = True) )
-            # vardb.registerVar( Variable(shortname = "MuProbePtAVG", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10.0,200.0], sysvar = True) )
-            vardb.registerVar( Variable(shortname = "MuProbePt_RealEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10.0,15.0,20.0,26.0,35.0,50.0,80.0,100.0,140.0,200.0]) )
-            vardb.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10.0,15.0,20.0,26.0,35.0,50.0,200.0]) )
+            vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
+            # vardb.registerVar( Variable(shortname = "MuProbePt_RealEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,50,90,140,210]) )
+            # vardb.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10.0,15.0,20.0,26.0,35.0,50.0,200.0]) )
             # vardb.registerVar( Variable(shortname = "MuProbeEta", latexname = "#eta^{#mu}", ntuplename = "TMath::Abs( " + mu_probe + "Eta )", bins = 25, minval = 0.0, maxval = 2.5) )
             # vardb.registerVar( Variable(shortname = "MuProbeDistanceClosestJet", latexname = '#DeltaR(#mu, closest jet)', ntuplename = mu_probe + "deltaRClosestJet", bins = 20, minval = 0.0, maxval = 5.0) )
             # vardb.registerVar( Variable(shortname = "MuProbeDistanceClosestBJet", latexname = '#DeltaR(#mu, closest b-jet)', ntuplename = mu_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
             # vardb.registerVar( Variable(shortname = "MuProbeNJets", latexname = "Jet multiplicity", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
 
-            # if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
-            #     vardb.registerVar( Variable(shortname = "MuProbeType", latexname = "truthType^{#mu}", ntuplename = mu_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
-            #     vardb.registerVar( Variable(shortname = "MuProbeOrigin", latexname = "truthOrigin^{#mu}", ntuplename = mu_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbeOrigin', latexnameX = 'truthType^{#mu}', latexnameY = 'truthOrigin^{#mu}', ntuplename = mu_probe + "truthOrigin" + ":" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_NJets', latexnameX = 'truthType^{#mu}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{#mu}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + mu_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbePt', latexnameX = 'truthType^{#mu}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "truthType" + ":" + mu_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
+            if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
+                vardb.registerVar( Variable(shortname = "MuProbeType", latexname = "truthType^{#mu}", ntuplename = mu_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
+                vardb.registerVar( Variable(shortname = "MuProbeOrigin", latexname = "truthOrigin^{#mu}", ntuplename = mu_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+                vardb.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbeOrigin', latexnameX = 'truthType^{#mu}', latexnameY = 'truthOrigin^{#mu}', ntuplename = mu_probe + "truthOrigin" + ":" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
+                vardb.registerVar( Variable(shortname = 'MuProbeType_VS_NJets', latexnameX = 'truthType^{#mu}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+                vardb.registerVar( Variable(shortname = 'MuProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{#mu}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + mu_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+                vardb.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbePt', latexnameX = 'truthType^{#mu}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "truthType" + ":" + mu_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
 
             # -----------------------------------------------------------------------------------------------------------------
             # MC subtraction: what gets plotted will be subtracted to data:
@@ -1290,8 +1281,7 @@ if __name__ == "__main__":
             #
             # ---> events where PROBE is !prompt (aka, a fake or QMisID (negligible) or photon conv)
             # This removes events where the probe is a fake lepton.
-            # This procedure can be questioned, as we'd be trusting MC for the fakes...
-            # However, for a ttbar-dominated OS CR, the fake contamination is pretty low, and mostly @ low pT ( < 25 GeV ), so we could forget about the bias...
+            # This procedure can be questioned, as we'd be trusting MC for the fakes, but we assign a pretty large systematics...
             #
             # -) Fake SS CR:
             #
@@ -1317,10 +1307,11 @@ if __name__ == "__main__":
 
             	truth_sub_OS = truth_sub_SS = vardb.getCut('2Lep_TRUTH_QMisIDVeto')
 
-                # NB: uncomment this if you want to see the fake probe truth type/origin in SS CR
-                # This makes sure in SS CR the probe lepton is a fake, and not QMisID
+                # NB: if you want to see the fake probe truth type/origin in SS CR,
+                #     make sure the probe lepton is a fake, and not QMisID
 
-                # truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
+                if "CHECK_FAKEORIG" in args.channel:
+                    truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
 
                 ratiolims_real = ratiolims_fake = None
 
@@ -1419,9 +1410,14 @@ if __name__ == "__main__":
                         vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         vardb.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        # vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        # vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        # vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        # To compare w/ Kun: look only at events where the muon is leading
+                        vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+
 
                 if "CLOSURE" in args.channel and not any( opt in args.channel for opt in ["TRUTH_TP","TRUTH_ON_PROBE"]):
 
@@ -1438,12 +1434,12 @@ if __name__ == "__main__":
                         vardb.registerCategory( MyCategory('FakeCRMu' + midstr_T_TM + 'Real', cut = probe_T_TM_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
                         vardb.registerCategory( MyCategory('FakeCRMu' + midstr_T_TM + 'Any',  cut = probe_T_TM_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Fake',  cut = probe_ANY_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Real',  cut = probe_ANY_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Any',   cut = probe_ANY_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Fake', cut = probe_T_TM_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Real', cut = probe_T_TM_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Any',  cut = probe_T_TM_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_TagVeryTightSelected','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Fake',  cut = probe_ANY_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Real',  cut = probe_ANY_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Any',   cut = probe_ANY_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Fake', cut = probe_T_TM_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Real', cut = probe_T_TM_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Any',  cut = probe_T_TM_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
 
             if ( args.lepFlavComp == "ICHEP_2016" ): # Real CR: OF, Fake CR: INCLUSIVE(el), SF(mu)
 
@@ -1535,9 +1531,9 @@ if __name__ == "__main__":
 
 	elif "LH" in args.channel:
 
-            #vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', bins = 40, minval = 10.0, maxval = 210.0, typeval = TH2D) )
-            #vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', manualbinsX = [10.0,15.0,20.0,26.0,35.0,50.0,210.0], manualbinsY = [10.0,15.0,20.0,26.0,35.0,50.0,210.0], typeval = TH2D) )
-            vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', manualbinsX = [10.0,26.0,50.0,210.0], manualbinsY = [10.0,26.0,50.0,210.0], typeval = TH2D) )
+            vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', bins = 200, minval = 10.0, maxval = 210.0, typeval = TH2D) )
+            #vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', manualbinsX = [10,15,20,26,30,40,60,90,140,210], manualbinsY = [10,15,20,26,30,40,60,90,140,210], typeval = TH2D) )
+            #vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', manualbinsX = [10,15,20,26,30,40,50,90,140,210], manualbinsY = [10,15,20,26,30,40,50,90,140,210], typeval = TH2D) )
 
             # For measurement in data: select MC events to be subtracted afterwards
 
@@ -1785,7 +1781,8 @@ if __name__ == "__main__":
         'tHbj':('tHbbkg','tHbj'),
         'WtH':('WtHbkg','tWH'),
         'TTBarW':('ttbarwbkg','$t\\bar{t}W$'),
-        'TTBarZ':('ttbarzbkg','$t\\bar{t}Z$'),
+        'TTBarZ':('ttbarzbkg','$t\\bar{t}Z/\\gamma^{*}$'),
+        'TTBarGamma':('ttbargammabkg','$t\\bar{t}\\gamma$'),
         'SingleTop':('singletopbkg','Single $t$, $tW$'),
         'RareTop':('raretopbkg','Others'),
         'Triboson':('tribosonbkg','VVV'),
@@ -1827,16 +1824,17 @@ if __name__ == "__main__":
         'tHbj':kPink+7,
         'WtH':kPink-4,
         'TTBarW':kYellow-9,
-        'TTBarZ':kAzure+1,
+        'TTBarZ':kCyan,
+        'TTBarGamma':kAzure+1,
         'SingleTop':kOrange+6,
         'RareTop':kOrange+7,
         'Triboson':kTeal+10,
         'Rare':kGray,
-        'TTBar': kRed - 4,
+        'TTBar': kRed-4,
         'TopCF':kAzure-4,
         'Diboson':kGreen-9,
         'DibosonCF':kOrange-3,
-        'Zjets': kCyan -9,
+        'Zjets': kBlue-7,
         'Zeejets':kAzure+10,
         'Zmumujets':kAzure-3,
         'Ztautaujets':kCyan-7,
@@ -1862,12 +1860,11 @@ if __name__ == "__main__":
 
     if ( doSR or doLowNJetCR ):
 
-        ttH.signals     = ['TTBarH']
-        ttH.observed    = ['Observed']
-        ttH.backgrounds = []
+        ttH.signals         = ['TTBarH']
+        ttH.observed        = ['Observed']
+        ttH.backgrounds     = []
         ttH.sub_backgrounds = []
-
-        ttH.debugprocs  = ['TTBarW','TTBarH']
+        ttH.debugprocs      = ['TTBarW','TTBarH']
 
         if doMM:
 
@@ -1929,11 +1926,12 @@ if __name__ == "__main__":
         ttH.signals     = []
         ttH.observed    = ['Observed']
         if args.ratesMC: ttH.observed = []
-        # ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson'] # NB: if using this list, make sure a QMisID veto is applied (in SS CR), since QMisID is added separately below
-        # ttH.debugprocs  = ['TTBar','Observed']
+        #ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson'] # NB: if using this list, make sure a QMisID veto is applied (in SS CR), since QMisID is added separately below
+        #ttH.debugprocs  = ['TTBar','Observed']
         #
-        ttH.backgrounds = ['Prompt','FakesMC'] # This includes all the following processes: ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']. Truth cuts are redefined in the 'Prompt' and 'FakesMC' classes...
-        ttH.debugprocs  = ['Prompt','FakesMC']
+        ttH.backgrounds = ['Prompt','FakesMC','TTBar'] # 'Prompt' includes all the following processes: ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']. Truth cuts are redefined in the 'Prompt' and 'FakesMC' classes...
+                                                       # 'TTBar' is also appended to the list b/c in FakeCR we have a contribution from ttbar events w/ mis-assigned probe (prompt) to be subtracted.
+        #ttH.debugprocs  = ['Prompt','FakesMC']
 
         if args.useMCQMisID:
             ttH.backgrounds.append('QMisIDMC')
@@ -2032,9 +2030,7 @@ if __name__ == "__main__":
     for sample in ttH.backgrounds:
         histname[sample]   = samplenames[sample]
         histcolour[sample] = colours[sample]
-        #
         # Will override default colour based on the dictionary provided above
-        #
         ttH.str_to_class(sample).colour = colours[sample]
     for sample in ttH.observed:
         histname[sample]   = samplenames[sample]
@@ -2083,7 +2079,7 @@ if __name__ == "__main__":
         # For DLT, trigger SF not available in yet...
         # Set trigger weight to 1
 
-        if any( t in args.trigger for t in ["DLT","SLT_OR_DLT"]) and "weight_event_trig_SLT" in category.weight:
+        if any( t in args.trigger for t in ["DLT","SLT_OR_DLT"]) and any( w in category.weight for w in ["weight_event_trig_SLT","lepSFTrigTight"] ):
 	    print("Using DLT. Trigger SFs not available yet. Do not apply trigger SF...\n")
             category.weight = category.weight.replace("weight_event_trig_SLT","1.0")
 
@@ -2205,9 +2201,11 @@ if __name__ == "__main__":
             # For some categories, make sure non-relevant processes are removed from the proc list!
 
             if "RealCR" in category.name or ( "LH" in args.channel and "OS_" in category.name ):
-                mybackgrounds = [ bkg for bkg in mybackgrounds if not any( bkg == b for b in ["Prompt","QMisID","QMisIDMC"]) ]
+                mybackgrounds = [ bkg for bkg in mybackgrounds if ( "FakesMC" not in mybackgrounds or not any( bkg == b for b in ["Prompt","QMisID","QMisIDMC","TTBar"]) ) ]
             if "FakeCR" in category.name or ( "LH" in args.channel and "SS_" in category.name ):
-                mybackgrounds = [ bkg for bkg in mybackgrounds if not bkg == "FakesMC" ]
+                mybackgrounds = [ bkg for bkg in mybackgrounds if ( "Prompt" not in mybackgrounds or not bkg == "FakesMC" ) ]
+                if "LH" in args.channel:
+                    mybackgrounds = [ bkg for bkg in mybackgrounds if ( "Prompt" not in mybackgrounds or not bkg == "TTBar" ) ]
 
             hists[category.name + ' ' + var.shortname] = ttH.plot( var,
                                                                    eventweight=category.weight,

@@ -6,7 +6,7 @@ __maintainer__ = "Marco Milesi"
 
 import sys, glob, os, array, inspect, math
 
-from ROOT import TFile, TH1, TH1D, TH1I, TH2D, TH2F, TH2I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
+from ROOT import TFile, TH1, TH1D, TH1I, TH2, TH2D, TH2F, TH2I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
 from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kBlack, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
 
 sys.path.append(os.path.abspath(os.path.curdir))
@@ -1007,19 +1007,18 @@ class Background:
         obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
 
 	if obs:
-	    if not var.typeval in [TH2I,TH2F,TH2D]:
-            	process = obslist[0][1]
-            	datagr = None
-	    	if not ( "$ISDATA$" in obslist[0][0].GetName() ):
-	    	    datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
-		    datagr.SetLineStyle(2)
-	    	else :
-	    	    datagr = makePoissonErrors(obs)
+            process = obslist[0][1]
+            datagr = None
+            if not ( "$ISDATA$" in obslist[0][0].GetName() ):
+                datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
+                datagr.SetLineStyle(2)
+            else :
+                datagr = makePoissonErrors(obs)
             	#datagr.SetMarkerSize(1.2)
             	datagr.SetMarkerSize(0.8)
             	datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
             	datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
-            	legs.append([datagr, process.latexname, "p"])
+            	legs.append([datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "p"])
 
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
 
@@ -1048,7 +1047,7 @@ class Background:
 	    	h.SetFillColor(self.style.get(pname+'FillColour', process.colour))
 	    	h.SetFillStyle(self.style.get(pname+'FillStyle', 1001))
 	    	stack.Add(h)
-	    	legs.append([h, process.latexname, 'f'])
+	    	legs.append([h, process.latexname + " ({0:.1f})".format(integrate(h)), 'f'])
 	    	bkg[pname] = h
 	else:
 	    stack = None
@@ -1077,7 +1076,7 @@ class Background:
             h_name = process.latexname+signal
             if signalfactor != 1.:
                h_name += " [#times"+str(int(signalfactor))+']'
-            legs.append([sig, h_name, 'f'])
+            legs.append([sig, h_name + " ({0:.1f})".format(integrate(sig)), 'f'])
 
 
         if showratio and obs and bkg and not var.typeval in [TH2I,TH2F,TH2D]:
@@ -1268,6 +1267,10 @@ class Background:
 	         ytitle = 'Events / %.2g GeV' % (binwidth)
 	         datagr.GetYaxis().SetTitle(ytitle)
                  datagr.Draw('AP')
+	   else:
+	      set_fancy_2D_style()
+              gPad.SetRightMargin(0.2)
+	      datagr.Draw(var.drawOpt2D)
 
         lower, labels = self.labels(legs, showratio and obs and bkg)
         #gPad.RedrawAxis()
@@ -1297,9 +1300,9 @@ class Background:
 	sig, siglist    = self.sumhist(var, processes=self.signals,       cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
 
         legs = [
-            [nom, 'Nominal', "F"],
-            [up, systematics.name + ' + 1#sigma', "F"],
-            [down, systematics.name + ' - 1#sigma', "F"],
+            [nom, 'Nominal' + " ({0:.1f})".format(integrate(nom)), "F"],
+            [up, systematics.name + ' + 1#sigma' + " ({0:.1f})".format(integrate(up)), "F"],
+            [down, systematics.name + ' - 1#sigma' + " ({0:.1f})".format(integrate(down)), "F"],
         ]
 
         bkguplist = {}
@@ -1334,7 +1337,7 @@ class Background:
             datagr.SetMarkerStyle(20)
             datagr.SetMarkerSize(1.2)
             datagr.SetMarkerColor(1)
-            legs.insert(0, (datagr, process.latexname,"P"))
+            legs.insert(0, (datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "P"))
 
 
         c = TCanvas("c1","Temp",50,50,600,600)
@@ -1575,6 +1578,13 @@ def makeMCErrors(hist):
             ipoint += 1
 
     return graph
+
+# Get effective integral of input histogram, taking u/oflow into account
+
+def integrate(hist):
+    if isinstance(hist,TH2):
+        return hist.Integral(0,hist.GetXaxis().GetNbins()+1,0,hist.GetYaxis().GetNbins()+1)
+    return hist.Integral(0,hist.GetNbinsX()+1)
 
 
 # This function loads the samples metadata from the .csv file info

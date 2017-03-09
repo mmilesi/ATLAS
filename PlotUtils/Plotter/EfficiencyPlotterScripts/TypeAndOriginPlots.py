@@ -22,7 +22,10 @@ def plotTypeVSOrigin( normFactor=0, **kwargs ):
 
     variable = "{0}ProbeType_VS_{1}ProbeOrigin".format(kwargs["flavour"],kwargs["flavour"])
 
-    inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/" + kwargs["lepSelection"] + "/"
+    #basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/MMRates_DATA/" + "OutputPlots_MMRates_DATAMC_" + kwargs["prodID"] + "_LeptonMVA_FakeOrig_" + kwargs["jetSelection"]
+    basePath = os.path.abspath(os.curdir) + "/" + "OutputPlots_MMRates_DATAMC_" + kwargs["prodID"] + "_LeptonMVA_FakeOrig_" + kwargs["jetSelection"]
+
+    inputPath = basePath + "/" + kwargs["lepSelection"] + "/"
     inputName = kwargs["lepSelection"] + "_" + variable + ".root"
 
     p0_props = {
@@ -52,7 +55,7 @@ def plotTypeVSOrigin( normFactor=0, **kwargs ):
     #Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
     #Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
 
-    savePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
+    savePath = basePath + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
     saveName = canvasID
 
     for ext in ["png","eps","root"]:
@@ -74,7 +77,10 @@ def plotTypeVSNjets( normFactor=0, **kwargs ):
 
     variable = "{0}ProbeType_VS_NJets".format(kwargs["flavour"])
 
-    inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/" + kwargs["lepSelection"] + "/"
+    #basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/MMRates_DATA/" + "OutputPlots_MMRates_DATAMC_" + kwargs["prodID"] + "_LeptonMVA_FakeOrig_" + kwargs["jetSelection"]
+    basePath = os.path.abspath(os.curdir) + "/" + "OutputPlots_MMRates_DATAMC_" + kwargs["prodID"] + "_LeptonMVA_FakeOrig_" + kwargs["jetSelection"]
+
+    inputPath = basePath + "/" + kwargs["lepSelection"] + "/"
     inputName = kwargs["lepSelection"] + "_" + variable + ".root"
 
     p0_props = {
@@ -103,7 +109,7 @@ def plotTypeVSNjets( normFactor=0, **kwargs ):
     #Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
     #Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
 
-    savePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
+    savePath = basePath + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
     saveName = canvasID
 
     for ext in ["png","eps","root"]:
@@ -125,7 +131,10 @@ def plotOriginVSNjets( normFactor=0, **kwargs ):
 
     variable = "{0}ProbeOrigin_VS_NJets".format(kwargs["flavour"])
 
-    inputPath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/" + kwargs["lepSelection"] + "/"
+    #basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/MMRates_DATA/" + "OutputPlots_MMRates_DATAMC_" + kwargs["prodID"] + "_LeptonMVA_FakeOrig_" + kwargs["jetSelection"]
+    basePath = os.path.abspath(os.curdir) + "/" + "OutputPlots_MMRates_DATAMC_" + kwargs["prodID"] + "_LeptonMVA_FakeOrig_" + kwargs["jetSelection"]
+
+    inputPath = basePath + "/" + kwargs["lepSelection"] + "/"
     inputName = kwargs["lepSelection"] + "_" + variable + ".root"
 
     p0_props = {
@@ -166,7 +175,7 @@ def plotOriginVSNjets( normFactor=0, **kwargs ):
     #Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
     #Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
 
-    savePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/MMClosure_v24_SUSYTP/OutputPlots_MMRates_SUSYTagProbe_SLT_DataMC_FAKE_CR_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
+    savePath = basePath + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
     saveName = canvasID
 
     for ext in ["png","eps","root"]:

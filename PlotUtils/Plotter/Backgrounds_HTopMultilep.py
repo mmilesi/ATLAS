@@ -223,7 +223,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             # Clean up from any truth cut
 
@@ -256,9 +256,6 @@ class TTHBackgrounds(Background):
             # hmass = options.get('hmass', '125')
 
             inputgroup = [
-                #('ttH', 'ttH_dil'),
-                #('ttH', 'ttH_semilep'),
-                #('ttH', 'ttH_allhad'),
                 ('ttH', 'ttH_dil_Pythia8'),
                 ('ttH', 'ttH_semilep_Pythia8'),
                 ('ttH', 'ttH_allhad_Pythia8'),
@@ -282,7 +279,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -307,7 +304,6 @@ class TTHBackgrounds(Background):
             # hmass = options.get('hmass', '125')
 
             inputgroup = [
-                #('ttH', 'ttH_semilep'),
                 ('ttH', 'ttH_semilep_Pythia8'),
                         ]
 
@@ -329,7 +325,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -349,7 +345,6 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
             inputgroup = [
-                #('ttH', 'ttH_dil'),
                 ('ttH', 'ttH_dil_Pythia8'),
                          ]
 
@@ -371,7 +366,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -412,7 +407,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -452,7 +447,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -471,9 +466,7 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                #('tops', 'ttW'),
 		('tops', 'ttW_aMcAtNlo'),
-                #('tops', 'Sherpa_ttW'),
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -494,7 +487,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -514,17 +507,11 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                #('tops', 'ttZnnqq'),
-                #('tops', 'ttee'),
-                #('tops', 'ttmumu'),
-                #('tops', 'tttautau'),
                 ('tops', 'ttee_aMcAtNlo'),
                 ('tops', 'ttmumu_aMcAtNlo'),
                 ('tops', 'tttautau_aMcAtNlo'),
                 ('tops', 'ttZnunu_aMcAtNlo'),
                 ('tops', 'ttZqq_aMcAtNlo'),
-                #('tops', 'Sherpa_ttZnnqq'),
-                #('tops', 'Sherpa_ttll'),
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -545,7 +532,47 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+
+            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+
+            if TTcut:
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+
+            return sp
+
+    class TTBarGamma(Process):
+
+        latexname = 't#bar{t}#gamma'
+        colour = kRed - 6
+
+        def base(self, treename='physics', category=None, options={}):
+
+	    inputgroup = [
+		('tops', 'ttgamma'),
+                         ]
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
+
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+
+            weight = None
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -565,21 +592,17 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                           #('Z+jets', 'ee'),
-                           #('MadGraphZ+jets', 'ee'),
                            ('Z+jetsLowMllBVeto', 'ee'),
                            ('Z+jetsLowMllBFilter', 'ee'),
-                           #('DYZ+jets', 'ee'),
+                           ('Z+jets_HighZPt', 'ee'),
                          ]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 # Sherpa NNPDF30NNLO
-                #
                 print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")
                 inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', 'ee'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', 'ee'), ('Z+jetsBFilter_NNPDF30NNLO', 'ee') ]
             else:
                 # Sherpa CT10
-                #
                 inputgroup += [ ('Z+jetsCVetoBVeto', 'ee'), ('Z+jetsCFilterBVeto', 'ee'), ('Z+jetsBFilter', 'ee') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -602,7 +625,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
@@ -625,21 +648,17 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                           #('Z+jets', 'mumu'),
-                           #('MadGraphZ+jets', 'mumu'),
                            ('Z+jetsLowMllBVeto', 'mumu'),
                            ('Z+jetsLowMllBFilter', 'mumu'),
-                           #('DYZ+jets', 'mumu'),
+                           ('Z+jets_HighZPt', 'mumu'),
                          ]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 # Sherpa NNPDF30NNLO
-                #
                 print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")
                 inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', 'mumu'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', 'mumu'), ('Z+jetsBFilter_NNPDF30NNLO', 'mumu') ]
             else:
                 # Sherpa CT10
-                #
                 inputgroup += [ ('Z+jetsCVetoBVeto', 'mumu'), ('Z+jetsCFilterBVeto', 'mumu'), ('Z+jetsBFilter', 'mumu') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -661,7 +680,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
@@ -683,21 +702,17 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                           #('Z+jets', 'tautau'),
-                           #('MadGraphZ+jets', 'tautau'),
                            ('Z+jetsLowMllBVeto', 'tautau'),
                            ('Z+jetsLowMllBFilter', 'tautau'),
-                           #('DYZ+jets', 'tautau'),
+                           ('Z+jets_HighZPt', 'tautau'),
                          ]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 # Sherpa NNPDF30NNLO
-                #
                 print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")
                 inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', 'tautau'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', 'tautau'), ('Z+jetsBFilter_NNPDF30NNLO', 'tautau') ]
             else:
                 # Sherpa CT10
-                #
                 inputgroup += [ ('Z+jetsCVetoBVeto', 'tautau'), ('Z+jetsCFilterBVeto', 'tautau'), ('Z+jetsBFilter', 'tautau') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -720,7 +735,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
@@ -759,21 +774,17 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                           #('Z+jets', '*'),
-                           #('MadGraphZ+jets', '*'),
                            ('Z+jetsLowMllBVeto', '*'),
                            ('Z+jetsLowMllBFilter', '*'),
-                           #('DYZ+jets', '*'),
+                           ('Z+jets_HighZPt', '*'),
                          ]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 # Sherpa NNPDF30NNLO
-                #
                 print("\nUsing Sherpa NNPDF30NNLO Z+jets! Jet reweighting needed...\n")
                 inputgroup += [ ('Z+jetsCVetoBVeto_NNPDF30NNLO', '*'), ('Z+jetsCFilterBVeto_NNPDF30NNLO', '*'), ('Z+jetsBFilter_NNPDF30NNLO', '*') ]
             else:
                 # Sherpa CT10
-                #
                 inputgroup += [ ('Z+jetsCVetoBVeto', '*'), ('Z+jetsCFilterBVeto', '*'), ('Z+jetsBFilter', '*') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -796,7 +807,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
@@ -834,12 +845,10 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                #('PowhegPythiaW+jets', 'Wplusenu'),
-                #('PowhegPythiaW+jets', 'Wminusenu'),
-                #('MadGraphW+jets', 'enu'),
                 ('W+jetsBFilter', 'enu'),
                 ('W+jetsCFilterBVeto', 'enu'),
                 ('W+jetsCVetoBVeto', 'enu'),
+                ('W+jets_HighWPt', 'enu')
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -860,7 +869,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -880,12 +889,10 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                #('PowhegPythiaW+jets', 'Wplusmunu'),
-                #('PowhegPythiaW+jets', 'Wminusmunu'),
-                #('MadGraphW+jets', 'munu'),
                 ('W+jetsBFilter', 'munu'),
                 ('W+jetsCFilterBVeto', 'munu'),
                 ('W+jetsCVetoBVeto', 'munu'),
+                ('W+jets_HighWPt', 'munu')
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -906,7 +913,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -926,12 +933,10 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                #('PowhegPythiaW+jets', 'Wplustaunu'),
-                #('PowhegPythiaW+jets', 'Wminustaunu'),
-                #('MadGraphW+jets', 'taunu'),
                 ('W+jetsBFilter', 'taunu'),
                 ('W+jetsCFilterBVeto', 'taunu'),
                 ('W+jetsCVetoBVeto', 'taunu'),
+                ('W+jets_HighWPt', 'taunu')
                          ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -952,7 +957,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -990,6 +995,7 @@ class TTHBackgrounds(Background):
 
 	    inputgroup = [
                 ('tops', 'tZ'),
+                ('tops', '3top'),
                 ('tops', '4top'),
                 ('tops', 'ttWW'),
                 ('tops', 'tWZDR'),
@@ -1013,7 +1019,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1027,13 +1033,14 @@ class TTHBackgrounds(Background):
 
     class SingleTop(Process):
 
-        latexname = 'single top, tW'
+        latexname = 'single t, tW'
         colour = kAzure + 1
 
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
                 ('tops', 'singlet'),
+                ('tops', 'SingleTopSchan_noAllHad'),
                 ('tops', 'tW'),
                          ]
 
@@ -1055,7 +1062,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1116,7 +1123,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1141,6 +1148,8 @@ class TTHBackgrounds(Background):
                 ('tops', 'tZ'),
                 ('tops', 'tW'),
                 ('tops', 'singlet'),
+                ('tops', 'SingleTopSchan_noAllHad'),
+                ('tops', '3top'),
                 ('tops', '4top'),
                 ('tops', 'tWZDR'),
                 ('tops', 'ttWW'),
@@ -1164,7 +1173,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             # Plot only events where at least one lepton is charge flip.
 	    # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
@@ -1199,7 +1208,6 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                #('Diboson', '*'),
                 ('Diboson', 'llll'),
                 ('Diboson', 'lllvSFMinus'),
                 ('Diboson', 'lllvOFMinus'),
@@ -1212,9 +1220,6 @@ class TTHBackgrounds(Background):
                 ('Diboson', 'lllljj_EW6'),
                 ('Diboson', 'ggllll'),
                 ('Diboson', 'ggllvv'),
-                #('Diboson', 'WW'),
-                #('Diboson', 'WZ'),
-                #('Diboson', 'ZZ'),
                 ('Diboson', 'WW_SHv21_improved'),
                 ('Diboson', 'WZ_SHv21_improved'),
                 ('Diboson', 'ZZ_SHv21_improved'),
@@ -1238,7 +1243,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1258,7 +1263,6 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                #('Diboson', '*'),
                 ('Diboson', 'llll'),
                 ('Diboson', 'lllvSFMinus'),
                 ('Diboson', 'lllvOFMinus'),
@@ -1271,9 +1275,6 @@ class TTHBackgrounds(Background):
                 ('Diboson', 'lllljj_EW6'),
                 ('Diboson', 'ggllll'),
                 ('Diboson', 'ggllvv'),
-                #('Diboson', 'WW'),
-                #('Diboson', 'WZ'),
-                #('Diboson', 'ZZ'),
                 ('Diboson', 'WW_SHv21_improved'),
                 ('Diboson', 'WZ_SHv21_improved'),
                 ('Diboson', 'ZZ_SHv21_improved'),
@@ -1297,7 +1298,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             # Plot only events where at least one lepton is charge flip.
 	    # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
@@ -1352,7 +1353,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1402,7 +1403,7 @@ class TTHBackgrounds(Background):
 
             # Remember to add TT cut (if needed) as it's not in basecut!
 
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
             if TTcut:
                 updatedcut = updatedcut & self.vardb.getCut(TTcut)
 
@@ -1637,6 +1638,7 @@ class TTHBackgrounds(Background):
             rare_top  = self.parent.procmap['RareTop'](treename, category, options)
             ttbarw    = self.parent.procmap['TTBarW'](treename, category, options)
             ttbarz    = self.parent.procmap['TTBarZ'](treename, category, options)
+            # ttbargamma = self.parent.procmap['TTBarGamma'](treename, category, options)
             ttbar     = self.parent.procmap['TTBar'](treename, category, options)
             singletop = self.parent.procmap['SingleTop'](treename, category, options)
             zjets     = self.parent.procmap['Zjets'](treename, category, options)
@@ -1656,7 +1658,7 @@ class TTHBackgrounds(Background):
 
             # Remember to add TT cut (if needed) as it's not in basecut!
 
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
             if TTcut:
                 updatedcut = updatedcut & self.vardb.getCut(TTcut)
 
@@ -1675,12 +1677,13 @@ class TTHBackgrounds(Background):
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("RareTop",rare_top.basecut.cutnamelist, rare_top.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBarW",ttbarw.basecut.cutnamelist, ttbarw.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBarZ",ttbarz.basecut.cutnamelist, ttbarz.eventweight))
+            # print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBarGamma",ttbargamma.basecut.cutnamelist, ttbarw.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBar",ttbar.basecut.cutnamelist, ttbar.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("SingleTop",singletop.basecut.cutnamelist, singletop.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Zjets",zjets.basecut.cutnamelist, zjets.eventweight))
             print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Wjets",wjets.basecut.cutnamelist, wjets.eventweight))
 
-            return diboson + rare_top + ttbarw + ttbarz + ttbar + singletop + zjets + wjets
+            return diboson + rare_top + ttbarw + ttbarz + ttbar + singletop + zjets + wjets # + ttbargamma
 
 
     class FakesFF(Process):
@@ -1728,7 +1731,9 @@ class TTHBackgrounds(Background):
 
             sublist = [ item for item in self.parent.sub_backgrounds ]
             for sample in sublist:
-                sp = sp - self.parent.procmap[sample].base(treename, category, options) # here it is important to have used base otherwise at the sub sample there would be already applied the selection specified in the category __call__ of that sample i.e. for example also the iso-iso cut which is orthogonal to the cuts done in this sample which are fake iso or fake fake.
+                sp = sp - self.parent.procmap[sample].base(treename, category, options) # Here it is important to have used base otherwise at the sub sample
+                                                                                        # there would be already applied the selection specified in the category __call__ of that sample
+                                                                                        # i.e. for example also the iso-iso cut which is orthogonal to the cuts done in this sample which are fake iso or fake fake.
             #print sp
             sp_TL = sp.subprocess(cut=self.vardb.getCut(TLcut))
             sp_LT = sp.subprocess(cut=self.vardb.getCut(LTcut))
@@ -1773,11 +1778,11 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            TLcut  = ('','TL')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            LTcut  = ('','LT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            LLcut  = ('','LL')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            weight = (None,'MMWeight')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TLcut  = ('','TL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            LTcut  = ('','LT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            LLcut  = ('','LL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            weight = (None,'MMWeight')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             # Clean up from any truth cut
 
@@ -2278,11 +2283,11 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
-            TTcut  = ('','TT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            TLcut  = ('','TL')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            LTcut  = ('','LT')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            LLcut  = ('','LL')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
-            weight  = (None,'MMWeight')[bool(self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep')]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TLcut  = ('','TL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            LTcut  = ('','LT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            LLcut  = ('','LL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            weight  = (None,'MMWeight')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp_TT_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(TTcut))
             sp_TL_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(TLcut))
@@ -2327,8 +2332,8 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                    #('tops', 'ttbar_nonallhad_Pythia8'),
-                    ('tops', 'ttbar_nonallhad'),
+                    ('tops', 'ttbar_nonallhad_Pythia8'),
+                    #('tops', 'ttbar_nonallhad'),
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -2518,8 +2523,8 @@ class TTHBackgrounds(Background):
         def base(self, treename='physics', category=None, options={}):
 
 	    inputgroup = [
-                    #('tops', 'ttbar_nonallhad_Pythia8'),
-                    ('tops', 'ttbar_nonallhad'),
+                    ('tops', 'ttbar_nonallhad_Pythia8'),
+                    #('tops', 'ttbar_nonallhad'),
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))

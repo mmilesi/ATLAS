@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 if __name__ == "__main__":
@@ -23,7 +24,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter_v26
 
-    if True:
+    if False:
 
         EfficiencyPlotter_v26.plotRealElectron()
         EfficiencyPlotter_v26.plotRealMuon()
@@ -49,17 +50,25 @@ if __name__ == "__main__":
         # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron_NO_TRUTH()
         EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron_EtaBarrel()
 
+    import LikelihoodVSTagAndProbe
+
+    if True:
+        LikelihoodVSTagAndProbe.compareRealMuon()
+        LikelihoodVSTagAndProbe.compareRealElectron()
+
     import TypeAndOriginPlots
 
     if False:
 
         samples       = ["ttbarbkg","wjetsbkg"]
-        #lepSelections = ["FakeCRElT","FakeCRElL"]
-        flavour       = "Mu"
-        lepSelections = ["FakeCRMuT","FakeCRMuL"]
+        flavour       = "El"
+        lepSelections = ["FakeCRElT","FakeCRElL"]
+        #flavour       = "Mu"
+        #lepSelections = ["FakeCRMuT","FakeCRMuL"]
         jetSelections = ["ALLNJ","LOWNJ","HIGHNJ"]
-        prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
-        normFactor    = 0 # 1.0
+        #prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
+        prodIDs       = ["25ns_v26"]
+        normFactor    = 1.0 # 0
 
         for s in samples:
             print("\nLooking at sample: {0}".format(s))
