@@ -2239,6 +2239,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: storeLeptonBranches()
     m_nmuons     = 0;
     m_nelectrons = 0;
 
+    std::string electron_key, muon_key;
+
     for ( auto lep : m_leptons ) {
 
 	lep_flavour = lep.get()->props["Flavour"].i;
@@ -2249,40 +2251,31 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: storeLeptonBranches()
 
 	    ++m_nelectrons;
 
-	    m_electron_OR_branches["electron_pt"].vec_f.push_back(lep.get()->props["Pt"].f);
-	    m_electron_OR_branches["electron_eta"].vec_f.push_back(lep.get()->props["Eta"].f);
-	    m_electron_OR_branches["electron_EtaBE2"].vec_f.push_back(lep.get()->props["EtaBE2"].f);
-	    m_electron_OR_branches["electron_phi"].vec_f.push_back(lep.get()->props["Phi"].f);
-	    m_electron_OR_branches["electron_isTightSelected"].vec_c.push_back(lep.get()->props["isTightSelected"].c);
-	    m_electron_OR_branches["electron_isTightSelectedMVA"].vec_c.push_back(lep.get()->props["isTightSelectedMVA"].c);
-	    m_electron_OR_branches["electron_promptLeptonIso_TagWeight"].vec_f.push_back(lep.get()->props["promptLeptonIso_TagWeight"].f);
-	    m_electron_OR_branches["electron_chargeIDBDTTight"].vec_f.push_back(lep.get()->props["chargeIDBDTTight"].f);
-	    m_electron_OR_branches["electron_sigd0PV"].vec_f.push_back(lep.get()->props["sigd0PV"].f);
-	    m_electron_OR_branches["electron_z0SinTheta"].vec_f.push_back(lep.get()->props["Z0SinTheta"].f);
-	    m_electron_OR_branches["electron_deltaRClosestJet"].vec_f.push_back(lep.get()->props["deltaRClosestJet"].f);
-	    m_electron_OR_branches["electron_deltaRClosestBJet"].vec_f.push_back(lep.get()->props["deltaRClosestBJet"].f);
-	    m_electron_OR_branches["electron_ptvarcone20"].vec_f.push_back(lep.get()->props["ptVarcone20"].f);
-	    m_electron_OR_branches["electron_topoetcone20"].vec_f.push_back(lep.get()->props["topoEtcone20"].f);
-	    m_electron_OR_branches["electron_truthType"].vec_i.push_back(lep.get()->props["truthType"].i);
-	    m_electron_OR_branches["electron_truthOrigin"].vec_i.push_back(lep.get()->props["truthOrigin"].i);
+	    for ( const auto& var : m_EL_VEC_VARS ) {
+
+		key = var.substr( 0, var.length() - 2 );
+		electron_key = "electron_" + key;
+
+		m_electron_OR_branches[electron_key].vec_f.push_back(lep.get()->props[key].f);
+		m_electron_OR_branches[electron_key].vec_c.push_back(lep.get()->props[key].c);
+		m_electron_OR_branches[electron_key].vec_i.push_back(lep.get()->props[key].i);
+
+	    }
 
 	} else if ( lep_flavour == 13 ) {
 
 	    ++m_nmuons;
 
-	    m_muon_OR_branches["muon_pt"].vec_f.push_back(lep.get()->props["Pt"].f);
-	    m_muon_OR_branches["muon_eta"].vec_f.push_back(lep.get()->props["Eta"].f);
-	    m_muon_OR_branches["muon_phi"].vec_f.push_back(lep.get()->props["Phi"].f);
-	    m_muon_OR_branches["muon_isTightSelected"].vec_c.push_back(lep.get()->props["isTightSelected"].c);
-	    m_muon_OR_branches["muon_isTightSelectedMVA"].vec_c.push_back(lep.get()->props["isTightSelectedMVA"].c);
-	    m_muon_OR_branches["muon_promptLeptonIso_TagWeight"].vec_f.push_back(lep.get()->props["promptLeptonIso_TagWeight"].f);
-	    m_muon_OR_branches["muon_sigd0PV"].vec_f.push_back(lep.get()->props["sigd0PV"].f);
-	    m_muon_OR_branches["muon_z0SinTheta"].vec_f.push_back(lep.get()->props["Z0SinTheta"].f);
-	    m_muon_OR_branches["muon_deltaRClosestJet"].vec_f.push_back(lep.get()->props["deltaRClosestJet"].f);
-	    m_muon_OR_branches["muon_deltaRClosestBJet"].vec_f.push_back(lep.get()->props["deltaRClosestBJet"].f);
-	    m_muon_OR_branches["muon_ptvarcone30"].vec_f.push_back(lep.get()->props["ptVarcone30"].f);
-	    m_muon_OR_branches["muon_truthType"].vec_i.push_back(lep.get()->props["truthType"].i);
-	    m_muon_OR_branches["muon_truthOrigin"].vec_i.push_back(lep.get()->props["truthOrigin"].i);
+	    for ( const auto& var : m_MU_VEC_VARS ) {
+
+		key = var.substr( 0, var.length() - 2 );
+		muon_key = "muon_" + key;
+
+		m_muon_OR_branches[muon_key].vec_f.push_back(lep.get()->props[key].f);
+		m_muon_OR_branches[muon_key].vec_c.push_back(lep.get()->props[key].c);
+		m_muon_OR_branches[muon_key].vec_i.push_back(lep.get()->props[key].i);
+
+	    }
 
 	}
 
@@ -2291,6 +2284,22 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: storeLeptonBranches()
     return EL::StatusCode::SUCCESS;
 
 }
+
+bool HTopMultilepMiniNTupMaker :: isQMisIDBDTLoose( std::shared_ptr<leptonObj> lepA, std::shared_ptr<leptonObj> lepB ) {
+
+    if ( m_lepSelForTP.compare("MVA") != 0 ) { return true; } // Forget about QMisID BDT for ICHEP selection!
+    if ( m_event.get()->trilep_type )        { return true; } // No QMisID at all in 3L
+    if ( m_event.get()->dilep_type == 1 )    { return true; } // No QMisID at all in 2L mm
+    if ( m_event.get()->dilep_type == 3 ) { // 2L ee
+	if ( lepA.get()->props["chargeIDBDTLoose"].f > 0.10083 && lepB.get()->props["chargeIDBDTLoose"].f > 0.10083 ) return true;
+    }
+    if ( m_event.get()->dilep_type == 2 ) { // 2L OF
+	if ( lepA.get()->props["Flavour"].f == 11 && lepA.get()->props["chargeIDBDTLoose"].f > 0.10083 ) return true;
+	if ( lepB.get()->props["Flavour"].f == 11 && lepB.get()->props["chargeIDBDTLoose"].f > 0.10083 ) return true;
+    }
+    return false;
+}
+
 
 EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 {
@@ -2317,15 +2326,19 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
     m_is_AntiTel_Tmu = ( ( lepA.get()->props["Flavour"].i == 11 && !lepA.get()->props["isTightSelected"].c ) && ( lepB.get()->props["Flavour"].i == 13 && lepB.get()->props["isTightSelected"].c ) );
     m_is_AntiTmu_Tel = ( ( lepA.get()->props["Flavour"].i == 13 && !lepA.get()->props["isTightSelected"].c ) && ( lepB.get()->props["Flavour"].i == 11 && lepB.get()->props["isTightSelected"].c ) );
 
-    m_is_TMVA_TMVA	   = (  lepA.get()->props["isTightSelectedMVA"].c &&  lepB.get()->props["isTightSelectedMVA"].c );
-    m_is_TMVA_AntiTMVA     = (  lepA.get()->props["isTightSelectedMVA"].c && !lepB.get()->props["isTightSelectedMVA"].c );
-    m_is_AntiTMVA_TMVA     = ( !lepA.get()->props["isTightSelectedMVA"].c &&  lepB.get()->props["isTightSelectedMVA"].c );
-    m_is_AntiTMVA_AntiTMVA = ( !lepA.get()->props["isTightSelectedMVA"].c && !lepB.get()->props["isTightSelectedMVA"].c );
+    // For lepton MVA selection, apply a baseline requirement for *all* electrons to be passing QMisID BDT Loose cut
 
-    m_is_TMVAel_AntiTMVAmu = ( ( lepA.get()->props["Flavour"].i == 11 && lepA.get()->props["isTightSelectedMVA"].c )  && ( lepB.get()->props["Flavour"].i == 13 && !lepB.get()->props["isTightSelectedMVA"].c ) );
-    m_is_TMVAmu_AntiTMVAel = ( ( lepA.get()->props["Flavour"].i == 13 && lepA.get()->props["isTightSelectedMVA"].c )  && ( lepB.get()->props["Flavour"].i == 11 && !lepB.get()->props["isTightSelectedMVA"].c ) );
-    m_is_AntiTMVAel_TMVAmu = ( ( lepA.get()->props["Flavour"].i == 11 && !lepA.get()->props["isTightSelectedMVA"].c ) && ( lepB.get()->props["Flavour"].i == 13 && lepB.get()->props["isTightSelectedMVA"].c ) );
-    m_is_AntiTMVAmu_TMVAel = ( ( lepA.get()->props["Flavour"].i == 13 && !lepA.get()->props["isTightSelectedMVA"].c ) && ( lepB.get()->props["Flavour"].i == 11 && lepB.get()->props["isTightSelectedMVA"].c ) );
+    bool isQMIsIDBDTLooseFlag = this->isQMisIDBDTLoose( lepA, lepB );
+
+    m_is_TMVA_TMVA	   = (  lepA.get()->props["isTightSelectedMVA"].c &&  lepB.get()->props["isTightSelectedMVA"].c ) && isQMIsIDBDTLooseFlag;
+    m_is_TMVA_AntiTMVA     = (  lepA.get()->props["isTightSelectedMVA"].c && !lepB.get()->props["isTightSelectedMVA"].c ) && isQMIsIDBDTLooseFlag;
+    m_is_AntiTMVA_TMVA     = ( !lepA.get()->props["isTightSelectedMVA"].c &&  lepB.get()->props["isTightSelectedMVA"].c ) && isQMIsIDBDTLooseFlag;
+    m_is_AntiTMVA_AntiTMVA = ( !lepA.get()->props["isTightSelectedMVA"].c && !lepB.get()->props["isTightSelectedMVA"].c ) && isQMIsIDBDTLooseFlag;
+
+    m_is_TMVAel_AntiTMVAmu = ( ( lepA.get()->props["Flavour"].i == 11 && lepA.get()->props["isTightSelectedMVA"].c )  && ( lepB.get()->props["Flavour"].i == 13 && !lepB.get()->props["isTightSelectedMVA"].c ) ) && isQMIsIDBDTLooseFlag;
+    m_is_TMVAmu_AntiTMVAel = ( ( lepA.get()->props["Flavour"].i == 13 && lepA.get()->props["isTightSelectedMVA"].c )  && ( lepB.get()->props["Flavour"].i == 11 && !lepB.get()->props["isTightSelectedMVA"].c ) ) && isQMIsIDBDTLooseFlag;
+    m_is_AntiTMVAel_TMVAmu = ( ( lepA.get()->props["Flavour"].i == 11 && !lepA.get()->props["isTightSelectedMVA"].c ) && ( lepB.get()->props["Flavour"].i == 13 && lepB.get()->props["isTightSelectedMVA"].c ) ) && isQMIsIDBDTLooseFlag;
+    m_is_AntiTMVAmu_TMVAel = ( ( lepA.get()->props["Flavour"].i == 13 && !lepA.get()->props["isTightSelectedMVA"].c ) && ( lepB.get()->props["Flavour"].i == 11 && lepB.get()->props["isTightSelectedMVA"].c ) ) && isQMIsIDBDTLooseFlag;
 
     ANA_CHECK( this->storeLeptonBranches() );
 

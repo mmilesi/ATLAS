@@ -22,6 +22,7 @@ event_branches       = ["EventNumber","RunNumber","RunYear","mc_channel_number",
                         "nJets_OR_T","nJets_OR_T_MV2c10_70","nJets_OR_T_MV2c10_77",
 			"nTaus_OR_Pt25",
 			"Mll01","Ptll01","DRll01","Mlll012","Mll02","Ptll02","DRll02","Mll12","Ptll12","DRll12","HT","HT_lep","HT_jets",
+                        "matchDLTll.*",
 			"MET_RefFinal_et","MET_RefFinal_phi",
 			"isBlinded"]
 
@@ -84,13 +85,6 @@ vec_lep_branches     = ["electron_passOR",
                         "muon_truthOrigin",
                        ]
 
-prompt_lep_branches = ["electron_PromptLeptonIso_TagWeight",
-                       "electron_ChargeIDBDTLoose",
-                       "electron_ChargeIDBDTMedium",
-                       "electron_ChargeIDBDTTight",
-                       "muon_PromptLeptonIso_TagWeight",
-                       ]
-
 lep_branches        = ["lep_.*[^4]"]
 
 tau_branches        = ["tau_pt_0","tau_eta_0","tau_phi_0","tau_charge_0","tau_BDTJetScore_0","tau_JetBDTSigLoose_0","tau_JetBDTSigMedium_0","tau_JetBDTSigTight_0","tau_numTrack_0","tau_SFTight_0","tau_SFLoose_0"]
@@ -108,7 +102,14 @@ branches_to_copy = eventweight_branches + event_branches + trigbits_branches + l
 jet_vec_branches       = ["selected_jets","selected_jets_T","m_jet_pt","m_jet_eta","m_jet_phi","m_jet_E","m_jet_flavor_weight_MV2c10","m_jet_flavor_truth_label","m_jet_flavor_truth_label_ghost"]
 jet_truth_vec_branches = ["m_truth_jet_pt","m_truth_jet_eta","m_truth_jet_phi","m_truth_jet_e"]
 
-branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches + vec_lep_branches # + trigmatch_branches
+prompt_lep_branches = ["electron_PromptLeptonIso_TagWeight",
+                       "electron_ChargeIDBDTLoose",
+                       "electron_ChargeIDBDTMedium",
+                       "electron_ChargeIDBDTTight",
+                       "muon_PromptLeptonIso_TagWeight",
+                       ]
+
+branches_to_activate = branches_to_copy + jet_vec_branches + jet_truth_vec_branches + vec_lep_branches + prompt_lep_branches # + trigmatch_branches
 
 # Trick to pass the list as a comma-separated string to the C++ algorithm
 
@@ -154,7 +155,7 @@ algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamNam
 algskim.addCut("RunYear==2015 || RunYear==2016")
 algskim.addCut("passEventCleaning==1")
 algskim.addCut("(dilep_type>0 && lep_Pt_1>10e3) || (trilep_type>0 && lep_Pt_0>10e3 && lep_Pt_1>10e3 && lep_Pt_2>10e3) || (quadlep_type>0 && lep_Pt_3>10e3)") # keep only dilepton,trilepton and quadlepton events, ensuring min(pT lep) > 10 GeV (NB: in 3L, flat branches are not pT-ranked, so we have to be explicit...)
-algskim.addCut("(dilep_type>0 && nJets_OR_T>=2 && nJets_OR_T_MV2c10_70>=0) || ( (trilep_type>0 || quadlep_type>0) && nJets_OR>=2 && nJets_OR_MV2c10_70>=0)") # minimal njet/nbjet skimming cut
+algskim.addCut("(dilep_type>0 && nJets_OR_T>=2 && nJets_OR_T_MV2c10_70>=1) || ( (trilep_type>0 || quadlep_type>0) && nJets_OR>=2 && nJets_OR_MV2c10_70>=1)") # minimal njet/nbjet skimming cut
 algskim.histName("cutflow")
 
 # Add the algorithms to the job.

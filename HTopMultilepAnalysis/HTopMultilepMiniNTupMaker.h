@@ -278,6 +278,7 @@ private:
   Int_t           m_nJets_OR_T_MV2c10_70;
 
   std::vector<std::string> m_LEP_INPUT_VARS  = {"ID/F","Pt/F","E/F","Eta/F","Phi/F","EtaBE2/F","sigd0PV/F","Z0SinTheta/F","isTightLH/B","isMediumLH/B","isLooseLH/B","isTight/B","isMedium/B","isLoose/B","isolationLooseTrackOnly/I","isolationLoose/I","isolationFixedCutTight/I","isolationFixedCutTightTrackOnly/I","isolationFixedCutLoose/I","topoEtcone20/F","ptVarcone20/F","ptVarcone30/F","promptLeptonIso_TagWeight/F","chargeIDBDTLoose/F","chargeIDBDTMedium/F","chargeIDBDTTight/F","isTrigMatch/B","isTrigMatchDLT/B","isPrompt/B","isBrems/B","isFakeLep/B","isQMisID/B","isConvPh/B","truthType/I","truthOrigin/I","SFIDLoose/F","SFIDTight/F","SFTrigLoose/F","SFTrigTight/F","EffTrigLoose/F","EffTrigTight/F","SFIsoLoose/F","SFIsoTight/F","SFReco/F","SFTTVA/F","SFObjLoose/F","SFObjTight/F"};
+  //std::vector<std::string> m_LEP_INPUT_VARS  = {"ID/F","Pt/F","E/F","Eta/F","Phi/F","EtaBE2/F","sigd0PV/F","Z0SinTheta/F","isTightLH/B","isMediumLH/B","isLooseLH/B","isTight/B","isMedium/B","isLoose/B","isolationLooseTrackOnly/I","isolationLoose/I","isolationFixedCutTight/I","isolationFixedCutTightTrackOnly/I","isolationFixedCutLoose/I","topoEtcone20/F","ptVarcone20/F","ptVarcone30/F","isTrigMatch/B","isTrigMatchDLT/B","isPrompt/B","isBrems/B","isFakeLep/B","isQMisID/B","isConvPh/B","truthType/I","truthOrigin/I","SFIDLoose/F","SFIDTight/F","SFTrigLoose/F","SFTrigTight/F","EffTrigLoose/F","EffTrigTight/F","SFIsoLoose/F","SFIsoTight/F","SFReco/F","SFTTVA/F","SFObjLoose/F","SFObjTight/F"};
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep0_INPUT_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep1_INPUT_branches;
@@ -415,7 +416,7 @@ private:
 
   /** Additional lepton flat branches */
 
-  std::vector<std::string> m_LEP_OUTPUT_VARS  = {"isTightSelectedMVA/B","isTightSelected/B","deltaRClosestJet/F","deltaRClosestBJet/F"};
+  std::vector<std::string> m_LEP_OUTPUT_VARS  = {"isTightSelectedMVA/B","isTightSelected/B","deltaRClosestJet/F","deltaRClosestBJet/F" /*, "promptLeptonIso_TagWeight/F","chargeIDBDTLoose/F","chargeIDBDTMedium/F","chargeIDBDTTight/F" */};
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep0_OUTPUT_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep1_OUTPUT_branches;
@@ -425,8 +426,8 @@ private:
 
   /** Some vector branches for leptons after OLR (pT-ordered) */
 
-  std::vector<std::string> m_EL_VEC_VARS  = { "pt/F", "eta/F", "EtaBE2/F", "phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "chargeIDBDTTight/F", "sigd0PV/F", "z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptvarcone20/F", "topoetcone20/F", "truthType/I", "truthOrigin/I" };
-  std::vector<std::string> m_MU_VEC_VARS  = { "pt/F", "eta/F", "phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "sigd0PV/F", "z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptvarcone30/F", "truthType/I", "truthOrigin/I" };
+  std::vector<std::string> m_EL_VEC_VARS  = { "Pt/F", "Eta/F", "EtaBE2/F", "Phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "chargeIDBDTLoose/F", "chargeIDBDTMedium/F", "chargeIDBDTTight/F", "sigd0PV/F", "Z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptVarcone20/F", "topoEtcone20/F", "truthType/I", "truthOrigin/I" };
+  std::vector<std::string> m_MU_VEC_VARS  = { "Pt/F", "Eta/F", "Phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "sigd0PV/F", "Z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptVarcone30/F", "truthType/I", "truthOrigin/I" };
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_electron_OR_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_muon_OR_branches;
@@ -515,6 +516,7 @@ private:
 
   EL::StatusCode fillTPFlatBranches ( std::shared_ptr<MiniNTupMaker::leptonObj> lep, const std::string& trig );
   EL::StatusCode storeLeptonBranches ();
+  bool isQMisIDBDTLoose( std::shared_ptr<MiniNTupMaker::leptonObj> lepA, std::shared_ptr<MiniNTupMaker::leptonObj> lepB );
   EL::StatusCode setOutputBranches ();
   EL::StatusCode clearBranches ( const std::string& type );
 
