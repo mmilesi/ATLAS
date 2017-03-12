@@ -100,7 +100,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: histInitialize ()
   Info("histInitialize()", "Calling histInitialize");
 
   // Parse input weight list, split by comma, and put into a vector
-  //
+
   std::vector<std::string> weights;
   ANA_CHECK( this->tokenize( ',', weights, m_weightToCalc ) );
 

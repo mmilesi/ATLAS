@@ -1632,6 +1632,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	}
 
+	return EL::StatusCode::SUCCESS;
+
     }
 
     if ( m_useNominalTP ) {
