@@ -1812,18 +1812,11 @@ void LHFitter :: readTagAndProbeEff() {
 
     Info("readTagAndProbeEff()", "Reading histograms with tag and probe efficiencies from input...");
 
-    std::string path     = m_input_path_TP + "LeptonEfficiencies.root";
-    std::string path_avg = m_input_path_TP + "LeptonEfficienciesAvg.root";
+    std::string path = m_input_path_TP + "LeptonEfficiencies.root";
 
     TFile *file = TFile::Open(path.c_str());
     if ( !file->IsOpen() ) {
 	SysError("readTagAndProbeEff()", "Failed to open ROOT file from path: %s . Aborting", path.c_str() );
-	exit(-1);
-    }
-
-    TFile *file_avg = TFile::Open(path_avg.c_str());
-    if ( !file_avg->IsOpen() ) {
-	SysError("readTagAndProbeEff()", "Failed to open ROOT file from path: %s . Aborting", path_avg.c_str() );
 	exit(-1);
     }
 
@@ -1834,10 +1827,10 @@ void LHFitter :: readTagAndProbeEff() {
 
     std::string eff_type = ( !s_useMC ) ? "observed_sub" : "expectedbkg";
 
-    filename_rel = filename_rel_avg = "Real_El_Pt_Efficiency_" + eff_type;
-    filename_fel = filename_fel_avg = "Fake_El_Pt_Efficiency_" + eff_type;
-    filename_rmu = filename_rmu_avg = "Real_Mu_Pt_Efficiency_" + eff_type;
-    filename_fmu = filename_fmu_avg = "Fake_Mu_Pt_Efficiency_" + eff_type;
+    filename_rel = "Real_El_Pt_Efficiency_" + eff_type;
+    filename_fel = "Fake_El_Pt_Efficiency_" + eff_type;
+    filename_rmu = "Real_Mu_Pt_Efficiency_" + eff_type;
+    filename_fmu = "Fake_Mu_Pt_Efficiency_" + eff_type;
 
     TH1D *releff = get_object<TH1D>( *file, filename_rel );
     TH1D *feleff = get_object<TH1D>( *file, filename_fel );
@@ -1861,10 +1854,15 @@ void LHFitter :: readTagAndProbeEff() {
 
     // Save average efficiencies
 
-    TH1D *releff_avg = get_object<TH1D>( *file_avg, filename_rel_avg );
-    TH1D *feleff_avg = get_object<TH1D>( *file_avg, filename_fel_avg );
-    TH1D *rmueff_avg = get_object<TH1D>( *file_avg, filename_rmu_avg );
-    TH1D *fmueff_avg = get_object<TH1D>( *file_avg, filename_fmu_avg );
+    filename_rel_avg = filename_rel + "_AVG";
+    filename_fel_avg = filename_fel + "_AVG";
+    filename_rmu_avg = filename_rmu + "_AVG";
+    filename_fmu_avg = filename_fmu + "_AVG";
+
+    TH1D *releff_avg = get_object<TH1D>( *file, filename_rel_avg );
+    TH1D *feleff_avg = get_object<TH1D>( *file, filename_fel_avg );
+    TH1D *rmueff_avg = get_object<TH1D>( *file, filename_rmu_avg );
+    TH1D *fmueff_avg = get_object<TH1D>( *file, filename_fmu_avg );
 
     m_rel_init_avg = releff_avg->GetBinContent(1);
     m_fel_init_avg = feleff_avg->GetBinContent(1);
@@ -2970,11 +2968,11 @@ int main( int argc, char **argv ) {
 
     // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
 
-    const std::string tp_path("../PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_25ns_v26_LeptonMVA/");
+    //const std::string tp_path("../PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_25ns_v26_LeptonMVA/");
 
     // Input 2D pT histograms
 
-    const std::string input_path("../OutputPlots_MMRates_LHFit_DLT_25ns_v26_LeptonMVA/");
+    //const std::string input_path("../OutputPlots_MMRates_LHFit_DLT_25ns_v26_LeptonMVA/");
     //const std::string input_path("../OutputPlots_MMRates_LHFit_SLT_25ns_v26_LeptonMVA/");
 
     //const std::string input_path("../OutputPlots_MMRates_LHFit_DLT_25ns_v26_LeptonMVA_Bin_10_15_20_26_30_40_60_90_140_210/");
@@ -2989,21 +2987,15 @@ int main( int argc, char **argv ) {
 
     // Input T&P efficiencies: will read *average* efficiency from T&P as an eductaed guess for the fit.
 
-    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA/");
-    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA_410000/");
-    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonCutBased/");
-    //const std::string tp_path("../PLOTS_25ns_v26/MMClosure_v26_SUSYTP/OutputPlots_MMClosureRates_25ns_v26_LeptonCutBased_410000/");
+    const std::string tp_path("../OutputPlots_MMClosureRates_25ns_v26_LeptonMVA/");
 
     // Input 2D pT histograms
 
-    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA/");
-    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA_410000/");
-    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonCutBased/");
-    //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonCutBased_410000/");
+    const std::string input_path("../OutputPlots_MMClosureRates_LHFit_DLT_25ns_v26_LeptonMVA/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_TRIGMATCH_EFF/");
     //const std::string input_path("../PLOTS_25ns_v26/MMClosure_v26_LikelihoodFit/_NOT_TRIGMATCH_EFF/");
 
-    //LHFitter::useMC();
+    LHFitter::useMC();
 
     // -------------
     // FIT SF events
@@ -3050,8 +3042,8 @@ int main( int argc, char **argv ) {
 	double fake_ee_new_bins[array_fake_bin_size] = {10,15,20,26,35,60,210};
 	fake_ee.setVariableBins( fake_ee_new_bins, array_fake_bin_size-1 );
 
-	//fake_ee.initialise();
-	//fake_ee.fit();
+	fake_ee.initialise();
+	fake_ee.fit();
 
     }
 
@@ -3097,8 +3089,8 @@ int main( int argc, char **argv ) {
 	double fake_mm_new_bins[array_fake_bin_size] = {10,15,20,26,35,50,210};
 	fake_mm.setVariableBins( fake_mm_new_bins, array_fake_bin_size-1 );
 
-	//fake_mm.initialise();
-	//fake_mm.fit();
+	fake_mm.initialise();
+	fake_mm.fit();
 
     }
 
@@ -3148,8 +3140,8 @@ int main( int argc, char **argv ) {
 	double fake_of_new_bins[array_fake_bin_size] = {10,15,20,26,35,60,210};
 	fake_of.setVariableBins( fake_of_new_bins, array_fake_bin_size-1 );
 
-	//fake_of.initialise();
-	//fake_of.fit();
+	fake_of.initialise();
+	fake_of.fit();
 
     }
 
