@@ -486,10 +486,17 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if "2Lep_TRUTH_ProbePromptEvent" in category.cut.cutname:
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+            if "2Lep_TRUTH_QMisIDVeto" in category.cut.cutname:
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -1436,6 +1443,75 @@ class TTHBackgrounds(Background):
             return diboson + rare_top + ttbarw + ttbarz + ttbar + singletop + zjets + wjets + triboson + tHbj + WtH
 
 
+    class OtherPrompt(Process):
+
+        #latexname = 'Prompt (non t#bar{t} W)'
+        latexname = 'Other Prompt'
+        colour = kYellow - 10
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+
+            # Pick the subprocesses from the DB
+
+            diboson   = self.parent.procmap['Diboson'](treename, category, options)
+            triboson  = self.parent.procmap['Triboson'](treename, category, options)
+            rare_top  = self.parent.procmap['RareTop'](treename, category, options)
+            ttbarz    = self.parent.procmap['TTBarZ'](treename, category, options)
+            tHbj      = self.parent.procmap['THbj'](treename, category, options)
+            WtH       = self.parent.procmap['WtH'](treename, category, options)
+            #
+            ttbar     = self.parent.procmap['TTBar'](treename, category, options)
+            singletop = self.parent.procmap['SingleTop'](treename, category, options)
+            zjets     = self.parent.procmap['Zjets'](treename, category, options)
+            wjets     = self.parent.procmap['Wjets'](treename, category, options)
+
+            # Clean up from any truth cut
+
+	    basecut = category.cut
+
+	    for CUT in basecut.cutlist:
+	    	if ("TRUTH") in CUT.cutname:
+	    	    basecut = basecut.removeCut(CUT)
+
+            # Require all lepton be prompt, and veto on QMisID
+
+            updatedcut = basecut & self.vardb.getCut('2Lep_TRUTH_PurePromptEvent')
+
+            # Remember to add TT cut (if needed) as it's not in basecut!
+
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            if TTcut:
+                updatedcut = updatedcut & self.vardb.getCut(TTcut)
+
+            # Reset the cut for the subprocesses, and apply the new one
+
+            diboson   = diboson.subprocess(cut=updatedcut, clearbasecut=True)
+            triboson  = triboson.subprocess(cut=updatedcut, clearbasecut=True)
+            rare_top  = rare_top.subprocess(cut=updatedcut, clearbasecut=True)
+            ttbarz    = ttbarz.subprocess(cut=updatedcut, clearbasecut=True)
+            tHbj      = tHbj.subprocess(cut=updatedcut, clearbasecut=True)
+            WtH       = WtH.subprocess(cut=updatedcut, clearbasecut=True)
+            ttbar     = ttbar.subprocess(cut=updatedcut, clearbasecut=True)
+            singletop = singletop.subprocess(cut=updatedcut, clearbasecut=True)
+            zjets     = zjets.subprocess(cut=updatedcut, clearbasecut=True)
+            wjets     = wjets.subprocess(cut=updatedcut, clearbasecut=True)
+
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Diboson",diboson.basecut.cutnamelist, diboson.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Triboson",triboson.basecut.cutnamelist, triboson.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("RareTop",rare_top.basecut.cutnamelist, rare_top.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("THbj",tHbj.basecut.cutnamelist, tHbj.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("WtH",WtH.basecut.cutnamelist, WtH.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBarZ",ttbarz.basecut.cutnamelist, ttbarz.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBar",ttbar.basecut.cutnamelist, ttbar.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("SingleTop",singletop.basecut.cutnamelist, singletop.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Zjets",zjets.basecut.cutnamelist, zjets.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Wjets",wjets.basecut.cutnamelist, wjets.eventweight))
+
+            return diboson + rare_top + ttbarz + ttbar + singletop + zjets + wjets + triboson + tHbj + WtH
+
+
     class QMisIDMC(Process):
 
         latexname = 'QMisID (MC)'
@@ -1778,10 +1854,10 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            TLcut  = ('','TL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            LTcut  = ('','LT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            LLcut  = ('','LL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','FakesSideband_TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TLcut  = ('','FakesSideband_TL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
             weight = (None,'MMWeight')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             # Clean up from any truth cut
@@ -1963,13 +2039,13 @@ class TTHBackgrounds(Background):
             weightMC = (category.weight,"1.0")[bool(TTHBackgrounds.noWeights)]
 
             if ( self.parent.channel=='TwoLepSS' ):
-                TTCut  = self.vardb.getCut('TT')
-                TLCut  = self.vardb.getCut('TL')
-                LTCut  = self.vardb.getCut('LT')
-                TelLmuCut = self.vardb.getCut('TelLmu')
-                LelTmuCut = self.vardb.getCut('LelTmu')
-                TmuLelCut = self.vardb.getCut('TmuLel')
-                LmuTelCut = self.vardb.getCut('LmuTel')
+                TTCut  = self.vardb.getCut('FakesSideband_TT')
+                TLCut  = self.vardb.getCut('FakesSideband_TL')
+                LTCut  = self.vardb.getCut('FakesSideband_LT')
+                TelLmuCut = self.vardb.getCut('FakesSideband_TelLmu')
+                LelTmuCut = self.vardb.getCut('FakesSideband_LelTmu')
+                TmuLelCut = self.vardb.getCut('FakesSideband_TmuLel')
+                LmuTelCut = self.vardb.getCut('FakesSideband_LmuTel')
 
             TL_LT_Cut = (TLCut | LTCut)
 
@@ -2283,10 +2359,10 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            TLcut  = ('','TL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            LTcut  = ('','LT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            LLcut  = ('','LL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','FakesSideband_TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TLcut  = ('','FakesSideband_TL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
             weight  = (None,'MMWeight')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
 
             sp_TT_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(TTcut))
@@ -2394,13 +2470,13 @@ class TTHBackgrounds(Background):
             LmuTelCut =''
             weight = None
             if self.parent.channel=='TwoLepSS':
-                TTCut  = self.vardb.getCut('TT')
-                TLCut  = self.vardb.getCut('TL')
-                LTCut  = self.vardb.getCut('LT')
-                TelLmuCut = self.vardb.getCut('TelLmu')
-                LelTmuCut = self.vardb.getCut('LelTmu')
-                TmuLelCut = self.vardb.getCut('TmuLel')
-                LmuTelCut = self.vardb.getCut('LmuTel')
+                TTCut  = self.vardb.getCut('FakesSideband_TT')
+                TLCut  = self.vardb.getCut('FakesSideband_TL')
+                LTCut  = self.vardb.getCut('FakesSideband_LT')
+                TelLmuCut = self.vardb.getCut('FakesSideband_TelLmu')
+                LelTmuCut = self.vardb.getCut('FakesSideband_LelTmu')
+                TmuLelCut = self.vardb.getCut('FakesSideband_TmuLel')
+                LmuTelCut = self.vardb.getCut('FakesSideband_LmuTel')
 
             TL_LT_Cut = (TLCut | LTCut)
 
@@ -2556,13 +2632,13 @@ class TTHBackgrounds(Background):
             weightMC = 'weight_event_trig * weight_event_lep * tauSFTight * JVT_EventWeight * MV2c10_70_EventWeight'
 
             if self.parent.channel=='TwoLepSS':
-                TTCut  = self.vardb.getCut('TT')
-                TLCut  = self.vardb.getCut('TL')
-                LTCut  = self.vardb.getCut('LT')
-                TelLmuCut = self.vardb.getCut('TelLmu')
-                LelTmuCut = self.vardb.getCut('LelTmu')
-                TmuLelCut = self.vardb.getCut('TmuLel')
-                LmuTelCut = self.vardb.getCut('LmuTel')
+                TTCut  = self.vardb.getCut('FakesSideband_TT')
+                TLCut  = self.vardb.getCut('FakesSideband_TL')
+                LTCut  = self.vardb.getCut('FakesSideband_LT')
+                TelLmuCut = self.vardb.getCut('FakesSideband_TelLmu')
+                LelTmuCut = self.vardb.getCut('FakesSideband_LelTmu')
+                TmuLelCut = self.vardb.getCut('FakesSideband_TmuLel')
+                LmuTelCut = self.vardb.getCut('FakesSideband_LmuTel')
 
             TL_LT_Cut = (TLCut | LTCut)
 
