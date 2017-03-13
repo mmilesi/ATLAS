@@ -899,11 +899,19 @@ if __name__ == "__main__":
         #vardb.registerSystematics( Systematics(name='JER',            treename='JER') )
 
         if doMMRates and "DATA" in args.channel:
-            vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight='QMisIDWeight_', process=['QMisID']) )
+
+            if args.useMCQMisID:
+                weightQMisID = 0.2
+                procQMisID   = 'QMisIDMC'
+            else:
+                QMisIDWeight = 'QMisIDWeight_'
+                procQMisID   = 'QMisID'
+
+            vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight=weightQMisID, process=[procQMisID]) )
             vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['FakesMC']) )
-            #vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['Prompt','TTBar']) )
             vardb.registerSystematics( Systematics(name='TTBarWsys', eventweight=0.2, process=['TTBarW']) )
             vardb.registerSystematics( Systematics(name='OtherPromptSSsys', eventweight=0.15, process=['OtherPrompt','TTBar']) )
+            #vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['Prompt','TTBar']) )
             # vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['TTBar','SingleTop','Zjets','Wjets']) )
             # vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']) )
             # vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['TTBar']) )

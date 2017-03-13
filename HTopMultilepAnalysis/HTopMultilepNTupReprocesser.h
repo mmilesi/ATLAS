@@ -117,8 +117,8 @@ public:
       By default, it includes the statistical uncertainty on the efficiencies
   */
 
-  std::string              m_systematics_list;
-  std::vector<std::string> m_systematics;
+  std::string                                       m_systematics_list;
+  std::vector< std::pair<std::string,std::string> > m_systematics;
 
   /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
 
@@ -234,7 +234,7 @@ private:
 
   /** This will be updated when looping over the input systematics for a given event, so all the methods know about it */
 
-  std::string m_this_syst;   //!
+  std::pair<std::string,std::string> m_this_syst;   //!
 
   std::shared_ptr<NTupReprocesser::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<NTupReprocesser::leptonObj> > m_leptons; //!
@@ -285,7 +285,8 @@ private:
 
   std::string str_replace( const std::string& input_str, const std::string& old_substr, const std::string& new_substr );
 
-  EL::StatusCode tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list );
+  EL::StatusCode tokenize      ( char separator, std::vector<std::string>& vec_tokens, const std::string& list );
+  EL::StatusCode tokenize_pair ( char separator, std::vector< std::pair<std::string,std::string> >& vec_tokens, const std::string& list );
 
   void printWeights( const std::string& in_out );
 

@@ -30,7 +30,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                    "m_weightToCalc"               : "QMisID",#"MM", #"QMisID",
+                                    "m_weightToCalc"               : "MM", #"QMisID",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
                                     "m_QMisIDRates_Filename_T"     : "Rates_3D_Tot_v26_Tight.root",
                                     "m_QMisIDRates_Filename_AntiT" : "Rates_3D_Tot_v26_Loose.root",
@@ -77,12 +77,13 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/CombinedEfficiencies_LeptonCutBased_410000",
                                     #"m_useCutBasedLep"             : True,
                                     #
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_25ns_v26_LeptonMVA_DDQMisID",
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_25ns_v26_LeptonMVA_DDQMisID",
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v26_LeptonMVA_MCQMisID",
                                     #
                                     # ------------------------------------------------------------
                                     #
-				    "m_systematics_list"           : "Nominal,Stat,N_PromptSS,D_PromptSS,N_FakesOS,D_FakesOS,N_QMisID,D_QMisID",
-				    #"m_systematics_list"           : "Nominal,Stat",
+				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins,N_TTBarW:CorrBins,D_TTBarW:CorrBins,N_OtherPromptSS:CorrBins,D_OtherPromptSS:CorrBins,N_FakesOS:CorrBins,D_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
+				    #"m_systematics_list"           : "Nominal:Stat:UncorrBins",
                                     "m_correlatedMMWeights"        : False,
                                     #
 				    "m_useTrigMatchingInfo"        : False,
