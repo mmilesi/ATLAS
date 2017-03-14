@@ -2293,11 +2293,11 @@ bool HTopMultilepMiniNTupMaker :: isQMisIDBDTLoose( std::shared_ptr<leptonObj> l
     if ( m_event.get()->trilep_type )        { return true; } // No QMisID at all in 3L
     if ( m_event.get()->dilep_type == 1 )    { return true; } // No QMisID at all in 2L mm
     if ( m_event.get()->dilep_type == 3 ) { // 2L ee
-	if ( lepA.get()->props["chargeIDBDTLoose"].f > 0.10083 && lepB.get()->props["chargeIDBDTLoose"].f > 0.10083 ) return true;
+	if ( lepA.get()->props["chargeIDBDTLoose"].f > 0.10083 && lepB.get()->props["chargeIDBDTLoose"].f > 0.10083 ) { return true; }
     }
     if ( m_event.get()->dilep_type == 2 ) { // 2L OF
-	if ( lepA.get()->props["Flavour"].f == 11 && lepA.get()->props["chargeIDBDTLoose"].f > 0.10083 ) return true;
-	if ( lepB.get()->props["Flavour"].f == 11 && lepB.get()->props["chargeIDBDTLoose"].f > 0.10083 ) return true;
+	if ( lepA.get()->props["Flavour"].i == 11 && lepA.get()->props["chargeIDBDTLoose"].f > 0.10083 ) { return true; }
+	if ( lepB.get()->props["Flavour"].i == 11 && lepB.get()->props["chargeIDBDTLoose"].f > 0.10083 ) { return true; }
     }
     return false;
 }
