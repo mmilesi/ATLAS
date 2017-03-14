@@ -272,8 +272,6 @@ EL::StatusCode  HTopMultilepNTupReprocesser :: tokenize_pair ( char separator, s
     return EL::StatusCode::SUCCESS;
 }
 
-
-
 EL::StatusCode HTopMultilepNTupReprocesser :: initialize ()
 {
   // Here you do everything that you need to do after the first input
