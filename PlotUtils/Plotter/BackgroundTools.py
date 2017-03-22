@@ -1014,11 +1014,10 @@ class Background:
                 datagr.SetLineStyle(2)
             else :
                 datagr = makePoissonErrors(obs)
-            	#datagr.SetMarkerSize(1.2)
-            	datagr.SetMarkerSize(0.8)
+            	datagr.SetMarkerSize(0.8) # (1.2)
             	datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
             	datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
-            	legs.append([datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "p"])
+            legs.append([datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "p"])
 
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
 
@@ -1333,12 +1332,9 @@ class Background:
 	        datagr = makePoissonErrors(obs)
             datagr.SetMarkerSize(1.2)
             datagr.SetMarkerStyle(20)
-            datagr.SetLineColor(1)
-            datagr.SetMarkerStyle(20)
-            datagr.SetMarkerSize(1.2)
             datagr.SetMarkerColor(1)
+            datagr.SetLineColor(1)
             legs.insert(0, (datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "P"))
-
 
         c = TCanvas("c1","Temp",50,50,600,600)
         color_up = 46

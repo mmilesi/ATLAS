@@ -254,8 +254,10 @@ def getTotFakeUncertainty( nominal, stat, flav ):
         if s[0] == "Non_Closure": proc = "Non closure"
         if s[0] == "D_FakesOS"  : proc = "Fakes OS sub., $T\\bar{T}$"
         if s[0] == "N_FakesOS"  : proc = "Fakes OS sub., $TT$"
-        if s[0] == "D_PromptSS" : proc = "Prompt SS sub., $T\\bar{T}$"
-        if s[0] == "N_PromptSS" : proc = "Prompt SS sub. $TT$"
+        if s[0] == "D_TTBarW"   : proc = "$t\\bar{t}W$ sub., $T\\bar{T}$"
+        if s[0] == "N_TTBarW"   : proc = "$t\\bar{t}W$ sub. $TT$"
+        if s[0] == "D_OtherPromptSS" : proc = "Other Prompt SS sub., $T\\bar{T}$"
+        if s[0] == "N_OtherPromptSS" : proc = "Other Prompt SS sub. $TT$"
         if s[0] == "D_QMisID"   : proc = "QMisID sub., $T\\bar{T}$"
         if s[0] == "N_QMisID"   : proc = "QMisID sub., $TT$"
         if s[0] == "Stat"       : proc = "$\\varepsilon$ stat. unc."
@@ -610,66 +612,6 @@ if __name__ == '__main__':
     	    fakes_syst = {}
     	    for key in myfile.GetListOfKeys():
 
-                # fakesbkg_MMsys_Fake_El_Pt_D_QMisID_1_up
-
-                # fakesbkg
-                # fakesbkg_MMsys_Real_El_Pt_Stat_up
-                # fakesbkg_MMsys_Real_El_Pt_Stat_dn
-                # fakesbkg_MMsys_Fake_El_Pt_Stat_up
-                # fakesbkg_MMsys_Fake_El_Pt_Stat_dn
-                # fakesbkg_MMsys_Real_Mu_Pt_Stat_up
-                # fakesbkg_MMsys_Real_Mu_Pt_Stat_dn
-                # fakesbkg_MMsys_Fake_Mu_Pt_Stat_up
-                # fakesbkg_MMsys_Fake_Mu_Pt_Stat_dn
-                # fakesbkg_MMsys_Real_El_Pt_N_PromptSS_up
-                # fakesbkg_MMsys_Real_El_Pt_N_PromptSS_dn
-                # fakesbkg_MMsys_Fake_El_Pt_N_PromptSS_up
-                # fakesbkg_MMsys_Fake_El_Pt_N_PromptSS_dn
-                # fakesbkg_MMsys_Real_Mu_Pt_N_PromptSS_up
-                # fakesbkg_MMsys_Real_Mu_Pt_N_PromptSS_dn
-                # fakesbkg_MMsys_Fake_Mu_Pt_N_PromptSS_up
-                # fakesbkg_MMsys_Fake_Mu_Pt_N_PromptSS_dn
-                # fakesbkg_MMsys_Real_El_Pt_D_PromptSS_up
-                # fakesbkg_MMsys_Real_El_Pt_D_PromptSS_dn
-                # fakesbkg_MMsys_Fake_El_Pt_D_PromptSS_up
-                # fakesbkg_MMsys_Fake_El_Pt_D_PromptSS_dn
-                # fakesbkg_MMsys_Real_Mu_Pt_D_PromptSS_up
-                # fakesbkg_MMsys_Real_Mu_Pt_D_PromptSS_dn
-                # fakesbkg_MMsys_Fake_Mu_Pt_D_PromptSS_up
-                # fakesbkg_MMsys_Fake_Mu_Pt_D_PromptSS_dn
-                # fakesbkg_MMsys_Real_El_Pt_N_FakesOS_up
-                # fakesbkg_MMsys_Real_El_Pt_N_FakesOS_dn
-                # fakesbkg_MMsys_Fake_El_Pt_N_FakesOS_up
-                # fakesbkg_MMsys_Fake_El_Pt_N_FakesOS_dn
-                # fakesbkg_MMsys_Real_Mu_Pt_N_FakesOS_up
-                # fakesbkg_MMsys_Real_Mu_Pt_N_FakesOS_dn
-                # fakesbkg_MMsys_Fake_Mu_Pt_N_FakesOS_up
-                # fakesbkg_MMsys_Fake_Mu_Pt_N_FakesOS_dn
-                # fakesbkg_MMsys_Real_El_Pt_D_FakesOS_up
-                # fakesbkg_MMsys_Real_El_Pt_D_FakesOS_dn
-                # fakesbkg_MMsys_Fake_El_Pt_D_FakesOS_up
-                # fakesbkg_MMsys_Fake_El_Pt_D_FakesOS_dn
-                # fakesbkg_MMsys_Real_Mu_Pt_D_FakesOS_up
-                # fakesbkg_MMsys_Real_Mu_Pt_D_FakesOS_dn
-                # fakesbkg_MMsys_Fake_Mu_Pt_D_FakesOS_up
-                # fakesbkg_MMsys_Fake_Mu_Pt_D_FakesOS_dn
-                # fakesbkg_MMsys_Real_El_Pt_N_QMisID_up
-                # fakesbkg_MMsys_Real_El_Pt_N_QMisID_dn
-                # fakesbkg_MMsys_Fake_El_Pt_N_QMisID_up
-                # fakesbkg_MMsys_Fake_El_Pt_N_QMisID_dn
-                # fakesbkg_MMsys_Real_Mu_Pt_N_QMisID_up
-                # fakesbkg_MMsys_Real_Mu_Pt_N_QMisID_dn
-                # fakesbkg_MMsys_Fake_Mu_Pt_N_QMisID_up
-                # fakesbkg_MMsys_Fake_Mu_Pt_N_QMisID_dn
-                # fakesbkg_MMsys_Real_El_Pt_D_QMisID_up
-                # fakesbkg_MMsys_Real_El_Pt_D_QMisID_dn
-                # fakesbkg_MMsys_Fake_El_Pt_D_QMisID_up
-                # fakesbkg_MMsys_Fake_El_Pt_D_QMisID_dn
-                # fakesbkg_MMsys_Real_Mu_Pt_D_QMisID_up
-                # fakesbkg_MMsys_Real_Mu_Pt_D_QMisID_dn
-                # fakesbkg_MMsys_Fake_Mu_Pt_D_QMisID_up
-                # fakesbkg_MMsys_Fake_Mu_Pt_D_QMisID_dn
-
     		keyname = key.GetName()
     		if not ( "fakesbkg_" in keyname ): continue
 
@@ -685,10 +627,14 @@ if __name__ == '__main__':
     		    value = "N_QMisID"
     		if "D_QMisID" in keyname:
     		    value = "D_QMisID"
-    		if "N_PromptSS" in keyname:
-    		    value = "N_PromptSS"
-    		if "D_PromptSS" in keyname:
-    		    value = "D_PromptSS"
+    		if "N_TTBarW" in keyname:
+    		    value = "N_TTBarW"
+    		if "D_TTBarW" in keyname:
+    		    value = "D_TTBarW"
+    		if "N_OtherPromptSS" in keyname:
+    		    value = "N_OtherPromptSS"
+    		if "D_OtherPromptSS" in keyname:
+    		    value = "D_OtherPromptSS"
     		if "N_FakesOS" in keyname:
     		    value = "N_FakesOS"
     		if "D_FakesOS" in keyname:

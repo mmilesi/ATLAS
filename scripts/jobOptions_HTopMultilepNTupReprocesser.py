@@ -80,10 +80,12 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v26/MMRates_DATA/OutputPlots_MMRates_25ns_v26_LeptonMVA_DDQMisID",
                                     "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/OutputPlots_MMRates_25ns_v26_LeptonMVA_MCQMisID",
                                     #
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/OutputPlots_MMClosureRates_25ns_v26_LeptonMVA", # Closure
+                                    #
                                     # ------------------------------------------------------------
                                     #
 				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins,N_TTBarW:CorrBins,D_TTBarW:CorrBins,N_OtherPromptSS:CorrBins,D_OtherPromptSS:CorrBins,N_FakesOS:CorrBins,D_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
-				    #"m_systematics_list"           : "Nominal:Stat:UncorrBins",
+				    #"m_systematics_list"           : "Nominal:,Stat:UncorrBins",
                                     "m_correlatedMMWeights"        : False,
                                     #
 				    "m_useTrigMatchingInfo"        : False,

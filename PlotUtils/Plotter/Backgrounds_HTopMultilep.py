@@ -1880,9 +1880,10 @@ class TTHBackgrounds(Background):
                 print("{0} - LT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
                 print("{0} - LL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
 
-            # Perform QMisID per-event subtraction taking advantage of the linearity of MM equations (this was done in the SUSY SS analysis)
+            # Perform QMisID per-event subtraction taking advantage of the linearity of MM equations
+            # NB: this works only for DD QMisID!
 
-	    sublist = [ item for item in self.parent.sub_backgrounds if ( item == "QMisID" or item == "QMisIDMC" ) ]
+	    sublist = [ item for item in self.parent.sub_backgrounds if item == "QMisID" ]
             sp_OS_TT = sp_OS_TL = sp_OS_LT = sp_OS_LL = None
             sp_QMisID_TT = sp_QMisID_TL = sp_QMisID_LT = sp_QMisID_LL = None
 

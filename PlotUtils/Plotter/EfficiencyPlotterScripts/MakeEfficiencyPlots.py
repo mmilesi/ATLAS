@@ -52,23 +52,23 @@ if __name__ == "__main__":
 
     import LikelihoodVSTagAndProbe
 
-    if True:
+    if False:
         LikelihoodVSTagAndProbe.compareRealMuon()
         LikelihoodVSTagAndProbe.compareRealElectron()
 
     import TypeAndOriginPlots
 
-    if False:
+    if True:
 
         samples       = ["ttbarbkg","wjetsbkg"]
-        flavour       = "El"
-        lepSelections = ["FakeCRElT","FakeCRElL"]
-        #flavour       = "Mu"
-        #lepSelections = ["FakeCRMuT","FakeCRMuL"]
+        #flavour       = "El"
+        #lepSelections = ["FakeCRElAntiT"]# ["FakeCRElT","FakeCRElL"]
+        flavour       = "Mu"
+        lepSelections = ["FakeCRMuAntiT"] #["FakeCRMuT","FakeCRMuL"]
         jetSelections = ["ALLNJ","LOWNJ","HIGHNJ"]
         #prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
         prodIDs       = ["25ns_v26"]
-        normFactor    = 1.0 # 0
+        normFactor    = 0 # 1.0
 
         for s in samples:
             print("\nLooking at sample: {0}".format(s))
