@@ -858,7 +858,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker ::  checkIsTightLep( std::shared_ptr<le
 			lep.get()->props["PID"].c &&
 			std::abs(lep.get()->props["sigd0PV"].f) < 5.0 &&
 			std::abs(lep.get()->props["Z0SinTheta"].f) < 0.5 &&
-			lep.get()->props["chargeIDBDTTight"].f > 0.0670415 &&
+			( !m_event.get()->dilep_type || lep.get()->props["chargeIDBDTTight"].f > 0.0670415 ) &&
 			lep.get()->props["promptLeptonIso_TagWeight"].f < -0.50 );
 	} else {
 	    isTight = ( lep.get()->props["Isolated"].c &&
