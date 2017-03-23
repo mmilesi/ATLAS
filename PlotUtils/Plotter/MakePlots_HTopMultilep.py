@@ -18,13 +18,13 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Plotting script for the HTopMultilep Run 2 analysis')
 
-channels     = ["TwoLepSR(,NO_CORR)","ThreeLepSR","FourLepSR",
-                "TwoLepLowNJetCR(,NO_CORR)", "ThreeLepLowNJetCR",
+channels     = ["2LSS_SR","3L_SR",
+                "2LSS_LOWNJ_VR",
                 "WZonCR", "WZoffCR", "WZHFonCR", "WZHFoffCR",
                 "ttWCR", "ttZCR","ZSSpeakCR", "DataMC",
-                "MMRates(,DATA,CLOSURE,NO_CORR,TP,LH,TRUTH_TP,SUSY_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
-                "MMClosureTest(,NO_CORR,HIGHNJ,LOWNJ,ALLNJ)",
-                "CutFlowChallenge(,MM,2LepSS,2LepSS1Tau,3Lep)","MMSidebands(,NO_CORR,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth"]
+                "MMRates(,DATA,CLOSURE,TP,LH,TRUTH_TP,SUSY_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
+                "MMClosureTest(,HIGHNJ,LOWNJ,ALLNJ)",
+                "CutFlowChallenge(,MM,2LSS,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth"]
 
 categories   = ["ALL","ee","mm","OF"]
 
@@ -42,7 +42,7 @@ luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
                  "FULL 2015+2016 DS":36.0746          # December 2016 (full 2015+2016 DS)
                }
 
-triggers     = ["SLT_OR_DLT","SLT","DLT","MIXED"]
+triggers     = ["SLT_OR_DLT","SLT","DLT"]
 
 syst_schemes = ["UNCORRELATED_BINS","CORRELATED_BINS"]
 
@@ -57,7 +57,7 @@ parser.add_argument("--trigger", dest="trigger", action="store", default=trigger
 parser.add_argument('--channel', dest='channel', action='store', default=channels[0], type=str, nargs='+',
                     help='The channel chosen. Full list of available options:\n{0}. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). If this option is not specified, default will be \'{1}\''.format(channels,channels[0]))
 parser.add_argument('--category', dest='category', action='store', default=categories[0], type=str, nargs='+', choices=categories,
-                    help='The category chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). Use w/ option --channel={{TwoLepSR,TwoLepLowNJetCR,MMClosureTest,MMSidebands}}. If this option is not specified, default will be \'{0}\''.format(categories[0]))
+                    help='The category chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). Use w/ option --channel={{2LSS_SR,2LSS_LOWNJ_VR,MMClosureTest,MMSidebands}}. If this option is not specified, default will be \'{0}\''.format(categories[0]))
 parser.add_argument('--lepton', dest='lepton', action='store', default=leptons[0], type=str, nargs='+', choices=leptons,
                     help='The lepton flavour chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). Use w/ option --channel=MMRates. If this option is not specified, default will be \'{0}\''.format(leptons[0]))
 parser.add_argument('--efficiency', dest='efficiency', action='store', default=efficiencies[0], type=str, nargs='+', choices=efficiencies,
@@ -92,6 +92,8 @@ parser.add_argument('--doSyst', dest='doSyst', action='store', default=None, con
                     help='Run systematics. If the option is specified, but not followed by any of the allowed command-line arguments, default will be \'{0}\''.format(syst_schemes[0]))
 parser.add_argument('--noSignal', action='store_true', dest='noSignal',
                     help='Exclude signal')
+parser.add_argument('--noCorrections', action='store_true', dest='noCorrections', default=False,
+                    help='Do not apply any correction. The Xsec weight and mcEvtWeight are applied instead.')
 parser.add_argument('--noWeights', action='store_true', dest='noWeights', default=False,
                     help='Do not apply any weight, correction. Also the Xsec weight and mcEvtWeight are reset to 1. This is used e.g. to get raw cutflow.')
 parser.add_argument('--makeStandardPlots', action='store_true', dest='makeStandardPlots', default=False,
@@ -233,12 +235,10 @@ from Plotter.Backgrounds_HTopMultilep import MyCategory, TTHBackgrounds
 
 if __name__ == "__main__":
 
-    doTwoLepSR              = bool( "TwoLepSR" in args.channel )
-    doThreeLepSR            = bool( "ThreeLepSR" in args.channel )
-    doFourLepSR             = bool( "FourLepSR" in args.channel )
+    do2LSS_SR               = bool( "2LSS_SR" in args.channel )
+    do3L_SR                 = bool( "3L_SR" in args.channel )
     doMMRates               = bool( "MMRates" in args.channel )
-    doTwoLepLowNJetCR       = bool( "TwoLepLowNJetCR" in args.channel )
-    doThreeLepLowNJetCR     = bool( "ThreeLepLowNJetCR" in args.channel )
+    do2LSS_LOWNJ_VR         = bool( "2LSS_LOWNJ_VR" in args.channel )
     doWZonCR                = bool( "WZonCR" in args.channel )
     doWZoffCR               = bool( "WZoffCR" in args.channel )
     doWZHFonCR              = bool( "WZHFonCR" in args.channel )
@@ -267,13 +267,13 @@ if __name__ == "__main__":
     # A comprehensive flag for all possible SRs
     # -----------------------------------------
 
-    doSR = (doTwoLepSR or doThreeLepSR or doFourLepSR)
+    doSR = (do2LSS_SR or do3L_SR)
 
     # -----------------------------------------
     # A comprehensive flag for the low-Njet CR
     # -----------------------------------------
 
-    doLowNJetCR = (doTwoLepLowNJetCR or doThreeLepLowNJetCR)
+    doLowNJetCR = (do2LSS_LOWNJ_VR)
 
     # ------------------------------------------
     # A comprehensive flag for all the other CRs
@@ -351,7 +351,7 @@ if __name__ == "__main__":
     # General cuts
     # ---------------------
 
-    vardb.registerCut( Cut('DummyCut',    '( 1 )') )
+    vardb.registerCut( Cut('DummyCut', '( 1 )') )
 
     #vardb.registerCut( Cut('BlindingCut', '( isBlinded == 0 )') ) # <--- use this cut to get blinded results!
     vardb.registerCut( Cut('BlindingCut', '( 1 )') )
@@ -371,8 +371,8 @@ if __name__ == "__main__":
     mm_DLT = "( ( RunYear == 2015 && HLT_mu18_mu8noL1 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1 ) )"
     of_DLT = "( ( RunYear == 2015 && HLT_e17_lhloose_mu14 ) || ( RunYear == 2016 && HLT_e17_lhloose_nod0_mu14 ) )"
 
-    SLT_matching = '( lep_isTrigMatch_0 == 1 || lep_isTrigMatch_1 == 1 )'
-    DLT_matching = '( lep_isTrigMatchDLT_0 == 1 && lep_isTrigMatchDLT_1 == 1 )'
+    SLT_matching = '( ( dilep_type > 0 && ( lep_isTrigMatch_0 || lep_isTrigMatch_1 ) ) || ( trilep_type > 0 && ( lep_isTrigMatch_0 || lep_isTrigMatch_1 || lep_isTrigMatch_2 ) ) )'
+    DLT_matching = '( ( dilep_type > 0 && matchDLTll01 ) || ( trilep_type > 0 && ( matchDLTll01 || matchDLTll02 || matchDLTll12 ) ) )'
 
     ee_DLT_OR_SLT = "( ( RunYear == 2015 && ( ( ( HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) && {0} ) || ( HLT_2e12_lhloose_L12EM10VH && {1} ) ) ) || ( RunYear == 2016 && ( ( ( HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) && {0} ) || ( HLT_2e17_lhvloose_nod0 && {1} ) ) ) )".format( SLT_matching, DLT_matching )
     mm_DLT_OR_SLT = "( ( RunYear == 2015 && ( ( ( HLT_mu20_iloose_L1MU15 || HLT_mu50 ) && {0} ) || ( HLT_mu18_mu8noL1 && {1} ) ) ) || ( RunYear == 2016 && ( ( ( HLT_mu26_ivarmedium || HLT_mu50 ) && {0} ) || ( HLT_mu22_mu8noL1 && {1} ) ) ) )".format( SLT_matching, DLT_matching )
@@ -383,7 +383,11 @@ if __name__ == "__main__":
     #
     # of_DLT_OR_SLT = "( ( RunYear == 2015 && ( ( ( HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose || HLT_mu20_iloose_L1MU15 || HLT_mu50 ) && {0} ) || ( HLT_e24_medium_L1EM20VHI_mu8noL1 || HLT_e7_medium_mu24 && {1} ) ) ) || ( RunYear == 2016 && ( ( ( HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 || HLT_mu26_ivarmedium || HLT_mu50 ) && {0} ) || ( HLT_e26_lhmedium_nod0_L1EM22VHI_mu8noL1 || HLT_e7_lhmedium_nod0_mu24 && {1} ) ) ) )".format( SLT_matching, DLT_matching )
 
-    if "SLT" in args.trigger: # use SLT for all categories
+    if "SLT_OR_DLT" in args.trigger: # use ( DLT || SLT ) for all categories (includes trigger matching already!)
+
+        vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT_OR_SLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT_OR_SLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT_OR_SLT + " )" + " )" ) )
+
+    elif "SLT" in args.trigger: # use SLT for all categories
 
         vardb.registerCut( Cut("TrigDec", "( " + e_SLT + " || " + m_SLT + " )" ) )
 
@@ -391,13 +395,6 @@ if __name__ == "__main__":
 
         vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT + " )" + " )" ) )
 
-    elif "SLT_OR_DLT" in args.trigger: # use ( DLT || SLT ) for all categories (includes trigger matching already!)
-
-        vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT_OR_SLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT_OR_SLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT_OR_SLT + " )" + " )" ) )
-
-    elif "MIXED" in args.trigger: # use a different trigger selection for each category
-
-        vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT_OR_SLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT + " )" + " )" ) ) # DLT for mm, SLT for ee, ( DLT || SLT ) for OF
 
     vardb.registerCut( Cut('LargeNBJet',      '( nJets_OR_T_MV2c10_70 > 1 )') )
     vardb.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_T_MV2c10_70 < 4 )') )
@@ -414,21 +411,12 @@ if __name__ == "__main__":
     # Trigger matching
     # ----------------
 
-    if "SLT" in args.trigger:
-
-        vardb.registerCut( Cut('2Lep_TrigMatch', '( lep_isTrigMatch_0 == 1 || lep_isTrigMatch_1 == 1 )') )
-
-    elif "DLT" in args.trigger:
-
-        vardb.registerCut( Cut('2Lep_TrigMatch', '( lep_isTrigMatchDLT_0 == 1 && lep_isTrigMatchDLT_1 == 1 )') ) # For DLT, require BOTH leptons to be matched
-
-    elif "SLT_OR_DLT" in args.trigger:
-
+    if "SLT_OR_DLT" in args.trigger:
         vardb.registerCut( Cut('2Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
-
-    elif "MIXED" in args.trigger:
-
-        vardb.registerCut( Cut('2Lep_TrigMatch', '( ( dilep_type == 1 && ( lep_isTrigMatchDLT_0 == 1 && lep_isTrigMatchDLT_1 == 1 ) ) || ( dilep_type == 2 ) || ( dilep_type == 3 && ( lep_isTrigMatch_0 == 1 || lep_isTrigMatch_1 == 1 ) ) )') ) # use DLT matching for mm, SLT matching for ee, a mix for OF (already implemented above)
+    elif "SLT" in args.trigger:
+        vardb.registerCut( Cut('2Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
+    elif "DLT" in args.trigger:
+        vardb.registerCut( Cut('2Lep_TrigMatch', '( matchDLTll01 )') )
 
     # For LH fit, use this cuts in order to introduce the trigger bias from SLT
     # This is safe as we will use the likelihood to fit fake muon efficiency in mm events
@@ -508,46 +496,6 @@ if __name__ == "__main__":
 
             vardb.getCut('2Lep_ElProbe').cutstr = '( 1 )'
             vardb.getCut('2Lep_MuProbe').cutstr = '( 1 )'
-
-    # -----------------
-    # Event "tightness"
-    # -----------------
-
-    vardb.registerCut( Cut('TT', '( lep_isTightSelectedMVA_0 == 1 && lep_isTightSelectedMVA_1 == 1 )') )
-    vardb.registerCut( Cut('TL', '( lep_isTightSelectedMVA_0 == 1 && lep_isTightSelectedMVA_1 == 0 )') )
-    vardb.registerCut( Cut('LT', '( lep_isTightSelectedMVA_0 == 0 && lep_isTightSelectedMVA_1 == 1 )') )
-    vardb.registerCut( Cut('LL', '( lep_isTightSelectedMVA_0 == 0 && lep_isTightSelectedMVA_1 == 0 )') )
-
-    # ------------------------------
-    # Sidebands definition for fakes
-    # ------------------------------
-
-    vardb.registerCut( Cut('FakesSideband_TT',      '( is_TMVA_TMVA == 1 )') )
-    vardb.registerCut( Cut('FakesSideband_TL',      '( is_TMVA_AntiTMVA == 1 )') )
-    vardb.registerCut( Cut('FakesSideband_LT',      '( is_AntiTMVA_TMVA == 1 )') )
-    vardb.registerCut( Cut('FakesSideband_TL_LT',   '( is_TMVA_AntiTMVA == 1 || is_AntiTMVA_TMVA == 1 )') )
-    vardb.registerCut( Cut('FakesSideband_LL',      '( is_AntiTMVA_AntiTMVA == 1 )') )
-    vardb.registerCut( Cut('FakesSideband_TelLmu',  '( is_TMVAel_AntiTMVAmu == 1 )') )
-    vardb.registerCut( Cut('FakesSideband_LelTmu',  '( is_AntiTMVAel_TMVAmu == 1 )') )
-    vardb.registerCut( Cut('FakesSideband_TmuLel',  '( is_TMVAmu_AntiTMVAel == 1 )') )
-    vardb.registerCut( Cut('FakesSideband_LmuTel',  '( is_AntiTMVAmu_TMVAel == 1 )') )
-
-    if args.cutBasedLepDef:
-
-        vardb.getCut('TT').cutstr = '( lep_isTightSelected_0 == 1 && lep_isTightSelected_1 == 1 )'
-        vardb.getCut('TL').cutstr = '( lep_isTightSelected_0 == 1 && lep_isTightSelected_1 == 0 )'
-        vardb.getCut('LT').cutstr = '( lep_isTightSelected_0 == 0 && lep_isTightSelected_1 == 1 )'
-        vardb.getCut('LL').cutstr = '( lep_isTightSelected_0 == 0 && lep_isTightSelected_1 == 0 )'
-
-        vardb.getCut('FakesSideband_TT').cutstr     =  '( is_T_T == 1 )'
-        vardb.getCut('FakesSideband_TL').cutstr     =  '( is_T_AntiT == 1 )'
-        vardb.getCut('FakesSideband_LT').cutstr     =  '( is_AntiT_T == 1 )'
-        vardb.getCut('FakesSideband_TL_LT').cutstr  =  '( is_T_AntiT == 1 || is_AntiT_T == 1 )'
-        vardb.getCut('FakesSideband_LL').cutstr     =  '( is_AntiT_AntiT == 1 )'
-        vardb.getCut('FakesSideband_TelLmu').cutstr =  '( is_Tel_AntiTmu == 1 )'
-        vardb.getCut('FakesSideband_LelTmu').cutstr =  '( is_AntiTel_Tmu == 1 )'
-        vardb.getCut('FakesSideband_TmuLel').cutstr =  '( is_Tmu_AntiTel == 1 )'
-        vardb.getCut('FakesSideband_LmuTel').cutstr =  '( is_AntiTmu_Tel == 1 )'
 
     # ---------------------------
     # Cuts for ttW Control Region
@@ -716,19 +664,60 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('3Lep_NLep',         '( trilep_type > 0 )') )
     vardb.registerCut( Cut('3Lep_pT',           '( lep_Pt_0 > 10e3 && lep_Pt_1 > 20e3 && lep_Pt_2 > 20e3 )') )
     vardb.registerCut( Cut('3Lep_Charge',       '( TMath::Abs(total_charge) == 1 )') )
-    vardb.registerCut( Cut('3Lep_TightLeptons', '( ( TMath::Abs( lep_Z0SinTheta_0 ) < 0.5 && ( TMath::Abs( lep_ID_0 ) == 13 && TMath::Abs( lep_sigd0PV_0 ) < 3.0 || TMath::Abs( lep_ID_0 ) == 11 && TMath::Abs( lep_sigd0PV_0 ) < 5.0 ) ) && ( ( TMath::Abs( lep_ID_1 ) == 13 && lep_isolationFixedCutTightTrackOnly_1 > 0 && TMath::Abs( lep_sigd0PV_1 ) < 3.0 ) || ( TMath::Abs( lep_ID_1 ) == 11 && lep_isolationFixedCutTight_1 > 0 && lep_isTightLH_1 > 0 && TMath::Abs( lep_sigd0PV_1 ) < 5.0 ) ) && ( ( TMath::Abs( lep_ID_2 ) == 13 && lep_isolationFixedCutTightTrackOnly_2 > 0 && TMath::Abs( lep_sigd0PV_2 ) < 3.0 ) || ( TMath::Abs( lep_ID_2 ) == 11 && lep_isolationFixedCutTight_2 > 0 && lep_isTightLH_2 > 0 && TMath::Abs( lep_sigd0PV_2 ) < 5.0 ) ) ) ') )
-    vardb.registerCut( Cut('3Lep_TrigMatch',    '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || lep_isTrigMatch_2 )') )
+    vardb.registerCut( Cut('3Lep_TightLeptons', '( ( ( TMath::Abs(lep_ID_2) == 13 && lep_isolationLoose_2 ) || ( TMath::Abs(lep_ID_2) == 11 && lep_isolationLoose_2 && lep_isTightLH_2 ) ) && ( ( TMath::Abs(lep_ID_1) == 13 && lep_isolationLoose_1 ) || ( TMath::Abs(lep_ID_1) == 11 && lep_isolationLoose_1 && lep_isTightLH_1 ) ) && lep_promptLeptonIso_TagWeight_1 < -0.5 && lep_promptLeptonIso_TagWeight_2 < -0.5 )') )
+    if "SLT_OR_DLT" in args.trigger:
+        vardb.registerCut( Cut('3Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
+    elif "SLT" in args.trigger:
+        vardb.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || || lep_isTrigMatch_2 )') )
+    elif "DLT" in args.trigger:
+        vardb.registerCut( Cut('3Lep_TrigMatch', '( matchDLTll01 || matchDLTll02 || matchDLTll12 )') )
     vardb.registerCut( Cut('3Lep_ZVeto',        '( ( lep_ID_0 != -lep_ID_1 || TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) && ( lep_ID_0! = -lep_ID_2 || TMath::Abs( Mll02 - 91.2e3 ) > 10e3 ) )') )
     vardb.registerCut( Cut('3Lep_MinZCut',      '( ( lep_ID_0 != -lep_ID_1 || Mll01 > 12e3 ) && ( lep_ID_0 != -lep_ID_2 || Mll02 > 12e3 ) )') )
+    vardb.registerCut( Cut('3Lep_ZllGammaVeto', '( TMath::Abs( Mlll012 - 91.2e3 ) > 10e3 )') )
     vardb.registerCut( Cut('3Lep_NJets',        '( ( nJets_OR >= 4 && nJets_OR_MV2c10_70 >= 1 ) || ( nJets_OR >=3 && nJets_OR_MV2c10_70 >= 2 ) )') )
 
-    # ---------
-    # 4lep cuts
-    # ---------
+    # -----------------------------
+    # Event "tightness"
+    #
+    # For 2LSS, these are lep0,lep1
+    # For 3L, these are lep1,lep2
+    # -----------------------------
 
-    # FIXME!
-    vardb.registerCut( Cut('4Lep_NJets',  '( nJets_OR_T >= 2 )') )
-    vardb.registerCut( Cut('4Lep',        '( nleptons == 4 )') )
+    vardb.registerCut( Cut('TT', '( lep_isTightSelectedMVA_0 == 1 && lep_isTightSelectedMVA_1 == 1 )') )
+    vardb.registerCut( Cut('TL', '( lep_isTightSelectedMVA_0 == 1 && lep_isTightSelectedMVA_1 == 0 )') )
+    vardb.registerCut( Cut('LT', '( lep_isTightSelectedMVA_0 == 0 && lep_isTightSelectedMVA_1 == 1 )') )
+    vardb.registerCut( Cut('LL', '( lep_isTightSelectedMVA_0 == 0 && lep_isTightSelectedMVA_1 == 0 )') )
+
+    # ------------------------------
+    # Sidebands definition for fakes
+    # ------------------------------
+
+    vardb.registerCut( Cut('FakesSideband_TT',      '( is_TMVA_TMVA == 1 )') )
+    vardb.registerCut( Cut('FakesSideband_TL',      '( is_TMVA_AntiTMVA == 1 )') )
+    vardb.registerCut( Cut('FakesSideband_LT',      '( is_AntiTMVA_TMVA == 1 )') )
+    vardb.registerCut( Cut('FakesSideband_TL_LT',   '( is_TMVA_AntiTMVA == 1 || is_AntiTMVA_TMVA == 1 )') )
+    vardb.registerCut( Cut('FakesSideband_LL',      '( is_AntiTMVA_AntiTMVA == 1 )') )
+    vardb.registerCut( Cut('FakesSideband_TelLmu',  '( is_TMVAel_AntiTMVAmu == 1 )') )
+    vardb.registerCut( Cut('FakesSideband_LelTmu',  '( is_AntiTMVAel_TMVAmu == 1 )') )
+    vardb.registerCut( Cut('FakesSideband_TmuLel',  '( is_TMVAmu_AntiTMVAel == 1 )') )
+    vardb.registerCut( Cut('FakesSideband_LmuTel',  '( is_AntiTMVAmu_TMVAel == 1 )') )
+
+    if args.cutBasedLepDef:
+
+        vardb.getCut('TT').cutstr = '( lep_isTightSelected_0 == 1 && lep_isTightSelected_1 == 1 )'
+        vardb.getCut('TL').cutstr = '( lep_isTightSelected_0 == 1 && lep_isTightSelected_1 == 0 )'
+        vardb.getCut('LT').cutstr = '( lep_isTightSelected_0 == 0 && lep_isTightSelected_1 == 1 )'
+        vardb.getCut('LL').cutstr = '( lep_isTightSelected_0 == 0 && lep_isTightSelected_1 == 0 )'
+
+        vardb.getCut('FakesSideband_TT').cutstr     =  '( is_T_T == 1 )'
+        vardb.getCut('FakesSideband_TL').cutstr     =  '( is_T_AntiT == 1 )'
+        vardb.getCut('FakesSideband_LT').cutstr     =  '( is_AntiT_T == 1 )'
+        vardb.getCut('FakesSideband_TL_LT').cutstr  =  '( is_T_AntiT == 1 || is_AntiT_T == 1 )'
+        vardb.getCut('FakesSideband_LL').cutstr     =  '( is_AntiT_AntiT == 1 )'
+        vardb.getCut('FakesSideband_TelLmu').cutstr =  '( is_Tel_AntiTmu == 1 )'
+        vardb.getCut('FakesSideband_LelTmu').cutstr =  '( is_AntiTel_Tmu == 1 )'
+        vardb.getCut('FakesSideband_TmuLel').cutstr =  '( is_Tmu_AntiTel == 1 )'
+        vardb.getCut('FakesSideband_LmuTel').cutstr =  '( is_AntiTmu_Tel == 1 )'
 
     # ---------------------
     # 2Lep SS + 1 tau cuts
@@ -757,7 +746,7 @@ if __name__ == "__main__":
 
     pT_Z = '( TMath::Sqrt( (lep_Pt_0*lep_Pt_0) + (lep_Pt_1*lep_Pt_1) + 2*lep_Pt_0*lep_Pt_1*(TMath::Cos( lep_Phi_0 - lep_Phi_1 )) ) )/1e3'
 
-    # Calculate DeltaR(lep0,lep1) in 2LepSS + 0 tau category
+    # Calculate DeltaR(lep0,lep1) in 2LSS + 0 tau category
 
     gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/deltaR.cxx+")
     from ROOT import deltaR
@@ -1014,7 +1003,7 @@ if __name__ == "__main__":
     cc_2Lep1Tau_list = ['TrigDec','BlindingCut','2Lep1Tau_NLep','2Lep1Tau_pT','2Lep1Tau_TrigMatch','2Lep1Tau_SS','2Lep1Tau_1Tau','2Lep1Tau_Zsidescut','2Lep1Tau_NBJet']
     common_cuts_2Lep1Tau = vardb.getCuts(cc_2Lep1Tau_list)
 
-    cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_TightLeptons','3Lep_ZVeto','3Lep_MinZCut','3Lep_NJets']
+    cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_TightLeptons','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets']
     common_cuts_3Lep = vardb.getCuts(cc_3Lep_list)
 
     cc_4Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','4Lep','4Lep_NJets']
@@ -1036,7 +1025,7 @@ if __name__ == "__main__":
 
     if doSR:
 
-        if doTwoLepSR :
+        if do2LSS_SR :
 
             append_2Lep += "_SR"
 
@@ -1049,17 +1038,14 @@ if __name__ == "__main__":
             #
             #vardb.registerCategory( MyCategory('TwoLepSSTau_SR', cut = common_cuts_2Lep1Tau & vardb.getCut('2Lep1Tau_NJet_SR') ), weight = weight_SR_CR )
 
-        if doThreeLepSR:
+        if do3L_SR:
             vardb.registerCategory( MyCategory('ThreeLep_SR',    cut = common_cuts_3Lep, weight = weight_SR_CR ) )
-
-        if doFourLepSR:
-            vardb.registerCategory( MyCategory('FourLep_SR',     cut = common_cuts_4Lep, weight = weight_SR_CR ) )
 
     # -------------
     # Low N-jet CRs
     # -------------
 
-    if doTwoLepLowNJetCR :
+    if do2LSS_LOWNJ_VR :
 
         append_2Lep += "_LowNJetCR"
 
@@ -1071,11 +1057,6 @@ if __name__ == "__main__":
             if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
             if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
         #vardb.registerCategory( MyCategory('TwoLepSSTau_LowNJetCR',  cut = common_cuts_2Lep1Tau & vardb.getCut('2Lep1Tau_NJet_CR'), weight = weight_SR_CR ) )
-
-    if doThreeLepLowNJetCR:
-        # take OS pairs
-        #
-        vardb.registerCategory( MyCategory('ThreeLep_LowNJetCR',   cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','2Lep_NJet_CR','ZOSsidescut','2Lep_OS']), weight = weight_SR_CR ) )
 
     # -------------
     # Other CRs
@@ -1201,11 +1182,11 @@ if __name__ == "__main__":
             vardb.registerCategory( MyCategory( "B5_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
             vardb.registerCategory( MyCategory( "B6_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
 
-        if "2LepSS" in args.channel:
+        if "2LSS" in args.channel:
 
             cutlist_CFC_2Lep = []
 
-            cat_name = "CFChallenge_2LepSS0Tau_SR"
+            cat_name = "CFChallenge_2LSS0Tau_SR"
 
             # NB: here order of cuts is important b/c they will be applied on top of each other
 
@@ -1235,15 +1216,16 @@ if __name__ == "__main__":
             vardb.registerCategory( MyCategory( str(tot_idx) + "_" + cat_name + "_" + "mm",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_MuMu_Event']), weight = weight_CFC ) )
             vardb.registerCategory( MyCategory( str(tot_idx) + "_" + cat_name + "_" + "of",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_OF_Event']), weight = weight_CFC ) )
 
-        if "2LepSS1Tau" in args.channel:
+        if "2LSS1Tau" in args.channel:
 
             cutlist_CFC_2Lep1Tau = []
 
-            cat_name = "CFChallenge_2LepSS1Tau_SR"
+            cat_name = "CFChallenge_2LSS1Tau_SR"
 
             # NB: here order of cuts is important b/c they will be applied on top of each other
 
             cutlistnames_CFC_2Lep1Tau = [
+                                 ["TrigDec",weight_CFC],
                                  ["2Lep1Tau_NLep",weight_CFC],
                                  ["2Lep1Tau_TightLeptons",weight_CFC],
                                  ["2Lep1Tau_pT",weight_CFC],
@@ -1265,15 +1247,16 @@ if __name__ == "__main__":
                 tot_idx += 1
 
 
-        if "3Lep" in args.channel:
+        if "3L" in args.channel:
 
-            cutlist_CFC_3Lep = []
+            cutlist_CFC_3L = []
 
-            cat_name = "CFChallenge_3Lep_SR"
+            cat_name = "CFChallenge_3L_SR"
 
             # NB: here order of cuts is important b/c they will be applied on top of each other
 
             cutlistnames_CFC_3Lep = [
+                                 ["TrigDec",weight_CFC],
                                  ["3Lep_NLep",weight_CFC],
                                  ["3Lep_Charge",weight_CFC],
                                  ["3Lep_TightLeptons",weight_CFC],
@@ -1281,6 +1264,7 @@ if __name__ == "__main__":
                                  ["3Lep_TrigMatch",weight_CFC],
                                  ["3Lep_ZVeto",weight_CFC],
                                  ["3Lep_MinZCut",weight_CFC],
+                                 ["3Lep_ZllGammaVeto",weight_CFC],
                                  ["3Lep_NJets",weight_CFC],
                                     ]
 
@@ -1799,13 +1783,7 @@ if __name__ == "__main__":
     # ----------------------------------
 
     ttH.eventweight = "mcWeightOrg * pileupEventWeight_090"
-
-    # if doMMClosureTest or "CLOSURE" in args.channel:
-    #     # Closure w/o any correction (but keep MC evt weight!)
-    #     if "NO_CORR" in args.channel:
-    #         ttH.eventweight = "mcWeightOrg"
-
-    if "NO_CORR" in args.channel:
+    if args.noCorrections:
         ttH.eventweight = "mcWeightOrg"
 
     # This will reset the global event weight, and will reset the Xsec and lumi weight to be 1
@@ -1829,14 +1807,12 @@ if __name__ == "__main__":
 
     # ------------------------------------
 
-    if doTwoLepSR or doTwoLepLowNJetCR or dottWCR or doMMClosureTest:
-        ttH.channel = 'TwoLepSS'
-    elif doThreeLepSR or doThreeLepLowNJetCR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
-        ttH.channel = 'ThreeLep'
-    elif doFourLepSR:
-        ttH.channel = 'FourLep'
+    if do2LSS_SR or do2LSS_LOWNJ_VR or dottWCR or doMMClosureTest:
+        ttH.channel = '2LSS'
+    elif do3L_SR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
+        ttH.channel = '3L'
     elif doDataMCCR or doZSSpeakCR or doMMRates or doCFChallenge or doMMSidebands or doLeptonTruth:
-        ttH.channel = 'TwoLepCR'
+        ttH.channel = '2LSS_CR'
 
     events = {}
     hists  = {}
@@ -1997,10 +1973,6 @@ if __name__ == "__main__":
 
             ttH.debugprocs.extend(['FakesMC','QMisID'])
 
-        if doFourLepSR:
-            # no fakes in 4lep
-            ttH.backgrounds.extend(['TTBarW','TTBarZ','Diboson','TTBar','Rare','Zjets'])
-
     if doMMRates:
 
         ttH.signals     = []
@@ -2160,17 +2132,9 @@ if __name__ == "__main__":
         # Reset the weight for *this* category to None if neeeded
         # -------------------------------------------------------
 
-        if args.noWeights or "NO_CORR" in args.channel:
+        if args.noWeights or args.noCorrections:
 	    print("Resetting category weight to empty string...\n")
             category.weight = ""
-
-        # TEMP!
-        # For DLT, trigger SF not available in yet...
-        # Set trigger weight to 1
-
-        if any( t in args.trigger for t in ["DLT","SLT_OR_DLT"]) and any( w in category.weight for w in ["weight_event_trig_SLT","lepSFTrigTight"] ):
-	    print("Using DLT. Trigger SFs not available yet. Do not apply trigger SF...\n")
-            category.weight = category.weight.replace("weight_event_trig_SLT","1.0")
 
         # ------------------------------------------
         # Remove eta acceptance cut unless requested
@@ -2196,7 +2160,7 @@ if __name__ == "__main__":
             # Reset the weight for *this* variable to None if neeeded
             # -------------------------------------------------------
 
-            if args.noWeights or "NO_CORR" in args.channel and var.weight:
+            if args.noWeights or ( args.noCorrections and var.weight ):
                 print("\tResetting variable weight to None...\n")
                 var.weight = None
 

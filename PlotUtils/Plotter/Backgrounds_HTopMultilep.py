@@ -44,7 +44,7 @@ class TTHBackgrounds(Background):
     lumi_units  = 'fb-1'
     norm_factor = 1.0           # Might be needed to correct units for Xsec weight
     rescaleXsecAndLumi = False  # Set to "True" if you don't want to take into account the Xsec*lumi weight
-    channel     = 'TwoLepSS'    # Can be one of ['TwoLepSS' 'TwoLepCR', 'ThreeLep', 'FourLep']
+    channel     = '2LSS'        # Can be one of ['2LSS' '2LSS_CR', '3L']
     eventweight = 1.0
     noWeights = False
     useEmbedding    = False
@@ -223,7 +223,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             # Clean up from any truth cut
 
@@ -279,7 +279,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -325,7 +325,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -366,7 +366,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -407,7 +407,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -447,7 +447,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -494,7 +494,7 @@ class TTHBackgrounds(Background):
                 basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=basecut,eventweight=weight)
 
@@ -539,7 +539,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -579,7 +579,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -632,7 +632,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
@@ -687,7 +687,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
@@ -742,7 +742,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
@@ -814,7 +814,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
@@ -876,7 +876,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -920,7 +920,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -964,7 +964,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1026,7 +1026,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1069,7 +1069,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1130,7 +1130,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1180,7 +1180,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             # Plot only events where at least one lepton is charge flip.
 	    # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
@@ -1250,7 +1250,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1305,7 +1305,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             # Plot only events where at least one lepton is charge flip.
 	    # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
@@ -1360,7 +1360,7 @@ class TTHBackgrounds(Background):
             sp = self.base(treename, category, options)
 
             weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp = sp.subprocess(cut=category.cut,eventweight=weight)
 
@@ -1410,7 +1410,7 @@ class TTHBackgrounds(Background):
 
             # Remember to add TT cut (if needed) as it's not in basecut!
 
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
             if TTcut:
                 updatedcut = updatedcut & self.vardb.getCut(TTcut)
 
@@ -1481,7 +1481,7 @@ class TTHBackgrounds(Background):
 
             # Remember to add TT cut (if needed) as it's not in basecut!
 
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
             if TTcut:
                 updatedcut = updatedcut & self.vardb.getCut(TTcut)
 
@@ -1575,7 +1575,7 @@ class TTHBackgrounds(Background):
 
             print("\nQMisID initial cut: {0}".format(basecut.cutnamelist))
 
-            if ( self.parent.channel=='TwoLepSS' ) or ( self.parent.channel=='ThreeLep' ):
+            if ( self.parent.channel=='2LSS' ) or ( self.parent.channel=='3L' ):
                 TTcut = 'TT'
 
             # Clean up from any truth cut
@@ -1734,7 +1734,7 @@ class TTHBackgrounds(Background):
 
             # Remember to add TT cut (if needed) as it's not in basecut!
 
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
             if TTcut:
                 updatedcut = updatedcut & self.vardb.getCut(TTcut)
 
@@ -1795,7 +1795,7 @@ class TTHBackgrounds(Background):
             LLcut=''
             weight = None
 
-            if self.parent.channel=='TwoLepSS' or self.parent.channel=='ThreeLep':
+            if self.parent.channel=='2LSS' or self.parent.channel=='3L':
                 TLcut='TL'
                 LTcut='LT'
                 LLcut='LL'
@@ -1854,11 +1854,11 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
-            TTcut  = ('','FakesSideband_TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            TLcut  = ('','FakesSideband_TL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            weight = (None,'MMWeight')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','FakesSideband_TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            TLcut  = ('','FakesSideband_TL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            weight = (None,'MMWeight')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             # Clean up from any truth cut
 
@@ -2039,7 +2039,7 @@ class TTHBackgrounds(Background):
             weight   = '1.0'
             weightMC = (category.weight,"1.0")[bool(TTHBackgrounds.noWeights)]
 
-            if ( self.parent.channel=='TwoLepSS' ):
+            if ( self.parent.channel=='2LSS' ):
                 TTCut  = self.vardb.getCut('FakesSideband_TT')
                 TLCut  = self.vardb.getCut('FakesSideband_TL')
                 LTCut  = self.vardb.getCut('FakesSideband_LT')
@@ -2360,11 +2360,11 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
-            TTcut  = ('','FakesSideband_TT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            TLcut  = ('','FakesSideband_TL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
-            weight  = (None,'MMWeight')[any( c == self.parent.channel for c in ['TwoLepSS','ThreeLep'] )]
+            TTcut  = ('','FakesSideband_TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            TLcut  = ('','FakesSideband_TL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            weight  = (None,'MMWeight')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             sp_TT_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(TTcut))
             sp_TL_preweight = sp.subprocess(cut=category.cut & self.vardb.getCut(TLcut))
@@ -2470,7 +2470,7 @@ class TTHBackgrounds(Background):
             TmuLelCut =''
             LmuTelCut =''
             weight = None
-            if self.parent.channel=='TwoLepSS':
+            if self.parent.channel=='2LSS':
                 TTCut  = self.vardb.getCut('FakesSideband_TT')
                 TLCut  = self.vardb.getCut('FakesSideband_TL')
                 LTCut  = self.vardb.getCut('FakesSideband_LT')
@@ -2632,7 +2632,7 @@ class TTHBackgrounds(Background):
             weight = None
             weightMC = 'weight_event_trig * weight_event_lep * tauSFTight * JVT_EventWeight * MV2c10_70_EventWeight'
 
-            if self.parent.channel=='TwoLepSS':
+            if self.parent.channel=='2LSS':
                 TTCut  = self.vardb.getCut('FakesSideband_TT')
                 TLCut  = self.vardb.getCut('FakesSideband_TL')
                 LTCut  = self.vardb.getCut('FakesSideband_LT')
