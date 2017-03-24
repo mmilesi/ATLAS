@@ -29,7 +29,7 @@ class MyCategory(Category):
 
         if len(self.tokens)>=3:
             self.stream = self.tokens[0]
-            if self.stream == 'El': self.streamname = 'Egamma'
+            if   self.stream == 'El': self.streamname = 'Egamma'
             elif self.stream == 'Mu': self.streamname = 'Muons'
             self.jet = self.tokens[1]
             self.met = self.tokens[2]
@@ -169,12 +169,13 @@ class TTHBackgrounds(Background):
 
         if self.lumi_units == 'fb-1':
             lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(self.luminosity), x=.2, y=.87, size=0.03 * scale)
+
         # for O(pb-1) luminosity
 
         elif self.lumi_units == 'pb-1':
             lumtext = drawText(text="  #int L dt = %.2f pb^{-1}"%(self.luminosity*1000), x=.2, y=.87, size=0.04 * scale)
 
-        cmetext = drawText(text="         #sqrt{s} = 13 TeV", x=.2, y=.82, size=0.03 * scale)
+        cmetext   = drawText(text="         #sqrt{s} = 13 TeV", x=.2, y=.82, size=0.03 * scale)
         atlastext = drawText(text="#bf{#it{ATLAS}} Work In Progress", x=.2, y=.77, size=0.03 * scale)
 
         return lower, locals()
@@ -199,7 +200,7 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
-            inputgroup = [
+o            inputgroup = [
                     ('Data', 'physics_Main'),
                 ]
 
@@ -1417,7 +1418,7 @@ class TTHBackgrounds(Background):
             # Reset the cut for the subprocesses, and apply the new one
 
             diboson   = diboson.subprocess(cut=updatedcut, clearbasecut=True)
-            triboson   = triboson.subprocess(cut=updatedcut, clearbasecut=True)
+            triboson  = triboson.subprocess(cut=updatedcut, clearbasecut=True)
             rare_top  = rare_top.subprocess(cut=updatedcut, clearbasecut=True)
             ttbarw    = ttbarw.subprocess(cut=updatedcut, clearbasecut=True)
             ttbarz    = ttbarz.subprocess(cut=updatedcut, clearbasecut=True)
@@ -1563,7 +1564,7 @@ class TTHBackgrounds(Background):
 
             # Categories w/ any of these cuts must get the QMisID weight...
 
-            cut_w_el  = ['2Lep_ElEl_Event','2Lep_MuEl_Event','2Lep_ElMu_Event']
+            cut_w_el  = ['2Lep_ElEl_Event','2Lep_MuEl_Event','2Lep_ElMu_Event','2Lep_OF_Event']
 
             # ... and these must not!
 
@@ -1588,7 +1589,7 @@ class TTHBackgrounds(Background):
                 basecut = basecut & self.vardb.getCut(TTcut)
 
             # If SS cut in category, need to switch to OS before applying QMisID weight.
-            # Otherwise, just forget about QMisID, at all (NB: the weight is 0 by default!).
+            # Otherwise, just forget about QMisID, at all (NB: the weight is 0 by default, so the process will be suppressed).
 
             if ("2Lep_SS") in category.cut.cutname:
                 basecut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
@@ -1611,13 +1612,10 @@ class TTHBackgrounds(Background):
 
             else:
 
-                weight_SF = '0.0'
-                weight_OF = '0.0'
+                weight_SF = weight_OF = '0.0'
+                sp_SF = sp_OF = None
 
-                sp_SF = None
-                sp_OF = None
-
-                if ( 'ElRealFakeRateCR' ) in category.cut.cutname:
+                if ( 'FakeCREl' ) in category.name:
 
                     cut_SF = basecut & self.vardb.getCut('2Lep_ElEl_Event')
                     cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
@@ -1630,7 +1628,7 @@ class TTHBackgrounds(Background):
                     print("\nQMisID sp_SF - cuts: {0}, process weight: {1}".format(sp_SF.basecut.cutnamelist, weight_SF))
                     print("\nQMisID sp_OF - cuts: {0}, process weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
 
-                elif ( 'MuRealFakeRateCR' ) in category.cut.cutname:
+                elif ( 'FakeCRMu' ) in category.name:
 
                     cut_SF = basecut & self.vardb.getCut('2Lep_MuMu_Event')
                     cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
@@ -1655,13 +1653,13 @@ class TTHBackgrounds(Background):
 
                     sp_elel = sp.subprocess(cut=cut_elel,eventweight=weight_elel)
                     sp_mumu = sp.subprocess(cut=cut_mumu,eventweight=weight_mumu)
-                    sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
+
+                    sp_SF   = sp_elel + sp_mumu
+                    sp_OF   = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
 
                     print("\nQMisID sp_elel - cuts: {0}, process weight: {1}".format(sp_elel.basecut.cutnamelist, weight_elel))
                     print("\nQMisID sp_mumu - cuts: {0}, process weight: {1}".format(sp_mumu.basecut.cutnamelist, weight_mumu))
                     print("\nQMisID sp_OF - cuts: {0}, process weight: {1}".format(sp_OF.basecut.cutnamelist, weight_OF))
-
-                    sp_SF = sp_elel + sp_mumu
 
                 sp = sp_SF + sp_OF
 

@@ -333,7 +333,8 @@ class Cut:
             for c in sorted(self.cutlist + othercut.cutlist, key=lambda x: x.cutname):
                 if c.cutname in newlistnames: continue # Don't use the same cut more than once!
                 newlistnames.append(c.cutname)
-                newliststr.append(c.cutstr)
+                if not any( s == c.cutstr for s in ['( 1 )','1'] ): # Add only non-dummy cuts
+                    newliststr.append(c.cutstr)
                 newlist.append(c)
             newname = ' AND '.join(newlistnames)
             newstr  = ' && '.join(newliststr)

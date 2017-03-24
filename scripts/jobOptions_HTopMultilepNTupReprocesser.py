@@ -30,7 +30,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                    "m_weightToCalc"               : "MM", #"QMisID",
+                                    "m_weightToCalc"               : "QMisID", # "MM"
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
                                     "m_QMisIDRates_Filename_T"     : "Rates_3D_Tot_v26_Tight.root",
                                     "m_QMisIDRates_Filename_AntiT" : "Rates_3D_Tot_v26_Loose.root",
