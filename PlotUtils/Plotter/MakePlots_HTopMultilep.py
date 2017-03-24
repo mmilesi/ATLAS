@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description='Plotting script for the HTopMultil
 channels     = ["2LSS_SR","3L_SR",
                 "2LSS_LOWNJ_VR",
                 "WZonCR", "WZoffCR", "WZHFonCR", "WZHFoffCR",
-                "ttWCR", "ttZCR","ZSSpeakCR", "DataMC",
+                "ttWCR", "ttZCR","ZSSpeakCR", "TopCR",
                 "MMRates(,DATA,CLOSURE,TP,LH,TRUTH_TP,SUSY_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
                 "MMClosureTest(,HIGHNJ,LOWNJ,ALLNJ)",
                 "CutFlowChallenge(,MM,2LSS,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth"]
@@ -79,7 +79,7 @@ parser.add_argument('--fakeMethod', dest='fakeMethod', action='store', default=N
 parser.add_argument('--lepFlavComp', dest='lepFlavComp', action='store', default=flavours[0], type=str, choices=flavours,
                     help='Flavour composition in the CRs used for r/f efficiency measurement. Use w/ option --channel=MMRates. If this option is not specified, default will be \'{0}\''.format(flavours[0]))
 parser.add_argument('--doShowRatio', action='store_true', dest='doShowRatio', default=False,
-                    help='Show ratio plot with data/expected')
+                    help='Show ratio plot with data/expected. Default is False.')
 parser.add_argument('--splitProcs', dest='splitProcs', action='store_true', default=False,
                     help='Plot all the background processes separately. Use w/ option --channel=MMRates. Default is False.')
 parser.add_argument('--mergeOverflow', dest='mergeOverflow', action='store_true', default=False,
@@ -246,7 +246,7 @@ if __name__ == "__main__":
     dottWCR                 = bool( "ttWCR" in args.channel )
     dottZCR                 = bool( "ttZCR" in args.channel )
     doZSSpeakCR             = bool( "ZSSpeakCR" in args.channel )
-    doDataMCCR              = bool( "DataMC" in args.channel )
+    doTopCR                 = bool( "TopCR" in args.channel )
     doMMClosureTest         = bool( "MMClosureTest" in args.channel )
     doCFChallenge           = bool( "CutFlowChallenge" in args.channel )
     doMMSidebands           = bool( "MMSidebands" in args.channel )
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     # A comprehensive flag for all the other CRs
     # ------------------------------------------
 
-    doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZSSpeakCR or doMMRates or doDataMCCR or doMMClosureTest or doCFChallenge or doMMSidebands or doLeptonTruth )
+    doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZSSpeakCR or doMMRates or doTopCR or doMMClosureTest or doCFChallenge or doMMSidebands or doLeptonTruth )
 
     # -------------------------------------------------------------
     # Make standard plots in SR and VR unless differently specified
@@ -430,7 +430,6 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T > 1 )') )
     vardb.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T > 3 )') )
     vardb.registerCut( Cut('2Lep_NJet_CR',		  '( nJets_OR_T >= 2 && nJets_OR_T <= 3 )') )
-    vardb.registerCut( Cut('2Lep_NJet_CR_SStt', 	  '( nJets_OR_T < 4 )') )
     vardb.registerCut( Cut('2Lep_SS',			  '( lep_ID_0 * lep_ID_1 > 0 )') )
     vardb.registerCut( Cut('2Lep_OS',			  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
     vardb.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
@@ -842,35 +841,36 @@ if __name__ == "__main__":
 
     if makeStandardPlots:
         print ''
-        vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
-        vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
-        vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
-        vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
-        vardb.registerVar( Variable(shortname = 'NElectrons', latexname = 'Electron multiplicity', ntuplename = 'nelectrons', bins = 5, minval = -0.5, maxval = 4.5) )
-        vardb.registerVar( Variable(shortname = 'NMuons', latexname = 'Muon multiplicity', ntuplename = 'nmuons', bins = 5, minval = -0.5, maxval = 4.5) )
-        #
-        # Inclusive m(ll) plot
-        #
-        vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 46, minval = 10.0, maxval = 240.0,) )
-        #
-        # Z peak plot
-        #
-        vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
-        #
-        vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
+        # vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
+        # vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+        # vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
+        # vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
+        # vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
+        # vardb.registerVar( Variable(shortname = 'NElectrons', latexname = 'Electron multiplicity', ntuplename = 'nelectrons', bins = 5, minval = -0.5, maxval = 4.5) )
+        # vardb.registerVar( Variable(shortname = 'NMuons', latexname = 'Muon multiplicity', ntuplename = 'nmuons', bins = 5, minval = -0.5, maxval = 4.5) )
+        # #
+        # # Inclusive m(ll) plot
+        # #
+        # vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 46, minval = 10.0, maxval = 240.0,) )
+        # #
+        # # Z peak plot
+        # #
+        # vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
+        # #
+        # vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
         vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 36, minval = 10.0, maxval = 190.0) )
-        vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 20, minval = 10.0, maxval = 110.0) )
-        vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_Eta_0', bins = 16, minval = -2.6, maxval = 2.6) )
-        vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_Eta_1', bins = 16, minval = -2.6, maxval = 2.6) )
-        vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
-        vardb.registerVar( Variable(shortname = 'deltaRLep0Lep2', latexname = '#DeltaR(lep_{0},lep_{2})', ntuplename = delta_R_lep0lep2, bins = 20, minval = 0.0, maxval = 5.0) )
-        vardb.registerVar( Variable(shortname = 'deltaRLep1Lep2', latexname = '#DeltaR(lep_{1},lep_{2})', ntuplename = delta_R_lep1lep2, bins = 20, minval = 0.0, maxval = 5.0) )
-        vardb.registerVar( Variable(shortname = 'Mll12', latexname = 'm(l_{1}l_{2}) [GeV]', ntuplename = 'Mll12/1e3', bins = 15, minval = 0.0, maxval = 300.0,) )
-        vardb.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = 'lead_jetPt/1e3', bins = 36, minval = 20.0, maxval = 200.0,) )
-        vardb.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = 'lead_jetEta', bins = 50, minval = -5.0, maxval = 5.0) )
-        vardb.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageIntPerXing*1.16', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
-        vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} (FinalTrk) [GeV]', ntuplename = 'MET_RefFinal_et/1e3', bins = 45, minval = 0.0, maxval = 180.0,) )
-        vardb.registerVar( Variable(shortname = 'Tau0Pt', latexname = 'p_{T}^{lead tau} [GeV]', ntuplename = 'tau_pt_0', bins = 30, minval = 25.0, maxval = 100.0,) )
+        # vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 20, minval = 10.0, maxval = 110.0) )
+        # vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_Eta_0', bins = 16, minval = -2.6, maxval = 2.6) )
+        # vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_Eta_1', bins = 16, minval = -2.6, maxval = 2.6) )
+        # vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(lep_{0},lep_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
+        # vardb.registerVar( Variable(shortname = 'deltaRLep0Lep2', latexname = '#DeltaR(lep_{0},lep_{2})', ntuplename = delta_R_lep0lep2, bins = 20, minval = 0.0, maxval = 5.0) )
+        # vardb.registerVar( Variable(shortname = 'deltaRLep1Lep2', latexname = '#DeltaR(lep_{1},lep_{2})', ntuplename = delta_R_lep1lep2, bins = 20, minval = 0.0, maxval = 5.0) )
+        # vardb.registerVar( Variable(shortname = 'Mll12', latexname = 'm(l_{1}l_{2}) [GeV]', ntuplename = 'Mll12/1e3', bins = 15, minval = 0.0, maxval = 300.0,) )
+        # vardb.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = 'lead_jetPt/1e3', bins = 36, minval = 20.0, maxval = 200.0,) )
+        # vardb.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = 'lead_jetEta', bins = 50, minval = -5.0, maxval = 5.0) )
+        # vardb.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageIntPerXing*1.16', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
+        vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} [GeV]', ntuplename = 'MET_RefFinal_et/1e3', bins = 50, minval = 0.0, maxval = 200.0,) )
+        # vardb.registerVar( Variable(shortname = 'Tau0Pt', latexname = 'p_{T}^{lead tau} [GeV]', ntuplename = 'tau_pt_0', bins = 30, minval = 25.0, maxval = 100.0,) )
 
     # -------------------------------------------------
     # Alterantive ranges and binning for the histograms
@@ -1083,33 +1083,20 @@ if __name__ == "__main__":
         vardb.registerCategory( MyCategory('ZSSpeakCR_ElEl',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_ElEl_Event','2Lep_SS','2Lep_Zpeakcut','2Lep_TRUTH_PurePromptEvent']), weight = weight_SR_CR ) )
         vardb.registerCategory( MyCategory('ZSSpeakCR_MuMu',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_MuMu_Event','2Lep_SS','2Lep_Zpeakcut','2Lep_TRUTH_PurePromptEvent']), weight = weight_SR_CR ) )
 
+    if doTopCR:
 
-    # ------------------------------------
-    # Special CR for Data/MC control plots
-    # ------------------------------------
+        # OS ttbar (top dilepton) (ee,mumu,emu)
 
-    if doDataMCCR:
-
-        # Inclusive OS dilepton (ee,mumu, emu)
-
-        vardb.registerCategory( MyCategory('DataMC_InclusiveOS_MuMu', cut = vardb.getCuts(['2Lep_NLep','2Lep_pT_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_MuMu_Event','TT','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory('DataMC_InclusiveOS_ElEl', cut = vardb.getCuts(['2Lep_NLep','2Lep_pT_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_ElEl_Event','TT','2Lep_ElEtaCut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory('DataMC_InclusiveOS_OF',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_OF_Event','TT','2Lep_ElEtaCut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
-
-        # OS ttbar ( top dilepton) (ee,mumu,emu)
-
-        vardb.registerCategory( MyCategory('DataMC_OS_ttbar_MuMu',    cut = vardb.getCuts(['2Lep_NLep','2Lep_pT_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_MuMu_Event','TT','4Lep_NJets','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory('DataMC_OS_ttbar_ElEl',    cut = vardb.getCuts(['2Lep_NLep','2Lep_pT_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_ElEl_Event','TT','2Lep_ElEtaCut','4Lep_NJets','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory('DataMC_OS_ttbar_OF',      cut = vardb.getCuts(['2Lep_NLep','2Lep_pT_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_OF_Event','TT','2Lep_ElEtaCut','4Lep_NJets','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
+        #vardb.registerCategory( MyCategory('TopCR_OS_MuMu',    cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_MuMu_Event','TT','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
+        #vardb.registerCategory( MyCategory('TopCR_OS_ElEl',    cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_ElEl_Event','TT','2Lep_ElEtaCut','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
+        vardb.registerCategory( MyCategory('TopCR_OS_OF',      cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_OF_Event','TT','2Lep_ElEtaCut','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
 
         # SS ttbar (ee,mumu,emu)
 
-        vardb.registerCategory( MyCategory('DataMC_SS_ttbar',        cut = vardb.getCuts(['2Lep_NLep','2Lep_pT_Relaxed','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NJet_CR_SStt','TT','2Lep_ElEtaCut','OneBJet','2Lep_SS','2Lep_Zmincut']), weight = weight_SR_CR ) )
+        #vardb.registerCategory( MyCategory('TopCR_SS',         cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NJet_CR','TT','2Lep_ElEtaCut','OneBJet','2Lep_SS','2Lep_Zmincut']), weight = weight_SR_CR ) )
 
 
     if doLeptonTruth:
-
-        vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
 
         cc_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_MinNJet','TT']
         common_cuts = vardb.getCuts(cc_list)
@@ -1120,7 +1107,6 @@ if __name__ == "__main__":
         vardb.registerCategory( MyCategory(basename+"1Prompt1NonPrompt",  cut = common_cuts & vardb.getCuts(['2Lep_TRUTH_1Prompt1NonPromptEvent']), weight = weight_SR_CR ) )
         vardb.registerCategory( MyCategory(basename+"2NonPrompt",         cut = common_cuts & vardb.getCuts(['2Lep_TRUTH_2NonPromptEvent']), weight = weight_SR_CR ) )
         vardb.registerCategory( MyCategory(basename+"1Prompt1QMisID",     cut = common_cuts & vardb.getCuts(['2Lep_TRUTH_1Prompt1QMisIDEvent']), weight = weight_SR_CR ) )
-
 
     # --------------------------------------------
     # Full breakdown of cuts for cutflow challenge
@@ -1304,8 +1290,9 @@ if __name__ == "__main__":
             #vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
             #vardb.registerVar( Variable(shortname = "Integral_LOGY", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, logaxis = True) )
 
-            vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
-            vardb.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
+            #vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
+            vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 50, minval = 10.0, maxval = 210.0, sysvar = True) )
+            # vardb.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
             # vardb.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210]) )
             # vardb.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210]) )
             # vardb.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", bins = 26, minval = 0.0,  maxval = 2.6) )
@@ -1325,8 +1312,9 @@ if __name__ == "__main__":
             #     vardb.registerVar( Variable(shortname = 'ElProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{e}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + el_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
             #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbePt', latexnameX = 'truthType^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "truthType" + ":" + el_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
 
-            vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
-            vardb.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
+            #vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
+            vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 50, minval = 10.0, maxval = 210.0, sysvar = True) )
+            # vardb.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
             # vardb.registerVar( Variable(shortname = "MuProbePt_RealEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,50,90,140,210]) )
             # vardb.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,35,50,210]) )
             # vardb.registerVar( Variable(shortname = "MuProbeEta", latexname = "#eta^{#mu}", ntuplename = "TMath::Abs( " + mu_probe + "Eta )", bins = 25, minval = 0.0, maxval = 2.5) )
@@ -1462,12 +1450,12 @@ if __name__ == "__main__":
 
                 if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
-                        vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        #vardb.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        #vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
                         vardb.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
-                        vardb.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        #vardb.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        #vardb.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
                         vardb.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
 
             	# Fake CR: OF for electrons (w/ tag *always* muon), SF for muons
@@ -1812,7 +1800,7 @@ if __name__ == "__main__":
         ttH.channel = '2LSS'
     elif do3L_SR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
         ttH.channel = '3L'
-    elif doDataMCCR or doZSSpeakCR or doMMRates or doCFChallenge or doMMSidebands or doLeptonTruth:
+    elif doTopCR or doZSSpeakCR or doMMRates or doCFChallenge or doMMSidebands or doLeptonTruth:
         ttH.channel = '2LSS_CR'
 
     events = {}
@@ -2027,13 +2015,11 @@ if __name__ == "__main__":
         ttH.backgrounds = ['TTBar']
         ttH.debugprocs  = ['TTBar']
 
-    if doDataMCCR:
+    if doTopCR:
 
         ttH.signals     = []
         ttH.observed    = ['Observed']
-        ttH.backgrounds = ['TTBar','SingleTop','Rare','Zeejets','Zmumujets','Ztautaujets','Wjets','TTBarW','TTBarZ','Diboson']
-        if not args.useMCQMisID:
-            ttH.backgrounds.append('QMisID')
+        ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
 
     if doZSSpeakCR:
 
@@ -2331,7 +2317,7 @@ if __name__ == "__main__":
                                                                                       category=category,
                                                                                       overridebackground=mybackgrounds,
                                                                                       overflowbins=merge_overflow,
-                                                                                      showratio=True,
+                                                                                      showratio=showRatio,
                                                                                       wait=False,
                                                                                       save=list_formats_sys,
                                                                                       log=args.doLogScaleY,

@@ -200,7 +200,7 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
-o            inputgroup = [
+            inputgroup = [
                     ('Data', 'physics_Main'),
                 ]
 
