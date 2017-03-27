@@ -2330,7 +2330,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: setOutputBranches ()
 
     // For lepton MVA selection, apply a baseline requirement for *all* electrons to be passing QMisID BDT Loose cut
 
-    bool isQMIsIDBDTLooseFlag = this->isQMisIDBDTLoose( lepA, lepB );
+    // bool isQMIsIDBDTLooseFlag = this->isQMisIDBDTLoose( lepA, lepB );
+    bool isQMIsIDBDTLooseFlag = true;
 
     m_is_TMVA_TMVA	   = (  lepA.get()->props["isTightSelectedMVA"].c &&  lepB.get()->props["isTightSelectedMVA"].c ) && isQMIsIDBDTLooseFlag;
     m_is_TMVA_AntiTMVA     = (  lepA.get()->props["isTightSelectedMVA"].c && !lepB.get()->props["isTightSelectedMVA"].c ) && isQMIsIDBDTLooseFlag;
