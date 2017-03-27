@@ -20,9 +20,9 @@ parser = argparse.ArgumentParser(description='Plotting script for the HTopMultil
 
 channels     = ["2LSS_SR","3L_SR",
                 "2LSS_LOWNJ_VR",
-                "WZonCR", "WZoffCR", "WZHFonCR", "WZHFoffCR",
-                "ttWCR", "ttZCR","ZSSpeakCR", "TopCR",
-                "MMRates(,DATA,CLOSURE,TP,LH,TRUTH_TP,SUSY_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
+                "WZonCR","WZoffCR","WZHFonCR","WZHFoffCR",
+                "ttWCR","ttZCR","ZOSpeakCR","ZSSpeakCR","TopCR",
+                "MMRates(,DATA,CLOSURE,TP,LH,TRUTH_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
                 "MMClosureTest(,HIGHNJ,LOWNJ,ALLNJ)",
                 "CutFlowChallenge(,MM,2LSS,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth"]
 
@@ -245,6 +245,7 @@ if __name__ == "__main__":
     doWZHFoffCR             = bool( "WZHFoffCR" in args.channel )
     dottWCR                 = bool( "ttWCR" in args.channel )
     dottZCR                 = bool( "ttZCR" in args.channel )
+    doZOSpeakCR             = bool( "ZOSpeakCR" in args.channel )
     doZSSpeakCR             = bool( "ZSSpeakCR" in args.channel )
     doTopCR                 = bool( "TopCR" in args.channel )
     doMMClosureTest         = bool( "MMClosureTest" in args.channel )
@@ -279,7 +280,7 @@ if __name__ == "__main__":
     # A comprehensive flag for all the other CRs
     # ------------------------------------------
 
-    doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZSSpeakCR or doMMRates or doTopCR or doMMClosureTest or doCFChallenge or doMMSidebands or doLeptonTruth )
+    doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZOSpeakCR or doZSSpeakCR or doMMRates or doTopCR or doMMClosureTest or doCFChallenge or doMMSidebands or doLeptonTruth )
 
     # -------------------------------------------------------------
     # Make standard plots in SR and VR unless differently specified
@@ -386,6 +387,7 @@ if __name__ == "__main__":
     if "SLT_OR_DLT" in args.trigger: # use ( DLT || SLT ) for all categories (includes trigger matching already!)
 
         vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT_OR_SLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT_OR_SLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT_OR_SLT + " )" + " )" ) )
+        #vardb.registerCut( Cut("TrigDec", '(((RunYear==2015 && (HLT_mu20_iloose_L1MU15 || HLT_mu50 || HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose )) || (RunYear==2016 && (HLT_mu26_ivarmedium || HLT_mu50 || HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 )))||(RunYear==2015&&(HLT_2e12_lhloose_L12EM10VH||HLT_e17_lhloose_mu14||HLT_mu18_mu8noL1)) ||(RunYear==2016&&(HLT_2e17_lhvloose_nod0||HLT_e17_lhloose_nod0_mu14||HLT_mu22_mu8noL1)))') )
 
     elif "SLT" in args.trigger: # use SLT for all categories
 
@@ -394,7 +396,6 @@ if __name__ == "__main__":
     elif "DLT" in args.trigger: # use DLT for all categories
 
         vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT + " )" + " )" ) )
-
 
     vardb.registerCut( Cut('LargeNBJet',      '( nJets_OR_T_MV2c10_70 > 1 )') )
     vardb.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_T_MV2c10_70 < 4 )') )
@@ -413,6 +414,8 @@ if __name__ == "__main__":
 
     if "SLT_OR_DLT" in args.trigger:
         vardb.registerCut( Cut('2Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
+        # vardb.registerCut( Cut('2Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1||matchDLTll01 )') ) # trigger matching already implemented in trigger selection cut
+
     elif "SLT" in args.trigger:
         vardb.registerCut( Cut('2Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 )') )
     elif "DLT" in args.trigger:
@@ -433,7 +436,7 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_SS',			  '( lep_ID_0 * lep_ID_1 > 0 )') )
     vardb.registerCut( Cut('2Lep_OS',			  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
     vardb.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
-    vardb.registerCut( Cut('2Lep_pT',			  '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
+    vardb.registerCut( Cut('2Lep_pT',			  '( 1 )') ) # For 2LSS, go as low as the trigger matching allows for
     if args.ICHEPSelection:
         vardb.getCut('2Lep_pT').cutstr =  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 25e3 )' # 2LSS SR cut - ICHEP 2016
     vardb.registerCut( Cut('2Lep_pT_MMRates',		  '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
@@ -444,9 +447,9 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('2Lep_OF_Event',		  '( dilep_type == 2 )') )
     vardb.registerCut( Cut('2Lep_MuEl_Event',		  '( dilep_type == 2 && TMath::Abs( lep_ID_0 ) == 13  )') )
     vardb.registerCut( Cut('2Lep_ElMu_Event',		  '( dilep_type == 2 && TMath::Abs( lep_ID_0 ) == 11  )') )
-    vardb.registerCut( Cut('2Lep_Zsidescut',              '( ( dilep_type != 3 ) || ( TMath::Abs( Mll01 - 91.2e3 ) > 7.5e3 ) )' ) )  # Use this to require the 2 SF electrons to be outside Z peak
-    vardb.registerCut( Cut('2Lep_Zpeakcut',               '( ( dilep_type == 2 ) || ( TMath::Abs( Mll01 - 91.2e3 ) < 30e3  ) )' ) )  # Use this to require the 2 SF leptons to be around Z peak
-    vardb.registerCut( Cut('2Lep_Zmincut',                '( ( dilep_type == 2 ) || ( Mll01  > 20e3 ) )' ) )   # Remove J/Psi, Upsilon peak in SF events
+    vardb.registerCut( Cut('2Lep_Zsidescut',              '( ( dilep_type != 3 ) || ( TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) )' ) )  # Use this to require 2 SF electrons to be outside Z peak
+    vardb.registerCut( Cut('2Lep_Zpeakcut',               '( ( dilep_type == 2 ) || ( TMath::Abs( Mll01 - 91.2e3 ) < 30e3  ) )' ) ) # Use this to require 2 SF leptons to be around Z peak
+    vardb.registerCut( Cut('2Lep_Zmincut',                '( ( dilep_type == 2 ) || ( Mll01  > 20e3 ) )' ) )                        # Remove J/Psi, Upsilon peak in SF events
     gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/largeEtaEvent.cxx+")
     from ROOT import largeEtaEvent
     vardb.registerCut( Cut('2Lep_ElEtaCut',               '( largeEtaEvent( dilep_type,lep_ID_0,lep_ID_1,lep_EtaBE2_0,lep_EtaBE2_1 ) == 0 )') )
@@ -459,14 +462,14 @@ if __name__ == "__main__":
 
         trig_tag = "SLT"
 
-        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( lep_Tag_' + trig_tag + '_isTightSelectedMVA == 1 && lep_Tag_' + trig_tag + '_isTrigMatch == 1 )') )
+        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( event_isBadTP_SLT == 0 )') ) # The presence of a T (& T.M.) lepton to tag the event is implemented in the MiniNTup code. The reason is b/c vector branches are used, and for the Real CR both leptons can be the tag.
         vardb.registerCut( Cut('2Lep_LepTagTrigMatched',        '( lep_Tag_' + trig_tag + '_isTrigMatch == 1 )') )
         vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_' + trig_tag + '_isTrigMatch == 1 )') )
         vardb.registerCut( Cut('2Lep_LepProbeAntiTrigMatched',  '( lep_Probe_' + trig_tag + '_isTrigMatch == 0 )') )
         vardb.registerCut( Cut('2Lep_ElTag',                    '( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 11 )') )
         vardb.registerCut( Cut('2Lep_MuTag',                    '( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 13 )') )
-        vardb.registerCut( Cut('2Lep_ElProbe',                  '( TMath::Abs( lep_Probe_' + trig_tag + '_ID ) == 11 )') )
-        vardb.registerCut( Cut('2Lep_MuProbe',                  '( TMath::Abs( lep_Probe_' + trig_tag + '_ID ) == 13 )') )
+        vardb.registerCut( Cut('2Lep_ElProbe',                  '( 1 )') ) # Now T&P uses vector branches for probe electron and muon: do not specify the flavour of the probe (this is particularly crucial for the Real CR, where in the ambiguous "both T&TM leptons" case there is no distinction between T&P)
+        vardb.registerCut( Cut('2Lep_MuProbe',                  '( 1 )') ) # Now T&P uses vector branches for probe electron and muon: do not specify the flavour of the probe (this is particularly crucial for the Real CR, where in the ambiguous "both T&TM leptons" case there is no distinction between T&P)
         vardb.registerCut( Cut('2Lep_ProbeTight',               '( lep_Probe_' + trig_tag + '_isTightSelectedMVA == 1 )') )
         vardb.registerCut( Cut('2Lep_ProbeAntiTight',           '( lep_Probe_' + trig_tag + '_isTightSelectedMVA == 0 )') )
         vardb.registerCut( Cut('2Lep_TagAndProbe_GoodEvent',    '( event_isBadTP_' + trig_tag + ' == 0 )') )
@@ -474,45 +477,36 @@ if __name__ == "__main__":
         vardb.registerCut( Cut('2Lep_TagVeryTightSelected',     '( lep_Tag_' + trig_tag + '_ptVarcone30/lep_Tag_' + trig_tag + '_Pt < 0.01 )' ) ) # Tighten the track iso of the tag to increase fake purity for the probe (was used in v24)
         gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/allElectronsQMisIDBDTLoose.cxx+")
         from ROOT import allElectronsQMisIDBDTLoose
-        vardb.registerCut( Cut('2Lep_ElQMisIDBDT',              '( allElectronsQMisIDBDTLoose( dilep_type, lep_ID_0, lep_ID_1, lep_chargeIDBDTLoose_0, lep_chargeIDBDTLoose_1, 0.10083 ) )') )
-        #vardb.registerCut( Cut('2Lep_ElQMisIDBDT',              '( 1 )') )
+        # vardb.registerCut( Cut('2Lep_ElQMisIDBDT',              '( allElectronsQMisIDBDTLoose( dilep_type, lep_ID_0, lep_ID_1, lep_chargeIDBDTLoose_0, lep_chargeIDBDTLoose_1, 0.10083 ) )') )
+        vardb.registerCut( Cut('2Lep_ElQMisIDBDT',              '( 1 )') )
+
+        if "TRUTH_TP" in args.channel:
+            vardb.getCut('2Lep_LepTagTightTrigMatched').cutstr = '( lep_Tag_' + trig_tag + '_isTightSelectedMVA == 1 && lep_Tag_' + trig_tag + '_isTrigMatch == 1 )'
+            vardb.getCut('2Lep_ElProbe').cutstr = '( TMath::Abs( lep_Probe_' + trig_tag + '_ID ) == 11 )'
+            vardb.getCut('2Lep_MuProbe').cutstr = '( TMath::Abs( lep_Probe_' + trig_tag + '_ID ) == 13 )'
 
         if args.cutBasedLepDef:
-
             vardb.getCut('2Lep_ElQMisIDBDT').cutstr            = '( 1 )'
             vardb.getCut('2Lep_LepTagTightTrigMatched').cutstr = '( lep_Tag_' + trig_tag + '_isTightSelected == 1 && lep_Tag_' + trig_tag + '_isTrigMatch == 1 )'
             vardb.getCut('2Lep_ProbeTight').cutstr             = '( lep_Probe_' + trig_tag + '_isTightSelected == 1 )'
             vardb.getCut('2Lep_ProbeAntiTight').cutstr         = '( lep_Probe_' + trig_tag + '_isTightSelected == 0 )'
 
-        if "SUSY_TP" in args.channel:
-
-            # The presence of a T (& T.M.) lepton to tag the event is implemented in the MiniNTup code.
-            # The reason is b/c vector branches are used, and for the Real CR both leptons can be the tag.
-
-            vardb.getCut('2Lep_LepTagTightTrigMatched').cutstr = '( event_isBadTP_SLT == 0 )'
-
-            # SUSY T&P uses vector branches for probe electron and muon: do not specify the flavour of the probe
-            # (this is particularly crucial for the Real CR, where in the ambiguous "both T&TM leptons" case there is no distinction between T&P)
-
-            vardb.getCut('2Lep_ElProbe').cutstr = '( 1 )'
-            vardb.getCut('2Lep_MuProbe').cutstr = '( 1 )'
 
     # ---------------------------
     # Cuts for ttW Control Region
     # ---------------------------
 
-    # >= 2 btag
-    # <= 3 jets
+    # NBjets >= 2
+    # 2<= NJets <= 4
     # HT(jets) > 220 GeV in ee and emu
     # Z peak [+- 15 GeV] veto in ee
     # MET > 50 GeV in ee
 
     vardb.registerCut( Cut('2Lep_HTJ_ttW',        '( dilep_type == 1 || HT_jets > 220e3 )') )
     vardb.registerCut( Cut('2Lep_MET_ttW',        '( dilep_type != 3 || ( MET_RefFinal_et > 50e3 ) )') )
-    vardb.registerCut( Cut('2Lep_Zsidescut_ttW',  '( dilep_type != 3 || ( TMath::Abs( Mll01 - 91.2e3 ) > 15e3 ) )') )
-    vardb.registerCut( Cut('2Lep_NJet_ttW',       '( nJets_OR_T <= 4 )') )
+    vardb.registerCut( Cut('2Lep_Zsidescut_ttW',  '( dilep_type != 3 || ( Mll01 < 75e3 || Mll01 > 105e3 ) )') )
+    vardb.registerCut( Cut('2Lep_NJet_ttW',       '( nJets_OR_T >= 2 && nJets_OR_T <= 4 )') )
     vardb.registerCut( Cut('2Lep_NBJet_ttW',      '( nJets_OR_T_MV2c10_70 >= 2 )') )
-    vardb.registerCut( Cut('2Lep_Zmincut_ttW',    '( Mll01 > 40e3 )'))
 
     # -------------------
     # TRUTH MATCHING CUTS
@@ -673,7 +667,8 @@ if __name__ == "__main__":
     vardb.registerCut( Cut('3Lep_ZVeto',        '( ( lep_ID_0 != -lep_ID_1 || TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) && ( lep_ID_0! = -lep_ID_2 || TMath::Abs( Mll02 - 91.2e3 ) > 10e3 ) )') )
     vardb.registerCut( Cut('3Lep_MinZCut',      '( ( lep_ID_0 != -lep_ID_1 || Mll01 > 12e3 ) && ( lep_ID_0 != -lep_ID_2 || Mll02 > 12e3 ) )') )
     vardb.registerCut( Cut('3Lep_ZllGammaVeto', '( TMath::Abs( Mlll012 - 91.2e3 ) > 10e3 )') )
-    vardb.registerCut( Cut('3Lep_NJets',        '( ( nJets_OR >= 4 && nJets_OR_MV2c10_70 >= 1 ) || ( nJets_OR >=3 && nJets_OR_MV2c10_70 >= 2 ) )') )
+    # vardb.registerCut( Cut('3Lep_NJets',        '( ( nJets_OR_T >= 4 && nJets_OR_T_MV2c10_70 >= 1 ) || ( nJets_OR_T >=3 && nJets_OR_T_MV2c10_70 >= 2 ) )') )
+    vardb.registerCut( Cut('3Lep_NJets',        '( nJets_OR_T >= 3 && nJets_OR_T_MV2c10_70 >= 1 )') )
 
     # -----------------------------
     # Event "tightness"
@@ -682,7 +677,9 @@ if __name__ == "__main__":
     # For 3L, use lep1,lep2
     # -----------------------------
 
-    vardb.registerCut( Cut('TT', '( ( dilep_type > 0 && lep_isTightSelectedMVA_0 && lep_isTightSelectedMVA_1 ) || ( trilep_type > 0 && lep_isTightSelectedMVA_1 && lep_isTightSelectedMVA_2 ) )') ) # NB: using this and not 'is_TMVA_TMVA' to make sure there is not QMisID BDT cut on loose electrons applied on top of the tight (in principle it shouldn't matter, but...)
+    #vardb.registerCut( Cut('TT', '( ( dilep_type > 0 && lep_isTightSelectedMVA_0 && lep_isTightSelectedMVA_1 ) || ( trilep_type > 0 && lep_isTightSelectedMVA_1 && lep_isTightSelectedMVA_2 ) )') ) # NB: using this and not 'is_TMVA_TMVA' to make sure there is not QMisID BDT cut on loose electrons applied on top of the tight (in principle it shouldn't matter, but...)
+    #vardb.registerCut( Cut('TT', '( ((TMath::Abs(lep_ID_0)==13 && lep_isolationLoose_0) || (TMath::Abs(lep_ID_0)==11 && lep_isolationLoose_0 && lep_isTightLH_0 && lep_chargeIDBDTTight_0>0.0670415)) && ((TMath::Abs(lep_ID_1)==13 && lep_isolationLoose_1) || (TMath::Abs(lep_ID_1)==11 && lep_isolationLoose_1 && lep_isTightLH_1 && lep_chargeIDBDTTight_1>0.0670415)) && lep_promptLeptonIso_TagWeight_0<-0.5 && lep_promptLeptonIso_TagWeight_1<-0.5 )') )
+    vardb.registerCut( Cut('TT', '( is_TMVA_TMVA )') )
     vardb.registerCut( Cut('TL', '( is_TMVA_AntiTMVA )') )
     vardb.registerCut( Cut('LT', '( is_AntiTMVA_TMVA )') )
     vardb.registerCut( Cut('LL', '( is_AntiTMVA_AntiTMVA )') )
@@ -827,7 +824,7 @@ if __name__ == "__main__":
         elif "LOWNJ" in args.channel:
             vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
 
-    if doZSSpeakCR:
+    if doZOSpeakCR or doZSSpeakCR:
         print ''
         vardb.registerVar( Variable(shortname = 'Mll01_NarrowPeak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 26, minval = 60.0, maxval = 125.0) )
 
@@ -837,11 +834,11 @@ if __name__ == "__main__":
             vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = "electron_ProbeVec_SLT_Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0) )
             vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = "muon_ProbeVec_SLT_Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0) )
         else:
-            vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
 
     if makeStandardPlots:
         print ''
-        # vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
+        vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
         # vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         # vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
         # vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
@@ -858,7 +855,7 @@ if __name__ == "__main__":
         # vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
         # #
         # vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
-        vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 36, minval = 10.0, maxval = 190.0) )
+        # vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 36, minval = 10.0, maxval = 190.0) )
         # vardb.registerVar( Variable(shortname = 'Lep1Pt', latexname = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3', bins = 20, minval = 10.0, maxval = 110.0) )
         # vardb.registerVar( Variable(shortname = 'Lep0Eta', latexname = '#eta^{lead lep}', ntuplename = 'lep_Eta_0', bins = 16, minval = -2.6, maxval = 2.6) )
         # vardb.registerVar( Variable(shortname = 'Lep1Eta', latexname = '#eta^{2nd lead lep}', ntuplename = 'lep_Eta_1', bins = 16, minval = -2.6, maxval = 2.6) )
@@ -934,13 +931,9 @@ if __name__ == "__main__":
 
             vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight=weightQMisID, process=[procQMisID]) )
             vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['FakesMC']) )
-            vardb.registerSystematics( Systematics(name='TTBarWsys', eventweight=0.2, process=['TTBarW']) )
-            vardb.registerSystematics( Systematics(name='OtherPromptSSsys', eventweight=0.15, process=['OtherPrompt','TTBar']) )
-            #vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['Prompt','TTBar']) )
-            # vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['TTBar','SingleTop','Zjets','Wjets']) )
-            # vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']) )
-            # vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['TTBar']) )
-            # vardb.registerSystematics( Systematics(name='PromptSSsys', eventweight=0.2, process=['TTBar','TTBarW']) )
+            vardb.registerSystematics( Systematics(name='TTVsys', eventweight=0.25, process=['TTBarW','TTBarZ']) )
+            vardb.registerSystematics( Systematics(name='VVsys', eventweight=0.3, process=['Diboson']) )
+            vardb.registerSystematics( Systematics(name='OtherPromptSSsys', eventweight=0.15, process=['Rare','TTBar']) )
 
         if doMM:
 
@@ -952,7 +945,8 @@ if __name__ == "__main__":
             sys_sources = []
             if not doMMClosureTest:
                 sys_process = "FakesMM"
-                sys_sources.extend([("Stat","UncorrBins"),("N_TTBarW","CorrBins"),("D_TTBarW","CorrBins"),("N_OtherPromptSS","CorrBins"),("D_OtherPromptSS","CorrBins"),("N_FakesOS","CorrBins"),("D_FakesOS","CorrBins"),("N_QMisID","UncorBins"),("D_QMisID","UncorrBins")])
+                #sys_sources.extend([("Stat","UncorrBins"),("N_TTBarW","CorrBins"),("D_TTBarW","CorrBins"),("N_OtherPromptSS","CorrBins"),("D_OtherPromptSS","CorrBins"),("N_FakesOS","CorrBins"),("D_FakesOS","CorrBins"),("N_QMisID","UncorBins"),("D_QMisID","UncorrBins")])
+                sys_sources.extend([("Stat","UncorrBins"),("N_TTV","CorrBins"),("D_TTV","CorrBins"),("N_VV","CorrBins"),("D_VV","CorrBins"),("N_OtherPromptSS","CorrBins"),("D_OtherPromptSS","CorrBins"),("N_FakesOS","CorrBins"),("D_FakesOS","CorrBins"),("N_QMisID","UncorBins"),("D_QMisID","UncorrBins")])
             else:
                 sys_process = "FakesClosureMM"
                 sys_sources.extend([("Stat","UncorrBins")])
@@ -998,6 +992,7 @@ if __name__ == "__main__":
 
     # weight_SR_CR = "tauSFTight * lepSFTrigTight * lepSFObjTight * JVT_EventWeight * MV2c10_70_EventWeight"
     weight_SR_CR = "tauSFTight * lepSFTrigTight * JVT_EventWeight * MV2c10_70_EventWeight" # TEMP for v26 : no calibration of lepton MVA yet
+    # weight_SR_CR = "tauSFTight * weight_event_trig_SLT * JVT_EventWeight * MV2c10_70_EventWeight" # TEMP for v26 : no calibration of lepton MVA yet
 
     cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut']
     common_cuts_2Lep = vardb.getCuts(cc_2Lep_list)
@@ -1024,19 +1019,16 @@ if __name__ == "__main__":
 
     if doSR:
 
+        append_2Lep += "_SR"
+
+        if ( doMM or doFF or doTHETA ):
+            append_2Lep += "_DataDriven"
+
         if do2LSS_SR :
-
-            append_2Lep += "_SR"
-
-            if ( doMM or doFF or doTHETA ):
-                append_2Lep += "_DataDriven"
-
             if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
             if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
             if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
-            #
             #vardb.registerCategory( MyCategory('TwoLepSSTau_SR', cut = common_cuts_2Lep1Tau & vardb.getCut('2Lep1Tau_NJet_SR') ), weight = weight_SR_CR )
-
         if do3L_SR:
             vardb.registerCategory( MyCategory('ThreeLep_SR',    cut = common_cuts_3Lep, weight = weight_SR_CR ) )
 
@@ -1077,21 +1069,25 @@ if __name__ == "__main__":
         vardb.registerCategory( MyCategory('ttZCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','NJet3L','2Lep_Zpeakcut','2Lep_OS']), weight = weight_SR_CR ) )
 
     if dottWCR:
-        vardb.registerCategory( MyCategory('ttWCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NJet_ttW','2Lep_NBJet_ttW','2Lep_NLep','2Lep_pT_Relaxed','TauVeto','TT','2Lep_Zmincut_ttW','2Lep_OS']), weight = weight_SR_CR ) )
+        vardb.registerCategory( MyCategory('ttWCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NJet_ttW','2Lep_NBJet_ttW','2Lep_NLep','2Lep_pT','TauVeto','TT','2Lep_HTJ_ttW','2Lep_MET_ttW']), weight = weight_SR_CR ) )
+
+    if doZOSpeakCR:
+        vardb.registerCategory( MyCategory('ZOSpeakCR_ElEl',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_ElEl_Event','2Lep_OS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
+        vardb.registerCategory( MyCategory('ZOSpeakCR_MuMu',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_MuMu_Event','2Lep_OS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
 
     if doZSSpeakCR:
-        vardb.registerCategory( MyCategory('ZSSpeakCR_ElEl',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_ElEl_Event','2Lep_SS','2Lep_Zpeakcut','2Lep_TRUTH_PurePromptEvent']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory('ZSSpeakCR_MuMu',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_MuMu_Event','2Lep_SS','2Lep_Zpeakcut','2Lep_TRUTH_PurePromptEvent']), weight = weight_SR_CR ) )
+        vardb.registerCategory( MyCategory('ZSSpeakCR_ElEl',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_ElEl_Event','2Lep_SS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
+        vardb.registerCategory( MyCategory('ZSSpeakCR_MuMu',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_MuMu_Event','2Lep_SS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
 
     if doTopCR:
 
-        # OS ttbar (top dilepton) (ee,mumu,emu)
+        # OS TTBar (top dilepton) (ee,mumu,emu)
 
         #vardb.registerCategory( MyCategory('TopCR_OS_MuMu',    cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_MuMu_Event','TT','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
         #vardb.registerCategory( MyCategory('TopCR_OS_ElEl',    cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_ElEl_Event','TT','2Lep_ElEtaCut','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory('TopCR_OS_OF',      cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_OF_Event','TT','2Lep_ElEtaCut','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
+        vardb.registerCategory( MyCategory('TopCR_OS_OF',      cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_OF_Event','TT','2Lep_ElEtaCut','2Lep_NJet_CR','2Lep_NBJet','2Lep_OS']), weight = weight_SR_CR ) )
 
-        # SS ttbar (ee,mumu,emu)
+        # Fakes SS TTBar (ee,mumu,emu)
 
         #vardb.registerCategory( MyCategory('TopCR_SS',         cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NJet_CR','TT','2Lep_ElEtaCut','OneBJet','2Lep_SS','2Lep_Zmincut']), weight = weight_SR_CR ) )
 
@@ -1178,14 +1174,12 @@ if __name__ == "__main__":
             cutlistnames_CFC_2Lep = [
                                  ["TrigDec",weight_CFC],
                                  ["2Lep_NLep",weight_CFC],
-                                 ["TT",weight_CFC],
-                                 ["2Lep_TrigMatch",weight_CFC],
                                  ["2Lep_SS",weight_CFC],
-                                 ["2Lep_pT",weight_CFC],
-                                 ["2Lep_ElEtaCut",weight_CFC],
-                                 ["TauVeto",weight_CFC],
+                                 ["2Lep_TrigMatch",weight_CFC],
+                                 ["TT",weight_CFC],
                                  ["2Lep_NJet_SR",weight_CFC],
-                                 ["2Lep_NBJet_SR",weight_CFC]
+                                 ["2Lep_NBJet_SR",weight_CFC],
+                                 ["TauVeto",weight_CFC],
                                     ]
 
             tot_idx = 0
@@ -1197,9 +1191,13 @@ if __name__ == "__main__":
                 print("registering category:\t{0}".format( prepend + "_" + cat_name + "_" + cut[0] ) + " - defined by cuts: [" + ",".join( "\'{0}\'".format(c) for c in cutlist_CFC_2Lep ) + "] - weight : \'{0}\'".format(cut[1]))
                 tot_idx += 1
 
-            vardb.registerCategory( MyCategory( str(tot_idx) + "_" + cat_name + "_" + "ee",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_ElEl_Event']), weight = weight_CFC ) )
-            vardb.registerCategory( MyCategory( str(tot_idx) + "_" + cat_name + "_" + "mm",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_MuMu_Event']), weight = weight_CFC ) )
-            vardb.registerCategory( MyCategory( str(tot_idx) + "_" + cat_name + "_" + "of",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_OF_Event']), weight = weight_CFC ) )
+            prepend = str(tot_idx)
+            if tot_idx < 10:
+                prepend = "0" + str(tot_idx)
+
+            vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + "ee",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_ElEl_Event']), weight = weight_CFC ) )
+            vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + "mm",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_MuMu_Event']), weight = weight_CFC ) )
+            vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + "of",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_OF_Event']), weight = weight_CFC ) )
 
         if "2LSS1Tau" in args.channel:
 
@@ -1243,14 +1241,15 @@ if __name__ == "__main__":
             cutlistnames_CFC_3Lep = [
                                  ["TrigDec",weight_CFC],
                                  ["3Lep_NLep",weight_CFC],
-                                 ["3Lep_Charge",weight_CFC],
-                                 ["TT",weight_CFC],
-                                 ["3Lep_pT",weight_CFC],
                                  ["3Lep_TrigMatch",weight_CFC],
+                                 ["TT",weight_CFC],
+                                 ["3Lep_Charge",weight_CFC],
+                                 ["3Lep_NJets",weight_CFC],
+                                 # ["3Lep_pT",weight_CFC],
+                                 ["TauVeto",weight_CFC],
                                  ["3Lep_ZVeto",weight_CFC],
                                  ["3Lep_MinZCut",weight_CFC],
-                                 ["3Lep_ZllGammaVeto",weight_CFC],
-                                 ["3Lep_NJets",weight_CFC],
+                                 #["3Lep_ZllGammaVeto",weight_CFC],
                                     ]
 
             tot_idx = 0
@@ -1274,14 +1273,14 @@ if __name__ == "__main__":
 
         if "TP" in args.channel:
 
-            el_tag   = mu_tag   = "lep_Tag_SLT_"
-            el_probe = mu_probe = "lep_Probe_SLT_"
+            el_tag   = "electron_TagVec_SLT_"
+            el_probe = "electron_ProbeVec_SLT_"
+            mu_tag   = "muon_TagVec_SLT_"
+            mu_probe = "muon_ProbeVec_SLT_"
 
-            if "SUSY_TP" in args.channel: # Use vector branches!
-                el_tag   = "electron_TagVec_SLT_"
-                el_probe = "electron_ProbeVec_SLT_"
-                mu_tag   = "muon_TagVec_SLT_"
-                mu_probe = "muon_ProbeVec_SLT_"
+            if "TRUTH_TP" in args.channel:
+                el_tag   = mu_tag   = "lep_Tag_SLT_"
+                el_probe = mu_probe = "lep_Probe_SLT_"
 
             # ---------------------------------------
             # Special plots for MM real/fake eff CRs
@@ -1335,9 +1334,10 @@ if __name__ == "__main__":
             #
             # -) Real OS CR:
             #
-            # ---> events where PROBE is !prompt (aka, a fake or QMisID (negligible) or photon conv)
-            # This removes events where the probe is a fake lepton.
-            # This procedure can be questioned, as we'd be trusting MC for the fakes, but we assign a pretty large systematics...
+            # ---> events where at least 1 is !prompt or QMisID
+            #
+            # This procedure can be questioned, as we'd be trusting MC for the fakes, but the impact is
+            # overall small and we assign a pretty large systematics...
             #
             # -) Fake SS CR:
             #
@@ -1349,11 +1349,8 @@ if __name__ == "__main__":
             # By default we use the data-driven charge flip estimate. To use MC charge flips, use appropriate command-line option.
             # When using DD QMisID, we need to veto in MC all events w/ at least one (truth) QMisID, to avoid double subtraction (since ttV, VV might have QMisID leptons)
 
-            truth_sub_OS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptOrQMisIDEvent')
+            truth_sub_OS = vardb.getCut('2Lep_TRUTH_NonPromptEvent') | vardb.getCut('2Lep_TRUTH_QMisIDEvent')
             truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbePromptEvent') & vardb.getCut('2Lep_TRUTH_QMisIDVeto')
-
-            if "SUSY_TP" in args.channel:
-                truth_sub_OS = vardb.getCut('2Lep_TRUTH_NonPromptEvent') | vardb.getCut('2Lep_TRUTH_QMisIDEvent')
 
             ratiolims_real = ratiolims_fake = (0.1,"MAX")
 
@@ -1423,7 +1420,7 @@ if __name__ == "__main__":
 
             cc_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_LepTagTightTrigMatched','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_NJet_CR','2Lep_ElEtaCut','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElQMisIDBDT']
 
-            # Modify jet multiplicity if requested. By default, we look only at njet=[2,4] events for measuring the efficiencies.
+            # Modify jet multiplicity if requested. By default, we look only at njet=[2,3] events for measuring the efficiencies.
 
             if "HIGHNJ" in args.channel:
                 cc_list = [ cut.replace('2Lep_NJet_CR','2Lep_NJet_SR') for cut in cc_list ]
@@ -1462,7 +1459,7 @@ if __name__ == "__main__":
 
                 if any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        #vardb.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         #vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         vardb.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
@@ -1470,7 +1467,7 @@ if __name__ == "__main__":
                         # vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         # vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         # To compare w/ Kun: look only at events where the muon is leading
-                        vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        #vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         #vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
 
@@ -1800,7 +1797,7 @@ if __name__ == "__main__":
         ttH.channel = '2LSS'
     elif do3L_SR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
         ttH.channel = '3L'
-    elif doTopCR or doZSSpeakCR or doMMRates or doCFChallenge or doMMSidebands or doLeptonTruth:
+    elif doTopCR or doZSSpeakCR or doZSSpeakCR or doMMRates or doCFChallenge or doMMSidebands or doLeptonTruth:
         ttH.channel = '2LSS_CR'
 
     events = {}
@@ -1849,7 +1846,7 @@ if __name__ == "__main__":
         'OtherPrompt':('otherpromptbkg','Prompt (non $t\\bar{t}W$) $\ell$ backgrounds'),
         'QMisID':('qmisidbkg','Charge mis-ID'),
         'QMisIDMC':('qmisidbkg','Charge mis-ID (simulation)'),
-        'FakesMC':('fakesbkg','Fake $\ell$ backgrounds (simulation)'),
+        'FakesMC':('fakesbkg','Fake $\ell$ backgrounds (Simulation)'),
         'FakesFF':('fakesbkg','Fake $\ell$ backgrounds (Fake Factor)'),
         'FakesMM':('fakesbkg','Fake $\ell$ backgrounds (Matrix Method)'),
         'FakesTHETA':('fakesbkg','Fake $\ell$ backgrounds ($\theta$ method)'),
@@ -1867,16 +1864,16 @@ if __name__ == "__main__":
         'TTBarHDilep':kRed,
         'tHbj':kPink+7,
         'WtH':kPink-4,
-        'TTBarW':kYellow-9,
+        'TTBarW':kYellow,
         'TTBarZ':kCyan,
-        'TTBarGamma':kAzure+1,
+        'TTBarGamma':kPink-9,
         'SingleTop':kOrange+6,
         'RareTop':kOrange+7,
         'Triboson':kTeal+10,
         'Rare':kGray,
         'TTBar': kRed-4,
         'TopCF':kAzure-4,
-        'Diboson':kGreen-9,
+        'Diboson':kGreen-7,
         'DibosonCF':kOrange-3,
         'Zjets': kBlue-7,
         'Zeejets':kAzure+10,
@@ -1891,16 +1888,16 @@ if __name__ == "__main__":
         'Wtaunujets':kGray+2,
         'Prompt':kOrange-3,
         'OtherPrompt':kOrange-2,
-        'QMisID':kMagenta+1,
-        'QMisIDMC':kMagenta+1,
-        'FakesMC':kMagenta-9,
-        'FakesMM':kMagenta-9,
-        'FakesFF':kMagenta-9,
-        'FakesMM':kMagenta-9,
-        'FakesTHETA':kMagenta-9,
+        'QMisID':kMagenta+3,
+        'QMisIDMC':kMagenta+3,
+        'FakesMC':kViolet-4,
+        'FakesMM':kViolet-4,
+        'FakesFF':kViolet-4,
+        'FakesMM':kViolet-4,
+        'FakesTHETA':kViolet-4,
         'FakesClosureMM':kTeal+1,
         'FakesClosureTHETA':kCyan-9,
-        'FakesClosureDataTHETA': kMagenta-9,
+        'FakesClosureDataTHETA': kViolet-4,
     }
 
     if ( doSR or doLowNJetCR ):
@@ -1969,14 +1966,13 @@ if __name__ == "__main__":
         if args.ratesMC: ttH.observed = []
         #ttH.backgrounds = ['Prompt','FakesMC','TTBar'] # 'Prompt' includes all the following processes: ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']. Truth cuts are redefined in the 'Prompt' and 'FakesMC' classes...
                                                         # 'TTBar' is also appended to the list b/c in FakeCR we have a contribution from ttbar events w/ mis-assigned probe (prompt) to be subtracted.
-        ttH.backgrounds = []
-        #ttH.backgrounds = ['TTBarW','OtherPrompt','TTBar','FakesMC'] # 'OtherPrompt' includes all the following processes: ['SingleTop','Rare','Zjets','Wjets','TTBarZ','Diboson']. Truth cuts are redefined in the 'OtherPrompt' and 'FakesMC' classes...
-                                                                     # 'TTBarW' is appended to the list b/c we want to keep it separate from the other prompt SS
-                                                                     # 'TTBar' is also appended to the list b/c in FakeCR we have a contribution from ttbar events w/ mis-assigned probe (prompt) to be subtracted.
+        ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','TTBar','FakesMC']
+        #ttH.backgrounds = ['TTBarW','OtherPrompt','TTBar','FakesMC']
+
         if args.splitProcs:
             ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson'] # NB: if using this list, make sure a QMisID veto is applied in the category cut, since QMisID is added separately below
 
-        ttH.debugprocs  = ['Observed']#,'TTBarW']
+        ttH.debugprocs  = ['Observed','TTBar','TTBarW']
 
         if args.useMCQMisID:
             ttH.backgrounds.append('QMisIDMC')
@@ -2015,11 +2011,12 @@ if __name__ == "__main__":
         ttH.backgrounds = ['TTBar']
         ttH.debugprocs  = ['TTBar']
 
-    if doTopCR:
+    if doTopCR or doZOSpeakCR:
 
         ttH.signals     = []
         ttH.observed    = ['Observed']
         ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']
+        ttH.debugprocs  = ['Observed','TTBar']
 
     if doZSSpeakCR:
 
@@ -2160,11 +2157,11 @@ if __name__ == "__main__":
                 print ("\tSkipping variable:\t{0}\n".format( var.shortname ))
                 continue
 
-            if  ( "MuMu" in category.cut.cutname and "El" in var.shortname )  or  ( "ElEl" in category.cut.cutname and "Mu" in var.shortname ):
+            if ( "MuMu" in category.cut.cutname and "El" in var.shortname ) or ( "ElEl" in category.cut.cutname and "Mu" in var.shortname ):
                 print ("\tSkipping variable:\t{0}\n".format( var.shortname ))
                 continue
 
-            if  "OF" in category.cut.cutname and any( v in var.shortname for v in ["Mu1","El1"] ):
+            if "OF" in category.cut.cutname and any( v in var.shortname for v in ["Mu1","El1"] ):
                 print ("\tSkipping variable:\t{0}\n".format( var.shortname ))
                 continue
 
@@ -2174,7 +2171,7 @@ if __name__ == "__main__":
                     print ("\tSkipping variable:\t{0}\n".format( var.shortname ))
                     continue
                 # if probe is an electron, do not plot MuProbe* stuff!
-                if  "ElProbe" in category.cut.cutname  and  "MuProbe" in var.shortname:
+                if  "ElProbe" in category.cut.cutname and "MuProbe" in var.shortname:
                     print ("\tSkipping variable:\t{0}\n".format( var.shortname ))
                     continue
                 if "RealCR" in category.name and "Fake" in var.shortname:
@@ -2242,11 +2239,11 @@ if __name__ == "__main__":
             # For some categories, make sure non-relevant processes are removed from the proc list!
 
             if "RealCR" in category.name or ( "LH" in args.channel and "OS_" in category.name ):
-                mybackgrounds = [ bkg for bkg in mybackgrounds if ( "FakesMC" not in mybackgrounds or not any( bkg == b for b in ["Prompt","OtherPrompt","QMisID","QMisIDMC","TTBar","TTBarW"]) ) ]
+                mybackgrounds = [ bkg for bkg in mybackgrounds if ( "FakesMC" not in mybackgrounds or bkg == "FakesMC" ) ]
             if "FakeCR" in category.name or ( "LH" in args.channel and "SS_" in category.name ):
-                mybackgrounds = [ bkg for bkg in mybackgrounds if ( not any ( b in mybackgrounds for b in ["Prompt","OtherPrompt"] ) or not bkg == "FakesMC" ) ]
+                mybackgrounds = [ bkg for bkg in mybackgrounds if not bkg == "FakesMC" ]
                 if "LH" in args.channel:
-                    mybackgrounds = [ bkg for bkg in mybackgrounds if ( not any ( b in mybackgrounds for b in ["Prompt","OtherPrompt"] ) or not bkg == "TTBar" ) ]
+                    mybackgrounds = [ bkg for bkg in mybackgrounds if not bkg == "TTBar" ]
 
             hists[category.name + ' ' + var.shortname] = ttH.plot( var,
                                                                    eventweight=category.weight,
@@ -2289,7 +2286,7 @@ if __name__ == "__main__":
 
                     # Skip systematic variations in the DB which are not relevant for *this* category
 
-                    if "RealCR" in category.name and any( s in syst.name for s in ["TTBarW","OtherPromptSS","QMisID"] ): continue
+                    if "RealCR" in category.name and any( s in syst.name for s in ["TTV","VV","OtherPromptSS","QMisID"] ): continue
                     if "FakeCR" in category.name and any( s in syst.name for s in ["FakesOS"] ): continue
 
                     if "2Lep_MuMu_Event" in category.cut.cutname and "_El_" in syst.name: continue

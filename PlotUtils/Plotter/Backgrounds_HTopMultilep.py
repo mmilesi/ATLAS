@@ -66,10 +66,11 @@ class TTHBackgrounds(Background):
         'Mu': (999.0, 0.0),
     }
 
-    # Returns the name and position in bkg list of the first background process which
-    # is *not* data-driven
-
     def getFirstSimulatedProc(self, category, mybackgrounds = None):
+
+        # Returns the name and position in bkg list of the first background process which
+        # is *not* data-driven
+
         backgrounds = self.backgrounds
         if mybackgrounds:
             backgrounds = mybackgrounds
@@ -88,9 +89,10 @@ class TTHBackgrounds(Background):
             return identifier
         raise TypeError("%s is not a class." % field)
 
-    # Multiply a sample by a kfactor treating properly the systematics if needed
 
     def applyKfactor(self, sp, category, kfactor, options):
+
+        # Multiply a sample by a kfactor treating properly the systematics if needed
 
         systematics = options.get('systematics', None)
         systematicsdirection = options.get('systematicsdirection', None)
@@ -407,10 +409,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -447,10 +455,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -489,9 +503,8 @@ class TTHBackgrounds(Background):
 
             basecut = category.cut
 
-            if "2Lep_TRUTH_ProbePromptEvent" in category.cut.cutname:
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
                 basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
-            if "2Lep_TRUTH_QMisIDVeto" in category.cut.cutname:
                 basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
 
             weight = None
@@ -539,10 +552,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -632,13 +651,19 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -687,13 +712,19 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -742,13 +773,19 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
             if self.parent.useSherpaNNPDF30NNLO:
                 weight = 'SherpaNJetWeight'
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -876,10 +913,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -920,10 +963,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -964,10 +1013,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -1026,10 +1081,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -1069,10 +1130,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -1250,10 +1317,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
@@ -1360,10 +1433,16 @@ class TTHBackgrounds(Background):
                 systname_opts['systematicsdirection'] = direction
             sp = self.base(treename, category, options)
 
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
             weight = None
             TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
 
-            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
