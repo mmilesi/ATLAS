@@ -31,7 +31,7 @@ parser.add_argument("--mergeOverflow", dest="mergeOverflow", action="store_true"
 
 args = parser.parse_args()
 
-from ROOT import gROOT, TCanvas, TPad, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange
+from ROOT import gROOT, TCanvas, TPad, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange, kWhite, kViolet
 
 gROOT.Reset()
 gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
@@ -251,13 +251,11 @@ def getTotFakeUncertainty( nominal, stat, flav ):
     print("\\begin{{table}}\n\\begin{{center}}\n\\begin{{tabular}}{{ll}}\n\\toprule\n\\multicolumn{{2}}{{c}}{{MY_FLAVOUR - $2\\leq N_{{jets}} \\leq 4$ VR, SR}} \\\\ \n\\midrule\nFakes (MM) = & {0:.2f} $\\pm$ \\\\\n & {1:.2f} $[{2:.2f}\%]$ (Sidebands stat.) $\pm$ \\\\".format(nominal, stat, (stat/nominal)*100))
     for s in sorted( sq_list, key = lambda sq : sq[2] ):
         proc = "?Unknown Process?"
-        if s[0] == "Non_Closure": proc = "Non closure"
-        if s[0] == "D_FakesOS"  : proc = "Fakes OS sub., $T\\bar{T}$"
-        if s[0] == "N_FakesOS"  : proc = "Fakes OS sub., $TT$"
-        if s[0] == "D_TTBarW"   : proc = "$t\\bar{t}W$ sub., $T\\bar{T}$"
-        if s[0] == "N_TTBarW"   : proc = "$t\\bar{t}W$ sub. $TT$"
-        if s[0] == "D_OtherPromptSS" : proc = "Other Prompt SS sub., $T\\bar{T}$"
-        if s[0] == "N_OtherPromptSS" : proc = "Other Prompt SS sub. $TT$"
+        if s[0] == "Non_Closure" : proc = "Non closure"
+        if s[0] == "ND_FakesOS"  : proc = "Fakes OS sub."
+        if s[0] == "ND_TTV"      : proc = "$t\\bar{t}W,t\\bar{t}Z$ sub."
+        if s[0] == "ND_VV"       : proc = "$WW,WZ,ZZ$ sub."
+        if s[0] == "ND_OtherPromptSS" : proc = "Other Prompt SS sub."
         if s[0] == "D_QMisID"   : proc = "QMisID sub., $T\\bar{T}$"
         if s[0] == "N_QMisID"   : proc = "QMisID sub., $TT$"
         if s[0] == "Stat"       : proc = "$\\varepsilon$ stat. unc."
@@ -408,8 +406,8 @@ def makeSysPlots( flav, var, MC_hist, MM_hist ):
 
     new_MM_hist.SetLineWidth(3)
     new_MM_hist.SetLineStyle(1)
-    new_MM_hist.SetLineColor(1)
-    new_MM_hist.SetFillColor(kTeal+1)
+    new_MM_hist.SetLineColor(kViolet-4)
+    new_MM_hist.SetFillColor(kWhite)
     new_MM_hist.SetFillStyle(1001)
 
     err = new_MM_hist.Clone("tot_uncertainty")
@@ -627,18 +625,14 @@ if __name__ == '__main__':
     		    value = "N_QMisID"
     		if "D_QMisID" in keyname:
     		    value = "D_QMisID"
-    		if "N_TTBarW" in keyname:
-    		    value = "N_TTBarW"
-    		if "D_TTBarW" in keyname:
-    		    value = "D_TTBarW"
-    		if "N_OtherPromptSS" in keyname:
-    		    value = "N_OtherPromptSS"
-    		if "D_OtherPromptSS" in keyname:
-    		    value = "D_OtherPromptSS"
-    		if "N_FakesOS" in keyname:
-    		    value = "N_FakesOS"
-    		if "D_FakesOS" in keyname:
-    		    value = "D_FakesOS"
+    		if "ND_TTV" in keyname:
+    		    value = "ND_TTV"
+    		if "ND_VV" in keyname:
+    		    value = "ND_VV"
+    		if "ND_OtherPromptSS" in keyname:
+    		    value = "ND_OtherPromptSS"
+    		if "ND_FakesOS" in keyname:
+    		    value = "ND_FakesOS"
 
     		if not fakes_syst.get(keyname):
     		    fakes_syst[keyname] = value
