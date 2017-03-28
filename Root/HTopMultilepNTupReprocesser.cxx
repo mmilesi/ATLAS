@@ -1017,7 +1017,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 		  // Make sure only relevant systematic sources for this efficiency,flavour are read in
 
 		  if ( eff.compare("Real") == 0 ) {
-		      if ( sysgroup.first.find("TTBarW") != std::string::npos )        { continue; }
+		      if ( sysgroup.first.find("TTV") != std::string::npos )        { continue; }
+		      if ( sysgroup.first.find("VV") != std::string::npos )        { continue; }
 		      if ( sysgroup.first.find("OtherPromptSS") != std::string::npos ) { continue; }
 		      if ( sysgroup.first.find("QMisID") != std::string::npos )        { continue; }
 		  }
