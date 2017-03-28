@@ -1292,6 +1292,12 @@ class Background:
         obs, obslist    = self.sumhist(var, processes=self.observed,      cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
 	sig, siglist    = self.sumhist(var, processes=self.signals,       cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
 
+        nom_stat_err = nom.Clone("nom_stat_err")
+        nom_stat_err.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
+        nom_stat_err.SetLineColor(self.style.get('SumErrorLineColour', 10))
+        nom_stat_err.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
+        nom_stat_err.SetMarkerSize(0)
+
         legs = [
             [nom, 'Nominal' + " ({0:.1f})".format(integrate(nom)), "F"],
             [up, systematics.name + ' + 1#sigma' + " ({0:.1f})".format(integrate(up)), "F"],
@@ -1410,11 +1416,6 @@ class Background:
 
             # Histogram for statistical error bars
 
-	    nom_stat_err = nom.Clone("nom_stat_err")
-	    nom_stat_err.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
-            nom_stat_err.SetLineColor(self.style.get('SumErrorLineColour', 10))
-            nom_stat_err.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
-            nom_stat_err.SetMarkerSize(0)
 	    nom_stat_err_ratio = nom_stat_err.Clone("nom_stat_err_ratio")
 	    nom_stat_err_ratio.Divide(nom_stat_err)
             legs.insert(len(legs), (nom_stat_err,"Stat. Unc.","F"))
