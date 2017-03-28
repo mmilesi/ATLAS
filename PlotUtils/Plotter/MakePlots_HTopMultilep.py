@@ -22,7 +22,7 @@ channels     = ["2LSS_SR","3L_SR",
                 "2LSS_LOWNJ_VR",
                 "WZonCR","WZoffCR","WZHFonCR","WZHFoffCR",
                 "ttWCR","ttZCR","ZOSpeakCR","ZSSpeakCR","TopCR",
-                "MMRates(,DATA,CLOSURE,TP,3L_EFF,LH,TRUTH_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
+                "MMRates(,DATA,CLOSURE,TP,LH,TRUTH_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
                 "MMClosureTest(,HIGHNJ,LOWNJ,ALLNJ)",
                 "CutFlowChallenge(,MM,2LSS_SR,2LSS_LOWNJ_VR,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth"]
 
@@ -490,10 +490,6 @@ if __name__ == "__main__":
             vardb.getCut('2Lep_ProbeTight').cutstr             = '( lep_Probe_' + trig_tag + '_isTightSelected == 1 )'
             vardb.getCut('2Lep_ProbeAntiTight').cutstr         = '( lep_Probe_' + trig_tag + '_isTightSelected == 0 )'
 
-        if "3L_EFF" in args.channel:
-            vardb.getCut('2Lep_ProbeTight').cutstr             = '( ( ( ( TMath::Abs( lep_Probe_{0}_ID_2 ) == 13 && lep_Probe_{0}_isolationLoose_2 ) || ( TMath::Abs( lep_Probe_{0}_ID_2 ) == 11 && lep_Probe_{0}_isolationLoose_2 && lep_Probe_{0}_isTightLH_2 ) ) && ( ( TMath::Abs( lep_Probe_{0}_ID_1 ) == 13 && lep_Probe_{0}_isolationLoose_1 ) || ( TMath::Abs( lep_Probe_{0}_ID_1 ) == 11 && lep_Probe_{0}_isolationLoose_1 && lep_Probe_{0}_isTightLH_1 ) ) && lep_Probe_{0}_promptLeptonIso_TagWeight_1 < -0.5 && lep_Probe_{0}_promptLeptonIso_TagWeight_2 < -0.5 ) )'.format(trig_tag)
-            vardb.getCut('2Lep_ProbeAntiTight').cutstr         = '( !( ( ( TMath::Abs( lep_Probe_{0}_ID_2 ) == 13 && lep_Probe_{0}_isolationLoose_2 ) || ( TMath::Abs( lep_Probe_{0}_ID_2 ) == 11 && lep_Probe_{0}_isolationLoose_2 && lep_Probe_{0}_isTightLH_2 ) ) && ( ( TMath::Abs( lep_Probe_{0}_ID_1 ) == 13 && lep_Probe_{0}_isolationLoose_1 ) || ( TMath::Abs( lep_Probe_{0}_ID_1 ) == 11 && lep_Probe_{0}_isolationLoose_1 && lep_Probe_{0}_isTightLH_1 ) ) && lep_Probe_{0}_promptLeptonIso_TagWeight_1 < -0.5 && lep_Probe_{0}_promptLeptonIso_TagWeight_2 < -0.5 ) )'.format(trig_tag)
-
     # ---------------------------
     # Cuts for ttW Control Region
     # ---------------------------
@@ -820,7 +816,6 @@ if __name__ == "__main__":
         # vardb.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(lep_{0},lep_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
         if "ALLNJ" in args.channel:
             vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
-            #vardb.registerVar( Variable(shortname = 'Lep0PtManualBins_Rebin', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 10, minval = 20.0, maxval = 220.0, manualbins = [20.0,26.0,35.0,60.0,80.0,140.0,220.0], sysvar = True) )
         elif "HIGHNJ" in args.channel:
             vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "LOWNJ" in args.channel:
@@ -1900,7 +1895,7 @@ if __name__ == "__main__":
         'FakesFF':kViolet-4,
         'FakesMM':kViolet-4,
         'FakesTHETA':kViolet-4,
-        'FakesClosureMM':kTeal+1,
+        'FakesClosureMM':kWhite,#kTeal+1,
         'FakesClosureTHETA':kCyan-9,
         'FakesClosureDataTHETA': kViolet-4,
     }
@@ -2091,6 +2086,9 @@ if __name__ == "__main__":
         histname[sample]   = samplenames[sample]
         histcolour[sample] = colours[sample]
         ttH.str_to_class(sample).colour = colours[sample]
+
+    if doMMClosureTest and doMM:
+        ttH.style["FakesClosureMMLineColour"] = colours["FakesMM"]
 
     print "Processes:\n", histname
     print "Processes' colours:\n", histcolour
