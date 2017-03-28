@@ -105,7 +105,7 @@ namespace MiniNTupMaker {
 	props.insert( std::make_pair( "sigd0PV", Branch_Types() ) );	          props["sigd0PV"].f = -999.0;
 	props.insert( std::make_pair( "Z0SinTheta", Branch_Types() ) );	          props["Z0SinTheta"].f = -999.0;
 	props.insert( std::make_pair( "isTightLH", Branch_Types() ) );	          props["isTightLH"].c = 0;
-	props.insert( std::make_pair( "isolationLoose", Branch_Types() ) );	  props["isolationLoose"].c = 0;
+	props.insert( std::make_pair( "isolationLoose", Branch_Types() ) );	  props["isolationLoose"].i = 0;
 	props.insert( std::make_pair( "Isolated", Branch_Types() ) );	          props["Isolated"].c = 0;
 	props.insert( std::make_pair( "TrackIsoOverPt", Branch_Types() ) );	  props["TrackIsoOverPt"].f = -1.0;
 	props.insert( std::make_pair( "CaloIsoOverPt", Branch_Types() ) );	  props["CaloIsoOverPt"].f = -1.0;
@@ -224,6 +224,9 @@ public:
 
   /** Activate if want to define T&P leptons in the standard way (same criteria applied on data and MC). This is inspired by what done in the SUSY SS analysis */
   bool m_useNominalTP;
+
+  /** Acivate if want to do T&P for 3L. This will ensure the T eletron definition does NOT include the chargeIDBDT selection */
+  bool m_do3LTP;
 
   /** Choose which criterion to use to solve ambiguous case of both T (TM) leptons in T&P Fake SS CR
 

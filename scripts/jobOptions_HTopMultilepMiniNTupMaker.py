@@ -129,6 +129,7 @@ HTopMultilepMiniNTupMakerDict = { "m_name"                 : "HTopMultilepMiniNT
 				  "m_addStreamEventsHist"  : False,
 				  "m_useTruthTP"           : False,
 				  "m_useNominalTP"         : True,
+                                  "m_do3LTP"               : False,
                                   "m_ambiSolvingCrit"      : "OF",
                                   #"m_ambiSolvingCrit"     : "Pt",
                                   #"m_ambiSolvingCrit"     : "deltaRClosestBJet",
@@ -161,6 +162,8 @@ algskim.addCut("RunYear==2015 || RunYear==2016")
 algskim.addCut("passEventCleaning == 1")
 algskim.addCut("( dilep_type > 0 && lep_Pt_1 > 10e3 ) || ( trilep_type > 0 && lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 && lep_Pt_2 > 10e3 ) || ( quadlep_type > 0 && lep_Pt_3 > 10e3 )") # keep only dilepton,trilepton and quadlepton events, ensuring min(pT lep) > 10 GeV (NB: in 3L, flat branches are not pT-ranked, so we have to be explicit...)
 algskim.addCut(jet_skim_cut)
+if ( HTopMultilepMiniNTupMakerDict["m_do3LTP"] ):
+   algskim.addCut("dilep_type > 0 && ( nJets_OR_T >= 2 && nJets_OR_T<= 3 && nJets_OR_T_MV2c10_70 >= 1 )") # Reduce the size as much as possible when doing 3L T&P
 algskim.histName("cutflow")
 
 # Add the algorithms to the job.

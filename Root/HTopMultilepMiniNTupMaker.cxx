@@ -44,6 +44,7 @@ HTopMultilepMiniNTupMaker :: HTopMultilepMiniNTupMaker(std::string className) :
     m_addStreamEventsHist  = false;
     m_useTruthTP           = false;
     m_useNominalTP         = true;
+    m_do3LTP               = false;
     m_ambiSolvingCrit      = "OF";
     m_lepSelForTP          = "MVA";
     m_jetTruthMatching     = false;
@@ -847,11 +848,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker ::  checkIsTightLep( std::shared_ptr<le
     {
     case 11:
 	if ( useMVA ) {
-	    isTight = ( lep.get()->props["isolationLoose"].c &&
+	    isTight = ( lep.get()->props["isolationLoose"].i &&
 			lep.get()->props["isTightLH"].c &&
 			std::abs(lep.get()->props["sigd0PV"].f) < 5.0 &&
 			std::abs(lep.get()->props["Z0SinTheta"].f) < 0.5 &&
-			( !m_event.get()->dilep_type || lep.get()->props["chargeIDBDTTight"].f > 0.0670415 ) &&
+			( ( !m_event.get()->dilep_type || m_do3LTP ) || lep.get()->props["chargeIDBDTTight"].f > 0.0670415 ) && // Do NOT cut on chargeIDBDT if the event is not dilep OR we are doing T&P for 3L!
 			lep.get()->props["promptLeptonIso_TagWeight"].f < -0.50 );
 	} else {
 	    isTight = ( lep.get()->props["Isolated"].c &&
@@ -862,7 +863,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker ::  checkIsTightLep( std::shared_ptr<le
 	break;
     case 13:
 	if ( useMVA ) {
-	    isTight = ( lep.get()->props["isolationLoose"].c &&
+	    isTight = ( lep.get()->props["isolationLoose"].i &&
 			std::abs(lep.get()->props["sigd0PV"].f) < 3.0 &&
 			std::abs(lep.get()->props["Z0SinTheta"].f) < 0.5 &&
 			lep.get()->props["promptLeptonIso_TagWeight"].f < -0.50 );
