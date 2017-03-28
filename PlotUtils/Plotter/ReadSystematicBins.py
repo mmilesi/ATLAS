@@ -199,13 +199,13 @@ def sumQuadrature ( inlist ):
 def getTotFakeUncertainty( nominal, stat, flav ):
 
     if ( "HIGHNJ" in args.channel ):
-        if flav == "ElEl" : non_closure = 0.2543 * nominal
-        if flav == "OF"   : non_closure = 0.1041 * nominal
-        if flav == "MuMu" : non_closure = 0.0080 * nominal
+        if flav == "ElEl" : non_closure = 0.1711 * nominal # Updated on v27
+        if flav == "OF"   : non_closure = 0.1316 * nominal # Updated on v27
+        if flav == "MuMu" : non_closure = 0.0461 * nominal # Updated on v27
     elif ( "LOWNJ" in args.channel ):
-        if flav == "ElEl" : non_closure = 0.1037 * nominal
-        if flav == "OF"   : non_closure = 0.0409 * nominal
-        if flav == "MuMu" : non_closure = 0.0010 * nominal
+        if flav == "ElEl" : non_closure = 0.0208 * nominal # Updated on v27
+        if flav == "OF"   : non_closure = 0.0481 * nominal # Updated on v27
+        if flav == "MuMu" : non_closure = 0.0281 * nominal # Updated on v27
 
     # If you are doing closure, do not consider closure syst!
 

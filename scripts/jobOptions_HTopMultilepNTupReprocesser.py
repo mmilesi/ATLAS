@@ -64,13 +64,14 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
                                     # v27
                                     #
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMRates_25ns_v27",
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMRates_25ns_v27",
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMRates_TTWx2_25ns_v27",
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMClosureRates_25ns_v27", # Closure
                                     #
                                     # ------------------------------------------------------------
                                     #
-				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins,ND_TTV:CorrBins,ND_VV:CorrBins,ND_OtherPromptSS:CorrBins,ND_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
-				    #"m_systematics_list"           : "Nominal:,Stat:UncorrBins",
+				    #"m_systematics_list"           : "Nominal:,Stat:UncorrBins,ND_TTV:CorrBins,ND_VV:CorrBins,ND_OtherPromptSS:CorrBins,ND_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
+				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins",
                                     "m_correlatedMMWeights"        : False,
                                     #
 				    "m_useTrigMatchingInfo"        : False,

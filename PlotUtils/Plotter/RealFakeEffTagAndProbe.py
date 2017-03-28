@@ -44,7 +44,7 @@ g_leptons      = ["ALL","El","Mu"]
 
 parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["FULL 2015+2016 DS"],
                   help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) + ". Default is {0}".format(g_luminosities["FULL 2015+2016 DS"] ) )
-parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='+', default="Pt",
+parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='+', default=["Pt"],
                   help='List of variables to be considered. Use a space-separated list. If using a 2D input distribution, pass a string of format \"varxname&&varyname\" (remember to escape the \"&\" symbol in the shell!). If unspecified, will consider \"Pt\" only.')
 parser.add_argument('--efficiency', dest='efficiency', action='store', default=[g_efficiencies[0]], type=str, nargs='+', choices=g_efficiencies,
                   help='The efficiency type to be measured. Can pass multiple space-separated arguments to this command-line option (picking among the above list). If this option is not specified, default will be \'{0}\''.format(g_efficiencies[0]))
@@ -165,14 +165,10 @@ class RealFakeEffTagAndProbe:
         self.__process_syst_dict = {"qmisidbkg":["QMisID"],"ttbarwbkg":["TTV"],"ttbarzbkg":["TTV"],"dibosonbkg":["VV"],"raretopbkg":["OtherPromptSS"],"ttbarbkg":["OtherPromptSS"],"fakesbkg":["FakesOS"]}
         self.__syst_color_dict   = {"QMisID_N":kGreen+3,
                                     "QMisID_D":kGreen-7,
-                                    "TTV_N":kOrange,
-                                    "TTV_D":kOrange+7,
-                                    "VV_N":kGray+1,
-                                    "VV_D":kGray+3,
-                                    "OtherPromptSS_N":kAzure,
-                                    "OtherPromptSS_D":kAzure+6,
-                                    "FakesOS_N":kRed,
-                                    "FakesOS_D":kMagenta,
+                                    "TTV_ND":kYellow,
+                                    "VV_ND":kGreen-7,
+                                    "OtherPromptSS_ND":kGray,
+                                    "FakesOS_ND":kViolet-4,
                                     }
 
     	# -----------------------------------------
@@ -872,6 +868,12 @@ class RealFakeEffTagAndProbe:
 
             tokens = key.split("_")
 
+            if any( sys in tokens for sys in ["TTV","VV","OtherPromptSS","FakesOS"] ) :
+                if not variation == "ND": continue
+                if tokens[-1].isdigit(): continue
+            if any( sys in tokens for sys in ["QMisID"] ):
+                if not variation in ["N","D"]: continue
+
 	    min_tokens = True
 	    if self.closure or self.nosub:
 	        min_tokens = ( len(tokens) >= 4 )
@@ -916,6 +918,10 @@ class RealFakeEffTagAndProbe:
             elif variation == "D":
                 append = "D"
                 key_N     = nominal_key
+                key_AntiN = key
+            elif variation == "ND":
+                append = "ND"
+                key_N     = key
                 key_AntiN = key
 
             # Crucial to clone histograms here!
@@ -1590,6 +1596,7 @@ class RealFakeEffTagAndProbe:
 
 	            hists_sys_numerator   = []
 	            hists_sys_denominator = []
+	            hists_sys_numden      = []
 
   	     	    for sys in self.__systematics[1:]:
 
@@ -1605,17 +1612,27 @@ class RealFakeEffTagAndProbe:
 
 	     		for sysdir in self.__systematicsdirections[1:]:
 
-			    for bin in range( 1, hist_nominal.GetSize()):
+                            if sys in ["QMisID"]: # Systematics which are uncorrelated among bins, and between N, D subsets
+                                for bin in range( 1, hist_nominal.GetSize()):
 
-			        keyappend_num   = "_".join(("N",sys,sysdir,str(bin)))
-			        keyappend_denom = "_".join(("D",sys,sysdir,str(bin)))
+                                    keyappend_num   = "_".join(("N",sys,sysdir,str(bin)))
+                                    keyappend_denom = "_".join(("D",sys,sysdir,str(bin)))
 
-				if self.verbose:
-				    print "\tstoring efficiency: ", "_".join((key_nominal,keyappend_num))
+                                    if self.verbose:
+                                        print "\tstoring efficiency: ", "_".join((key_nominal,keyappend_num))
 
-	                        hists_sys_numerator.append( self.histefficiencies["_".join((key_nominal,keyappend_num))] )
-                                hists_sys_denominator.append( self.histefficiencies["_".join((key_nominal,keyappend_denom))] )
-				histlist.extend([ self.histefficiencies["_".join((key_nominal,keyappend_num))], self.histefficiencies["_".join((key_nominal,keyappend_denom))] ])
+                                    hists_sys_numerator.append( self.histefficiencies["_".join((key_nominal,keyappend_num))] )
+                                    hists_sys_denominator.append( self.histefficiencies["_".join((key_nominal,keyappend_denom))] )
+                                    histlist.extend([ self.histefficiencies["_".join((key_nominal,keyappend_num))], self.histefficiencies["_".join((key_nominal,keyappend_denom))] ])
+                            else:
+                                    keyappend_numden = "_".join(("ND",sys,sysdir))
+
+                                    if self.verbose:
+                                        print "\tstoring efficiency: ", "_".join((key_nominal,keyappend_numden))
+
+                                    hists_sys_numden.append( self.histefficiencies["_".join((key_nominal,keyappend_numden))] )
+                                    histlist.extend([ self.histefficiencies["_".join((key_nominal,keyappend_numden))], self.histefficiencies["_".join((key_nominal,keyappend_numden))] ])
+
 
           	    legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
                     legend.SetHeader(eff + " - " + self.leptons_full[lep])
@@ -1664,7 +1681,7 @@ class RealFakeEffTagAndProbe:
 				h.SetLineColor(self.__syst_color_dict[sys+"_N"])
 			        h.SetMarkerColor(self.__syst_color_dict[sys+"_N"])
 			        if not count_sys_num[idx]:
-			            legend.AddEntry(h,"{0} subtraction sys (TT)".format(sys), "P")
+			            legend.AddEntry(h,"{0} sub. sys. (TT)".format(sys), "P")
 				    count_sys_num[idx] += 1
 
 		    count_sys_denom = [0 for i in range(len(self.__systematics[1:]))]
@@ -1693,8 +1710,38 @@ class RealFakeEffTagAndProbe:
 			        h.SetLineColor(self.__syst_color_dict[sys+"_D"])
 			        h.SetMarkerColor(self.__syst_color_dict[sys+"_D"])
 			        if not count_sys_denom[idx]:
-			            legend.AddEntry(h,"{0} subtraction sys (T#slash{{T}})".format(sys), "P")
+			            legend.AddEntry(h,"{0} sub. sys. (T#slash{{T}})".format(sys), "P")
 				    count_sys_denom[idx] += 1
+
+		    count_sys_numden = [0 for i in range(len(self.__systematics[1:]))]
+
+	  	    for h in hists_sys_numden:
+
+			h.SetLineStyle(1)
+			h.SetLineWidth(2)
+	  		h.SetMarkerStyle(kOpenTriangleUp)
+
+			for idx, sys in enumerate(self.__systematics[1:]):
+			    if sys in h.GetName():
+
+				# print "\tsys hist name: ", h.GetName()
+                                tokens = h.GetName().split("_")
+
+                                for bin in range(1,hist_nominal.GetNbinsX()+2):
+                                    sys_var = abs( hist_nominal.GetBinContent(int(bin)) - h.GetBinContent(int(bin)) )
+                                    bin = str(bin)
+                                    # print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
+                                    if not all_sys.get(bin):
+                                        all_sys[bin] = pow(sys_var,2.0)
+                                    else:
+                                        all_sys[bin] += pow(sys_var,2.0)
+				    # print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
+
+                                    h.SetLineColor(self.__syst_color_dict[sys+"_ND"])
+                                    h.SetMarkerColor(self.__syst_color_dict[sys+"_ND"])
+                                    if not count_sys_numden[idx]:
+                                        legend.AddEntry(h,"{0} sub. sys.".format(sys), "P")
+                                        count_sys_numden[idx] += 1
 
 	            # Now get sqrt of sum in quadrature of systematics
 
@@ -1775,6 +1822,17 @@ class RealFakeEffTagAndProbe:
 			    print("\t ratio = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio.GetBinContent(i) for i in range(1,ratio.GetSize()) ] ) + "]" )
 			ratiolist.append(ratio)
 
+	  	    for h in hists_sys_numden:
+			if self.verbose:
+			    print "hist sys: ", h.GetName()
+			    print("\t num   = [" + ",".join( "{0:.3f}".format(x) for x in [ h.GetBinContent(i) for i in range(1,h.GetSize()) ] ) + "]" )
+			    print("\t denom = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_nominal.GetBinContent(i) for i in range(1,hist_nominal.GetSize()) ] ) + "]" )
+			ratio = h.Clone(h.GetName())
+                        ratio.Divide(hist_nominal)
+			if self.verbose:
+			    print("\t ratio = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio.GetBinContent(i) for i in range(1,ratio.GetSize()) ] ) + "]" )
+			ratiolist.append(ratio)
+
 		    ratio_ymin, ratio_ymax = self.__getLimits__(ratiolist, ratio=True)
 		    rationom.GetYaxis().SetRangeUser(ratio_ymin, ratio_ymax)
 
@@ -1826,18 +1884,19 @@ class RealFakeEffTagAndProbe:
           	    legend_allsys.SetTextFont(42)	# Helvetica
 
 		    hist_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_AllSys")
-	   	    hist_allsys.SetFillColor(kYellow-9)
-           	    hist_allsys.SetLineColor(kYellow-9)
+	   	    hist_allsys.SetFillColor(kOrange-3)
+           	    hist_allsys.SetLineColor(kOrange-3)
            	    hist_allsys.SetFillStyle(1001)
 
 	  	    legend_allsys.AddEntry(hist_nominal,"#varepsilon_{{{0}}} - nominal (stat. unc.)".format(eff), "P")
-		    legend_allsys.AddEntry(hist_allsys,"Combined systematics", "F")
+		    legend_allsys.AddEntry(hist_allsys,"Combined sys.", "F")
 
 		    for bin in 	range(1,hist_allsys.GetSize()):
 			# A dirty hack: if the error is zero, drawing w/ option E2 seems
 			# to be ingnored and HIST gets used instead.
 			# Thus, just set a tiny error on the hist
 			#
+                        # print "bin: ", bin
 			error = 0.0001
 			if all_sys[str(bin)]:
 			    error = all_sys[str(bin)]
@@ -1870,7 +1929,7 @@ class RealFakeEffTagAndProbe:
              	    ratio_allsys.GetXaxis().SetLabelSize(0.15)
              	    ratio_allsys.GetYaxis().SetLabelSize(0.12)
              	    ratio_allsys.GetYaxis().SetNdivisions(5)#(503)#(5)
-	   	    ratio_allsys.SetFillColor(kYellow-9)
+	   	    ratio_allsys.SetFillColor(kOrange-3)
            	    ratio_allsys.SetFillStyle(1001)
 
                     # Need to re-get the nominal ratio hist with stats errors
@@ -2024,11 +2083,13 @@ if __name__ == "__main__":
     eff.computeEfficiencies(variation="nominal")
     eff.computeEfficiencies(variation="N")
     eff.computeEfficiencies(variation="D")
+    eff.computeEfficiencies(variation="ND")
 
     if eff.factors:
         eff.computeFactors("nominal")
         eff.computeFactors("N")
         eff.computeFactors("D")
+        eff.computeFactors("ND")
 
     eff.saveOutputs( filename=args.outfilename, outputpath=args.outpath )
 
