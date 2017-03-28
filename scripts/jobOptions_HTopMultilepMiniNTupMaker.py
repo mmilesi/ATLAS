@@ -152,7 +152,7 @@ for branch in branches_to_copy:
 # Instantiate the AlgSelect algorithm to skim the input ntuple
 
 jet_skim_cut_2L = "( dilep_type > 0 && ( ( nJets_OR_T >= 2 && nJets_OR_T_MV2c10_70 >= 1 ) || ( nJets_OR_T >= 4 && nJets_OR_T_MV2c10_70 == 0 ) ) )"
-jet_skim_cut_3L = "( trilep_type > 0 && nJets_OR >= 2 )"
+jet_skim_cut_3L = "( trilep_type > 0 && nJets_OR_T >= 2 )"
 jet_skim_cut_4L = "( quadlep_type > 0 && nJets_OR >= 2 )"
 jet_skim_cut = jet_skim_cut_2L + " || " + jet_skim_cut_3L + " || " + jet_skim_cut_4L
 

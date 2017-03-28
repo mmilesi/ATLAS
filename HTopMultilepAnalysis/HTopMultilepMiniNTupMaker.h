@@ -78,12 +78,14 @@ namespace MiniNTupMaker {
   class jetObj {
   public:
     jetObj():
-      pt(-1.0),eta(-999.0),phi(-999.0),isbtag(0)
+      pt(-1.0),eta(-999.0),phi(-999.0),E(-1.0),flavor_weight_MV2c10(-999.0),isbtag(0)
       { };
 
       float pt;
       float eta;
       float phi;
+      float E;
+      float flavor_weight_MV2c10;
       char  isbtag;
   };
 
@@ -102,8 +104,8 @@ namespace MiniNTupMaker {
 	props.insert( std::make_pair( "Charge", Branch_Types() ) );	          props["Charge"].f = -999.0;
 	props.insert( std::make_pair( "sigd0PV", Branch_Types() ) );	          props["sigd0PV"].f = -999.0;
 	props.insert( std::make_pair( "Z0SinTheta", Branch_Types() ) );	          props["Z0SinTheta"].f = -999.0;
-	props.insert( std::make_pair( "PID", Branch_Types() ) );	          props["PID"].c = 0;
-	props.insert( std::make_pair( "LooseIsolated", Branch_Types() ) );	  props["LooseIsolated"].c = 0;
+	props.insert( std::make_pair( "isTightLH", Branch_Types() ) );	          props["isTightLH"].c = 0;
+	props.insert( std::make_pair( "isolationLoose", Branch_Types() ) );	  props["isolationLoose"].c = 0;
 	props.insert( std::make_pair( "Isolated", Branch_Types() ) );	          props["Isolated"].c = 0;
 	props.insert( std::make_pair( "TrackIsoOverPt", Branch_Types() ) );	  props["TrackIsoOverPt"].f = -1.0;
 	props.insert( std::make_pair( "CaloIsoOverPt", Branch_Types() ) );	  props["CaloIsoOverPt"].f = -1.0;
@@ -361,7 +363,7 @@ private:
   std::vector<float>   *m_jet_pt = nullptr;  //!
   std::vector<float>   *m_jet_eta = nullptr; //!
   std::vector<float>   *m_jet_phi = nullptr; //!
-  std::vector<float>   *m_jet_E = nullptr;   //!
+  std::vector<float>   *m_jet_E   = nullptr;   //!
   std::vector<float>   *m_jet_flavor_weight_MV2c10 = nullptr;     //!
   std::vector<int>     *m_jet_flavor_truth_label = nullptr;       //!
   std::vector<int>     *m_jet_flavor_truth_label_ghost = nullptr; //!
@@ -436,7 +438,7 @@ private:
 
   std::vector<std::string> m_TPS      = { "Tag", "Probe" };
   std::vector<std::string> m_TRIGS    = { "SLT" /*, "DLT"*/ };
-  std::vector<std::string> m_TP_VARS  = { "Pt/F", "Pt/VECF", "Eta/F", "Eta/VECF", "EtaBE2/F", "EtaBE2/VECF", "ptVarcone20/F", "ptVarcone30/F", "topoEtcone20/F", "sigd0PV/F", "Z0SinTheta/F", "ID/F", "deltaRClosestJet/F", "deltaRClosestJet/VECF", "deltaRClosestBJet/F", "deltaRClosestBJet/VECF", "massClosestBJet/F", "isTrigMatch/B", "isTightSelected/B", "isTightSelectedMVA/B", "isPrompt/B", "isBrems/B", "isFakeLep/B", "isQMisID/B", "isConvPh/B", "truthType/I", "truthType/VECI", "truthOrigin/I", "truthOrigin/VECI" };
+  std::vector<std::string> m_TP_VARS  = { "Pt/F", "Pt/VECF", "Eta/F", "Eta/VECF", "EtaBE2/F", "EtaBE2/VECF", "ptVarcone20/F", "ptVarcone30/F", "topoEtcone20/F", "sigd0PV/F", "Z0SinTheta/F", "ID/F", "deltaRClosestJet/F", "deltaRClosestJet/VECF", "deltaRClosestBJet/F", "deltaRClosestBJet/VECF", "massClosestBJet/F", "isTrigMatch/B", "isTightSelected/B", "isTightSelectedMVA/B", "isolationLoose/I", "isTightLH/B", "promptLeptonIso_TagWeight/F", "chargeIDBDTLoose/F", "chargeIDBDTMedium/F", "chargeIDBDTTight/F", "isPrompt/B", "isBrems/B", "isFakeLep/B", "isQMisID/B", "isConvPh/B", "truthType/I", "truthType/VECI", "truthOrigin/I", "truthOrigin/VECI" };
 
   char m_isBadTPEvent_SLT; /** No T&TM (SLT) leptons found */
 
@@ -448,6 +450,7 @@ private:
   std::vector<float> m_jet_OR_Eta;
   std::vector<float> m_jet_OR_Phi;
   std::vector<float> m_jet_OR_E;
+  std::vector<float> m_jet_OR_flavor_weight_MV2c10;
   std::vector<float> m_jet_OR_truthMatch_Pt;
   std::vector<float> m_jet_OR_truthMatch_Eta;
   std::vector<float> m_jet_OR_truthMatch_Phi;

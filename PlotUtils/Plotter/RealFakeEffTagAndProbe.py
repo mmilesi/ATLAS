@@ -28,7 +28,7 @@ parser.add_argument("inputpath", metavar="inputpath",type=str,
 # optional arguments
 #*******************
 
-g_avaialble_systematics = ["QMisID","TTBarW","OtherPromptSS","FakesOS"]
+g_avaialble_systematics = ["QMisID","TTV","VV","OtherPromptSS","FakesOS"]
 
 g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
                    "ICHEP 2015+2016 DS":13.20768,       # August 2016
@@ -131,7 +131,7 @@ class RealFakeEffTagAndProbe:
 	if not self.closure:
 	    self.__processes.append("observed")
             if not self.nosub:
-                self.__processes_sub.extend(["qmisidbkg","ttbarwbkg","otherpromptbkg","ttbarbkg","fakesbkg"])
+                self.__processes_sub.extend(["qmisidbkg","ttbarwbkg","ttbarzbkg","dibosonbkg","raretopbkg","ttbarbkg","fakesbkg"])
                 #self.__processes_sub.extend(["qmisidbkg","dibosonbkg","ttbarzbkg","raretopbkg","wjetsbkg","ttbarwbkg","ttbarbkg","zjetsbkg","singletopbkg"])
 	else:
 	    self.__processes.append("expectedbkg")
@@ -162,11 +162,13 @@ class RealFakeEffTagAndProbe:
 
         # The following dictionary associates a known process to a list of affecting systematics
 
-        self.__process_syst_dict = {"qmisidbkg":["QMisID"],"ttbarwbkg":["TTBarW"],"otherpromptbkg":["OtherPromptSS"],"ttbarbkg":["OtherPromptSS"],"fakesbkg":["FakesOS"]}
+        self.__process_syst_dict = {"qmisidbkg":["QMisID"],"ttbarwbkg":["TTV"],"ttbarzbkg":["TTV"],"dibosonbkg":["VV"],"raretopbkg":["OtherPromptSS"],"ttbarbkg":["OtherPromptSS"],"fakesbkg":["FakesOS"]}
         self.__syst_color_dict   = {"QMisID_N":kGreen+3,
                                     "QMisID_D":kGreen-7,
-                                    "TTBarW_N":kOrange,
-                                    "TTBarW_D":kOrange+7,
+                                    "TTV_N":kOrange,
+                                    "TTV_D":kOrange+7,
+                                    "VV_N":kGray+1,
+                                    "VV_D":kGray+3,
                                     "OtherPromptSS_N":kAzure,
                                     "OtherPromptSS_D":kAzure+6,
                                     "FakesOS_N":kRed,
@@ -305,7 +307,7 @@ class RealFakeEffTagAndProbe:
                                 if sys == "QMisID" and not ( eff == "Fake" and lep == "El" ):
                                     print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
                                     continue
-                                if sys in ["TTBarW","OtherPromptSS"] and not ( eff == "Fake" ):
+                                if sys in ["TTV","VV","OtherPromptSS"] and not ( eff == "Fake" ):
                                     print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
                                     continue
                                 if sys == "FakesOS" and not ( eff == "Real" ):
@@ -433,7 +435,7 @@ class RealFakeEffTagAndProbe:
                 if sys == "QMisID" and not all( s in key for s in ["Fake","El"] ):
                     print("Skipping {0} systematics for {1}".format(sys,key))
                     continue
-                if sys in ["TTBarW","OtherPromptSS"] and not ( "Fake" in key ):
+                if sys in ["TTV","VV","OtherPromptSS"] and not ( "Fake" in key ):
                     print("Skipping {0} systematics for {1}".format(sys,key))
                     continue
                 if sys == "FakesOS" and not ( "Real" in key ):
@@ -1594,7 +1596,7 @@ class RealFakeEffTagAndProbe:
                         if sys == "QMisID" and not all( s in key_nominal for s in ["Fake","El"] ):
                             print("Skipping {0} systematics for {1}".format(sys,key_nominal))
                             continue
-                        if sys in ["TTBarW","OtherPromptSS"] and not ( "Fake" in key_nominal ):
+                        if sys in ["TTV","VV","OtherPromptSS"] and not ( "Fake" in key_nominal ):
                             print("Skipping {0} systematics for {1}".format(sys,key_nominal))
                             continue
                         if sys == "FakesOS" and not ( "Real" in key_nominal ):
@@ -2012,12 +2014,12 @@ if __name__ == "__main__":
     eff.readInputs( inputpath=args.inputpath, channel=args.channel )
 
     eff.rebinHistograms( rebinlist=args.rebin, averagehistlist=args.averagehist )
-    eff.checkRebin("check rebinning...")
+    eff.checkRebin("Checking rebinning...")
 
-    eff.checkYields("check event yields BEFORE subtraction")
+    eff.checkYields("Checking event yields BEFORE subtraction")
     eff.subtractHistograms()
     if not args.nosub:
-        eff.checkYields("check event yields AFTER subtraction")
+        eff.checkYields("Checking event yields AFTER subtraction")
 
     eff.computeEfficiencies(variation="nominal")
     eff.computeEfficiencies(variation="N")

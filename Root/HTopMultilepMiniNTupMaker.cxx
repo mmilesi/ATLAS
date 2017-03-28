@@ -447,6 +447,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
     m_outputNTuple->tree()->Branch("jet_OR_Eta",			&m_jet_OR_Eta);
     m_outputNTuple->tree()->Branch("jet_OR_Phi",  	   	        &m_jet_OR_Phi);
     m_outputNTuple->tree()->Branch("jet_OR_E",		   	        &m_jet_OR_E);
+    m_outputNTuple->tree()->Branch("jet_OR_flavor_weight_MV2c10",       &m_jet_OR_flavor_weight_MV2c10);
 
     if ( m_jetTruthMatching ) {
 	m_outputNTuple->tree()->Branch("jet_OR_truthMatch_Pt",		&m_jet_OR_truthMatch_Pt);
@@ -575,8 +576,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
 	if ( key.compare("Flavour") == 0 )        { property.second.i = std::abs(m_lep0_INPUT_branches["ID"].f); continue; }
 	if ( key.compare("Charge") == 0 )         { property.second.f = m_lep0_INPUT_branches["ID"].f / std::abs(m_lep0_INPUT_branches["ID"].f); continue; }
-	if ( key.compare("PID") == 0 )            { property.second.c = m_lep0_INPUT_branches["isTightLH"].c; continue; }
-	if ( key.compare("LooseIsolated") == 0 )  { property.second.c = m_lep0_INPUT_branches["isolationLoose"].i; continue; }
 	if ( key.compare("Isolated") == 0 )       { property.second.c = ( std::abs(m_lep0_INPUT_branches["ID"].f) == 13 ) ? m_lep0_INPUT_branches["isolationFixedCutTightTrackOnly"].i : m_lep0_INPUT_branches["isolationFixedCutTight"].i; continue; }
 	if ( key.compare("TrackIsoOverPt") == 0 ) { property.second.f = ( std::abs(m_lep0_INPUT_branches["ID"].f) == 13 ) ? m_lep0_INPUT_branches["ptKeycone30"].f / m_lep0_INPUT_branches["Pt"].f : m_lep0_INPUT_branches["ptKeycone20"].f / m_lep0_INPUT_branches["Pt"].f; continue; }
 	if ( key.compare("CaloIsoOverPt") == 0 )  { property.second.f = ( std::abs(m_lep0_INPUT_branches["ID"].f) == 13 ) ? -1.0 : m_lep0_INPUT_branches["topoEtcone20"].f / m_lep0_INPUT_branches["Pt"].f; continue; }
@@ -612,8 +611,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
 	if ( key.compare("Flavour") == 0 )        { property.second.i = std::abs(m_lep1_INPUT_branches["ID"].f); continue; }
 	if ( key.compare("Charge") == 0 )         { property.second.f = m_lep1_INPUT_branches["ID"].f / std::abs(m_lep1_INPUT_branches["ID"].f); continue; }
-	if ( key.compare("PID") == 0 )            { property.second.c = m_lep1_INPUT_branches["isTightLH"].c; continue; }
-	if ( key.compare("LooseIsolated") == 0 )  { property.second.c = m_lep1_INPUT_branches["isolationLoose"].i; continue; }
 	if ( key.compare("Isolated") == 0 )       { property.second.c = ( std::abs(m_lep1_INPUT_branches["ID"].f) == 13 ) ? m_lep1_INPUT_branches["isolationFixedCutTightTrackOnly"].i : m_lep1_INPUT_branches["isolationFixedCutTight"].i; continue; }
 	if ( key.compare("TrackIsoOverPt") == 0 ) { property.second.f = ( std::abs(m_lep1_INPUT_branches["ID"].f) == 13 ) ? m_lep1_INPUT_branches["ptKeycone30"].f / m_lep1_INPUT_branches["Pt"].f : m_lep1_INPUT_branches["ptKeycone20"].f / m_lep1_INPUT_branches["Pt"].f; continue; }
 	if ( key.compare("CaloIsoOverPt") == 0 )  { property.second.f = ( std::abs(m_lep1_INPUT_branches["ID"].f) == 13 ) ? -1.0 : m_lep1_INPUT_branches["topoEtcone20"].f / m_lep1_INPUT_branches["Pt"].f; continue; }
@@ -646,8 +643,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
 	    if ( key.compare("Flavour") == 0 )        { property.second.i = std::abs(m_lep2_INPUT_branches["ID"].f); continue; }
 	    if ( key.compare("Charge") == 0 )         { property.second.f = m_lep2_INPUT_branches["ID"].f / std::abs(m_lep2_INPUT_branches["ID"].f); continue; }
-	    if ( key.compare("PID") == 0 )            { property.second.c = m_lep2_INPUT_branches["isTightLH"].c; continue; }
-	    if ( key.compare("LooseIsolated") == 0 )  { property.second.c = m_lep2_INPUT_branches["isolationLoose"].i; continue; }
 	    if ( key.compare("Isolated") == 0 )       { property.second.c = ( std::abs(m_lep2_INPUT_branches["ID"].f) == 13 ) ? m_lep2_INPUT_branches["isolationFixedCutTightTrackOnly"].i : m_lep2_INPUT_branches["isolationFixedCutTight"].i; continue; }
 	    if ( key.compare("TrackIsoOverPt") == 0 ) { property.second.f = ( std::abs(m_lep2_INPUT_branches["ID"].f) == 13 ) ? m_lep2_INPUT_branches["ptKeycone30"].f / m_lep2_INPUT_branches["Pt"].f : m_lep2_INPUT_branches["ptKeycone20"].f / m_lep2_INPUT_branches["Pt"].f; continue; }
 	    if ( key.compare("CaloIsoOverPt") == 0 )  { property.second.f = ( std::abs(m_lep2_INPUT_branches["ID"].f) == 13 ) ? -1.0 : m_lep2_INPUT_branches["topoEtcone20"].f / m_lep2_INPUT_branches["Pt"].f; continue; }
@@ -678,8 +673,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
 		if ( key.compare("Flavour") == 0 )        { property.second.i = std::abs(m_lep3_INPUT_branches["ID"].f); continue; }
 		if ( key.compare("Charge") == 0 )         { property.second.f = m_lep3_INPUT_branches["ID"].f / std::abs(m_lep3_INPUT_branches["ID"].f); continue; }
-		if ( key.compare("PID") == 0 )            { property.second.c = m_lep3_INPUT_branches["isTightLH"].c; continue; }
-		if ( key.compare("LooseIsolated") == 0 )  { property.second.c = m_lep3_INPUT_branches["isolationLoose"].i; continue; }
 		if ( key.compare("Isolated") == 0 )       { property.second.c = ( std::abs(m_lep3_INPUT_branches["ID"].f) == 13 ) ? m_lep3_INPUT_branches["isolationFixedCutTightTrackOnly"].i : m_lep3_INPUT_branches["isolationFixedCutTight"].i; continue; }
 		if ( key.compare("TrackIsoOverPt") == 0 ) { property.second.f = ( std::abs(m_lep3_INPUT_branches["ID"].f) == 13 ) ? m_lep3_INPUT_branches["ptKeycone30"].f / m_lep3_INPUT_branches["Pt"].f : m_lep3_INPUT_branches["ptKeycone20"].f / m_lep3_INPUT_branches["Pt"].f; continue; }
 		if ( key.compare("CaloIsoOverPt") == 0 )  { property.second.f = ( std::abs(m_lep3_INPUT_branches["ID"].f) == 13 ) ? -1.0 : m_lep3_INPUT_branches["topoEtcone20"].f / m_lep3_INPUT_branches["Pt"].f; continue; }
@@ -854,22 +847,22 @@ EL::StatusCode HTopMultilepMiniNTupMaker ::  checkIsTightLep( std::shared_ptr<le
     {
     case 11:
 	if ( useMVA ) {
-	    isTight = ( lep.get()->props["LooseIsolated"].c &&
-			lep.get()->props["PID"].c &&
+	    isTight = ( lep.get()->props["isolationLoose"].c &&
+			lep.get()->props["isTightLH"].c &&
 			std::abs(lep.get()->props["sigd0PV"].f) < 5.0 &&
 			std::abs(lep.get()->props["Z0SinTheta"].f) < 0.5 &&
 			( !m_event.get()->dilep_type || lep.get()->props["chargeIDBDTTight"].f > 0.0670415 ) &&
 			lep.get()->props["promptLeptonIso_TagWeight"].f < -0.50 );
 	} else {
 	    isTight = ( lep.get()->props["Isolated"].c &&
-			lep.get()->props["PID"].c &&
+			lep.get()->props["isTightLH"].c &&
 			std::abs(lep.get()->props["sigd0PV"].f) < 5.0 &&
 			std::abs(lep.get()->props["Z0SinTheta"].f) < 0.5 );
 	}
 	break;
     case 13:
 	if ( useMVA ) {
-	    isTight = ( lep.get()->props["LooseIsolated"].c &&
+	    isTight = ( lep.get()->props["isolationLoose"].c &&
 			std::abs(lep.get()->props["sigd0PV"].f) < 3.0 &&
 			std::abs(lep.get()->props["Z0SinTheta"].f) < 0.5 &&
 			lep.get()->props["promptLeptonIso_TagWeight"].f < -0.50 );
@@ -923,19 +916,21 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateEvent ( )
     //
     // for ( auto lep : m_leptons ) { ANA_CHECK( this->checkIsTightLep( lep, "MVA" ) ); }
 
-    // Store jet objects w/ some properties (e.g., isbtag). For dilepton events, use jets after OLR w/ taus.
+    // Store jet objects w/ some properties (e.g., isbtag). For dilepton/trilepton events, use jets after OLR w/ taus.
 
-    unsigned int njets = ( m_event.get()->dilep_type ) ? m_selected_jets_T->size() : m_selected_jets->size();
+    unsigned int njets = ( m_event.get()->dilep_type || m_event.get()->trilep_type ) ? m_selected_jets_T->size() : m_selected_jets->size();
 
     for ( unsigned int j_idx(0); j_idx < njets; ++j_idx ) {
 
-	short j = ( m_event.get()->dilep_type ) ? m_selected_jets_T->at(j_idx) : m_selected_jets->at(j_idx);
+	short j = ( m_event.get()->dilep_type || m_event.get()->trilep_type ) ? m_selected_jets_T->at(j_idx) : m_selected_jets->at(j_idx);
 
 	auto jet = std::make_shared<jetObj>();
 
 	jet.get()->pt     = m_jet_pt->at(j);
 	jet.get()->eta    = m_jet_eta->at(j);
 	jet.get()->phi    = m_jet_phi->at(j);
+	jet.get()->E      = m_jet_E->at(j);
+	jet.get()->flavor_weight_MV2c10 = m_jet_flavor_weight_MV2c10->at(j);
 	jet.get()->isbtag = !( m_jet_flavor_weight_MV2c10->at(j) < 0.8244273 ); // MV2c10, FixedCutBEff_70 : https://twiki.cern.ch/twiki/bin/view/AtlasProtected/BTaggingBenchmarks#MV2c20_tagger
 
 	m_jets.push_back(jet);
@@ -943,7 +938,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: decorateEvent ( )
     }
 
     m_event.get()->njets  = njets;
-    m_event.get()->nbjets = ( m_event.get()->dilep_type ) ? m_nJets_OR_T_MV2c10_70 : m_nJets_OR_MV2c10_70;
+    m_event.get()->nbjets = ( m_event.get()->dilep_type || m_event.get()->trilep_type ) ? m_nJets_OR_T_MV2c10_70 : m_nJets_OR_MV2c10_70;
 
     if ( m_debug ) { Info("decorateEvent()","Number of jets = %i - Number of bjets (MV2c10, 70 WP) = %i", m_event.get()->njets, m_event.get()->nbjets); }
 
@@ -2170,7 +2165,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: fillTPFlatBranches ( std::shared_ptr
 
     if ( isBadTPEvent ) { return EL::StatusCode::SUCCESS; }
 
-    std::string key, tp_key, type;
+    std::string key, tp_key, type, props_lookup;
 
     for ( const auto& tp_trig : tp_trigs ) {
 
@@ -2183,9 +2178,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: fillTPFlatBranches ( std::shared_ptr
 
 	    tp_key = "lep_" + tp_trig + "_" + key;
 
-	    if ( type.compare("F") == 0 ) { m_TagProbe_branches[tp_key].f = lep.get()->props[key].f; }
-	    if ( type.compare("B") == 0 ) { m_TagProbe_branches[tp_key].c = lep.get()->props[key].c; }
-	    if ( type.compare("I") == 0 ) { m_TagProbe_branches[tp_key].i = lep.get()->props[key].i; }
+	    props_lookup = key;
+
+	    if ( type.compare("F") == 0 ) { m_TagProbe_branches[tp_key].f = lep.get()->props[props_lookup].f; }
+	    if ( type.compare("B") == 0 ) { m_TagProbe_branches[tp_key].c = lep.get()->props[props_lookup].c; }
+	    if ( type.compare("I") == 0 ) { m_TagProbe_branches[tp_key].i = lep.get()->props[props_lookup].i; }
 
 	}
 
@@ -2399,6 +2396,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: clearBranches ( const std::string& t
 	m_jet_OR_Eta.clear();
 	m_jet_OR_Phi.clear();
 	m_jet_OR_E.clear();
+	m_jet_OR_flavor_weight_MV2c10.clear();
     } else if ( type.compare("jets_truth") == 0 ) {
 	m_jet_OR_truthMatch_Pt.clear();
 	m_jet_OR_truthMatch_Eta.clear();
@@ -2421,22 +2419,21 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: jetKinematics ()
 {
 
     // Clear vector branches from previous event
-    //
+
     ANA_CHECK( this->clearBranches("jets_kin") );
 
-    for ( unsigned int j_idx(0); j_idx < m_selected_jets_T->size(); ++j_idx ) {
+    unsigned int idx(0);
+    for ( auto& jet : m_jets ) {
 
-	short j = m_selected_jets_T->at(j_idx);
+	if ( m_debug ) { Info("jetKinematics()","reco jet[%i], pT = %.2f, eta = %.2f, phi = %.2f, E = %.2f, flavor_weight_MV2c10 = %.2f", idx, jet.get()->pt/1e3, jet.get()->eta, jet.get()->phi, jet.get()->E/1e3, jet.get()->flavor_weight_MV2c10 ); }
 
-	// Read the jet branches from the vector *before* OR via the index
+	m_jet_OR_Pt.push_back( jet.get()->pt );
+	m_jet_OR_Eta.push_back( jet.get()->eta );
+	m_jet_OR_Phi.push_back(jet.get()->phi );
+	m_jet_OR_E.push_back( jet.get()->E );
+	m_jet_OR_flavor_weight_MV2c10.push_back( jet.get()->flavor_weight_MV2c10 );
 
-	if ( m_debug ) { Info("jetKinematics()","reco jet[%i], pT = %.2f, eta = %.2f, phi = %.2f, E = %.2f",j, m_jet_pt->at(j)/1e3, m_jet_eta->at(j), m_jet_phi->at(j), m_jet_E->at(j)/1e3 ); }
-
-	m_jet_OR_Pt.push_back( m_jet_pt->at(j) );
-	m_jet_OR_Eta.push_back( m_jet_eta->at(j) );
-	m_jet_OR_Phi.push_back( m_jet_phi->at(j) );
-	m_jet_OR_E.push_back( m_jet_E->at(j) );
-
+	++idx;
     }
 
     return EL::StatusCode::SUCCESS;
@@ -2459,8 +2456,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: jetTruthMatching ()
     for ( unsigned int j_idx(0); j_idx < m_selected_jets_T->size(); ++j_idx ) {
 
 	short j = m_selected_jets_T->at(j_idx);
+
 	// Read the jet branches from the vector *before* OR via the index
-	//
+
 	jet.SetPtEtaPhi( m_jet_pt->at(j), m_jet_eta->at(j), m_jet_phi->at(j) );
 
 	if ( m_debug ) { Info("jetTruthMatching()","reco jet[%i], pT = %.2f, eta = %.2f, phi = %.2f",j, jet.Pt()/1e3, jet.Eta(), jet.Phi() ); }
@@ -2494,7 +2492,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: jetTruthMatching ()
 	    match_tj_e   =  m_truth_jet_e->at(best_tj);
 
 	    // Truth flavour classification already done w/ MCTruthClassifier in DF
-	    //
+
 	    match_tj_isbjet  = ( m_jet_flavor_truth_label_ghost->at(j) == 5 );
 	    match_tj_iscjet  = ( m_jet_flavor_truth_label_ghost->at(j) == 4 );
 	    match_tj_islfjet = ( m_jet_flavor_truth_label_ghost->at(j) != 5 && m_jet_flavor_truth_label_ghost->at(j) != 4 && m_jet_flavor_truth_label_ghost->at(j) != 21 );
