@@ -18,13 +18,13 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Plotting script for the HTopMultilep Run 2 analysis')
 
-channels     = ["2LSS_SR","3L_SR",
-                "2LSS_LOWNJ_VR",
+channels     = ["2LSS_SR (,INCL_FLAV)","3L_SR",
+                "2LSS_LOWNJ_VR (,INCL_FLAV)","2LSS_HIGHNJ_VR (,INCL_FLAV)"
                 "WZonCR","WZoffCR","WZHFonCR","WZHFoffCR",
                 "ttWCR","ttZCR","ZOSpeakCR","ZSSpeakCR","TopCR",
-                "MMRates(,DATA,CLOSURE,TP,LH,TRUTH_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
-                "MMClosureTest(,HIGHNJ,LOWNJ,ALLNJ)",
-                "CutFlowChallenge(,MM,2LSS_SR,2LSS_LOWNJ_VR,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth"]
+                "MMRates (,DATA,CLOSURE,TP,LH,TRUTH_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
+                "MMClosureTest (,HIGHNJ,LOWNJ,ALLNJ)",
+                "CutFlowChallenge (,MM,2LSS_SR,2LSS_LOWNJ_VR,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth"]
 
 categories   = ["ALL","ee","mm","OF"]
 
@@ -239,6 +239,7 @@ if __name__ == "__main__":
     do3L_SR                 = bool( "3L_SR" in args.channel )
     doMMRates               = bool( "MMRates" in args.channel )
     do2LSS_LOWNJ_VR         = bool( "2LSS_LOWNJ_VR" in args.channel and not "CutFlowChallenge" in args.channel )
+    do2LSS_HIGHNJ_VR        = bool( "2LSS_HIGHNJ_VR" in args.channel and not "CutFlowChallenge" in args.channel )
     doWZonCR                = bool( "WZonCR" in args.channel )
     doWZoffCR               = bool( "WZoffCR" in args.channel )
     doWZHFonCR              = bool( "WZHFonCR" in args.channel )
@@ -271,10 +272,11 @@ if __name__ == "__main__":
     doSR = (do2LSS_SR or do3L_SR)
 
     # -----------------------------------------
-    # A comprehensive flag for the low-Njet CR
+    # A comprehensive flag for the VRs
     # -----------------------------------------
 
-    doLowNJetCR = (do2LSS_LOWNJ_VR)
+    doLowNJetCR  = (do2LSS_LOWNJ_VR)
+    doHighNJetVR = (do2LSS_HIGHNJ_VR)
 
     # ------------------------------------------
     # A comprehensive flag for all the other CRs
@@ -286,7 +288,7 @@ if __name__ == "__main__":
     # Make standard plots in SR and VR unless differently specified
     # -------------------------------------------------------------
 
-    makeStandardPlots = False if ( not args.makeStandardPlots ) else ( doSR or doLowNJetCR or doOtherCR )
+    makeStandardPlots = False if ( not args.makeStandardPlots ) else ( doSR or doLowNJetCR or doHighNJetVR or doOtherCR )
 
     # ----------------------------
     # Check fake estimation method
@@ -750,49 +752,46 @@ if __name__ == "__main__":
     delta_R_lep0lep2 = 'deltaR( lep_ID_0, lep_Eta_0, lep_EtaBE2_0, lep_Phi_0, lep_ID_2, lep_Eta_2, lep_EtaBE2_2, lep_Phi_2 )'
     delta_R_lep1lep2 = 'deltaR( lep_ID_1, lep_Eta_1, lep_EtaBE2_1, lep_Phi_1, lep_ID_2, lep_Eta_2, lep_EtaBE2_2, lep_Phi_2 )'
 
-    if doSR or doLowNJetCR:
+    if doSR or doLowNJetCR or doHighNJetVR:
         print ''
-        #vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
-        if doSR:
-	    vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight") )
-        elif doLowNJetCR:
-            vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = "JVT_EventWeight") )
+        if "INCL_FLAV" in args.channel:
+            vardb.registerVar( Variable(shortname = "LepFlavours", latexname = "2lSS0#tau category", ntuplename = "dilep_type", bins = 3, minval = 0.5, maxval = 3.5) )
+        else:
+            vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            if doSR or doHighNJetVR:
+                vardb.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight") )
+            elif doLowNJetCR:
+                vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = "JVT_EventWeight") )
 
-        vardb.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{lead lep} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 10, minval = 10.0, maxval = 210.0, sysvar = True) )
-        vardb.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{2nd lead lep} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
-        # vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{lead e} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 10, minval = 10.0, maxval = 210.0) )
-        # vardb.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{2nd lead e} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
-        # vardb.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{lead #mu} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 10, minval = 10.0, maxval = 210.0) )
-        # vardb.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{2nd lead #mu} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
-
-        # vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{lead e} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
-        # vardb.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{2nd lead e} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
-        # vardb.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{lead #mu} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
-        # vardb.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{2nd lead #mu} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
-
-        # vardb.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{lead e}", ntuplename = "TMath::Abs( electron_EtaBE2[0] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
-        # vardb.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{2nd lead e}", ntuplename = "TMath::Abs( electron_EtaBE2[1] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
-        # vardb.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{lead #mu}", ntuplename = "TMath::Abs( muon_Eta[0] )", manualbins = [0.0,0.1,0.7,1.3,1.9,2.5]) )
-        # vardb.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{2nd lead #mu}", ntuplename = "TMath::Abs( muon_Eta[1] )", manualbins =[0.0,0.1,0.7,1.3,1.9,2.5]) )
-        # vardb.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "#DeltaR{lead e, closest j}", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
-        # vardb.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "#DeltaR{2nd lead e, closest j}", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
-        # vardb.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "#DeltaR{lead #mu, closest j}", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
-        # vardb.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "#DeltaR{2nd lead #mu, closest j}", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
-        # vardb.registerVar( Variable(shortname = "NBJets", latexname = "BJet multiplicity", ntuplename ="nJets_OR_T_MV2c10_70", bins = 4, minval = -0.5, maxval = 3.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
-        # vardb.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0,) )
-        # vardb.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} (FinalTrk) [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 9, minval = 0.0, maxval = 180.0,) )
-        # vardb.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(lep_{0},lep_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
+            # vardb.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{lead lep} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 10, minval = 10.0, maxval = 210.0, sysvar = True) )
+            # vardb.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{2nd lead lep} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
+            # vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{lead e} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
+            # vardb.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{2nd lead e} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
+            # vardb.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{lead #mu} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
+            # vardb.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{2nd lead #mu} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
+            # vardb.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{lead e}", ntuplename = "TMath::Abs( electron_EtaBE2[0] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
+            # vardb.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{2nd lead e}", ntuplename = "TMath::Abs( electron_EtaBE2[1] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
+            # vardb.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{lead #mu}", ntuplename = "TMath::Abs( muon_Eta[0] )", manualbins = [0.0,0.1,0.7,1.3,1.9,2.5]) )
+            # vardb.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{2nd lead #mu}", ntuplename = "TMath::Abs( muon_Eta[1] )", manualbins =[0.0,0.1,0.7,1.3,1.9,2.5]) )
+            # vardb.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "#DeltaR{lead e, closest j}", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+            # vardb.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "#DeltaR{2nd lead e, closest j}", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+            # vardb.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "#DeltaR{lead #mu, closest j}", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+            # vardb.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "#DeltaR{2nd lead #mu, closest j}", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+            # vardb.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 4, minval = -0.5, maxval = 3.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
+            # vardb.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0,) )
+            # vardb.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} (FinalTrk) [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 9, minval = 0.0, maxval = 180.0,) )
+            # vardb.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(lep_{0},lep_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
 
     if doMMSidebands:
         vardb.registerVar( Variable(shortname = 'MMWeight', latexname = 'MM weight', ntuplename = 'MMWeight', bins = 50, minval = -0.5, maxval = 0.5) )
         # vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 9, minval = 25.0, maxval = 205.0,) )
         # vardb.registerVar( Variable(shortname = 'Lep0TM_VS_Lep1TM', latexnameX = 'lead lep TM', latexnameY = '2nd lead lep TM', ntuplename = 'lep_isTrigMatch_1:lep_isTrigMatch_0', bins = 2, minval = -0.5, maxval = 1.5, typeval = TH2F) )
         if "HIGHNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "LOWNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
         elif "ALLNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
 
     if doMMClosureTest:
         print ''
@@ -810,16 +809,16 @@ if __name__ == "__main__":
         # vardb.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "#DeltaR{2nd lead e, closest j}", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
         # vardb.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "#DeltaR{lead #mu, closest j}", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
         # vardb.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "#DeltaR{2nd lead #mu, closest j}", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
-        # vardb.registerVar( Variable(shortname = "NBJets", latexname = "BJet multiplicity", ntuplename ="nJets_OR_T_MV2c10_70", bins = 4, minval = -0.5, maxval = 3.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
+        # vardb.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 4, minval = -0.5, maxval = 3.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
         # vardb.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0,) )
         # vardb.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} (FinalTrk) [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 9, minval = 0.0, maxval = 180.0,) )
         # vardb.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(lep_{0},lep_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
         if "ALLNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "HIGHNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets5j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "LOWNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
 
     if doZOSpeakCR or doZSSpeakCR:
         print ''
@@ -836,9 +835,9 @@ if __name__ == "__main__":
     if makeStandardPlots:
         print ''
         vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
-        # vardb.registerVar( Variable(shortname = 'NJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
-        # vardb.registerVar( Variable(shortname = 'NJets2j3j4j', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
-        # vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'BJet multiplicity', ntuplename = 'nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
+        # vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+        # vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
+        # vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'N_{b-tags}', ntuplename = 'nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
         # vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
         # vardb.registerVar( Variable(shortname = 'NElectrons', latexname = 'Electron multiplicity', ntuplename = 'nelectrons', bins = 5, minval = -0.5, maxval = 4.5) )
         # vardb.registerVar( Variable(shortname = 'NMuons', latexname = 'Muon multiplicity', ntuplename = 'nmuons', bins = 5, minval = -0.5, maxval = 4.5) )
@@ -1005,6 +1004,7 @@ if __name__ == "__main__":
                        'OF' : 'OFSS',
                        'em' : 'ElMuSS',
                        'me' : 'MuElSS',
+                       'INCL_FLAV' : 'InclusiveSS',
                      }
 
     append_2Lep = ""
@@ -1021,9 +1021,12 @@ if __name__ == "__main__":
             append_2Lep += "_DataDriven"
 
         if do2LSS_SR :
-            if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
-            if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
-            if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+            if "INCL_FLAV" in args.channel:
+                vardb.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_NJet_SR']), weight = weight_SR_CR ) )
+            else:
+                if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
             #vardb.registerCategory( MyCategory('TwoLepSSTau_SR', cut = common_cuts_2Lep1Tau & vardb.getCut('2Lep1Tau_NJet_SR') ), weight = weight_SR_CR )
         if do3L_SR:
             vardb.registerCategory( MyCategory('ThreeLep_SR',    cut = common_cuts_3Lep, weight = weight_SR_CR ) )
@@ -1039,11 +1042,32 @@ if __name__ == "__main__":
         if ( doMM or doFF or doTHETA ):
             append_2Lep += "_DataDriven"
 
-        if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
-        if not ( doTHETA ):
-            if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
-            if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+        if "INCL_FLAV" in args.channel:
+            vardb.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+        else:
+            if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            if not ( doTHETA ):
+                if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+                if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
         #vardb.registerCategory( MyCategory('TwoLepSSTau_LowNJetCR',  cut = common_cuts_2Lep1Tau & vardb.getCut('2Lep1Tau_NJet_CR'), weight = weight_SR_CR ) )
+
+    # --------------------------
+    # High N-jet CRs (w/ B veto)
+    # --------------------------
+
+    if do2LSS_HIGHNJ_VR :
+
+        append_2Lep += "_HighNJetCR"
+
+        if ( doMM or doFF or doTHETA ):
+            append_2Lep += "_DataDriven"
+
+        if "INCL_FLAV" in args.channel:
+            vardb.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+        else:
+            if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
 
     # -------------
     # Other CRs
@@ -1295,7 +1319,7 @@ if __name__ == "__main__":
             # vardb.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", bins = 26, minval = 0.0,  maxval = 2.6) )
             # vardb.registerVar( Variable(shortname = "ElProbeDistanceClosestJet", latexname = '#DeltaR(e, closest jet)', ntuplename = el_probe + "deltaRClosestJet", bins = 20, minval = 0.0, maxval = 5.0) )
             # vardb.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
-            # vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'Jet multiplicity', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            # vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
 
             # if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
                 # vardb.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,1.37,1.52,2.6], manualbinsY = [10.0,50.0,210.0], typeval = TH2D, drawOpt2D = "COLZ1 text") )
@@ -1305,8 +1329,8 @@ if __name__ == "__main__":
             #     vardb.registerVar( Variable(shortname = "ElProbeType", latexname = "truthType^{e}", ntuplename = el_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
             #     vardb.registerVar( Variable(shortname = "ElProbeOrigin", latexname = "truthOrigin^{e}", ntuplename = el_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
             #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbeOrigin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = el_probe + "truthOrigin" + ":" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_NJets', latexnameX = 'truthType^{e}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{e}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + el_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+            #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_NJets', latexnameX = 'truthType^{e}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+            #     vardb.registerVar( Variable(shortname = 'ElProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{e}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + el_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
             #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbePt', latexnameX = 'truthType^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "truthType" + ":" + el_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
 
             vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
@@ -1319,14 +1343,14 @@ if __name__ == "__main__":
             # vardb.registerVar( Variable(shortname = "MuProbeEta", latexname = "#eta^{#mu}", ntuplename = "TMath::Abs( " + mu_probe + "Eta )", bins = 25, minval = 0.0, maxval = 2.5) )
             # vardb.registerVar( Variable(shortname = "MuProbeDistanceClosestJet", latexname = '#DeltaR(#mu, closest jet)', ntuplename = mu_probe + "deltaRClosestJet", bins = 20, minval = 0.0, maxval = 5.0) )
             # vardb.registerVar( Variable(shortname = "MuProbeDistanceClosestBJet", latexname = '#DeltaR(#mu, closest b-jet)', ntuplename = mu_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
-            # vardb.registerVar( Variable(shortname = "MuProbeNJets", latexname = "Jet multiplicity", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
+            # vardb.registerVar( Variable(shortname = "MuProbeNJets", latexname = "N_{jets}", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
 
             # if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
             #     vardb.registerVar( Variable(shortname = "MuProbeType", latexname = "truthType^{#mu}", ntuplename = mu_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
             #     vardb.registerVar( Variable(shortname = "MuProbeOrigin", latexname = "truthOrigin^{#mu}", ntuplename = mu_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
             #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbeOrigin', latexnameX = 'truthType^{#mu}', latexnameY = 'truthOrigin^{#mu}', ntuplename = mu_probe + "truthOrigin" + ":" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_NJets', latexnameX = 'truthType^{#mu}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{#mu}', latexnameY = 'Jet multiplicity', ntuplename = "nJets_OR_T:" + mu_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+            #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_NJets', latexnameX = 'truthType^{#mu}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+            #     vardb.registerVar( Variable(shortname = 'MuProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{#mu}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + mu_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
             #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbePt', latexnameX = 'truthType^{#mu}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "truthType" + ":" + mu_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
 
             # -----------------------------------------------------------------------------------------------------------------
@@ -1793,7 +1817,7 @@ if __name__ == "__main__":
 
     # ------------------------------------
 
-    if do2LSS_SR or do2LSS_LOWNJ_VR or dottWCR or doMMClosureTest:
+    if do2LSS_SR or do2LSS_LOWNJ_VR or do2LSS_HIGHNJ_VR or dottWCR or doMMClosureTest:
         ttH.channel = '2LSS'
     elif do3L_SR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
         ttH.channel = '3L'
@@ -1900,7 +1924,7 @@ if __name__ == "__main__":
         'FakesClosureDataTHETA': kViolet-4,
     }
 
-    if ( doSR or doLowNJetCR ):
+    if ( doSR or doLowNJetCR or doHighNJetVR ):
 
         ttH.signals         = ['TTBarH']
         ttH.observed        = ['Observed']
