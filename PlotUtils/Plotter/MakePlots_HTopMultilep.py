@@ -19,7 +19,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Plotting script for the HTopMultilep Run 2 analysis')
 
 channels     = ["2LSS_SR (,INCL_FLAV)","3L_SR",
-                "2LSS_LOWNJ_VR (,INCL_FLAV)","2LSS_HIGHNJ_VR (,INCL_FLAV)"
+                "2LSS_LOWNJ_VR (,INCL_FLAV)","2LSS_HIGHNJ_BVETO_VR (,INCL_FLAV)"
                 "WZonCR","WZoffCR","WZHFonCR","WZHFoffCR",
                 "ttWCR","ttZCR","ZOSpeakCR","ZSSpeakCR","TopCR",
                 "MMRates (,DATA,CLOSURE,TP,LH,TRUTH_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
@@ -239,7 +239,7 @@ if __name__ == "__main__":
     do3L_SR                 = bool( "3L_SR" in args.channel )
     doMMRates               = bool( "MMRates" in args.channel )
     do2LSS_LOWNJ_VR         = bool( "2LSS_LOWNJ_VR" in args.channel and not "CutFlowChallenge" in args.channel )
-    do2LSS_HIGHNJ_VR        = bool( "2LSS_HIGHNJ_VR" in args.channel and not "CutFlowChallenge" in args.channel )
+    do2LSS_HIGHNJ_BVETO_VR  = bool( "2LSS_HIGHNJ_BVETO_VR" in args.channel and not "CutFlowChallenge" in args.channel )
     doWZonCR                = bool( "WZonCR" in args.channel )
     doWZoffCR               = bool( "WZoffCR" in args.channel )
     doWZHFonCR              = bool( "WZHFonCR" in args.channel )
@@ -271,13 +271,6 @@ if __name__ == "__main__":
 
     doSR = (do2LSS_SR or do3L_SR)
 
-    # -----------------------------------------
-    # A comprehensive flag for the VRs
-    # -----------------------------------------
-
-    doLowNJetCR  = (do2LSS_LOWNJ_VR)
-    doHighNJetVR = (do2LSS_HIGHNJ_VR)
-
     # ------------------------------------------
     # A comprehensive flag for all the other CRs
     # ------------------------------------------
@@ -288,7 +281,7 @@ if __name__ == "__main__":
     # Make standard plots in SR and VR unless differently specified
     # -------------------------------------------------------------
 
-    makeStandardPlots = False if ( not args.makeStandardPlots ) else ( doSR or doLowNJetCR or doHighNJetVR or doOtherCR )
+    makeStandardPlots = False if ( not args.makeStandardPlots ) else ( doSR or do2LSS_LOWNJ_VR or do2LSS_HIGHNJ_BVETO_VR or doOtherCR )
 
     # ----------------------------
     # Check fake estimation method
@@ -752,17 +745,18 @@ if __name__ == "__main__":
     delta_R_lep0lep2 = 'deltaR( lep_ID_0, lep_Eta_0, lep_EtaBE2_0, lep_Phi_0, lep_ID_2, lep_Eta_2, lep_EtaBE2_2, lep_Phi_2 )'
     delta_R_lep1lep2 = 'deltaR( lep_ID_1, lep_Eta_1, lep_EtaBE2_1, lep_Phi_1, lep_ID_2, lep_Eta_2, lep_EtaBE2_2, lep_Phi_2 )'
 
-    if doSR or doLowNJetCR or doHighNJetVR:
+    if doSR or do2LSS_LOWNJ_VR or do2LSS_HIGHNJ_BVETO_VR:
         print ''
         if "INCL_FLAV" in args.channel:
             vardb.registerVar( Variable(shortname = "LepFlavours", latexname = "2lSS0#tau category", ntuplename = "dilep_type", bins = 3, minval = 0.5, maxval = 3.5) )
         else:
             vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
-            if doSR or doHighNJetVR:
+            if doSR or do2LSS_HIGHNJ_BVETO_VR:
                 vardb.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight") )
-            elif doLowNJetCR:
-                vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = "JVT_EventWeight") )
+            elif do2LSS_LOWNJ_VR:
+                vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = "JVT_EventWeight") )
 
+            vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
             # vardb.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{lead lep} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 10, minval = 10.0, maxval = 210.0, sysvar = True) )
             # vardb.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{2nd lead lep} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 7, minval = 10.0, maxval = 150.0) )
             # vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{lead e} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
@@ -789,7 +783,7 @@ if __name__ == "__main__":
         if "HIGHNJ" in args.channel:
             vardb.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "LOWNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = 'JVT_EventWeight') )
         elif "ALLNJ" in args.channel:
             vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
 
@@ -818,7 +812,7 @@ if __name__ == "__main__":
         elif "HIGHNJ" in args.channel:
             vardb.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "LOWNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
+            vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = 'JVT_EventWeight') )
 
     if doZOSpeakCR or doZSSpeakCR:
         print ''
@@ -836,7 +830,7 @@ if __name__ == "__main__":
         print ''
         vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
         # vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
-        # vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 4, minval = 1.5, maxval = 5.5, weight = 'JVT_EventWeight') )
+        # vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = 'JVT_EventWeight') )
         # vardb.registerVar( Variable(shortname = 'NBJets', latexname = 'N_{b-tags}', ntuplename = 'nJets_OR_T_MV2c10_70', bins = 4, minval = -0.5, maxval = 3.5, weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
         # vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
         # vardb.registerVar( Variable(shortname = 'NElectrons', latexname = 'Electron multiplicity', ntuplename = 'nelectrons', bins = 5, minval = -0.5, maxval = 4.5) )
@@ -1055,7 +1049,7 @@ if __name__ == "__main__":
     # High N-jet CRs (w/ B veto)
     # --------------------------
 
-    if do2LSS_HIGHNJ_VR :
+    if do2LSS_HIGHNJ_BVETO_VR :
 
         append_2Lep += "_HighNJetCR"
 
@@ -1817,7 +1811,7 @@ if __name__ == "__main__":
 
     # ------------------------------------
 
-    if do2LSS_SR or do2LSS_LOWNJ_VR or do2LSS_HIGHNJ_VR or dottWCR or doMMClosureTest:
+    if do2LSS_SR or do2LSS_LOWNJ_VR or do2LSS_HIGHNJ_BVETO_VR or dottWCR or doMMClosureTest:
         ttH.channel = '2LSS'
     elif do3L_SR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
         ttH.channel = '3L'
@@ -1924,7 +1918,7 @@ if __name__ == "__main__":
         'FakesClosureDataTHETA': kViolet-4,
     }
 
-    if ( doSR or doLowNJetCR or doHighNJetVR ):
+    if ( doSR or do2LSS_LOWNJ_VR or do2LSS_HIGHNJ_BVETO_VR ):
 
         ttH.signals         = ['TTBarH']
         ttH.observed        = ['Observed']
