@@ -202,9 +202,10 @@ class Variable:
         self.minvalY            = kw.get('minvalY',	self.minval)
         self.maxvalY            = kw.get('maxvalY',	self.maxval)
         self.typeval            = kw.get('typeval',     TH1D)
-        self.manualbins         = kw.get('manualbins',   None)
-        self.manualbinsX        = kw.get('manualbinsX',  None)
-        self.manualbinsY        = kw.get('manualbinsY',  None)
+        self.manualbins         = kw.get('manualbins',  None)
+        self.manualbinsX        = kw.get('manualbinsX', None)
+        self.manualbinsY        = kw.get('manualbinsY', None)
+        self.binlabelsX         = kw.get('binlabelsX',  {})
         self.logaxis            = kw.get('logaxis',     False)
         self.logaxisX           = kw.get('logaxisX',    False)
         self.basecut            = kw.get('basecut',     None)
@@ -280,7 +281,10 @@ class Variable:
             	h = self.typeval(name, title, self.bins, self.minval, self.maxval)
             h.SetXTitle(self.latexname)
             h.SetYTitle(self.ytitle(manualbins=manualbins))
-
+            if self.binlabelsX:
+                for idx,label in self.binlabelsX.iteritems():
+                    h.GetXaxis().SetBinLabel(idx,label)
+                    h.GetYaxis().SetLabelSize(h.GetXaxis().GetLabelSize())
         h.Sumw2()
         return h
 
@@ -1018,6 +1022,7 @@ class Background:
                 datagr = makePoissonErrors(obs)
             	datagr.SetMarkerSize(0.8) # (1.2)
             	datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
+            	datagr.SetLineWidth(self.style.get('ObservedLineWidth', 2))
             	datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
             legs.append([datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "p"])
 
@@ -1041,7 +1046,7 @@ class Background:
 	    stack = THStack('Stack'+tSum.GetName(), self.__class__.__name__+';'+tSum.GetXaxis().GetTitle()+';'+tSum.GetYaxis().GetTitle())
 	    for h, process in reversed(bkglist):
 	    	h.Draw()
-	    	h.SetLineWidth(self.style.get('BackgroundLineWidth', 3))
+	    	h.SetLineWidth(self.style.get('BackgroundLineWidth', 2))
 	    	h.SetLineStyle(self.style.get('BackgroundLineStyle', 1))
 	    	pname = process.__class__.__name__
 	    	h.SetLineColor(self.style.get(pname+'LineColour', self.style.get('BackgroundLineColour', 1)))
@@ -1070,7 +1075,7 @@ class Background:
             process = siglist[0][1]
             sig.SetFillColor(self.style.get('SignalFillColour', 10))
             sig.SetFillStyle(self.style.get('SignalFillStyle', 1001))
-            sig.SetLineWidth(self.style.get('SignalLineWidth', 3))
+            sig.SetLineWidth(self.style.get('SignalLineWidth', 2))
             sig.SetLineColor(self.style.get('SignalLineColour', 2))
             sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
             stack.Add(sig)
@@ -1110,6 +1115,7 @@ class Background:
                 ratiomc.GetXaxis().SetNdivisions(tSum.GetNbinsX())
                 ratiomc.GetXaxis().CenterLabels(True)
                 ratiodata = TH1D("RatioData", "RatioData", tSum.GetNbinsX(), tSum.GetBinLowEdge(1), tSum.GetBinLowEdge(tSum.GetNbinsX()+1))
+                ratiodata.SetLineWidth(2)
                 for i in range(1, tSum.GetNbinsX()+1):
                     ratiomc.SetBinContent(i, tSum.GetBinContent(i))
                     ratiodata.SetBinContent(i, obs.GetBinContent(i))
@@ -1190,7 +1196,7 @@ class Background:
             refl.SetLineStyle(2)
             refl.SetLineColor(kRed)
             refl.Draw("SAME")
-            ratiodata.Draw("SAME")
+            ratiodata.Draw("PE1 SAME")
             pad1.cd()
 
         legs.reverse()
@@ -1248,7 +1254,7 @@ class Background:
         if obs:
 	   if not var.typeval in [TH2I,TH2F,TH2D]:
               if stack:
-                 datagr.Draw("PE SAME")
+                 datagr.Draw("P SAME")
               else:
 	         if logx or var.logaxisX:
 	             gPad.SetLogx()

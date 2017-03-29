@@ -2038,7 +2038,7 @@ class TTHBackgrounds(Background):
             sp = self.subprocess(trees=trees)
             return sp
 
-        def getFakesMM(self, sp, inputcut):
+        def getFakesMM(self, treename='physics', category=None, options={}, sp=None, inputcut=None):
 
             debugflag = any( proc in self.parent.debugprocs for proc in [self.__class__.__name__,"ALL"])
 
@@ -2078,7 +2078,7 @@ class TTHBackgrounds(Background):
             for process in sublist:
 
                 if ("2Lep_MuMu_Event") in inputcut.cutname:
-                    print("NO QMisID subtraction for muons!!")
+                    print("NO QMisID subtraction for MuMu events!!")
                     continue
 
 	        QMisIDcut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
@@ -2140,22 +2140,19 @@ class TTHBackgrounds(Background):
 
             sp = self.base(treename, category, options)
 
-	    for CUT in category.cut.cutlist:
-	    	print CUT.cutname
-
-            if any( cutname in category.cut.cutlist for cutname in ["2Lep_MuMu_Event","2Lep_ElEL_Event","2Lep_OF_Event"] ):
-                sp = getFakesMM(sp,category.cut)
+            if any( cutname in category.cut.cutnamelist for cutname in ["2Lep_MuMu_Event","2Lep_ElEL_Event","2Lep_OF_Event"] ):
+                sp = self.getFakesMM(treename, category, options, sp, category.cut)
             else:
                 # If the input cut is inclusive in ee,mm,OF, we need to split the 3 subprocesses, otherwise the QMisID subtraction
                 # will screw up results for mm events...
 
-                cut_ee = category.cut & self.vardb.getCut("2Lep_ElEL_Event")
-                cut_mm = category.cut & self.vardb.getCut("2Lep_MuMu_Event")
-                cut_OF = category.cut & self.vardb.getCut("2Lep_OF_Event")
+                cut_ee = category.cut & self.vardb.getCut('2Lep_ElEl_Event')
+                cut_mm = category.cut & self.vardb.getCut('2Lep_MuMu_Event')
+                cut_OF = category.cut & self.vardb.getCut('2Lep_OF_Event')
 
-                sp_ee = getFakesMM(sp,cut_ee)
-                sp_mm = getFakesMM(sp,cut_mm)
-                sp_OF = getFakesMM(sp,cut_OF)
+                sp_ee = self.getFakesMM(treename, category, options, sp, cut_ee)
+                sp_mm = self.getFakesMM(treename, category, options, sp, cut_mm)
+                sp_OF = self.getFakesMM(treename, category, options, sp, cut_OF)
 
                 sp = sp_ee + sp_mm + sp_OF
 
