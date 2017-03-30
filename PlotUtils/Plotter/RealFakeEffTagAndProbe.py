@@ -1884,8 +1884,8 @@ class RealFakeEffTagAndProbe:
           	    legend_allsys.SetTextFont(42)	# Helvetica
 
 		    hist_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_AllSys")
-	   	    hist_allsys.SetFillColor(kOrange-3)
-           	    hist_allsys.SetLineColor(kOrange-3)
+	   	    hist_allsys.SetFillColor(kOrange-2)
+           	    hist_allsys.SetLineColor(kOrange-2)
            	    hist_allsys.SetFillStyle(1001)
 
 	  	    legend_allsys.AddEntry(hist_nominal,"#varepsilon_{{{0}}} - nominal (stat. unc.)".format(eff), "P")
@@ -1921,7 +1921,7 @@ class RealFakeEffTagAndProbe:
 		    ratio_allsys.SetLineStyle(1)
 		    ratio_allsys.SetLineWidth(2)
 		    ratio_allsys.SetMarkerSize(0)
-             	    ratio_allsys.SetYTitle("Syst/Nom")
+             	    ratio_allsys.SetYTitle("Syst./Nom.")
              	    ratio_allsys.GetXaxis().SetTitleSize(0.15)
              	    ratio_allsys.GetYaxis().SetTitleSize(0.15)
              	    ratio_allsys.GetXaxis().SetTitleOffset(1.0)
@@ -1929,7 +1929,7 @@ class RealFakeEffTagAndProbe:
              	    ratio_allsys.GetXaxis().SetLabelSize(0.15)
              	    ratio_allsys.GetYaxis().SetLabelSize(0.12)
              	    ratio_allsys.GetYaxis().SetNdivisions(5)#(503)#(5)
-	   	    ratio_allsys.SetFillColor(kOrange-3)
+	   	    ratio_allsys.SetFillColor(kOrange-2)
            	    ratio_allsys.SetFillStyle(1001)
 
                     # Need to re-get the nominal ratio hist with stats errors

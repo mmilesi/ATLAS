@@ -2,6 +2,8 @@
 
 import os, sys, math, argparse
 
+sys.path.append(os.path.abspath(os.path.curdir))
+
 parser = argparse.ArgumentParser(description='Get yields and systematics for MM')
 
 list_channel = ['HIGHNJ','LOWNJ','ALLNJ']
@@ -31,13 +33,14 @@ parser.add_argument("--mergeOverflow", dest="mergeOverflow", action="store_true"
 
 args = parser.parse_args()
 
-from ROOT import gROOT, TCanvas, TPad, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange, kWhite, kViolet
+from ROOT import gROOT, gStyle, TCanvas, TPad, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange, kWhite, kViolet, kRed
 
 gROOT.Reset()
 gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
+from Plotter.BackgroundTools import makePoissonErrors, integrate
 
 # Store sys integral for each systematic name
 
@@ -285,7 +288,7 @@ def saveSystHistogram( flav, var, nominalhist, tot_syst ):
     if nominalhist.GetSize() != len(g_unc_bins_NO_STAT):
         sys.exit("ERROR: nominal hist nbins: {0}, g_unc_bins_NO_STAT size: {1}".format(nbins,len(g_unc_bins_NO_STAT)))
 
-    sysstack = THStack("fakessys_stack_"+flav+"_"+var,"AllSys;"+nominalhist.GetXaxis().GetTitle()+";Sys./Nom.")
+    sysstack = THStack("fakessys_stack_"+flav+"_"+var,"AllSys;"+nominalhist.GetXaxis().GetTitle()+";Sys. [%]")
 
     legend = TLegend(0.22,0.7,0.45,0.9) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
     legend.SetBorderSize(0)     # no border
@@ -322,10 +325,10 @@ def saveSystHistogram( flav, var, nominalhist, tot_syst ):
             #print("\t\tthistuple: {0}".format(thistuple))
             if thistuple:
                 #print("\t\t{0}-th bin, sysvalue: {1:.3f}".format(bin,thistuple[0][0]))
-                if thistuple[0][0] < 0 or nominalhist.Integral(bin,bin) < 0:
+                if thistuple[0][0] < 0 or nominalhist.Integral(bin,bin) <= 0:
                     hist.SetBinContent(bin,0)
                 else:
-                    hist.SetBinContent(bin,thistuple[0][0]/nominalhist.Integral(bin,bin))
+                    hist.SetBinContent(bin,(thistuple[0][0]/nominalhist.Integral(bin,bin))*100)
             else:
                 #print("\t\t{0}-th bin, sysvalue: 0".format(bin))
                 hist.SetBinContent(bin,0)
@@ -346,7 +349,7 @@ def saveSystHistogram( flav, var, nominalhist, tot_syst ):
     syssumquadhist.SetLineColor(1)
     syssumquadhist.SetLineStyle(2)
     for bin, sq in g_sq_unc_bins_NO_STAT.iteritems():
-        if bin == 0 or nominalhist.Integral(bin,bin) < 0:
+        if bin == 0 or nominalhist.Integral(bin,bin) <= 0:
             syssumquadhist.SetBinContent(bin,0)
         else:
             syssumquadhist.SetBinContent(bin,sq/nominalhist.Integral(bin,bin))
@@ -378,7 +381,197 @@ def saveSystHistogram( flav, var, nominalhist, tot_syst ):
         hist.Write()
     foutput.Close()
 
-def makeSysPlots( flav, var, MC_hist, MM_hist ):
+
+def makeSysPlots( flav, var, observedhist, expectedhist ):
+
+    gROOT.SetBatch(True)
+
+    c = TCanvas("c1","Temp",50,50,600,600)
+
+    pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
+    pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
+    pad1.SetBottomMargin(0.02)
+    pad2.SetBottomMargin(0.4)
+    pad1.Draw()
+    pad2.Draw()
+
+    new_expectedhist = expectedhist.Clone(expectedhist.GetName())
+
+    # For expected hist, set the bin error as the sum in quadrature of stat (on expected) + syst (on fakes)
+
+    for ibin in range(1,new_expectedhist.GetNbinsX()+2):
+        uncertlist = [ g_sq_unc_bins_NO_STAT[ibin], new_expectedhist.GetBinError(ibin) ]
+        new_expectedhist.SetBinError(ibin, sumQuadrature(uncertlist) )
+
+    if observedhist:
+        observedgr = makePoissonErrors(observedhist)
+        observedgr.SetMarkerSize(0.8) # (1.2)
+        observedgr.SetLineColor(1)
+        observedgr.SetLineWidth(2)
+        observedgr.SetMarkerStyle(20)
+        observedgr.SetLineStyle(1)
+
+    new_expectedhist.SetLineWidth(2)
+    new_expectedhist.SetLineStyle(1)
+    new_expectedhist.SetLineColor(kBlue-4)
+    new_expectedhist.SetFillColor(kWhite)
+    new_expectedhist.SetFillStyle(1001)
+
+    err = new_expectedhist.Clone("tot_uncertainty")
+    err.SetFillColor(kOrange)
+    err.SetLineColor(10)
+    err.SetFillStyle(3356)
+    gStyle.SetHatchesLineWidth(2)
+    gStyle.SetHatchesSpacing(0.8)
+    err.SetMarkerSize(0)
+
+    # Trick to rescale:
+
+    ymax      = err.GetMaximum()
+    binmax    = err.GetMaximumBin()
+    binmaxerr = err.GetBinError(binmax)
+
+    if new_expectedhist.GetMaximum() > ymax:
+        ymax      = new_expectedhist.GetMaximum()
+        binmax    = new_expectedhist.GetMaximumBin()
+        binmaxerr = new_expectedhist.GetBinError(binmax)
+
+    #print("FLAV: {0} - MM max = {1:.2f} - expected max = {2:.2f}".format(flav,new_expectedhist.GetMaximum(),observedhist.GetMaximum()))
+
+    if observedhist:
+        if observedhist.GetMaximum() > ymax:
+            ymax      = observedhist.GetMaximum()
+            binmax    = observedhist.GetMaximumBin()
+            binmaxerr = observedhist.GetBinError(binmax)
+
+    #print("FLAV: {0} - max = {1:.2f} - binmax = {2} - binmaxerr = {3:.2f}".format(flav,ymax,binmax,binmaxerr))
+
+    err.SetMaximum( ( ymax + binmaxerr ) * 1.5 )
+    err.SetMinimum(0)
+
+    # --------------------------
+
+    # Stat + sys error on expected (ratio)
+
+    ratio_err = err.Clone("RatioErr")
+    ratio_err.SetXTitle(new_expectedhist.GetXaxis().GetTitle())
+    ratio_err.SetYTitle("Data/Exp.")
+    ratio_err.GetXaxis().SetTitleSize(0.15)
+    ratio_err.GetYaxis().SetTitleSize(0.15)
+    ratio_err.GetXaxis().SetTitleOffset(0.90)
+    ratio_err.GetYaxis().SetTitleOffset(0.35)
+    ratio_err.GetXaxis().SetLabelSize(0.15)
+    ratio_err.GetYaxis().SetLabelSize(0.12)
+    ratio_err.GetYaxis().SetNdivisions(505) #(5)
+    ratio_err.SetFillColor(kOrange)
+    ratio_err.SetLineColor(kOrange)#(10)
+    ratio_err.SetFillStyle(3356)
+    gStyle.SetHatchesLineWidth(2)
+    gStyle.SetHatchesSpacing(0.8)
+    ratio_err.SetMarkerSize(0)
+
+    ratio_err.Divide(err)
+
+    # obs / exp
+
+    ymax_ratio = -999
+    ymin_ratio = 999
+
+    if observedhist:
+        ratio_obs_exp = observedhist.Clone("RatioObsExp")
+        ratio_obs_exp.SetYTitle("Data/Exp.")
+        ratio_obs_exp.SetLineStyle(1)
+        ratio_obs_exp.SetMarkerSize(0.8)
+        ratio_obs_exp.SetLineColor(1)
+        ratio_obs_exp.SetMarkerStyle(20)
+        ratio_obs_exp.SetLineWidth(1)
+        ratio_obs_exp.Divide(new_expectedhist)
+
+        # Trick to rescale
+
+        ymax_ratio = ratio_obs_exp.GetMaximum()
+        ymin_ratio = ratio_obs_exp.GetMinimum()
+
+    #print("FLAV: {0} - MC/MM max = {1:.2f} - MC/MM min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
+
+    # For ratio error, get the bin with maximum uncertainty and the uncertainty value
+
+    max_unc = 0
+    for ibin in range(1, ratio_err.GetNbinsX()+1):
+        this_unc = ratio_err.GetBinError(ibin)
+      	if this_unc > max_unc:
+	    max_unc = this_unc
+
+    #print("FLAV: {0} - max unc./2 ratio = {1:.2f}".format(flav,max_unc/2.0))
+
+    if ( 1 + max_unc/2.0 ) > ymax_ratio:
+    	ymax_ratio = 1 + max_unc/2.0
+    if ( 1 - max_unc/2.0 ) < ymin_ratio:
+    	ymin_ratio = 1 - max_unc/2.0
+
+    if ymin_ratio < 0: ymin_ratio = 0
+
+    #print("FLAV: {0} - actual max = {1:.2f} - actual min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
+
+    ratio_err.SetMaximum( ymax_ratio * 1.2 )
+    ratio_err.SetMinimum( ymin_ratio * 0.8 )
+
+    # --------------------------
+
+    pad1.cd()
+
+    err.GetXaxis().SetLabelSize(0)
+    err.GetXaxis().SetLabelOffset(999)
+
+    err.Draw("E2")
+    new_expectedhist.Draw("HIST SAME")
+    if observedhist:
+        observedgr.Draw("P SAME")
+
+    legend = TLegend(0.6,0.7,0.8,0.9) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+    legend.SetBorderSize(0)	 # no border
+    legend.SetFillStyle(0)	 # Legend transparent background
+    legend.SetTextSize(0.035)    # Increase entry font size!
+    #legend.SetTextFont(42)	 # Helvetica
+
+    legend.AddEntry(new_expectedhist, "Tot. Expected ({0:.1f})".format(integrate(new_expectedhist)), "F")
+    if observedhist:
+        legend.AddEntry(observedhist, "Data ({0:.0f})".format(integrate(observedhist)), "P")
+    legend.AddEntry(err, "Stat. + Sys. Unc. (Fakes)", "F")
+
+    leg_ATLAS = TLatex()
+    leg_lumi  = TLatex()
+    leg_ATLAS.SetTextSize(0.03)
+    leg_ATLAS.SetNDC()
+    leg_lumi.SetTextSize(0.03)
+    leg_lumi.SetNDC()
+
+    legend.Draw()
+    leg_ATLAS.DrawLatex(0.19,0.85,"#bf{#it{ATLAS}} Work In Progress")
+    leg_lumi.DrawLatex(0.19,0.75,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
+
+    pad2.cd()
+    ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
+    ratio_err.Draw("E2")
+    if observedhist:
+        ratio_obs_exp.Draw("PE SAME")
+
+    refl = TLine(ratio_err.GetBinLowEdge(1), 1.0, ratio_err.GetBinLowEdge(ratio_err.GetNbinsX()+1), 1.0)
+    refl.SetLineStyle(2)
+    refl.SetLineColor(kRed)
+    refl.SetLineWidth(2)
+    refl.Draw("SAME")
+
+    # --------------------------
+
+    outpath = args.inputDir
+    if outpath[-1] == '/':
+      outpath = outpath[:-1]
+
+    c.SaveAs( outpath + "/" + flav + "_" + var + "_Sys.png" )
+
+
+def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
     gROOT.SetBatch(True)
 
@@ -404,7 +597,7 @@ def makeSysPlots( flav, var, MC_hist, MM_hist ):
     MC_hist.SetMarkerStyle(20)
     MC_hist.SetLineWidth(1)
 
-    new_MM_hist.SetLineWidth(3)
+    new_MM_hist.SetLineWidth(2)
     new_MM_hist.SetLineStyle(1)
     new_MM_hist.SetLineColor(kViolet-4)
     new_MM_hist.SetFillColor(kWhite)
@@ -417,7 +610,7 @@ def makeSysPlots( flav, var, MC_hist, MM_hist ):
     err.SetMarkerSize(0)
 
     # Trick to rescale:
-    #
+
     ymax      = new_MM_hist.GetMaximum()
     binmax    = new_MM_hist.GetMaximumBin()
     binmaxerr = new_MM_hist.GetBinError(binmax)
@@ -524,8 +717,8 @@ def makeSysPlots( flav, var, MC_hist, MM_hist ):
     leg_lumi.SetNDC()
 
     legend.Draw()
-    leg_ATLAS.DrawLatex(0.6,0.55,"#bf{#it{ATLAS}} Work In Progress")
-    leg_lumi.DrawLatex(0.6,0.45,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
+    leg_ATLAS.DrawLatex(0.19,0.85,"#bf{#it{ATLAS}} Work In Progress")
+    leg_lumi.DrawLatex(0.19,0.75,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
 
     pad2.cd()
     #ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
@@ -535,6 +728,7 @@ def makeSysPlots( flav, var, MC_hist, MM_hist ):
 
     refl = TLine(ratio_err.GetBinLowEdge(1), 1.0, ratio_err.GetBinLowEdge(ratio_err.GetNbinsX()+1), 1.0)
     refl.SetLineStyle(2)
+    refl.SetLineColor(kRed)
     refl.SetLineWidth(2)
     refl.Draw("SAME")
 
@@ -659,7 +853,7 @@ if __name__ == '__main__':
     		closure     = ( (fakes - ttbar) / (ttbar) ) * 100
     		closure_err = math.sqrt( ( ( math.pow(fakes,2.0) / math.pow(ttbar,4.0) ) * math.pow(ttbar_err,2.0) ) + ( math.pow(fakes_tot_err,2.0) / math.pow(ttbar,2.0) ) ) * 100
 
-    		makeSysPlots(flav,var_name,ttbar_nominal,fakes_nominal)
+    		makeSysPlotsClosure(flav,var_name,ttbar_nominal,fakes_nominal)
 
     		print("\n\tNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
 
@@ -679,6 +873,8 @@ if __name__ == '__main__':
     		if observed:
     		    print ("\n\tObserved: \n")
     		    obs, obs_err = getYields(observed)
+
+                makeSysPlots(flav,var_name,observed,expected_nominal)
 
     		signal = myfile.Get("signal")
 
