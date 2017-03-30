@@ -251,7 +251,7 @@ def getTotFakeUncertainty( nominal, stat, flav ):
 
     # Print out results in LaTeX friendly format!
 
-    print("\\begin{{table}}\n\\begin{{center}}\n\\begin{{tabular}}{{ll}}\n\\toprule\n\\multicolumn{{2}}{{c}}{{MY_FLAVOUR - $2\\leq N_{{jets}} \\leq 4$ VR, SR}} \\\\ \n\\midrule\nFakes (MM) = & {0:.2f} $\\pm$ \\\\\n & {1:.2f} $[{2:.2f}\%]$ (Sidebands stat.) $\pm$ \\\\".format(nominal, stat, (stat/nominal)*100))
+    print("\\begin{{table}}\n\\begin{{center}}\n\\begin{{tabular}}{{ll}}\n\\toprule\n\\multicolumn{{2}}{{c}}{{MY_FLAVOUR - $2\\leq N_{{jets}} \\leq 3$ VR, SR}} \\\\ \n\\midrule\nFakes (MM) = & {0:.2f} $\\pm$ \\\\\n & {1:.2f} $[{2:.2f}\%]$ (Sidebands stat.) $\pm$ \\\\".format(nominal, stat, (stat/nominal)*100))
     for s in sorted( sq_list, key = lambda sq : sq[2] ):
         proc = "?Unknown Process?"
         if s[0] == "Non_Closure" : proc = "Non closure"
@@ -294,7 +294,7 @@ def saveSystHistogram( flav, var, nominalhist, tot_syst ):
     legend.SetBorderSize(0)     # no border
     legend.SetFillStyle(0)      # Legend transparent background
     legend.SetTextSize(0.025)   # Increase entry font size!
-    legend.SetTextFont(42)      # Helvetica
+    #legend.SetTextFont(42)      # Helvetica
 
     # By construction, each bin has got the same number of systematic sources contributing.
     # We need to create an histogram for each one of them.
@@ -519,7 +519,6 @@ def makeSysPlots( flav, var, observedhist, expectedhist ):
     # --------------------------
 
     pad1.cd()
-
     err.GetXaxis().SetLabelSize(0)
     err.GetXaxis().SetLabelOffset(999)
 
@@ -568,7 +567,9 @@ def makeSysPlots( flav, var, observedhist, expectedhist ):
     if outpath[-1] == '/':
       outpath = outpath[:-1]
 
-    c.SaveAs( outpath + "/" + flav + "_" + var + "_Sys.png" )
+    extensions = [".png",".eps",".root"]
+    for ext in extensions:
+        c.SaveAs( outpath + "/" + flav + "_" + var + "_Sys" + ext )
 
 
 def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
@@ -794,6 +795,10 @@ if __name__ == '__main__':
     	    clearDicts()
 
     	    print ("\tFlavour region: {0}\n".format(flav))
+
+            if flav == "ElEl" and "Mu" in var_name: continue
+            if flav == "MuMu" and "El" in var_name: continue
+            if flav == "OF" and any ( f in var_name for f in ["El1","Mu1"] ): continue
 
     	    filename = inputpath + flav + region + "/" + flav + region + "_" + var_name + ".root"
     	    myfile = TFile(filename)

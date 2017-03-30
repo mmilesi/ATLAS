@@ -85,7 +85,7 @@ parser.add_argument("--update", dest="update", action="store_true", default=Fals
 
 args = parser.parse_args()
 
-from ROOT import ROOT, gROOT, Double, gPad, TPad, TLine, TH1, TH1D, TH2, TH2D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
+from ROOT import ROOT, gROOT, gStyle, Double, gPad, TPad, TLine, TH1, TH1D, TH2, TH2D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
 
 from Plotter.BackgroundTools import set_fancy_2D_style
 
@@ -1416,7 +1416,7 @@ class RealFakeEffTagAndProbe:
                     legend.SetBorderSize(0)     # no border
                     legend.SetFillStyle(0)      # Legend transparent background
                     legend.SetTextSize(0.035)   # Increase entry font size!
-                    legend.SetTextFont(42)      # Helvetica
+                    #legend.SetTextFont(42)      # Helvetica
 
                     legend.SetHeader(self.leptons_full[lep])
 
@@ -1476,7 +1476,7 @@ class RealFakeEffTagAndProbe:
                     legend.SetBorderSize(0)     # no border
                     legend.SetFillStyle(0)      # Legend transparent background
                     legend.SetTextSize(0.035)   # Increase entry font size!
-                    legend.SetTextFont(42)      # Helvetica
+                    #legend.SetTextFont(42)      # Helvetica
 
                     legend.SetHeader(self.leptons_full[lep])
 
@@ -1639,7 +1639,7 @@ class RealFakeEffTagAndProbe:
           	    legend.SetBorderSize(0)	# no border
           	    legend.SetFillStyle(0)	# Legend transparent background
           	    legend.SetTextSize(0.035)	# Increase entry font size!
-          	    legend.SetTextFont(42)	# Helvetica
+          	    #legend.SetTextFont(42)	# Helvetica
 
                     leg_ATLAS  = TLatex()
                     leg_lumi   = TLatex()
@@ -1724,18 +1724,18 @@ class RealFakeEffTagAndProbe:
 			for idx, sys in enumerate(self.__systematics[1:]):
 			    if sys in h.GetName():
 
-				# print "\tsys hist name: ", h.GetName()
+				#print "\tsys hist name: ", h.GetName()
                                 tokens = h.GetName().split("_")
 
                                 for bin in range(1,hist_nominal.GetNbinsX()+2):
-                                    sys_var = abs( hist_nominal.GetBinContent(int(bin)) - h.GetBinContent(int(bin)) )
+                                    sys_var = h.GetBinContent(int(bin)) - hist_nominal.GetBinContent(int(bin))
                                     bin = str(bin)
-                                    # print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
+                                    #print("\t\tvariation[{0}] = {1}".format(bin,sys_var))
                                     if not all_sys.get(bin):
                                         all_sys[bin] = pow(sys_var,2.0)
                                     else:
                                         all_sys[bin] += pow(sys_var,2.0)
-				    # print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
+				    #print("\t\tsum var[{0}] = {1}".format(bin,all_sys[bin]))
 
                                     h.SetLineColor(self.__syst_color_dict[sys+"_ND"])
                                     h.SetMarkerColor(self.__syst_color_dict[sys+"_ND"])
@@ -1747,7 +1747,7 @@ class RealFakeEffTagAndProbe:
 
 		    for key, sys_var in sorted(all_sys.iteritems()):
 		        all_sys[key] = math.sqrt(all_sys[key])
-			# print("\ttot sys bin[{0}] = {1}".format(key,all_sys[key]))
+			#print("\tallsys bin[{0}] = {1}".format(key,all_sys[key]))
 
 	  	    c = TCanvas("c_"+ var + "_" + lep + "_" + eff,"Efficiencies")
           	    c.SetFrameFillColor(0)
@@ -1772,32 +1772,38 @@ class RealFakeEffTagAndProbe:
 		        scale_dn = 0.95
 		        scale_up = 1.05
 		    ymin, ymax = self.__getLimits__(histlist, scale_up, scale_dn)
-		    hist_nominal.GetYaxis().SetRangeUser(ymin,ymax)
+		    #hist_nominal.GetYaxis().SetRangeUser(ymin,ymax)
+                    hist_nominal.SetMaximum(ymax*1.2)
+                    hist_nominal.SetMinimum(0)
 
                     # Make a clone of nominal, and divide by itself
 
 		    rationom = hist_nominal.Clone(hist_nominal.GetName()+"_Ratio")
+                    rationom.Add(rationom,-1)
 		    rationom.Divide(hist_nominal)
 		    for bin in 	range(1,rationom.GetSize()):
 		        error = 0.0
 			if hist_nominal.GetBinContent(bin) > 0:
-		            error = 2.0 * ( hist_nominal.GetBinError(bin) / hist_nominal.GetBinContent(bin) )
+		            error = hist_nominal.GetBinError(bin) / hist_nominal.GetBinContent(bin)
 		        rationom.SetBinError( bin, error )
 
 		    rationom.SetLineStyle(1)
 		    rationom.SetLineWidth(2)
 		    rationom.SetMarkerSize(0)
-             	    rationom.SetYTitle("Syst/Nom")
+             	    rationom.SetYTitle("#Delta#varepsilon/#varepsilon")
              	    rationom.GetXaxis().SetTitleSize(0.15)
              	    rationom.GetYaxis().SetTitleSize(0.15)
              	    rationom.GetXaxis().SetTitleOffset(1.0)
              	    rationom.GetYaxis().SetTitleOffset(0.35)
              	    rationom.GetXaxis().SetLabelSize(0.15)
              	    rationom.GetYaxis().SetLabelSize(0.12)
-             	    rationom.GetYaxis().SetNdivisions(503)#(5)
+             	    rationom.GetYaxis().SetNdivisions(505)#(503)#(5)
 	   	    rationom.SetFillColor(kGray+3)
-           	    rationom.SetLineColor(10)
-           	    rationom.SetFillStyle(3004)
+           	    rationom.SetLineColor(kGray+3)
+                    rationom.SetFillStyle(3356)
+                    gStyle.SetHatchesLineWidth(1)
+                    gStyle.SetHatchesSpacing(0.6)
+           	    #rationom.SetFillStyle(3004)
 
 		    ratiolist = []
 	  	    for h in hists_sys_numerator:
@@ -1806,6 +1812,7 @@ class RealFakeEffTagAndProbe:
 			    print("\t num   = [" + ",".join( "{0:.3f}".format(x) for x in [ h.GetBinContent(i) for i in range(1,h.GetSize()) ] ) + "]" )
 			    print("\t denom = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_nominal.GetBinContent(i) for i in range(1,hist_nominal.GetSize()) ] ) + "]" )
 			ratio = h.Clone(h.GetName())
+                        ratio.Add(hist_nominal,-1)
                         ratio.Divide(hist_nominal)
 			if self.verbose:
 			    print("\t ratio = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio.GetBinContent(i) for i in range(1,ratio.GetSize()) ] ) + "]" )
@@ -1817,6 +1824,7 @@ class RealFakeEffTagAndProbe:
 			    print("\t num   = [" + ",".join( "{0:.3f}".format(x) for x in [ h.GetBinContent(i) for i in range(1,h.GetSize()) ] ) + "]" )
 			    print("\t denom = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_nominal.GetBinContent(i) for i in range(1,hist_nominal.GetSize()) ] ) + "]" )
 			ratio = h.Clone(h.GetName())
+                        ratio.Add(hist_nominal,-1)
                         ratio.Divide(hist_nominal)
 			if self.verbose:
 			    print("\t ratio = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio.GetBinContent(i) for i in range(1,ratio.GetSize()) ] ) + "]" )
@@ -1828,13 +1836,20 @@ class RealFakeEffTagAndProbe:
 			    print("\t num   = [" + ",".join( "{0:.3f}".format(x) for x in [ h.GetBinContent(i) for i in range(1,h.GetSize()) ] ) + "]" )
 			    print("\t denom = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_nominal.GetBinContent(i) for i in range(1,hist_nominal.GetSize()) ] ) + "]" )
 			ratio = h.Clone(h.GetName())
+                        ratio.Add(hist_nominal,-1)
                         ratio.Divide(hist_nominal)
 			if self.verbose:
 			    print("\t ratio = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio.GetBinContent(i) for i in range(1,ratio.GetSize()) ] ) + "]" )
 			ratiolist.append(ratio)
 
 		    ratio_ymin, ratio_ymax = self.__getLimits__(ratiolist, ratio=True)
-		    rationom.GetYaxis().SetRangeUser(ratio_ymin, ratio_ymax)
+		    #rationom.GetYaxis().SetRangeUser(ratio_ymin, ratio_ymax)
+		    ###rationom.SetMaximum(ratio_ymax*1.4)
+		    #rationom.SetMinimum(ratio_ymin*(1.0/1.2))
+		    ##rationom.SetMinimum(ratio_ymin*1.4)
+
+                    rationom.SetMaximum(0.6)
+                    rationom.SetMinimum(-0.6)
 
 		    pad1.cd()
 		    # Remove X axis labels from top pad
@@ -1851,9 +1866,10 @@ class RealFakeEffTagAndProbe:
 		    rationom.Draw("E2")
 		    for r in ratiolist:
 			r.Draw("HIST SAME")
-                    refl = TLine(rationom.GetBinLowEdge(1), 1., rationom.GetBinLowEdge(rationom.GetNbinsX()+1), 1.)
+
+                    refl = TLine(rationom.GetBinLowEdge(1), 0.0, rationom.GetBinLowEdge(rationom.GetNbinsX()+1), 0.0)
                     refl.SetLineStyle(2)
-		    refl.SetLineColor(kBlack)
+		    refl.SetLineColor(kRed)
                     refl.SetLineWidth(2)
 		    refl.Draw("SAME")
 
@@ -1881,7 +1897,7 @@ class RealFakeEffTagAndProbe:
           	    legend_allsys.SetBorderSize(0)	# no border
           	    legend_allsys.SetFillStyle(0)	# Legend transparent background
           	    legend_allsys.SetTextSize(0.035)	# Increase entry font size!
-          	    legend_allsys.SetTextFont(42)	# Helvetica
+          	    #legend_allsys.SetTextFont(42)	# Helvetica
 
 		    hist_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_AllSys")
 	   	    hist_allsys.SetFillColor(kOrange-2)
@@ -1903,11 +1919,15 @@ class RealFakeEffTagAndProbe:
 		        hist_allsys.SetBinError(bin,error)
 
 		    ymin_allsys, ymax_allsys = self.__getLimits__([hist_allsys,hist_nominal], scale_up, scale_dn)
-		    hist_allsys.GetYaxis().SetRangeUser(ymin_allsys,ymax_allsys)
-
+		    #hist_allsys.GetYaxis().SetRangeUser(ymin_allsys,ymax_allsys)
+                    hist_allsys.SetMaximum(ymax_allsys*1.2)
+                    hist_allsys.SetMinimum(0)
 
 		    ratio_allsys = hist_nominal.Clone(hist_nominal.GetName()+"_Ratio_AllSys")
+                    ratio_allsys.Add(hist_nominal,-1)
 		    ratio_allsys.Divide(hist_nominal)
+
+                    #print("Setting error on ratio_allsys:")
 		    for bin in 	range(1,ratio_allsys.GetSize()):
 			# A dirty hack: if the error is zero, drawing w/ option E2 seems
 			# to be ingnored and HIST gets used instead.
@@ -1915,13 +1935,17 @@ class RealFakeEffTagAndProbe:
 			#
 			error = 0.0001
 			if hist_nominal.GetBinContent(bin) > 0 and all_sys[str(bin)]:
-			    error = 2.0 * ( all_sys[str(bin)] / hist_nominal.GetBinContent(bin) )
+			    #error = 2.0 * ( all_sys[str(bin)] / hist_nominal.GetBinContent(bin) )
+                            #print("all_sys[{0}] = {1:.3f}, nominal[{0}] = {2:.3f}".format(bin,all_sys[str(bin)],hist_nominal.GetBinContent(bin)))
+			    error = all_sys[str(bin)] / hist_nominal.GetBinContent(bin)
+                            #print("error = ( all_sys[{0}] ) / nominal[{0}] = {1:.3f}".format(bin,error))
 		        ratio_allsys.SetBinError( bin, error )
 
 		    ratio_allsys.SetLineStyle(1)
+		    ratio_allsys.SetLineColor(kBlack)
 		    ratio_allsys.SetLineWidth(2)
 		    ratio_allsys.SetMarkerSize(0)
-             	    ratio_allsys.SetYTitle("Syst./Nom.")
+             	    ratio_allsys.SetYTitle("#Delta#varepsilon/#varepsilon")
              	    ratio_allsys.GetXaxis().SetTitleSize(0.15)
              	    ratio_allsys.GetYaxis().SetTitleSize(0.15)
              	    ratio_allsys.GetXaxis().SetTitleOffset(1.0)
@@ -1937,7 +1961,9 @@ class RealFakeEffTagAndProbe:
 		    ratio_ymin_allsys, ratio_ymax_allsys = self.__getLimits__([ratio_allsys,rationom], shift_up=0.2, shift_dn=0.2, ratio=True)
 
 		    print ("ratio_ymin_allsys = {0:.1f}, ratio_ymax_allsys = {1:.1f}".format(ratio_ymin_allsys, ratio_ymax_allsys))
-		    ratio_allsys.GetYaxis().SetRangeUser(round(ratio_ymin_allsys,1), round(ratio_ymax_allsys,1))
+		    #ratio_allsys.GetYaxis().SetRangeUser(round(ratio_ymin_allsys,1), round(ratio_ymax_allsys,1))
+                    ratio_allsys.SetMaximum(ratio_ymax_allsys*1.2)
+                    ratio_allsys.SetMinimum(ratio_ymin_allsys*(1.0/1.2))
 
           	    pad1_allsys = TPad("pad1", "", 0, 0.25, 1, 1)
           	    pad2_allsys = TPad("pad2", "", 0, 0,   1, 0.25)
@@ -1953,29 +1979,25 @@ class RealFakeEffTagAndProbe:
                     hist_allsys.GetXaxis().SetLabelOffset(999)
 		    hist_allsys.Draw("E2")
 		    hist_nominal.Draw("E0 SAME")
+
                     legend_allsys.Draw()
 		    leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
                     leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi))
 
-		    print("NOMINAL: bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinContent(ibin) for ibin in range(1,hist_nominal.GetSize()) ] ) + "]" )
-		    print("NOMINAL: binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_nominal.GetBinError(ibin) for ibin in range(1,hist_nominal.GetSize()) ] ) + "]" )
-		    print("ALLSYS:  bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_allsys.GetBinContent(ibin) for ibin in range(1,hist_allsys.GetSize()) ] ) + "]" )
-		    print("ALLSYS:  binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ hist_allsys.GetBinError(ibin) for ibin in range(1,hist_allsys.GetSize()) ] ) + "]" )
+		    print("NOMINAL: bincontent    = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_nominal.GetBinContent(ibin) for ibin in range(1,hist_nominal.GetSize()) ] ) + "]" )
+		    print("NOMINAL: binerror (+-) = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_nominal.GetBinError(ibin) for ibin in range(1,hist_nominal.GetSize()) ] ) + "]" )
+		    print("ALLSYS:  bincontent    = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_allsys.GetBinContent(ibin) for ibin in range(1,hist_allsys.GetSize()) ] ) + "]" )
+		    print("ALLSYS:  binerror (+-) = [" + ",".join( "{0:.3f}".format(x) for x in [ hist_allsys.GetBinError(ibin) for ibin in range(1,hist_allsys.GetSize()) ] ) + "]" )
 
 		    pad2_allsys.cd()
-		    ratio_allsys.Draw("E2")
-		    rationom.Draw("E2 SAME")
-
-		    print("RATIO NOMINAL: bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ rationom.GetBinContent(ibin) for ibin in range(1,rationom.GetSize()) ] ) + "]" )
-		    print("RATIO NOMINAL: binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ rationom.GetBinError(ibin) for ibin in range(1,rationom.GetSize()) ] ) + "]" )
-		    print("RATIO ALLSYS:  bincontent    = [" + ",".join( "{0:.2f}".format(x) for x in [ ratio_allsys.GetBinContent(ibin) for ibin in range(1,ratio_allsys.GetSize()) ] ) + "]" )
-		    print("RATIO ALLSYS:  binerror (+-) = [" + ",".join( "{0:.2f}".format(x) for x in [ ratio_allsys.GetBinError(ibin) for ibin in range(1,ratio_allsys.GetSize()) ] ) + "]" )
-
-		    refl = TLine(rationom.GetBinLowEdge(1), 1., rationom.GetBinLowEdge(rationom.GetNbinsX()+1), 1.)
-                    refl.SetLineStyle(2)
-		    refl.SetLineColor(kBlack)
-                    refl.SetLineWidth(2)
+		    rationom.Draw("E2")
+		    ratio_allsys.Draw("E2 SAME")
 		    refl.Draw("SAME")
+
+		    print("RATIO NOMINAL: bincontent    = [" + ",".join( "{0:.3f}".format(x) for x in [ rationom.GetBinContent(ibin) for ibin in range(1,rationom.GetSize()) ] ) + "]" )
+		    print("RATIO NOMINAL: binerror (+-) = [" + ",".join( "{0:.3f}".format(x) for x in [ rationom.GetBinError(ibin) for ibin in range(1,rationom.GetSize()) ] ) + "]" )
+		    print("RATIO ALLSYS:  bincontent    = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio_allsys.GetBinContent(ibin) for ibin in range(1,ratio_allsys.GetSize()) ] ) + "]" )
+		    print("RATIO ALLSYS:  binerror (+-) = [" + ",".join( "{0:.3f}".format(x) for x in [ ratio_allsys.GetBinError(ibin) for ibin in range(1,ratio_allsys.GetSize()) ] ) + "]" )
 
 		    canvas_allsys_filename = "_".join((eff,lep,var,"Efficiency",proc,"CombinedSystematics"))
 
