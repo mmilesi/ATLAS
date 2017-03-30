@@ -48,6 +48,8 @@ parser.add_argument('--variables', dest='variables', action='store', type=str, n
                   help='List of variables to be considered. Use a space-separated list. If using a 2D input distribution, pass a string of format \"varxname&&varyname\" (remember to escape the \"&\" symbol in the shell!). If unspecified, will consider \"Pt\" only.')
 parser.add_argument('--efficiency', dest='efficiency', action='store', default=[g_efficiencies[0]], type=str, nargs='+', choices=g_efficiencies,
                   help='The efficiency type to be measured. Can pass multiple space-separated arguments to this command-line option (picking among the above list). If this option is not specified, default will be \'{0}\''.format(g_efficiencies[0]))
+parser.add_argument("--do3L", dest="do3L", action="store_true",default=False,
+                  help="Save efficiencies to be used in 3L SR.")
 parser.add_argument("--channel", metavar="channel", default="", type=str,
                   help="Flavour composition of the two leptons in CR to be considered (\"ElEl\", \"MuMu\", \"OF\"). If unspecified, will consider all combinations.")
 parser.add_argument('--lepton', dest='lepton', action='store', default=[g_leptons[0]], type=str, nargs='+', choices=g_leptons,
@@ -1191,6 +1193,8 @@ class RealFakeEffTagAndProbe:
             if "&&" in hname:
                 hname = hname.replace("&&","_VS_")
                 h.SetName(hname)
+            if args.do3L:
+                h.SetName("3L_"+hname)
     	    h.Write()
 
     	    eff=[]
