@@ -204,7 +204,7 @@ class RealFakeEffTagAndProbe:
 	self.log     = False
 
         self.lumi = 36.4
-	self.extensionlist = ["eps","png","root"]
+	self.extensionlist = ["pdf","png","root"]
 
     def addProcess( self, processlist=None ):
 	self.__processes.extend(processlist)

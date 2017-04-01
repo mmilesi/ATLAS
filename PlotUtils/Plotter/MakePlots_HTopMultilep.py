@@ -757,7 +757,7 @@ if __name__ == "__main__":
             elif do2LSS_LOWNJ_VR:
                 vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = "JVT_EventWeight", sysvar = False) )
 
-            vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0), sysvar = False )
+            vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = False) )
             # vardb.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
             # vardb.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
             vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = False) )
@@ -2245,7 +2245,7 @@ if __name__ == "__main__":
 
             merge_overflow = args.mergeOverflow
 
-            list_formats = [ plotname + ".png", plotname + ".eps" ]
+            list_formats = [ plotname + ".png", plotname + ".pdf" ]
             if doCFChallenge:
                 list_formats = []
 
@@ -2321,7 +2321,7 @@ if __name__ == "__main__":
 		        print ("\t\tDirectory for systematic plot:\t{0}/".format( dirname ))
                     print ("\t\t-----------------------------------------------------------------------------------------------------------------------------\n")
 
-                    list_formats_sys = [] # [ plotname + ".png"] # [ plotname + ".eps" ]
+                    list_formats_sys = [] # [ plotname + ".png"] # [ plotname + ".pdf" ]
 
                     # plotSystematics is the function which takes care of the systematics
 
