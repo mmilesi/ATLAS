@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description='Get yields and systematics for MM'
 
 list_channel = ['HIGHNJ','LOWNJ','ALLNJ']
 
-categories   = ["ALL","ElEl","MuMu","OF"]
+categories   = ["ALL","ElEl","MuMu","OF","Inclusive"]
 
 luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
                  "ICHEP 2015+2016 DS":13.20768,       # August 2016
@@ -21,7 +21,7 @@ parser.add_argument('inputDir', metavar='inputDir',type=str,
 parser.add_argument('--channel', dest='channel', action='store', default='HIGHNJ', type=str, nargs='+',
                     help='The channel chosen. Full list of available options:\n{0}'.format(list_channel))
 parser.add_argument('--category', dest='category', action='store', default=categories[0], type=str, nargs='+', choices=categories,
-                    help='The category chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). If this option is not specified, default will be \'{0}\''.format(categories[0]))
+                    help='The category chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). If this option is not specified, default will be \'{0}\' (NB: \'Inclusive\' is not included by default, no pun intended:))'.format(categories[0]))
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
                     help='List of variables to be considered. Use a space-separated list.')
 parser.add_argument('--closure', dest='closure', action='store_true', default=False,
@@ -33,7 +33,7 @@ parser.add_argument("--mergeOverflow", dest="mergeOverflow", action="store_true"
 
 args = parser.parse_args()
 
-from ROOT import gROOT, gStyle, TCanvas, TPad, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange, kWhite, kViolet, kRed
+from ROOT import gROOT, gStyle, TCanvas, TPad, TH1, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange, kWhite, kViolet, kRed
 
 gROOT.Reset()
 gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
@@ -45,6 +45,10 @@ from Plotter.BackgroundTools import makePoissonErrors, integrate
 # Store sys integral for each systematic name
 
 g_sys_dict = {}
+
+# Store each histogram bin's content
+
+g_content_bins = {}
 
 # Store for each histogram bin a list with the uncertainties for each source
 #
@@ -81,6 +85,8 @@ def getYields(nominal, up=None, dn=None, sysname=None, sysgroup=None, debug=Fals
 
         stat_error    = Double(0)
         value_nominal = nominal.IntegralAndError(bin,nextbin,stat_error)
+
+        g_content_bins[bin] = value_nominal
 
         bincenter = nominal.GetBinCenter(bin)
 
@@ -201,14 +207,21 @@ def sumQuadrature ( inlist ):
 
 def getTotFakeUncertainty( nominal, stat, flav ):
 
+    non_closure_vals = {}
+
     if ( "HIGHNJ" in args.channel ):
-        if flav == "ElEl" : non_closure = 0.1711 * nominal # Updated on v27
-        if flav == "OF"   : non_closure = 0.1316 * nominal # Updated on v27
-        if flav == "MuMu" : non_closure = 0.0461 * nominal # Updated on v27
+        non_closure_vals["MuMu"] = 0.0461 # Updated on v27
+        non_closure_vals["OF"]   = 0.1316 # Updated on v27
+        non_closure_vals["ElEl"] = 0.1711 # Updated on v27
     elif ( "LOWNJ" in args.channel ):
-        if flav == "ElEl" : non_closure = 0.0208 * nominal # Updated on v27
-        if flav == "OF"   : non_closure = 0.0481 * nominal # Updated on v27
-        if flav == "MuMu" : non_closure = 0.0281 * nominal # Updated on v27
+        non_closure_vals["MuMu"] = 0.0281 # Updated on v27
+        non_closure_vals["OF"]   = 0.0481 # Updated on v27
+        non_closure_vals["ElEl"] = 0.0208 # Updated on v27
+
+    if flav == "Inclusive" :
+        non_closure ={"MuMu":non_closure_vals["MuMu"] * nominal, "OF":non_closure_vals["OF"] * nominal, "ElEl":non_closure_vals["ElEl"] * nominal}
+    else:
+        non_closure = non_closure_vals[flav] * nominal
 
     # If you are doing closure, do not consider closure syst!
 
@@ -221,7 +234,9 @@ def getTotFakeUncertainty( nominal, stat, flav ):
     # This prints out sorting systematics from smallest to largest
 
     print("\t\tTot. yields w/ systematics (ungrouped):\n")
-    print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (Sidebands Stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) )
+
+    print g_sys_dict
+    #print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (Sidebands Stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) and not type(g_sys_dict[key]) is dict ) )
 
     print("")
 
@@ -229,6 +244,9 @@ def getTotFakeUncertainty( nominal, stat, flav ):
 
     sq_list = []
     for sg, values in g_sysgroup_dict.iteritems():
+        print sg
+        print values
+        if any( type(t) is dict for t in values ): continue
         tup = ( sg, sumQuadrature(values), (sumQuadrature(values)/nominal)*100 )
         sq_list.append(tup)
 
@@ -242,12 +260,46 @@ def getTotFakeUncertainty( nominal, stat, flav ):
 
     toterrlist = list(g_sys_dict.values())
     toterrlist.extend([stat])
+    toterrlist = [ e for e in toterrlist if not type(e) is dict ]
     sq = sumQuadrature( toterrlist )
 
-    sq_NO_STAT = sumQuadrature( list(g_sys_dict.values()) )
+    toterrlist_NO_STAT = list(g_sys_dict.values())
+    toterrlist_NO_STAT = [ e for e in toterrlist_NO_STAT if not type(e) is dict ]
+    sq_NO_STAT = sumQuadrature( toterrlist_NO_STAT )
 
     print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (TOTAL UNCERTAINTY)".format(nominal, sq, (sq/nominal)*100))
     print ("\t\t                   +- {0:.2f} [{1:.2f} %] (TOTAL SYST. UNCERTAINTY)".format(sq_NO_STAT, (sq_NO_STAT/nominal)*100))
+
+    # Add in quadrature the non-closure uncertainty to each bin's total uncertainty
+
+    if not flav == "Inclusive":
+        print("")
+        for bin, list_unc in g_unc_bins.iteritems():
+            g_sq_unc_bins[bin] = sumQuadrature( [x[0] for x in list_unc] + [ non_closure_vals[flav] * g_content_bins[bin] ] )
+            print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins[bin]) )
+        print("")
+        for bin, list_unc in g_unc_bins_NO_STAT.iteritems():
+            g_sq_unc_bins_NO_STAT[bin] = sumQuadrature( [x[0] for x in list_unc] + [ non_closure_vals[flav] * g_content_bins[bin] ] )
+            print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins_NO_STAT[bin]) )
+        print("")
+    else:
+        print("")
+        print "bin[1] = ", g_content_bins[1]
+        print "bin[2] = ", g_content_bins[2]
+        print "bin[3] = ", g_content_bins[3]
+        g_sq_unc_bins[1] = sumQuadrature( [x[0] for x in g_unc_bins[1]] + [ non_closure_vals["MuMu"] * g_content_bins[1] ] )
+        g_sq_unc_bins[2] = sumQuadrature( [x[0] for x in g_unc_bins[2]] + [ non_closure_vals["OF"]   * g_content_bins[2] ] )
+        g_sq_unc_bins[3] = sumQuadrature( [x[0] for x in g_unc_bins[3]] + [ non_closure_vals["ElEl"] * g_content_bins[3] ] )
+        print("1-th bin (MuMu), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
+        print("1-th bin (OF), list of uncertainties (INCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
+        print("1-th bin (ElEl), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
+        print("")
+        g_sq_unc_bins_NO_STAT[1] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[1]] + [ non_closure_vals["MuMu"] * g_content_bins[1] ] )
+        g_sq_unc_bins_NO_STAT[2] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[2]] + [ non_closure_vals["OF"]   * g_content_bins[2] ] )
+        g_sq_unc_bins_NO_STAT[3] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[3]] + [ non_closure_vals["ElEl"] * g_content_bins[3] ] )
+        print("1-th bin (MuMu), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
+        print("1-th bin (OF), list of uncertainties (EXCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
+        print("1-th bin (ElEl), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
 
     # Print out results in LaTeX friendly format!
 
@@ -272,6 +324,7 @@ def clearDicts():
 
     g_sys_dict.clear()
     g_sysgroup_dict .clear()
+    g_content_bins.clear()
     g_unc_bins.clear()
     g_unc_bins_NO_STAT.clear()
     g_sq_unc_bins.clear()
@@ -399,9 +452,18 @@ def makeSysPlots( flav, var, observedhist, expectedhist ):
 
     # For expected hist, set the bin error as the sum in quadrature of stat (on expected) + syst (on fakes)
 
-    for ibin in range(1,new_expectedhist.GetNbinsX()+2):
+    print("\nmakeSysPlots()\n")
+
+    for w in new_expectedhist.GetSumw2():
+        print w
+
+    for ibin in range(1,new_expectedhist.GetSize()):
         uncertlist = [ g_sq_unc_bins_NO_STAT[ibin], new_expectedhist.GetBinError(ibin) ]
+        #uncertlist = [ g_sq_unc_bins[ibin] ] # This is just stat + syst for fakes
         new_expectedhist.SetBinError(ibin, sumQuadrature(uncertlist) )
+        print("\t\t{0}-th bin,".format(ibin) + " tot. uncertainty (stat+syst): {0:.3f}".format( sumQuadrature(uncertlist) ) )
+        if new_expectedhist.Integral(ibin,ibin) > 0:
+            print("\t\tnew_expectedhist[{0}] = {1:.3f} +- {2:.3f} ({3:.3f} [%])".format( ibin, new_expectedhist.GetBinContent(ibin), new_expectedhist.GetBinError(ibin) , ( new_expectedhist.GetBinError(ibin) / new_expectedhist.Integral(ibin,ibin) ) * 100 ) )
 
     if observedhist:
         observedgr = makePoissonErrors(observedhist)
@@ -453,7 +515,7 @@ def makeSysPlots( flav, var, observedhist, expectedhist ):
 
     # Stat + sys error on expected (ratio)
 
-    ratio_err = err.Clone("RatioErr")
+    ratio_err = new_expectedhist.Clone("RatioErr")
     ratio_err.SetXTitle(new_expectedhist.GetXaxis().GetTitle())
     ratio_err.SetYTitle("Data/Exp.")
     ratio_err.GetXaxis().SetTitleSize(0.15)
@@ -470,7 +532,17 @@ def makeSysPlots( flav, var, observedhist, expectedhist ):
     gStyle.SetHatchesSpacing(0.8)
     ratio_err.SetMarkerSize(0)
 
-    ratio_err.Divide(err)
+    # print("")
+    # for ibin in range(1,ratio_err.GetSize()):
+    #     print("\t\tratio_err[{0}]  = {1:.3f} +- {2:.4f}".format( ibin, ratio_err.GetBinContent(ibin), ratio_err.GetBinError(ibin) ))
+
+    ratio_err.Divide(new_expectedhist)
+    for ibin in range(1,ratio_err.GetSize()):
+        if new_expectedhist.GetBinError(ibin) > 0:
+            ratio_err.SetBinError(ibin, new_expectedhist.GetBinError(ibin)/new_expectedhist.GetBinContent(ibin))
+
+    # for ibin in range(1,ratio_err.GetSize()):
+    #     print("\t\tratio_err[{0}]  = {1:.3f} +- {2:.4f}".format( ibin, ratio_err.GetBinContent(ibin), ratio_err.GetBinError(ibin) ))
 
     # obs / exp
 
@@ -550,7 +622,11 @@ def makeSysPlots( flav, var, observedhist, expectedhist ):
     leg_lumi.DrawLatex(0.19,0.75,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
 
     pad2.cd()
-    ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
+
+    # Hardcoded axis limits
+    ratio_err.GetYaxis().SetRangeUser(0.4, 1.6)
+    pad2.SetGridy(1)
+
     ratio_err.Draw("E2")
     if observedhist:
         ratio_obs_exp.Draw("PE SAME")
@@ -593,10 +669,14 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
         new_MM_hist.SetBinError(ibin, g_sq_unc_bins[ibin] )
 
     MC_hist.SetLineStyle(2)
+    MC_hist.SetLineWidth(3)
+    MC_hist.SetLineColor(kViolet-4)
     MC_hist.SetMarkerSize(0.8)
-    MC_hist.SetLineColor(1)
+    MC_hist.SetMarkerColor(1)
     MC_hist.SetMarkerStyle(20)
-    MC_hist.SetLineWidth(1)
+    # MC_hist.SetMarkerSize(0.8)
+    # MC_hist.SetMarkerColor(kViolet-4)
+    # MC_hist.SetMarkerStyle(24)
 
     new_MM_hist.SetLineWidth(2)
     new_MM_hist.SetLineStyle(1)
@@ -625,7 +705,7 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
     #print("FLAV: {0} - max = {1:.2f} - binmax = {2} - binmaxerr = {3:.2f}".format(flav,ymax,binmax,binmaxerr))
 
-    new_MM_hist.SetMaximum( ymax + binmaxerr *1.3 )
+    new_MM_hist.SetMaximum( (ymax + binmaxerr) *1.3 )
     new_MM_hist.SetMinimum(0)
 
     # --------------------------
@@ -648,16 +728,23 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     ratio_err.SetMarkerSize(0)
 
     ratio_err.Divide(err)
+    for ibin in range(1,ratio_err.GetSize()):
+        if new_MM_hist.GetBinError(ibin) > 0:
+            ratio_err.SetBinError(ibin, new_MM_hist.GetBinError(ibin)/new_MM_hist.GetBinContent(ibin))
 
     # MC ttbar / MM ttbar
 
     ratio_MC_MM = MC_hist.Clone("RatioMCMM")
     ratio_MC_MM.SetYTitle("")
     ratio_MC_MM.SetLineStyle(2)
+    ratio_MC_MM.SetLineWidth(3)
+    ratio_MC_MM.SetLineColor(kViolet-4)
     ratio_MC_MM.SetMarkerSize(0.8)
-    ratio_MC_MM.SetLineColor(1)
+    ratio_MC_MM.SetMarkerColor(1)
     ratio_MC_MM.SetMarkerStyle(20)
-    ratio_MC_MM.SetLineWidth(1)
+    # ratio_MC_MM.SetMarkerSize(0.8)
+    # ratio_MC_MM.SetMarkerColor(kViolet-4)
+    # ratio_MC_MM.SetMarkerStyle(22)
     ratio_MC_MM.Divide(new_MM_hist)
 
     # Trick to rescale
@@ -722,7 +809,6 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     leg_lumi.DrawLatex(0.19,0.75,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
 
     pad2.cd()
-    #ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
     ratio_err.GetYaxis().SetRangeUser(0.5, 1.5)
     ratio_err.Draw("E2")
     ratio_MC_MM.Draw("PE SAME")
@@ -744,6 +830,8 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 # -------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+
+    TH1.SetDefaultSumw2()
 
     region = var_name = None
 
@@ -812,7 +900,7 @@ if __name__ == '__main__':
     		keyname = key.GetName()
     		if not ( "fakesbkg_" in keyname ): continue
 
-                # if not any( k == keyname for k in ["fakesbkg_MMsys_Fake_El_Pt_Stat_up","fakesbkg_MMsys_Fake_El_Pt_Stat_dn","fakesbkg_MMsys_Real_El_Pt_Stat_up","fakesbkg_MMsys_Real_El_Pt_Stat_dn"] ): continue
+                #if not any( k in keyname for k in ["TTV"] ): continue
 
     		keyname = keyname.replace("fakesbkg_","")
     		keyname = keyname.replace("_dn","")
