@@ -108,6 +108,8 @@ parser.add_argument('--useMoriondTruth', dest='useMoriondTruth', action='store_t
                     help='Use 2016 Moriond-style truth matching (aka, just rely on type/origin info)')
 parser.add_argument('--debug', dest='debug', action='store_true', default=False,
                     help='Run in debug mode')
+parser.add_argument('--submitPBSVar', dest='submitPBSVar',action='store',const='Integral',default=None,type=str,nargs='?',
+                    help='IF used, will make sure only the variable passed as command-line argument to this option is processed at a time. The default variable - if unspecified - is \'Integral\'')
 
 args = parser.parse_args()
 
@@ -2125,6 +2127,10 @@ if __name__ == "__main__":
 
     significance_dict = {}
 
+    if args.submitPBSVar:
+        if not args.submitPBSVar in vardb.iterkeys():
+            sys.exit("ERROR: the input variable for the PBS job: {0} couldn't be found in the VariableDB!".format(args.submitPBSVar))
+
     for category in sorted(vardb.categorylist, key=(lambda category: category.name) ):
 
         print ("\n*********************************************\n")
@@ -2157,6 +2163,14 @@ if __name__ == "__main__":
         # ------------------------------
 
         for idx,var in enumerate(vardb.varlist, start=0):
+
+            # If running on the PBS batch system, make sure only the variable for *this* job is considered
+
+            if args.submitPBSVar:
+                if not var == vardb.getVar(args.submitPBSVar):
+                    continue
+                else:
+                    print("\n\tRunning batch job for varianle: {0}\n".format(var))
 
             # -------------------------------------------------------
             # Reset the weight for *this* variable to None if neeeded
