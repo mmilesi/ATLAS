@@ -334,7 +334,7 @@ if __name__ == "__main__":
     # with min, max, number of bins and ntuple name.
     # ------------------------------------------------------
 
-    vardb = VariableDB()
+    database = VariableDB()
 
     # -----------------------------------------------------
     # The list of event-level TCuts
@@ -349,14 +349,14 @@ if __name__ == "__main__":
     # General cuts
     # ---------------------
 
-    vardb.registerCut( Cut('DummyCut', '( 1 )') )
+    database.registerCut( Cut('DummyCut', '( 1 )') )
 
-    #vardb.registerCut( Cut('BlindingCut', '( isBlinded == 0 )') ) # <--- use this cut to get blinded results!
-    vardb.registerCut( Cut('BlindingCut', '( 1 )') )
+    #database.registerCut( Cut('BlindingCut', '( isBlinded == 0 )') ) # <--- use this cut to get blinded results!
+    database.registerCut( Cut('BlindingCut', '( 1 )') )
     if args.doUnblinding:
-        vardb.getCut('BlindingCut').cutstr = '( 1 )'
+        database.getCut('BlindingCut').cutstr = '( 1 )'
 
-    vardb.registerCut( Cut('IsMC', '( mc_channel_number != 0 )') )
+    database.registerCut( Cut('IsMC', '( mc_channel_number != 0 )') )
 
     # -------
     # Trigger
@@ -383,23 +383,23 @@ if __name__ == "__main__":
 
     if "SLT_OR_DLT" in args.trigger: # use ( DLT || SLT ) for all categories (includes trigger matching already!)
 
-        #vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT_OR_SLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT_OR_SLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT_OR_SLT + " )" + " )" ) )
-        vardb.registerCut( Cut("TrigDec", '( ( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 || HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_mu26_ivarmedium || HLT_mu50 || HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) ) || ( RunYear == 2015 && ( HLT_2e12_lhloose_L12EM10VH || HLT_e17_lhloose_mu14 || HLT_mu18_mu8noL1 ) ) || ( RunYear == 2016 && ( HLT_2e17_lhvloose_nod0 || HLT_e17_lhloose_nod0_mu14 || HLT_mu22_mu8noL1 ) ) )') )
+        #database.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT_OR_SLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT_OR_SLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT_OR_SLT + " )" + " )" ) )
+        database.registerCut( Cut("TrigDec", '( ( ( RunYear == 2015 && ( HLT_mu20_iloose_L1MU15 || HLT_mu50 || HLT_e24_lhmedium_L1EM20VH || HLT_e60_lhmedium || HLT_e120_lhloose ) ) || ( RunYear == 2016 && ( HLT_mu26_ivarmedium || HLT_mu50 || HLT_e26_lhtight_nod0_ivarloose || HLT_e60_lhmedium_nod0 || HLT_e140_lhloose_nod0 ) ) ) || ( RunYear == 2015 && ( HLT_2e12_lhloose_L12EM10VH || HLT_e17_lhloose_mu14 || HLT_mu18_mu8noL1 ) ) || ( RunYear == 2016 && ( HLT_2e17_lhvloose_nod0 || HLT_e17_lhloose_nod0_mu14 || HLT_mu22_mu8noL1 ) ) )') )
 
     elif "SLT" in args.trigger: # use SLT for all categories
 
-        vardb.registerCut( Cut("TrigDec", "( " + e_SLT + " || " + m_SLT + " )" ) )
+        database.registerCut( Cut("TrigDec", "( " + e_SLT + " || " + m_SLT + " )" ) )
 
     elif "DLT" in args.trigger: # use DLT for all categories
 
-        vardb.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT + " )" + " )" ) )
+        database.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT + " )" + " )" ) )
 
-    vardb.registerCut( Cut('LargeNBJet',      '( nJets_OR_T_MV2c10_70 > 1 )') )
-    vardb.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_T_MV2c10_70 < 4 )') )
-    vardb.registerCut( Cut('BJetVeto',        '( nJets_OR_T_MV2c10_70 == 0 )') )
-    vardb.registerCut( Cut('OneBJet',         '( nJets_OR_T_MV2c10_70 == 1 )') )
-    vardb.registerCut( Cut('TauVeto',         '( nTaus_OR_Pt25 == 0 )') )
-    vardb.registerCut( Cut('OneTau',          '( nTaus_OR_Pt25 == 1 )') )
+    database.registerCut( Cut('LargeNBJet',      '( nJets_OR_T_MV2c10_70 > 1 )') )
+    database.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_T_MV2c10_70 < 4 )') )
+    database.registerCut( Cut('BJetVeto',        '( nJets_OR_T_MV2c10_70 == 0 )') )
+    database.registerCut( Cut('OneBJet',         '( nJets_OR_T_MV2c10_70 == 1 )') )
+    database.registerCut( Cut('TauVeto',         '( nTaus_OR_Pt25 == 0 )') )
+    database.registerCut( Cut('OneTau',          '( nTaus_OR_Pt25 == 1 )') )
 
     # ---------------------
     # 2Lep SS + 0 tau cuts
@@ -410,45 +410,45 @@ if __name__ == "__main__":
     # ----------------
 
     if "SLT_OR_DLT" in args.trigger:
-        #vardb.registerCut( Cut('2Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
-        vardb.registerCut( Cut('2Lep_TrigMatch', '( {0} || {1} )'.format( SLT_matching, DLT_matching ) ) )
+        #database.registerCut( Cut('2Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
+        database.registerCut( Cut('2Lep_TrigMatch', '( {0} || {1} )'.format( SLT_matching, DLT_matching ) ) )
     elif "SLT" in args.trigger:
-        vardb.registerCut( Cut('2Lep_TrigMatch', '( {0} )'.format( SLT_matching ) ) )
+        database.registerCut( Cut('2Lep_TrigMatch', '( {0} )'.format( SLT_matching ) ) )
     elif "DLT" in args.trigger:
-        vardb.registerCut( Cut('2Lep_TrigMatch', '( {0} )'.format( DLT_matching ) ) )
+        database.registerCut( Cut('2Lep_TrigMatch', '( {0} )'.format( DLT_matching ) ) )
 
     # For LH fit, use this cuts in order to introduce the trigger bias from SLT
     # This is safe as we will use the likelihood to fit fake muon efficiency in mm events
     # The following will work also if doing LH fit for fake muons in a (mm + OF) CR
 
-    vardb.registerCut( Cut('2Lep_BothTrigMatchSLT',       '( ( dilep_type == 1 && ( lep_isTrigMatch_0 == 1 && lep_isTrigMatch_1 == 1 ) ) || ( dilep_type == 2 && ( ( TMath::Abs( lep_ID_0 ) == 13 && lep_isTrigMatch_0 == 1 ) || ( TMath::Abs( lep_ID_1 ) == 13 && lep_isTrigMatch_1 == 1 ) ) ) )') )
-    vardb.registerCut( Cut('2Lep_BothAntiTrigMatchSLT',   '( ( dilep_type == 1 && ( lep_isTrigMatch_0 == 0 && lep_isTrigMatch_1 == 0 ) ) || ( dilep_type == 2 && ( ( TMath::Abs( lep_ID_0 ) == 13 && lep_isTrigMatch_0 == 0 ) || ( TMath::Abs( lep_ID_1 ) == 13 && lep_isTrigMatch_1 == 0 ) ) ) )') )
+    database.registerCut( Cut('2Lep_BothTrigMatchSLT',       '( ( dilep_type == 1 && ( lep_isTrigMatch_0 == 1 && lep_isTrigMatch_1 == 1 ) ) || ( dilep_type == 2 && ( ( TMath::Abs( lep_ID_0 ) == 13 && lep_isTrigMatch_0 == 1 ) || ( TMath::Abs( lep_ID_1 ) == 13 && lep_isTrigMatch_1 == 1 ) ) ) )') )
+    database.registerCut( Cut('2Lep_BothAntiTrigMatchSLT',   '( ( dilep_type == 1 && ( lep_isTrigMatch_0 == 0 && lep_isTrigMatch_1 == 0 ) ) || ( dilep_type == 2 && ( ( TMath::Abs( lep_ID_0 ) == 13 && lep_isTrigMatch_0 == 0 ) || ( TMath::Abs( lep_ID_1 ) == 13 && lep_isTrigMatch_1 == 0 ) ) ) )') )
 
-    vardb.registerCut( Cut('2Lep_NBJet',                  '( nJets_OR_T_MV2c10_70 > 0 )') )
-    vardb.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 > 0 )') )
-    vardb.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T > 1 )') )
-    vardb.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T > 3 )') )
-    vardb.registerCut( Cut('2Lep_NJet_CR',		  '( nJets_OR_T >= 2 && nJets_OR_T <= 3 )') )
-    vardb.registerCut( Cut('2Lep_SS',			  '( lep_ID_0 * lep_ID_1 > 0 )') )
-    vardb.registerCut( Cut('2Lep_OS',			  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
-    vardb.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
-    vardb.registerCut( Cut('2Lep_pT',			  '( 1 )') ) # For 2LSS, go as low as the trigger matching allows for
+    database.registerCut( Cut('2Lep_NBJet',               '( nJets_OR_T_MV2c10_70 > 0 )') )
+    database.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 > 0 )') )
+    database.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T > 1 )') )
+    database.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T > 3 )') )
+    database.registerCut( Cut('2Lep_NJet_CR',		  '( nJets_OR_T >= 2 && nJets_OR_T <= 3 )') )
+    database.registerCut( Cut('2Lep_SS',	          '( lep_ID_0 * lep_ID_1 > 0 )') )
+    database.registerCut( Cut('2Lep_OS',		  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
+    database.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
+    database.registerCut( Cut('2Lep_pT',		  '( 1 )') ) # For 2LSS, go as low as the trigger matching allows for
     if args.ICHEPSelection:
-        vardb.getCut('2Lep_pT').cutstr =  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 25e3 )' # 2LSS SR cut - ICHEP 2016
-    vardb.registerCut( Cut('2Lep_pT_MMRates',		  '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
-    vardb.registerCut( Cut('2Lep_pT_Relaxed',		  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 10e3 )') )
-    vardb.registerCut( Cut('2Lep_SF_Event',		  '( dilep_type == 1 || dilep_type == 3 )') )
-    vardb.registerCut( Cut('2Lep_MuMu_Event',		  '( dilep_type == 1 )') )
-    vardb.registerCut( Cut('2Lep_ElEl_Event',		  '( dilep_type == 3 )') )
-    vardb.registerCut( Cut('2Lep_OF_Event',		  '( dilep_type == 2 )') )
-    vardb.registerCut( Cut('2Lep_MuEl_Event',		  '( dilep_type == 2 && TMath::Abs( lep_ID_0 ) == 13  )') )
-    vardb.registerCut( Cut('2Lep_ElMu_Event',		  '( dilep_type == 2 && TMath::Abs( lep_ID_0 ) == 11  )') )
-    vardb.registerCut( Cut('2Lep_Zsidescut',              '( ( dilep_type != 3 ) || ( TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) )' ) )  # Use this to require 2 SF electrons to be outside Z peak
-    vardb.registerCut( Cut('2Lep_Zpeakcut',               '( ( dilep_type == 2 ) || ( TMath::Abs( Mll01 - 91.2e3 ) < 30e3  ) )' ) ) # Use this to require 2 SF leptons to be around Z peak
-    vardb.registerCut( Cut('2Lep_Zmincut',                '( ( dilep_type == 2 ) || ( Mll01  > 20e3 ) )' ) )                        # Remove J/Psi, Upsilon peak in SF events
+        database.getCut('2Lep_pT').cutstr =  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 25e3 )' # 2LSS SR cut - ICHEP 2016
+    database.registerCut( Cut('2Lep_pT_MMRates',	  '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
+    database.registerCut( Cut('2Lep_pT_Relaxed',	  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 10e3 )') )
+    database.registerCut( Cut('2Lep_SF_Event',		  '( dilep_type == 1 || dilep_type == 3 )') )
+    database.registerCut( Cut('2Lep_MuMu_Event',	  '( dilep_type == 1 )') )
+    database.registerCut( Cut('2Lep_ElEl_Event',	  '( dilep_type == 3 )') )
+    database.registerCut( Cut('2Lep_OF_Event',		  '( dilep_type == 2 )') )
+    database.registerCut( Cut('2Lep_MuEl_Event',	  '( dilep_type == 2 && TMath::Abs( lep_ID_0 ) == 13  )') )
+    database.registerCut( Cut('2Lep_ElMu_Event',	  '( dilep_type == 2 && TMath::Abs( lep_ID_0 ) == 11  )') )
+    database.registerCut( Cut('2Lep_Zsidescut',           '( ( dilep_type != 3 ) || ( TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) )' ) )  # Use this to require 2 SF electrons to be outside Z peak
+    database.registerCut( Cut('2Lep_Zpeakcut',            '( ( dilep_type == 2 ) || ( TMath::Abs( Mll01 - 91.2e3 ) < 30e3  ) )' ) ) # Use this to require 2 SF leptons to be around Z peak
+    database.registerCut( Cut('2Lep_Zmincut',             '( ( dilep_type == 2 ) || ( Mll01  > 20e3 ) )' ) )                        # Remove J/Psi, Upsilon peak in SF events
     gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/largeEtaEvent.cxx+")
     from ROOT import largeEtaEvent
-    vardb.registerCut( Cut('2Lep_ElEtaCut',               '( largeEtaEvent( dilep_type,lep_ID_0,lep_ID_1,lep_EtaBE2_0,lep_EtaBE2_1 ) == 0 )') )
+    database.registerCut( Cut('2Lep_ElEtaCut',            '( largeEtaEvent( dilep_type,lep_ID_0,lep_ID_1,lep_EtaBE2_0,lep_EtaBE2_1 ) == 0 )') )
 
     # ------------------
     # Tag and probe cuts
@@ -458,34 +458,34 @@ if __name__ == "__main__":
 
         trig_tag = "SLT"
 
-        vardb.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( event_isBadTP_SLT == 0 )') ) # The presence of a T (& T.M.) lepton to tag the event is implemented in the MiniNTup code. The reason is b/c vector branches are used, and for the Real CR both leptons can be the tag.
-        vardb.registerCut( Cut('2Lep_LepTagTrigMatched',        '( lep_Tag_' + trig_tag + '_isTrigMatch == 1 )') )
-        vardb.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_' + trig_tag + '_isTrigMatch == 1 )') )
-        vardb.registerCut( Cut('2Lep_LepProbeAntiTrigMatched',  '( lep_Probe_' + trig_tag + '_isTrigMatch == 0 )') )
-        vardb.registerCut( Cut('2Lep_ElTag',                    '( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 11 )') )
-        vardb.registerCut( Cut('2Lep_MuTag',                    '( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 13 )') )
-        vardb.registerCut( Cut('2Lep_ElProbe',                  '( 1 )') ) # Now T&P uses vector branches for probe electron and muon: do not specify the flavour of the probe (this is particularly crucial for the Real CR, where in the ambiguous "both T&TM leptons" case there is no distinction between T&P)
-        vardb.registerCut( Cut('2Lep_MuProbe',                  '( 1 )') ) # Now T&P uses vector branches for probe electron and muon: do not specify the flavour of the probe (this is particularly crucial for the Real CR, where in the ambiguous "both T&TM leptons" case there is no distinction between T&P)
-        vardb.registerCut( Cut('2Lep_ProbeTight',               '( lep_Probe_' + trig_tag + '_isTightSelectedMVA == 1 )') )
-        vardb.registerCut( Cut('2Lep_ProbeAntiTight',           '( lep_Probe_' + trig_tag + '_isTightSelectedMVA == 0 )') )
-        vardb.registerCut( Cut('2Lep_TagAndProbe_GoodEvent',    '( event_isBadTP_' + trig_tag + ' == 0 )') )
-        vardb.registerCut( Cut('2Lep_ElTagEtaCut',              '( ( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 13 ) || ( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 11 && TMath::Abs( lep_Tag_' + trig_tag + '_EtaBE2 ) < 1.37 ) )') )
-        vardb.registerCut( Cut('2Lep_TagVeryTightSelected',     '( lep_Tag_' + trig_tag + '_ptVarcone30/lep_Tag_' + trig_tag + '_Pt < 0.01 )' ) ) # Tighten the track iso of the tag to increase fake purity for the probe (was used in v24)
+        database.registerCut( Cut('2Lep_LepTagTightTrigMatched',   '( event_isBadTP_SLT == 0 )') ) # The presence of a T (& T.M.) lepton to tag the event is implemented in the MiniNTup code. The reason is b/c vector branches are used, and for the Real CR both leptons can be the tag.
+        database.registerCut( Cut('2Lep_LepTagTrigMatched',        '( lep_Tag_' + trig_tag + '_isTrigMatch == 1 )') )
+        database.registerCut( Cut('2Lep_LepProbeTrigMatched',      '( lep_Probe_' + trig_tag + '_isTrigMatch == 1 )') )
+        database.registerCut( Cut('2Lep_LepProbeAntiTrigMatched',  '( lep_Probe_' + trig_tag + '_isTrigMatch == 0 )') )
+        database.registerCut( Cut('2Lep_ElTag',                    '( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 11 )') )
+        database.registerCut( Cut('2Lep_MuTag',                    '( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 13 )') )
+        database.registerCut( Cut('2Lep_ElProbe',                  '( 1 )') ) # Now T&P uses vector branches for probe electron and muon: do not specify the flavour of the probe (this is particularly crucial for the Real CR, where in the ambiguous "both T&TM leptons" case there is no distinction between T&P)
+        database.registerCut( Cut('2Lep_MuProbe',                  '( 1 )') ) # Now T&P uses vector branches for probe electron and muon: do not specify the flavour of the probe (this is particularly crucial for the Real CR, where in the ambiguous "both T&TM leptons" case there is no distinction between T&P)
+        database.registerCut( Cut('2Lep_ProbeTight',               '( lep_Probe_' + trig_tag + '_isTightSelectedMVA == 1 )') )
+        database.registerCut( Cut('2Lep_ProbeAntiTight',           '( lep_Probe_' + trig_tag + '_isTightSelectedMVA == 0 )') )
+        database.registerCut( Cut('2Lep_TagAndProbe_GoodEvent',    '( event_isBadTP_' + trig_tag + ' == 0 )') )
+        database.registerCut( Cut('2Lep_ElTagEtaCut',              '( ( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 13 ) || ( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 11 && TMath::Abs( lep_Tag_' + trig_tag + '_EtaBE2 ) < 1.37 ) )') )
+        database.registerCut( Cut('2Lep_TagVeryTightSelected',     '( lep_Tag_' + trig_tag + '_ptVarcone30/lep_Tag_' + trig_tag + '_Pt < 0.01 )' ) ) # Tighten the track iso of the tag to increase fake purity for the probe (was used in v24)
         gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/allElectronsQMisIDBDTLoose.cxx+")
         from ROOT import allElectronsQMisIDBDTLoose
-        # vardb.registerCut( Cut('2Lep_ElQMisIDBDT',              '( allElectronsQMisIDBDTLoose( dilep_type, lep_ID_0, lep_ID_1, lep_chargeIDBDTLoose_0, lep_chargeIDBDTLoose_1, 0.10083 ) )') )
-        vardb.registerCut( Cut('2Lep_ElQMisIDBDT',              '( 1 )') )
+        # database.registerCut( Cut('2Lep_ElQMisIDBDT',              '( allElectronsQMisIDBDTLoose( dilep_type, lep_ID_0, lep_ID_1, lep_chargeIDBDTLoose_0, lep_chargeIDBDTLoose_1, 0.10083 ) )') )
+        database.registerCut( Cut('2Lep_ElQMisIDBDT',              '( 1 )') )
 
         if "TRUTH_TP" in args.channel:
-            vardb.getCut('2Lep_LepTagTightTrigMatched').cutstr = '( lep_Tag_' + trig_tag + '_isTightSelectedMVA == 1 && lep_Tag_' + trig_tag + '_isTrigMatch == 1 )'
-            vardb.getCut('2Lep_ElProbe').cutstr = '( TMath::Abs( lep_Probe_' + trig_tag + '_ID ) == 11 )'
-            vardb.getCut('2Lep_MuProbe').cutstr = '( TMath::Abs( lep_Probe_' + trig_tag + '_ID ) == 13 )'
+            database.getCut('2Lep_LepTagTightTrigMatched').cutstr = '( lep_Tag_' + trig_tag + '_isTightSelectedMVA == 1 && lep_Tag_' + trig_tag + '_isTrigMatch == 1 )'
+            database.getCut('2Lep_ElProbe').cutstr = '( TMath::Abs( lep_Probe_' + trig_tag + '_ID ) == 11 )'
+            database.getCut('2Lep_MuProbe').cutstr = '( TMath::Abs( lep_Probe_' + trig_tag + '_ID ) == 13 )'
 
         if args.cutBasedLepDef:
-            vardb.getCut('2Lep_ElQMisIDBDT').cutstr            = '( 1 )'
-            vardb.getCut('2Lep_LepTagTightTrigMatched').cutstr = '( lep_Tag_' + trig_tag + '_isTightSelected == 1 && lep_Tag_' + trig_tag + '_isTrigMatch == 1 )'
-            vardb.getCut('2Lep_ProbeTight').cutstr             = '( lep_Probe_' + trig_tag + '_isTightSelected == 1 )'
-            vardb.getCut('2Lep_ProbeAntiTight').cutstr         = '( lep_Probe_' + trig_tag + '_isTightSelected == 0 )'
+            database.getCut('2Lep_ElQMisIDBDT').cutstr            = '( 1 )'
+            database.getCut('2Lep_LepTagTightTrigMatched').cutstr = '( lep_Tag_' + trig_tag + '_isTightSelected == 1 && lep_Tag_' + trig_tag + '_isTrigMatch == 1 )'
+            database.getCut('2Lep_ProbeTight').cutstr             = '( lep_Probe_' + trig_tag + '_isTightSelected == 1 )'
+            database.getCut('2Lep_ProbeAntiTight').cutstr         = '( lep_Probe_' + trig_tag + '_isTightSelected == 0 )'
 
     # ---------------------------
     # Cuts for ttW Control Region
@@ -497,11 +497,11 @@ if __name__ == "__main__":
     # Z peak [+- 15 GeV] veto in ee
     # MET > 50 GeV in ee
 
-    vardb.registerCut( Cut('2Lep_HTJ_ttW',        '( dilep_type == 1 || HT_jets > 220e3 )') )
-    vardb.registerCut( Cut('2Lep_MET_ttW',        '( dilep_type != 3 || ( MET_RefFinal_et > 50e3 ) )') )
-    vardb.registerCut( Cut('2Lep_Zsidescut_ttW',  '( dilep_type != 3 || ( Mll01 < 75e3 || Mll01 > 105e3 ) )') )
-    vardb.registerCut( Cut('2Lep_NJet_ttW',       '( nJets_OR_T >= 2 && nJets_OR_T <= 4 )') )
-    vardb.registerCut( Cut('2Lep_NBJet_ttW',      '( nJets_OR_T_MV2c10_70 >= 2 )') )
+    database.registerCut( Cut('2Lep_HTJ_ttW',        '( dilep_type == 1 || HT_jets > 220e3 )') )
+    database.registerCut( Cut('2Lep_MET_ttW',        '( dilep_type != 3 || ( MET_RefFinal_et > 50e3 ) )') )
+    database.registerCut( Cut('2Lep_Zsidescut_ttW',  '( dilep_type != 3 || ( Mll01 < 75e3 || Mll01 > 105e3 ) )') )
+    database.registerCut( Cut('2Lep_NJet_ttW',       '( nJets_OR_T >= 2 && nJets_OR_T <= 4 )') )
+    database.registerCut( Cut('2Lep_NBJet_ttW',      '( nJets_OR_T_MV2c10_70 >= 2 )') )
 
     # -------------------
     # TRUTH MATCHING CUTS
@@ -529,7 +529,7 @@ if __name__ == "__main__":
 
     cutstr_2Lep_TRUTH_PurePromptEvent = '( ( mc_channel_number == 0 ) || ( ( ( lep_isPrompt_0 == 1 || ( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) && ( lep_isPrompt_1 == 1 || ( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) ) && ( isQMisIDEvent == 0 ) ) )'
     #cutstr_2Lep_TRUTH_PurePromptEvent = '( ( mc_channel_number == 0 ) || ( lep_isPrompt_0 == 1 && lep_isPrompt_1 == 1 && isQMisIDEvent == 0 ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_PurePromptEvent', cutstr_2Lep_TRUTH_PurePromptEvent) )
+    database.registerCut( Cut('2Lep_TRUTH_PurePromptEvent', cutstr_2Lep_TRUTH_PurePromptEvent) )
 
     # 2.
     #
@@ -538,7 +538,7 @@ if __name__ == "__main__":
     # We classify as 'prompt' also a 'brems' lepton whose charge has been reconstructed with the correct sign
 
     cutsr_2Lep_TRUTH_NonPromptEvent = '( ( mc_channel_number == 0 ) || ( ( ( lep_isPrompt_0 == 0 && !( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) || ( lep_isPrompt_1 == 0 && !( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) ) && ( isQMisIDEvent == 0 ) ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_NonPromptEvent', cutsr_2Lep_TRUTH_NonPromptEvent) )
+    database.registerCut( Cut('2Lep_TRUTH_NonPromptEvent', cutsr_2Lep_TRUTH_NonPromptEvent) )
 
     # 2a.
     #
@@ -546,21 +546,21 @@ if __name__ == "__main__":
 
     cutsr_2Lep_TRUTH_1Prompt1NonPromptEvent = '( ( mc_channel_number == 0 ) || ( ( ( ( lep_isPrompt_1 == 0 && !( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) && ( lep_isPrompt_0 == 1 || ( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) ) || ( ( lep_isPrompt_0 == 0 && !( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) && ( lep_isPrompt_1 == 1 || ( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) ) ) && ( isQMisIDEvent == 0 ) ) )'
     #cutsr_2Lep_TRUTH_1Prompt1NonPromptEvent = '( ( mc_channel_number == 0 ) || ( ( ( lep_isPrompt_1 == 0 && lep_isPrompt_0 == 1 ) || ( lep_isPrompt_0 == 0 && lep_isPrompt_1 == 1 ) ) && ( isQMisIDEvent == 0 ) ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_1Prompt1NonPromptEvent', cutsr_2Lep_TRUTH_1Prompt1NonPromptEvent) )
+    database.registerCut( Cut('2Lep_TRUTH_1Prompt1NonPromptEvent', cutsr_2Lep_TRUTH_1Prompt1NonPromptEvent) )
 
     # 2b.
     #
     # Event passes this cut if ALL leptons are !prompt (MCTruthClassifier --> !Iso), and none is charge flip.
 
     cutsr_2Lep_TRUTH_2NonPromptEvent = '( ( mc_channel_number == 0 ) || ( ( lep_isPrompt_1 == 0 && !( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) && ( lep_isPrompt_0 == 0 && !( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) && ( isQMisIDEvent == 0 ) ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_2NonPromptEvent', cutsr_2Lep_TRUTH_2NonPromptEvent) )
+    database.registerCut( Cut('2Lep_TRUTH_2NonPromptEvent', cutsr_2Lep_TRUTH_2NonPromptEvent) )
 
     # 3.
     #
     # Event passes this cut if AT LEAST ONE lepton is charge flip (does not distinguish trident VS charge-misreconstructed)
 
     cutsr_2Lep_TRUTH_QMisIDEvent = '( ( mc_channel_number == 0 ) || ( ( isQMisIDEvent == 1 ) ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_QMisIDEvent', cutsr_2Lep_TRUTH_QMisIDEvent) )
+    database.registerCut( Cut('2Lep_TRUTH_QMisIDEvent', cutsr_2Lep_TRUTH_QMisIDEvent) )
 
     # 3a.
     #
@@ -568,59 +568,59 @@ if __name__ == "__main__":
 
     cutsr_2Lep_TRUTH_1Prompt1QMisIDEvent = '( ( mc_channel_number == 0 ) || ( ( lep_isQMisID_1 == 1 && ( lep_isPrompt_0 == 1 || ( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) ) || ( ( lep_isPrompt_1 == 1 || ( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) && lep_isQMisID_0 == 1 ) ) )'
     #cutsr_2Lep_TRUTH_1Prompt1QMisIDEvent = '( ( mc_channel_number == 0 ) || ( ( lep_isQMisID_1 == 1 && ( lep_isPrompt_0 == 1 ) ) || ( ( lep_isPrompt_1 == 1 ) && lep_isQMisID_0 == 1 ) ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_1Prompt1QMisIDEvent', cutsr_2Lep_TRUTH_1Prompt1QMisIDEvent) )
+    database.registerCut( Cut('2Lep_TRUTH_1Prompt1QMisIDEvent', cutsr_2Lep_TRUTH_1Prompt1QMisIDEvent) )
 
     # 3b.
     #
     # Event passes this cut if AT LEAST ONE lepton is (prompt and charge flip) (it will be a charge-misId charge flip)
 
     cutsr_2Lep_TRUTH_QMisIDPromptEvent = '( ( mc_channel_number == 0 ) || ( ( ( lep_isQMisID_0 == 1 && lep_isPrompt_0 == 1 ) || ( lep_isQMisID_1 == 1 && lep_isPrompt_1 == 1 ) ) ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_QMisIDPromptEvent', cutsr_2Lep_TRUTH_QMisIDPromptEvent) )
+    database.registerCut( Cut('2Lep_TRUTH_QMisIDPromptEvent', cutsr_2Lep_TRUTH_QMisIDPromptEvent) )
 
     # 3c.
     #
     # Event passes this cut if AT LEAST ONE object is charge flip from bremsstrahlung (this will be a trident charge flip)
 
     cutstr_2Lep_TRUTH_QMisIDBremEvent = '( ( mc_channel_number == 0 ) || ( ( ( lep_isBrems_0 == 1 && lep_isQMisID_0 == 1 ) || ( lep_isBrems_1 == 1 && lep_isQMisID_1 == 1 ) ) ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_QMisIDBremEvent', cutstr_2Lep_TRUTH_QMisIDBremEvent) )
+    database.registerCut( Cut('2Lep_TRUTH_QMisIDBremEvent', cutstr_2Lep_TRUTH_QMisIDBremEvent) )
 
     # 3d.
     #
     # Event passes this cut if AT LEAST ONE lepton is (!prompt and charge flip)
 
     cutstr_2Lep_TRUTH_QMisIDNonPromptEvent = '( ( mc_channel_number == 0 ) || ( ( ( lep_isQMisID_0 == 1 && lep_isPrompt_0 == 0 ) || ( lep_isQMisID_1 == 1 && lep_isPrompt_1 == 0 ) ) ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_QMisIDNonPromptEvent', cutstr_2Lep_TRUTH_QMisIDNonPromptEvent) )
+    database.registerCut( Cut('2Lep_TRUTH_QMisIDNonPromptEvent', cutstr_2Lep_TRUTH_QMisIDNonPromptEvent) )
 
     # 4.
     #
     # Event passes this cut if NONE of the leptons is charge flip
 
     cutstr_2Lep_TRUTH_QMisIDVeto = '( ( mc_channel_number == 0 ) || ( isQMisIDEvent == 0 ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_QMisIDVeto', cutstr_2Lep_TRUTH_QMisIDVeto) )
+    database.registerCut( Cut('2Lep_TRUTH_QMisIDVeto', cutstr_2Lep_TRUTH_QMisIDVeto) )
 
     # 4.a
     #
     # Event passes this cut if NONE of the leptons is charge flip / from photon conversion
 
     cutstr_2Lep_TRUTH_QMisIDANDConvPhVeto = '( ( mc_channel_number == 0 ) || ( isQMisIDEvent == 0 && isLepFromPhEvent == 0 ) )'
-    vardb.registerCut( Cut('2Lep_TRUTH_QMisIDANDConvPhVeto', cutstr_2Lep_TRUTH_QMisIDANDConvPhVeto) )
+    database.registerCut( Cut('2Lep_TRUTH_QMisIDANDConvPhVeto', cutstr_2Lep_TRUTH_QMisIDANDConvPhVeto) )
 
     # 5.
     #
     # Event passes this cut if AT LEAST ONE lepton is from a primary photon conversion
 
-    vardb.registerCut( Cut('2Lep_TRUTH_LepFromPhEvent', '( ( mc_channel_number == 0 ) || ( isLepFromPhEvent == 1 ) )') )
+    database.registerCut( Cut('2Lep_TRUTH_LepFromPhEvent', '( ( mc_channel_number == 0 ) || ( isLepFromPhEvent == 1 ) )') )
 
     # 6.
     #
     # Event passes this cut if AT LEAST ONE lepton is charge flip OR from a primary photon conversion
 
-    vardb.registerCut( Cut('2Lep_TRUTH_QMisIDORLepFromPhEvent', '( ( mc_channel_number == 0 ) || ( ( isQMisIDEvent == 1 || isLepFromPhEvent == 1 ) ) )') )
+    database.registerCut( Cut('2Lep_TRUTH_QMisIDORLepFromPhEvent', '( ( mc_channel_number == 0 ) || ( ( isQMisIDEvent == 1 || isLepFromPhEvent == 1 ) ) )') )
 
     # 6a.
     # Event passes this cut if AT LEAST ONE lepton is coming from ISR/FSR photon
 
-    vardb.registerCut( Cut('2Lep_TRUTH_ISRPhEvent',  '( ( mc_channel_number == 0 ) || ( ( lep_isISRFSRPh_0 == 1 || lep_isISRFSRPh_1 == 1 ) ) )') )
+    database.registerCut( Cut('2Lep_TRUTH_ISRPhEvent',  '( ( mc_channel_number == 0 ) || ( ( lep_isISRFSRPh_0 == 1 || lep_isISRFSRPh_1 == 1 ) ) )') )
 
     # ------------------------------------------------------------------------------
     # The following cuts enforce truth requirements only on the probe lepton for T&P
@@ -630,40 +630,40 @@ if __name__ == "__main__":
 
         trig_tag = "SLT"
 
-        vardb.registerCut( Cut('2Lep_TRUTH_ProbePromptEvent',             '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_' + trig_tag + '_isPrompt == 1 || ( lep_Probe_' + trig_tag + '_isBrems == 1 && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) )') )
-        vardb.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptEvent',          '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_' + trig_tag + '_isPrompt == 0 && !( lep_Probe_' + trig_tag + '_isBrems == 1 && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) )') )
-        vardb.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptOrQMisIDEvent',  '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_' + trig_tag + '_isPrompt == 0 && !( lep_Probe_' + trig_tag + '_isBrems == 1 && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) || lep_Probe_' + trig_tag + '_isQMisID == 1 ) ) )') )
-        vardb.registerCut( Cut('2Lep_TRUTH_ProbeQMisIDEvent',             '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_isQMisID == 1 ) ) )') )
-        vardb.registerCut( Cut('2Lep_TRUTH_ProbeLepFromPhEvent',          '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_isConvPh == 1 || lep_Probe_' + trig_tag + '_isISRFSRPh_0 == 1 ) ) )') )
+        database.registerCut( Cut('2Lep_TRUTH_ProbePromptEvent',             '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_' + trig_tag + '_isPrompt == 1 || ( lep_Probe_' + trig_tag + '_isBrems == 1 && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) )') )
+        database.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptEvent',          '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_' + trig_tag + '_isPrompt == 0 && !( lep_Probe_' + trig_tag + '_isBrems == 1 && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) )') )
+        database.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptOrQMisIDEvent',  '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_' + trig_tag + '_isPrompt == 0 && !( lep_Probe_' + trig_tag + '_isBrems == 1 && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) || lep_Probe_' + trig_tag + '_isQMisID == 1 ) ) )') )
+        database.registerCut( Cut('2Lep_TRUTH_ProbeQMisIDEvent',             '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_isQMisID == 1 ) ) )') )
+        database.registerCut( Cut('2Lep_TRUTH_ProbeLepFromPhEvent',          '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_isConvPh == 1 || lep_Probe_' + trig_tag + '_isISRFSRPh_0 == 1 ) ) )') )
 
     if args.useMoriondTruth:
 
-        vardb.getCut('2Lep_TRUTH_PurePromptEvent').cutstr             = '( ( mc_channel_number == 0 ) || ( ( ( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) && ( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) ) )'
-        vardb.getCut('2Lep_TRUTH_NonPromptEvent').cutstr              = '( ( mc_channel_number == 0 ) || ( ( ( !( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) || !( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) && !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )'
-        vardb.getCut('2Lep_TRUTH_QMisIDVeto').cutstr                  = '( ( mc_channel_number == 0 ) || ( ( !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )'
-        vardb.getCut('2Lep_TRUTH_ProbePromptEvent').cutstr            = '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_truthType == 2 || lep_Probe_' + trig_tag + '_truthType == 6 ) ) )'
-        vardb.getCut('2Lep_TRUTH_ProbeNonPromptOrQMisIDEvent').cutstr = '( ( mc_channel_number == 0 ) || ( !( lep_Probe_' + trig_tag + '_truthType == 2 || lep_Probe_' + trig_tag + '_truthType == 6 ) ) )'
-        vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent').cutstr         = '( ( mc_channel_number == 0 ) || ( ( !( lep_Probe_' + trig_tag + '_truthType == 2 || lep_Probe_' + trig_tag + '_truthType == 6 ) && !( lep_Probe_' + trig_tag + '_truthType == 4 && lep_Probe_' + trig_tag + '_truthOrigin == 5 ) ) ) )'
+        database.getCut('2Lep_TRUTH_PurePromptEvent').cutstr             = '( ( mc_channel_number == 0 ) || ( ( ( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) && ( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) ) )'
+        database.getCut('2Lep_TRUTH_NonPromptEvent').cutstr              = '( ( mc_channel_number == 0 ) || ( ( ( !( lep_truthType_0 == 2 || lep_truthType_0 == 6 ) || !( lep_truthType_1 == 2 || lep_truthType_1 == 6 ) ) && !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )'
+        database.getCut('2Lep_TRUTH_QMisIDVeto').cutstr                  = '( ( mc_channel_number == 0 ) || ( ( !( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 ) && !( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 ) ) ) )'
+        database.getCut('2Lep_TRUTH_ProbePromptEvent').cutstr            = '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_truthType == 2 || lep_Probe_' + trig_tag + '_truthType == 6 ) ) )'
+        database.getCut('2Lep_TRUTH_ProbeNonPromptOrQMisIDEvent').cutstr = '( ( mc_channel_number == 0 ) || ( !( lep_Probe_' + trig_tag + '_truthType == 2 || lep_Probe_' + trig_tag + '_truthType == 6 ) ) )'
+        database.getCut('2Lep_TRUTH_ProbeNonPromptEvent').cutstr         = '( ( mc_channel_number == 0 ) || ( ( !( lep_Probe_' + trig_tag + '_truthType == 2 || lep_Probe_' + trig_tag + '_truthType == 6 ) && !( lep_Probe_' + trig_tag + '_truthType == 4 && lep_Probe_' + trig_tag + '_truthOrigin == 5 ) ) ) )'
 
 
     # ---------
     # 3lep cuts
     # ---------
 
-    vardb.registerCut( Cut('3Lep_NLep',         '( trilep_type > 0 )') )
-    vardb.registerCut( Cut('3Lep_pT',           '( lep_Pt_0 > 10e3 && lep_Pt_1 > 20e3 && lep_Pt_2 > 20e3 )') )
-    vardb.registerCut( Cut('3Lep_Charge',       '( TMath::Abs(total_charge) == 1 )') )
+    database.registerCut( Cut('3Lep_NLep',         '( trilep_type > 0 )') )
+    database.registerCut( Cut('3Lep_pT',           '( lep_Pt_0 > 10e3 && lep_Pt_1 > 20e3 && lep_Pt_2 > 20e3 )') )
+    database.registerCut( Cut('3Lep_Charge',       '( TMath::Abs(total_charge) == 1 )') )
     if "SLT_OR_DLT" in args.trigger:
-        vardb.registerCut( Cut('3Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
+        database.registerCut( Cut('3Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
     elif "SLT" in args.trigger:
-        vardb.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || || lep_isTrigMatch_2 )') )
+        database.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || || lep_isTrigMatch_2 )') )
     elif "DLT" in args.trigger:
-        vardb.registerCut( Cut('3Lep_TrigMatch', '( matchDLTll01 || matchDLTll02 || matchDLTll12 )') )
-    vardb.registerCut( Cut('3Lep_ZVeto',        '( ( lep_ID_0 != -lep_ID_1 || TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) && ( lep_ID_0! = -lep_ID_2 || TMath::Abs( Mll02 - 91.2e3 ) > 10e3 ) )') )
-    vardb.registerCut( Cut('3Lep_MinZCut',      '( ( lep_ID_0 != -lep_ID_1 || Mll01 > 12e3 ) && ( lep_ID_0 != -lep_ID_2 || Mll02 > 12e3 ) )') )
-    vardb.registerCut( Cut('3Lep_ZllGammaVeto', '( TMath::Abs( Mlll012 - 91.2e3 ) > 10e3 )') )
-    # vardb.registerCut( Cut('3Lep_NJets',        '( ( nJets_OR_T >= 4 && nJets_OR_T_MV2c10_70 >= 1 ) || ( nJets_OR_T >=3 && nJets_OR_T_MV2c10_70 >= 2 ) )') )
-    vardb.registerCut( Cut('3Lep_NJets',        '( nJets_OR_T >= 3 && nJets_OR_T_MV2c10_70 >= 1 )') )
+        database.registerCut( Cut('3Lep_TrigMatch', '( matchDLTll01 || matchDLTll02 || matchDLTll12 )') )
+    database.registerCut( Cut('3Lep_ZVeto',        '( ( lep_ID_0 != -lep_ID_1 || TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) && ( lep_ID_0! = -lep_ID_2 || TMath::Abs( Mll02 - 91.2e3 ) > 10e3 ) )') )
+    database.registerCut( Cut('3Lep_MinZCut',      '( ( lep_ID_0 != -lep_ID_1 || Mll01 > 12e3 ) && ( lep_ID_0 != -lep_ID_2 || Mll02 > 12e3 ) )') )
+    database.registerCut( Cut('3Lep_ZllGammaVeto', '( TMath::Abs( Mlll012 - 91.2e3 ) > 10e3 )') )
+    # database.registerCut( Cut('3Lep_NJets',        '( ( nJets_OR_T >= 4 && nJets_OR_T_MV2c10_70 >= 1 ) || ( nJets_OR_T >=3 && nJets_OR_T_MV2c10_70 >= 2 ) )') )
+    database.registerCut( Cut('3Lep_NJets',        '( nJets_OR_T >= 3 && nJets_OR_T_MV2c10_70 >= 1 )') )
 
     # -----------------------------
     # Event "tightness"
@@ -672,12 +672,12 @@ if __name__ == "__main__":
     # For 3L, use lep1,lep2
     # -----------------------------
 
-    # vardb.registerCut( Cut('TT', '( ( dilep_type > 0 && lep_isTightSelectedMVA_0 && lep_isTightSelectedMVA_1 ) || ( trilep_type > 0 && lep_isTightSelectedMVA_1 && lep_isTightSelectedMVA_2 ) )') ) # NB: using this and not 'is_TMVA_TMVA' to make sure there is not QMisID BDT cut on loose electrons applied on top of the tight (in principle it shouldn't matter, but...)
-    # vardb.registerCut( Cut('TT', '( ((TMath::Abs(lep_ID_0)==13 && lep_isolationLoose_0) || (TMath::Abs(lep_ID_0)==11 && lep_isolationLoose_0 && lep_isTightLH_0 && lep_chargeIDBDTTight_0>0.0670415)) && ((TMath::Abs(lep_ID_1)==13 && lep_isolationLoose_1) || (TMath::Abs(lep_ID_1)==11 && lep_isolationLoose_1 && lep_isTightLH_1 && lep_chargeIDBDTTight_1>0.0670415)) && lep_promptLeptonIso_TagWeight_0<-0.5 && lep_promptLeptonIso_TagWeight_1<-0.5 )') )
-    vardb.registerCut( Cut('TT', '( is_TMVA_TMVA )') )
-    vardb.registerCut( Cut('TL', '( is_TMVA_AntiTMVA )') )
-    vardb.registerCut( Cut('LT', '( is_AntiTMVA_TMVA )') )
-    vardb.registerCut( Cut('LL', '( is_AntiTMVA_AntiTMVA )') )
+    # database.registerCut( Cut('TT', '( ( dilep_type > 0 && lep_isTightSelectedMVA_0 && lep_isTightSelectedMVA_1 ) || ( trilep_type > 0 && lep_isTightSelectedMVA_1 && lep_isTightSelectedMVA_2 ) )') ) # NB: using this and not 'is_TMVA_TMVA' to make sure there is not QMisID BDT cut on loose electrons applied on top of the tight (in principle it shouldn't matter, but...)
+    # database.registerCut( Cut('TT', '( ((TMath::Abs(lep_ID_0)==13 && lep_isolationLoose_0) || (TMath::Abs(lep_ID_0)==11 && lep_isolationLoose_0 && lep_isTightLH_0 && lep_chargeIDBDTTight_0>0.0670415)) && ((TMath::Abs(lep_ID_1)==13 && lep_isolationLoose_1) || (TMath::Abs(lep_ID_1)==11 && lep_isolationLoose_1 && lep_isTightLH_1 && lep_chargeIDBDTTight_1>0.0670415)) && lep_promptLeptonIso_TagWeight_0<-0.5 && lep_promptLeptonIso_TagWeight_1<-0.5 )') )
+    database.registerCut( Cut('TT', '( is_TMVA_TMVA )') )
+    database.registerCut( Cut('TL', '( is_TMVA_AntiTMVA )') )
+    database.registerCut( Cut('LT', '( is_AntiTMVA_TMVA )') )
+    database.registerCut( Cut('LL', '( is_AntiTMVA_AntiTMVA )') )
 
     # ------------------------------
     # Sidebands definition for fakes
@@ -685,47 +685,47 @@ if __name__ == "__main__":
 
     # NB: for electrons, these flags include a QMisID BDT cut on the LooseLH WP
 
-    vardb.registerCut( Cut('FakesSideband_TT',      '( is_TMVA_TMVA )') )
-    vardb.registerCut( Cut('FakesSideband_TL',      '( is_TMVA_AntiTMVA )') )
-    vardb.registerCut( Cut('FakesSideband_LT',      '( is_AntiTMVA_TMVA )') )
-    vardb.registerCut( Cut('FakesSideband_TL_LT',   '( is_TMVA_AntiTMVA || is_AntiTMVA_TMVA )') )
-    vardb.registerCut( Cut('FakesSideband_LL',      '( is_AntiTMVA_AntiTMVA )') )
-    vardb.registerCut( Cut('FakesSideband_TelLmu',  '( is_TMVAel_AntiTMVAmu )') )
-    vardb.registerCut( Cut('FakesSideband_LelTmu',  '( is_AntiTMVAel_TMVAmu )') )
-    vardb.registerCut( Cut('FakesSideband_TmuLel',  '( is_TMVAmu_AntiTMVAel )') )
-    vardb.registerCut( Cut('FakesSideband_LmuTel',  '( is_AntiTMVAmu_TMVAel )') )
+    database.registerCut( Cut('FakesSideband_TT',      '( is_TMVA_TMVA )') )
+    database.registerCut( Cut('FakesSideband_TL',      '( is_TMVA_AntiTMVA )') )
+    database.registerCut( Cut('FakesSideband_LT',      '( is_AntiTMVA_TMVA )') )
+    database.registerCut( Cut('FakesSideband_TL_LT',   '( is_TMVA_AntiTMVA || is_AntiTMVA_TMVA )') )
+    database.registerCut( Cut('FakesSideband_LL',      '( is_AntiTMVA_AntiTMVA )') )
+    database.registerCut( Cut('FakesSideband_TelLmu',  '( is_TMVAel_AntiTMVAmu )') )
+    database.registerCut( Cut('FakesSideband_LelTmu',  '( is_AntiTMVAel_TMVAmu )') )
+    database.registerCut( Cut('FakesSideband_TmuLel',  '( is_TMVAmu_AntiTMVAel )') )
+    database.registerCut( Cut('FakesSideband_LmuTel',  '( is_AntiTMVAmu_TMVAel )') )
 
     if args.cutBasedLepDef:
 
-        vardb.getCut('TT').cutstr = '( is_T_T )'
-        vardb.getCut('TL').cutstr = '( is_T_AntiT )'
-        vardb.getCut('LT').cutstr = '( is_AntiT_T )'
-        vardb.getCut('LL').cutstr = '( is_AntiT_AntiT )'
+        database.getCut('TT').cutstr = '( is_T_T )'
+        database.getCut('TL').cutstr = '( is_T_AntiT )'
+        database.getCut('LT').cutstr = '( is_AntiT_T )'
+        database.getCut('LL').cutstr = '( is_AntiT_AntiT )'
 
-        vardb.getCut('FakesSideband_TT').cutstr     =  '( is_T_T )'
-        vardb.getCut('FakesSideband_TL').cutstr     =  '( is_T_AntiT )'
-        vardb.getCut('FakesSideband_LT').cutstr     =  '( is_AntiT_T )'
-        vardb.getCut('FakesSideband_TL_LT').cutstr  =  '( is_T_AntiT || is_AntiT_T )'
-        vardb.getCut('FakesSideband_LL').cutstr     =  '( is_AntiT_AntiT )'
-        vardb.getCut('FakesSideband_TelLmu').cutstr =  '( is_Tel_AntiTmu )'
-        vardb.getCut('FakesSideband_LelTmu').cutstr =  '( is_AntiTel_Tmu )'
-        vardb.getCut('FakesSideband_TmuLel').cutstr =  '( is_Tmu_AntiTel )'
-        vardb.getCut('FakesSideband_LmuTel').cutstr =  '( is_AntiTmu_Tel )'
+        database.getCut('FakesSideband_TT').cutstr     =  '( is_T_T )'
+        database.getCut('FakesSideband_TL').cutstr     =  '( is_T_AntiT )'
+        database.getCut('FakesSideband_LT').cutstr     =  '( is_AntiT_T )'
+        database.getCut('FakesSideband_TL_LT').cutstr  =  '( is_T_AntiT || is_AntiT_T )'
+        database.getCut('FakesSideband_LL').cutstr     =  '( is_AntiT_AntiT )'
+        database.getCut('FakesSideband_TelLmu').cutstr =  '( is_Tel_AntiTmu )'
+        database.getCut('FakesSideband_LelTmu').cutstr =  '( is_AntiTel_Tmu )'
+        database.getCut('FakesSideband_TmuLel').cutstr =  '( is_Tmu_AntiTel )'
+        database.getCut('FakesSideband_LmuTel').cutstr =  '( is_AntiTmu_Tel )'
 
     # ---------------------
     # 2Lep SS + 1 tau cuts
     # ---------------------
 
-    vardb.registerCut( Cut('2Lep1Tau_NLep',         '( dilep_type > 0 )') )
-    vardb.registerCut( Cut('2Lep1Tau_TightLeptons', '( is_T_T == 1 )') )
-    vardb.registerCut( Cut('2Lep1Tau_pT',           '( lep_Pt_0 > 25e3 && lep_Pt_1 > 15e3  )') )
-    vardb.registerCut( Cut('2Lep1Tau_TrigMatch',    '( lep_isTrigMatch_0|| lep_isTrigMatch_1 )') )
-    vardb.registerCut( Cut('2Lep1Tau_SS',           '( lep_ID_0 * lep_ID_1 > 0 )') )
-    vardb.registerCut( Cut('2Lep1Tau_1Tau',         '( nTaus_OR_Pt25 == 1 && ( lep_ID_0 * tau_charge_0 ) < 0 )') )
-    vardb.registerCut( Cut('2Lep1Tau_Zsidescut',    '( dilep_type != 3 || TMath::Abs( Mll01 - 91.2e3 ) > 10e3 )' )  )
-    vardb.registerCut( Cut('2Lep1Tau_NJet_SR',      '( nJets_OR_T >= 4 )') )
-    vardb.registerCut( Cut('2Lep1Tau_NJet_CR',      '( nJets_OR_T > 1 && nJets_OR_T < 4 )') )
-    vardb.registerCut( Cut('2Lep1Tau_NBJet',        '( nJets_OR_T_MV2c10_70 > 0 )') )
+    database.registerCut( Cut('2Lep1Tau_NLep',         '( dilep_type > 0 )') )
+    database.registerCut( Cut('2Lep1Tau_TightLeptons', '( is_T_T == 1 )') )
+    database.registerCut( Cut('2Lep1Tau_pT',           '( lep_Pt_0 > 25e3 && lep_Pt_1 > 15e3  )') )
+    database.registerCut( Cut('2Lep1Tau_TrigMatch',    '( lep_isTrigMatch_0|| lep_isTrigMatch_1 )') )
+    database.registerCut( Cut('2Lep1Tau_SS',           '( lep_ID_0 * lep_ID_1 > 0 )') )
+    database.registerCut( Cut('2Lep1Tau_1Tau',         '( nTaus_OR_Pt25 == 1 && ( lep_ID_0 * tau_charge_0 ) < 0 )') )
+    database.registerCut( Cut('2Lep1Tau_Zsidescut',    '( dilep_type != 3 || TMath::Abs( Mll01 - 91.2e3 ) > 10e3 )' )  )
+    database.registerCut( Cut('2Lep1Tau_NJet_SR',      '( nJets_OR_T >= 4 )') )
+    database.registerCut( Cut('2Lep1Tau_NJet_CR',      '( nJets_OR_T > 1 && nJets_OR_T < 4 )') )
+    database.registerCut( Cut('2Lep1Tau_NBJet',        '( nJets_OR_T_MV2c10_70 > 0 )') )
 
     # ---------------------------
     # A list of variables to plot
@@ -750,110 +750,110 @@ if __name__ == "__main__":
     if doSR or do2LSS_LOWNJ_VR or do2LSS_HIGHNJ_BVETO_VR:
         print ''
         if "INCL_FLAV" in args.channel:
-            vardb.registerVar( Variable(shortname = "LepFlavours", latexname = "Lepton flavour (2lSS0#tau)", ntuplename = "dilep_type", bins = 3, minval = 0.5, maxval = 3.5, binlabelsX = {1:"#mu#mu",2:"e#mu",3:"ee"}, sysvar = False) )
+            database.registerVar( Variable(shortname = "LepFlavours", latexname = "Lepton flavour (2lSS0#tau)", ntuplename = "dilep_type", bins = 3, minval = 0.5, maxval = 3.5, binlabelsX = {1:"#mu#mu",2:"e#mu",3:"ee"}, sysvar = False) )
         else:
-            # vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
-            # vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
+            # database.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            # database.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = database.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
             if doSR or do2LSS_HIGHNJ_BVETO_VR:
-                vardb.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = False) )
+                database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = False) )
             elif do2LSS_LOWNJ_VR:
-                vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = "JVT_EventWeight", sysvar = False) )
+                database.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = "JVT_EventWeight", sysvar = False) )
 
-            vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = False) )
-            # vardb.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
-            # vardb.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
-            vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{#mu_{0}} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{#mu_{1}} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{e_{0}}", ntuplename = "electron_EtaBE2[0]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{e_{1}}", ntuplename = "electron_EtaBE2[1]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{#mu_{0}}", ntuplename = "muon_Eta[0]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{#mu_{1}}", ntuplename = "muon_Eta[1]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "min #DeltaR(e_{0},j)", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "min #DeltaR(e_{1},j)", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "min #DeltaR(#mu_{0},j)", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "min #DeltaR(#mu_{1},j)", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 5, minval = -0.5, maxval = 4.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight", sysvar = False) )
-            vardb.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 20, minval = 0.0, maxval = 200.0, logaxis = True, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(l_{0},l_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0, sysvar = False) )
-            vardb.registerVar( Variable(shortname = "TotLepCharge", latexname = "Tot. lep. charge", ntuplename = "total_charge", bins = 7, minval = -3.5, maxval = 3.5, logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = False) )
+            # database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
+            # database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
+            database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{#mu_{0}} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{#mu_{1}} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{e_{0}}", ntuplename = "electron_EtaBE2[0]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{e_{1}}", ntuplename = "electron_EtaBE2[1]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{#mu_{0}}", ntuplename = "muon_Eta[0]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{#mu_{1}}", ntuplename = "muon_Eta[1]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "min #DeltaR(e_{0},j)", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "min #DeltaR(e_{1},j)", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "min #DeltaR(#mu_{0},j)", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "min #DeltaR(#mu_{1},j)", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 5, minval = -0.5, maxval = 4.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight", sysvar = False) )
+            database.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0, sysvar = False) )
+            database.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 20, minval = 0.0, maxval = 200.0, logaxis = True, sysvar = False) )
+            database.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(l_{0},l_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0, sysvar = False) )
+            database.registerVar( Variable(shortname = "TotLepCharge", latexname = "Tot. lep. charge", ntuplename = "total_charge", bins = 7, minval = -3.5, maxval = 3.5, logaxis = True, sysvar = False) )
 
     if doMMSidebands:
-        vardb.registerVar( Variable(shortname = 'MMWeight', latexname = 'MM weight', ntuplename = 'MMWeight', bins = 50, minval = -0.5, maxval = 0.5) )
-        # vardb.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 9, minval = 25.0, maxval = 205.0,) )
-        # vardb.registerVar( Variable(shortname = 'Lep0TM_VS_Lep1TM', latexnameX = 'lead lep TM', latexnameY = '2nd lead lep TM', ntuplename = 'lep_isTrigMatch_1:lep_isTrigMatch_0', bins = 2, minval = -0.5, maxval = 1.5, typeval = TH2F) )
+        database.registerVar( Variable(shortname = 'MMWeight', latexname = 'MM weight', ntuplename = 'MMWeight', bins = 50, minval = -0.5, maxval = 0.5) )
+        # database.registerVar( Variable(shortname = 'Lep0Pt', latexname = 'p_{T}^{lead lep} [GeV]', ntuplename = 'lep_Pt_0/1e3', bins = 9, minval = 25.0, maxval = 205.0,) )
+        # database.registerVar( Variable(shortname = 'Lep0TM_VS_Lep1TM', latexnameX = 'lead lep TM', latexnameY = '2nd lead lep TM', ntuplename = 'lep_isTrigMatch_1:lep_isTrigMatch_0', bins = 2, minval = -0.5, maxval = 1.5, typeval = TH2F) )
         if "HIGHNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "LOWNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = 'JVT_EventWeight') )
+            database.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = 'JVT_EventWeight') )
         elif "ALLNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            database.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
 
     if doMMClosureTest:
         print ''
-        vardb.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{lead lep} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True) )
-        # vardb.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
-        # vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
-        # vardb.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
-        # vardb.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
-        # vardb.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{#mu_{0}} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
-        # vardb.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{#mu_{1}} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
-        # vardb.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{e_{0}}", ntuplename = "electron_EtaBE2[0]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
-        # vardb.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{e_{1}}", ntuplename = "electron_EtaBE2[1]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
-        # vardb.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{#mu_{0}}", ntuplename = "muon_Eta[0]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5]) )
-        # vardb.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{#mu_{1}}", ntuplename = "muon_Eta[1]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5]) )
-        # vardb.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "#DeltaR{e_{0}, closest j}", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
-        # vardb.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "#DeltaR{e_{1}, closest j}", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
-        # vardb.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "#DeltaR{#mu_{0}, closest j}", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
-        # vardb.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "#DeltaR{#mu_{1}, closest j}", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
-        # vardb.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 5, minval = -0.5, maxval = 4.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
-        # vardb.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0,) )
-        # vardb.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 40, minval = 0.0, maxval = 200.0,) )
-        # vardb.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(l_{0},l_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
+        database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{lead lep} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True) )
+        # database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
+        # database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
+        # database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
+        # database.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
+        # database.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{#mu_{0}} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
+        # database.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{#mu_{1}} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
+        # database.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{e_{0}}", ntuplename = "electron_EtaBE2[0]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
+        # database.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{e_{1}}", ntuplename = "electron_EtaBE2[1]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6]) )
+        # database.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{#mu_{0}}", ntuplename = "muon_Eta[0]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5]) )
+        # database.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{#mu_{1}}", ntuplename = "muon_Eta[1]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5]) )
+        # database.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "#DeltaR{e_{0}, closest j}", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+        # database.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "#DeltaR{e_{1}, closest j}", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+        # database.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "#DeltaR{#mu_{0}, closest j}", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+        # database.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "#DeltaR{#mu_{1}, closest j}", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0]) )
+        # database.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 5, minval = -0.5, maxval = 4.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
+        # database.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0,) )
+        # database.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 40, minval = 0.0, maxval = 200.0,) )
+        # database.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(l_{0},l_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0) )
         if "ALLNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            database.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "HIGHNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "LOWNJ" in args.channel:
-            vardb.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = 'JVT_EventWeight') )
+            database.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = 'JVT_EventWeight') )
 
     if doZOSpeakCR or doZSSpeakCR:
         print ''
-        vardb.registerVar( Variable(shortname = 'Mll01_NarrowPeak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 26, minval = 60.0, maxval = 125.0) )
+        database.registerVar( Variable(shortname = 'Mll01_NarrowPeak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 26, minval = 60.0, maxval = 125.0) )
 
     if doCFChallenge:
         print ''
         if "MM" in args.channel:
-            vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = "electron_ProbeVec_SLT_Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0) )
-            vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = "muon_ProbeVec_SLT_Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0) )
+            database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = "electron_ProbeVec_SLT_Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0) )
+            database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = "muon_ProbeVec_SLT_Pt/1e3", bins = 40, minval = 10.0, maxval = 210.0) )
         else:
-            vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
+            database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
 
     if makeStandardPlots:
         print ''
-        vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
-        # vardb.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = vardb.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
+        database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
+        # database.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = database.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
         # #
         # # Inclusive m(ll) plot
         # #
-        # vardb.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 46, minval = 10.0, maxval = 240.0,) )
+        # database.registerVar( Variable(shortname = 'Mll01_inc', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 46, minval = 10.0, maxval = 240.0,) )
         # #
         # # Z peak plot
         # #
-        # vardb.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
+        # database.registerVar( Variable(shortname = 'Mll01_peak', latexname = 'm(l_{0}l_{1}) [GeV]', ntuplename = 'Mll01/1e3', bins = 40, minval = 40.0, maxval = 120.0,) )
         # #
-        # vardb.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
-        # vardb.registerVar( Variable(shortname = 'Mll12', latexname = 'm(l_{1}l_{2}) [GeV]', ntuplename = 'Mll12/1e3', bins = 15, minval = 0.0, maxval = 300.0,) )
-        # vardb.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = 'lead_jetPt/1e3', bins = 36, minval = 20.0, maxval = 200.0,) )
-        # vardb.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = 'lead_jetEta', bins = 50, minval = -5.0, maxval = 5.0) )
-        # vardb.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageIntPerXing*1.16', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
-        vardb.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} [GeV]', ntuplename = 'MET_RefFinal_et/1e3', bins = 40, minval = 0.0, maxval = 200.0,) )
-        # vardb.registerVar( Variable(shortname = 'Tau0Pt', latexname = 'p_{T}^{lead tau} [GeV]', ntuplename = 'tau_pt_0', bins = 30, minval = 25.0, maxval = 100.0,) )
-        # vardb.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
-        # vardb.registerVar( Variable(shortname = 'deltaRLep0Lep2', latexname = '#DeltaR(l_{0},l_{2})', ntuplename = delta_R_lep0lep2, bins = 20, minval = 0.0, maxval = 5.0) )
-        # vardb.registerVar( Variable(shortname = 'deltaRLep1Lep2', latexname = '#DeltaR(l_{1},l_{2})', ntuplename = delta_R_lep1lep2, bins = 20, minval = 0.0, maxval = 5.0) )
+        # database.registerVar( Variable(shortname = 'pT_Z', latexname = 'p_{T} Z (reco) [GeV]', ntuplename = pT_Z, bins = 100, minval = 0.0, maxval = 1000.0, logaxisX = True) )
+        # database.registerVar( Variable(shortname = 'Mll12', latexname = 'm(l_{1}l_{2}) [GeV]', ntuplename = 'Mll12/1e3', bins = 15, minval = 0.0, maxval = 300.0,) )
+        # database.registerVar( Variable(shortname = 'Jet0Pt', latexname = 'p_{T}^{lead jet} [GeV]', ntuplename = 'lead_jetPt/1e3', bins = 36, minval = 20.0, maxval = 200.0,) )
+        # database.registerVar( Variable(shortname = 'Jet0Eta', latexname = '#eta^{lead jet}', ntuplename = 'lead_jetEta', bins = 50, minval = -5.0, maxval = 5.0) )
+        # database.registerVar( Variable(shortname = 'avgint', latexname = 'Average Interactions Per Bunch Crossing', ntuplename = 'averageIntPerXing*1.16', bins = 50, minval = 0, maxval = 50, typeval = TH1I) )
+        database.registerVar( Variable(shortname = 'MET_FinalTrk', latexname = 'E_{T}^{miss} [GeV]', ntuplename = 'MET_RefFinal_et/1e3', bins = 40, minval = 0.0, maxval = 200.0,) )
+        # database.registerVar( Variable(shortname = 'Tau0Pt', latexname = 'p_{T}^{lead tau} [GeV]', ntuplename = 'tau_pt_0', bins = 30, minval = 25.0, maxval = 100.0,) )
+        # database.registerVar( Variable(shortname = 'deltaRLep0Lep1', latexname = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1, bins = 20, minval = 0.0, maxval = 5.0) )
+        # database.registerVar( Variable(shortname = 'deltaRLep0Lep2', latexname = '#DeltaR(l_{0},l_{2})', ntuplename = delta_R_lep0lep2, bins = 20, minval = 0.0, maxval = 5.0) )
+        # database.registerVar( Variable(shortname = 'deltaRLep1Lep2', latexname = '#DeltaR(l_{1},l_{2})', ntuplename = delta_R_lep1lep2, bins = 20, minval = 0.0, maxval = 5.0) )
 
     # -------------------------------------------------
     # Alterantive ranges and binning for the histograms
@@ -884,27 +884,27 @@ if __name__ == "__main__":
 
     if args.doSyst:
 
-        #vardb.registerSystematics( Systematics(name='PU',             eventweight='evtsel_sys_PU_rescaling_') )
-        #vardb.registerSystematics( Systematics(name='el_reco',        eventweight='evtsel_sys_sf_el_reco_') )
-        #vardb.registerSystematics( Systematics(name='el_id',          eventweight='evtsel_sys_sf_el_id_') )
-        #vardb.registerSystematics( Systematics(name='el_iso',         eventweight='evtsel_sys_sf_el_iso_') )
-        #vardb.registerSystematics( Systematics(name='mu_id',          eventweight='evtsel_sys_sf_mu_id_') )
-        #vardb.registerSystematics( Systematics(name='mu_iso',         eventweight='evtsel_sys_sf_mu_iso_') )
-        #vardb.registerSystematics( Systematics(name='lep_trig',       eventweight='evtsel_sys_sf_lep_trig_') )
-        #vardb.registerSystematics( Systematics(name='bjet_b',         eventweight='evtsel_sys_sf_bjet_b_') )
-        #vardb.registerSystematics( Systematics(name='bjet_c',         eventweight='evtsel_sys_sf_bjet_c_') )
-        #vardb.registerSystematics( Systematics(name='bjet_m',         eventweight='evtsel_sys_sf_bjet_m_') )
+        #database.registerSystematics( Systematics(name='PU',             eventweight='evtsel_sys_PU_rescaling_') )
+        #database.registerSystematics( Systematics(name='el_reco',        eventweight='evtsel_sys_sf_el_reco_') )
+        #database.registerSystematics( Systematics(name='el_id',          eventweight='evtsel_sys_sf_el_id_') )
+        #database.registerSystematics( Systematics(name='el_iso',         eventweight='evtsel_sys_sf_el_iso_') )
+        #database.registerSystematics( Systematics(name='mu_id',          eventweight='evtsel_sys_sf_mu_id_') )
+        #database.registerSystematics( Systematics(name='mu_iso',         eventweight='evtsel_sys_sf_mu_iso_') )
+        #database.registerSystematics( Systematics(name='lep_trig',       eventweight='evtsel_sys_sf_lep_trig_') )
+        #database.registerSystematics( Systematics(name='bjet_b',         eventweight='evtsel_sys_sf_bjet_b_') )
+        #database.registerSystematics( Systematics(name='bjet_c',         eventweight='evtsel_sys_sf_bjet_c_') )
+        #database.registerSystematics( Systematics(name='bjet_m',         eventweight='evtsel_sys_sf_bjet_m_') )
 
-        #vardb.registerSystematics( Systematics(name='METSys',         treename='METSys') )
-        #vardb.registerSystematics( Systematics(name='ElEnResSys',     treename='ElEnResSys') )
-        #vardb.registerSystematics( Systematics(name='ElES_LowPt',     treename='ElES_LowPt') )
-        #vardb.registerSystematics( Systematics(name='ElES_Zee',       treename='ElES_Zee') )
-        #vardb.registerSystematics( Systematics(name='ElES_R12',       treename='ElES_R12') )
-        #vardb.registerSystematics( Systematics(name='ElES_PS',        treename='ElES_PS') )
-        #vardb.registerSystematics( Systematics(name='EESSys',         treename='EESSys') )
-        #vardb.registerSystematics( Systematics(name='MuSys',          treename='MuSys') )
-        #vardb.registerSystematics( Systematics(name='JES_Total',      treename='JES_Total') )
-        #vardb.registerSystematics( Systematics(name='JER',            treename='JER') )
+        #database.registerSystematics( Systematics(name='METSys',         treename='METSys') )
+        #database.registerSystematics( Systematics(name='ElEnResSys',     treename='ElEnResSys') )
+        #database.registerSystematics( Systematics(name='ElES_LowPt',     treename='ElES_LowPt') )
+        #database.registerSystematics( Systematics(name='ElES_Zee',       treename='ElES_Zee') )
+        #database.registerSystematics( Systematics(name='ElES_R12',       treename='ElES_R12') )
+        #database.registerSystematics( Systematics(name='ElES_PS',        treename='ElES_PS') )
+        #database.registerSystematics( Systematics(name='EESSys',         treename='EESSys') )
+        #database.registerSystematics( Systematics(name='MuSys',          treename='MuSys') )
+        #database.registerSystematics( Systematics(name='JES_Total',      treename='JES_Total') )
+        #database.registerSystematics( Systematics(name='JER',            treename='JER') )
 
         if doMMRates and "DATA" in args.channel:
 
@@ -915,11 +915,11 @@ if __name__ == "__main__":
                 weightQMisID = 'QMisIDWeight_'
                 procQMisID   = 'QMisID'
 
-            vardb.registerSystematics( Systematics(name='QMisIDsys', eventweight=weightQMisID, process=[procQMisID]) )
-            vardb.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['FakesMC']) )
-            vardb.registerSystematics( Systematics(name='TTVsys', eventweight=0.25, process=['TTBarW','TTBarZ']) )
-            vardb.registerSystematics( Systematics(name='VVsys', eventweight=0.3, process=['Diboson']) )
-            vardb.registerSystematics( Systematics(name='OtherPromptSSsys', eventweight=0.15, process=['Rare','TTBar']) )
+            database.registerSystematics( Systematics(name='QMisIDsys', eventweight=weightQMisID, process=[procQMisID]) )
+            database.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['FakesMC']) )
+            database.registerSystematics( Systematics(name='TTVsys', eventweight=0.25, process=['TTBarW','TTBarZ']) )
+            database.registerSystematics( Systematics(name='VVsys', eventweight=0.3, process=['Diboson']) )
+            database.registerSystematics( Systematics(name='OtherPromptSSsys', eventweight=0.15, process=['Rare','TTBar']) )
 
         if doMM:
 
@@ -945,7 +945,7 @@ if __name__ == "__main__":
                             for v in variables:
                                 thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys[0]
                                 thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] + "_"
-                                vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
+                                database.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
 
             elif args.doSyst == "UNCORRELATED_BINS":
 
@@ -956,7 +956,7 @@ if __name__ == "__main__":
                                 if sys[1] == "CorrBins":
                                     thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys[0]
                                     thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] + "_"
-                                    vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
+                                    database.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
                                 elif sys[1] == "UncorrBins":
                                     # Get the number of systematics shifts for the MMWeight systematics (aka, the number of bins of the r/f efficiency)
                                     # from the reweighted tree.
@@ -966,9 +966,9 @@ if __name__ == "__main__":
                                     for ibin in bins:
                                         thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys[0] + "_" + str(ibin)
                                         thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] + "_" + str(ibin) + "_"
-                                        vardb.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
+                                        database.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
         if doFF:
-            vardb.registerSystematics( Systematics(name="FFsys", eventweight="FFWeight_", process=["FakesFF"]) )
+            database.registerSystematics( Systematics(name="FFsys", eventweight="FFWeight_", process=["FakesFF"]) )
 
 
     # -------------------------------------------------------------------
@@ -979,13 +979,13 @@ if __name__ == "__main__":
     weight_SR_CR = "tauSFTight * lepSFTrigTight * JVT_EventWeight * MV2c10_70_EventWeight" # TEMP for v26,v27 : no calibration of lepton MVA yet
 
     cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_TRUTH_PurePromptEvent','2Lep_ElEtaCut']
-    common_cuts_2Lep = vardb.getCuts(cc_2Lep_list)
+    common_cuts_2Lep = database.getCuts(cc_2Lep_list)
 
     cc_2Lep1Tau_list = ['TrigDec','BlindingCut','2Lep1Tau_NLep','2Lep1Tau_pT','2Lep1Tau_TrigMatch','2Lep1Tau_SS','2Lep1Tau_1Tau','2Lep1Tau_Zsidescut','2Lep1Tau_NBJet']
-    common_cuts_2Lep1Tau = vardb.getCuts(cc_2Lep1Tau_list)
+    common_cuts_2Lep1Tau = database.getCuts(cc_2Lep1Tau_list)
 
     cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets']
-    common_cuts_3Lep = vardb.getCuts(cc_3Lep_list)
+    common_cuts_3Lep = database.getCuts(cc_3Lep_list)
 
     cat_names_2Lep = {
                        'mm' : 'MuMuSS',
@@ -1011,14 +1011,14 @@ if __name__ == "__main__":
 
         if do2LSS_SR :
             if "INCL_FLAV" in args.channel:
-                vardb.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                database.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_2Lep & database.getCuts(['2Lep_NJet_SR']), weight = weight_SR_CR ) )
             else:
-                if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
-                if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
-                if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
-            #vardb.registerCategory( MyCategory('TwoLepSSTau_SR', cut = common_cuts_2Lep1Tau & vardb.getCut('2Lep1Tau_NJet_SR') ), weight = weight_SR_CR )
+                if any( cat in args.category for cat in ["mm","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_2Lep & database.getCuts(['2Lep_MuMu_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                if any( cat in args.category for cat in ["ee","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_2Lep & database.getCuts(['2Lep_ElEl_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+                if any( cat in args.category for cat in ["OF","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_2Lep & database.getCuts(['2Lep_OF_Event','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+            #database.registerCategory( MyCategory('TwoLepSSTau_SR', cut = common_cuts_2Lep1Tau & database.getCut('2Lep1Tau_NJet_SR') ), weight = weight_SR_CR )
         if do3L_SR:
-            vardb.registerCategory( MyCategory('ThreeLep_SR',    cut = common_cuts_3Lep, weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory('ThreeLep_SR',    cut = common_cuts_3Lep, weight = weight_SR_CR ) )
 
     # -------------
     # Low N-jet CRs
@@ -1032,13 +1032,13 @@ if __name__ == "__main__":
             append_2Lep += "_DataDriven"
 
         if "INCL_FLAV" in args.channel:
-            vardb.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_2Lep & database.getCuts(['2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
         else:
-            if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            if any( cat in args.category for cat in ["OF","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep, cut = common_cuts_2Lep & database.getCuts(['2Lep_OF_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
             if not ( doTHETA ):
-                if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
-                if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
-        #vardb.registerCategory( MyCategory('TwoLepSSTau_LowNJetCR',  cut = common_cuts_2Lep1Tau & vardb.getCut('2Lep1Tau_NJet_CR'), weight = weight_SR_CR ) )
+                if any( cat in args.category for cat in ["mm","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & database.getCuts(['2Lep_MuMu_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+                if any( cat in args.category for cat in ["ee","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & database.getCuts(['2Lep_ElEl_Event','2Lep_NJet_CR']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+        #database.registerCategory( MyCategory('TwoLepSSTau_LowNJetCR',  cut = common_cuts_2Lep1Tau & database.getCut('2Lep1Tau_NJet_CR'), weight = weight_SR_CR ) )
 
     # --------------------------
     # High N-jet CRs (w/ B veto)
@@ -1052,69 +1052,69 @@ if __name__ == "__main__":
             append_2Lep += "_DataDriven"
 
         cc_2Lep_list = [ cut for cut in cc_2Lep_list if not cut == "2Lep_NBJet_SR" ]
-        common_cuts_2Lep = vardb.getCuts(cc_2Lep_list)
+        common_cuts_2Lep = database.getCuts(cc_2Lep_list)
 
         if "INCL_FLAV" in args.channel:
-            vardb.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_2Lep & vardb.getCuts(['2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_2Lep & database.getCuts(['2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
         else:
-            if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_MuMu_Event','2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
-            if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_ElEl_Event','2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
-            if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep, cut = common_cuts_2Lep & vardb.getCuts(['2Lep_OF_Event','2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            if any( cat in args.category for cat in ["mm","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep, cut = common_cuts_2Lep & database.getCuts(['2Lep_MuMu_Event','2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            if any( cat in args.category for cat in ["ee","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep, cut = common_cuts_2Lep & database.getCuts(['2Lep_ElEl_Event','2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
+            if any( cat in args.category for cat in ["OF","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep, cut = common_cuts_2Lep & database.getCuts(['2Lep_OF_Event','2Lep_NJet_SR','BJetVeto']), weight = weight_SR_CR, ratiolims=(0.5,1.5) ) )
 
     # -------------
     # Other CRs
     # -------------
 
     if doWZonCR:
-        vardb.registerCategory( MyCategory('WZonCR',      cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','BJetVeto','3Lep_NLep','2Lep_Zpeakcut','2Lep_OS']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('WZonCR',      cut = database.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','BJetVeto','3Lep_NLep','2Lep_Zpeakcut','2Lep_OS']), weight = weight_SR_CR ) )
 
     if doWZoffCR:
-        vardb.registerCategory( MyCategory('WZoffCR',     cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','BJetVeto','3Lep_NLep','2Lep_Zsidescut','2Lep_OS']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('WZoffCR',     cut = database.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','BJetVeto','3Lep_NLep','2Lep_Zsidescut','2Lep_OS']), weight = weight_SR_CR ) )
 
     if doWZHFonCR:
-        vardb.registerCategory( MyCategory('WZHFonCR',    cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','2Lep_Zpeakcut','2Lep_OS']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('WZHFonCR',    cut = database.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','2Lep_Zpeakcut','2Lep_OS']), weight = weight_SR_CR ) )
 
     if doWZHFoffCR:
-        vardb.registerCategory( MyCategory('WZHFoffCR',   cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','2Lep_Zsidescut','2Lep_OS']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('WZHFoffCR',   cut = database.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','2Lep_Zsidescut','2Lep_OS']), weight = weight_SR_CR ) )
 
     if dottZCR:
-        vardb.registerCategory( MyCategory('ttZCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','NJet3L','2Lep_Zpeakcut','2Lep_OS']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('ttZCR',       cut = database.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','3Lep_NLep','NJet3L','2Lep_Zpeakcut','2Lep_OS']), weight = weight_SR_CR ) )
 
     if dottWCR:
-        vardb.registerCategory( MyCategory('ttWCR',       cut = vardb.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NJet_ttW','2Lep_NBJet_ttW','2Lep_NLep','2Lep_pT','TauVeto','TT','2Lep_HTJ_ttW','2Lep_MET_ttW']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('ttWCR',       cut = database.getCuts(['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NJet_ttW','2Lep_NBJet_ttW','2Lep_NLep','2Lep_pT','TauVeto','TT','2Lep_HTJ_ttW','2Lep_MET_ttW']), weight = weight_SR_CR ) )
 
     if doZOSpeakCR:
-        vardb.registerCategory( MyCategory('ZOSpeakCR_ElEl',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_ElEl_Event','2Lep_OS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory('ZOSpeakCR_MuMu',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_MuMu_Event','2Lep_OS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('ZOSpeakCR_ElEl',   cut = database.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_ElEl_Event','2Lep_OS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('ZOSpeakCR_MuMu',   cut = database.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_MuMu_Event','2Lep_OS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
 
     if doZSSpeakCR:
-        vardb.registerCategory( MyCategory('ZSSpeakCR_ElEl',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_ElEl_Event','2Lep_SS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory('ZSSpeakCR_MuMu',   cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_MuMu_Event','2Lep_SS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('ZSSpeakCR_ElEl',   cut = database.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_ElEl_Event','2Lep_SS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('ZSSpeakCR_MuMu',   cut = database.getCuts(['2Lep_NLep','2Lep_pT','TT','TrigDec','BlindingCut','2Lep_TrigMatch','TauVeto','2Lep_MuMu_Event','2Lep_SS','2Lep_Zpeakcut']), weight = weight_SR_CR ) )
 
     if doTopCR:
 
         # OS TTBar (top dilepton) (ee,mumu,emu)
 
-        #vardb.registerCategory( MyCategory('TopCR_OS_MuMu',    cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_MuMu_Event','TT','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
-        #vardb.registerCategory( MyCategory('TopCR_OS_ElEl',    cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_ElEl_Event','TT','2Lep_ElEtaCut','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory('TopCR_OS_OF',      cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_OF_Event','TT','2Lep_ElEtaCut','2Lep_NJet_CR','2Lep_NBJet','2Lep_OS']), weight = weight_SR_CR ) )
+        #database.registerCategory( MyCategory('TopCR_OS_MuMu',    cut = database.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_MuMu_Event','TT','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
+        #database.registerCategory( MyCategory('TopCR_OS_ElEl',    cut = database.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_ElEl_Event','TT','2Lep_ElEtaCut','2Lep_NJet_CR','2Lep_NBJet','2Lep_Zsidescut','2Lep_Zmincut','2Lep_OS']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory('TopCR_OS_OF',      cut = database.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_OF_Event','TT','2Lep_ElEtaCut','2Lep_NJet_CR','2Lep_NBJet','2Lep_OS']), weight = weight_SR_CR ) )
 
         # Fakes SS TTBar (ee,mumu,emu)
 
-        #vardb.registerCategory( MyCategory('TopCR_SS',         cut = vardb.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NJet_CR','TT','2Lep_ElEtaCut','OneBJet','2Lep_SS','2Lep_Zmincut']), weight = weight_SR_CR ) )
+        #database.registerCategory( MyCategory('TopCR_SS',         cut = database.getCuts(['2Lep_NLep','2Lep_pT','TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NJet_CR','TT','2Lep_ElEtaCut','OneBJet','2Lep_SS','2Lep_Zmincut']), weight = weight_SR_CR ) )
 
 
     if doLeptonTruth:
 
         cc_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_MinNJet','TT']
-        common_cuts = vardb.getCuts(cc_list)
+        common_cuts = database.getCuts(cc_list)
 
         basename = "LeptonTruth_"
-        vardb.registerCategory( MyCategory(basename+"NoTruth",            cut = common_cuts, weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory(basename+"2Prompt",            cut = common_cuts & vardb.getCuts(['2Lep_TRUTH_PurePromptEvent']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory(basename+"1Prompt1NonPrompt",  cut = common_cuts & vardb.getCuts(['2Lep_TRUTH_1Prompt1NonPromptEvent']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory(basename+"2NonPrompt",         cut = common_cuts & vardb.getCuts(['2Lep_TRUTH_2NonPromptEvent']), weight = weight_SR_CR ) )
-        vardb.registerCategory( MyCategory(basename+"1Prompt1QMisID",     cut = common_cuts & vardb.getCuts(['2Lep_TRUTH_1Prompt1QMisIDEvent']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory(basename+"NoTruth",            cut = common_cuts, weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory(basename+"2Prompt",            cut = common_cuts & database.getCuts(['2Lep_TRUTH_PurePromptEvent']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory(basename+"1Prompt1NonPrompt",  cut = common_cuts & database.getCuts(['2Lep_TRUTH_1Prompt1NonPromptEvent']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory(basename+"2NonPrompt",         cut = common_cuts & database.getCuts(['2Lep_TRUTH_2NonPromptEvent']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory(basename+"1Prompt1QMisID",     cut = common_cuts & database.getCuts(['2Lep_TRUTH_1Prompt1QMisIDEvent']), weight = weight_SR_CR ) )
 
     # --------------------------------------------
     # Full breakdown of cuts for cutflow challenge
@@ -1145,35 +1145,35 @@ if __name__ == "__main__":
                                  ["2Lep_TagAndProbe_GoodEvent", weight_CFC_MM + " * weight_tag"],
                                      ]
 
-            truth_sub_OS = vardb.getCut('2Lep_TRUTH_PurePromptEvent')
-            truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
+            truth_sub_OS = database.getCut('2Lep_TRUTH_PurePromptEvent')
+            truth_sub_SS = database.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
 
             if "NO_TRUTH_SEL" in args.channel:
                 print ("\nWARNING! All truth cuts being deactivated...\n")
-                truth_sub_OS = truth_sub_SS = vardb.getCut("DummyCut")
+                truth_sub_OS = truth_sub_SS = database.getCut("DummyCut")
 
             tot_idx = 0
             for idx, cut in enumerate(basecutlistnames_CFC_MM):
                 prepend = str(idx)
                 if idx < 10:
                     prepend = "0" + str(idx)
-                vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + cut[0],    cut = vardb.getCuts( appended( basecutlist_CFC_MM, cut[0] ) ), weight = cut[1] ) )
+                database.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + cut[0],    cut = database.getCuts( appended( basecutlist_CFC_MM, cut[0] ) ), weight = cut[1] ) )
                 tot_idx += 1
 
-            vardb.registerCategory( MyCategory( "A0_RealCR" + "_" + cat_name + "_" + 'OS',                      cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
-            vardb.registerCategory( MyCategory( "A1_RealCR" + "_" + cat_name + "_" + 'OS_OF',                   cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
-            vardb.registerCategory( MyCategory( "A2_RealCR" + "_" + cat_name + "_" + 'OS_ProbeElT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
-            vardb.registerCategory( MyCategory( "A3_RealCR" + "_" + cat_name + "_" + 'OS_ProbeMuT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_MuProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" )  ) )
-            vardb.registerCategory( MyCategory( "A4_RealCR" + "_" + cat_name + "_" + 'OS_ProbeElAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" )  ) )
-            vardb.registerCategory( MyCategory( "A5_RealCR" + "_" + cat_name + "_" + 'OS_ProbeMuAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_MuProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            database.registerCategory( MyCategory( "A0_RealCR" + "_" + cat_name + "_" + 'OS',                      cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_OS']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
+            database.registerCategory( MyCategory( "A1_RealCR" + "_" + cat_name + "_" + 'OS_OF',                   cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_OS','2Lep_OF_Event']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
+            database.registerCategory( MyCategory( "A2_RealCR" + "_" + cat_name + "_" + 'OS_ProbeElT',             cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            database.registerCategory( MyCategory( "A3_RealCR" + "_" + cat_name + "_" + 'OS_ProbeMuT',             cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_MuProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" )  ) )
+            database.registerCategory( MyCategory( "A4_RealCR" + "_" + cat_name + "_" + 'OS_ProbeElAntiT',         cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" )  ) )
+            database.registerCategory( MyCategory( "A5_RealCR" + "_" + cat_name + "_" + 'OS_ProbeMuAntiT',         cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_OS','2Lep_OF_Event','2Lep_MuProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
 
-            vardb.registerCategory( MyCategory( "B0_FakeCR" + "_" + cat_name + "_" + 'SS',                      cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
-            vardb.registerCategory( MyCategory( "B1_FakeCR" + "_" + cat_name + "_" + 'SS_Zmin',                 cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
-            vardb.registerCategory( MyCategory( "B2_FakeCR" + "_" + cat_name + "_" + 'SS_Zveto',                cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
-            vardb.registerCategory( MyCategory( "B3_FakeCR" + "_" + cat_name + "_" + 'SS_OF',                   cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
-            vardb.registerCategory( MyCategory( "B4_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeEl',              cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
-            vardb.registerCategory( MyCategory( "B5_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElT',             cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
-            vardb.registerCategory( MyCategory( "B6_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElAntiT',         cut = vardb.getCuts(basecutlist_CFC_MM) & vardb.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            database.registerCategory( MyCategory( "B0_FakeCR" + "_" + cat_name + "_" + 'SS',                      cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_SS']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
+            database.registerCategory( MyCategory( "B1_FakeCR" + "_" + cat_name + "_" + 'SS_Zmin',                 cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_SS','2Lep_Zmincut']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
+            database.registerCategory( MyCategory( "B2_FakeCR" + "_" + cat_name + "_" + 'SS_Zveto',                cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
+            database.registerCategory( MyCategory( "B3_FakeCR" + "_" + cat_name + "_" + 'SS_OF',                   cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event']), weight = ( weight_CFC_MM + " * weight_tag" ) ) )
+            database.registerCategory( MyCategory( "B4_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeEl',              cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe']), weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            database.registerCategory( MyCategory( "B5_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElT',             cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
+            database.registerCategory( MyCategory( "B6_FakeCR" + "_" + cat_name + "_" + 'SS_ProbeElAntiT',         cut = database.getCuts(basecutlist_CFC_MM) & database.getCuts(['2Lep_SS','2Lep_Zmincut','2Lep_Zsidescut','2Lep_OF_Event','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = ( weight_CFC_MM + " * weight_tag * weight_probe" ) ) )
 
         if any( reg in args.channel for reg in ["2LSS_SR","2LSS_LOWNJ_VR"] ):
 
@@ -1199,7 +1199,7 @@ if __name__ == "__main__":
                 prepend = str(idx)
                 if idx < 10:
                     prepend = "0" + str(idx)
-                vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + cut[0],    cut = vardb.getCuts( appended( cutlist_CFC_2Lep, cut[0] ) ), weight = cut[1] ) )
+                database.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + cut[0],    cut = database.getCuts( appended( cutlist_CFC_2Lep, cut[0] ) ), weight = cut[1] ) )
                 print("registering category:\t{0}".format( prepend + "_" + cat_name + "_" + cut[0] ) + " - defined by cuts: [" + ",".join( "\'{0}\'".format(c) for c in cutlist_CFC_2Lep ) + "] - weight : \'{0}\'".format(cut[1]))
                 tot_idx += 1
 
@@ -1207,9 +1207,9 @@ if __name__ == "__main__":
             if tot_idx < 10:
                 prepend = "0" + str(tot_idx)
 
-            vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + "ElEl",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_ElEl_Event']), weight = weight_CFC ) )
-            vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + "MuMu",   cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_MuMu_Event']), weight = weight_CFC ) )
-            vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + "OF",     cut = vardb.getCuts(cutlist_CFC_2Lep) & vardb.getCuts(['2Lep_OF_Event']), weight = weight_CFC ) )
+            database.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + "ElEl",   cut = database.getCuts(cutlist_CFC_2Lep) & database.getCuts(['2Lep_ElEl_Event']), weight = weight_CFC ) )
+            database.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + "MuMu",   cut = database.getCuts(cutlist_CFC_2Lep) & database.getCuts(['2Lep_MuMu_Event']), weight = weight_CFC ) )
+            database.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + "OF",     cut = database.getCuts(cutlist_CFC_2Lep) & database.getCuts(['2Lep_OF_Event']), weight = weight_CFC ) )
 
         if "2LSS1Tau" in args.channel:
 
@@ -1237,7 +1237,7 @@ if __name__ == "__main__":
                 prepend = str(idx)
                 if idx < 10:
                     prepend = "0" + str(idx)
-                vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + cut[0],    cut = vardb.getCuts( appended( cutlist_CFC_2Lep1Tau, cut[0] ) ), weight = cut[1] ) )
+                database.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + cut[0],    cut = database.getCuts( appended( cutlist_CFC_2Lep1Tau, cut[0] ) ), weight = cut[1] ) )
                 print("registering category:\t{0}".format( prepend + "_" + cat_name + "_" + cut[0] ) + " - defined by cuts: [" + ",".join( "\'{0}\'".format(c) for c in cutlist_CFC_2Lep1Tau ) + "] - weight : \'{0}\'".format(cut[1]))
                 tot_idx += 1
 
@@ -1269,7 +1269,7 @@ if __name__ == "__main__":
                 prepend = str(idx)
                 if idx < 10:
                     prepend = "0" + str(idx)
-                vardb.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + cut[0],    cut = vardb.getCuts( appended( cutlist_CFC_3Lep, cut[0] ) ), weight = cut[1] ) )
+                database.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + cut[0],    cut = database.getCuts( appended( cutlist_CFC_3Lep, cut[0] ) ), weight = cut[1] ) )
                 print("registering category:\t{0}".format( prepend + "_" + cat_name + "_" + cut[0] ) + " - defined by cuts: [" + ",".join( "\'{0}\'".format(c) for c in cutlist_CFC_3Lep ) + "] - weight : \'{0}\'".format(cut[1]))
                 tot_idx += 1
 
@@ -1298,52 +1298,52 @@ if __name__ == "__main__":
             # Special plots for MM real/fake eff CRs
             # ---------------------------------------
 
-            #vardb.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
-            #vardb.registerVar( Variable(shortname = "Integral_LOGY", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, logaxis = True) )
+            #database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
+            #database.registerVar( Variable(shortname = "Integral_LOGY", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, logaxis = True) )
 
-            vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
-            # vardb.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 50, minval = 10.0, maxval = 210.0, sysvar = True) )
-            # vardb.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
-            # vardb.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210]) )
-            # vardb.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210]) )
-            # vardb.registerVar( Variable(shortname = "ElProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210], logaxis = True) )
-            # vardb.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210], logaxis = True) )
-            # vardb.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", bins = 26, minval = 0.0,  maxval = 2.6) )
-            # vardb.registerVar( Variable(shortname = "ElProbeDistanceClosestJet", latexname = '#DeltaR(e, closest jet)', ntuplename = el_probe + "deltaRClosestJet", bins = 20, minval = 0.0, maxval = 5.0) )
-            # vardb.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
-            # vardb.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 50, minval = 10.0, maxval = 210.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210]) )
+            # database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210]) )
+            # database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210], logaxis = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210], logaxis = True) )
+            # database.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", bins = 26, minval = 0.0,  maxval = 2.6) )
+            # database.registerVar( Variable(shortname = "ElProbeDistanceClosestJet", latexname = '#DeltaR(e, closest jet)', ntuplename = el_probe + "deltaRClosestJet", bins = 20, minval = 0.0, maxval = 5.0) )
+            # database.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
+            # database.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
 
             # if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
-                # vardb.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,1.37,1.52,2.6], manualbinsY = [10.0,50.0,210.0], typeval = TH2D, drawOpt2D = "COLZ1 text") )
-                # vardb.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,0.5,0.8,1.37,1.52,2.0,2.6], manualbinsY = [10.0,15.0,20.0,26.0,35.0,45.0,60.0,80.0,100.0,140.0,200.0], typeval = TH2D, drawOpt2D = "COLZ1 text") )
+                # database.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,1.37,1.52,2.6], manualbinsY = [10.0,50.0,210.0], typeval = TH2D, drawOpt2D = "COLZ1 text") )
+                # database.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,0.5,0.8,1.37,1.52,2.0,2.6], manualbinsY = [10.0,15.0,20.0,26.0,35.0,45.0,60.0,80.0,100.0,140.0,200.0], typeval = TH2D, drawOpt2D = "COLZ1 text") )
 
             # if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
-            #     vardb.registerVar( Variable(shortname = "ElProbeType", latexname = "truthType^{e}", ntuplename = el_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
-            #     vardb.registerVar( Variable(shortname = "ElProbeOrigin", latexname = "truthOrigin^{e}", ntuplename = el_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbeOrigin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = el_probe + "truthOrigin" + ":" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_NJets', latexnameX = 'truthType^{e}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{e}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + el_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbePt', latexnameX = 'truthType^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "truthType" + ":" + el_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
+            #     database.registerVar( Variable(shortname = "ElProbeType", latexname = "truthType^{e}", ntuplename = el_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
+            #     database.registerVar( Variable(shortname = "ElProbeOrigin", latexname = "truthOrigin^{e}", ntuplename = el_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+            #     database.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbeOrigin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = el_probe + "truthOrigin" + ":" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
+            #     database.registerVar( Variable(shortname = 'ElProbeType_VS_NJets', latexnameX = 'truthType^{e}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+            #     database.registerVar( Variable(shortname = 'ElProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{e}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + el_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+            #     database.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbePt', latexnameX = 'truthType^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "truthType" + ":" + el_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
 
-            vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
-            # vardb.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 50, minval = 10.0, maxval = 210.0, sysvar = True) )
-            # vardb.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
-            # vardb.registerVar( Variable(shortname = "MuProbePt_RealEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,50,90,140,210]) )
-            # vardb.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,35,50,210]) )
-            # vardb.registerVar( Variable(shortname = "MuProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,50,90,140,210], logaxis = True) )
-            # vardb.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,35,50,210], logaxis = True) )
-            # vardb.registerVar( Variable(shortname = "MuProbeEta", latexname = "#eta^{#mu}", ntuplename = "TMath::Abs( " + mu_probe + "Eta )", bins = 25, minval = 0.0, maxval = 2.5) )
-            # vardb.registerVar( Variable(shortname = "MuProbeDistanceClosestJet", latexname = '#DeltaR(#mu, closest jet)', ntuplename = mu_probe + "deltaRClosestJet", bins = 20, minval = 0.0, maxval = 5.0) )
-            # vardb.registerVar( Variable(shortname = "MuProbeDistanceClosestBJet", latexname = '#DeltaR(#mu, closest b-jet)', ntuplename = mu_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
-            # vardb.registerVar( Variable(shortname = "MuProbeNJets", latexname = "N_{jets}", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
+            database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 50, minval = 10.0, maxval = 210.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
+            # database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,50,90,140,210]) )
+            # database.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,35,50,210]) )
+            # database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,50,90,140,210], logaxis = True) )
+            # database.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,35,50,210], logaxis = True) )
+            # database.registerVar( Variable(shortname = "MuProbeEta", latexname = "#eta^{#mu}", ntuplename = "TMath::Abs( " + mu_probe + "Eta )", bins = 25, minval = 0.0, maxval = 2.5) )
+            # database.registerVar( Variable(shortname = "MuProbeDistanceClosestJet", latexname = '#DeltaR(#mu, closest jet)', ntuplename = mu_probe + "deltaRClosestJet", bins = 20, minval = 0.0, maxval = 5.0) )
+            # database.registerVar( Variable(shortname = "MuProbeDistanceClosestBJet", latexname = '#DeltaR(#mu, closest b-jet)', ntuplename = mu_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
+            # database.registerVar( Variable(shortname = "MuProbeNJets", latexname = "N_{jets}", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
 
             # if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
-            #     vardb.registerVar( Variable(shortname = "MuProbeType", latexname = "truthType^{#mu}", ntuplename = mu_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
-            #     vardb.registerVar( Variable(shortname = "MuProbeOrigin", latexname = "truthOrigin^{#mu}", ntuplename = mu_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbeOrigin', latexnameX = 'truthType^{#mu}', latexnameY = 'truthOrigin^{#mu}', ntuplename = mu_probe + "truthOrigin" + ":" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_NJets', latexnameX = 'truthType^{#mu}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{#mu}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + mu_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-            #     vardb.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbePt', latexnameX = 'truthType^{#mu}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "truthType" + ":" + mu_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
+            #     database.registerVar( Variable(shortname = "MuProbeType", latexname = "truthType^{#mu}", ntuplename = mu_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
+            #     database.registerVar( Variable(shortname = "MuProbeOrigin", latexname = "truthOrigin^{#mu}", ntuplename = mu_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+            #     database.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbeOrigin', latexnameX = 'truthType^{#mu}', latexnameY = 'truthOrigin^{#mu}', ntuplename = mu_probe + "truthOrigin" + ":" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
+            #     database.registerVar( Variable(shortname = 'MuProbeType_VS_NJets', latexnameX = 'truthType^{#mu}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+            #     database.registerVar( Variable(shortname = 'MuProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{#mu}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + mu_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
+            #     database.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbePt', latexnameX = 'truthType^{#mu}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "truthType" + ":" + mu_probe + "Pt/1e3", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 40, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D) )
 
             # -----------------------------------------------------------------------------------------------------------------
             # MC subtraction: what gets plotted will be subtracted to data:
@@ -1367,8 +1367,8 @@ if __name__ == "__main__":
             # By default we use the data-driven charge flip estimate. To use MC charge flips, use appropriate command-line option.
             # When using DD QMisID, we need to veto in MC all events w/ at least one (truth) QMisID, to avoid double subtraction (since ttV, VV might have QMisID leptons)
 
-            truth_sub_OS = vardb.getCut('2Lep_TRUTH_NonPromptEvent') | vardb.getCut('2Lep_TRUTH_QMisIDEvent')
-            truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbePromptEvent') & vardb.getCut('2Lep_TRUTH_QMisIDVeto')
+            truth_sub_OS = database.getCut('2Lep_TRUTH_NonPromptEvent') | database.getCut('2Lep_TRUTH_QMisIDEvent')
+            truth_sub_SS = database.getCut('2Lep_TRUTH_ProbePromptEvent') & database.getCut('2Lep_TRUTH_QMisIDVeto')
 
             ratiolims_real = ratiolims_fake = (0.1,"MAX")
 
@@ -1376,13 +1376,13 @@ if __name__ == "__main__":
 
             	# Plot all MC, except for QMisID (as we estimate them separately using DD/MC)
 
-            	truth_sub_OS = truth_sub_SS = vardb.getCut('2Lep_TRUTH_QMisIDVeto')
+            	truth_sub_OS = truth_sub_SS = database.getCut('2Lep_TRUTH_QMisIDVeto')
 
                 # NB: if you want to see the fake probe truth type/origin in SS CR,
                 #     make sure the probe lepton is a fake, and not QMisID
 
                 if "CHECK_FAKEORIG" in args.channel:
-                    truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
+                    truth_sub_SS = database.getCut('2Lep_TRUTH_ProbeNonPromptEvent')
 
                 ratiolims_real = ratiolims_fake = None
 
@@ -1398,37 +1398,37 @@ if __name__ == "__main__":
 
             if "CLOSURE" in args.channel or args.ratesMC:
 
-            	truth_sub_OS = vardb.getCut('2Lep_TRUTH_PurePromptEvent') # Both leptons be real ( and none is QMisID )
-                truth_sub_SS = vardb.getCut('2Lep_TRUTH_NonPromptEvent')  # At least one lepton is fake ( and none is QMisID ). NB: w/ this cut, the fake could be either the tag or the probe.
+            	truth_sub_OS = database.getCut('2Lep_TRUTH_PurePromptEvent') # Both leptons be real ( and none is QMisID )
+                truth_sub_SS = database.getCut('2Lep_TRUTH_NonPromptEvent')  # At least one lepton is fake ( and none is QMisID ). NB: w/ this cut, the fake could be either the tag or the probe.
                 # This is what we did for ICHEP:
                 if "TRUTH_ON_PROBE" in args.channel:
-                    truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent') # Probe lepton is fake, and not QMisID
+                    truth_sub_SS = database.getCut('2Lep_TRUTH_ProbeNonPromptEvent') # Probe lepton is fake, and not QMisID
 
                 # Use this truth cut if T&P was defined at truth level in skimming code.
 		# Simply ensure event is not "bad" and nothing else ( !bad = RR (OS), RF||FR (SS, QMisID vetoed) ).
 
 		if "TRUTH_TP" in args.channel:
-		    truth_sub_OS = truth_sub_SS = vardb.getCut("2Lep_TagAndProbe_GoodEvent")
+		    truth_sub_OS = truth_sub_SS = database.getCut("2Lep_TagAndProbe_GoodEvent")
 
             	if args.doQMisIDRate:
             	    print ("\nMeasuring efficiency/rate for QMisID leptons in MC!\n")
-            	    truth_sub_SS = vardb.getCut('2Lep_TRUTH_ProbeQMisIDEvent')
+            	    truth_sub_SS = database.getCut('2Lep_TRUTH_ProbeQMisIDEvent')
 
                 # --------------------------------------------
                 # Fake probe assignment efficiency
                 # (Make sure all events w/ QMisID are removed)
                 # --------------------------------------------
 
-                fake_match_cut = vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent')  # Require probe to be fake
-                real_match_cut = -vardb.getCut('2Lep_TRUTH_ProbeNonPromptEvent') # Require probe to be !fake
+                fake_match_cut = database.getCut('2Lep_TRUTH_ProbeNonPromptEvent')  # Require probe to be fake
+                real_match_cut = -database.getCut('2Lep_TRUTH_ProbeNonPromptEvent') # Require probe to be !fake
 
-                probe_T_TM_cut = vardb.getCuts(['2Lep_ProbeTight','2Lep_LepProbeTrigMatched']) # This selects only ambiguous events where also the probe is T & TM
-                probe_ANY_cut  = vardb.getCut('DummyCut')                                      # This applies no selection on the probe (remembering that the tag lepton is always required to be T & TM)
+                probe_T_TM_cut = database.getCuts(['2Lep_ProbeTight','2Lep_LepProbeTrigMatched']) # This selects only ambiguous events where also the probe is T & TM
+                probe_ANY_cut  = database.getCut('DummyCut')                                      # This applies no selection on the probe (remembering that the tag lepton is always required to be T & TM)
 
 
             if "NO_TRUTH_SEL" in args.channel:
                 print ("\nWARNING! All truth cuts being deactivated...\n")
-                truth_sub_OS = truth_sub_SS = vardb.getCut("DummyCut")
+                truth_sub_OS = truth_sub_SS = database.getCut("DummyCut")
 
             # ------------------------------------------
             # Define common event weight and common cuts
@@ -1451,7 +1451,7 @@ if __name__ == "__main__":
             elif "NOT_TRIGMATCH_EFF" in args.channel:
             	cc_list.append('2Lep_LepProbeAntiTrigMatched')
 
-            common_cuts = vardb.getCuts(cc_list)
+            common_cuts = database.getCuts(cc_list)
 
             # --------------------------
             # Define the control regions
@@ -1463,29 +1463,29 @@ if __name__ == "__main__":
 
                 if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
-                        vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
-                        vardb.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        database.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        database.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        database.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
-                        vardb.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
-                        vardb.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        database.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        database.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
+                        database.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM, ratiolims=ratiolims_real ) )
 
             	# Fake CR: OF for electrons (w/ tag *always* muon), SF for muons
 
                 if any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        database.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        database.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        database.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        # vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        # database.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        # database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        # database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         # To compare w/ Kun: look only at events where the muon is leading
-                        vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        database.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
 
 
                 if "CLOSURE" in args.channel and not any( opt in args.channel for opt in ["TRUTH_TP","TRUTH_ON_PROBE"]):
@@ -1496,103 +1496,103 @@ if __name__ == "__main__":
                     midstr_ANY  = "ProbeMatchedTo"
                     midstr_T_TM = "ProbeTTMMatchedTo"
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('FakeCRMu' + midstr_ANY + 'Fake',  cut = probe_ANY_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMu' + midstr_ANY + 'Real',  cut = probe_ANY_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMu' + midstr_ANY + 'Any',   cut = probe_ANY_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMu' + midstr_T_TM + 'Fake', cut = probe_T_TM_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMu' + midstr_T_TM + 'Real', cut = probe_T_TM_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMu' + midstr_T_TM + 'Any',  cut = probe_T_TM_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMu' + midstr_ANY + 'Fake',  cut = probe_ANY_cut & fake_match_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMu' + midstr_ANY + 'Real',  cut = probe_ANY_cut & real_match_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMu' + midstr_ANY + 'Any',   cut = probe_ANY_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMu' + midstr_T_TM + 'Fake', cut = probe_T_TM_cut & fake_match_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMu' + midstr_T_TM + 'Real', cut = probe_T_TM_cut & real_match_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMu' + midstr_T_TM + 'Any',  cut = probe_T_TM_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Fake',  cut = probe_ANY_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Real',  cut = probe_ANY_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Any',   cut = probe_ANY_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Fake', cut = probe_T_TM_cut & fake_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Real', cut = probe_T_TM_cut & real_match_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Any',  cut = probe_T_TM_cut & common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Fake',  cut = probe_ANY_cut & fake_match_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Real',  cut = probe_ANY_cut & real_match_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCREl' + midstr_ANY + 'Any',   cut = probe_ANY_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Fake', cut = probe_T_TM_cut & fake_match_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Real', cut = probe_T_TM_cut & real_match_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCREl' + midstr_T_TM + 'Any',  cut = probe_T_TM_cut & common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
 
             if ( args.lepFlavComp == "ICHEP_2016" ): # Real CR: OF, Fake CR: INCLUSIVE(el), SF(mu)
 
                 if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
                 if any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
 
             if ( args.lepFlavComp == "INCLUSIVE" ): # combine OF + SF
 
                 if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
                 if any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
 
             if ( args.lepFlavComp == "SF" ): # SF only
 
                 if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ElEl_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ElEl_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
                 if any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ElEl_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ElEl_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_ElEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
 
             if ( args.lepFlavComp == "OF" ): # OF only
 
                 if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRMuT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElL',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_OS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('RealCRElT',     cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_OS, weight = weight_TP_MM ) )
                 if any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
                     if any( l in args.lepton for l in ["ALL","m"] ):
-                        vardb.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
-                        vardb.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
-                        vardb.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM ) )
+                        database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM ) )
 
         # ------------------------
 	# Likelihood fit selection
@@ -1600,13 +1600,13 @@ if __name__ == "__main__":
 
 	elif "LH" in args.channel:
 
-            vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', bins = 200, minval = 10.0, maxval = 210.0, typeval = TH2D) )
-            #vardb.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', manualbinsX = [10,15,20,26,30,40,60,90,140,210], manualbinsY = [10,15,20,26,30,40,60,90,140,210], typeval = TH2D) )
+            database.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', bins = 200, minval = 10.0, maxval = 210.0, typeval = TH2D) )
+            #database.registerVar( Variable(shortname = 'Lep0Pt_VS_Lep1Pt', latexnameX = 'p_{T}^{lead lep} [GeV]', latexnameY = 'p_{T}^{2nd lead lep} [GeV]', ntuplename = 'lep_Pt_1/1e3:lep_Pt_0/1e3', manualbinsX = [10,15,20,26,30,40,60,90,140,210], manualbinsY = [10,15,20,26,30,40,60,90,140,210], typeval = TH2D) )
 
             # For measurement in data: select MC events to be subtracted afterwards
 
-            truth_sub_OS = vardb.getCut('2Lep_TRUTH_NonPromptEvent')  # Will subtract events w/ at least one non-prompt, and no QMisID
-            truth_sub_SS = vardb.getCut('2Lep_TRUTH_PurePromptEvent') # Will subtract events w/ both prompt leptons, and no QMisID. This assumes QMisID will be estimated independently from data
+            truth_sub_OS = database.getCut('2Lep_TRUTH_NonPromptEvent')  # Will subtract events w/ at least one non-prompt, and no QMisID
+            truth_sub_SS = database.getCut('2Lep_TRUTH_PurePromptEvent') # Will subtract events w/ both prompt leptons, and no QMisID. This assumes QMisID will be estimated independently from data
 
             # For closure rates
             #
@@ -1614,8 +1614,8 @@ if __name__ == "__main__":
 
             if "CLOSURE" in args.channel:
 
-		truth_sub_OS = vardb.getCut('2Lep_TRUTH_PurePromptEvent') # Both leptons be real ( and no QMisID )
-            	truth_sub_SS = vardb.getCut('2Lep_TRUTH_NonPromptEvent')  # At least one lepton is fake, and no QMisID
+		truth_sub_OS = database.getCut('2Lep_TRUTH_PurePromptEvent') # Both leptons be real ( and no QMisID )
+            	truth_sub_SS = database.getCut('2Lep_TRUTH_NonPromptEvent')  # At least one lepton is fake, and no QMisID
 
             cc_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep','2Lep_pT_MMRates','TauVeto','2Lep_NJet_CR','2Lep_ElEtaCut','2Lep_Zsidescut','2Lep_Zmincut','2Lep_ElQMisIDBDT']
 
@@ -1624,59 +1624,59 @@ if __name__ == "__main__":
             elif "NOT_TRIGMATCH_EFF" in args.channel:
             	cc_list.append('2Lep_BothAntiTrigMatchSLT')
 
-            common_cuts = vardb.getCuts(cc_list)
+            common_cuts = database.getCuts(cc_list)
 
             # Real CR - SF
 
             if ( args.lepFlavComp == "SF" or args.lepFlavComp == "INCLUSIVE" ):
 
-            	vardb.registerCategory( MyCategory('OS_ElEl_TT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElEl_Event','TT']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_ElEl_TL', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElEl_Event','TL']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_ElEl_LT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElEl_Event','LT']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_ElEl_LL', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElEl_Event','LL']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_MuMu_TT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuMu_Event','TT']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_MuMu_TL', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuMu_Event','TL']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_MuMu_LT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuMu_Event','LT']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_MuMu_LL', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuMu_Event','LL']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_ElEl_TT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElEl_Event','TT']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_ElEl_TL', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElEl_Event','TL']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_ElEl_LT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElEl_Event','LT']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_ElEl_LL', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElEl_Event','LL']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_MuMu_TT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuMu_Event','TT']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_MuMu_TL', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuMu_Event','TL']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_MuMu_LT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuMu_Event','LT']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_MuMu_LL', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuMu_Event','LL']) & truth_sub_OS, weight = weight_SR_CR ) )
 
             # Real CR - OF
 
             if ( args.lepFlavComp == "OF" or args.lepFlavComp == "INCLUSIVE" ):
 
-            	vardb.registerCategory( MyCategory('OS_MuEl_TT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuEl_Event','TT']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_ElMu_TT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElMu_Event','TT']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_MuEl_TL', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuEl_Event','TL']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_ElMu_TL', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElMu_Event','TL']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_MuEl_LT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuEl_Event','LT']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_ElMu_LT', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElMu_Event','LT']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_MuEl_LL', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_MuEl_Event','LL']) & truth_sub_OS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('OS_ElMu_LL', cut = common_cuts & vardb.getCuts(['2Lep_OS','2Lep_ElMu_Event','LL']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_MuEl_TT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuEl_Event','TT']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_ElMu_TT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElMu_Event','TT']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_MuEl_TL', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuEl_Event','TL']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_ElMu_TL', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElMu_Event','TL']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_MuEl_LT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuEl_Event','LT']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_ElMu_LT', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElMu_Event','LT']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_MuEl_LL', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_MuEl_Event','LL']) & truth_sub_OS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('OS_ElMu_LL', cut = common_cuts & database.getCuts(['2Lep_OS','2Lep_ElMu_Event','LL']) & truth_sub_OS, weight = weight_SR_CR ) )
 
             # Fake CR - SF
 
             if ( args.lepFlavComp == "SF" or args.lepFlavComp == "INCLUSIVE" ):
 
-            	vardb.registerCategory( MyCategory('SS_ElEl_TT',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElEl_Event','TT']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_ElEl_TL',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElEl_Event','TL']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_ElEl_LT',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElEl_Event','LT']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_ElEl_LL',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElEl_Event','LL']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_MuMu_TT',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuMu_Event','TT']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_MuMu_TL',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuMu_Event','TL']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_MuMu_LT',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuMu_Event','LT']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_MuMu_LL',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuMu_Event','LL']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_ElEl_TT',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElEl_Event','TT']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_ElEl_TL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElEl_Event','TL']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_ElEl_LT',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElEl_Event','LT']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_ElEl_LL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElEl_Event','LL']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_MuMu_TT',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuMu_Event','TT']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_MuMu_TL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuMu_Event','TL']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_MuMu_LT',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuMu_Event','LT']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_MuMu_LL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuMu_Event','LL']) & truth_sub_SS, weight = weight_SR_CR ) )
 
             # Fake CR - OF
 
             if ( args.lepFlavComp == "OF" or args.lepFlavComp == "INCLUSIVE" ):
 
-            	vardb.registerCategory( MyCategory('SS_MuEl_TT',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuEl_Event','TT']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_ElMu_TT',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElMu_Event','TL']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_MuEl_TL',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuEl_Event','LT']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_ElMu_TL',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElMu_Event','LL']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_MuEl_LT',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuEl_Event','TT']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_ElMu_LT',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElMu_Event','TL']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_MuEl_LL',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_MuEl_Event','LT']) & truth_sub_SS, weight = weight_SR_CR ) )
-            	vardb.registerCategory( MyCategory('SS_ElMu_LL',    cut = common_cuts & vardb.getCuts(['2Lep_SS','2Lep_ElMu_Event','LL']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_MuEl_TT',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuEl_Event','TT']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_ElMu_TT',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElMu_Event','TL']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_MuEl_TL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuEl_Event','LT']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_ElMu_TL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElMu_Event','LL']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_MuEl_LT',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuEl_Event','TT']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_ElMu_LT',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElMu_Event','TL']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_MuEl_LL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuEl_Event','LT']) & truth_sub_SS, weight = weight_SR_CR ) )
+            	database.registerCategory( MyCategory('SS_ElMu_LL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElMu_Event','LL']) & truth_sub_SS, weight = weight_SR_CR ) )
 
     if doMMClosureTest:
 
@@ -1698,20 +1698,20 @@ if __name__ == "__main__":
 
         append_2Lep += "_DataDriven_Closure"
 
-        common_cuts_MMClosure = vardb.getCuts(cc_MMClosure_list)
+        common_cuts_MMClosure = database.getCuts(cc_MMClosure_list)
 
         if ( doMM or doFF ):
 
-            if any( cat in args.category for cat in ["mm","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_MMClosure & vardb.getCuts(['2Lep_MuMu_Event']), weight = weight_SR_CR ) )
-            if any( cat in args.category for cat in ["ee","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_MMClosure & vardb.getCuts(['2Lep_ElEl_Event']), weight = weight_SR_CR ) )
-            if any( cat in args.category for cat in ["OF","ALL"] ): vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_MMClosure & vardb.getCuts(['2Lep_OF_Event']), weight = weight_SR_CR ) )
+            if any( cat in args.category for cat in ["mm","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_MuMu_Event']), weight = weight_SR_CR ) )
+            if any( cat in args.category for cat in ["ee","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+            if any( cat in args.category for cat in ["OF","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_OF_Event']), weight = weight_SR_CR ) )
 
         elif ( doTHETA ):
 
             # NB: for the theta method, the closure test is meaningful only in the OF LowNJ CR, b/c the [SF, LowNJ] CRs are already used to derive the theta factors.
 
             if "LOWNJ" in args.channel:
-                vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_MMClosure & vardb.getCuts(['2Lep_OF_Event']), weight = weight_SR_CR ) )
+                database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_OF_Event']), weight = weight_SR_CR ) )
             else:
                 sys.exit("ERROR: closure test for THETA method makes sense only for LOWNJ option (You are currently using {0})".format(args.channel))
 
@@ -1741,25 +1741,25 @@ if __name__ == "__main__":
             append_2Lep += "_LowJet"
             cc_MMSidebands_list.append('2Lep_NJet_CR')
 
-        common_cuts_MMSidebands = vardb.getCuts(cc_MMSidebands_list)
+        common_cuts_MMSidebands = database.getCuts(cc_MMSidebands_list)
 
         if any( cat in args.category for cat in ["mm","ALL"] ):
-            vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep + '_LL',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_MuMu_Event','LL']), weight = weight_SR_CR ) )
-            vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep + '_TL',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_MuMu_Event','TL']), weight = weight_SR_CR ) )
-            vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep + '_LT',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_MuMu_Event','LT']), weight = weight_SR_CR ) )
-            vardb.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep + '_TT',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_MuMu_Event','TT']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep + '_LL',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_MuMu_Event','LL']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep + '_TL',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_MuMu_Event','TL']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep + '_LT',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_MuMu_Event','LT']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep + '_TT',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_MuMu_Event','TT']), weight = weight_SR_CR ) )
 
         if any( cat in args.category for cat in ["ee","ALL"] ):
-            vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep + '_LL',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_ElEl_Event','LL']), weight = weight_SR_CR ) )
-            vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep + '_TL',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_ElEl_Event','TL']), weight = weight_SR_CR ) )
-            vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep + '_LT',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_ElEl_Event','LT']), weight = weight_SR_CR ) )
-            vardb.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep + '_TT',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_ElEl_Event','TT']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep + '_LL',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_ElEl_Event','LL']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep + '_TL',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_ElEl_Event','TL']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep + '_LT',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_ElEl_Event','LT']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep + '_TT',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_ElEl_Event','TT']), weight = weight_SR_CR ) )
 
         if any( cat in args.category for cat in ["OF","ALL"] ):
-            vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep + '_LL',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_OF_Event','LL']), weight = weight_SR_CR ) )
-            vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep + '_TL',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_OF_Event','TL']), weight = weight_SR_CR ) )
-            vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep + '_LT',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_OF_Event','LT']), weight = weight_SR_CR ) )
-            vardb.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep + '_TT',  cut = common_cuts_MMSidebands & vardb.getCuts(['2Lep_OF_Event','TT']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep + '_LL',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_OF_Event','LL']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep + '_TL',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_OF_Event','TL']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep + '_LT',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_OF_Event','LT']), weight = weight_SR_CR ) )
+            database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep + '_TT',  cut = common_cuts_MMSidebands & database.getCuts(['2Lep_OF_Event','TT']), weight = weight_SR_CR ) )
 
     # --------------------------------------------------------
     # TTHBackgrounds is the class used to manage each process:
@@ -1768,7 +1768,7 @@ if __name__ == "__main__":
     #   will perform the background estimation
     # --------------------------------------------------------
 
-    ttH = TTHBackgrounds(inputs, vardb)
+    ttH = TTHBackgrounds(inputs, database)
 
     # ------------------------------------
     # Set the integrated luminosity (fb-1)
@@ -2128,10 +2128,10 @@ if __name__ == "__main__":
     significance_dict = {}
 
     if args.submitPBSVar:
-        if not args.submitPBSVar in vardb.iterkeys():
+        if not args.submitPBSVar in database.vardb.iterkeys():
             sys.exit("ERROR: the input variable for the PBS job: {0} couldn't be found in the VariableDB!".format(args.submitPBSVar))
 
-    for category in sorted(vardb.categorylist, key=(lambda category: category.name) ):
+    for category in sorted(database.categorylist, key=(lambda category: category.name) ):
 
         print ("\n*********************************************\n")
         print ("Making plots in category:\t{0}\n".format( category.name ))
@@ -2162,15 +2162,15 @@ if __name__ == "__main__":
         # Processing different variables
         # ------------------------------
 
-        for idx,var in enumerate(vardb.varlist, start=0):
+        for idx,var in enumerate(database.varlist, start=0):
 
             # If running on the PBS batch system, make sure only the variable for *this* job is considered
 
             if args.submitPBSVar:
-                if not var == vardb.getVar(args.submitPBSVar):
+                if not var == database.getVar(args.submitPBSVar):
                     continue
                 else:
-                    print("\n\tRunning batch job for varianle: {0}\n".format(var))
+                    print("\n\tRunning batch job for variable: {0}\n".format(var.shortname))
 
             # -------------------------------------------------------
             # Reset the weight for *this* variable to None if neeeded
@@ -2313,7 +2313,7 @@ if __name__ == "__main__":
                 total_syst_down = 0.0
                 histograms_syst = {}
 
-                for syst in vardb.systlist:
+                for syst in database.systlist:
 
                     # Skip systematic variations in the DB which are not relevant for *this* category
 
