@@ -12,6 +12,8 @@ parser = argparse.ArgumentParser(description="PBS plot making submission script 
 
 parser.add_argument("--outputdir", dest="outputdir", action="store", default="PLOTS_TEST", type=str,
                     help="The base directory where output of each job will be stored,, e.g. PLOTS_25ns_v27,...  (default: PLOTS_TEST)")
+parser.add_argument("-f","--forcetarball", dest="forcetarball", action="store_true", default=False,
+                    help="Force recreation of package tarball")
 parser.add_argument("--optstr", dest="optsr", action="store", type=str,
                     help='A string representing the command options for Plotter/MakePlots_HTopMultilep.py, including the input directory, the channel for which plots should be made, etc. To see all the options, just type \'python Plotter/MakePlots_HTopMultilep.py --help\'')
 parser.add_argument("--release", dest="release", action="store", default="2.4.22", type=str,
@@ -20,6 +22,8 @@ parser.add_argument("--queue", dest="queue", action="store", default="long", typ
                     help="The PBS batch queue type to be used (\"short\",\"long\", default: queue=\"long\")")
 parser.add_argument("--showvars", dest="showvars", action="store", const="-1", default=None, type=str, nargs='?',
                     help="Show on screen the list of variable names, with their corresponding indexes in the job array, then exit. If no argument is given to the option ( or using --showvars -1 ), will print the entire list. If the user gives one ore more comma-separated indexes as option, only the corresponding variable names will be printed.)")
+parser.add_argument("--dry", dest="dry", action="store_true", default=False,
+                    help="Dry-run")
 
 args = parser.parse_args()
 
@@ -35,9 +39,22 @@ def copy_source(subdir = string.Template("$TMPDIR").substitute(os.environ), forc
         print("Good! Submission directory already exists...")
 
     tarballname = "HTop.tar.gz"
-    print("Making a tarball of code and moving it to submission directory...")
-    if not os.path.isfile(subdir+"/"+tarballname):
-        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs"])
+
+    # The directory where the inut package lives
+
+    # WARNING: the following works only if RootCore has been set up previously on the submission node...
+    # rcdir = string.Template("$ROOTCOREBIN").substitute(os.environ)
+    # tokens = rcdir.split('/')
+    # pckgdir = "/".join( "{0}".format(tk) for tk in tokens[:-1] )
+
+    pckgdir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk"
+
+    os.chdir(os.path.abspath(pckgdir))
+
+    print("Making a tarball of input package and moving it to submission directory...")
+    if not os.path.isfile(subdir+"/"+tarballname) or args.forcetarball:
+        excludefilepattern = "--exclude='*.so' --exclude='*.d' --exclude='*.pcm'"
+        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs",excludefilepattern])
         shutil.move("./"+tarballname,subdir+"/"+tarballname)
     else:
         print("Good! Tarball of code already exists in submission directory...")
@@ -132,10 +149,13 @@ echo ""
 TMP=`mktemp -d $TMPDIR/mmilesi.$PBS_ARRAYID.XXXX`
 echo "Creating temporary directory for this subjob: $TMP"
 if [ -d "$TMP" ]; then
-    echo "Directory already found! Removing it first..."
+    echo "Directory w/ this name already found! Removing it first, and recreate it..."
     rm -rf $TMP
 fi
 mkdir $TMP
+echo ""
+echo "Temp dir: " $TMP
+echo ""
 echo "Copying tarballed package and cd'ing into temp subjob directory..."
 echo ""
 rsync -arvxSH HTop.tar.gz $TMP/
@@ -152,8 +172,8 @@ echo ""
 echo "Setting up RootCore and ASG..."
 echo ""
 source $ATLAS_LOCAL_RCSETUP_PATH/rcSetup.sh Base,{release}
-rc find_packages
-rc compile
+# rc find_packages
+# rc compile
 echo ""
 echo "Printing env variables:"
 echo ""
@@ -162,10 +182,10 @@ echo ""
 
 # The following script wraps around the MakePlots_HTopMultilep.py script, picking the plotting variable for the PBS subjob from the input plotting variable list via the env variable os.getenv('PBS_ARRAYID'). It also copies the output to a more suitable directory.
 
-python $PWD/HTopMultilepAnalysis/PlotUtils/Scripts/wrapper-MakePlots_HTopMultilep-PBS..py {optstr} --varlist {varlist} --outputpath {outputpath}
+python $PWD/HTopMultilepAnalysis/PlotUtils/Scripts/wrapper-MakePlots_HTopMultilep-PBS.py --optstr="{optstr}" --varlist {vars} --outputpath {outputpath}
 
 echo "Removing temporary directory..."
-rm -rf $TMP
+# rm -rf $TMP
 exit 0
     """
 
@@ -175,6 +195,8 @@ exit 0
         "Integral",
         "NJets2j3j",
         "NJets4j",
+        "El0Pt",
+        "El1Pt",
     ]
 
     if args.showvars:
@@ -221,4 +243,5 @@ exit 0
 
     # Finally, execute the PBS script
 
-    submit_jobs(jobs)
+    if not args.dry:
+        submit_jobs(jobs)

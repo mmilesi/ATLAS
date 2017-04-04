@@ -6,7 +6,7 @@ __author__     = "Marco Milesi, Francesco Nuti"
 __email__      = "marco.milesi@cern.ch, francesco.nuti@cern.ch"
 __maintainer__ = "Marco Milesi"
 
-import os, sys, math, array
+import os, sys, math, array, string
 
 sys.path.append(os.path.abspath(os.path.curdir))
 

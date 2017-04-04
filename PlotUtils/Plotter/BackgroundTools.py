@@ -12,8 +12,8 @@ from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kB
 sys.path.append(os.path.abspath(os.path.curdir))
 from Core import NTupleTools, DatasetManager, listifyInputFiles
 
-gROOT.Reset()
-gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
+gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
+# gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
