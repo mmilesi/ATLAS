@@ -197,7 +197,13 @@ exit 0
         "NJets4j",
         "El0Pt",
         "El1Pt",
-    ]
+        # "Lep1Type",
+        # "Lep1Origin",
+        # 'Lep1Type_VS_Lep1Origin',
+        # "Lep2Type",
+        # "Lep2Origin",
+        # 'Lep2Type_VS_Lep2Origin',
+        ]
 
     if args.showvars:
         showvars = [ int(s) for s in args.showvars.split(',') ]

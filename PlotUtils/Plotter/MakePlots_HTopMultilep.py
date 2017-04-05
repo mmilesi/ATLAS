@@ -24,7 +24,7 @@ channels     = ["2LSS_SR (,INCL_FLAV)","3L_SR",
                 "ttWCR","ttZCR","ZOSpeakCR","ZSSpeakCR","TopCR",
                 "MMRates (,DATA,CLOSURE,TP,LH,TRUTH_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
                 "MMClosureTest (,HIGHNJ,LOWNJ,ALLNJ)",
-                "CutFlowChallenge (,MM,2LSS_SR,2LSS_LOWNJ_VR,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth"]
+                "CutFlowChallenge (,MM,2LSS_SR,2LSS_LOWNJ_VR,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth,FakeOriginFrac"]
 
 categories   = ["ALL","ee","mm","OF"]
 
@@ -255,6 +255,7 @@ if __name__ == "__main__":
     doCFChallenge           = bool( "CutFlowChallenge" in args.channel )
     doMMSidebands           = bool( "MMSidebands" in args.channel )
     doLeptonTruth           = bool( "LeptonTruth" in args.channel)
+    doFakeOriginFrac        = bool( "FakeOriginFrac" in args.channel)
 
     print( "input directory: {0}\n".format(args.inputpath) )
     print( "channel = {0}\n".format(args.channel) )
@@ -277,7 +278,7 @@ if __name__ == "__main__":
     # A comprehensive flag for all the other CRs
     # ------------------------------------------
 
-    doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZOSpeakCR or doZSSpeakCR or doMMRates or doTopCR or doMMClosureTest or doCFChallenge or doMMSidebands or doLeptonTruth )
+    doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZOSpeakCR or doZSSpeakCR or doMMRates or doTopCR or doMMClosureTest or doCFChallenge or doMMSidebands or doLeptonTruth or doFakeOriginFrac )
 
     # -------------------------------------------------------------
     # Make standard plots in SR and VR unless differently specified
@@ -651,10 +652,12 @@ if __name__ == "__main__":
     # ---------
 
     database.registerCut( Cut('3Lep_NLep',         '( trilep_type > 0 )') )
-    database.registerCut( Cut('3Lep_pT',           '( lep_Pt_0 > 10e3 && lep_Pt_1 > 20e3 && lep_Pt_2 > 20e3 )') )
+    database.registerCut( Cut('3Lep_pT',           '( lep_Pt_1 > 15e3 && lep_Pt_2 > 15e3 )') )
     database.registerCut( Cut('3Lep_Charge',       '( TMath::Abs(total_charge) == 1 )') )
+    database.registerCut( Cut('3Lep_TT',           '( lep_isTightSelectedMVA_1 && lep_isTightSelectedMVA_2 )') )
     if "SLT_OR_DLT" in args.trigger:
-        database.registerCut( Cut('3Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
+        # database.registerCut( Cut('3Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
+        database.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || || lep_isTrigMatch_2 || matchDLTll01 || matchDLTll02 || matchDLTll12 )') )
     elif "SLT" in args.trigger:
         database.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || || lep_isTrigMatch_2 )') )
     elif "DLT" in args.trigger:
@@ -663,7 +666,7 @@ if __name__ == "__main__":
     database.registerCut( Cut('3Lep_MinZCut',      '( ( lep_ID_0 != -lep_ID_1 || Mll01 > 12e3 ) && ( lep_ID_0 != -lep_ID_2 || Mll02 > 12e3 ) )') )
     database.registerCut( Cut('3Lep_ZllGammaVeto', '( TMath::Abs( Mlll012 - 91.2e3 ) > 10e3 )') )
     # database.registerCut( Cut('3Lep_NJets',        '( ( nJets_OR_T >= 4 && nJets_OR_T_MV2c10_70 >= 1 ) || ( nJets_OR_T >=3 && nJets_OR_T_MV2c10_70 >= 2 ) )') )
-    database.registerCut( Cut('3Lep_NJets',        '( nJets_OR_T >= 3 && nJets_OR_T_MV2c10_70 >= 1 )') )
+    database.registerCut( Cut('3Lep_NJets',        '( nJets_OR_T >= 2 && nJets_OR_T_MV2c10_70 >= 1 )') )
 
     # -----------------------------
     # Event "tightness"
@@ -984,7 +987,7 @@ if __name__ == "__main__":
     cc_2Lep1Tau_list = ['TrigDec','BlindingCut','2Lep1Tau_NLep','2Lep1Tau_pT','2Lep1Tau_TrigMatch','2Lep1Tau_SS','2Lep1Tau_1Tau','2Lep1Tau_Zsidescut','2Lep1Tau_NBJet']
     common_cuts_2Lep1Tau = database.getCuts(cc_2Lep1Tau_list)
 
-    cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets']
+    cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_TT','TauVeto','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets']
     common_cuts_3Lep = database.getCuts(cc_3Lep_list)
 
     cat_names_2Lep = {
@@ -1115,6 +1118,30 @@ if __name__ == "__main__":
         database.registerCategory( MyCategory(basename+"1Prompt1NonPrompt",  cut = common_cuts & database.getCuts(['2Lep_TRUTH_1Prompt1NonPromptEvent']), weight = weight_SR_CR ) )
         database.registerCategory( MyCategory(basename+"2NonPrompt",         cut = common_cuts & database.getCuts(['2Lep_TRUTH_2NonPromptEvent']), weight = weight_SR_CR ) )
         database.registerCategory( MyCategory(basename+"1Prompt1QMisID",     cut = common_cuts & database.getCuts(['2Lep_TRUTH_1Prompt1QMisIDEvent']), weight = weight_SR_CR ) )
+
+    if doFakeOriginFrac:
+
+        database.registerVar( Variable(shortname = "Lep1Type", latexname = "truthType^{e}", ntuplename = "lep_truthType_1", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
+        database.registerVar( Variable(shortname = "Lep1Origin", latexname = "truthOrigin^{e}", ntuplename = "lep_truthOrigin_1", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+        database.registerVar( Variable(shortname = 'Lep1Type_VS_Lep1Origin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = "lep_truthOrigin_1:lep_truthType_1", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
+        database.registerVar( Variable(shortname = "Lep2Type", latexname = "truthType^{e}", ntuplename = "lep_truthType_2", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
+        database.registerVar( Variable(shortname = "Lep2Origin", latexname = "truthOrigin^{e}", ntuplename = "lep_truthOrigin_2", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+        database.registerVar( Variable(shortname = 'Lep2Type_VS_Lep2Origin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = "lep_truthOrigin_2:lep_truthType_2", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
+
+        database.registerCut( Cut('2Lep_Lep1_ElFake', '( TMath::Abs( lep_ID_1 ) == 11 && lep_isPrompt_1 == 0 && !( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) )') )
+        database.registerCut( Cut('3Lep_Lep2_ElFake', '( TMath::Abs( lep_ID_2 ) == 11 && lep_isPrompt_2 == 0 && !( lep_isBrems_2 == 1 && lep_isQMisID_2 == 0 ) )') )
+
+        cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_TRUTH_QMisIDVeto','2Lep_Lep1_ElFake','TT']
+        common_cuts_2Lep = database.getCuts(cc_2Lep_list)
+
+        cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_TT','TauVeto','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets','3Lep_Lep2_ElFake']
+        common_cuts_3Lep = database.getCuts(cc_3Lep_list)
+
+        basename = "FakeOriginFrac_"
+        database.registerCategory( MyCategory(basename+"2LSS_LOWNJ_VR_TT",  cut = common_cuts_2Lep & database.getCut('2Lep_NJet_CR'), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory(basename+"2LSS_SR_TT",        cut = common_cuts_2Lep & database.getCut('2Lep_NJet_SR'), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory(basename+"3L_SR_TT",          cut = common_cuts_3Lep, weight = weight_SR_CR ) )
+
 
     # --------------------------------------------
     # Full breakdown of cuts for cutflow challenge
@@ -1813,7 +1840,7 @@ if __name__ == "__main__":
         ttH.channel = '2LSS'
     elif do3L_SR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
         ttH.channel = '3L'
-    elif doTopCR or doZSSpeakCR or doZSSpeakCR or doMMRates or doCFChallenge or doMMSidebands or doLeptonTruth:
+    elif doTopCR or doZSSpeakCR or doZSSpeakCR or doMMRates or doCFChallenge or doMMSidebands or doLeptonTruth or doFakeOriginFrac:
         ttH.channel = '2LSS_CR'
 
     events = {}
@@ -2021,7 +2048,7 @@ if __name__ == "__main__":
             ttH.backgrounds = ['TTBar']
             ttH.debugprocs  = ['TTBar']
 
-    if doLeptonTruth:
+    if doLeptonTruth or doFakeOriginFrac:
         ttH.signals     = []
         ttH.observed    = []
         ttH.backgrounds = ['TTBar']

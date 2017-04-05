@@ -186,3 +186,72 @@ def plotOriginVSNjets( normFactor=0, **kwargs ):
     Plot.legend.Clear()
 
 
+
+
+def plotFakeOriginFrac2L3L( normFactor=0, **kwargs ):
+
+    plotlist = []
+
+    if kwargs["flavour"] == "Mu":
+        header   = "muons"
+    elif kwargs["flavour"] == "El":
+        header   = "electrons"
+
+    Plot.legend.SetHeader("Fake {0}".format(header))
+
+    variable = "Lep1Origin"
+
+    basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "OutputPlots_FakeOriginFrac_TTBarTTBarGamma_" + kwargs["prodID"]
+
+    inputPath_2LVR = basePath + "/" + "FakeOriginFrac_2LSS_LOWNJ_VR_TT" + "/"
+    inputPath_2LSR = basePath + "/" + "FakeOriginFrac_2LSS_SR_TT" + "/"
+    inputPath_3LSR = basePath + "/" + "FakeOriginFrac_3L_SR_TT" + "/"
+    inputName = variable + ".root"
+
+    p0_props = {
+                #"legend"      : " t#bar{t} + t#bar{t}#gamma",
+                "xAxisTitle"  : "truthOrigin",
+                "xAxisLabels" : [("NonDefined",0),("SingleElec",1),("SingleMuon",2),("SinglePhot",3),("SingleTau",4),("PhotonConv",5),("DalitzDec",6),("ElMagProc",7),("Mu",8),("TauLep",9),("top",10),("QuarkWeakDec",11),("WBoson",12),("ZBoson",13),("Higgs",14),("HiggsMSSM",15),("HeavyBoson",16),("WBosonLRSM",17),("NuREle",18),("NuRMu",19),("NuRTau",20),("LQ",21),("SUSY",22),("LightMeson",23),("StrangeMeson",24),("CharmedMeson",25),("BottomMeson",26),("CCbarMeson",27),("JPsi",28),("BBbarMeson",29),("LightBaryon",30),("StrangeBaryon",31),("CharmedBaryon",32),("BottomBaryon",33),("PionDecay",34),("KaonDecay",35),("BremPhot",36),("PromptPhot",37),("UndrPhot",38),("ISRPhot",39),("FSRPhot",40)], #,("NucReact",41),("PiZero",42),("DiBoson",43),("ZorHeavyBoson",44),("QCD",45)],
+                "normFactor"   : normFactor,
+               }
+
+    p0 = Plot(kwargs["sample"], inputPath  + inputName, p0_props)
+
+    extension = ""
+    if "normFactor" in p0_props:
+        if p0_props["normFactor"]:
+            extension = "_NORM"
+
+    canvasID = kwargs["lepSelection"] + "_" + variable + "_" + kwargs["sample"] + "_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + extension
+    c = TCanvas(canvasID,canvasID,50,50,1000,700)
+    c.cd()
+    p0.makePlot()
+
+    doLeptonOriginFracPlots = ( not "normFactor" in p0_props or not p0_props["normFactor"] )
+    if doLeptonOriginFracPlots:
+        canvasID_stack = kwargs["lepSelection"] + "_LepOriginFrac_VS_NJets_" + kwargs["sample"] + "_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + extension
+        cstack = TCanvas(canvasID_stack,canvasID_stack,50,50,1000,700)
+        cstack.cd()
+        mystack, mystackleg = p0.makeLeptonOriginFracPlots(canvasID_stack)
+        mystack.Draw()
+        mystack.GetXaxis().SetTitle("Jet multiplicity")
+        mystack.GetYaxis().SetTitle("Fake lepton origin fraction")
+        mystack.GetXaxis().SetRangeUser(2,mystack.GetHistogram().GetNbinsX()-1)
+        mystackleg.Draw()
+        saveName_stack = canvasID_stack
+
+    #Plot.legend.Draw()
+    #Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
+    #Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
+
+    savePath = basePath + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
+    saveName = canvasID
+
+    for ext in ["png","eps","root"]:
+        c.SaveAs( savePath + saveName + "." + ext )
+        if doLeptonOriginFracPlots:
+            cstack.SaveAs( savePath + saveName_stack + "." + ext )
+
+    Plot.legend.Clear()
+
+
