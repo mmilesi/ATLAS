@@ -32,6 +32,7 @@ if __name__ == '__main__':
         append = "Data"
     else:
         append = "Nominal"
+        #append = "ttbar_ttgamma/Nominal"
 
     infile    =  args.inputpath + "/" + append + "/" + sample + "/" + sample + ".root"
     submitdir = sample

@@ -13,7 +13,10 @@ eventweight_branches = ["mcWeightOrg","SherpaNJetWeight","pileupEventWeight_090"
                         "MV2c10_70_EventWeight","MV2c10_77_EventWeight","JVT_EventWeight",
 			"lepSFTrigLoose","lepSFTrigTight",
 			"lepSFObjLoose","lepSFObjTight",
-			"tauSFTight","tauSFLoose"]
+			"tauSFTight","tauSFLoose",
+                        "m_hasMEphoton.*",
+                        "m_MEphoton_.*",
+                        ]
 
 event_branches       = ["EventNumber","RunNumber","RunYear","mc_channel_number","averageIntPerXing","passEventCleaning",
                         "onelep_type","dilep_type","trilep_type","quadlep_type","total_charge","total_leptons",
