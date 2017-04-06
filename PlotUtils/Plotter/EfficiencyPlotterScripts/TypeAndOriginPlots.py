@@ -3,7 +3,7 @@
 import os
 
 from ROOT import kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
-from ROOT import TLine, TCanvas
+from ROOT import TLine, TCanvas, TFile, TH1D, THStack, TLegend
 
 from EfficiencyPlotterClasses import Plot, MultiPlot
 
@@ -186,9 +186,7 @@ def plotOriginVSNjets( normFactor=0, **kwargs ):
     Plot.legend.Clear()
 
 
-
-
-def plotFakeOriginFrac2L3L( normFactor=0, **kwargs ):
+def plotFakeOriginFrac2L3L( **kwargs ):
 
     plotlist = []
 
@@ -199,59 +197,155 @@ def plotFakeOriginFrac2L3L( normFactor=0, **kwargs ):
 
     Plot.legend.SetHeader("Fake {0}".format(header))
 
-    variable = "Lep1Origin"
+    variable_2L = "Lep1Origin"
+    variable_3L = "Lep2Origin"
 
     basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "OutputPlots_FakeOriginFrac_TTBarTTBarGamma_" + kwargs["prodID"]
 
-    inputPath_2LVR = basePath + "/" + "FakeOriginFrac_2LSS_LOWNJ_VR_TT" + "/"
-    inputPath_2LSR = basePath + "/" + "FakeOriginFrac_2LSS_SR_TT" + "/"
-    inputPath_3LSR = basePath + "/" + "FakeOriginFrac_3L_SR_TT" + "/"
-    inputName = variable + ".root"
+    inputPath_2LVR = basePath + "/" + "FakeOriginFrac_2LSS_LOWNJ_VR_TT" + "/" + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_"
+    inputPath_2LSR = basePath + "/" + "FakeOriginFrac_2LSS_SR_TT" + "/" + "FakeOriginFrac_2LSS_SR_TT_"
+    inputPath_3LSR = basePath + "/" + "FakeOriginFrac_3L_SR_TT" + "/" + "FakeOriginFrac_3L_SR_TT_"
 
-    p0_props = {
-                #"legend"      : " t#bar{t} + t#bar{t}#gamma",
-                "xAxisTitle"  : "truthOrigin",
-                "xAxisLabels" : [("NonDefined",0),("SingleElec",1),("SingleMuon",2),("SinglePhot",3),("SingleTau",4),("PhotonConv",5),("DalitzDec",6),("ElMagProc",7),("Mu",8),("TauLep",9),("top",10),("QuarkWeakDec",11),("WBoson",12),("ZBoson",13),("Higgs",14),("HiggsMSSM",15),("HeavyBoson",16),("WBosonLRSM",17),("NuREle",18),("NuRMu",19),("NuRTau",20),("LQ",21),("SUSY",22),("LightMeson",23),("StrangeMeson",24),("CharmedMeson",25),("BottomMeson",26),("CCbarMeson",27),("JPsi",28),("BBbarMeson",29),("LightBaryon",30),("StrangeBaryon",31),("CharmedBaryon",32),("BottomBaryon",33),("PionDecay",34),("KaonDecay",35),("BremPhot",36),("PromptPhot",37),("UndrPhot",38),("ISRPhot",39),("FSRPhot",40)], #,("NucReact",41),("PiZero",42),("DiBoson",43),("ZorHeavyBoson",44),("QCD",45)],
-                "normFactor"   : normFactor,
-               }
+    inputName_2L = variable_2L + ".root"
+    inputName_3L = variable_3L + ".root"
 
-    p0 = Plot(kwargs["sample"], inputPath  + inputName, p0_props)
+    f_2LVR = TFile(inputPath_2LVR+inputName_2L)
+    h_2LVR = f_2LVR.Get(kwargs["sample"])
+    h_2LVR.SetDirectory(0)
 
-    extension = ""
-    if "normFactor" in p0_props:
-        if p0_props["normFactor"]:
-            extension = "_NORM"
+    f_2LSR = TFile(inputPath_2LSR+inputName_2L)
+    h_2LSR = f_2LSR.Get(kwargs["sample"])
+    h_2LSR.SetDirectory(0)
 
-    canvasID = kwargs["lepSelection"] + "_" + variable + "_" + kwargs["sample"] + "_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + extension
-    c = TCanvas(canvasID,canvasID,50,50,1000,700)
-    c.cd()
-    p0.makePlot()
+    f_3LSR = TFile(inputPath_3LSR+inputName_3L)
+    h_3LSR = f_3LSR.Get(kwargs["sample"])
+    h_3LSR.SetDirectory(0)
 
-    doLeptonOriginFracPlots = ( not "normFactor" in p0_props or not p0_props["normFactor"] )
-    if doLeptonOriginFracPlots:
-        canvasID_stack = kwargs["lepSelection"] + "_LepOriginFrac_VS_NJets_" + kwargs["sample"] + "_" + kwargs["prodID"] + "_" + kwargs["jetSelection"] + extension
-        cstack = TCanvas(canvasID_stack,canvasID_stack,50,50,1000,700)
-        cstack.cd()
-        mystack, mystackleg = p0.makeLeptonOriginFracPlots(canvasID_stack)
-        mystack.Draw()
-        mystack.GetXaxis().SetTitle("Jet multiplicity")
-        mystack.GetYaxis().SetTitle("Fake lepton origin fraction")
-        mystack.GetXaxis().SetRangeUser(2,mystack.GetHistogram().GetNbinsX()-1)
-        mystackleg.Draw()
-        saveName_stack = canvasID_stack
+    h_list = [ h_2LVR, h_2LSR, h_3LSR ]
 
-    #Plot.legend.Draw()
-    #Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
-    #Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
+    # Fake lepton origin fraction wrt. 2LVR, 2LSR, 3LSR
 
-    savePath = basePath + "/TypeOriginPlots_" + kwargs["prodID"] + "/"
-    saveName = canvasID
+    histfakes_HF        = TH1D("histfakes_HF","histfakes_HF",3,-0.5,2.5)
+    histfakes_LF        = TH1D("histfakes_LF","histfakes_LF",3,-0.5,2.5)
+    histfakes_PhConv    = TH1D("histfakes_PhConv","histfakes_PhConv",3,-0.5,2.5)
+    histfakes_Other     = TH1D("histfakes_Other","histfakes_Other",3,-0.5,2.5)
 
-    for ext in ["png","eps","root"]:
-        c.SaveAs( savePath + saveName + "." + ext )
-        if doLeptonOriginFracPlots:
-            cstack.SaveAs( savePath + saveName_stack + "." + ext )
+    stacklegend = TLegend(0.5,0.3,0.75,0.6) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+    stacklegend.SetBorderSize(1)
+    stacklegend.SetFillColor(kWhite)
+    stacklegend.SetTextSize(0.03)
+    stacklegend.SetTextFont(42)
 
-    Plot.legend.Clear()
+    histfakes_HF.SetLineWidth(3)
+    histfakes_LF.SetLineWidth(3)
+    histfakes_PhConv.SetLineWidth(3)
+    histfakes_Other.SetLineWidth(3)
 
+    histfakes_HF.SetLineStyle(1)
+    histfakes_LF.SetLineStyle(1)
+    histfakes_PhConv.SetLineStyle(1)
+    histfakes_Other.SetLineStyle(1)
+
+    histfakes_HF.SetLineColor(1)
+    histfakes_LF.SetLineColor(1)
+    histfakes_PhConv.SetLineColor(1)
+    histfakes_Other.SetLineColor(1)
+
+    histfakes_HF.SetFillColor(kRed)
+    histfakes_LF.SetFillColor(kOrange+1)
+    histfakes_PhConv.SetFillColor(kYellow)
+    histfakes_Other.SetFillColor(kAzure+1)
+
+    # p0_props = {
+    #             #"legend"      : " t#bar{t} + t#bar{t}#gamma",
+    #             "xAxisTitle"  : "truthOrigin",
+    #             "xAxisLabels" : [("NonDefined",0),("SingleElec",1),("SingleMuon",2),("SinglePhot",3),("SingleTau",4),("PhotonConv",5),("DalitzDec",6),("ElMagProc",7),("Mu",8),("TauLep",9),("top",10),("QuarkWeakDec",11),("WBoson",12),("ZBoson",13),("Higgs",14),("HiggsMSSM",15),("HeavyBoson",16),("WBosonLRSM",17),("NuREle",18),("NuRMu",19),("NuRTau",20),("LQ",21),("SUSY",22),("LightMeson",23),("StrangeMeson",24),("CharmedMeson",25),("BottomMeson",26),("CCbarMeson",27),("JPsi",28),("BBbarMeson",29),("LightBaryon",30),("StrangeBaryon",31),("CharmedBaryon",32),("BottomBaryon",33),("PionDecay",34),("KaonDecay",35),("BremPhot",36),("PromptPhot",37),("UndrPhot",38),("ISRPhot",39),("FSRPhot",40)], #,("NucReact",41),("PiZero",42),("DiBoson",43),("ZorHeavyBoson",44),("QCD",45)],
+    #             "normFactor"   : normFactor,
+    #            }
+
+    # Loop over truthOrigin hists: 2LVR, 2LSR, 3LSR
+
+    for idx, h in enumerate(h_list):
+
+        offset = 1 # (to account for underflow bin, which has idx=0)
+
+        # Get the tot. fakes for *this* hist
+
+        fakes_TOT_h = h.Integral( 0, h.GetNbinsX()+1 )
+
+        # Get the HF fakes for *this* hist
+
+        fakes_HF_h = h.Integral( 25+offset,29+offset ) + h.Integral( 32+offset,33+offset )
+
+        # Get the LF fakes for *this* hist
+
+        fakes_LF_h = h.Integral( 23+offset,24+offset ) + h.Integral( 30+offset,31+offset )
+
+        # Get the photon conversion fakes for *this* hist
+
+        fakes_PhConv_h = h.Integral( 5+offset,5+offset )
+
+        # Get the other fakes for *this* hist
+
+        fakes_Other_h = fakes_TOT_h - ( fakes_HF_h + fakes_LF_h + fakes_PhConv_h )
+
+        # Set the bin content for the fake lepton origin fraction hists for *this* hist
+
+        if fakes_TOT_h:
+            fakes_HF_frac_h     = fakes_HF_h/fakes_TOT_h
+            fakes_LF_frac_h     = fakes_LF_h/fakes_TOT_h
+            fakes_PhConv_frac_h = fakes_PhConv_h/fakes_TOT_h
+            fakes_Other_frac_h  = fakes_Other_h/fakes_TOT_h
+        else:
+            fakes_HF_frac_h = fakes_LF_frac_h = fakes_PhConv_frac_h = fakes_Other_frac_h = 0
+
+        print("bin[{0}] ".format(idx))
+        print("\ttot fakes = {0}".format(fakes_TOT_h))
+        print("\t-) HF fakes = {0} ({1:.2f})".format(fakes_HF_h,fakes_HF_frac_h))
+        print("\t-) LF fakes = {0} ({1:.2f})".format(fakes_LF_h,fakes_LF_frac_h))
+        print("\t-) PhConv fakes = {0} ({1:.2f})".format(fakes_PhConv_h,fakes_PhConv_frac_h))
+        print("\t-) Other fakes = {0} ({1:.2f})".format(fakes_Other_h,fakes_Other_frac_h))
+
+        histfakes_HF.SetBinContent( idx+offset, fakes_HF_frac_h )
+        histfakes_LF.SetBinContent( idx+offset, fakes_LF_frac_h )
+        histfakes_PhConv.SetBinContent( idx+offset, fakes_PhConv_frac_h )
+        histfakes_Other.SetBinContent( idx+offset, fakes_Other_frac_h )
+
+    # Add histograms w/ fake origin fractions into a stack plot
+
+    stacklegend.AddEntry(histfakes_HF, "HF Fakes", "F")
+    stacklegend.AddEntry(histfakes_LF, "LF Fakes", "F")
+    stacklegend.AddEntry(histfakes_PhConv, "#gamma conversion" , "F")
+    stacklegend.AddEntry(histfakes_Other, "Other Fakes", "F")
+
+    stack = THStack("FakeLepOriginFrac_VS_2L3LCat_STACK","FakeLepOriginFrac_VS_2L3LCat_STACK")
+    stack.Add(histfakes_HF)
+    stack.Add(histfakes_LF)
+    stack.Add(histfakes_PhConv)
+    stack.Add(histfakes_Other)
+
+    canvasID_stack = "FakeLepOriginFrac_VS_2L3LCat_" + kwargs["sample"] + "_" + kwargs["prodID"]
+    cstack = TCanvas(canvasID_stack,canvasID_stack,50,50,1000,700)
+
+    cstack.cd()
+    stack.Draw()
+    stack.GetXaxis().SetTitle("Category")
+    stack.GetYaxis().SetTitle("Fake electron origin fraction")
+    stack.GetXaxis().SetRangeUser(-0.5,stack.GetHistogram().GetNbinsX()-0.5)
+
+    stack.GetXaxis().SetBinLabel(1,"2lSS, CR")
+    stack.GetXaxis().SetBinLabel(2,"2lSS, SR")
+    stack.GetXaxis().SetBinLabel(3,"3l, SR")
+    stack.GetYaxis().SetLabelSize(stack.GetXaxis().GetLabelSize())
+
+    stacklegend.Draw()
+    saveName_stack = canvasID_stack
+
+    savePath = basePath + "/FakeLepOriginFrac_VS_2L3LCat_" + kwargs["prodID"] + "/"
+
+    if not os.path.exists(savePath):
+        os.makedirs(savePath)
+
+    for ext in ["png","pdf","root"]:
+        cstack.SaveAs( savePath + saveName_stack + "." + ext )
 

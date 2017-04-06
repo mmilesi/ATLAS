@@ -100,6 +100,8 @@ parser.add_argument('--makeStandardPlots', action='store_true', dest='makeStanda
                     help='Produce a set of standard plots. Default is False.')
 parser.add_argument('--doQMisIDRate', dest='doQMisIDRate', action='store_true',
                     help='Measure charge flip rate in MC (to be used with --channel=MMRates CLOSURE)')
+parser.add_argument('--doPhotonConversionRate', dest='doPhotonConversionRate', action='store_true',
+                    help='Measure photon conversion rate in MC (to be used with --channel=MMRates CLOSURE)')
 parser.add_argument('--doUnblinding', dest='doUnblinding', action='store_true', default=False,
                     help='Unblind data in SRs')
 parser.add_argument('--printEventYields', dest='printEventYields', action='store_true', default=False,
@@ -635,7 +637,8 @@ if __name__ == "__main__":
         database.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptEvent',          '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_' + trig_tag + '_isPrompt == 0 && !( lep_Probe_' + trig_tag + '_isBrems == 1 && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) )') )
         database.registerCut( Cut('2Lep_TRUTH_ProbeNonPromptOrQMisIDEvent',  '( ( mc_channel_number == 0 ) || ( ( ( lep_Probe_' + trig_tag + '_isPrompt == 0 && !( lep_Probe_' + trig_tag + '_isBrems == 1 && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) || lep_Probe_' + trig_tag + '_isQMisID == 1 ) ) )') )
         database.registerCut( Cut('2Lep_TRUTH_ProbeQMisIDEvent',             '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_isQMisID == 1 ) ) )') )
-        database.registerCut( Cut('2Lep_TRUTH_ProbeLepFromPhEvent',          '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_isConvPh == 1 || lep_Probe_' + trig_tag + '_isISRFSRPh_0 == 1 ) ) )') )
+        # database.registerCut( Cut('2Lep_TRUTH_ProbeLepFromPhEvent',          '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_isConvPh == 1 || lep_Probe_' + trig_tag + '_isISRFSRPh == 1 ) ) )') )
+        database.registerCut( Cut('2Lep_TRUTH_ProbeLepFromPhEvent',          '( ( mc_channel_number == 0 ) || ( ( lep_Probe_' + trig_tag + '_truthType == 4 && lep_Probe_' + trig_tag + '_truthOrigin == 5 && lep_Probe_' + trig_tag + '_isQMisID == 0 ) ) )') )
 
     if args.useMoriondTruth:
 
@@ -657,9 +660,9 @@ if __name__ == "__main__":
     database.registerCut( Cut('3Lep_TT',           '( lep_isTightSelectedMVA_1 && lep_isTightSelectedMVA_2 )') )
     if "SLT_OR_DLT" in args.trigger:
         # database.registerCut( Cut('3Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
-        database.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || || lep_isTrigMatch_2 || matchDLTll01 || matchDLTll02 || matchDLTll12 )') )
+        database.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || lep_isTrigMatch_2 || matchDLTll01 || matchDLTll02 || matchDLTll12 )') )
     elif "SLT" in args.trigger:
-        database.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || || lep_isTrigMatch_2 )') )
+        database.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || lep_isTrigMatch_2 )') )
     elif "DLT" in args.trigger:
         database.registerCut( Cut('3Lep_TrigMatch', '( matchDLTll01 || matchDLTll02 || matchDLTll12 )') )
     database.registerCut( Cut('3Lep_ZVeto',        '( ( lep_ID_0 != -lep_ID_1 || TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) && ( lep_ID_0! = -lep_ID_2 || TMath::Abs( Mll02 - 91.2e3 ) > 10e3 ) )') )
@@ -1121,15 +1124,15 @@ if __name__ == "__main__":
 
     if doFakeOriginFrac:
 
-        database.registerVar( Variable(shortname = "Lep1Type", latexname = "truthType^{e}", ntuplename = "lep_truthType_1", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
-        database.registerVar( Variable(shortname = "Lep1Origin", latexname = "truthOrigin^{e}", ntuplename = "lep_truthOrigin_1", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+        database.registerVar( Variable(shortname = "Lep1Type", latexname = "truthType^{e}", ntuplename = "lep_truthType_1", bins = 21, minval = -0.5, maxval = 20.5 ) )
+        database.registerVar( Variable(shortname = "Lep1Origin", latexname = "truthOrigin^{e}", ntuplename = "lep_truthOrigin_1", bins = 41, minval = -0.5, maxval = 40.5 ) )
         database.registerVar( Variable(shortname = 'Lep1Type_VS_Lep1Origin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = "lep_truthOrigin_1:lep_truthType_1", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
-        database.registerVar( Variable(shortname = "Lep2Type", latexname = "truthType^{e}", ntuplename = "lep_truthType_2", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
-        database.registerVar( Variable(shortname = "Lep2Origin", latexname = "truthOrigin^{e}", ntuplename = "lep_truthOrigin_2", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+        database.registerVar( Variable(shortname = "Lep2Type", latexname = "truthType^{e}", ntuplename = "lep_truthType_2", bins = 21, minval = -0.5, maxval = 20.5 ) )
+        database.registerVar( Variable(shortname = "Lep2Origin", latexname = "truthOrigin^{e}", ntuplename = "lep_truthOrigin_2", bins = 41, minval = -0.5, maxval = 40.5 ) )
         database.registerVar( Variable(shortname = 'Lep2Type_VS_Lep2Origin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = "lep_truthOrigin_2:lep_truthType_2", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
 
-        database.registerCut( Cut('2Lep_Lep1_ElFake', '( TMath::Abs( lep_ID_1 ) == 11 && lep_isPrompt_1 == 0 && !( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) )') )
-        database.registerCut( Cut('3Lep_Lep2_ElFake', '( TMath::Abs( lep_ID_2 ) == 11 && lep_isPrompt_2 == 0 && !( lep_isBrems_2 == 1 && lep_isQMisID_2 == 0 ) )') )
+        database.registerCut( Cut('2Lep_Lep1_ElFake', '( TMath::Abs( lep_ID_1 ) == 11 && lep_isPrompt_1 == 0 )') )
+        database.registerCut( Cut('3Lep_Lep2_ElFake', '( TMath::Abs( lep_ID_2 ) == 11 && lep_isPrompt_2 == 0 )') )
 
         cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_TRUTH_QMisIDVeto','2Lep_Lep1_ElFake','TT']
         common_cuts_2Lep = database.getCuts(cc_2Lep_list)
@@ -1271,7 +1274,7 @@ if __name__ == "__main__":
 
         if "3L" in args.channel:
 
-            cutlist_CFC_3L = []
+            cutlist_CFC_3Lep = []
 
             cat_name = "CFChallenge_3L"
 
@@ -1281,14 +1284,14 @@ if __name__ == "__main__":
                                  ["TrigDec",weight_CFC],
                                  ["3Lep_NLep",weight_CFC],
                                  ["3Lep_TrigMatch",weight_CFC],
-                                 ["TT",weight_CFC],
+                                 ["3Lep_TT",weight_CFC],
                                  ["3Lep_Charge",weight_CFC],
                                  ["3Lep_NJets",weight_CFC],
-                                 # ["3Lep_pT",weight_CFC],
+                                 ["3Lep_pT",weight_CFC],
                                  ["TauVeto",weight_CFC],
                                  ["3Lep_ZVeto",weight_CFC],
                                  ["3Lep_MinZCut",weight_CFC],
-                                 #["3Lep_ZllGammaVeto",weight_CFC],
+                                 ["3Lep_ZllGammaVeto",weight_CFC],
                                     ]
 
             tot_idx = 0
@@ -1345,8 +1348,8 @@ if __name__ == "__main__":
                 # database.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,0.5,0.8,1.37,1.52,2.0,2.6], manualbinsY = [10.0,15.0,20.0,26.0,35.0,45.0,60.0,80.0,100.0,140.0,200.0], typeval = TH2D, drawOpt2D = "COLZ1 text") )
 
             # if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
-            #     database.registerVar( Variable(shortname = "ElProbeType", latexname = "truthType^{e}", ntuplename = el_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
-            #     database.registerVar( Variable(shortname = "ElProbeOrigin", latexname = "truthOrigin^{e}", ntuplename = el_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+            #     database.registerVar( Variable(shortname = "ElProbeType", latexname = "truthType^{e}", ntuplename = el_probe + "truthType", bins = 21, minval = -0.5, maxval = 20.5 ) )
+            #     database.registerVar( Variable(shortname = "ElProbeOrigin", latexname = "truthOrigin^{e}", ntuplename = el_probe + "truthOrigin", bins = 41, minval = -0.5, maxval = 40.5 ) )
             #     database.registerVar( Variable(shortname = 'ElProbeType_VS_ElProbeOrigin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = el_probe + "truthOrigin" + ":" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
             #     database.registerVar( Variable(shortname = 'ElProbeType_VS_NJets', latexnameX = 'truthType^{e}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + el_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
             #     database.registerVar( Variable(shortname = 'ElProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{e}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + el_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
@@ -1365,8 +1368,8 @@ if __name__ == "__main__":
             # database.registerVar( Variable(shortname = "MuProbeNJets", latexname = "N_{jets}", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
 
             # if "DATAMC" in args.channel and any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
-            #     database.registerVar( Variable(shortname = "MuProbeType", latexname = "truthType^{#mu}", ntuplename = mu_probe + "truthType", bins = 21, minvalX = -0.5, maxvalX = 20.5 ) )
-            #     database.registerVar( Variable(shortname = "MuProbeOrigin", latexname = "truthOrigin^{#mu}", ntuplename = mu_probe + "truthOrigin", bins = 41, minvalX = -0.5, maxvalX = 40.5 ) )
+            #     database.registerVar( Variable(shortname = "MuProbeType", latexname = "truthType^{#mu}", ntuplename = mu_probe + "truthType", bins = 21, minval = -0.5, maxval = 20.5 ) )
+            #     database.registerVar( Variable(shortname = "MuProbeOrigin", latexname = "truthOrigin^{#mu}", ntuplename = mu_probe + "truthOrigin", bins = 41, minval = -0.5, maxval = 40.5 ) )
             #     database.registerVar( Variable(shortname = 'MuProbeType_VS_MuProbeOrigin', latexnameX = 'truthType^{#mu}', latexnameY = 'truthOrigin^{#mu}', ntuplename = mu_probe + "truthOrigin" + ":" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
             #     database.registerVar( Variable(shortname = 'MuProbeType_VS_NJets', latexnameX = 'truthType^{#mu}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + mu_probe + "truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
             #     database.registerVar( Variable(shortname = 'MuProbeOrigin_VS_NJets', latexnameX = 'truthOrigin^{#mu}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:" + mu_probe + "truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
@@ -1440,6 +1443,10 @@ if __name__ == "__main__":
             	if args.doQMisIDRate:
             	    print ("\nMeasuring efficiency/rate for QMisID leptons in MC!\n")
             	    truth_sub_SS = database.getCut('2Lep_TRUTH_ProbeQMisIDEvent')
+
+                if args.doPhotonConversionRate:
+            	    print ("\nMeasuring efficiency/rate for photon conversions in MC!\n")
+                    truth_sub_SS = database.getCut('2Lep_TRUTH_ProbeLepFromPhEvent')
 
                 # --------------------------------------------
                 # Fake probe assignment efficiency
@@ -2052,6 +2059,7 @@ if __name__ == "__main__":
         ttH.signals     = []
         ttH.observed    = []
         ttH.backgrounds = ['TTBar']
+        ttH.debugprocs  = ['TTBar']
         ttH.debugprocs  = ['TTBar']
 
     if doTopCR or doZOSpeakCR:

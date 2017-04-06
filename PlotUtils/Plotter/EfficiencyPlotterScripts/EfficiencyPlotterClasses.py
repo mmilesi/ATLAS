@@ -22,7 +22,7 @@ class Plot:
     legend.SetBorderSize(0)  # no border
     legend.SetFillStyle(0) # Legend transparent background
     legend.SetTextSize(0.03) # Increase entry font size!
-    legend.SetTextFont(42)   # Helvetica
+    # legend.SetTextFont(42)   # Helvetica
 
     legendATLAS = TLatex()
     legendLumi  = TLatex()
@@ -332,6 +332,6 @@ class MultiPlot:
 	Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
         Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
 
-        for ext in ["png","eps","root"]:
+        for ext in ["png","pdf","root"]:
 	    c.SaveAs( savePath + "/" + saveName + "." + ext )
 

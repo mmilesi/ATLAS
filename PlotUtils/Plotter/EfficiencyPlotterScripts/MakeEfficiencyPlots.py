@@ -13,52 +13,28 @@ if __name__ == "__main__":
 
     gROOT.SetBatch(True)
 
-    import EfficiencyPlotter_v24_ElNoIso
+    import EfficiencyPlotter
 
-    # Use this one for v24 (has the right binning)
-    if False:
-        EfficiencyPlotter_v24_ElNoIso.plotRealElectron()
-        EfficiencyPlotter_v24_ElNoIso.plotRealMuon()
-        EfficiencyPlotter_v24_ElNoIso.plotFakeElectron()
-        EfficiencyPlotter_v24_ElNoIso.plotFakeMuon()
+    if True:
 
-    import EfficiencyPlotter_v26
+        EfficiencyPlotter.plotRealElectron()
+        # EfficiencyPlotter.plotRealMuon()
+        # EfficiencyPlotter.plotFakeElectron()
+        # EfficiencyPlotter.plotFakeMuon()
 
-    if False:
+        # EfficiencyPlotter.plotRealElectron_CutBased()
+        # EfficiencyPlotter.plotRealMuon_CutBased()
+        # EfficiencyPlotter.plotFakeElectron_CutBased()
+        # EfficiencyPlotter.plotFakeMuon_CutBased()
 
-        EfficiencyPlotter_v26.plotRealElectron()
-        EfficiencyPlotter_v26.plotRealMuon()
-        EfficiencyPlotter_v26.plotFakeElectron()
-        EfficiencyPlotter_v26.plotFakeMuon()
+        # EfficiencyPlotter.plotProbeElectronAssignEff_MVA()
+        # EfficiencyPlotter.plotProbeElectronAssignEff_CutBased()
 
-        EfficiencyPlotter_v26.plotRealElectron_CutBased()
-        EfficiencyPlotter_v26.plotRealMuon_CutBased()
-        EfficiencyPlotter_v26.plotFakeElectron_CutBased()
-        EfficiencyPlotter_v26.plotFakeMuon_CutBased()
-
-        # EfficiencyPlotter_v26.plotProbeElectronAssignEff_MVA()
-        # EfficiencyPlotter_v26.plotProbeElectronAssignEff_CutBased()
-
-    import EfficiencyPlotter_v26_VS_v24_ElNoIso
-
-    if False:
-
-        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealElectron()
-        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotRealMuon()
-        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron()
-        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeMuon()
-        # EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron_NO_TRUTH()
-        EfficiencyPlotter_v26_VS_v24_ElNoIso.plotFakeElectron_EtaBarrel()
-
-    import LikelihoodVSTagAndProbe
-
-    if False:
-        LikelihoodVSTagAndProbe.compareRealMuon()
-        LikelihoodVSTagAndProbe.compareRealElectron()
+        EfficiencyPlotter.plotFakeElectron_NonPromptVSPhotonConv()
 
     import TypeAndOriginPlots
 
-    if True:
+    if False:
 
         samples       = ["ttbarbkg","wjetsbkg"]
         #flavour       = "El"
@@ -82,4 +58,19 @@ if __name__ == "__main__":
                         TypeAndOriginPlots.plotTypeVSOrigin(normFactor=normFactor, **kwargs)
                         TypeAndOriginPlots.plotTypeVSNjets(normFactor=normFactor, **kwargs)
                         TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
+
+
+    if False:
+
+        samples       = ["ttbarbkg"]
+        flavour       = "El"
+        prodIDs       = ["25ns_v27"]
+
+        for s in samples:
+            print("\nLooking at sample: {0}".format(s))
+            for pid in prodIDs:
+                print("\n\t\tprodID: {0}\n".format(pid))
+                kwargs = {"flavour":flavour,"prodID":pid, "sample":s}
+                TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
+
 
