@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter
 
-    if True:
+    if False:
 
         EfficiencyPlotter.plotRealElectron()
         # EfficiencyPlotter.plotRealMuon()
@@ -60,7 +60,7 @@ if __name__ == "__main__":
                         TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
 
 
-    if False:
+    if True:
 
         samples       = ["ttbarbkg"]
         flavour       = "El"
