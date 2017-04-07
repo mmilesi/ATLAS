@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     os.chdir(os.path.abspath(os.path.curdir)+"/HTopMultilepAnalysis/PlotUtils")
 
-    plotscript = os.path.abspath(os.path.curdir) + "/HTopMultilepAnalysis/PlotUtils/Plotter/MakePlots_HTopMultilep.py"
+    plotscript = os.path.abspath(os.path.curdir) + "/Plotter/MakePlots_HTopMultilep.py"
     optlist = args.optstr.split(' ')
 
     cmdlist = ['python',plotscript] + optlist + ['--submitPBSVar',var]

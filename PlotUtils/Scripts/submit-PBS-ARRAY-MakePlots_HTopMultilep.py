@@ -49,12 +49,17 @@ def copy_source(subdir = string.Template("$TMPDIR").substitute(os.environ), forc
 
     pckgdir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk"
 
+    # Remove some ROOT object and shared libraries files before tarballing and copying
+
+    for filetype in ["*.so","*.d","*.pcm"]:
+        map(os.remove, glob.glob(pckgdir+"/RootCoreBin/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/"+filetype))
+        map(os.remove, glob.glob(pckgdir+"/HTopMultilepAnalysis/scripts/ROOT_TTreeFormulas/"+filetype))
+
     os.chdir(os.path.abspath(pckgdir))
 
     print("Making a tarball of input package and moving it to submission directory...")
     if not os.path.isfile(subdir+"/"+tarballname) or args.forcetarball:
-        excludefilepattern = "--exclude='*.so' --exclude='*.d' --exclude='*.pcm'"
-        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs",excludefilepattern])
+        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs"])
         shutil.move("./"+tarballname,subdir+"/"+tarballname)
     else:
         print("Good! Tarball of code already exists in submission directory...")
@@ -193,10 +198,28 @@ exit 0
 
     varlist = [
         "Integral",
-        "NJets2j3j",
-        "NJets4j",
-        "El0Pt",
-        "El1Pt",
+        "Integral_LOGY",
+        "ElProbePt",
+        "ElProbePt_LOGY",
+        "ElProbePt_RealEffBinning",
+        "ElProbePt_FakeEffBinning",
+        "ElProbePt_RealEffBinning_LOGY",
+        "ElProbePt_FakeEffBinning_LOGY",
+        "ElProbeEta",
+        "MuProbePt",
+        "MuProbePt_LOGY",
+        "MuProbePt_RealEffBinning",
+        "MuProbePt_FakeEffBinning",
+        "MuProbePt_RealEffBinning_LOGY",
+        "MuProbePt_FakeEffBinning_LOGY",
+        "MuProbeEta",
+        #
+        # "Integral",
+        # "NJets2j3j",
+        # "NJets4j",
+        # "El0Pt",
+        # "El1Pt",
+        #
         # "Lep1Type",
         # "Lep1Origin",
         # 'Lep1Type_VS_Lep1Origin',

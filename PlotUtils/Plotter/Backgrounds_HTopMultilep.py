@@ -1176,7 +1176,7 @@ class TTHBackgrounds(Background):
 
 	    inputgroup = [
                 ('tops', 'ttbar_nonallhad_Pythia8'),
-		('tops', 'ttgamma'),
+		#('tops', 'ttgamma'),
                 #('tops', 'ttbar_nonallhad'),
                 #('tops', 'ttbar_dilep'),
                 #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
@@ -1209,8 +1209,8 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
-            tt_ttgamma_OLR_cut = Cut("TTBar_TTGamma_OLR","( ( mc_channel_number == 410082 && m_MEphoton_OLtty_cat1 ) || ( mc_channel_number != 410082 && m_MEphoton_OLtty_keepEvent && !m_hasMEphoton_DRgt02_nonhad ) )")
-            sp = sp.subprocess(cut=tt_ttgamma_OLR_cut)
+            # tt_ttgamma_OLR_cut = Cut("TTBar_TTGamma_OLR","( ( mc_channel_number == 410082 && m_MEphoton_OLtty_cat1 ) || ( mc_channel_number != 410082 && m_MEphoton_OLtty_keepEvent && !m_hasMEphoton_DRgt02_nonhad ) )")
+            # sp = sp.subprocess(cut=tt_ttgamma_OLR_cut)
 
             print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
