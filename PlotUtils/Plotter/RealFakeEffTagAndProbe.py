@@ -1252,9 +1252,13 @@ class RealFakeEffTagAndProbe:
     	    	for myset in eff:
     	    	    self.__outputfile_yields.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + " [" + str(round(myset[1],3)) + "," + str(round(myset[2],3)) + "], factor (from TH1::Divide()) = " + str(round(myset[3],3)) + " +- " + str(round(myset[4],3)) ) )
 
-	self.__outputfile_yields.close()
+
+    def closeOutputFiles( self ):
+
+        self.__outputfile_yields.close()
         self.__outputfile.Write()
         self.__outputfile.Close()
+
 
     def __getLimits__( self, histlist, scale_up=1.0, scale_dn=1.0, shift_up=0.0, shift_dn=0.0, ratio=False ):
         ymin = 1e9
@@ -1922,6 +1926,17 @@ class RealFakeEffTagAndProbe:
 			    error = all_sys[str(bin)]
 		        hist_allsys.SetBinError(bin,error)
 
+                    print("\nSyst hist: {0}:".format(hist_allsys.GetName()))
+                    self.__outputfile_yields.write("%s:\n" %(hist_allsys.GetName()) )
+                    effsys = []
+                    for ibin in range( 1, hist_allsys.GetSize() ):
+                        myset = [ ibin, hist_allsys.GetBinLowEdge(ibin), hist_allsys.GetBinLowEdge(ibin+1), hist_allsys.GetBinContent(ibin), hist_nominal.GetBinError(ibin), hist_allsys.GetBinError(ibin)]
+                        effsys.append( myset )
+                    for myset in effsys:
+                        print("{ %s };" %( "Bin nr: " + str(myset[0]) + " [" + str(round(myset[1],3)) + "," + str(round(myset[2],3)) + "], efficiency (from TH1::Divide(\"B\")) = " + str(round(myset[3],3)) + " +- " + str(round(myset[4],3)) + " (stat)" + " +- " + str(round(myset[5],3)) + " (syst)" ) )
+                        self.__outputfile_yields.write("{ %s }; \n" %( "Bin nr: " + str(myset[0]) + " [" + str(round(myset[1],3)) + "," + str(round(myset[2],3)) + "], efficiency (from TH1::Divide(\"B\")) = " + str(round(myset[3],3)) + " +- " + str(round(myset[4],3)) + " (stat)" + " +- " + str(round(myset[5],3)) + " (syst)" ) )
+                    print("")
+
 		    ymin_allsys, ymax_allsys = self.__getLimits__([hist_allsys,hist_nominal], scale_up, scale_dn)
 		    #hist_allsys.GetYaxis().SetRangeUser(ymin_allsys,ymax_allsys)
                     hist_allsys.SetMaximum(ymax_allsys*1.2)
@@ -2123,3 +2138,5 @@ if __name__ == "__main__":
         eff.plotMaker()
         if args.systematics and not args.closure and not args.nosub:
 	    eff.plotMakerSys()
+
+    eff.closeOutputFiles()
