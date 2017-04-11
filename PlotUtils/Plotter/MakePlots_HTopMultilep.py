@@ -691,11 +691,11 @@ if __name__ == "__main__":
 
     # NB: for electrons, these flags include a QMisID BDT cut on the LooseLH WP
 
-    database.registerCut( Cut('FakesSideband_TT',      '( is_TMVA_TMVA )') )
-    database.registerCut( Cut('FakesSideband_TL',      '( is_TMVA_AntiTMVA )') )
-    database.registerCut( Cut('FakesSideband_LT',      '( is_AntiTMVA_TMVA )') )
+    database.registerCut( Cut('FakesSideband_TT',      '( isMMSideband_TT )') )
+    database.registerCut( Cut('FakesSideband_TL',      '( isMMSideband_TAntiT )') )
+    database.registerCut( Cut('FakesSideband_LT',      '( isMMSideband_AntiTT )') )
     database.registerCut( Cut('FakesSideband_TL_LT',   '( is_TMVA_AntiTMVA || is_AntiTMVA_TMVA )') )
-    database.registerCut( Cut('FakesSideband_LL',      '( is_AntiTMVA_AntiTMVA )') )
+    database.registerCut( Cut('FakesSideband_LL',      '( isMMSideband_AntiTAntiT )') )
     database.registerCut( Cut('FakesSideband_TelLmu',  '( is_TMVAel_AntiTMVAmu )') )
     database.registerCut( Cut('FakesSideband_LelTmu',  '( is_AntiTMVAel_TMVAmu )') )
     database.registerCut( Cut('FakesSideband_TmuLel',  '( is_TMVAmu_AntiTMVAel )') )

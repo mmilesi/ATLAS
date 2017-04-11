@@ -2089,7 +2089,11 @@ class TTHBackgrounds(Background):
                     continue
 
 	        QMisIDcut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-	        OSweight  = 'QMisIDWeight * MMWeight'
+	        OSweight  = ''
+                if ("2Lep_ElEl_Event") in inputcut.cutname:
+                    OSweight = 'Lep2SS0tau_ee_QMisIDWeight * MMWeight'
+                if ("2Lep_OF_Event") in inputcut.cutname:
+                    OSweight = 'Lep2SS0tau_OF_QMisIDWeight * MMWeight'
 
                 # These are the actual QMisID events in the sidebands
 
