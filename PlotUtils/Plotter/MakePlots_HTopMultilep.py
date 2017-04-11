@@ -435,7 +435,7 @@ if __name__ == "__main__":
     database.registerCut( Cut('2Lep_SS',	          '( lep_ID_0 * lep_ID_1 > 0 )') )
     database.registerCut( Cut('2Lep_OS',		  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
     database.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
-    database.registerCut( Cut('2Lep_pT',		  '( 1 )') ) # For 2LSS, go as low as the trigger matching allows for
+    database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_0 > 15e3 && lep_Pt_1 > 15e3 )') )
     if args.ICHEPSelection:
         database.getCut('2Lep_pT').cutstr =  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 25e3 )' # 2LSS SR cut - ICHEP 2016
     database.registerCut( Cut('2Lep_pT_MMRates',	  '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
@@ -668,7 +668,6 @@ if __name__ == "__main__":
     database.registerCut( Cut('3Lep_ZVeto',        '( ( lep_ID_0 != -lep_ID_1 || TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) && ( lep_ID_0! = -lep_ID_2 || TMath::Abs( Mll02 - 91.2e3 ) > 10e3 ) )') )
     database.registerCut( Cut('3Lep_MinZCut',      '( ( lep_ID_0 != -lep_ID_1 || Mll01 > 12e3 ) && ( lep_ID_0 != -lep_ID_2 || Mll02 > 12e3 ) )') )
     database.registerCut( Cut('3Lep_ZllGammaVeto', '( TMath::Abs( Mlll012 - 91.2e3 ) > 10e3 )') )
-    # database.registerCut( Cut('3Lep_NJets',        '( ( nJets_OR_T >= 4 && nJets_OR_T_MV2c10_70 >= 1 ) || ( nJets_OR_T >=3 && nJets_OR_T_MV2c10_70 >= 2 ) )') )
     database.registerCut( Cut('3Lep_NJets',        '( nJets_OR_T >= 2 && nJets_OR_T_MV2c10_70 >= 1 )') )
 
     # -----------------------------
@@ -688,8 +687,6 @@ if __name__ == "__main__":
     # ------------------------------
     # Sidebands definition for fakes
     # ------------------------------
-
-    # NB: for electrons, these flags include a QMisID BDT cut on the LooseLH WP
 
     database.registerCut( Cut('FakesSideband_TT',      '( is_TMVA_TMVA )') )
     database.registerCut( Cut('FakesSideband_TL',      '( is_TMVA_AntiTMVA )') )
