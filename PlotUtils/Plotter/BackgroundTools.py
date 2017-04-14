@@ -23,11 +23,11 @@ class Inputs:
 
         self.alltrees = {}
         self.sampleids = {}
-        self.nomtree = 'physics'
+        self.nomtree = 'nominal'
         self.systrees = []
         self.sysweights = []
 
-    def registerTree(self, filegroup, nomtree = 'physics', systrees=[], ismc=True, isembedding=False, isdata=False, sample={}, resetTreeWeight=False):
+    def registerTree(self, filegroup, nomtree = 'nominal', systrees=[], ismc=True, isembedding=False, isdata=False, sample={}, resetTreeWeight=False):
 
 	# This function add a tree to TChain contained in self.alltrees = {}.
 	# In this dictionary each group and subgroup is separated and has its proper TChain.
@@ -103,7 +103,7 @@ class Inputs:
 
     # Load a tree from the list of all trees
 
-    def getTree(self, treename='physics', group='', subgroup='', sampleid=None):
+    def getTree(self, treename='nominal', group='', subgroup='', sampleid=None):
 
 	if sampleid:
             group, subgroup = self.sampleids[self.nomtree][sampleid]
@@ -121,7 +121,7 @@ class Inputs:
 	#print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
 
-    def getTrees(self, treename='physics', grouplist=[]):
+    def getTrees(self, treename='nominal', grouplist=[]):
 
         # Group list is a list of tuple with two elements (strings),
         # e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards.
@@ -758,7 +758,7 @@ class Process:
         self.vardb  = vardb
         self.parent = parent
 
-    def __call__(self, treename='physics', category=None, options={}):
+    def __call__(self, treename='nominal', category=None, options={}):
         pass
 
     def subprocess(self, trees=[], basecut=None, baseweight=1.0, eventweight=None):
@@ -844,7 +844,7 @@ class Background:
         return cache
 
     def getProcess(self, name, category=None, systematics=None, systematicsdirection=None, options={}):
-        treename = 'physics'
+        treename = 'nominal'
         eventweight = None
         if systematics:
             matchtoken = True
@@ -1604,7 +1604,7 @@ def integrate(hist):
 
 # This function loads the samples metadata from the .csv file info
 
-def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', systrees=[]):
+def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='nominal', systrees=[]):
 
     # The datasat manager takes care of parsing the sample.csv files.
 
