@@ -1128,20 +1128,26 @@ if __name__ == "__main__":
         database.registerVar( Variable(shortname = "Lep2Origin", latexname = "truthOrigin^{e}", ntuplename = "lep_truthOrigin_2", bins = 41, minval = -0.5, maxval = 40.5 ) )
         database.registerVar( Variable(shortname = 'Lep2Type_VS_Lep2Origin', latexnameX = 'truthType^{e}', latexnameY = 'truthOrigin^{e}', ntuplename = "lep_truthOrigin_2:lep_truthType_2", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
 
-        database.registerCut( Cut('2Lep_Lep1_ElFake', '( TMath::Abs( lep_ID_1 ) == 11 && lep_isPrompt_1 == 0 )') )
-        database.registerCut( Cut('3Lep_Lep2_ElFake', '( TMath::Abs( lep_ID_2 ) == 11 && lep_isPrompt_2 == 0 )') )
+        # Require lep1 or lep2 to be fakes (as they have the largest probability of being so)
 
-        cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_TRUTH_QMisIDVeto','2Lep_Lep1_ElFake','TT']
+        database.registerCut( Cut('2Lep_Lep1_ElFake', '( TMath::Abs( lep_ID_1 ) == 11 && !( lep_isPrompt_1 == 1 || ( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) )') )
+        database.registerCut( Cut('3Lep_Lep2_ElFake', '( TMath::Abs( lep_ID_2 ) == 11 && !( lep_isPrompt_2 == 1 || ( lep_isBrems_2 == 1 && lep_isQMisID_2 == 0 ) ) )') )
+        database.registerCut( Cut('2Lep_Lep1_MuFake', '( TMath::Abs( lep_ID_1 ) == 13 && lep_isPrompt_1 == 0 )') )
+        database.registerCut( Cut('3Lep_Lep2_MuFake', '( TMath::Abs( lep_ID_2 ) == 13 && lep_isPrompt_2 == 0 )') )
+
+        cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_TRUTH_QMisIDVeto','TT']
         common_cuts_2Lep = database.getCuts(cc_2Lep_list)
 
-        cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_TT','TauVeto','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets','3Lep_Lep2_ElFake']
+        cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_TT','TauVeto','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets']
         common_cuts_3Lep = database.getCuts(cc_3Lep_list)
 
         basename = "FakeOriginFrac_"
-        database.registerCategory( MyCategory(basename+"2LSS_LOWNJ_VR_TT",  cut = common_cuts_2Lep & database.getCut('2Lep_NJet_CR'), weight = weight_SR_CR ) )
-        database.registerCategory( MyCategory(basename+"2LSS_SR_TT",        cut = common_cuts_2Lep & database.getCut('2Lep_NJet_SR'), weight = weight_SR_CR ) )
-        database.registerCategory( MyCategory(basename+"3L_SR_TT",          cut = common_cuts_3Lep, weight = weight_SR_CR ) )
-
+        database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT",        cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"3L_SR_TT",          cut = common_cuts_3Lep & database.getCut('3Lep_Lep2_ElFake'), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("Mu"+basename+"2LSS_LOWNJ_VR_TT",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_MuFake','2Lep_NJet_CR']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("Mu"+basename+"2LSS_SR_TT",        cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_MuFake','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("Mu"+basename+"3L_SR_TT",          cut = common_cuts_3Lep & database.getCut('3Lep_Lep2_MuFake'), weight = weight_SR_CR ) )
 
     # --------------------------------------------
     # Full breakdown of cuts for cutflow challenge

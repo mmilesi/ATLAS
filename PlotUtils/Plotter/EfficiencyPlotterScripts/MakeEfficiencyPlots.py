@@ -63,14 +63,16 @@ if __name__ == "__main__":
     if True:
 
         samples       = ["ttbarbkg"]
-        flavour       = "El"
+        flavours      = ["El","Mu"]
         prodIDs       = ["25ns_v27"]
 
         for s in samples:
             print("\nLooking at sample: {0}".format(s))
             for pid in prodIDs:
                 print("\n\t\tprodID: {0}\n".format(pid))
-                kwargs = {"flavour":flavour,"prodID":pid, "sample":s}
-                TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
+                for flavour in flavours:
+                    print("\n\t\t\tflavour: {0}\n".format(flavour))
+                    kwargs = {"flavour":flavour,"prodID":pid, "sample":s}
+                    TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
 
 

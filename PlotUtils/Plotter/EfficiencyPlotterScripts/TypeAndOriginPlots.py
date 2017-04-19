@@ -191,9 +191,9 @@ def plotFakeOriginFrac2L3L( **kwargs ):
     plotlist = []
 
     if kwargs["flavour"] == "Mu":
-        header   = "muons"
+        header   = "muon"
     elif kwargs["flavour"] == "El":
-        header   = "electrons"
+        header   = "electron"
 
     Plot.legend.SetHeader("Fake {0}".format(header))
 
@@ -202,9 +202,9 @@ def plotFakeOriginFrac2L3L( **kwargs ):
 
     basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "OutputPlots_FakeOriginFrac_TTBarTTBarGamma_" + kwargs["prodID"]
 
-    inputPath_2LVR = basePath + "/" + "FakeOriginFrac_2LSS_LOWNJ_VR_TT" + "/" + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_"
-    inputPath_2LSR = basePath + "/" + "FakeOriginFrac_2LSS_SR_TT" + "/" + "FakeOriginFrac_2LSS_SR_TT_"
-    inputPath_3LSR = basePath + "/" + "FakeOriginFrac_3L_SR_TT" + "/" + "FakeOriginFrac_3L_SR_TT_"
+    inputPath_2LVR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_"
+    inputPath_2LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_"
+    inputPath_3LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT_"
 
     inputName_2L = variable_2L + ".root"
     inputName_3L = variable_3L + ".root"
@@ -319,13 +319,13 @@ def plotFakeOriginFrac2L3L( **kwargs ):
     stack.Add(histfakes_PhConv)
     stack.Add(histfakes_Other)
 
-    canvasID_stack = "FakeLepOriginFrac_VS_2L3LCat_" + kwargs["sample"] + "_" + kwargs["prodID"]
+    canvasID_stack = kwargs["flavour"] + "_" + "FakeLepOriginFrac_VS_2L3LCat_" + kwargs["sample"] + "_" + kwargs["prodID"]
     cstack = TCanvas(canvasID_stack,canvasID_stack,50,50,1000,700)
 
     cstack.cd()
     stack.Draw()
     stack.GetXaxis().SetTitle("Category")
-    stack.GetYaxis().SetTitle("Fake electron origin fraction")
+    stack.GetYaxis().SetTitle("Fake {0} origin fraction".format(header))
     stack.GetXaxis().SetRangeUser(-0.5,stack.GetHistogram().GetNbinsX()-0.5)
 
     stack.GetXaxis().SetBinLabel(1,"2lSS, CR")
@@ -336,7 +336,7 @@ def plotFakeOriginFrac2L3L( **kwargs ):
     stacklegend.Draw()
     saveName_stack = canvasID_stack
 
-    savePath = basePath + "/FakeLepOriginFrac_VS_2L3LCat_" + kwargs["prodID"] + "/"
+    savePath = basePath + "/" + kwargs["flavour"] + "_" + "FakeLepOriginFrac_VS_2L3LCat_" + kwargs["prodID"] + "/"
 
     if not os.path.exists(savePath):
         os.makedirs(savePath)
