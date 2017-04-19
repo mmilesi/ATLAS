@@ -660,10 +660,8 @@ if __name__ == "__main__":
     # ---------
 
     database.registerCut( Cut('3Lep_NLep',         '( trilep_type > 0 )') )
-    database.registerCut( Cut('3Lep_pT',           '( lep_Pt_1 > 15e3 && lep_Pt_2 > 15e3 )') )
+    database.registerCut( Cut('3Lep_pT',           '( lep_Pt_0 > 10e3 && lep_Pt_1 > 15e3 && lep_Pt_2 > 15e3 )') )
     database.registerCut( Cut('3Lep_Charge',       '( TMath::Abs(total_charge) == 1 )') )
-    # database.registerCut( Cut('3Lep_Lep0T',       '( ( ( TMath::Abs(lep_ID_0)==13 && TMath::Abs(lep_sigd0PV_0)<3 ) || ( TMath::Abs(lep_ID_0)==11 && TMath::Abs(lep_sigd0PV_0)<5 ) ) && TMath::Abs(lep_Z0SinTheta_0)<0.5) )' )
-    database.registerCut( Cut('3Lep_TT',           '( lep_isTightSelectedMVA_1 && lep_isTightSelectedMVA_2 )') )
     if "SLT_OR_DLT" in args.trigger:
         # database.registerCut( Cut('3Lep_TrigMatch', '( 1 )') ) # trigger matching already implemented in trigger selection cut
         database.registerCut( Cut('3Lep_TrigMatch', '( lep_isTrigMatch_0 || lep_isTrigMatch_1 || lep_isTrigMatch_2 || matchDLTll01 || matchDLTll02 || matchDLTll12 )') )
@@ -674,8 +672,11 @@ if __name__ == "__main__":
     database.registerCut( Cut('3Lep_ZVeto',        '( ( lep_ID_0 != -lep_ID_1 || TMath::Abs( Mll01 - 91.2e3 ) > 10e3 ) && ( lep_ID_0! = -lep_ID_2 || TMath::Abs( Mll02 - 91.2e3 ) > 10e3 ) )') )
     database.registerCut( Cut('3Lep_MinZCut',      '( ( lep_ID_0 != -lep_ID_1 || Mll01 > 12e3 ) && ( lep_ID_0 != -lep_ID_2 || Mll02 > 12e3 ) )') )
     database.registerCut( Cut('3Lep_ZllGammaVeto', '( TMath::Abs( Mlll012 - 91.2e3 ) > 10e3 )') )
-    # database.registerCut( Cut('3Lep_NJets',        '( ( nJets_OR_T >= 4 && nJets_OR_T_MV2c10_70 >= 1 ) || ( nJets_OR_T >=3 && nJets_OR_T_MV2c10_70 >= 2 ) )') )
     database.registerCut( Cut('3Lep_NJets',        '( nJets_OR_T >= 2 && nJets_OR_T_MV2c10_70 >= 1 )') )
+
+    database.registerCut( Cut('3Lep_ElEl12_Event', '( TMath::Abs(lep_ID_1)==11 && TMath::Abs(lep_ID_2)==11 )') )
+    database.registerCut( Cut('3Lep_MuMu12_Event', '( TMath::Abs(lep_ID_1)==13 && TMath::Abs(lep_ID_2)==13 )') )
+    database.registerCut( Cut('3Lep_OF12_Event',   '( ( TMath::Abs(lep_ID_1)==11 && TMath::Abs(lep_ID_2)==13 ) || ( TMath::Abs(lep_ID_1)==13 && TMath::Abs(lep_ID_2)==11 ) )') )
 
     # -----------------------------
     # Event "tightness"
@@ -684,12 +685,16 @@ if __name__ == "__main__":
     # For 3L, use lep1,lep2
     # -----------------------------
 
+    dilep_TT = '( ( (TMath::Abs(lep_ID_0)==13 && lep_isolationLoose_0 ) || ( TMath::Abs(lep_ID_0)==11 && lep_isolationLoose_0 && lep_isTightLH_0 && lep_chargeIDBDTTight_0>0.0670415 ) ) && ( ( TMath::Abs(lep_ID_1)==13 && lep_isolationLoose_1 ) || ( TMath::Abs(lep_ID_1)==11 && lep_isolationLoose_1 && lep_isTightLH_1 && lep_chargeIDBDTTight_1>0.0670415 ) ) && lep_promptLeptonIso_TagWeight_0<-0.5 && lep_promptLeptonIso_TagWeight_1<-0.5 )'
+    trilep_TT = '( ( ( TMath::Abs(lep_ID_1)==13 && lep_isolationLoose_1 ) || ( TMath::Abs(lep_ID_1)==11 && lep_isolationLoose_1 && lep_isTightLH_1 ) ) && ( ( TMath::Abs(lep_ID_2)==13 && lep_isolationLoose_2 ) || ( TMath::Abs(lep_ID_2)==11 && lep_isolationLoose_2 && lep_isTightLH_2 ) ) && lep_promptLeptonIso_TagWeight_1<-0.5 && lep_promptLeptonIso_TagWeight_2<-0.5 )'
+    cut_TT = '( ( dilep_type>0 && {0} ) || ( trilep_type>0 && {1} ) )'.format(dilep_TT,trilep_TT)
+
     # database.registerCut( Cut('TT', '( ( dilep_type > 0 && lep_isTightSelectedMVA_0 && lep_isTightSelectedMVA_1 ) || ( trilep_type > 0 && lep_isTightSelectedMVA_1 && lep_isTightSelectedMVA_2 ) )') ) # NB: using this and not 'is_TMVA_TMVA' to make sure there is not QMisID BDT cut on loose electrons applied on top of the tight (in principle it shouldn't matter, but...)
-    # database.registerCut( Cut('TT', '( ((TMath::Abs(lep_ID_0)==13 && lep_isolationLoose_0) || (TMath::Abs(lep_ID_0)==11 && lep_isolationLoose_0 && lep_isTightLH_0 && lep_chargeIDBDTTight_0>0.0670415)) && ((TMath::Abs(lep_ID_1)==13 && lep_isolationLoose_1) || (TMath::Abs(lep_ID_1)==11 && lep_isolationLoose_1 && lep_isTightLH_1 && lep_chargeIDBDTTight_1>0.0670415)) && lep_promptLeptonIso_TagWeight_0<-0.5 && lep_promptLeptonIso_TagWeight_1<-0.5 )') )
-    database.registerCut( Cut('TT', '( is_TMVA_TMVA )') )
-    database.registerCut( Cut('TL', '( is_TMVA_AntiTMVA )') )
-    database.registerCut( Cut('LT', '( is_AntiTMVA_TMVA )') )
-    database.registerCut( Cut('LL', '( is_AntiTMVA_AntiTMVA )') )
+    database.registerCut( Cut('TT', cut_TT ) )
+    #database.registerCut( Cut('TT', '( is_TMVA_TMVA )') )
+    #database.registerCut( Cut('TL', '( is_TMVA_AntiTMVA )') )
+    #database.registerCut( Cut('LT', '( is_AntiTMVA_TMVA )') )
+    #database.registerCut( Cut('LL', '( is_AntiTMVA_AntiTMVA )') )
 
     # ------------------------------
     # Sidebands definition for fakes
@@ -766,12 +771,14 @@ if __name__ == "__main__":
         else:
             # database.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
             # database.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = database.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
-            if doSR or do2LSS_HIGHNJ_BVETO_VR:
+            if do2LSS_SR or do2LSS_HIGHNJ_BVETO_VR:
                 database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = False) )
             elif do2LSS_LOWNJ_VR:
                 database.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = "JVT_EventWeight", sysvar = False) )
+            else:
+                database.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight', sysvar = False) )
 
-            database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = False) )
+            # database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = False) )
             # database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
             # database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
             # database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = False) )
@@ -996,7 +1003,7 @@ if __name__ == "__main__":
     cc_2Lep1Tau_list = ['TrigDec','BlindingCut','2Lep1Tau_NLep','2Lep1Tau_pT','2Lep1Tau_TrigMatch','2Lep1Tau_SS','2Lep1Tau_1Tau','2Lep1Tau_Zsidescut','2Lep1Tau_NBJet']
     common_cuts_2Lep1Tau = database.getCuts(cc_2Lep1Tau_list)
 
-    cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_TT','TauVeto','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets']
+    cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','TauVeto','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets']
     common_cuts_3Lep = database.getCuts(cc_3Lep_list)
 
     cat_names_2Lep = {
@@ -1903,6 +1910,7 @@ if __name__ == "__main__":
         'FakesMC':('fakesbkg','Fake $\ell$ backgrounds (Simulation)'),
         'FakesFF':('fakesbkg','Fake $\ell$ backgrounds (Fake Factor)'),
         'FakesMM':('fakesbkg','Fake $\ell$ backgrounds (Matrix Method)'),
+        'FakesMM3L':('fakesbkg','Fake $\ell$ backgrounds (Matrix Method)'),
         'FakesTHETA':('fakesbkg','Fake $\ell$ backgrounds ($\theta$ method)'),
         'FakesClosureMM':('fakesbkg','Fake $\ell$ backgrounds (Matrix Method closure)'),
         'FakesClosureTHETA':('fakesbkg','Fake $\ell$ backgrounds ($\theta$ method closure)'),
@@ -1946,6 +1954,7 @@ if __name__ == "__main__":
         'QMisIDMC':kMagenta+3,
         'FakesMC':kViolet-4,
         'FakesMM':kViolet-4,
+        'FakesMM3L':kViolet-4,
         'FakesFF':kViolet-4,
         'FakesMM':kViolet-4,
         'FakesTHETA':kViolet-4,
@@ -1960,22 +1969,30 @@ if __name__ == "__main__":
         ttH.observed        = ['Observed']
         ttH.backgrounds     = []
         ttH.sub_backgrounds = []
-        ttH.debugprocs      = ['Observed']
+        ttH.debugprocs      = []#['Observed']
 
         if doMM:
 
-            ttH.backgrounds.extend(['FakesMM'])
-            ttH.debugprocs.append('FakesMM')
+            if do2LSS_SR:
+                ttH.backgrounds.extend(['FakesMM'])
+                # ttH.debugprocs.append('FakesMM')
 
-            # ttH.backgrounds.extend(['TTBarW','TTBarZ','Diboson','Rare','FakesMM']) # NB: if using this list, make sure only prompt MC events are selected (and QMisID veto), to avoid double counting w/ QMisID and Fakes estimate...
-            # #ttH.backgrounds.extend(['Prompt','FakesMM'])
+                # ttH.backgrounds.extend(['TTBarW','TTBarZ','Diboson','Rare','FakesMM']) # NB: if using this list, make sure only prompt MC events are selected (and QMisID veto), to avoid double counting w/ QMisID and Fakes estimate...
+                # #ttH.backgrounds.extend(['Prompt','FakesMM'])
 
-            # if args.useMCQMisID:
-            #     ttH.backgrounds.append('QMisIDMC')
-            #     ttH.sub_backgrounds.append('QMisIDMC')
-            # else:
-            #     ttH.backgrounds.append('QMisID')
-            #     ttH.sub_backgrounds.append('QMisID')
+                if args.useMCQMisID:
+                    ttH.backgrounds.append('QMisIDMC')
+                    ttH.sub_backgrounds.append('QMisIDMC')
+                else:
+                    ttH.backgrounds.append('QMisID')
+                    ttH.sub_backgrounds.append('QMisID')
+
+            elif do3L_SR:
+                ttH.backgrounds.extend(['FakesMM3L'])
+                ttH.debugprocs.append('FakesMM3L')
+
+                # ttH.backgrounds.extend(['TTBarW','TTBarZ','Diboson','Rare','FakesMM']) # NB: if using this list, make sure only prompt MC events are selected (and QMisID veto), to avoid double counting w/ QMisID and Fakes estimate...
+                # #ttH.backgrounds.extend(['Prompt','FakesMM'])
 
         elif doFF:
 

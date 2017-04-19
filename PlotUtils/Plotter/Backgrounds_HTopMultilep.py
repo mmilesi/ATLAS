@@ -1686,7 +1686,7 @@ class TTHBackgrounds(Background):
 
             if bool([ cut for cut in cut_w_el if cut in category.cut.cutname ]):
 
-                weight = 'QMisIDWeight'
+                weight = 'QMisID_MM_EventWeight'
                 sp = sp.subprocess(cut=basecut,eventweight=weight)
                 print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
@@ -1706,7 +1706,7 @@ class TTHBackgrounds(Background):
                     cut_SF = basecut & self.vardb.getCut('2Lep_ElEl_Event')
                     cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
 
-                    weight_SF = weight_OF = 'QMisIDWeight'
+                    weight_SF = weight_OF = 'QMisID_MM_EventWeight'
 
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
@@ -1720,7 +1720,7 @@ class TTHBackgrounds(Background):
                     cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
 
                     weight_SF = '0.0' # mu-mu region MUST get zero QMisID weight!
-                    weight_OF = 'QMisIDWeight'
+                    weight_OF = 'QMisID_MM_EventWeight'
 
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
@@ -1735,7 +1735,7 @@ class TTHBackgrounds(Background):
                     cut_OF   = basecut & self.vardb.getCut('2Lep_OF_Event')
 
                     weight_mumu = '0.0' # mu-mu region MUST get zero QMisID weight!
-                    weight_elel = weight_OF = 'QMisIDWeight'
+                    weight_elel = weight_OF = 'QMisID_MM_EventWeight'
 
                     sp_elel = sp.subprocess(cut=cut_elel,eventweight=weight_elel)
                     sp_mumu = sp.subprocess(cut=cut_mumu,eventweight=weight_mumu)
@@ -1907,125 +1907,6 @@ class TTHBackgrounds(Background):
             #print sp
             return sp
 
-    # class FakesMM(Process):
-
-    #     latexname = 'FakesMM'
-    #     colour = kTeal - 9
-
-    #     def base(self, treename='nominal', category=None, options={}):
-
-    #         inputgroup = [
-    #                 ('Data', 'physics_Main'),
-    #                      ]
-
-    #         print("\n{0}:\n".format(self.__class__.__name__))
-    #         print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
-
-    #         trees = self.inputs.getTrees(treename, inputgroup)
-    #         sp = self.subprocess(trees=trees)
-    #         return sp
-
-    #     def __call__(self, treename='nominal', category=None, options={}):
-
-    #         debugflag = any( proc in self.parent.debugprocs for proc in [self.__class__.__name__,"ALL"])
-
-    #         systematics = options.get('systematics', None)
-    #         direction = options.get('systematicsdirection', 'UP')
-    #         systname_opts = {}
-    #         if systematics and systematics.name == 'SystName':
-    #             systname_opts['systematics'] = True
-    #             systname_opts['systematicsdirection'] = direction
-    #         sp = self.base(treename, category, options)
-
-    #         TTcut  = ('','FakesSideband_TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
-    #         TLcut  = ('','FakesSideband_TL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
-    #         LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
-    #         LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
-    #         weight = (None,'MMWeight')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
-
-    #         # Clean up from any truth cut
-
-    #         basecut = category.cut
-
-    #         for CUT in basecut.cutlist:
-    #         	if ("TRUTH") in CUT.cutname:
-    #         	    basecut = basecut.removeCut(CUT)
-
-    #         sp_TT  = sp.subprocess(cut=basecut & self.vardb.getCut(TTcut), eventweight=weight)
-    #         sp_TL  = sp.subprocess(cut=basecut & self.vardb.getCut(TLcut), eventweight=weight)
-    #         sp_LT  = sp.subprocess(cut=basecut & self.vardb.getCut(LTcut), eventweight=weight)
-    #         sp_LL  = sp.subprocess(cut=basecut & self.vardb.getCut(LLcut), eventweight=weight)
-
-    #         if debugflag:
-    #             print(" ")
-    #             print("{0} - TT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TT.basecut.cutnamelist, weight))
-    #             print("{0} - TL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
-    #             print("{0} - LT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
-    #             print("{0} - LL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
-
-    #         # Perform QMisID per-event subtraction taking advantage of the linearity of MM equations
-    #         # NB: this works only for DD QMisID!
-
-    #         sublist = [ item for item in self.parent.sub_backgrounds if item == "QMisID" ]
-    #         sp_OS_TT = sp_OS_TL = sp_OS_LT = sp_OS_LL = None
-    #         sp_QMisID_TT = sp_QMisID_TL = sp_QMisID_LT = sp_QMisID_LL = None
-
-    #         for process in sublist:
-
-    #             if ("2Lep_MuMu_Event") in category.cut.cutname:
-    #                 print("NO QMisID subtraction for muons!!")
-    #                 continue
-
-    #             QMisIDcut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-    #             OSweight  = 'QMisIDWeight * MMWeight'
-
-    #             # These are the actual QMisID events in the sidebands
-
-    #             sp_QMisID_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight='QMisIDWeight')
-    #             sp_QMisID_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight='QMisIDWeight')
-    #             sp_QMisID_LT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LTcut), eventweight='QMisIDWeight')
-    #             sp_QMisID_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight='QMisIDWeight')
-
-    #             # These are the OS weighted events that need to be subtracted
-
-    #             sp_OS_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight=OSweight)
-    #             sp_OS_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight=OSweight)
-    #             sp_OS_LT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LTcut), eventweight=OSweight)
-    #             sp_OS_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight=OSweight)
-
-    #             if debugflag:
-    #                 print(" ")
-    #                 print("Subtracting OS TT sp: {0}, weight: {1}".format(sp_OS_TT.basecut.cutnamelist, OSweight))
-    #                 print("{0} - TT :\nFakes (before OS subtraction) = {1:.2f},\nQMisID = {2:.2f},\nOS = {3:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0],(sp_QMisID_TT.numberstats())[0],(sp_OS_TT.numberstats())[0]))
-    #                 print("Subtracting OS TL sp: {0}, weight: {1}".format(sp_OS_TL.basecut.cutnamelist, OSweight))
-    #                 print("{0} - TL :\nFakes (before OS subtraction) = {1:.2f},\nQMisID = {2:.2f},\nOS = {3:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0],(sp_QMisID_TL.numberstats())[0],(sp_OS_TL.numberstats())[0]))
-    #                 print("Subtracting OS LT sp: {0}, weight: {1}".format(sp_OS_LT.basecut.cutnamelist, OSweight))
-    #                 print("{0} - LT :\nFakes (before OS subtraction) = {1:.2f},\nQMisID = {2:.2f},\nOS = {3:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0],(sp_QMisID_LT.numberstats())[0],(sp_OS_LT.numberstats())[0]))
-    #                 print("Subtracting OS LL sp: {0}, weight: {1}".format(sp_OS_LL.basecut.cutnamelist, OSweight))
-    #                 print("{0} - LL :\nFakes (before OS subtraction) = {1:.2f},\nQMisID = {2:.2f},\nOS = {3:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0],(sp_QMisID_LL.numberstats())[0],(sp_OS_LL.numberstats())[0]))
-
-    #             sp_TT  = sp_TT - sp_OS_TT
-    #             sp_TL  = sp_TL - sp_OS_TL
-    #             sp_LT  = sp_LT - sp_OS_LT
-    #             sp_LL  = sp_LL - sp_OS_LL
-
-    #             if debugflag:
-    #                 print(" ")
-    #                 print("{0} - TT : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0]))
-    #                 print("{0} - TL : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0]))
-    #                 print("{0} - LT : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0]))
-    #                 print("{0} - LL : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0]))
-
-    #         sp = sp_TT + sp_TL + sp_LT + sp_LL
-
-    #         if debugflag:
-    #             print(" ")
-    #             print("{0} ---> Total Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp.numberstats()[0],sp.numberstats()[1]))
-
-    #         return sp
-
-
-######################################
 
     class FakesMM(Process):
 
@@ -2094,10 +1975,10 @@ class TTHBackgrounds(Background):
 
                 # These are the actual QMisID events in the sidebands
 
-                sp_QMisID_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight='QMisIDWeight')
-                sp_QMisID_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight='QMisIDWeight')
-                sp_QMisID_LT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LTcut), eventweight='QMisIDWeight')
-                sp_QMisID_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight='QMisIDWeight')
+                sp_QMisID_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight='QMisID_MM_EventWeight')
+                sp_QMisID_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight='QMisID_MM_EventWeight')
+                sp_QMisID_LT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LTcut), eventweight='QMisID_MM_EventWeight')
+                sp_QMisID_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight='QMisID_MM_EventWeight')
 
                 # These are the OS weighted events that need to be subtracted
 
@@ -2165,6 +2046,89 @@ class TTHBackgrounds(Background):
                 sp = sp_ee + sp_mm + sp_OF
 
             return sp
+
+    class FakesMM3L(Process):
+
+        latexname = 'FakesMM'
+        colour = kTeal - 9
+
+        def base(self, treename='nominal', category=None, options={}):
+
+	    inputgroup = [
+                    ('Data', 'physics_Main'),
+                         ]
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
+
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees)
+            return sp
+
+        def getFakesMM(self, treename='nominal', category=None, options={}, sp=None, inputcut=None, flavstr=None):
+
+            debugflag = any( proc in self.parent.debugprocs for proc in [self.__class__.__name__,"ALL"])
+
+            TTcut  = ('','FakesSideband_TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            TLcut  = ('','FakesSideband_TL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            weight = (None,'MM_EventWeight')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+
+            # Clean up from any truth cut
+
+	    basecut = inputcut
+
+	    for CUT in basecut.cutlist:
+	    	if ("TRUTH") in CUT.cutname:
+	    	    basecut = basecut.removeCut(CUT)
+
+            sp_TT  = sp.subprocess(cut=basecut & self.vardb.getCut(TTcut), eventweight=weight)
+            sp_TL  = sp.subprocess(cut=basecut & self.vardb.getCut(TLcut), eventweight=weight)
+            sp_LT  = sp.subprocess(cut=basecut & self.vardb.getCut(LTcut), eventweight=weight)
+            sp_LL  = sp.subprocess(cut=basecut & self.vardb.getCut(LLcut), eventweight=weight)
+
+            if debugflag:
+                print(" ")
+                print("{0} - TT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TT.basecut.cutnamelist, weight))
+                print("{0} - TL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_TL.basecut.cutnamelist, weight))
+                print("{0} - LT cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LT.basecut.cutnamelist, weight))
+                print("{0} - LL cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp_LL.basecut.cutnamelist, weight))
+
+            sp = sp_TT + sp_TL + sp_LT + sp_LL
+
+            if debugflag:
+                print(" ")
+                print("{0} Fakes {1} = {2:.2f} +- {3:.2f}".format(self.__class__.__name__,flavstr,sp.numberstats()[0],sp.numberstats()[1]))
+
+	    return sp
+
+        def __call__(self, treename='nominal', category=None, options={}):
+
+            systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+
+            sp = self.base(treename, category, options)
+
+            cut_ee = category.cut & self.vardb.getCut('3Lep_ElEl12_Event')
+            cut_mm = category.cut & self.vardb.getCut('3Lep_MuMu12_Event')
+            cut_OF = category.cut & self.vardb.getCut('3Lep_OF12_Event')
+
+            sp_ee = self.getFakesMM(treename, category, options, sp, cut_ee, "(ElEl12)")
+            sp_mm = self.getFakesMM(treename, category, options, sp, cut_mm, "(MuMu12)")
+            sp_OF = self.getFakesMM(treename, category, options, sp, cut_OF, "(OF12)")
+
+            sp = sp_ee + sp_mm + sp_OF
+
+            print(" ")
+            print("{0} --> Tot. Fakes 3L = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp.numberstats()[0],sp.numberstats()[1]))
+
+            return sp
+
 
 #####################################
 
@@ -2344,7 +2308,7 @@ class TTHBackgrounds(Background):
                         this_cut_sp_C_el = this_cut_sp_C_el.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
                         this_cut_sp_D_el = this_cut_sp_D_el.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
                         this_cut_sp_D_el = this_cut_sp_D_el.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-                        this_weight = 'QMisIDWeight'
+                        this_weight = 'QMisID_MM_EventWeight'
 
                     sub_sample_C_el = sub_sample_C_el.subprocess( cut = this_cut_sp_C_el, eventweight=this_weight )
                     sub_sample_D_el = sub_sample_D_el.subprocess( cut = this_cut_sp_D_el, eventweight=this_weight )
@@ -2481,7 +2445,7 @@ class TTHBackgrounds(Background):
                     if sample == "QMisIDMC":
                         this_cut_sp_B_SF = this_cut_sp_B_SF.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'),self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
                     if sample == "QMisID":
-                        this_weight = 'QMisIDWeight'
+                        this_weight = 'QMisID_MM_EventWeight'
                         this_cut_sp_B_SF = this_cut_sp_B_SF.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
                         this_cut_sp_B_SF = this_cut_sp_B_SF.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
 
@@ -2519,7 +2483,7 @@ class TTHBackgrounds(Background):
                         this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'), self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
                         this_cut_sp_B_OF_Lmu = this_cut_sp_B_OF_Lmu.swapCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'), self.vardb.getCut('2Lep_TRUTH_QMisIDEvent'))
 		    if sample == "QMisID":
-                        this_weight = 'QMisIDWeight'
+                        this_weight = 'QMisID_MM_EventWeight'
                         this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
                         this_cut_sp_B_OF_Lel = this_cut_sp_B_OF_Lel.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
                         this_cut_sp_B_OF_Lmu = this_cut_sp_B_OF_Lmu.removeCut(self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
