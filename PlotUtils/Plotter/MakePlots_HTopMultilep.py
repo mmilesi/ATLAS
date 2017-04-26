@@ -23,6 +23,7 @@ channels     = ["2LSS_SR (,INCL_FLAV)","3L_SR",
                 "WZonCR","WZoffCR","WZHFonCR","WZHFoffCR",
                 "ttWCR","ttZCR","ZOSpeakCR","ZSSpeakCR","TopCR",
                 "MMRates (,DATA,CLOSURE,TP,LH,TRUTH_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ)",
+                "PhotonConvElecRates",
                 "MMClosureTest (,HIGHNJ,LOWNJ,ALLNJ)",
                 "CutFlowChallenge (,MM,2LSS_SR,2LSS_LOWNJ_VR,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth,FakeOriginFrac"]
 
@@ -242,6 +243,7 @@ if __name__ == "__main__":
     do2LSS_SR               = bool( "2LSS_SR" in args.channel and not "CutFlowChallenge" in args.channel )
     do3L_SR                 = bool( "3L_SR" in args.channel )
     doMMRates               = bool( "MMRates" in args.channel )
+    doPhotonConvElecRates   = bool( "PhotonConvElecRates" in args.channel )
     do2LSS_LOWNJ_VR         = bool( "2LSS_LOWNJ_VR" in args.channel and not "CutFlowChallenge" in args.channel )
     do2LSS_HIGHNJ_BVETO_VR  = bool( "2LSS_HIGHNJ_BVETO_VR" in args.channel and not "CutFlowChallenge" in args.channel )
     doWZonCR                = bool( "WZonCR" in args.channel )
@@ -280,7 +282,7 @@ if __name__ == "__main__":
     # A comprehensive flag for all the other CRs
     # ------------------------------------------
 
-    doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZOSpeakCR or doZSSpeakCR or doMMRates or doTopCR or doMMClosureTest or doCFChallenge or doMMSidebands or doLeptonTruth or doFakeOriginFrac )
+    doOtherCR = (doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR or dottWCR or dottZCR or doZOSpeakCR or doZSSpeakCR or doMMRates or doTopCR or doMMClosureTest or doCFChallenge or doMMSidebands or doLeptonTruth or doFakeOriginFrac or doPhotonConvElecRates )
 
     # -------------------------------------------------------------
     # Make standard plots in SR and VR unless differently specified
@@ -1310,7 +1312,7 @@ if __name__ == "__main__":
     # CRs where r/f rates for MM method are measured
     # ----------------------------------------------
 
-    if "MMRates" in args.channel:
+    if doMMRates:
 
         # ----------------------
 	# Tag & Probe selection
@@ -1713,6 +1715,77 @@ if __name__ == "__main__":
             	database.registerCategory( MyCategory('SS_MuEl_LL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuEl_Event','LT']) & truth_sub_SS, weight = weight_SR_CR ) )
             	database.registerCategory( MyCategory('SS_ElMu_LL',    cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_ElMu_Event','LL']) & truth_sub_SS, weight = weight_SR_CR ) )
 
+    if doPhotonConvElecRates:
+
+        gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/mLep0Lep1.cxx+")
+        gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/mTLepMET.cxx+")
+        from ROOT import mLep0Lep1, mTLepMET
+        MassMuMu = "mLep0Lep1(muon_Pt[0],muon_Eta[0],muon_Phi[0],muon_Pt[1],muon_Eta[1],muon_Phi[1])"
+        mTElMET  = "mTLepMET(electron_Pt[0],electron_EtaBE2[0],electron_Phi[0],MET_RefFinal_et,MET_RefFinal_phi)"
+
+        database.registerCut( Cut('ZMuMuEl_TP_TrigDec',    '( ( RunYear == 2015 && HLT_mu18_mu8noL1 ) || ( RunYear == 2016 && HLT_mu22_mu8noL1 ) )') )
+        database.registerCut( Cut('ZMuMuEl_TP_TrigMatch',  '( ( TMath::Abs( lep_ID_0 ) == 11 || ( TMath::Abs( lep_ID_0 ) == 13 && lep_isTrigMatchDLT_0 ) ) && ( TMath::Abs( lep_ID_1 ) == 11 || ( TMath::Abs( lep_ID_1 ) == 13 && lep_isTrigMatchDLT_1 ) ) && ( TMath::Abs( lep_ID_2 ) == 11 || ( TMath::Abs( lep_ID_2 ) == 13 && lep_isTrigMatchDLT_2 ) ) )') )
+        database.registerCut( Cut('ZMuMuEl_TP_NLep',       '( trilep_type == 2 )') )
+        database.registerCut( Cut('ZMuMuEl_TP_MuOS',       '( muon_ID[0] * muon_ID[1] < 0 )') )
+        database.registerCut( Cut('ZMuMuEl_TP_MuQuality',  '( muon_isTightSelected[0] && muon_isTightSelected[1] )') )
+        database.registerCut( Cut('ZMuMuEl_TP_MassMuMuEl', '( TMath::Abs( Mlll012 - 91.2e3 ) < 10e3 )') )
+        database.registerCut( Cut('ZMuMuEl_TP_MassMuMu',   '( {0} > 20e3 )'.format(MassMuMu) ) )
+        database.registerCut( Cut('ZMuMuEl_TP_mTElMET',    '( {0} < 40e3 )'.format(mTElMET) ) )
+        database.registerCut( Cut('ZMuMuEl_TP_MET',        '( MET_RefFinal_et < 75e3 )') )
+        database.registerCut( Cut('ZMuMuEl_TP_ProbeElT',     '( electron_isTightSelectedMVA[0] )') )
+        database.registerCut( Cut('ZMuMuEl_TP_ProbeElAntiT', '( !electron_isTightSelectedMVA[0] )') )
+
+        database.registerVar( Variable(shortname = "MassMuMuEl_LOGY", latexname = "m(e#mu#mu)", ntuplename = "Mlll012/1e3", bins = 20, minval = 60.0, maxval = 120.0, logaxis = True ) )
+        database.registerVar( Variable(shortname = "MassMuMu_LOGY", latexname = "m(#mu#mu)", ntuplename = MassMuMu+"/1e3", bins = 50, minval = 0.0, maxval = 150.0, logaxis = True ) )
+        database.registerVar( Variable(shortname = "mTElMET_LOGY", latexname = "m_{T}(e,E^{miss}_{T})", ntuplename = mTElMET+"/1e3", bins = 30, minval = 0.0, maxval = 90.0, logaxis = True ) )
+        database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 200, minval = 10.0, maxval = 210.0 ) )
+        database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True ) )
+        database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = "electron_Pt[0]/1e3", manualbins=[10,15,20,26,35,60,210]) )
+        database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = "electron_Pt[0]/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210], logaxis = True) )
+        database.registerVar( Variable(shortname = "ElProbeEta", latexname = "#eta^{e}", ntuplename = "TMath::Abs( electron_EtaBE2[0] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6] ) )
+        database.registerVar( Variable(shortname = "ElProbeEta_LOGY", latexname = "#eta^{e}", ntuplename = "TMath::Abs( electron_EtaBE2[0] )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6], logaxis = True ) )
+
+        cc_PhotonConvElecRates_list = ['ZMuMuEl_TP_TrigDec','ZMuMuEl_TP_TrigMatch','ZMuMuEl_TP_NLep','ZMuMuEl_TP_MuOS','ZMuMuEl_TP_MuQuality','ZMuMuEl_TP_MassMuMuEl','ZMuMuEl_TP_MassMuMu','ZMuMuEl_TP_mTElMET','ZMuMuEl_TP_MET','BJetVeto']
+        cuts_PhotonConvElecRates = database.getCuts(cc_PhotonConvElecRates_list)
+
+        sf_lep0 = " ( ( TMath::Abs( lep_ID_0 ) == 11 ) + ( TMath::Abs( lep_ID_0 ) == 13 ) * lep_SFObjTight_0 * lep_SFTrigTight_0 )"
+        sf_lep1 = " ( ( TMath::Abs( lep_ID_1 ) == 11 ) + ( TMath::Abs( lep_ID_1 ) == 13 ) * lep_SFObjTight_1 * lep_SFTrigTight_1 )"
+        sf_lep2 = " ( ( TMath::Abs( lep_ID_2 ) == 11 ) + ( TMath::Abs( lep_ID_2 ) == 13 ) * lep_SFObjTight_2 * lep_SFTrigTight_2 )"
+        #weight_TP_PhotonConvElecRates = "( {0} * {1} * {2} )".format(sf_lep0,sf_lep1,sf_lep2) # NEED TO FIGURE OUT WHAT'S WRONG WITH THIS SF
+        weight_TP_PhotonConvElecRates = "1.0"
+
+        ratiolims = (0.3,1.7)
+
+        database.registerCategory( MyCategory('FakeCRElL',     cut = cuts_PhotonConvElecRates, weight = weight_TP_PhotonConvElecRates, ratiolims=ratiolims ) )
+        database.registerCategory( MyCategory('FakeCRElAntiT', cut = cuts_PhotonConvElecRates & database.getCut('ZMuMuEl_TP_ProbeElAntiT'), weight = weight_TP_PhotonConvElecRates, ratiolims=ratiolims ) )
+        database.registerCategory( MyCategory('FakeCRElT',     cut = cuts_PhotonConvElecRates & database.getCut('ZMuMuEl_TP_ProbeElT'), weight = weight_TP_PhotonConvElecRates, ratiolims=ratiolims ) )
+
+        # cutlist_PhotonConvElec = []
+        # cat_name = "FakeCREl"
+        # # NB: here order of cuts is important b/c they will be applied on top of each other
+        # weight_CFC = "1.0"
+        # cutlistnames_PhotonConvElec = [
+        #                          ["ZMuMuEl_TP_TrigDec",weight_CFC],
+        #                          ["ZMuMuEl_TP_TrigMatch",weight_CFC],
+        #                          ["ZMuMuEl_TP_NLep",weight_CFC],
+        #                          ["ZMuMuEl_TP_MuOS",weight_CFC],
+        #                          ["ZMuMuEl_TP_MuQuality",weight_CFC],
+        #                          ["ZMuMuEl_TP_MET",weight_CFC],
+        #                          ["BJetVeto",weight_CFC],
+        #                          ["ZMuMuEl_TP_MassMuMu",weight_CFC],
+        #                          ["ZMuMuEl_TP_mTElMET",weight_CFC],
+        #                          ["ZMuMuEl_TP_MassMuMuEl",weight_CFC],
+        #                             ]
+        # tot_idx = 0
+        # for idx, cut in enumerate(cutlistnames_PhotonConvElec):
+        #     prepend = str(idx)
+        #     if idx < 10:
+        #         prepend = "0" + str(idx)
+        #         database.registerCategory( MyCategory( prepend + "_" + cat_name + "_" + cut[0], cut = database.getCuts( appended( cutlist_PhotonConvElec, cut[0] ) ), weight = cut[1], ratiolims=ratiolims ) )
+        #         print("registering category:\t{0}".format( prepend + "_" + cat_name + "_" + cut[0] ) + " - defined by cuts: [" + ",".join( "\'{0}\'".format(c) for c in cutlist_PhotonConvElec ) + "]")
+        #         tot_idx += 1
+
+
     if doMMClosureTest:
 
         append_2Lep += "_SR"
@@ -1848,7 +1921,7 @@ if __name__ == "__main__":
         ttH.channel = '2LSS'
     elif do3L_SR or dottZCR or doWZonCR or doWZoffCR or doWZHFonCR or doWZHFoffCR:
         ttH.channel = '3L'
-    elif doTopCR or doZSSpeakCR or doZSSpeakCR or doMMRates or doCFChallenge or doMMSidebands or doLeptonTruth or doFakeOriginFrac:
+    elif doTopCR or doZSSpeakCR or doZSSpeakCR or doMMRates or doCFChallenge or doMMSidebands or doLeptonTruth or doFakeOriginFrac or doPhotonConvElecRates:
         ttH.channel = '2LSS_CR'
 
     events = {}
@@ -2039,6 +2112,15 @@ if __name__ == "__main__":
             #ttH.backgrounds = ['Zjets']
             ttH.debugprocs  = ['TTBar']
 
+    if doPhotonConvElecRates:
+
+        ttH.signals     = []
+        ttH.observed    = ['Observed']
+        ttH.backgrounds = ['TTBarW','TTBarZ','TTBar','SingleTop','Rare','Wjets'] # This is to be subtracted to data
+        if "DATAMC" in args.channel:
+            ttH.backgrounds.extend(['Diboson','Zjets'])
+        ttH.debugprocs  = ['Observed','TTBar']
+
     if doMMSidebands:
 
         ttH.signals     = ['TTBarH']
@@ -2224,9 +2306,10 @@ if __name__ == "__main__":
                 print ("\tSkipping variable:\t{0}\n".format( var.shortname ))
                 continue
 
-            if ( "MuMu" in category.cut.cutname and "El" in var.shortname ) or ( "ElEl" in category.cut.cutname and "Mu" in var.shortname ):
-                print ("\tSkipping variable:\t{0}\n".format( var.shortname ))
-                continue
+            if not doPhotonConvElecRates:
+                if ( "MuMu" in category.cut.cutname and "El" in var.shortname ) or ( "ElEl" in category.cut.cutname and "Mu" in var.shortname ):
+                    print ("\tSkipping variable:\t{0}\n".format( var.shortname ))
+                    continue
 
             if "OF" in category.cut.cutname and any( v in var.shortname for v in ["Mu1","El1"] ):
                 print ("\tSkipping variable:\t{0}\n".format( var.shortname ))

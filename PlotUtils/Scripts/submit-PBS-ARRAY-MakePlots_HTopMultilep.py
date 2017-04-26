@@ -16,6 +16,8 @@ parser.add_argument("-f","--forcetarball", dest="forcetarball", action="store_tr
                     help="Force recreation of package tarball")
 parser.add_argument("--optstr", dest="optsr", action="store", type=str,
                     help='A string representing the command options for Plotter/MakePlots_HTopMultilep.py, including the input directory, the channel for which plots should be made, etc. To see all the options, just type \'python Plotter/MakePlots_HTopMultilep.py --help\'')
+parser.add_argument("--tag", dest="tag", action="store", default=None, type=str,
+                    help="Add a tag identifier to the submission directory (default: None)")
 parser.add_argument("--release", dest="release", action="store", default="2.4.22", type=str,
                     help="The ASG release to be used (default: release=\"2.4.22\")")
 parser.add_argument("--queue", dest="queue", action="store", default="long", type=str,
@@ -197,22 +199,22 @@ exit 0
     # List of samples to be processed (one sample will correspond to one subjob in the array)
 
     varlist = [
-        "Integral",
-        "Integral_LOGY",
-        "ElProbePt",
-        "ElProbePt_LOGY",
-        "ElProbePt_RealEffBinning",
-        "ElProbePt_FakeEffBinning",
-        "ElProbePt_RealEffBinning_LOGY",
-        "ElProbePt_FakeEffBinning_LOGY",
-        "ElProbeEta",
-        "MuProbePt",
-        "MuProbePt_LOGY",
-        "MuProbePt_RealEffBinning",
-        "MuProbePt_FakeEffBinning",
-        "MuProbePt_RealEffBinning_LOGY",
-        "MuProbePt_FakeEffBinning_LOGY",
-        "MuProbeEta",
+        # "Integral",
+        # "Integral_LOGY",
+        # "ElProbePt",
+        # "ElProbePt_LOGY",
+        # "ElProbePt_RealEffBinning",
+        # "ElProbePt_FakeEffBinning",
+        # "ElProbePt_RealEffBinning_LOGY",
+        # "ElProbePt_FakeEffBinning_LOGY",
+        # "ElProbeEta",
+        # "MuProbePt",
+        # "MuProbePt_LOGY",
+        # "MuProbePt_RealEffBinning",
+        # "MuProbePt_FakeEffBinning",
+        # "MuProbePt_RealEffBinning_LOGY",
+        # "MuProbePt_FakeEffBinning_LOGY",
+        # "MuProbeEta",
         #
         # "Integral",
         # "NJets2j3j",
@@ -226,6 +228,16 @@ exit 0
         # "Lep2Type",
         # "Lep2Origin",
         # 'Lep2Type_VS_Lep2Origin',
+        #
+        "MassMuMuEl_LOGY",
+        "MassMuMu_LOGY",
+        "mTElMET_LOGY",
+        "ElProbePt",
+        "ElProbePt_LOGY",
+        "ElProbePt_FakeEffBinning",
+        "ElProbePt_RealEffBinning_LOGY",
+        "ElProbeEta",
+        "ElProbeEta_LOGY",
         ]
 
     if args.showvars:
@@ -243,13 +255,18 @@ exit 0
     queue    = args.queue
     optstr   = args.optsr
     print("optstr: {0}".format(optstr))
+    tag      = args.tag
+    if tag:
+        tag = "_" + tag
+    else:
+        tag = ""
 
     # Set the job parameters
 
     job_params = {
 	"release"     :  release,
 	"varlist"     :  varlist,
-	"subdir"      :  "/coepp/cephfs/mel/mmilesi/ttH/PBS/Plotting/" + outputdir + "_PBS",  # The path to the submission node (NB: must NOT be under /home : PBS cannot read/write into it!!)
+	"subdir"      :  "/coepp/cephfs/mel/mmilesi/ttH/PBS/Plotting/" + outputdir + "_PBS" + tag,  # The path to the submission node (NB: must NOT be under /home : PBS cannot read/write into it!!)
 	"outputpath"  :  "/coepp/cephfs/mel/mmilesi/ttH/PlotVault/" + outputdir,
         "optstr"      :  optstr,
 	"steer_job"   :  steer_job_script,

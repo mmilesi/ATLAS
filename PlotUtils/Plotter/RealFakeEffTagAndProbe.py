@@ -82,6 +82,8 @@ parser.add_argument("--triggerEff", dest="triggerEff", action="store", default=N
                   help="Measure trigger efficiency for a given lepton selection. The lepton selection can be specified as an optional command line argument to this option (Choose between [" + ",".join( "{0}".format( s ) for s in g_selections ) + "]). If no option is specified, default selection will be {0}".format(g_selections[0]))
 parser.add_argument("--probeAssignEff", dest="probeAssignEff", action="store_true", default=False,
                   help="Measure probe assignment efficiency.")
+parser.add_argument("--photonConvElecEff", dest="photonConvElecEff", action="store_true", default=False,
+                  help="Measure efficiency for electrons from converted photons.")
 parser.add_argument("--update", dest="update", action="store_true", default=False,
                   help="Update existing ROOT output file (Gets overwritten by default).")
 
@@ -208,6 +210,10 @@ class RealFakeEffTagAndProbe:
 
     def addProcess( self, processlist=None ):
 	self.__processes.extend(processlist)
+
+    def setSubProcess( self, processlist=None ):
+        self.__processes_sub = []
+	self.__processes_sub.extend(processlist)
 
     def __fillNDHistDicts__( self, key, eventset, hist ):
 
@@ -2103,6 +2109,9 @@ if __name__ == "__main__":
         if "Real" in eff.efficiencies: eff.efficiencies.remove("Real")
         eff.selections = {"D":"ProbeTTMMatchedToAny","N":"ProbeTTMMatchedToFake","AntiN":"ProbeTTMMatchedToReal"}
     	#eff.selections = {"D":"ProbeMatchedToAny","N":"ProbeMatchedToFake","AntiN":"ProbeMatchedToReal"}
+
+    if args.photonConvElecEff:
+        eff.setSubProcess(["ttbarwbkg","ttbarzbkg","dibosonbkg","raretopbkg","ttbarbkg"])
 
     eff.lumi  = args.lumi
     eff.debug = args.debug

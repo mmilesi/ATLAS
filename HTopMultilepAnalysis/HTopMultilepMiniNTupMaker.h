@@ -431,8 +431,8 @@ private:
 
   /** Some vector branches for leptons after OLR (pT-ordered) */
 
-  std::vector<std::string> m_EL_VEC_VARS  = { "Pt/F", "Eta/F", "EtaBE2/F", "Phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "chargeIDBDTLoose/F", "chargeIDBDTMedium/F", "chargeIDBDTTight/F", "sigd0PV/F", "Z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptVarcone20/F", "topoEtcone20/F", "truthType/I", "truthOrigin/I" };
-  std::vector<std::string> m_MU_VEC_VARS  = { "Pt/F", "Eta/F", "Phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "sigd0PV/F", "Z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptVarcone30/F", "truthType/I", "truthOrigin/I" };
+  std::vector<std::string> m_EL_VEC_VARS  = { "ID/F", "Pt/F", "Eta/F", "EtaBE2/F", "Phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "chargeIDBDTLoose/F", "chargeIDBDTMedium/F", "chargeIDBDTTight/F", "sigd0PV/F", "Z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptVarcone20/F", "topoEtcone20/F", "truthType/I", "truthOrigin/I" };
+  std::vector<std::string> m_MU_VEC_VARS  = { "ID/F", "Pt/F", "Eta/F", "Phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "sigd0PV/F", "Z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptVarcone30/F", "truthType/I", "truthOrigin/I" };
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_electron_OR_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_muon_OR_branches;

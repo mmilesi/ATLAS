@@ -30,7 +30,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                    "m_weightToCalc"               : "QMisID", # "MM"
+                                    "m_weightToCalc"               : "QMisID,MM",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
                                     #"m_QMisIDRates_Filename_T"     : "Rates_v27.root",
                                     #"m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
@@ -66,14 +66,14 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
                                     # v27
                                     #
-                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMRates_25ns_v27",
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMRates_TTWx2_25ns_v27",
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMRates_25ns_v27",
+                                    #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMRates_TTWx2_25ns_v27",
                                     #"m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMClosureRates_25ns_v27", # Closure
                                     #
                                     # ------------------------------------------------------------
                                     #
-				    #"m_systematics_list"           : "Nominal:,Stat:UncorrBins,ND_TTV:CorrBins,ND_VV:CorrBins,ND_OtherPromptSS:CorrBins,ND_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
-				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins",
+				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins,ND_TTV:CorrBins,ND_VV:CorrBins,ND_OtherPromptSS:CorrBins,ND_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
+				    #"m_systematics_list"           : "Nominal:,Stat:UncorrBins",
                                     "m_correlatedMMWeights"        : False,
                                     #
 				    "m_useTrigMatchingInfo"        : False,
@@ -81,7 +81,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
 				    #
                                     "m_doMMClosure"                : False,
-                                    "m_useEtaParametrisation"      : False,
+                                    "m_useEtaParametrisation"      : True,
 				    "m_useTEfficiency"             : False,
                                   }
 

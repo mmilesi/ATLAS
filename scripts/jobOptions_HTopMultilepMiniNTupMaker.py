@@ -14,8 +14,8 @@ eventweight_branches = ["mcWeightOrg","SherpaNJetWeight","pileupEventWeight_090"
 			"lepSFTrigLoose","lepSFTrigTight",
 			"lepSFObjLoose","lepSFObjTight",
 			"tauSFTight","tauSFLoose",
-                        "m_hasMEphoton.*",
-                        "m_MEphoton_.*",
+                        #"m_hasMEphoton.*",
+                        #"m_MEphoton_.*",
                         ]
 
 event_branches       = ["EventNumber","RunNumber","RunYear","mc_channel_number","averageIntPerXing","passEventCleaning",
@@ -167,6 +167,7 @@ algskim.addCut("( dilep_type > 0 && lep_Pt_1 > 10e3 ) || ( trilep_type > 0 && le
 algskim.addCut(jet_skim_cut)
 if ( HTopMultilepMiniNTupMakerDict["m_do3LTP"] ):
    algskim.addCut("dilep_type > 0 && ( nJets_OR_T >= 2 && nJets_OR_T<= 3 && nJets_OR_T_MV2c10_70 >= 1 )") # Reduce the size as much as possible when doing 3L T&P
+# algskim.addCut("trilep_type > 0 && lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 && lep_Pt_2 > 10e3")
 algskim.histName("cutflow")
 
 # Add the algorithms to the job.
