@@ -640,7 +640,7 @@ def makeSysPlots( flav, var, observedhist, expectedhist, fakeshist ):
     pad2.cd()
 
     # Hardcoded axis limits
-    ratio_err.GetYaxis().SetRangeUser(0.4, 1.6)
+    ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
     pad2.SetGridy(1)
 
     ratio_err.Draw("E2")
@@ -993,7 +993,7 @@ def compareFakesKinematics(flav, var, MM_hist, infilename):
     pad2.cd()
 
     # Hardcoded axis limits
-    ratio_err.GetYaxis().SetRangeUser(0.4, 1.6)
+    ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
     pad2.SetGridy(1)
 
     ratio_err.Draw("E2")
