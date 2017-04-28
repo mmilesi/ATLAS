@@ -15,9 +15,9 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter
 
-    if False:
+    if True:
 
-        EfficiencyPlotter.plotRealElectron()
+        # EfficiencyPlotter.plotRealElectron()
         # EfficiencyPlotter.plotRealMuon()
         # EfficiencyPlotter.plotFakeElectron()
         # EfficiencyPlotter.plotFakeMuon()
@@ -30,41 +30,20 @@ if __name__ == "__main__":
         # EfficiencyPlotter.plotProbeElectronAssignEff_MVA()
         # EfficiencyPlotter.plotProbeElectronAssignEff_CutBased()
 
-        EfficiencyPlotter.plotFakeElectron_NonPromptVSPhotonConv()
+        # EfficiencyPlotter.plotFakeElectron_NonPromptVSPhotonConv() # MC TTbar-based
+        EfficiencyPlotter.plotFakeElectron_NonPromptAndPhotonConvVSPhotonConv() # DD
 
     import TypeAndOriginPlots
 
     if False:
 
-        samples       = ["ttbarbkg","wjetsbkg"]
-        #flavour       = "El"
-        #lepSelections = ["FakeCRElAntiT"]# ["FakeCRElT","FakeCRElL"]
-        flavour       = "Mu"
-        lepSelections = ["FakeCRMuAntiT"] #["FakeCRMuT","FakeCRMuL"]
-        jetSelections = ["ALLNJ","LOWNJ","HIGHNJ"]
-        #prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
-        prodIDs       = ["25ns_v26"]
-        normFactor    = 0 # 1.0
-
-        for s in samples:
-            print("\nLooking at sample: {0}".format(s))
-            for ls in lepSelections:
-                print("\n\tlepton selection: {0}".format(ls))
-                for js in jetSelections:
-                    print("\n\tjet selection: {0}".format(js))
-                    for pid in prodIDs:
-                        print("\n\t\tprodID: {0}\n".format(pid))
-                        kwargs = {"flavour":flavour,"prodID":pid, "sample":s, "jetSelection":js, "lepSelection":ls}
-                        TypeAndOriginPlots.plotTypeVSOrigin(normFactor=normFactor, **kwargs)
-                        TypeAndOriginPlots.plotTypeVSNjets(normFactor=normFactor, **kwargs)
-                        TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
-
-
-    if True:
-
-        samples       = ["ttbarbkg"]
+        samples       = ["ttbarbkg"] # ["ttbarbkg","wjetsbkg"]
         flavours      = ["El","Mu"]
+        # lepSelections = ["FakeCRElAntiT"]# ["FakeCRElT","FakeCRElL"]
+        # lepSelections = ["FakeCRMuAntiT"] #["FakeCRMuT","FakeCRMuL"]
+        #prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
         prodIDs       = ["25ns_v27"]
+        normFactor    = 0 # 1.0
 
         for s in samples:
             print("\nLooking at sample: {0}".format(s))
@@ -74,5 +53,10 @@ if __name__ == "__main__":
                     print("\n\t\t\tflavour: {0}\n".format(flavour))
                     kwargs = {"flavour":flavour,"prodID":pid, "sample":s}
                     TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
-
-
+                    TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
+                    TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
+                    TypeAndOriginPlots.plotOriginVSDistanceLepClosestJet(normFactor=normFactor, **kwargs)
+                    if flavour == "Mu":
+                        TypeAndOriginPlots.plotOriginVSEta(normFactor=normFactor, **kwargs)
+                    elif flavour == "El":
+                        TypeAndOriginPlots.plotOriginVSEtaBE2(normFactor=normFactor, **kwargs)

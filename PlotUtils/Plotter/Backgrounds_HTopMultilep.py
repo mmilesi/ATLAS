@@ -1216,52 +1216,29 @@ class TTHBackgrounds(Background):
 
             return sp
 
+
     class TopCF(Process):
 
         latexname = 'tops (QMisID only)'
         colour = kAzure - 4
 
-        def base(self, treename='physics', category=None, options={}):
-
-	    inputgroup = [
-                ('tops', 'ttbar_nonallhad_Pythia8'),
-                #('tops', 'ttbar_nonallhad'),
-                #('tops', 'ttbar_dilep'),
-                ('tops', 'tZ'),
-                ('tops', 'tW'),
-                ('tops', 'singlet'),
-                ('tops', 'SingleTopSchan_noAllHad'),
-                ('tops', '3top'),
-                ('tops', '4top'),
-                ('tops', 'tWZDR'),
-                ('tops', 'ttWW'),
-                         ]
-
-            print("\n{0}:\n".format(self.__class__.__name__))
-	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
-
-            trees = self.inputs.getTrees(treename, inputgroup)
-            sp = self.subprocess(trees=trees) * self.parent.norm_factor
-            return sp
-
         def __call__(self, treename='physics', category=None, options={}):
 
-            systematics = options.get('systematics', None)
-            direction = options.get('systematicsdirection', 'UP')
-            systname_opts = {}
-            if systematics and systematics.name == 'SystName':
-                systname_opts['systematics'] = True
-                systname_opts['systematicsdirection'] = direction
-            sp = self.base(treename, category, options)
+            print("\n{0}:\n".format(self.__class__.__name__))
 
-            weight = None
-            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            # Pick the subprocesses from the DB
+
+            rare_top  = self.parent.procmap['RareTop'](treename, category, options)
+            ttbar     = self.parent.procmap['TTBar'](treename, category, options)
+            singletop = self.parent.procmap['SingleTop'](treename, category, options)
+
+	    basecut = category.cut
 
             # Plot only events where at least one lepton is charge flip.
 	    # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
 
 	    basecut = category.cut
-
+            weight  = None
 	    #if ("2Lep_SS") in basecut.cutname:
 	    if True:
 	        for CUT in basecut.cutlist:
@@ -1270,16 +1247,25 @@ class TTHBackgrounds(Background):
             else:
 	        weight = '0.0'
 
-            truth_cut = basecut & self.vardb.getCut('2Lep_TRUTH_QMisIDEvent')
+            updatedcut = basecut & self.vardb.getCut('2Lep_TRUTH_QMisIDEvent')
 
-            sp = sp.subprocess(cut=truth_cut,eventweight=weight)
+            # Remember to add TT cut (if needed) as it's not in basecut!
 
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
             if TTcut:
-                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+                updatedcut = updatedcut & self.vardb.getCut(TTcut)
 
-            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+            # Reset the cut for the subprocesses, and apply the new one
 
-            return sp
+            rare_top  = rare_top.subprocess(cut=updatedcut, clearbasecut=True, eventweight=weight)
+            ttbar     = ttbar.subprocess(cut=updatedcut, clearbasecut=True, eventweight=weight)
+            singletop = singletop.subprocess(cut=updatedcut, clearbasecut=True, eventweight=weight)
+
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("RareTop",rare_top.basecut.cutnamelist, rare_top.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBar",ttbar.basecut.cutnamelist, ttbar.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("SingleTop",singletop.basecut.cutnamelist, singletop.eventweight))
+
+            return rare_top + ttbar + singletop
 
 
     class Diboson(Process):

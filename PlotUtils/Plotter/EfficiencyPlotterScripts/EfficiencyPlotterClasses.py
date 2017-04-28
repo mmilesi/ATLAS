@@ -136,21 +136,32 @@ class Plot:
 
     def makeLeptonOriginFracPlots( self, histID=None ):
 
-        # Fake lepton origin fraction wrt. njets
+        # Fake lepton origin fraction wrt. X
 
-        histfakes_BF        = TH1D("histfakes_BF"+ "_"+histID,"histfakes_BF", self.__hist.GetNbinsY(),-0.5,self.__hist.GetNbinsY()-0.5)
-        histfakes_CF        = TH1D("histfakes_CF"+ "_"+histID,"histfakes_CF", self.__hist.GetNbinsY(),-0.5,self.__hist.GetNbinsY()-0.5)
-        histfakes_LF        = TH1D("histfakes_LF"+"_"+histID,"histfakes_LF", self.__hist.GetNbinsY(),-0.5,self.__hist.GetNbinsY()-0.5)
-        histfakes_PhConv    = TH1D("histfakes_PhConv"+"_"+histID,"histfakes_PhConv", self.__hist.GetNbinsY(),-0.5,self.__hist.GetNbinsY()-0.5)
-        histfakes_Other     = TH1D("histfakes_Other"+"_"+histID,"histfakes_Other", self.__hist.GetNbinsY(),-0.5,self.__hist.GetNbinsY()-0.5)
+        # Trick to make sure also the input histograms w/ variable bin size are handled correctly
+        binsY = []
+        for biny in range( 1, self.__hist.GetNbinsY()+2 ):
+            lowedge = self.__hist.GetYaxis().GetBinLowEdge(biny)
+            binsY.append(lowedge)
+        arr_binsY = array.array("d", binsY)
 
-        stacklegend = TLegend(0.5,0.3,0.75,0.6) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+        print "hist N binsY: ", self.__hist.GetNbinsY()
+        print "Y axis bin lims: ", binsY, " - N bins: ", len(binsY)-1
+
+        histfakes_BF        = TH1D("histfakes_BF"+ "_"+histID,"histfakes_BF", self.__hist.GetNbinsY(),arr_binsY) # B-hadrons in jets (mesons/baryons)
+        histfakes_CF        = TH1D("histfakes_CF"+ "_"+histID,"histfakes_CF", self.__hist.GetNbinsY(),arr_binsY) # C-hadrons in jets (mesons/baryons)
+        histfakes_HFRes     = TH1D("histfakes_HFRes"+ "_"+histID,"histfakes_HFRes", self.__hist.GetNbinsY(),arr_binsY) # B,C resonances (J/psi, Upsilon...)
+        histfakes_LF        = TH1D("histfakes_LF"+"_"+histID,"histfakes_LF", self.__hist.GetNbinsY(),arr_binsY) # Light hadrons in jets
+        histfakes_PhConv    = TH1D("histfakes_PhConv"+"_"+histID,"histfakes_PhConv", self.__hist.GetNbinsY(),arr_binsY) # Photon conversions
+        histfakes_Other     = TH1D("histfakes_Other"+"_"+histID,"histfakes_Other", self.__hist.GetNbinsY(),arr_binsY) # Other fakes (mis-id jets, leptons from generic pi/K...)
+
+        stacklegend = TLegend(0.23,0.25,0.43,0.55)
         stacklegend.SetBorderSize(1)
         stacklegend.SetFillColor(kWhite)
         stacklegend.SetTextSize(0.03)
         stacklegend.SetTextFont(42)
 
-        histfakes_list = [ (histfakes_BF,kRed), (histfakes_CF,kRed-9), (histfakes_LF,kOrange+1), (histfakes_PhConv,kYellow), (histfakes_Other,kAzure+1) ]
+        histfakes_list = [ (histfakes_BF,kRed), (histfakes_CF,kRed-9), (histfakes_HFRes,kPink-2), (histfakes_LF,kOrange+1), (histfakes_PhConv,kYellow), (histfakes_Other,kAzure+1) ]
 
         for h in histfakes_list:
             h[0].SetLineWidth(2)
@@ -158,70 +169,76 @@ class Plot:
             h[0].SetLineColor(1)
             h[0].SetFillColor(h[1])
 
-        # Loop over jet multiplicity bins of the 2D hist
+        # Loop over var Y bins of the 2D hist
 
-        for biny in range( 1, self.__hist.GetNbinsY()+1 ):
+        for biny in range( 1, self.__hist.GetNbinsY()+2 ):
 
             offset = 1 # (to account for underflow bin, which has idx=0)
 
-            # Get the tot. fakes for *this* nr. of jets
+            # Get the tot. fakes for *this* Y
 
             fakes_TOT_biny = self.__hist.Integral( 0,  self.__hist.GetNbinsX()+1, biny, biny )
 
-            # Get the HF fakes for *this* nr. of jets
+            # Get the HF fakes for *this* Y
 
-            #fakes_HF_biny = self.__hist.Integral( 25+offset,29+offset, biny, biny ) + self.__hist.Integral( 32+offset,33+offset, biny, biny )
-            fakes_BF_biny = self.__hist.Integral( 26+offset,26+offset, biny, biny ) + self.__hist.Integral( 29+offset,29+offset, biny, biny ) + self.__hist.Integral(33+offset,33+offset, biny, biny )
-            fakes_CF_biny = self.__hist.Integral( 25+offset,25+offset, biny, biny ) + self.__hist.Integral( 27+offset,28+offset, biny, biny ) + self.__hist.Integral(32+offset,32+offset, biny, biny )
+            fakes_BF_biny    = self.__hist.Integral( 26+offset,26+offset, biny, biny ) + self.__hist.Integral(33+offset,33+offset, biny, biny )
+            fakes_CF_biny    = self.__hist.Integral( 25+offset,25+offset, biny, biny ) + self.__hist.Integral(32+offset,32+offset, biny, biny )
+            fakes_HFRes_biny = self.__hist.Integral( 27+offset,29+offset, biny, biny )
 
-            # Get the LF fakes for *this* nr. of jets
+            # Get the LF fakes for *this* Y
 
             fakes_LF_biny = self.__hist.Integral( 23+offset,24+offset, biny, biny ) + self.__hist.Integral( 30+offset,31+offset, biny, biny )
 
-            # Get the photon conversion fakes for *this* nr. of jets
+            # Get the photon conversion fakes for *this* Y
 
             fakes_PhConv_biny = self.__hist.Integral( 5+offset,5+offset, biny, biny )
 
-            # Get the other fakes for *this* nr. of jets
+            # Get the other fakes for *this* Y
 
-            fakes_Other_biny = fakes_TOT_biny - ( fakes_HF_biny + fakes_LF_biny + fakes_PhConv_biny )
+            fakes_Other_biny = fakes_TOT_biny - ( fakes_BF_biny + fakes_CF_biny + fakes_HFRes_biny + fakes_LF_biny + fakes_PhConv_biny )
 
-            # Set the bin content for the fake lepton origin fraction hists for *this* nr. jet bin
+            # Set the bin content for the fake lepton origin fraction hists for *this* Y bin
 
             if fakes_TOT_biny:
                 fakes_BF_frac_biny     = fakes_BF_biny/fakes_TOT_biny
                 fakes_CF_frac_biny     = fakes_CF_biny/fakes_TOT_biny
+                fakes_HFRes_frac_biny  = fakes_HFRes_biny/fakes_TOT_biny
                 fakes_LF_frac_biny     = fakes_LF_biny/fakes_TOT_biny
                 fakes_PhConv_frac_biny = fakes_PhConv_biny/fakes_TOT_biny
                 fakes_Other_frac_biny  = fakes_Other_biny/fakes_TOT_biny
             else:
-                fakes_HF_frac_biny = fakes_LF_frac_biny = fakes_PhConv_frac_biny = fakes_Other_frac_biny = 0
+                fakes_BF_frac_biny = fakes_CF_frac_biny = fakes_HFRes_frac_biny = fakes_LF_frac_biny = fakes_PhConv_frac_biny = fakes_Other_frac_biny = 0
 
-            # print("bin[{0}] - njets = {1}".format(biny, biny-1))
-            # print("\ttot fakes = {0}".format(fakes_TOT_biny))
-            # print("\t-) BF fakes = {0} ({1:.2f})".format(fakes_BF_biny,fakes_BF_frac_biny))
-            # print("\t-) CF fakes = {0} ({1:.2f})".format(fakes_CF_biny,fakes_CF_frac_biny))
-            # print("\t-) LF fakes = {0} ({1:.2f})".format(fakes_LF_biny,fakes_LF_frac_biny))
-            # print("\t-) PhConv fakes = {0} ({1:.2f})".format(fakes_PhConv_biny,fakes_PhConv_frac_biny))
-            # print("\t-) Other fakes = {0} ({1:.2f})".format(fakes_Other_biny,fakes_Other_frac_biny))
+            if False:
+                print("varY - bin[{0}]".format(biny))
+                print("\ttot fakes = {0}".format(fakes_TOT_biny))
+                print("\t-) BF fakes = {0} ({1:.2f})".format(fakes_BF_biny,fakes_BF_frac_biny))
+                print("\t-) CF fakes = {0} ({1:.2f})".format(fakes_CF_biny,fakes_CF_frac_biny))
+                print("\t-) HFRes fakes = {0} ({1:.2f})".format(fakes_HFRes_biny,fakes_HFRes_frac_biny))
+                print("\t-) LF fakes = {0} ({1:.2f})".format(fakes_LF_biny,fakes_LF_frac_biny))
+                print("\t-) PhConv fakes = {0} ({1:.2f})".format(fakes_PhConv_biny,fakes_PhConv_frac_biny))
+                print("\t-) Other fakes = {0} ({1:.2f})".format(fakes_Other_biny,fakes_Other_frac_biny))
 
             histfakes_BF.SetBinContent( biny, fakes_BF_frac_biny )
             histfakes_CF.SetBinContent( biny, fakes_CF_frac_biny )
+            histfakes_HFRes.SetBinContent( biny, fakes_HFRes_frac_biny )
             histfakes_LF.SetBinContent( biny, fakes_LF_frac_biny )
             histfakes_PhConv.SetBinContent( biny, fakes_PhConv_frac_biny )
             histfakes_Other.SetBinContent( biny, fakes_Other_frac_biny )
 
         # Add histograms w/ fake origin fractions into a stack plot
 
-        stacklegend.AddEntry(histfakes_BF, "BF Fakes", "F")
-        stacklegend.AddEntry(histfakes_CF, "CF Fakes", "F")
-        stacklegend.AddEntry(histfakes_LF, "LF Fakes", "F")
+        stacklegend.AddEntry(histfakes_BF, "B-Had Fakes", "F")
+        stacklegend.AddEntry(histfakes_CF, "C-Had Fakes", "F")
+        stacklegend.AddEntry(histfakes_HFRes, "J/#psi,#Upsilon Fakes", "F")
+        stacklegend.AddEntry(histfakes_LF, "L-Had Fakes", "F")
         stacklegend.AddEntry(histfakes_PhConv, "#gamma conversion" , "F")
         stacklegend.AddEntry(histfakes_Other, "Other Fakes", "F")
 
-        stack = THStack("LepOriginFrac_VS_NJets_STACK","LepOriginFrac_VS_NJets_STACK")
+        stack = THStack("LepOriginFrac_VS_Y_STACK","LepOriginFrac_VS_Y_STACK")
         stack.Add(histfakes_BF)
         stack.Add(histfakes_CF)
+        stack.Add(histfakes_HFRes)
         stack.Add(histfakes_LF)
         stack.Add(histfakes_PhConv)
         stack.Add(histfakes_Other)

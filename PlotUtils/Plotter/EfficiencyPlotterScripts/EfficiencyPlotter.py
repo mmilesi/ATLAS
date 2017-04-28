@@ -727,3 +727,66 @@ def plotFakeElectron_NonPromptVSPhotonConv():
     Plot.legend.Clear()
 
     del Plot.reflines[:]
+
+def plotFakeElectron_NonPromptAndPhotonConvVSPhotonConv():
+
+    plotlist = []
+
+    Plot.legend.SetHeader("#varepsilon_{fake} - Electrons")
+
+    p0_props = {
+                "legend"      : "All fakes",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.0,0.7),
+                "colour"      : kOrange+10,
+                "lineStyle"   : 1,
+                "lineWidth"   : 2,
+                "markerStyle" : 20,
+                "markerSize"  : 1,
+               }
+
+    p0 = Plot("3L_Fake_El_Pt_Efficiency_observed_sub","./PLOTS_25ns_v27/OutputPlots_MMRates_25ns_v27_3LTP_v2/LeptonEfficiencies.root", p0_props)
+
+    plotlist.append(p0)
+
+    p1_props = {
+                "legend"      : "#gamma conversion",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.0,0.7),
+                #"colour"      : kOrange+7,
+                "colour"      : kGreen+3,
+                "lineStyle"   : 1,
+                "lineWidth"   : 2,
+                "markerStyle" : 20,
+                "markerSize"  : 1,
+               }
+
+    p1 = Plot("Fake_El_Pt_Efficiency_observed_sub","./PLOTS_25ns_v27/OutputPlots_PhotonConvElecRates_ZMuMuElTP_25ns_v27/LeptonEfficiencies.root", p1_props)
+
+    plotlist.append(p1)
+
+    # Add vertical reference lines for trigger thresholds.
+    # Use the first histogram in the list to set the range
+
+    refl_0 = TLine(26.0,p0_props["yAxisRange"][0],26.0,p0_props["yAxisRange"][1])
+    #Plot.reflines.append(refl_0)
+    refl_1 = TLine(60.0,p0_props["yAxisRange"][0],60.0,p0_props["yAxisRange"][1])
+    #Plot.reflines.append(refl_1)
+    #refl_2 = TLine(140.0,p0_props["yAxisRange"][0],140.0,p0_props["yAxisRange"][1])
+    #Plot.reflines.append(refl_2)
+
+    multiP = MultiPlot( plots=plotlist )
+
+    outdir = "./PLOTS_25ns_v27/NonPromptAndPhotonconv_VS_PhotonConv_DD"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    multiP.makeMultiPlot( outdir, "Fake_El_Compare_NonPromptAndPhotonConv_PhotonConv" )
+
+    # Clear before returning
+
+    del plotlist[:]
+
+    Plot.legend.Clear()
+
+    del Plot.reflines[:]
