@@ -1216,6 +1216,51 @@ class TTHBackgrounds(Background):
 
             return sp
 
+    class TTBarNoTTBarGamma(Process):
+
+        latexname = 't#bar{t}'
+        colour = kAzure + 8
+
+        def base(self, treename='physics', category=None, options={}):
+
+	    inputgroup = [
+                ('tops', 'ttbar_nonallhad_Pythia8'),
+                #('tops', 'ttbar_nonallhad'),
+                #('tops', 'ttbar_dilep'),
+                #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
+                #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
+                         ]
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
+
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
+
+	    return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+
+            weight = None
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+
+            sp = sp.subprocess(cut=category.cut,eventweight=weight)
+
+            if TTcut:
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+
+            return sp
+
 
     class TopCF(Process):
 
@@ -1230,22 +1275,23 @@ class TTHBackgrounds(Background):
 
             rare_top  = self.parent.procmap['RareTop'](treename, category, options)
             ttbar     = self.parent.procmap['TTBar'](treename, category, options)
+            # ttbar     = self.parent.procmap['TTBarNoTTBarGamma'](treename, category, options)
             singletop = self.parent.procmap['SingleTop'](treename, category, options)
 
-	    basecut = category.cut
+            basecut = category.cut
 
             # Plot only events where at least one lepton is charge flip.
-	    # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
+            # Do it only for SS events: for other events, just apply a weight = 0 to kill the process
 
-	    basecut = category.cut
+            basecut = category.cut
             weight  = None
-	    #if ("2Lep_SS") in basecut.cutname:
-	    if True:
-	        for CUT in basecut.cutlist:
-	            if ("TRUTH") in CUT.cutname:
-		        basecut = basecut.removeCut(CUT)
+            #if ("2Lep_SS") in basecut.cutname:
+            if True:
+                for CUT in basecut.cutlist:
+                    if ("TRUTH") in CUT.cutname:
+        	        basecut = basecut.removeCut(CUT)
             else:
-	        weight = '0.0'
+                weight = '0.0'
 
             updatedcut = basecut & self.vardb.getCut('2Lep_TRUTH_QMisIDEvent')
 

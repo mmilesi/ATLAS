@@ -439,8 +439,8 @@ if __name__ == "__main__":
     database.registerCut( Cut('2Lep_SS',	          '( lep_ID_0 * lep_ID_1 > 0 )') )
     database.registerCut( Cut('2Lep_OS',		  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
     database.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
-    # database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_0 > 15e3 && lep_Pt_1 > 15e3 )') )
-    database.registerCut( Cut('2Lep_pT',		  '( 1 )') )
+    database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_0 > 15e3 && lep_Pt_1 > 15e3 )') )
+    # database.registerCut( Cut('2Lep_pT',		  '( 1 )') )
     if args.ICHEPSelection:
         database.getCut('2Lep_pT').cutstr =  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 25e3 )' # 2LSS SR cut - ICHEP 2016
     database.registerCut( Cut('2Lep_pT_MMRates',	  '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
@@ -764,13 +764,19 @@ if __name__ == "__main__":
             # database.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = database.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
             if doSR or do2LSS_HIGHNJ_BVETO_VR:
                 print ""
-                database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = False) )
-                # database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( output_ttV < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( output_top < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = "RNN_ttV", latexname = "NN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( RNN_output_ttV < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = "RNN_top", latexname = "NN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( RNN_output_top < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = 'NN_ttV_VS_NN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'output_top:output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( output_ttV < 0.5 && output_top < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = 'RNN_ttV_VS_RNN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'RNN_output_top:RNN_output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( RNN_output_ttV < 0.5 && RNN_output_top < 0.5 )") ) )
+                # database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = False) )
+                # database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False ) )
+                # database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False ) )
+                # database.registerVar( Variable(shortname = "RNN_ttV", latexname = "NN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False ) )
+                # database.registerVar( Variable(shortname = "RNN_top", latexname = "NN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False ) )
+                # database.registerVar( Variable(shortname = 'NN_ttV_VS_NN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'output_top:output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F ) )
+                # database.registerVar( Variable(shortname = 'RNN_ttV_VS_RNN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'RNN_output_top:RNN_output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F ) )
+                database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( output_ttV < 0.5 )") ) )
+                database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( output_top < 0.5 )") ) )
+                database.registerVar( Variable(shortname = "RNN_ttV", latexname = "NN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( RNN_output_ttV < 0.5 )") ) )
+                database.registerVar( Variable(shortname = "RNN_top", latexname = "NN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( RNN_output_top < 0.5 )") ) )
+                database.registerVar( Variable(shortname = 'NN_ttV_VS_NN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'output_top:output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( output_ttV < 0.5 && output_top < 0.5 )") ) )
+                database.registerVar( Variable(shortname = 'RNN_ttV_VS_RNN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'RNN_output_top:RNN_output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( RNN_output_ttV < 0.5 && RNN_output_top < 0.5 )") ) )
 
             elif do2LSS_LOWNJ_VR:
                 print ""
@@ -1359,16 +1365,16 @@ if __name__ == "__main__":
             # Special plots for MM real/fake eff CRs
             # ---------------------------------------
 
-            database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
-            database.registerVar( Variable(shortname = "Integral_LOGY", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, logaxis = True) )
+            # database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
+            # database.registerVar( Variable(shortname = "Integral_LOGY", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, logaxis = True) )
 
             database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
-            database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210]) )
-            database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210]) )
-            database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210], logaxis = True) )
-            database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210], logaxis = True) )
-            database.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6] ) )
+            # database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210]) )
+            # database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210]) )
+            # database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210], logaxis = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210], logaxis = True) )
+            # database.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", manualbins = [0.0,0.5,0.8,1.37,1.52,2.0,2.6] ) )
             # database.registerVar( Variable(shortname = "ElProbeDistanceClosestJet", latexname = '#DeltaR(e, closest jet)', ntuplename = el_probe + "deltaRClosestJet", bins = 20, minval = 0.0, maxval = 5.0) )
             # database.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 20, minval = 0.0, maxval = 5.0) )
             # database.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
@@ -1530,7 +1536,7 @@ if __name__ == "__main__":
                         # database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         # To compare w/ Kun: look only at events where the muon is leading
                         database.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
+                        # database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
 
 
@@ -1964,6 +1970,7 @@ if __name__ == "__main__":
         'Triboson':('tribosonbkg','VVV'),
         'Rare':('raretopbkg','Others'),
         'TTBar':('ttbarbkg','$t\\bar{t}$'),
+        'TTBarNoTTBarGamma':('ttbarbkg','$t\\bar{t}$'),
         'TopCF':('topcfbkg','$t\\bar{t}$ (Charge mis-ID)'),
         'Diboson':('dibosonbkg','$WW$,$WZ$,$ZZ$'),
         'DibosonCF':('dibosoncfbkg','$WW$,$WZ$,$ZZ$ (Charge mis-ID)'),
@@ -2008,6 +2015,7 @@ if __name__ == "__main__":
         'Triboson':kTeal+10,
         'Rare':kGray,
         'TTBar': kRed-4,
+        'TTBarNoTTBarGamma': kRed-4,
         'TopCF':kAzure-4,
         'Diboson':kGreen-7,
         'DibosonCF':kOrange-3,

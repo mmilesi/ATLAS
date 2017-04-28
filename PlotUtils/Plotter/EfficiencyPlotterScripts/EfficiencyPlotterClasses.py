@@ -154,6 +154,7 @@ class Plot:
         histfakes_LF        = TH1D("histfakes_LF"+"_"+histID,"histfakes_LF", self.__hist.GetNbinsY(),arr_binsY) # Light hadrons in jets
         histfakes_PhConv    = TH1D("histfakes_PhConv"+"_"+histID,"histfakes_PhConv", self.__hist.GetNbinsY(),arr_binsY) # Photon conversions
         histfakes_Other     = TH1D("histfakes_Other"+"_"+histID,"histfakes_Other", self.__hist.GetNbinsY(),arr_binsY) # Other fakes (mis-id jets, leptons from generic pi/K...)
+        histfakes_Unknown   = TH1D("histfakes_Unknown"+"_"+histID,"histfakes_Unknown", self.__hist.GetNbinsY(),arr_binsY) # Unknown fakes (failure of MCTruthClassifier)
 
         stacklegend = TLegend(0.23,0.25,0.43,0.55)
         stacklegend.SetBorderSize(1)
@@ -161,7 +162,7 @@ class Plot:
         stacklegend.SetTextSize(0.03)
         stacklegend.SetTextFont(42)
 
-        histfakes_list = [ (histfakes_BF,kRed), (histfakes_CF,kRed-9), (histfakes_HFRes,kPink-2), (histfakes_LF,kOrange+1), (histfakes_PhConv,kYellow), (histfakes_Other,kAzure+1) ]
+        histfakes_list = [ (histfakes_BF,kRed), (histfakes_CF,kRed-9), (histfakes_HFRes,kPink-2), (histfakes_LF,kOrange+1), (histfakes_PhConv,kYellow), (histfakes_Other,kPink+1), (histfakes_Unknown,kAzure+1) ]
 
         for h in histfakes_list:
             h[0].SetLineWidth(2)
@@ -193,21 +194,26 @@ class Plot:
 
             fakes_PhConv_biny = self.__hist.Integral( 5+offset,5+offset, biny, biny )
 
+            # Get the "Unknown" fakes for *this* Y
+
+            fakes_Unknown_biny = self.__hist.Integral( 0+offset,0+offset, biny, biny )
+
             # Get the other fakes for *this* Y
 
-            fakes_Other_biny = fakes_TOT_biny - ( fakes_BF_biny + fakes_CF_biny + fakes_HFRes_biny + fakes_LF_biny + fakes_PhConv_biny )
+            fakes_Other_biny = fakes_TOT_biny - ( fakes_BF_biny + fakes_CF_biny + fakes_HFRes_biny + fakes_LF_biny + fakes_PhConv_biny + fakes_Unknown_biny )
 
             # Set the bin content for the fake lepton origin fraction hists for *this* Y bin
 
             if fakes_TOT_biny:
-                fakes_BF_frac_biny     = fakes_BF_biny/fakes_TOT_biny
-                fakes_CF_frac_biny     = fakes_CF_biny/fakes_TOT_biny
-                fakes_HFRes_frac_biny  = fakes_HFRes_biny/fakes_TOT_biny
-                fakes_LF_frac_biny     = fakes_LF_biny/fakes_TOT_biny
-                fakes_PhConv_frac_biny = fakes_PhConv_biny/fakes_TOT_biny
-                fakes_Other_frac_biny  = fakes_Other_biny/fakes_TOT_biny
+                fakes_BF_frac_biny      = fakes_BF_biny/fakes_TOT_biny
+                fakes_CF_frac_biny      = fakes_CF_biny/fakes_TOT_biny
+                fakes_HFRes_frac_biny   = fakes_HFRes_biny/fakes_TOT_biny
+                fakes_LF_frac_biny      = fakes_LF_biny/fakes_TOT_biny
+                fakes_PhConv_frac_biny  = fakes_PhConv_biny/fakes_TOT_biny
+                fakes_Unknown_frac_biny = fakes_Unknown_biny/fakes_TOT_biny
+                fakes_Other_frac_biny   = fakes_Other_biny/fakes_TOT_biny
             else:
-                fakes_BF_frac_biny = fakes_CF_frac_biny = fakes_HFRes_frac_biny = fakes_LF_frac_biny = fakes_PhConv_frac_biny = fakes_Other_frac_biny = 0
+                fakes_BF_frac_biny = fakes_CF_frac_biny = fakes_HFRes_frac_biny = fakes_LF_frac_biny = fakes_PhConv_frac_biny = fakes_Unknown_frac_biny = fakes_Other_frac_biny = 0
 
             if False:
                 print("varY - bin[{0}]".format(biny))
@@ -217,6 +223,7 @@ class Plot:
                 print("\t-) HFRes fakes = {0} ({1:.2f})".format(fakes_HFRes_biny,fakes_HFRes_frac_biny))
                 print("\t-) LF fakes = {0} ({1:.2f})".format(fakes_LF_biny,fakes_LF_frac_biny))
                 print("\t-) PhConv fakes = {0} ({1:.2f})".format(fakes_PhConv_biny,fakes_PhConv_frac_biny))
+                print("\t-) Unknown fakes = {0} ({1:.2f})".format(fakes_Unknown_biny,fakes_Unknown_frac_biny))
                 print("\t-) Other fakes = {0} ({1:.2f})".format(fakes_Other_biny,fakes_Other_frac_biny))
 
             histfakes_BF.SetBinContent( biny, fakes_BF_frac_biny )
@@ -224,7 +231,10 @@ class Plot:
             histfakes_HFRes.SetBinContent( biny, fakes_HFRes_frac_biny )
             histfakes_LF.SetBinContent( biny, fakes_LF_frac_biny )
             histfakes_PhConv.SetBinContent( biny, fakes_PhConv_frac_biny )
+            histfakes_Unknown.SetBinContent( biny, fakes_Unknown_frac_biny )
             histfakes_Other.SetBinContent( biny, fakes_Other_frac_biny )
+
+            # self.conversion_frac_VS_Y.append((biny,fakes_PhConv_frac_biny))
 
         # Add histograms w/ fake origin fractions into a stack plot
 
@@ -234,6 +244,7 @@ class Plot:
         stacklegend.AddEntry(histfakes_LF, "L-Had Fakes", "F")
         stacklegend.AddEntry(histfakes_PhConv, "#gamma conversion" , "F")
         stacklegend.AddEntry(histfakes_Other, "Other Fakes", "F")
+        stacklegend.AddEntry(histfakes_Unknown, "Unknown" , "F")
 
         stack = THStack("LepOriginFrac_VS_Y_STACK","LepOriginFrac_VS_Y_STACK")
         stack.Add(histfakes_BF)
@@ -242,6 +253,7 @@ class Plot:
         stack.Add(histfakes_LF)
         stack.Add(histfakes_PhConv)
         stack.Add(histfakes_Other)
+        stack.Add(histfakes_Unknown)
 
         return stack, stacklegend
 

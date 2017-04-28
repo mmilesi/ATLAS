@@ -584,11 +584,6 @@ def plotOriginVSDistanceLepClosestJet( normFactor=0, **kwargs ):
 
 
 
-
-
-
-
-
 def plotFakeOriginFrac2L3L( **kwargs ):
 
     plotlist = []
@@ -634,6 +629,7 @@ def plotFakeOriginFrac2L3L( **kwargs ):
     histfakes_LF        = TH1D("histfakes_LF","histfakes_LF",3,-0.5,2.5) # Light hadrons in jets
     histfakes_PhConv    = TH1D("histfakes_PhConv","histfakes_PhConv",3,-0.5,2.5) # Photon conversions
     histfakes_Other     = TH1D("histfakes_Other","histfakes_Other",3,-0.5,2.5) # Other fakes (mis-id jets, leptons from generic pi/K...)
+    histfakes_Unknown   = TH1D("histfakes_Unknown","histfakes_Unknown",3,-0.5,2.5) # Unknown fakes (failure of MCTruthClassifier
 
     stacklegend = TLegend(0.23,0.25,0.43,0.55)
     stacklegend.SetBorderSize(1)
@@ -641,7 +637,7 @@ def plotFakeOriginFrac2L3L( **kwargs ):
     stacklegend.SetTextSize(0.03)
     stacklegend.SetTextFont(42)
 
-    histfakes_list = [ (histfakes_BF,kRed), (histfakes_CF,kRed-9), (histfakes_HFRes,kPink-2), (histfakes_LF,kOrange+1), (histfakes_PhConv,kYellow), (histfakes_Other,kAzure+1) ]
+    histfakes_list = [ (histfakes_BF,kRed), (histfakes_CF,kRed-9), (histfakes_HFRes,kPink-2), (histfakes_LF,kOrange+1), (histfakes_PhConv,kYellow), (histfakes_Other,kPink+1), (histfakes_Unknown,kAzure+1) ]
 
     for h in histfakes_list:
         h[0].SetLineWidth(2)
@@ -680,21 +676,26 @@ def plotFakeOriginFrac2L3L( **kwargs ):
 
         fakes_PhConv_h = h.Integral( 5+offset,5+offset )
 
+        # Get the "Unknown" fakes for *this* Y
+
+        fakes_Unknown_h = h.Integral( 0+offset,0+offset )
+
         # Get the other fakes for *this* hist
 
-        fakes_Other_h = fakes_TOT_h - ( fakes_BF_h + fakes_CF_h + fakes_HFRes_h + fakes_LF_h + fakes_PhConv_h )
+        fakes_Other_h = fakes_TOT_h - ( fakes_BF_h + fakes_CF_h + fakes_HFRes_h + fakes_LF_h + fakes_PhConv_h + fakes_Unknown_h )
 
         # Set the bin content for the fake lepton origin fraction hists for *this* hist
 
         if fakes_TOT_h:
-            fakes_BF_frac_h     = fakes_BF_h/fakes_TOT_h
-            fakes_CF_frac_h     = fakes_CF_h/fakes_TOT_h
-            fakes_HFRes_frac_h  = fakes_HFRes_h/fakes_TOT_h
-            fakes_LF_frac_h     = fakes_LF_h/fakes_TOT_h
-            fakes_PhConv_frac_h = fakes_PhConv_h/fakes_TOT_h
-            fakes_Other_frac_h  = fakes_Other_h/fakes_TOT_h
+            fakes_BF_frac_h      = fakes_BF_h/fakes_TOT_h
+            fakes_CF_frac_h      = fakes_CF_h/fakes_TOT_h
+            fakes_HFRes_frac_h   = fakes_HFRes_h/fakes_TOT_h
+            fakes_LF_frac_h      = fakes_LF_h/fakes_TOT_h
+            fakes_PhConv_frac_h  = fakes_PhConv_h/fakes_TOT_h
+            fakes_Unknown_frac_h = fakes_Unknown_h/fakes_TOT_h
+            fakes_Other_frac_h   = fakes_Other_h/fakes_TOT_h
         else:
-            fakes_BF_frac_h = fakes_CF_frac_h = fakes_HFRes_frac_h = fakes_LF_frac_h = fakes_PhConv_frac_h = fakes_Other_frac_h = 0
+            fakes_BF_frac_h = fakes_CF_frac_h = fakes_HFRes_frac_h = fakes_LF_frac_h = fakes_PhConv_frac_h = fakes_Unknown_frac_h = fakes_Other_frac_h = 0
 
         print("bin[{0}] ".format(idx))
         print("\ttot fakes = {0}".format(fakes_TOT_h))
@@ -703,6 +704,7 @@ def plotFakeOriginFrac2L3L( **kwargs ):
         print("\t-) HFRes fakes = {0} ({1:.2f})".format(fakes_HFRes_h,fakes_HFRes_frac_h))
         print("\t-) LF fakes = {0} ({1:.2f})".format(fakes_LF_h,fakes_LF_frac_h))
         print("\t-) PhConv fakes = {0} ({1:.2f})".format(fakes_PhConv_h,fakes_PhConv_frac_h))
+        print("\t-) Unknown fakes = {0} ({1:.2f})".format(fakes_Unknown_h,fakes_Unknown_frac_h))
         print("\t-) Other fakes = {0} ({1:.2f})".format(fakes_Other_h,fakes_Other_frac_h))
 
         histfakes_BF.SetBinContent( idx+offset, fakes_BF_frac_h )
@@ -710,6 +712,7 @@ def plotFakeOriginFrac2L3L( **kwargs ):
         histfakes_HFRes.SetBinContent( idx+offset, fakes_HFRes_frac_h )
         histfakes_LF.SetBinContent( idx+offset, fakes_LF_frac_h )
         histfakes_PhConv.SetBinContent( idx+offset, fakes_PhConv_frac_h )
+        histfakes_Unknown.SetBinContent( idx+offset, fakes_Unknown_frac_h )
         histfakes_Other.SetBinContent( idx+offset, fakes_Other_frac_h )
 
     # Add histograms w/ fake origin fractions into a stack plot
@@ -720,6 +723,7 @@ def plotFakeOriginFrac2L3L( **kwargs ):
     stacklegend.AddEntry(histfakes_LF, "L-Had Fakes", "F")
     stacklegend.AddEntry(histfakes_PhConv, "#gamma conversion" , "F")
     stacklegend.AddEntry(histfakes_Other, "Other Fakes", "F")
+    stacklegend.AddEntry(histfakes_Unknown, "Unknown" , "F")
 
     stack = THStack("FakeLepOriginFrac_VS_2L3LCat_STACK","FakeLepOriginFrac_VS_2L3LCat_STACK")
     stack.Add(histfakes_BF)
@@ -728,6 +732,7 @@ def plotFakeOriginFrac2L3L( **kwargs ):
     stack.Add(histfakes_LF)
     stack.Add(histfakes_PhConv)
     stack.Add(histfakes_Other)
+    stack.Add(histfakes_Unknown)
 
     canvasID_stack = kwargs["flavour"] + "_" + "FakeLepOriginFrac_VS_2L3LCat_" + kwargs["sample"] + "_" + kwargs["prodID"]
     cstack = TCanvas(canvasID_stack,canvasID_stack,50,50,1000,700)
