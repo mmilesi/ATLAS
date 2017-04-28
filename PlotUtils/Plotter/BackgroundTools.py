@@ -24,8 +24,16 @@ class Inputs:
         self.alltrees = {}
         self.sampleids = {}
         self.nomtree = 'physics'
+        self.friendtrees = []
+        self.friendfile_extension = None
         self.systrees = []
         self.sysweights = []
+
+    def setFriendTree(self, friendtrees=[], friendfile_extension=None):
+
+        self.friendtrees = friendtrees
+        self.friendfile_extension = friendfile_extension
+
 
     def registerTree(self, filegroup, nomtree = 'physics', systrees=[], ismc=True, isembedding=False, isdata=False, sample={}, resetTreeWeight=False):
 
@@ -93,6 +101,11 @@ class Inputs:
                     processes[group][subgroup] = TChain(treename)
                     processes[group][subgroup].SetTitle(prefix+treename+group+subgroup)
                 processes[group][subgroup].Add(filepath)
+                # Add friend trees to *this* tree (if any)
+                if self.friendtrees:
+                    for friendname in self.friendtrees:
+                        friendfilepath = filepath + self.friendfile_extension
+                        processes[group][subgroup].AddFriend(friendname,friendfilepath)
                 if sampleid:
                     processes[group][subgroup].SetTitle(processes[group][subgroup].GetTitle()+'_'+sampleid)
                     if not treename in self.sampleids:
@@ -1176,8 +1189,8 @@ class Background:
 
             #ratiomc.SetMinimum((1-val)-0.1)
             #ratiomc.SetMaximum((1+val)+0.1)
-            ratiomc.SetMinimum(0.75)
-            ratiomc.SetMaximum(1.25)
+            ratiomc.SetMinimum(0.0)
+            ratiomc.SetMaximum(2.0)
 
             if type(showratio) is tuple:
                 if showratio[0] == "MIN" and type(showratio[1]) is float:
@@ -1465,8 +1478,8 @@ class Background:
 
             #ratioup.SetMinimum((1-val)-0.1)
             #ratioup.SetMaximum((1+val)+0.1)
-            ratioup.SetMinimum(0.5)
-            ratioup.SetMaximum(1.5)
+            ratioup.SetMinimum(0.0)
+            ratioup.SetMaximum(2.0)
 
             if type(showratio) is tuple:
                 if showratio[0] == "MIN" and type(showratio[1]) is float:
@@ -1604,7 +1617,7 @@ def integrate(hist):
 
 # This function loads the samples metadata from the .csv file info
 
-def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', systrees=[]):
+def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', friendtrees=[], friendfile_extension=None, systrees=[]):
 
     # The datasat manager takes care of parsing the sample.csv files.
 
@@ -1616,6 +1629,9 @@ def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', sys
     samples = datasets.getListSamples(samplesfile=samplescsv)
 
     inputs = Inputs()
+
+    if friendtrees:
+        inputs.setFriendTree(friendtrees,friendfile_extension)
 
     for s in samples:
 

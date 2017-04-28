@@ -32,10 +32,10 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_inputBranches"              : branches_to_activate_str,
                                     "m_weightToCalc"               : "QMisID,MM",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
-                                    #"m_QMisIDRates_Filename_T"     : "Rates_v27.root",
-                                    #"m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
-                                    "m_QMisIDRates_Filename_T"     : "Rates_v27_For3l.root",
-                                    "m_QMisIDRates_Filename_AntiT" : "Rates_v27_For3l_AntiT.root",
+                                    "m_QMisIDRates_Filename_T"     : "Rates_v27.root",
+                                    "m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
+                                    # "m_QMisIDRates_Filename_T"     : "Rates_v27_For3l.root",
+                                    # "m_QMisIDRates_Filename_AntiT" : "Rates_v27_For3l_AntiT.root",
                                     "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
                                     "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPtLoose",
                                     "m_useTAntiTRates"             : False, # --> set this option to True if QMisID rates have NOT been measured independently for T and AntiT electrons - Set True for v19
@@ -81,7 +81,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
 				    #
                                     "m_doMMClosure"                : False,
-                                    "m_useEtaParametrisation"      : True,
+                                    "m_useEtaParametrisation"      : False,
 				    "m_useTEfficiency"             : False,
                                   }
 
