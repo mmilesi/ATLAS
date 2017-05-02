@@ -241,6 +241,13 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
+            if   self.parent.var.shortname == "NN_ttV": sp = sp.subprocess(cut=Cut("NN_Cut","( output_ttV < 0.5 )"))
+            elif self.parent.var.shortname == "NN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( output_top < 0.5 )"))
+            if   self.parent.var.shortname == "RNN_ttV": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_ttV < 0.5 )"))
+            elif self.parent.var.shortname == "RNN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_top < 0.5 )"))
+            if   self.parent.var.shortname == "NN_Rebinned": sp = sp.subprocess(cut=Cut("NN_Cut","( output_bin < 5 )"))
+            elif self.parent.var.shortname == "RNN_Rebinned": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_bin < 5 )"))
+
             print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
             return sp

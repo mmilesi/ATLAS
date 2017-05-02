@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 
 if __name__ == "__main__":
@@ -15,7 +14,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter
 
-    if True:
+    if False:
 
         # EfficiencyPlotter.plotRealElectron()
         # EfficiencyPlotter.plotRealMuon()
@@ -32,6 +31,15 @@ if __name__ == "__main__":
 
         # EfficiencyPlotter.plotFakeElectron_NonPromptVSPhotonConv() # MC TTbar-based
         EfficiencyPlotter.plotFakeElectron_NonPromptAndPhotonConvVSPhotonConv() # DD
+
+    import EfficiencyPlotter_NBJetsGt2
+
+    if True:
+
+        EfficiencyPlotter_NBJetsGt2.plotRealElectron()
+        EfficiencyPlotter_NBJetsGt2.plotRealMuon()
+        EfficiencyPlotter_NBJetsGt2.plotFakeElectron()
+        EfficiencyPlotter_NBJetsGt2.plotFakeMuon()
 
     import TypeAndOriginPlots
 

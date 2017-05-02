@@ -814,6 +814,7 @@ class Background:
         self.procmap     = {}
         self.debugprocs  = []
         self.colourcache = self.colours()
+        self.var         = Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0)
 
         for key in dir(self):
             attr = getattr(self, key)
@@ -1016,6 +1017,8 @@ class Background:
         if type(var) is str:
             var = self.vardb.getVar(var)
 
+        self.var = var
+
         if not var.typeval in [TH2I,TH2F,TH2D]:
             c = TCanvas("c1","Temp",50,50,600,600)
 	else:
@@ -1157,6 +1160,15 @@ class Background:
             ratiodata.SetLineWidth(1)
             ratiodata.Divide(tSum)
 
+            soverb = None
+            if showratio and sig and bkg and not  var.typeval in [TH2I,TH2F,TH2D]:
+                soverb = sig.Clone("SoverB")
+                soverb.SetLineStyle(1)
+                if signalfactor != 1.0:
+                    soverb.Scale(1.0/signalfactor)
+                soverb.Add(tSum)
+                soverb.Divide(tSum)
+
             valYmin =  99.
             valYmax = -99.
             for i in range(1, tSum.GetNbinsX()+1):
@@ -1187,10 +1199,10 @@ class Background:
             else:
                 val = abs(valYmax-1)
 
-            #ratiomc.SetMinimum((1-val)-0.1)
-            #ratiomc.SetMaximum((1+val)+0.1)
-            ratiomc.SetMinimum(0.0)
-            ratiomc.SetMaximum(2.0)
+            # ratiomc.SetMinimum((1-val)-0.1)
+            # ratiomc.SetMaximum((1+val)+0.1)
+            ratiomc.SetMinimum(0.25)
+            ratiomc.SetMaximum(1.75)
 
             if type(showratio) is tuple:
                 if showratio[0] == "MIN" and type(showratio[1]) is float:
@@ -1205,9 +1217,20 @@ class Background:
 
             pad2.cd()
             ratiomc.Draw("E2")
+            if soverb:
+                # gStyle.SetPaintTextFormat(".2f S/B")
+                # soverb.SetMarkerSize(3.8)
+                # soverb.SetMarkerColor(self.style.get('SignalMarkerColour', 2))
+                # soverb.Draw("HIST SAME TEXT0")
+                soverb.SetFillStyle(0)
+                soverb.Draw("HIST SAME")
+                reflsoverb = TLine(soverb.GetBinLowEdge(1), 1.15, soverb.GetBinLowEdge(soverb.GetNbinsX()+1), 1.15)
+                reflsoverb.SetLineStyle(2)
+                reflsoverb.SetLineColor(kRed)
+                reflsoverb.Draw("SAME")
             refl = TLine(ratiomc.GetBinLowEdge(1), 1., ratiomc.GetBinLowEdge(ratiomc.GetNbinsX()+1), 1.)
             refl.SetLineStyle(2)
-            refl.SetLineColor(kRed)
+            refl.SetLineColor(kBlack)
             refl.Draw("SAME")
             ratiodata.Draw("PE1 SAME")
             pad1.cd()
