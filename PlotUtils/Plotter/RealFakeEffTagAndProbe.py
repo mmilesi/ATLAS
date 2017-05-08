@@ -735,8 +735,8 @@ class RealFakeEffTagAndProbe:
 
         else:
 
-            # NB: for a TH2, the overflow is the top-right corner of the rectangular grid defining the histogram itself.
-            # Therefore, we need to apply the same strategy of TH1 for each x and y 1D slice.
+            # NB: for a TH2, ROOT classifies as "overflow" only the top-right corner of the rectangular grid defining the histogram itself.
+            # Therefore, we need to apply the same strategy of TH1 for each x and y 1D slice, separately.
 
             # 1.A Loop over x-axis slices, and fix the y-projetcion overflows
 
