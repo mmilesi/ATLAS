@@ -21,6 +21,7 @@
 // ROOT include(s):
 #include "TTree.h"
 #include "TFile.h"
+#include "TH1.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TEfficiency.h"
@@ -243,8 +244,8 @@ private:
 
   /** For each systematic, store a map with the efficiency histogram "type" to be read and the histogram pointer */
 
-  std::map< std::string, std::map< std::string, TH1D* > >        m_el_hist_map; //!
-  std::map< std::string, std::map< std::string, TH1D* > >        m_mu_hist_map; //!
+  std::map< std::string, std::map< std::string, TH1* > >        m_el_hist_map; //!
+  std::map< std::string, std::map< std::string, TH1* > >        m_mu_hist_map; //!
   std::map< std::string, std::map< std::string, TEfficiency* > > m_el_teff_map; //!
   std::map< std::string, std::map< std::string, TEfficiency* > > m_mu_teff_map; //!
 

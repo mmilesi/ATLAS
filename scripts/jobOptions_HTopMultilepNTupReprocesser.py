@@ -26,8 +26,8 @@ base_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysis
 #base_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk"
 
 HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultilepNTupReprocesser",
-                                    "m_debug"                      : False,
-                                    "m_verbose"                    : False,
+                                    "m_debug"                      : True,
+                                    "m_verbose"                    : True,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
                                     # "m_weightToCalc"               : "QMisID,MM",

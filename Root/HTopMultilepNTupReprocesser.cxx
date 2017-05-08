@@ -945,7 +945,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   std::vector<std::string> efficiencies = { "Real","Fake" };
   if ( m_useScaledFakeEfficiency ) efficiencies.push_back("ScaledFake");
   std::vector<std::string> leptons      = { "El","Mu" };
-  std::vector<std::string> variables    = { "Pt" };
+  std::vector<std::string> variables    = { "NBJets_VS_Pt" /*, "Pt"*/ };
   if ( m_useEtaParametrisation ) variables.push_back("Eta");
   std::vector<std::string> sysdirections = { "up","dn" };
 
@@ -977,7 +977,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
       TFile *file = TFile::Open(path.c_str());
 
-      TH1D *hist(nullptr), *hist_avg(nullptr), *hist_YES_TM(nullptr), *hist_NO_TM(nullptr);
+      TH1 *hist(nullptr), *hist_avg(nullptr), *hist_YES_TM(nullptr), *hist_NO_TM(nullptr);
       TEfficiency *teff(nullptr);
 
       HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file->IsOpen(), "Failed to open ROOT file" );
@@ -988,7 +988,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 	      // Do not look at variables other than pT for muons
 
-	      if ( lep.compare("Mu") == 0 && var.compare("Pt") != 0 ) { continue; }
+	      if ( lep.compare("Mu") == 0 && var.find("Pt") == std::string::npos ) { continue; }
 
 	      std::string sys_append;
 
@@ -998,7 +998,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 	      std::string histname = eff + "_" + lep + "_" + var + "_Efficiency_"  + process;
 
-	      n_sysbins = get_object<TH1D>( *file, histname )->GetNbinsX(); // Do NOT count the overflow, as the last visible bin of the efficiency hist already takes into account the overflow events.
+	      if ( var.find("_VS_") == std::string::npos ) {
+		  n_sysbins = get_object<TH1D>( *file, histname )->GetSize()-2; // Do NOT count the overflow, as the last visible bin of the efficiency hist already takes into account the overflow events.
+	      } else {
+		  TH2D* hist2D =  get_object<TH2D>( *file, histname );
+		  int n_visible_bins_X = hist2D->ProjectionX()->GetSize()-2;
+		  int n_visible_bins_Y = hist2D->ProjectionY()->GetSize()-2;
+		  int n_tot_visible_bins = n_visible_bins_X * n_visible_bins_Y;
+		  n_sysbins = n_tot_visible_bins; // Do NOT count the overflow, as the last visible bin of the efficiency hist already takes into account the overflow events.
+	      }
 
 	      for ( const auto& sysgroup : systematic_groups ) {
 
@@ -1012,7 +1020,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 		  // For variables other than pT, just consider the nominal case
 
-		  if ( !isNominal && var.compare("Pt") != 0 ) { continue; }
+		  if ( !isNominal && var.find("Pt") == std::string::npos ) { continue; }
 
 		  // Make sure only relevant systematic sources for this efficiency,flavour are read in
 
@@ -1055,7 +1063,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 			      std::cout << "\t\t\t\t  " << lep << "," << eff << "," << var << " efficiency - input TH1 name: " << histname << std::endl;
 
-			      hist  = get_object<TH1D>( *file,  histname );
+			      if ( var.find("_VS_") == std::string::npos ) {
+				  hist  = get_object<TH1D>( *file,  histname );
+			      } else {
+				  hist  = get_object<TH2D>( *file,  histname );
+			      }
+
 			      hist->SetDirectory(0);
 
 			      if ( m_useTEfficiency ) {
@@ -1184,7 +1197,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 			  std::cout << "\t\t\t\t  " << lep << "," << eff << "," << var << " efficiency - input TH1 name: " << histname << std::endl;
 
-			  hist  = get_object<TH1D>( *file,  histname );
+			  if ( var.find("_VS_") == std::string::npos ) {
+			      hist  = get_object<TH1D>( *file,  histname );
+			  } else {
+			      hist  = get_object<TH2D>( *file,  histname );
+			  }
 			  hist->SetDirectory(0);
 
 			  if ( m_useTEfficiency ) {
@@ -1314,7 +1331,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     float this_low_edge_pt(-1.0), this_up_edge_pt(-1.0);
     float this_low_edge_eta(-999.0), this_up_edge_eta(-999.0);
 
-    std::map< std::string, std::map< std::string, TH1D* > >        *histograms    = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
+    std::map< std::string, std::map< std::string, TH1* > >         *histograms    = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
     std::map< std::string, std::map< std::string, TEfficiency* > > *tefficiencies = ( lep.get()->flavour == 13 ) ? &m_mu_teff_map : &m_el_teff_map;
 
     std::string key_pt, key_eta, key_pt_teff, key_eta_teff;
@@ -1342,11 +1359,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     std::vector<std::string> tokens;
 
-    TH1D* hist_nominal_pt  = (histograms->find("Nominal")->second).find(key_pt)->second;
-    TH1D* hist_nominal_eta = (histograms->find("Nominal")->second).find(key_eta)->second;
+    TH1* hist_nominal_pt  = (histograms->find("Nominal")->second).find(key_pt)->second;
+    TH1* hist_nominal_eta = (histograms->find("Nominal")->second).find(key_eta)->second;
 
-    TH1D* hist_nominal_pt_YES_TM(nullptr);
-    TH1D* hist_nominal_pt_NO_TM(nullptr);
+    TH1* hist_nominal_pt_YES_TM(nullptr);
+    TH1* hist_nominal_pt_NO_TM(nullptr);
 
     if ( m_useTrigMatchingInfo ) {
 
@@ -1357,7 +1374,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     // Get the number of bins. Use nominal
 
-    int nbins_pt = hist_nominal_pt->GetNbinsX(); // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
+    int nbins_pt = hist_nominal_pt->GetXaxis()->GetNbins(); // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
 
     bool isNominal = ( m_this_syst.first.find("Nominal") != std::string::npos );
     bool isStat    = ( m_this_syst.first.find("Stat")    != std::string::npos );
@@ -1518,7 +1535,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
 		// Get the number of bins. Use nominal
 
-		int nbins_eta = hist_nominal_eta->GetNbinsX();
+		int nbins_eta = hist_nominal_eta->GetXaxis()->GetNbins();
 
 		bool isNextBinOverflowEta(false);
 
