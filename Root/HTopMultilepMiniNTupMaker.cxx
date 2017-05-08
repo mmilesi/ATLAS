@@ -186,11 +186,6 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: changeInput (bool firstFile)
 		if ( branchtype.compare("B") == 0 )   { m_inputNTuple->SetBranchAddress ( branchname.c_str(),   &m_lep2_INPUT_branches[key].c ); }
 		if ( branchtype.compare("I") == 0 )   { m_inputNTuple->SetBranchAddress ( branchname.c_str(),   &m_lep2_INPUT_branches[key].i ); }
 		break;
-	    case 3:
-		if ( branchtype.compare("F") == 0 )   { m_inputNTuple->SetBranchAddress ( branchname.c_str(),   &m_lep3_INPUT_branches[key].f ); }
-		if ( branchtype.compare("B") == 0 )   { m_inputNTuple->SetBranchAddress ( branchname.c_str(),   &m_lep3_INPUT_branches[key].c ); }
-		if ( branchtype.compare("I") == 0 )   { m_inputNTuple->SetBranchAddress ( branchname.c_str(),   &m_lep3_INPUT_branches[key].i ); }
-		break;
 	    default:
 		break;
 	    }
@@ -307,6 +302,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: initialize ()
 
     m_outputNTuple->tree()->Branch("isSS01",               	&m_isSS01, "isSS01/B");
     m_outputNTuple->tree()->Branch("isSS12",               	&m_isSS12, "isSS12/B");
+
+    m_outputNTuple->tree()->Branch("isQMisIDEvent_v2",          &m_isQMisIDEvent_v2, "isQMisIDEvent_v2/B");
 
     m_outputNTuple->tree()->Branch("is_T_T",               	&m_is_T_T, "is_T_T/B");
     m_outputNTuple->tree()->Branch("is_T_AntiT",               	&m_is_T_AntiT, "is_T_AntiT/B");
@@ -588,7 +585,12 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
     }
 
+    // Check if (MC) lepton is QMisID
+
+    ANA_CHECK( this->defineTruthLepFlags( lep0 ) );
+
     // Check if this lepton passes tight selection
+
     ANA_CHECK( this->checkIsTightLep( lep0 ) );
     ANA_CHECK( this->checkIsTightLep( lep0, "MVA" ) );
 
@@ -623,7 +625,12 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
     }
 
+    // Define some useful truth flags for this lepton
+
+    ANA_CHECK( this->defineTruthLepFlags( lep1 ) );
+
     // Check if this lepton passes tight selection
+
     ANA_CHECK( this->checkIsTightLep( lep1 ) );
     ANA_CHECK( this->checkIsTightLep( lep1, "MVA" ) );
 
@@ -634,7 +641,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 	Info("execute()","lep1 pT = %.2f - flavour = %i", lep1.get()->props["Pt"].f/1e3, lep1.get()->props["Flavour"].i );
     }
 
-    if ( m_event.get()->trilep_type || m_event.get()->quadlep_type) {
+    if ( m_event.get()->trilep_type || m_event.get()->quadlep_type ) {
 
 	auto lep2 = std::make_shared<leptonObj>();
 
@@ -655,6 +662,9 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
 	}
 
+	// Define some useful truth flags for this lepton
+	ANA_CHECK( this->defineTruthLepFlags( lep2 ) );
+
 	// Check if this lepton passes tight selection
 
 	ANA_CHECK( this->checkIsTightLep( lep2 ) );
@@ -664,37 +674,16 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: execute ()
 
 	m_leptons.push_back(lep2);
 
-	if ( m_event.get()->quadlep_type ) {
+    }
 
-	    auto lep3 = std::make_shared<leptonObj>();
+    // ------------------------------------------------------------------------
 
-	    for ( auto& property : lep3.get()->props ) {
-
-		key  = property.first;
-
-		if ( key.compare("Flavour") == 0 )        { property.second.i = std::abs(m_lep3_INPUT_branches["ID"].f); continue; }
-		if ( key.compare("Charge") == 0 )         { property.second.f = m_lep3_INPUT_branches["ID"].f / std::abs(m_lep3_INPUT_branches["ID"].f); continue; }
-		if ( key.compare("Isolated") == 0 )       { property.second.c = ( std::abs(m_lep3_INPUT_branches["ID"].f) == 13 ) ? m_lep3_INPUT_branches["isolationFixedCutTightTrackOnly"].i : m_lep3_INPUT_branches["isolationFixedCutTight"].i; continue; }
-		if ( key.compare("TrackIsoOverPt") == 0 ) { property.second.f = ( std::abs(m_lep3_INPUT_branches["ID"].f) == 13 ) ? m_lep3_INPUT_branches["ptKeycone30"].f / m_lep3_INPUT_branches["Pt"].f : m_lep3_INPUT_branches["ptKeycone20"].f / m_lep3_INPUT_branches["Pt"].f; continue; }
-		if ( key.compare("CaloIsoOverPt") == 0 )  { property.second.f = ( std::abs(m_lep3_INPUT_branches["ID"].f) == 13 ) ? -1.0 : m_lep3_INPUT_branches["topoEtcone20"].f / m_lep3_INPUT_branches["Pt"].f; continue; }
-		if ( key.compare("isQMisID") == 0 )       { property.second.c = m_lep3_INPUT_branches[key].c; continue; }
-
-		if ( m_lep3_INPUT_branches[key].f != -999.0 ) { property.second.f = m_lep3_INPUT_branches[key].f; }
-		if ( m_lep3_INPUT_branches[key].c != -1 )     { property.second.c = m_lep3_INPUT_branches[key].c; }
-		if ( m_lep3_INPUT_branches[key].i != -999 )   { property.second.i = m_lep3_INPUT_branches[key].i; }
-
-	    }
-
-	    // Check if this lepton passes tight selection
-
-	    ANA_CHECK( this->checkIsTightLep( lep3 ) );
-	    ANA_CHECK( this->checkIsTightLep( lep3, "MVA" ) );
-
-	    if ( m_debug ) { Info("execute()","lep3 pT = %.3f - flavour = %i", lep3.get()->props["Pt"].f/1e3, lep3.get()->props["Flavour"].i ); }
-
-	    m_leptons.push_back(lep3);
+    m_isQMisIDEvent_v2 = 0;
+    for ( auto lep : m_leptons ) {
+	if ( lep.get()->props["isQMisID_v2"].c ) {
+	    m_isQMisIDEvent_v2 = 1;
+	    break;
 	}
-
     }
 
     // ------------------------------------------------------------------------
@@ -837,7 +826,79 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: enableSelectedBranches ()
 
 }
 
-EL::StatusCode HTopMultilepMiniNTupMaker ::  checkIsTightLep( std::shared_ptr<leptonObj> lep, const std::string& strategy )
+EL::StatusCode HTopMultilepMiniNTupMaker :: defineTruthLepFlags( std::shared_ptr<leptonObj> lep )
+{
+
+    int type          = lep.get()->props["truthType"].i;
+    int origin        = lep.get()->props["truthOrigin"].i;
+    int parent_type   = lep.get()->props["truthParentType"].i;
+    int parent_origin = lep.get()->props["truthParentOrigin"].i;
+
+    char isQMisID_v2(0);
+    char isPrompt_v2(0), isBremsPrompt_v2(0);
+    char isPhotonConv_v2(0), isPromptPhotonConv_v2(0), isRadiationPhotonConv_v2(0);
+    char isNonPrompt_v2(0);
+    char isOtherFake_v2(0);
+    char isUnknown_v2(0);
+
+    // Get QMisID flag by checking the reco lepton charge and ID against the parent charge and ID (Q must have flipped, but ID must be the same)
+
+    isQMisID_v2 = ( lep.get()->props["ID"].f / lep.get()->props["truthParentPdgId"].i == -1.0 );
+    lep.get()->props["isQMisID_v2"].c       = isQMisID_v2;
+    lep.get()->props["isPromptQMisID_v2"].c = ( isQMisID_v2 && type == 2 && origin == 10 );
+    lep.get()->props["isBremsQMisID_v2"].c  = ( isQMisID_v2 && type == 4 && origin == 5 );
+
+    // Get the prompt flag by reading the default one, and classify also brems leptons w/ correct reco charge as prompts
+
+    isPrompt_v2 = lep.get()->props["isPrompt"].c;
+    lep.get()->props["isPrompt_v2"].c      = isPrompt_v2;
+    isBremsPrompt_v2 = ( !isQMisID_v2  && type == 4 && origin == 5 && parent_type == 2 && parent_origin == 10 );
+    lep.get()->props["isBremsPrompt_v2"].c = isBremsPrompt_v2;
+
+    // Get flags for electron photon conversions:
+    //
+    // -) They must come directly from a photon (type 4, origin 5)
+    // -) They must not be QMisID
+    // -) They must not be coming from electron brems (as we classify those as prompts)
+
+    // Then flag depending on the photon origin:
+    //
+    // -) photon is prompt (e.g., a photon radiated from the top in ttbar+gamma)
+    // -) photon is ISR/FSR (e.g., produced in the Parton Showering in ttbar)
+    // -) Other photons (e.g., from pi0s, from generic meson decays...)
+
+    isPhotonConv_v2 = ( !isQMisID_v2 && !isBremsPrompt_v2 && type == 4 && origin == 5 );
+    lep.get()->props["isPhotonConv_v2"].c          = isPhotonConv_v2;
+    isPromptPhotonConv_v2 = ( isPhotonConv_v2 && parent_type == 14 && parent_origin == 37 );
+    lep.get()->props["isPromptPhotonConv_v2"].c    =isPromptPhotonConv_v2;
+    isRadiationPhotonConv_v2 = ( isPhotonConv_v2 && parent_type == 15 && ( parent_origin == 39 || parent_origin == 40 ) ) ;
+    lep.get()->props["isRadiationPhotonConv_v2"].c = isRadiationPhotonConv_v2;
+    lep.get()->props["isOtherPhotonConv_v2"].c     = ( isPhotonConv_v2 && !isPromptPhotonConv_v2 && !isRadiationPhotonConv_v2 );
+
+    // Get flag for non-prompt leptons from c-b flavour decays
+    //
+    // They must not be QMisID
+    // They must be "NonIso" or "Bkg", and come from C-B hadrons, or fro HF resonances
+
+    isNonPrompt_v2 = ( !isQMisID_v2 && ( type == 3 || type == 4 || type == 7 || type == 8 ) && ( origin == 25 || origin == 26 || origin == 26 || origin == 27 || origin == 28 || origin == 29 || origin == 32 || origin == 33 ) );
+    lep.get()->props["isNonPrompt_v2"].c = isNonPrompt_v2;
+
+    // Get flag for other fakes
+    // Make sure this does not include unknown type or undefined origin leptons
+
+    isOtherFake_v2 = ( type != 0 && origin != 0 && !isPrompt_v2 && !isPhotonConv_v2 && !isNonPrompt_v2 && !isQMisID_v2 );
+    lep.get()->props["isOtherFake_v2"].c = isOtherFake_v2;
+
+    // Get unknown flags
+
+    isUnknown_v2 = ( !isPrompt_v2 && !isPhotonConv_v2 && !isNonPrompt_v2 && !isQMisID_v2 && !isOtherFake_v2 );
+    lep.get()->props["isUnknown_v2"].c = isUnknown_v2;
+
+    return EL::StatusCode::SUCCESS;
+
+}
+
+EL::StatusCode HTopMultilepMiniNTupMaker :: checkIsTightLep( std::shared_ptr<leptonObj> lep, const std::string& strategy )
 {
 
     bool useMVA = ( strategy.compare("MVA") == 0 );

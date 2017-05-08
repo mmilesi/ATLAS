@@ -713,9 +713,11 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     new_MM_hist.SetFillStyle(1001)
 
     err = new_MM_hist.Clone("tot_uncertainty")
-    err.SetFillColor(kGray+3)
-    err.SetLineColor(10)
-    err.SetFillStyle(3004)
+    err.SetFillColor(kGray+1)
+    err.SetLineColor(kGray+1)
+    err.SetFillStyle(3356)
+    gStyle.SetHatchesLineWidth(1)
+    gStyle.SetHatchesSpacing(0.8)
     err.SetMarkerSize(0)
 
     # Trick to rescale:
@@ -750,9 +752,11 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     ratio_err.GetXaxis().SetLabelSize(0.15)
     ratio_err.GetYaxis().SetLabelSize(0.12)
     ratio_err.GetYaxis().SetNdivisions(505) #(5)
-    ratio_err.SetFillColor(kGray+3)
-    ratio_err.SetLineColor(10)
-    ratio_err.SetFillStyle(3004)
+    ratio_err.SetFillColor(kGray+1)
+    ratio_err.SetLineColor(kGray+1)
+    ratio_err.SetFillStyle(3356)
+    gStyle.SetHatchesLineWidth(1)
+    gStyle.SetHatchesSpacing(0.8)
     ratio_err.SetMarkerSize(0)
 
     ratio_err.Divide(err)
@@ -819,10 +823,10 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     legend.SetBorderSize(0)	# no border
     legend.SetFillStyle(0)	# Legend transparent background
     legend.SetTextSize(0.03)	# Increase entry font size!
-    legend.SetTextFont(42)	# Helvetica
+    #legend.SetTextFont(42)	# Helvetica
 
-    legend.AddEntry(new_MM_hist, "FakesMM - t#bar{t}", "F")
-    legend.AddEntry(MC_hist, "t#bar{t}", "P")
+    legend.AddEntry(new_MM_hist, "Fakes MM (t#bar{t}, t#bar{t}#gamma inputs)", "F")
+    legend.AddEntry(MC_hist, "t#bar{t}, t#bar{t}#gamma", "P")
     legend.AddEntry(err, "Stat.+Sys. Unc.", "F")
 
     leg_ATLAS = TLatex()
@@ -837,7 +841,7 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     leg_lumi.DrawLatex(0.19,0.75,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
 
     pad2.cd()
-    ratio_err.GetYaxis().SetRangeUser(0.5, 1.5)
+    ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
     ratio_err.Draw("E2")
     ratio_MC_MM.Draw("PE SAME")
 
@@ -853,7 +857,17 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     if outpath[-1] == '/':
       outpath = outpath[:-1]
 
-    c.SaveAs( outpath + "/" + flav + "_" + var + "_Sys.png" )
+    outpath += "/" + flav + "_MM_vs_MC_Sys"
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+
+    extensions = [(".png","PNG"),(".pdf","PDF"),(".root","ROOT")]
+    for ext in extensions:
+        finalpath = outpath+"/"+ext[1]
+        if not os.path.exists(finalpath):
+            os.makedirs(finalpath)
+        outname = finalpath + "/" + flav + "_" + var + "_MM_vs_MC_Sys"
+        c.SaveAs( outname + ext[0] )
 
 # -------------------------------------------------------------------------------------------------------------------
 
@@ -1042,31 +1056,34 @@ if __name__ == '__main__':
 
     # var_list = []
     var_list = [
-        # "Integral",
-        # "Mu0Pt",
-        # "Mu1Pt",
-        # "Mu0Eta",
-        # "Mu1Eta",
-        # "Mu0DeltaRClosestJet",
-        # "Mu1DeltaRClosestJet",
-        # "El0Pt",
-        # "El1Pt",
-        # "El0Eta",
-        # "El1Eta",
-        # "El0DeltaRClosestJet",
-        # "El1DeltaRClosestJet",
-        # "deltaRLep0Lep1",
-        # "MET_FinalTrk",
+        "Integral",
+        "Mu0Pt",
+        "Mu1Pt",
+        "Mu0Eta",
+        "Mu1Eta",
+        "Mu0DeltaRClosestJet",
+        "Mu1DeltaRClosestJet",
+        "El0Pt",
+        "El1Pt",
+        "El0Eta",
+        "El1Eta",
+        "El0DeltaRClosestJet",
+        "El1DeltaRClosestJet",
+        "deltaRLep0Lep1",
+        "MET_FinalTrk",
+        "Mll01_inc",
         # "TotLepCharge",
-        # "NBJets",
-        # "NJets2j3j",
-        # "NJets4j",
+        "NBJets",
+        "NJets2j3j",
+        "NJets4j",
+        # "Lep0Pt",
+        # "Lep1Pt",
         #
-        "NN_Rebinned",
-        "RNN_Rebinned",
-        "NN_ttV",
-        "NN_top",
-        "RNN_ttV",
+        # "NN_Rebinned",
+        # "RNN_Rebinned",
+        # "NN_ttV",
+        # "NN_top",
+        # "RNN_ttV",
         #"RNN_top",
         ]
 
@@ -1106,6 +1123,9 @@ if __name__ == '__main__':
     for var_name in var_list:
 
 	print ("\n\tVariable: {0}\n".format(var_name))
+
+        if var_name == "NJets2j3j" and "HIGHNJ" in args.channel: continue
+        if var_name == "NJets4j" and "LOWNJ" in args.channel: continue
 
     	for flav in flavour_list:
 

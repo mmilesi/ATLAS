@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter_NBJetsGt2
 
-    if True:
+    if False:
 
         EfficiencyPlotter_NBJetsGt2.plotRealElectron()
         EfficiencyPlotter_NBJetsGt2.plotRealMuon()
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     import TypeAndOriginPlots
 
-    if False:
+    if True:
 
         samples       = ["ttbarbkg"] # ["ttbarbkg","wjetsbkg"]
         flavours      = ["El","Mu"]
@@ -60,11 +60,12 @@ if __name__ == "__main__":
                 for flavour in flavours:
                     print("\n\t\t\tflavour: {0}\n".format(flavour))
                     kwargs = {"flavour":flavour,"prodID":pid, "sample":s}
-                    TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
-                    TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
-                    TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
-                    TypeAndOriginPlots.plotOriginVSDistanceLepClosestJet(normFactor=normFactor, **kwargs)
-                    if flavour == "Mu":
-                        TypeAndOriginPlots.plotOriginVSEta(normFactor=normFactor, **kwargs)
-                    elif flavour == "El":
-                        TypeAndOriginPlots.plotOriginVSEtaBE2(normFactor=normFactor, **kwargs)
+                    #TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
+                    #TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
+                    TypeAndOriginPlots.plotOriginVSNBjets(normFactor=normFactor, **kwargs)
+                    #TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
+                    #TypeAndOriginPlots.plotOriginVSDistanceLepClosestJet(normFactor=normFactor, **kwargs)
+                    #if flavour == "Mu":
+                    #    TypeAndOriginPlots.plotOriginVSEta(normFactor=normFactor, **kwargs)
+                    #elif flavour == "El":
+                    #    TypeAndOriginPlots.plotOriginVSEtaBE2(normFactor=normFactor, **kwargs)

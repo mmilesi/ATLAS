@@ -998,7 +998,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 	      std::string histname = eff + "_" + lep + "_" + var + "_Efficiency_"  + process;
 
-	      n_sysbins = get_object<TH1D>( *file, histname )->GetNbinsX()+1;
+	      n_sysbins = get_object<TH1D>( *file, histname )->GetNbinsX(); // Do NOT count the overflow, as the last visible bin of the efficiency hist already takes into account the overflow events.
 
 	      for ( const auto& sysgroup : systematic_groups ) {
 
@@ -1357,11 +1357,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
     // Get the number of bins. Use nominal
 
-    int nbins_pt = hist_nominal_pt->GetNbinsX()+1;
-
-    float overflow_pt_up_edge = hist_nominal_pt->GetXaxis()->GetBinUpEdge(nbins_pt);
-
-    bool isBinOverflowPt(false);
+    int nbins_pt = hist_nominal_pt->GetNbinsX(); // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
 
     bool isNominal = ( m_this_syst.first.find("Nominal") != std::string::npos );
     bool isStat    = ( m_this_syst.first.find("Stat")    != std::string::npos );
@@ -1369,19 +1365,21 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     bool isSysCorrBins   = ( m_this_syst.second.compare("CorrBins")   == 0 );
     bool isSysUncorrBins = ( m_this_syst.second.compare("UncorrBins") == 0 );
 
+    bool isNextBinOverflowPt(false);
+
     // Loop over number of pt bins
-    // Do not consider underflow, i.e. 0th bin
+    // Do not consider underflow, and overflow
 
     for ( int p(1); p <= nbins_pt; ++p ) {
 
-	isBinOverflowPt = hist_nominal_pt->IsBinOverflow(p);
+	this_low_edge_pt = hist_nominal_pt->GetXaxis()->GetBinLowEdge(p);
+	this_up_edge_pt  = hist_nominal_pt->GetXaxis()->GetBinUpEdge(p);
 
-	this_low_edge_pt = hist_nominal_pt->GetBinLowEdge(p);
-	this_up_edge_pt  = hist_nominal_pt->GetBinLowEdge(p+1);
+	isNextBinOverflowPt = ( hist_nominal_pt->IsBinOverflow(p+1) );
 
 	if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
 
-	if ( ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) || ( isBinOverflowPt && pt >= overflow_pt_up_edge ) ) {
+	if ( ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) || ( isNextBinOverflowPt && pt >= this_up_edge_pt ) ) {
 
 	    float eff_pt(1.0), eff_pt_err_up(0.0), eff_pt_err_dn(0.0);
 
@@ -1520,25 +1518,23 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
 		// Get the number of bins. Use nominal
 
-		int nbins_eta = hist_nominal_eta->GetNbinsX()+1;
+		int nbins_eta = hist_nominal_eta->GetNbinsX();
 
-		float overflow_eta_up_edge = hist_nominal_eta->GetXaxis()->GetBinUpEdge(nbins_eta);
-
-		bool isBinOverflowEta(false);
+		bool isNextBinOverflowEta(false);
 
 		// Loop over number of eta bins
-		// Do not consider underflow, i.e. 0th bin
+		// Do not consider underflow, overflow
 
 		for ( int e(1); e <= nbins_eta; ++e ) {
 
-		    isBinOverflowEta = hist_nominal_eta->IsBinOverflow(e);
+		    this_low_edge_eta = hist_nominal_eta->GetXaxis()->GetBinLowEdge(e);
+		    this_up_edge_eta  = hist_nominal_eta->GetXaxis()->GetBinUpEdge(e);
 
-		    this_low_edge_eta = hist_nominal_eta->GetBinLowEdge(e);
-		    this_up_edge_eta  = hist_nominal_eta->GetBinLowEdge(e+1);
+		    isNextBinOverflowEta = hist_nominal_eta->IsBinOverflow(e+1);
 
 		    if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
 
-		    if ( ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) || ( isBinOverflowEta && fabs(eta) >= overflow_eta_up_edge ) ) {
+		    if ( ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) || ( isNextBinOverflowEta && fabs(eta) >= this_up_edge_eta ) ) {
 
 			syskey_up_eta = syskey_dn_eta = "Nominal";
 

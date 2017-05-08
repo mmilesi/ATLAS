@@ -125,13 +125,33 @@ namespace MiniNTupMaker {
 													       1 : the lepton closets in DR to 0
 													       2 : the other lepton
 													     */
-	props.insert( std::make_pair( "isPrompt", Branch_Types() ) );	          props["isPrompt"].c = 0;
-	props.insert( std::make_pair( "isBrems", Branch_Types() ) );	          props["isBrems"].c = 0;
-	props.insert( std::make_pair( "isFakeLep", Branch_Types() ) );	          props["isFakeLep"].c = 0;
-	props.insert( std::make_pair( "isQMisID", Branch_Types() ) );	          props["isQMisID"].c = 0;
-	props.insert( std::make_pair( "isConvPh", Branch_Types() ) );	          props["isConvPh"].c = 0;
 	props.insert( std::make_pair( "truthType", Branch_Types() ) );	          props["truthType"].i = 0;
 	props.insert( std::make_pair( "truthOrigin", Branch_Types() ) );	  props["truthOrigin"].i = 0;
+	props.insert( std::make_pair( "truthParentType", Branch_Types() ) );	  props["truthParentType"].i = 0;
+	props.insert( std::make_pair( "truthParentOrigin", Branch_Types() ) );	  props["truthParentOrigin"].i = 0;
+	props.insert( std::make_pair( "truthParentPdgId", Branch_Types() ) );	  props["truthParentPdgId"].i = 0;
+	props.insert( std::make_pair( "isPrompt", Branch_Types() ) );	          props["isPrompt"].c = 0;
+	props.insert( std::make_pair( "isBrems", Branch_Types() ) );	          props["isBrems"].c = 0;
+	props.insert( std::make_pair( "isQMisID", Branch_Types() ) );	          props["isQMisID"].c = 0;
+        /** New definition of truth variables */
+	props.insert( std::make_pair( "isPrompt_v2", Branch_Types() ) );	      props["isPrompt_v2"].c = 0;
+	props.insert( std::make_pair( "isBremsPrompt_v2", Branch_Types() ) );	      props["isBremsPrompt_v2"].c = 0;
+	//
+	props.insert( std::make_pair( "isQMisID_v2", Branch_Types() ) );	      props["isQMisID_v2"].c = 0;
+	props.insert( std::make_pair( "isPromptQMisID_v2", Branch_Types() ) );	      props["isPromptQMisID_v2"].c = 0;
+	props.insert( std::make_pair( "isBremsQMisID_v2", Branch_Types() ) );	      props["isBremsQMisID_v2"].c = 0;
+	//
+	props.insert( std::make_pair( "isPhotonConv_v2", Branch_Types() ) );	      props["isPhotonConv_v2"].c = 0;
+	props.insert( std::make_pair( "isPromptPhotonConv_v2", Branch_Types() ) );    props["isPromptPhotonConv_v2"].c = 0;
+	props.insert( std::make_pair( "isRadiationPhotonConv_v2", Branch_Types() ) ); props["isRadiationPhotonConv_v2"].c = 0;
+	props.insert( std::make_pair( "isOtherPhotonConv_v2", Branch_Types() ) );     props["isOtherPhotonConv_v2"].c = 0;
+	//
+	props.insert( std::make_pair( "isNonPrompt_v2", Branch_Types() ) );	      props["isNonPrompt_v2"].c = 0;
+	//
+	props.insert( std::make_pair( "isOtherFake_v2", Branch_Types() ) );	      props["isOtherFake_v2"].c = 0;
+	//
+	props.insert( std::make_pair( "isUnknown_v2", Branch_Types() ) );	      props["isUnknown_v2"].c = 0;
+	//
 	props.insert( std::make_pair( "isTagSLT", Branch_Types() ) );	          props["isTagSLT"].c = 0;
 	props.insert( std::make_pair( "isTagDLT", Branch_Types() ) );	          props["isTagDLT"].c = 0;
 	props.insert( std::make_pair( "deltaRClosestJet", Branch_Types() ) );	  props["deltaRClosestJet"].f = -1.0;
@@ -282,13 +302,11 @@ private:
   Int_t           m_nJets_OR_T;
   Int_t           m_nJets_OR_T_MV2c10_70;
 
-  std::vector<std::string> m_LEP_INPUT_VARS  = {"ID/F","Pt/F","E/F","Eta/F","Phi/F","EtaBE2/F","sigd0PV/F","Z0SinTheta/F","isTightLH/B","isMediumLH/B","isLooseLH/B","isTight/B","isMedium/B","isLoose/B","isolationLooseTrackOnly/I","isolationLoose/I","isolationFixedCutTight/I","isolationFixedCutTightTrackOnly/I","isolationFixedCutLoose/I","topoEtcone20/F","ptVarcone20/F","ptVarcone30/F","promptLeptonIso_TagWeight/F","chargeIDBDTLoose/F","chargeIDBDTMedium/F","chargeIDBDTTight/F","isTrigMatch/B","isTrigMatchDLT/B","isPrompt/B","isBrems/B","isFakeLep/B","isQMisID/B","isConvPh/B","truthType/I","truthOrigin/I","SFIDLoose/F","SFIDTight/F","SFTrigLoose/F","SFTrigTight/F","EffTrigLoose/F","EffTrigTight/F","SFIsoLoose/F","SFIsoTight/F","SFReco/F","SFTTVA/F","SFObjLoose/F","SFObjTight/F"};
-  //std::vector<std::string> m_LEP_INPUT_VARS  = {"ID/F","Pt/F","E/F","Eta/F","Phi/F","EtaBE2/F","sigd0PV/F","Z0SinTheta/F","isTightLH/B","isMediumLH/B","isLooseLH/B","isTight/B","isMedium/B","isLoose/B","isolationLooseTrackOnly/I","isolationLoose/I","isolationFixedCutTight/I","isolationFixedCutTightTrackOnly/I","isolationFixedCutLoose/I","topoEtcone20/F","ptVarcone20/F","ptVarcone30/F","isTrigMatch/B","isTrigMatchDLT/B","isPrompt/B","isBrems/B","isFakeLep/B","isQMisID/B","isConvPh/B","truthType/I","truthOrigin/I","SFIDLoose/F","SFIDTight/F","SFTrigLoose/F","SFTrigTight/F","EffTrigLoose/F","EffTrigTight/F","SFIsoLoose/F","SFIsoTight/F","SFReco/F","SFTTVA/F","SFObjLoose/F","SFObjTight/F"};
+  std::vector<std::string> m_LEP_INPUT_VARS  = {"ID/F","Pt/F","E/F","Eta/F","Phi/F","EtaBE2/F","sigd0PV/F","Z0SinTheta/F","isTightLH/B","isMediumLH/B","isLooseLH/B","isTight/B","isMedium/B","isLoose/B","isolationLooseTrackOnly/I","isolationLoose/I","isolationFixedCutTight/I","isolationFixedCutTightTrackOnly/I","isolationFixedCutLoose/I","topoEtcone20/F","ptVarcone20/F","ptVarcone30/F","promptLeptonIso_TagWeight/F","chargeIDBDTLoose/F","chargeIDBDTMedium/F","chargeIDBDTTight/F","isTrigMatch/B","isTrigMatchDLT/B","isPrompt/B","isBrems/B","isQMisID/B","truthType/I","truthOrigin/I","truthParentType/I","truthParentOrigin/I","truthParentPdgId/I","SFIDLoose/F","SFIDTight/F","SFTrigLoose/F","SFTrigTight/F","EffTrigLoose/F","EffTrigTight/F","SFIsoLoose/F","SFIsoTight/F","SFReco/F","SFTTVA/F","SFObjLoose/F","SFObjTight/F"};
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep0_INPUT_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep1_INPUT_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep2_INPUT_branches;
-  std::map< std::string, MiniNTupMaker::Branch_Types > m_lep3_INPUT_branches;
 
   ULong64_t       m_totalEvents;
   Float_t         m_totalEventsWeighted;
@@ -397,6 +415,8 @@ private:
   char	    m_isSS01;
   char	    m_isSS12;
 
+  char      m_isQMisIDEvent_v2;
+
   char	    m_is_T_T;
   char	    m_is_T_AntiT;
   char	    m_is_AntiT_T;
@@ -419,29 +439,124 @@ private:
   int       m_nelectrons;
   int       m_nleptons;
 
-  /** Additional lepton flat branches */
+  /** Additional lepton flat branches which do not exist in GN1 */
 
-  std::vector<std::string> m_LEP_OUTPUT_VARS  = {"isTightSelectedMVA/B","isTightSelected/B","deltaRClosestJet/F","deltaRClosestBJet/F" /*, "promptLeptonIso_TagWeight/F","chargeIDBDTLoose/F","chargeIDBDTMedium/F","chargeIDBDTTight/F" */};
+  std::vector<std::string> m_LEP_OUTPUT_VARS  = {
+      "isTightSelectedMVA/B",
+      "isTightSelected/B",
+      "deltaRClosestJet/F",
+      "deltaRClosestBJet/F",
+      "isPrompt_v2/B",
+      "isBremsPrompt_v2/B",
+      "isQMisID_v2/B",
+      "isPromptQMisID_v2/B",
+      "isBremsQMisID_v2/B",
+      "isPhotonConv_v2/B",
+      "isPromptPhotonConv_v2/B",
+      "isRadiationPhotonConv_v2/B",
+      "isOtherPhotonConv_v2/B",
+      "isNonPrompt_v2/B",
+      "isOtherFake_v2/B",
+      "isUnknown_v2/B"
+  };
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep0_OUTPUT_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep1_OUTPUT_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_lep2_OUTPUT_branches;
 
-  char	    m_event_isTrigMatch_DLT;
+  char m_event_isTrigMatch_DLT;
 
   /** Some vector branches for leptons after OLR (pT-ordered) */
 
-  std::vector<std::string> m_EL_VEC_VARS  = { "ID/F", "Pt/F", "Eta/F", "EtaBE2/F", "Phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "chargeIDBDTLoose/F", "chargeIDBDTMedium/F", "chargeIDBDTTight/F", "sigd0PV/F", "Z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptVarcone20/F", "topoEtcone20/F", "truthType/I", "truthOrigin/I" };
-  std::vector<std::string> m_MU_VEC_VARS  = { "ID/F", "Pt/F", "Eta/F", "Phi/F", "isTightSelected/B", "isTightSelectedMVA/B", "promptLeptonIso_TagWeight/F", "sigd0PV/F", "Z0SinTheta/F", "deltaRClosestJet/F", "deltaRClosestBJet/F", "ptVarcone30/F", "truthType/I", "truthOrigin/I" };
+  std::vector<std::string> m_EL_VEC_VARS  = {
+      // "ID/F",
+      "Pt/F",
+      // "Eta/F",
+      "EtaBE2/F",
+      "Phi/F",
+      "isTightSelected/B",
+      "isTightSelectedMVA/B",
+      "promptLeptonIso_TagWeight/F",
+      // "chargeIDBDTLoose/F",
+      // "chargeIDBDTMedium/F",
+      "chargeIDBDTTight/F",
+      "sigd0PV/F",
+      "Z0SinTheta/F",
+      "deltaRClosestJet/F",
+      "deltaRClosestBJet/F"
+      // "ptVarcone20/F",
+      // "topoEtcone20/F"
+  };
+  std::vector<std::string> m_MU_VEC_VARS  = {
+      // "ID/F",
+      "Pt/F",
+      "Eta/F",
+      "Phi/F",
+      "isTightSelected/B",
+      "isTightSelectedMVA/B",
+      "promptLeptonIso_TagWeight/F",
+      "sigd0PV/F",
+      "Z0SinTheta/F",
+      "deltaRClosestJet/F",
+      "deltaRClosestBJet/F"
+      // "ptVarcone30/F"
+  };
 
   std::map< std::string, MiniNTupMaker::Branch_Types > m_electron_OR_branches;
   std::map< std::string, MiniNTupMaker::Branch_Types > m_muon_OR_branches;
 
-  /** Tag & Probe vector branches */
+  /** Tag & Probe flat,vector branches */
 
   std::vector<std::string> m_TPS      = { "Tag", "Probe" };
   std::vector<std::string> m_TRIGS    = { "SLT" /*, "DLT"*/ };
-  std::vector<std::string> m_TP_VARS  = { "Pt/F", "Pt/VECF", "Eta/F", "Eta/VECF", "EtaBE2/F", "EtaBE2/VECF", "ptVarcone20/F", "ptVarcone30/F", "topoEtcone20/F", "sigd0PV/F", "Z0SinTheta/F", "ID/F", "deltaRClosestJet/F", "deltaRClosestJet/VECF", "deltaRClosestBJet/F", "deltaRClosestBJet/VECF", "massClosestBJet/F", "isTrigMatch/B", "isTightSelected/B", "isTightSelectedMVA/B", "isolationLoose/I", "isTightLH/B", "promptLeptonIso_TagWeight/F", "chargeIDBDTLoose/F", "chargeIDBDTMedium/F", "chargeIDBDTTight/F", "isPrompt/B", "isBrems/B", "isFakeLep/B", "isQMisID/B", "isConvPh/B", "truthType/I", "truthType/VECI", "truthOrigin/I", "truthOrigin/VECI" };
+  std::vector<std::string> m_TP_VARS  = {
+      "Pt/F",
+      "Pt/VECF",
+      "Eta/F",
+      "Eta/VECF",
+      "EtaBE2/F",
+      "EtaBE2/VECF",
+      // "ptVarcone20/F",
+      // "ptVarcone30/F",
+      // "topoEtcone20/F",
+      "sigd0PV/F",
+      "Z0SinTheta/F",
+      "ID/F",
+      "deltaRClosestJet/F",
+      "deltaRClosestJet/VECF",
+      "deltaRClosestBJet/F",
+      "deltaRClosestBJet/VECF",
+      "massClosestBJet/F",
+      "isTrigMatch/B",
+      "isTightSelected/B",
+      "isTightSelectedMVA/B",
+      "isolationLoose/I",
+      "isTightLH/B",
+      "promptLeptonIso_TagWeight/F",
+      // "chargeIDBDTLoose/F",
+      // "chargeIDBDTMedium/F",
+      "chargeIDBDTTight/F",
+      "truthType/I",
+      "truthOrigin/I",
+      "truthParentType/I",
+      "truthParentOrigin/I",
+      "truthParentPdgId/I",
+      "isPrompt/B",
+      "isBrems/B",
+      "isQMisID/B",
+      "isPrompt_v2/B",
+      "isBremsPrompt_v2/B",
+      "isQMisID_v2/B",
+      "isPromptQMisID_v2/B",
+      "isBremsQMisID_v2/B",
+      "isPhotonConv_v2/B",
+      "isPromptPhotonConv_v2/B",
+      "isRadiationPhotonConv_v2/B",
+      "isOtherPhotonConv_v2/B",
+      "isNonPrompt_v2/B",
+      "isOtherFake_v2/B",
+      "isUnknown_v2/B"
+  };
 
   char m_isBadTPEvent_SLT; /** No T&TM (SLT) leptons found */
 
@@ -502,7 +617,8 @@ public:
 private:
 
   EL::StatusCode enableSelectedBranches ();
-  EL::StatusCode checkIsTightLep( std::shared_ptr<MiniNTupMaker::leptonObj> lep, const std::string& strategy = "CutBased" );
+  EL::StatusCode defineTruthLepFlags ( std::shared_ptr<MiniNTupMaker::leptonObj> lep );
+  EL::StatusCode checkIsTightLep ( std::shared_ptr<MiniNTupMaker::leptonObj> lep, const std::string& strategy = "CutBased" );
   EL::StatusCode decorateEvent ();
   EL::StatusCode decorateWeights ();
 

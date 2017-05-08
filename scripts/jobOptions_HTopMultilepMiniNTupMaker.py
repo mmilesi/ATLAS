@@ -88,7 +88,104 @@ vec_lep_branches     = ["electron_passOR",
                         "muon_truthOrigin",
                        ]
 
-lep_branches        = ["lep_.*[^4]"]
+base_lep_branches = [
+   "lep_E_",
+   "lep_EffTrigLoose_",
+   "lep_EffTrigTight_",
+   "lep_EtaBE2_",
+   "lep_Eta_",
+   "lep_ID_",
+   "lep_Index_",
+   "lep_Phi_",
+   "lep_Pt_",
+   "lep_SFIDLoose_",
+   "lep_SFIDTight_",
+   "lep_SFIsoLoose_",
+   "lep_SFIsoTight_",
+   "lep_SFObjLoose_",
+   "lep_SFObjTight_",
+   "lep_SFReco_",
+   "lep_SFTTVA_",
+   "lep_SFTrigLoose_",
+   "lep_SFTrigTight_",
+   "lep_Z0SinTheta_",
+   "lep_chargeIDBDTLoose_",
+   "lep_chargeIDBDTMedium_",
+   "lep_chargeIDBDTTight_",
+   "lep_d0_",
+   "lep_deltaz0_",
+   "lep_isBrems_",
+   "lep_isConvPh_",
+   "lep_isFakeLep_",
+   "lep_isISR_FSR_Ph_",
+   "lep_isLooseLH_",
+   "lep_isLoose_",
+   "lep_isMediumLH_",
+   "lep_isMedium_",
+   "lep_isPrompt_",
+   "lep_isQMisID_",
+   "lep_isTightLH_",
+   "lep_isTight_",
+   "lep_isTrigMatchDLT_",
+   "lep_isTrigMatch_",
+   "lep_isTruthMatched_",
+   "lep_isolationFixedCutLoose_",
+   "lep_isolationFixedCutTightTrackOnly_",
+   "lep_isolationFixedCutTight_",
+   "lep_isolationGradientLoose_",
+   "lep_isolationGradient_",
+   "lep_isolationLooseTrackOnly_",
+   "lep_isolationLoose_",
+   "lep_jet_BDT_",
+   "lep_jet_Pt_",
+   "lep_jet_deltaR_",
+   "lep_jet_mv2c10_",
+   "lep_jet_nTrk_",
+   "lep_jet_ptOverMuPt_",
+   "lep_jet_ptRel_",
+   "lep_jet_sumPtTrk_",
+   "lep_promptLeptonIso_DRlj_",
+   "lep_promptLeptonIso_LepJetPtFrac_",
+   "lep_promptLeptonIso_TagWeight_",
+   "lep_promptLeptonIso_TrackJetNTrack_",
+   "lep_promptLeptonIso_ip2_",
+   "lep_promptLeptonIso_ip3_",
+   "lep_promptLeptonIso_sv1_jf_ntrkv_",
+   "lep_promptLeptonNoIso_TagWeight_",
+   "lep_promptLepton_TagWeight_",
+   "lep_ptVarcone20_",
+   "lep_ptVarcone30_",
+   "lep_ptVarcone40_",
+   "lep_sigd0PV_",
+   "lep_topoEtcone20_",
+   "lep_topoEtcone30_",
+   "lep_topoEtcone40_",
+   "lep_truthE_",
+   "lep_truthEta_",
+   "lep_truthM_",
+   "lep_truthOrigin_",
+   "lep_truthParentOrigin_",
+   "lep_truthParentPdgId_",
+   "lep_truthParentStatus_",
+   "lep_truthParentType_",
+   "lep_truthPdgId_",
+   "lep_truthPhi_",
+   "lep_truthPt_",
+   "lep_truthRapidity_",
+   "lep_truthStatus_",
+   "lep_truthType_",
+   "lep_vz_",
+   "lep_z0_",
+   ]
+
+lep_branches = []
+
+for b in base_lep_branches:
+   for idx in range(0,3):
+      this_b = b + str(idx)
+      lep_branches.append(this_b)
+
+# lep_branches        = ["lep_.*[^4]"]
 
 tau_branches        = ["tau_pt_0","tau_eta_0","tau_phi_0","tau_charge_0","tau_BDTJetScore_0","tau_JetBDTSigLoose_0","tau_JetBDTSigMedium_0","tau_JetBDTSigTight_0","tau_numTrack_0","tau_SFTight_0","tau_SFLoose_0"]
 
@@ -156,14 +253,13 @@ for branch in branches_to_copy:
 # Instantiate the AlgSelect algorithm to skim the input ntuple
 
 jet_skim_cut_2L = "( dilep_type > 0 && ( ( nJets_OR_T >= 2 && nJets_OR_T_MV2c10_70 >= 1 ) || ( nJets_OR_T >= 4 && nJets_OR_T_MV2c10_70 == 0 ) ) )"
-jet_skim_cut_3L = "( trilep_type > 0 && nJets_OR_T >= 2 )"
-jet_skim_cut_4L = "( quadlep_type > 0 && nJets_OR >= 2 )"
-jet_skim_cut = jet_skim_cut_2L + " || " + jet_skim_cut_3L + " || " + jet_skim_cut_4L
+jet_skim_cut_3L = "( trilep_type > 0 && nJets_OR_T >= 2 && nJets_OR_T_MV2c10_70 >= 1 )"
+jet_skim_cut = jet_skim_cut_2L + " || " + jet_skim_cut_3L
 
 algskim = ROOT.EL.AlgSelect(HTopMultilepMiniNTupMakerDict["m_outputNTupStreamName"])
 algskim.addCut("RunYear==2015 || RunYear==2016")
 algskim.addCut("passEventCleaning == 1")
-algskim.addCut("( dilep_type > 0 && lep_Pt_1 > 10e3 ) || ( trilep_type > 0 && lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 && lep_Pt_2 > 10e3 ) || ( quadlep_type > 0 && lep_Pt_3 > 10e3 )") # keep only dilepton,trilepton and quadlepton events, ensuring min(pT lep) > 10 GeV (NB: in 3L, flat branches are not pT-ranked, so we have to be explicit...)
+algskim.addCut("( dilep_type > 0 && lep_Pt_1 > 10e3 ) || ( trilep_type > 0 && lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 && lep_Pt_2 > 10e3 )") # keep only dilepton,trilepton events, ensuring min(pT lep) > 10 GeV (NB: in 3L, flat branches are not pT-ranked, so we have to be explicit...)
 algskim.addCut(jet_skim_cut)
 if ( HTopMultilepMiniNTupMakerDict["m_do3LTP"] ):
    algskim.addCut("dilep_type > 0 && ( nJets_OR_T >= 2 && nJets_OR_T<= 3 && nJets_OR_T_MV2c10_70 >= 1 )") # Reduce the size as much as possible when doing 3L T&P

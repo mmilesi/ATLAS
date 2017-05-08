@@ -63,7 +63,7 @@ parser.add_argument("--verbose", dest="verbose", action="store_true",default=Fal
 parser.add_argument("--nosub", dest="nosub", action="store_true",default=False,
                   help="Do not subtract backgrounds to data (NB: subtraction is disabled by default when running w/ option --closure)")
 parser.add_argument('--systematics', dest='systematics', action='store', default="", type=str, nargs='*',
-                  help='Option to pass a list of systematic variations to be considered. Use a space-separated list. Currently available systematics: {0}'.format(g_avaialble_systematics))
+                  help='Option to pass a list of systematic variations to be considered. Use a space-separated list. Currently available systematics: {0}. If using option=\'ALL\', every sytematic in the list will be considered.'.format(g_avaialble_systematics))
 parser.add_argument("--log", dest="log", action="store_true",default=False,
                   help="Read plots with logarithmic Y scale.")
 parser.add_argument('--rebin', dest='rebin', action='store', type=str, nargs='+',
@@ -162,6 +162,9 @@ class RealFakeEffTagAndProbe:
                     self.__variables.append(var)
 
         if systematics:
+            if "ALL" in systematics:
+                 self.__systematics.extend(g_avaialble_systematics)
+            else:
                 self.__systematics.extend(systematics)
 
         # The following dictionary associates a known process to a list of affecting systematics
@@ -221,7 +224,7 @@ class RealFakeEffTagAndProbe:
             self.histkeys.append(key)
 
         if self.verbose:
-            print("Saving histogram for N,D,AntiN w/ key: {0}".format(key))
+            print("Saving histogram for {0} w/ key: {1}".format(eventset,key))
 
         if eventset == "N":
             self.numerator_hists[key] = hist
@@ -858,13 +861,18 @@ class RealFakeEffTagAndProbe:
             print("\n\No subtraction activated: do nominal only...")
             return
 
+        # Make projetcions only for 2D histograms
+
+        found_2D_key = False
         for key in sorted(self.histkeys):
             if variation != "nominal": continue
+            if not "&&" in key: continue
+            found_2D_key = True
             self.__makeProjectionHists__( self.numerator_hists[key], "N" )
             self.__makeProjectionHists__( self.denominator_hists[key], "D" )
             self.__makeProjectionHists__( self.antinumerator_hists[key], "AntiN" )
-
-        #self.storeYields()
+        if found_2D_key:
+            self.storeYields()
 
         print("\nCalculating EFFICIENCIES - {0}...".format(variation))
 
@@ -1458,15 +1466,16 @@ class RealFakeEffTagAndProbe:
                         leg_ATLAS.DrawLatex(0.2,0.82,"#bf{#it{ATLAS}} Work In Progress");
                         leg_lumi.DrawLatex(0.2,0.77,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
 
-                        var = var.replace("&&","_VS_")
-                        canvas_filename = "_".join((eff,lep,var,"Efficiency",proc))
+                        thisvar = var
+                        thisvar = thisvar.replace("&&","_VS_")
+                        canvas_filename = "_".join((eff,lep,thisvar,"Efficiency",proc))
 
                         c.Update()
 
                         for extension in self.extensionlist:
                             c.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"."+extension)
 
-                        self.__save1DProjections__(var, key, canvas_filename, savepath)
+                        self.__save1DProjections__(thisvar, key, canvas_filename, savepath)
 
                         c.Clear()
                         c_avg = c.Clone(c.GetName()+"_AVG")
