@@ -989,17 +989,17 @@ if __name__ == "__main__":
         if doMMRates and "DATA" in args.channel:
 
             if args.useMCQMisID:
-                weightQMisID = 0.2
+                weightQMisID = 0.20
                 procQMisID   = 'QMisIDMC'
             else:
                 weightQMisID = 'QMisIDWeight_'
                 procQMisID   = 'QMisID'
 
             database.registerSystematics( Systematics(name='QMisIDsys', eventweight=weightQMisID, process=[procQMisID]) )
-            database.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.3, process=['FakesMC']) )
-            database.registerSystematics( Systematics(name='TTVsys', eventweight=0.25, process=['TTBarW','TTBarZ']) )
-            database.registerSystematics( Systematics(name='VVsys', eventweight=0.3, process=['Diboson']) )
-            database.registerSystematics( Systematics(name='OtherPromptSSsys', eventweight=0.15, process=['Rare','TTBar']) )
+            database.registerSystematics( Systematics(name='FakesOSsys', eventweight=0.30, process=['FakesMC']) )
+            database.registerSystematics( Systematics(name='TTVsys', eventweight=0.14, process=['TTBarW','TTBarZ']) )
+            database.registerSystematics( Systematics(name='VVsys', eventweight=0.50, process=['Diboson']) )
+            database.registerSystematics( Systematics(name='OtherPromptSSsys', eventweight=0.30, process=['Rare','TTBar']) )
 
         if doMM:
 
@@ -1427,7 +1427,7 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = "Integral_LOGY", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, logaxis = True) )
 
             database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
+            database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True) )
             database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210]) )
             database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,35,60,210]) )
             database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,60,90,140,210], logaxis = True) )
@@ -1439,12 +1439,12 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
             database.registerVar( Variable(shortname = "ElProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 4, minval = -0.5, maxval = 3.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
             if any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
-                database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 4, minvalX = -0.5, maxvalX = 3.5, manualbinsY = [10,15,20,26,210], typeval = TH2D, drawOpt2D = "COLZ1 text") )
+                database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 4, minvalX = -0.5, maxvalX = 3.5, manualbinsY = [10,15,20,26,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             if any( e in args.efficiency for e in ["REAL_EFF","ALL_EFF"] ):
                 database.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,0.5,0.8,1.37,1.52,2.0,2.6], manualbinsY = [10,15,20,26,30,40,60,90,140,210], typeval = TH2D, drawOpt2D = "COLZ1 text") )
 
             database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
+            database.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 200, minval = 10.0, maxval = 210.0, logaxis = True) )
             database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,50,90,140,210]) )
             database.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,35,50,210]) )
             database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=[10,15,20,26,30,40,50,90,140,210], logaxis = True) )
@@ -1456,7 +1456,7 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = "MuProbeNJets", latexname = "N_{jets}", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
             database.registerVar( Variable(shortname = "MuProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 4, minval = -0.5, maxval = 3.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
             if any( e in args.efficiency for e in ["FAKE_EFF","ALL_EFF"] ):
-                 database.registerVar( Variable(shortname = 'MuProbeNBJets_VS_MuProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 4, minvalX = -0.5, maxvalX = 3.5, manualbinsY = [10,15,26,40,210], typeval = TH2D, drawOpt2D = "COLZ1 text") )
+                 database.registerVar( Variable(shortname = 'MuProbeNBJets_VS_MuProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 4, minvalX = -0.5, maxvalX = 3.5, manualbinsY = [10,15,26,40,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
 
             # -----------------------------------------------------------------------------------------------------------------
             # MC subtraction: what gets plotted will be subtracted to data:
