@@ -35,7 +35,8 @@ namespace NTupReprocesser {
     	  isMC(0),
     	  isSS01(0),
 	  dilep_type(0),trilep_type(0),
-  	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0)
+	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0),
+	  njets_T(-1),nbjets_T(-1)
     { };
 
     char isMC;
@@ -46,7 +47,8 @@ namespace NTupReprocesser {
     char TAntiT;
     char AntiTT;
     char AntiTAntiT;
-
+    int  njets_T;
+    int  nbjets_T;
   };
 
   class leptonObj {
@@ -166,6 +168,9 @@ private:
   Char_t     m_is_TMVA_AntiTMVA;
   Char_t     m_is_AntiTMVA_TMVA;
   Char_t     m_is_AntiTMVA_AntiTMVA;
+
+  Int_t      m_nJets_OR_T;
+  Int_t      m_nJets_OR_T_MV2c10_70;
 
   Float_t    m_lep_ID_0;
   Float_t    m_lep_Pt_0;
@@ -292,9 +297,15 @@ private:
   void printWeights( const std::string& in_out );
 
   EL::StatusCode readRFEfficiencies ();
+
+  EL::StatusCode getMMEfficiencyAndError_2D ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
+  					      std::vector<float>& efficiency,
+					      const std::string& type );
+
   EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
   					   std::vector<float>& efficiency,
 					   const std::string& type );
+
   EL::StatusCode getMMWeightAndError ( std::vector<float>& mm_weight,
   				       const std::vector<float>& r0, const std::vector<float>& r1,
 				       const std::vector<float>& f0, const std::vector<float>& f1 );

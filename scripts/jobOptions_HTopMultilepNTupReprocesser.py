@@ -9,6 +9,7 @@ c = xAH_config()
 event_branches = ["EventNumber","RunNumber","mc_channel_number","isSS01","dilep_type","trilep_type",
                   "is_T_T","is_T_AntiT","is_AntiT_T","is_AntiT_AntiT",
                   "is_TMVA_TMVA","is_TMVA_AntiTMVA","is_AntiTMVA_TMVA","is_AntiTMVA_AntiTMVA",
+                  "nJets_OR_T","nJets_OR_T_MV2c10_70",
                   ]
 
 lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0","lep_isTightSelectedMVA_0","lep_isTrigMatch_0",
@@ -26,8 +27,8 @@ base_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysis
 #base_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk"
 
 HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultilepNTupReprocesser",
-                                    "m_debug"                      : True,
-                                    "m_verbose"                    : True,
+                                    "m_debug"                      : False,
+                                    "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
                                     # "m_weightToCalc"               : "QMisID,MM",
