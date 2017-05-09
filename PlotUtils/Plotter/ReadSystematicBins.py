@@ -1182,7 +1182,7 @@ if __name__ == '__main__':
     	    print ("\tFakes:\n")
 
     	    for sys, sysgroup in fakes_syst.iteritems():
-                debugflag = False
+                debugflag = True
                 fakes_up = myfile.Get( "fakesbkg_" + sys + "_up")
                 fakes_dn = myfile.Get( "fakesbkg_" + sys + "_dn")
                 if debugflag: print("\tsys: {0}, sysgroup: {1}\n".format(sys, sysgroup))

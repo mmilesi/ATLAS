@@ -427,10 +427,10 @@ if __name__ == "__main__":
     database.registerCut( Cut('2Lep_BothTrigMatchSLT',       '( ( dilep_type == 1 && ( lep_isTrigMatch_0 == 1 && lep_isTrigMatch_1 == 1 ) ) || ( dilep_type == 2 && ( ( TMath::Abs( lep_ID_0 ) == 13 && lep_isTrigMatch_0 == 1 ) || ( TMath::Abs( lep_ID_1 ) == 13 && lep_isTrigMatch_1 == 1 ) ) ) )') )
     database.registerCut( Cut('2Lep_BothAntiTrigMatchSLT',   '( ( dilep_type == 1 && ( lep_isTrigMatch_0 == 0 && lep_isTrigMatch_1 == 0 ) ) || ( dilep_type == 2 && ( ( TMath::Abs( lep_ID_0 ) == 13 && lep_isTrigMatch_0 == 0 ) || ( TMath::Abs( lep_ID_1 ) == 13 && lep_isTrigMatch_1 == 0 ) ) ) )') )
 
-    database.registerCut( Cut('2Lep_NBJet',               '( nJets_OR_T_MV2c10_70 > 0 )') )
-    database.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 > 0 )') )
-    database.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T > 1 )') )
-    database.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T > 3 )') )
+    database.registerCut( Cut('2Lep_NBJet',               '( nJets_OR_T_MV2c10_70 >= 1 )') )
+    database.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 >= 1 )') )
+    database.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T >= 2 )') )
+    database.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T >= 4 )') )
     database.registerCut( Cut('2Lep_NJet_CR',		  '( nJets_OR_T >= 2 && nJets_OR_T <= 3 )') )
     database.registerCut( Cut('2Lep_SS',	          '( lep_ID_0 * lep_ID_1 > 0 )') )
     database.registerCut( Cut('2Lep_OS',		  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
@@ -526,7 +526,7 @@ if __name__ == "__main__":
     #
     # -------------------------------------------------------------------------------
 
-    # Prompt leptons
+    # # Prompt leptons
     # lep0_prompt      = "( lep_isPrompt_0 )"
     # lep1_prompt      = "( lep_isPrompt_1 )"
     # lep0_bremsprompt = "( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 && lep_truthParentType_0 == 2 && lep_truthParentOrigin_0 == 10 && lep_ID_0/lep_truthParentPdgId_0 == 1.0 )"
@@ -1007,7 +1007,7 @@ if __name__ == "__main__":
 
             flavours     = ["El","Mu"]
             efficiencies = ["Real","Fake"]
-            variables    = ["Pt"]
+            variables    = ["Pt","NBJets_VS_Pt"]
 
             sampleID = ""
             sys_sources = []
@@ -1035,6 +1035,7 @@ if __name__ == "__main__":
                     for f in flavours:
                         for e in efficiencies:
                             for v in variables:
+                                if f == "El" and e == "Fake" and v != "NBJets_VS_Pt": continue
                                 if sys[1] == "CorrBins":
                                     thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys[0]
                                     thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] + "_"
