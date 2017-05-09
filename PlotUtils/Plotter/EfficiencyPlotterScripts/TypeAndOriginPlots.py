@@ -594,6 +594,86 @@ def plotOriginVSDistanceLepClosestJet( normFactor=0, **kwargs ):
     Plot.legend.Clear()
 
 
+def plotOriginVSDistanceOtherLep( normFactor=0, **kwargs ):
+
+    plotlist = []
+
+    if kwargs["flavour"] == "Mu":
+        header   = "muons"
+    elif kwargs["flavour"] == "El":
+        header   = "electrons"
+
+    Plot.legend.SetHeader("Fake {0}".format(header))
+
+    variable_2L = "Lep1Origin_VS_DistanceOtherLep"
+    variable_3L = "Lep2Origin_VS_DistanceOtherLep"
+
+    basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "_v2/" + "OutputPlots_FakeOriginFrac_TTBarTTBarGamma_" + kwargs["prodID"]
+
+    inputPath_2LVR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_"
+    inputPath_2LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_"
+    inputPath_3LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT_"
+
+    inputName_2L = variable_2L + ".root"
+    inputName_3L = variable_3L + ".root"
+
+    p0_props = {
+                #"legend"      : "t#bar{t} - Loose sel.",
+                "xAxisTitle"  : "truthOrigin",
+                "yAxisTitle"  : "#DeltaR(l_{0},l_{1})",
+                "xAxisLabels" : [("NonDefined",0),("SingleElec",1),("SingleMuon",2),("SinglePhot",3),("SingleTau",4),("PhotonConv",5),("DalitzDec",6),("ElMagProc",7),("Mu",8),("TauLep",9),("top",10),("QuarkWeakDec",11),("WBoson",12),("ZBoson",13),("Higgs",14),("HiggsMSSM",15),("HeavyBoson",16),("WBosonLRSM",17),("NuREle",18),("NuRMu",19),("NuRTau",20),("LQ",21),("SUSY",22),("LightMeson",23),("StrangeMeson",24),("CharmedMeson",25),("BottomMeson",26),("CCbarMeson",27),("JPsi",28),("BBbarMeson",29),("LightBaryon",30),("StrangeBaryon",31),("CharmedBaryon",32),("BottomBaryon",33),("PionDecay",34),("KaonDecay",35),("BremPhot",36),("PromptPhot",37),("UndrPhot",38),("ISRPhot",39),("FSRPhot",40)], #,("NucReact",41),("PiZero",42),("DiBoson",43),("ZorHeavyBoson",44),("QCD",45)],
+                "normFactor"   : normFactor,
+                "drawGrid"     : True,
+               }
+
+    extension = ""
+    if "normFactor" in p0_props:
+        if p0_props["normFactor"]:
+            extension = "_NORM"
+    doLeptonOriginFracPlots = ( not "normFactor" in p0_props or not p0_props["normFactor"] )
+
+    pathlist   = [inputPath_2LVR+inputName_2L,inputPath_2LSR+inputName_2L,inputPath_3LSR+inputName_3L]
+    varlist    = [variable_2L,variable_2L,variable_3L]
+    regionlist = ["2LSS_LOWNJ_VR_TT","2LSS_SR_TT","3L_SR_TT"]
+
+    for idx, path in enumerate(pathlist):
+
+        p0 = Plot(kwargs["sample"], path, p0_props)
+
+        canvasID = varlist[idx] + "_" + kwargs["flavour"] + "_" + kwargs["prodID"] + "_" + regionlist[idx] + extension
+        c = TCanvas(canvasID,canvasID,50,50,1000,700)
+        c.cd()
+        p0.makePlot()
+
+        if doLeptonOriginFracPlots:
+            canvasID_stack = "FakeLepOriginFrac" + "_" + kwargs["flavour"] + "_" + varlist[idx] + "_" + kwargs["prodID"] + "_" + regionlist[idx]
+            cstack = TCanvas(canvasID_stack,canvasID_stack,50,50,1000,700)
+            cstack.cd()
+            mystack, mystackleg = p0.makeLeptonOriginFracPlots(canvasID_stack)
+            mystack.Draw()
+            mystack.GetXaxis().SetTitle("#DeltaR(l_{0},l_{1})")
+            mystack.GetYaxis().SetTitle("Fake {0} origin fraction".format(header))
+            mystackleg.Draw()
+            saveName_stack = canvasID_stack
+
+        # Plot.legend.Draw()
+        # Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
+        # Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
+
+        savePath = basePath + "/" + kwargs["flavour"] + "_" + "FakeLepOriginFrac_VS_DistanceLepOtherLep_" + kwargs["prodID"] + "/"
+
+        if not os.path.exists(savePath):
+            os.makedirs(savePath)
+
+        saveName = canvasID
+        for ext in ["png","pdf","root"]:
+            c.SaveAs( savePath + saveName + "." + ext )
+            if doLeptonOriginFracPlots:
+                cstack.SaveAs( savePath + saveName_stack + "." + ext )
+
+    Plot.legend.Clear()
+
+
 
 def plotFakeOriginFrac2L3L( **kwargs ):
 

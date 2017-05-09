@@ -60,12 +60,13 @@ if __name__ == "__main__":
                 for flavour in flavours:
                     print("\n\t\t\tflavour: {0}\n".format(flavour))
                     kwargs = {"flavour":flavour,"prodID":pid, "sample":s}
-                    #TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
-                    #TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
-                    TypeAndOriginPlots.plotOriginVSNBjets(normFactor=normFactor, **kwargs)
-                    #TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
-                    #TypeAndOriginPlots.plotOriginVSDistanceLepClosestJet(normFactor=normFactor, **kwargs)
-                    #if flavour == "Mu":
+                    # TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
+                    # TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
+                    # TypeAndOriginPlots.plotOriginVSNBjets(normFactor=normFactor, **kwargs)
+                    TypeAndOriginPlots.plotOriginVSDistanceOtherLep(normFactor=normFactor, **kwargs)
+                    # TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
+                    # TypeAndOriginPlots.plotOriginVSDistanceLepClosestJet(normFactor=normFactor, **kwargs)
+                    # if flavour == "Mu":
                     #    TypeAndOriginPlots.plotOriginVSEta(normFactor=normFactor, **kwargs)
-                    #elif flavour == "El":
+                    # elif flavour == "El":
                     #    TypeAndOriginPlots.plotOriginVSEtaBE2(normFactor=normFactor, **kwargs)
