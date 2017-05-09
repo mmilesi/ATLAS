@@ -311,7 +311,8 @@ class Plot:
         if self.is2D:
             gPad.Update()
             palette = self.__hist.FindObject("palette")
-            palette.GetAxis().SetLabelSize(0.05)
+            if palette:
+                palette.GetAxis().SetLabelSize(0.05)
 
         if self.__props.get("drawGrid"):
             if self.__props["drawGrid"]:

@@ -212,11 +212,26 @@ def plotOriginVSNBjets( normFactor=0, **kwargs ):
 
     basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "_v2/" + "OutputPlots_FakeOriginFrac_TTBarTTBarGamma_" + kwargs["prodID"]
 
-    inputPath_2L   = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_ALLNJ_VR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_ALLNJ_VR_TT_"
-    inputPath_3LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT_"
+    pathlist = []
 
     inputName_2L = variable_2L + ".root"
     inputName_3L = variable_3L + ".root"
+
+    inputPath_2LVR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_"
+    pathlist.append(inputPath_2LVR+inputName_2L)
+    inputPath_2LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_"
+    pathlist.append(inputPath_2LSR+inputName_2L)
+    inputPath_3LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT_"
+    pathlist.append(inputPath_3LSR+inputName_3L)
+    if kwargs["flavour"] == "El":
+        inputPath_2LVR_ElEl = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_ElEl" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_ElEl_"
+        pathlist.append(inputPath_2LVR_ElEl+inputName_2L)
+        inputPath_2LVR_OF   = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_OF" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_OF_"
+        pathlist.append(inputPath_2LVR_OF+inputName_2L)
+        inputPath_2LSR_ElEl = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_ElEl" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_ElEl_"
+        pathlist.append(inputPath_2LSR_ElEl+inputName_2L)
+        inputPath_2LSR_OF   = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_OF" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_OF_"
+        pathlist.append(inputPath_2LSR_OF+inputName_2L)
 
     p0_props = {
                 #"legend"      : "t#bar{t} - Loose sel.",
@@ -233,9 +248,11 @@ def plotOriginVSNBjets( normFactor=0, **kwargs ):
             extension = "_NORM"
     doLeptonOriginFracPlots = ( not "normFactor" in p0_props or not p0_props["normFactor"] )
 
-    pathlist   = [inputPath_2L+inputName_2L,inputPath_3LSR+inputName_3L]
-    varlist    = [variable_2L,variable_3L]
-    regionlist = ["2LSS_ALLNJ_VR_TT","3L_SR_TT"]
+    varlist    = [variable_2L,variable_2L,variable_3L]
+    regionlist = ["2LSS_LOWNJ_VR_TT","2LSS_SR_TT","3L_SR_TT"]
+    if kwargs["flavour"] == "El":
+        regionlist.extend(["2LSS_LOWNJ_VR_TT_ElEl","2LSS_LOWNJ_VR_TT_OF","2LSS_SR_TT_ElEl","2LSS_SR_TT_OF"])
+        varlist.extend([variable_2L,variable_2L,variable_2L,variable_2L])
 
     for idx, path in enumerate(pathlist):
 
@@ -610,12 +627,26 @@ def plotOriginVSDistanceOtherLep( normFactor=0, **kwargs ):
 
     basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "_v2/" + "OutputPlots_FakeOriginFrac_TTBarTTBarGamma_" + kwargs["prodID"]
 
-    inputPath_2LVR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_"
-    inputPath_2LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_"
-    inputPath_3LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT_"
+    pathlist = []
 
     inputName_2L = variable_2L + ".root"
     inputName_3L = variable_3L + ".root"
+
+    inputPath_2LVR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_"
+    pathlist.append(inputPath_2LVR+inputName_2L)
+    inputPath_2LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_"
+    pathlist.append(inputPath_2LSR+inputName_2L)
+    inputPath_3LSR = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT" + "/" + kwargs["flavour"] + "FakeOriginFrac_3L_SR_TT_"
+    pathlist.append(inputPath_3LSR+inputName_3L)
+    if kwargs["flavour"] == "El":
+        inputPath_2LVR_ElEl = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_ElEl" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_ElEl_"
+        pathlist.append(inputPath_2LVR_ElEl+inputName_2L)
+        inputPath_2LVR_OF   = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_OF" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_LOWNJ_VR_TT_OF_"
+        pathlist.append(inputPath_2LVR_OF+inputName_2L)
+        inputPath_2LSR_ElEl = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_ElEl" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_ElEl_"
+        pathlist.append(inputPath_2LSR_ElEl+inputName_2L)
+        inputPath_2LSR_OF   = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_OF" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_OF_"
+        pathlist.append(inputPath_2LSR_OF+inputName_2L)
 
     p0_props = {
                 #"legend"      : "t#bar{t} - Loose sel.",
@@ -632,11 +663,16 @@ def plotOriginVSDistanceOtherLep( normFactor=0, **kwargs ):
             extension = "_NORM"
     doLeptonOriginFracPlots = ( not "normFactor" in p0_props or not p0_props["normFactor"] )
 
-    pathlist   = [inputPath_2LVR+inputName_2L,inputPath_2LSR+inputName_2L,inputPath_3LSR+inputName_3L]
     varlist    = [variable_2L,variable_2L,variable_3L]
     regionlist = ["2LSS_LOWNJ_VR_TT","2LSS_SR_TT","3L_SR_TT"]
+    if kwargs["flavour"] == "El":
+        regionlist.extend(["2LSS_LOWNJ_VR_TT_ElEl","2LSS_LOWNJ_VR_TT_OF","2LSS_SR_TT_ElEl","2LSS_SR_TT_OF"])
+        varlist.extend([variable_2L,variable_2L,variable_2L,variable_2L])
+
 
     for idx, path in enumerate(pathlist):
+
+        print("Reading input from : {0}".format(path))
 
         p0 = Plot(kwargs["sample"], path, p0_props)
 

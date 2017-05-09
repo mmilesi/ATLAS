@@ -315,7 +315,7 @@ if __name__ == "__main__":
         inputdir    = args.inputpath,
         samplescsv  = args.samplesCSV,
         nomtree     = "physics",
-        # friendtrees = ["NN"],
+        # friendtrees = ["NN_physics"],
         # friendfile_extension = ".reduced.friend",
         # Name of the trees that contains values for shifted systematics
         systrees =  [
@@ -529,38 +529,38 @@ if __name__ == "__main__":
     # -------------------------------------------------------------------------------
 
     # Prompt leptons
-    # lep0_prompt      = "( lep_isPrompt_0 )"
-    # lep1_prompt      = "( lep_isPrompt_1 )"
-    # lep0_bremsprompt = "( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 && lep_truthParentType_0 == 2 && lep_truthParentOrigin_0 == 10 && lep_ID_0/lep_truthParentPdgId_0 == 1.0 )"
-    # lep1_bremsprompt = "( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 && lep_truthParentType_1 == 2 && lep_truthParentOrigin_1 == 10 && lep_ID_1/lep_truthParentPdgId_1 == 1.0 )"
-    # # QMisID leptons
-    # lep0_qmisid      = "( lep_ID_0/lep_truthParentPdgId_0 == -1.0 )"
-    # lep1_qmisid      = "( lep_ID_1/lep_truthParentPdgId_1 == -1.0 )"
-    # # Photon conversion leptons
-    # lep0_photonconv  = "( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 && !( lep_truthParentType_0 == 2 && lep_truthParentOrigin_0 == 10 ) && !{0} )".format(lep0_qmisid)
-    # lep1_photonconv  = "( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 && !( lep_truthParentType_1 == 2 && lep_truthParentOrigin_1 == 10 ) && !{0} )".format(lep1_qmisid)
-    # # Non-prompt leptons (ie, HF leptons, photon conversions, other fakes...). Exclude QMisID leptons from this definition
-    # lep0_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep0_prompt,lep0_bremsprompt,lep0_qmisid)
-    # lep1_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep1_prompt,lep1_bremsprompt,lep1_qmisid)
-    # # QMisID event
-    # isqmisidevent    = "( {0} || {1} )".format(lep0_qmisid,lep1_qmisid)
-
-    # Prompt leptons
-    lep0_prompt      = "lep_isPrompt_v2_0"
-    lep1_prompt      = "lep_isPrompt_v2_1"
-    lep0_bremsprompt = "lep_isBremsPrompt_v2_0"
-    lep1_bremsprompt = "lep_isBremsPrompt_v2_1"
+    lep0_prompt      = "( lep_isPrompt_0 )"
+    lep1_prompt      = "( lep_isPrompt_1 )"
+    lep0_bremsprompt = "( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 && lep_truthParentType_0 == 2 && lep_truthParentOrigin_0 == 10 && lep_ID_0/lep_truthParentPdgId_0 == 1.0 )"
+    lep1_bremsprompt = "( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 && lep_truthParentType_1 == 2 && lep_truthParentOrigin_1 == 10 && lep_ID_1/lep_truthParentPdgId_1 == 1.0 )"
     # QMisID leptons
-    lep0_qmisid      = "lep_isQMisID_v2_0"
-    lep1_qmisid      = "lep_isQMisID_v2_1"
+    lep0_qmisid      = "( lep_ID_0/lep_truthParentPdgId_0 == -1.0 )"
+    lep1_qmisid      = "( lep_ID_1/lep_truthParentPdgId_1 == -1.0 )"
     # Photon conversion leptons
-    lep0_photonconv  = "lep_isPhotonConv_v2_0"
-    lep1_photonconv  = "lep_isPhotonConv_v2_1"
+    lep0_photonconv  = "( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 && !( lep_truthParentType_0 == 2 && lep_truthParentOrigin_0 == 10 ) && !{0} )".format(lep0_qmisid)
+    lep1_photonconv  = "( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 && !( lep_truthParentType_1 == 2 && lep_truthParentOrigin_1 == 10 ) && !{0} )".format(lep1_qmisid)
     # Non-prompt leptons (ie, HF leptons, photon conversions, other fakes...). Exclude QMisID leptons from this definition
     lep0_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep0_prompt,lep0_bremsprompt,lep0_qmisid)
     lep1_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep1_prompt,lep1_bremsprompt,lep1_qmisid)
     # QMisID event
     isqmisidevent    = "( {0} || {1} )".format(lep0_qmisid,lep1_qmisid)
+
+    # # Prompt leptons
+    # lep0_prompt      = "lep_isPrompt_v2_0"
+    # lep1_prompt      = "lep_isPrompt_v2_1"
+    # lep0_bremsprompt = "lep_isBremsPrompt_v2_0"
+    # lep1_bremsprompt = "lep_isBremsPrompt_v2_1"
+    # # QMisID leptons
+    # lep0_qmisid      = "lep_isQMisID_v2_0"
+    # lep1_qmisid      = "lep_isQMisID_v2_1"
+    # # Photon conversion leptons
+    # lep0_photonconv  = "lep_isPhotonConv_v2_0"
+    # lep1_photonconv  = "lep_isPhotonConv_v2_1"
+    # # Non-prompt leptons (ie, HF leptons, photon conversions, other fakes...). Exclude QMisID leptons from this definition
+    # lep0_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep0_prompt,lep0_bremsprompt,lep0_qmisid)
+    # lep1_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep1_prompt,lep1_bremsprompt,lep1_qmisid)
+    # # QMisID event
+    # isqmisidevent    = "( {0} || {1} )".format(lep0_qmisid,lep1_qmisid)
 
     # 1.
     #
@@ -818,8 +818,8 @@ if __name__ == "__main__":
                 print ""
                 # database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = True) )
                 #
-                database.registerVar( Variable(shortname = "NN_Rebinned", latexname = "NN", ntuplename = "output_bin", bins = 8, minval = -0.5, maxval = 7.5, sysvar = True ) )
-                database.registerVar( Variable(shortname = "RNN_Rebinned", latexname = "NN", ntuplename = "RNN_output_bin", bins = 8, minval = -0.5, maxval = 7.5, sysvar = True ) )
+                database.registerVar( Variable(shortname = "NN_Rebinned", latexname = "NN", ntuplename = "output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
+                database.registerVar( Variable(shortname = "RNN_Rebinned", latexname = "NN", ntuplename = "RNN_output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
                 database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
                 database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
                 database.registerVar( Variable(shortname = "RNN_ttV", latexname = "NN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
@@ -1202,23 +1202,23 @@ if __name__ == "__main__":
         # database.registerVar( Variable(shortname = "Lep1Origin", latexname = "truthOrigin^{lep}", ntuplename = "lep_truthOrigin_1", bins = 41, minval = -0.5, maxval = 40.5 ) )
         # database.registerVar( Variable(shortname = 'Lep1Type_VS_Lep1Origin', latexnameX = 'truthType^{lep}', latexnameY = 'truthOrigin^{lep}', ntuplename = "lep_truthOrigin_1:lep_truthType_1", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_NJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-        # database.registerVar( Variable(shortname = 'Lep1Origin_VS_NBJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{b-tags}', ntuplename = "nJets_OR_T_MV2c10_70:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 4, minvalY = -0.5, maxvalY = 3.5, typeval = TH2D) )
+        database.registerVar( Variable(shortname = 'Lep1Origin_VS_NBJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{b-tags}', ntuplename = "nJets_OR_T_MV2c10_70:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 4, minvalY = -0.5, maxvalY = 3.5, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_Lep1Pt', latexnameX = 'truthOrigin^{lep}', latexnameY = 'p_{T}^{lep}', ntuplename = "lep_Pt_1/1e3:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[10,15,20,26,35,60,210], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_Lep1Eta', latexnameX = 'truthOrigin^{lep}', latexnameY = '#eta^{lep}', ntuplename = "TMath::Abs(lep_Eta_1):lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0.0,0.1,0.7,1.3,1.9,2.5], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_Lep1EtaBE2', latexnameX = 'truthOrigin^{lep}', latexnameY = '#eta^{lep}', ntuplename = "TMath::Abs(lep_EtaBE2_1):lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0.0,0.5,0.8,1.37,1.52,2.0,2.6], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_Lep1DistanceClosestJet', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(lep, closest jet)', ntuplename = "lep_deltaRClosestJet_1:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0,0.75,1.5,3,5], typeval = TH2D) )
-        database.registerVar( Variable(shortname = 'Lep1Origin_VS_DistanceOtherLep', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1 + ":lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY = [0.0,0.5,1.0,2.0,5.0], typeval = TH2D) )
+        database.registerVar( Variable(shortname = 'Lep1Origin_VS_DistanceOtherLep', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1 + ":lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY = [0.1,0.5,1.0,2.0,5.0], typeval = TH2D ) )
 
         # database.registerVar( Variable(shortname = "Lep2Type", latexname = "truthType^{lep}", ntuplename = "lep_truthType_2", bins = 21, minval = -0.5, maxval = 20.5 ) )
         # database.registerVar( Variable(shortname = "Lep2Origin", latexname = "truthOrigin^{lep}", ntuplename = "lep_truthOrigin_2", bins = 41, minval = -0.5, maxval = 40.5 ) )
         # database.registerVar( Variable(shortname = 'Lep2Type_VS_Lep2Origin', latexnameX = 'truthType^{lep}', latexnameY = 'truthOrigin^{lep}', ntuplename = "lep_truthOrigin_2:lep_truthType_2", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_NJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
-        # database.registerVar( Variable(shortname = 'Lep2Origin_VS_NBJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{b-tags}', ntuplename = "nJets_OR_T_MV2c10_70:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 4, minvalY = -0.5, maxvalY = 3.5, typeval = TH2D) )
+        database.registerVar( Variable(shortname = 'Lep2Origin_VS_NBJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{b-tags}', ntuplename = "nJets_OR_T_MV2c10_70:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 4, minvalY = -0.5, maxvalY = 3.5, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_Lep2Pt', latexnameX = 'truthOrigin^{lep}', latexnameY = 'p_{T}^{lep}', ntuplename = "lep_Pt_2/1e3:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[10,15,20,26,35,60,210], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_Lep2Eta', latexnameX = 'truthOrigin^{lep}', latexnameY = '#eta^{lep}', ntuplename = "TMath::Abs(lep_Eta_2):lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0.0,0.1,0.7,1.3,1.9,2.5], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_Lep2EtaBE2', latexnameX = 'truthOrigin^{lep}', latexnameY = '#eta^{lep}', ntuplename = "TMath::Abs(lep_EtaBE2_2):lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0.0,0.5,0.8,1.37,1.52,2.0,2.6], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_Lep2DistanceClosestJet', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(lep, closest jet)', ntuplename = "lep_deltaRClosestJet_2:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0,0.75,1.5,3,5], typeval = TH2D) )
-        database.registerVar( Variable(shortname = 'Lep2Origin_VS_DistanceOtherLep', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(l_{1},l_{2})', ntuplename = delta_R_lep1lep2 + ":lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY = [0.0,0.5,1.0,2.0,5.0], typeval = TH2D) )
+        database.registerVar( Variable(shortname = 'Lep2Origin_VS_DistanceOtherLep', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(l_{1},l_{2})', ntuplename = delta_R_lep1lep2 + ":lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY = [0.1,0.5,1.0,2.0,5.0], typeval = TH2D ) )
 
         # Require lep1 (for 2L) or lep2 (for 3L) to be fakes (as they have the largest probability of being so)
 
@@ -1238,6 +1238,14 @@ if __name__ == "__main__":
         database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR']), weight = weight_SR_CR ) )
         database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT",        cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR']), weight = weight_SR_CR ) )
         database.registerCategory( MyCategory("El"+basename+"3L_SR_TT",          cut = common_cuts_3Lep & database.getCut('3Lep_Lep2_ElFake'), weight = weight_SR_CR ) )
+        # Split the 2L category into ee, OF
+        database.registerCategory( MyCategory("El"+basename+"2LSS_ALLNJ_VR_TT_ElEl",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_MinNJet','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_ALLNJ_VR_TT_OF",    cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_MinNJet','2Lep_OF_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT_ElEl",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT_OF",    cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_OF_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT_ElEl",        cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT_OF",          cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR','2Lep_OF_Event']), weight = weight_SR_CR ) )
+        #
         database.registerCategory( MyCategory("Mu"+basename+"2LSS_ALLNJ_VR_TT",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_MuFake','2Lep_MinNJet']), weight = weight_SR_CR ) )
         database.registerCategory( MyCategory("Mu"+basename+"2LSS_LOWNJ_VR_TT",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_MuFake','2Lep_NJet_CR']), weight = weight_SR_CR ) )
         database.registerCategory( MyCategory("Mu"+basename+"2LSS_SR_TT",        cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_MuFake','2Lep_NJet_SR']), weight = weight_SR_CR ) )

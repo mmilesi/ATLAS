@@ -62,7 +62,7 @@ if __name__ == "__main__":
                     kwargs = {"flavour":flavour,"prodID":pid, "sample":s}
                     # TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
                     # TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
-                    # TypeAndOriginPlots.plotOriginVSNBjets(normFactor=normFactor, **kwargs)
+                    TypeAndOriginPlots.plotOriginVSNBjets(normFactor=normFactor, **kwargs)
                     TypeAndOriginPlots.plotOriginVSDistanceOtherLep(normFactor=normFactor, **kwargs)
                     # TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
                     # TypeAndOriginPlots.plotOriginVSDistanceLepClosestJet(normFactor=normFactor, **kwargs)
