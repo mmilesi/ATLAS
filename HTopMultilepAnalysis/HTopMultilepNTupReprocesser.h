@@ -300,7 +300,10 @@ private:
 
   EL::StatusCode getMMEfficiencyAndError_2D ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
   					      std::vector<float>& efficiency,
-					      const std::string& type );
+					      const std::string& type,
+					      std::string key,
+					      const std::pair<float,std::string>& varX,
+					      const std::pair<float,std::string>& varY );
 
   EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
   					   std::vector<float>& efficiency,

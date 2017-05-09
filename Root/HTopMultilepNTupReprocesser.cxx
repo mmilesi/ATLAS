@@ -1348,29 +1348,29 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 }
 
 
-EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::shared_ptr<leptonObj> lep, std::vector<float>& efficiency, const std::string& type )
+EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::shared_ptr<leptonObj> lep,
+									  std::vector<float>& efficiency,
+									  const std::string& type,
+									  std::string key,
+									  const std::pair<float,std::string>& varX,
+									  const std::pair<float,std::string>& varY )
 {
 
     float error_up(0.0), error_dn(0.0);
 
-    float pt     = lep.get()->pt/1e3; // Must be in GeV!
-    int   nbjets = m_event.get()->nbjets_T;
+    float x = varX.first;
+    float y = varY.first;
 
-    float this_low_edge_pt(-1.0), this_up_edge_pt(-1.0);
-    float this_low_edge_nbjets(-1.0), this_up_edge_nbjets(-1.0);
-    float this_bincenter_nbjets(-1.0);
+    float this_low_edge_y(-1.0), this_up_edge_y(-1.0);
+    float this_low_edge_x(-1.0), this_up_edge_x(-1.0);
+    float this_bincenter_x(-1.0), this_bincenter_y(-1.0);
 
     std::map< std::string, std::map< std::string, TH1* > > *histograms = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
 
-    std::string key;
-
-    if ( type.compare("REAL") == 0 ) {
-	key = "nbjets_VS_pt_reff_hist";
-    } else if ( type.compare("FAKE") == 0 ) {
-	key = "nbjets_VS_pt_feff_hist";
+    if ( m_verbose ) {
+	Info("getMMEfficiencyAndError_2D()", "\tReading %s efficiency...", type.c_str() );
+	Info("getMMEfficiencyAndError_2D()", "\t%s (x) = %.2f, %s (y) = %.2f", varX.second.c_str(), x, varY.second.c_str(), y );
     }
-
-    if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()", "\tReading %s efficiency...", type.c_str() ); }
 
     std::string syskey_up, syskey_dn;
 
@@ -1378,15 +1378,15 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::s
 
     TH1* hist_nominal = (histograms->find("Nominal")->second).find(key)->second;
 
-    // Take generic projections of the 2D hist (this is needed just to get the axis binning!)
+    // Take the default projection of the 2D hist (this is needed just to get the axis binning!)
 
-    TH1D* hist_nominal_pt     = dynamic_cast<TH2D*>(hist_nominal)->ProjectionY(); // This gives pT bins
-    TH1D* hist_nominal_nbjets = dynamic_cast<TH2D*>(hist_nominal)->ProjectionX(); // This gives Nbjets bins
+    TH1D* hist_nominal_y = dynamic_cast<TH2D*>(hist_nominal)->ProjectionY(); // This gives y bins
+    TH1D* hist_nominal_x = dynamic_cast<TH2D*>(hist_nominal)->ProjectionX(); // This gives X bins
 
     // Get the number of bins. Use nominal
 
-    int nbins_pt     = hist_nominal_pt->GetSize()-2;     // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
-    int nbins_nbjets = hist_nominal_nbjets->GetSize()-2; // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
+    int nbins_y = hist_nominal_y->GetSize()-2; // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
+    int nbins_x = hist_nominal_x->GetSize()-2; // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
 
     bool isNominal = ( m_this_syst.first.find("Nominal") != std::string::npos );
     bool isStat    = ( m_this_syst.first.find("Stat")    != std::string::npos );
@@ -1394,58 +1394,59 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::s
     bool isSysCorrBins   = ( m_this_syst.second.compare("CorrBins")   == 0 );
     bool isSysUncorrBins = ( m_this_syst.second.compare("UncorrBins") == 0 );
 
-    // Loop over the projections, and keep track of the bin number where (nbjets,pt) is found
+    // Loop over the projections, and keep track of the bin number where (x,y) is found
 
-    int nbjets_bin_nr(-1), pt_bin_nr(-1);
+    int x_bin_nr(-1), y_bin_nr(-1);
 
-    // Loop over nbjets
+    // Loop over x
     // Do not consider underflow, and overflow
 
-    bool isNextBinOverflowNBjets(false);
+    bool isNextBinOverflowX(false);
 
-    for ( int b(1); b <= nbins_nbjets; ++b ) {
+    for ( int xbin(1); xbin <= nbins_x; ++xbin ) {
 
-	this_low_edge_nbjets  = hist_nominal_nbjets->GetXaxis()->GetBinLowEdge(b);
-	this_up_edge_nbjets   = hist_nominal_nbjets->GetXaxis()->GetBinUpEdge(b);
-	this_bincenter_nbjets = hist_nominal_nbjets->GetXaxis()->GetBinCenter(b);
+	this_low_edge_x  = hist_nominal_x->GetXaxis()->GetBinLowEdge(xbin);
+	this_up_edge_x   = hist_nominal_x->GetXaxis()->GetBinUpEdge(xbin);
+	this_bincenter_x = hist_nominal_x->GetXaxis()->GetBinCenter(xbin);
 
-	isNextBinOverflowNBjets = ( hist_nominal_nbjets->IsBinOverflow(b+1) );
+	isNextBinOverflowX = ( hist_nominal_x->IsBinOverflow(xbin+1) );
 
-	if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()","\t\tNBjets bin %i : %.0f", b, this_bincenter_nbjets ); }
+	if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()","\t\t%s bin %i : [%.1f,%.1f] (center: %.1f)", varX.second.c_str(), xbin, this_low_edge_x, this_up_edge_x, this_bincenter_x ); }
 
-	if ( ( nbjets >= this_low_edge_nbjets && nbjets < this_up_edge_nbjets ) || ( isNextBinOverflowNBjets && nbjets >= this_up_edge_nbjets ) ) {
+	if ( ( x >= this_low_edge_x && x < this_up_edge_x ) || ( isNextBinOverflowX && x >= this_up_edge_x ) ) {
 	    if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()","\t\t\tfound bin!" ); }
-	    nbjets_bin_nr = hist_nominal_nbjets->GetBin(b);
+	    x_bin_nr = hist_nominal_x->GetBin(xbin);
 	    break;
 	}
 
     }
 
-    // Loop over number of pt bins
+    // Loop over number of y bins
     // Do not consider underflow, and overflow
 
-    bool isNextBinOverflowPt(false);
+    bool isNextBinOverflowY(false);
 
-    for ( int p(1); p <= nbins_pt; ++p ) {
+    for ( int ybin(1); ybin <= nbins_y; ++ybin ) {
 
-	this_low_edge_pt = hist_nominal_pt->GetXaxis()->GetBinLowEdge(p);
-	this_up_edge_pt  = hist_nominal_pt->GetXaxis()->GetBinUpEdge(p);
+	this_low_edge_y  = hist_nominal_y->GetXaxis()->GetBinLowEdge(ybin);
+	this_up_edge_y   = hist_nominal_y->GetXaxis()->GetBinUpEdge(ybin);
+	this_bincenter_y = hist_nominal_y->GetXaxis()->GetBinCenter(ybin);
 
-	isNextBinOverflowPt = ( hist_nominal_pt->IsBinOverflow(p+1) );
+	isNextBinOverflowY = ( hist_nominal_y->IsBinOverflow(ybin+1) );
 
-	if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
+	if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()","\t\t%s bin %i : [%.1f,%.1f] (center: %.1f)", varY.second.c_str(), ybin, this_low_edge_y, this_up_edge_y, this_bincenter_y ); }
 
-	if ( ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) || ( isNextBinOverflowPt && pt >= this_up_edge_pt ) ) {
+	if ( ( y >= this_low_edge_y && y < this_up_edge_y ) || ( isNextBinOverflowY && y >= this_up_edge_y ) ) {
 	    if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()","\t\t\tfound bin!" ); }
-	    pt_bin_nr = hist_nominal_pt->GetBin(p);
+	    y_bin_nr = hist_nominal_y->GetBin(ybin);
 	    break;
 	}
 
     }
 
-    int global_bin_nr = hist_nominal->GetBin( nbjets_bin_nr, pt_bin_nr );
+    int global_bin_nr = hist_nominal->GetBin( x_bin_nr, y_bin_nr );
 
-    if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()","\tcoordinates of efficiency bin = (%i,%i), global bin nr. = %i", nbjets_bin_nr, pt_bin_nr, global_bin_nr ); }
+    if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()","\tcoordinates of efficiency bin (%s,%s) = (%i,%i), global bin nr. = %i", varX.second.c_str(), varY.second.c_str(), x_bin_nr, y_bin_nr, global_bin_nr ); }
 
     float eff(1.0), eff_err_up(0.0), eff_err_dn(0.0);
 
@@ -1465,7 +1466,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::s
     // OR
     // -) m_this_syst does NOT contain Pt
     //
-    // , need to read "Nominal" for both up and dn  --> syskey_up_pt = syskey_dn_pt = "Nominal"
+    // , need to read "Nominal" for both up and dn  --> syskey_up = syskey_dn = "Nominal"
 
     tokens.clear();
     ANA_CHECK( this->tokenize( '_', tokens, m_this_syst.first ) );
@@ -1597,7 +1598,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 	key_pt_YES_TM = "pt_feff_hist_YES_TM";
     }
 
-    if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\tReading %s efficiency...", type.c_str() ); }
+    if ( m_verbose ) {
+	Info("getMMEfficiencyAndError()", "\tReading %s efficiency...", type.c_str() );
+	Info("getMMEfficiencyAndError()", "\tpT = %.2f [GeV], eta = %.2f", pt, eta );
+    }
 
     std::string syskey_up_pt, syskey_dn_pt, syskey_up_eta, syskey_dn_eta;
 
@@ -2013,12 +2017,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
     ANA_CHECK( this->getMMEfficiencyAndError( lep0, r0, "REAL" ) );
     ANA_CHECK( this->getMMEfficiencyAndError( lep1, r1, "REAL" ) );
     if ( lep0.get()->flavour == 11 ) {
-	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep0, f0, "FAKE" ) );
+	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep0, f0, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep0.get()->pt/1e3,"pT") ) );
     } else {
 	ANA_CHECK( this->getMMEfficiencyAndError( lep0, f0, "FAKE" ) );
     }
     if ( lep1.get()->flavour == 11 ) {
-	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep1, f1, "FAKE" ) );
+	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep1, f1, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep1.get()->pt/1e3,"pT") ) );
     } else {
 	ANA_CHECK( this->getMMEfficiencyAndError( lep1, f1, "FAKE" ) );
     }
