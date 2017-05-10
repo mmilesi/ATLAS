@@ -30,16 +30,21 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     "m_verbose"                    : False,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
-                                     # "m_weightToCalc"               : "QMisID,MM",
-                                    "m_weightToCalc"               : "MM",
+                                    # "m_weightToCalc"               : "QMisID,MM",
+                                    # "m_weightToCalc"               : "MM",
+                                    "m_weightToCalc"               : "QMisID",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
-                                    "m_QMisIDRates_Filename_T"     : "Rates_v27.root",
-                                    "m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
+                                    # "m_QMisIDRates_Filename_T"     : "Rates_v27.root",
+                                    # "m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
                                     # "m_QMisIDRates_Filename_T"     : "Rates_v27_For3l.root",
                                     # "m_QMisIDRates_Filename_AntiT" : "Rates_v27_For3l_AntiT.root",
-                                    "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
-                                    "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPtLoose",
-                                    "m_useTAntiTRates"             : False, # --> set this option to True if QMisID rates have NOT been measured independently for T and AntiT electrons - Set True for v19
+                                    "m_QMisIDRates_Filename_T"     : "Rates_Data_3l_2D_tight.root",
+                                    "m_QMisIDRates_Filename_AntiT" : "Rates_Data_3l_2D_Loose.root",
+                                    # "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
+                                    # "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPtLoose",
+                                    "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPt",
+                                    "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPt",
+                                    "m_useTAntiTRates"             : True, # --> set this option to True if QMisID rates have NOT been measured independently for T and AntiT electrons - Set True for v19
                                     #
                                     # ------------------------------------------------------------
                                     #
@@ -81,7 +86,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
 				    #
-                                    "m_doMMClosure"                : True,
+                                    "m_doMMClosure"                : False,
                                     "m_useEtaParametrisation"      : False,
 				    "m_useTEfficiency"             : False,
                                   }

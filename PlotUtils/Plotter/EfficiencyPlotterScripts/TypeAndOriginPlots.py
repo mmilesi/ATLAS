@@ -647,6 +647,23 @@ def plotOriginVSDistanceOtherLep( normFactor=0, **kwargs ):
         pathlist.append(inputPath_2LSR_ElEl+inputName_2L)
         inputPath_2LSR_OF   = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_OF" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_SR_TT_OF_"
         pathlist.append(inputPath_2LSR_OF+inputName_2L)
+        # Split 1bjet, >= 2 bjet
+        inputPath_2LVR_1BJET_ElEl = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_1BJET_LOWNJ_VR_TT_ElEl" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_1BJET_LOWNJ_VR_TT_ElEl_"
+        pathlist.append(inputPath_2LVR_1BJET_ElEl+inputName_2L)
+        inputPath_2LVR_1BJET_OF = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_1BJET_LOWNJ_VR_TT_OF" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_1BJET_LOWNJ_VR_TT_OF_"
+        pathlist.append(inputPath_2LVR_1BJET_OF+inputName_2L)
+        inputPath_2LVR_2BJET_ElEl = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_2BJET_LOWNJ_VR_TT_ElEl" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_2BJET_LOWNJ_VR_TT_ElEl_"
+        pathlist.append(inputPath_2LVR_2BJET_ElEl+inputName_2L)
+        inputPath_2LVR_2BJET_OF = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_2BJET_LOWNJ_VR_TT_OF" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_2BJET_LOWNJ_VR_TT_OF_"
+        pathlist.append(inputPath_2LVR_2BJET_OF+inputName_2L)
+        inputPath_2LSR_1BJET_ElEl = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_1BJET_SR_TT_ElEl" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_1BJET_SR_TT_ElEl_"
+        pathlist.append(inputPath_2LSR_1BJET_ElEl+inputName_2L)
+        inputPath_2LSR_1BJET_OF = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_1BJET_SR_TT_OF" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_1BJET_SR_TT_OF_"
+        pathlist.append(inputPath_2LSR_1BJET_OF+inputName_2L)
+        inputPath_2LSR_2BJET_ElEl = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_2BJET_SR_TT_ElEl" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_2BJET_SR_TT_ElEl_"
+        pathlist.append(inputPath_2LSR_2BJET_ElEl+inputName_2L)
+        inputPath_2LSR_2BJET_OF = basePath + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_2BJET_SR_TT_OF" + "/" + kwargs["flavour"] + "FakeOriginFrac_2LSS_2BJET_SR_TT_OF_"
+        pathlist.append(inputPath_2LSR_2BJET_OF+inputName_2L)
 
     p0_props = {
                 #"legend"      : "t#bar{t} - Loose sel.",
@@ -668,7 +685,9 @@ def plotOriginVSDistanceOtherLep( normFactor=0, **kwargs ):
     if kwargs["flavour"] == "El":
         regionlist.extend(["2LSS_LOWNJ_VR_TT_ElEl","2LSS_LOWNJ_VR_TT_OF","2LSS_SR_TT_ElEl","2LSS_SR_TT_OF"])
         varlist.extend([variable_2L,variable_2L,variable_2L,variable_2L])
-
+        # Split 1bjet, >= 2 bjet
+        regionlist.extend(["2LSS_1BJET_LOWNJ_VR_TT_ElEl","2LSS_1BJET_LOWNJ_VR_TT_OF","2LSS_2BJET_LOWNJ_VR_TT_ElEl","2LSS_2BJET_LOWNJ_VR_TT_OF","2LSS_1BJET_SR_TT_ElEl","2LSS_1BJET_SR_TT_OF","2LSS_2BJET_SR_TT_ElEl","2LSS_2BJET_SR_TT_OF"])
+        varlist.extend([variable_2L,variable_2L,variable_2L,variable_2L,variable_2L,variable_2L,variable_2L,variable_2L])
 
     for idx, path in enumerate(pathlist):
 

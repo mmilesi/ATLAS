@@ -283,10 +283,11 @@ class Plot:
             if self.__props.get("colour") :
                 self.__hist.SetLineColor(self.__props["colour"])
                 self.__hist.SetMarkerColor(self.__props["colour"])
-            if self.__props.get("lineStyle")   : self.__hist.SetLineStyle(self.__props["lineStyle"])
-            if self.__props.get("lineWidth")   : self.__hist.SetLineWidth(self.__props["lineWidth"])
-            if self.__props.get("markerStyle") : self.__hist.SetMarkerStyle(self.__props["markerStyle"])
-            if self.__props.get("markerSize")  : self.__hist.SetMarkerSize(self.__props["markerSize"])
+            if self.__props.get("lineStyle")    : self.__hist.SetLineStyle(self.__props["lineStyle"])
+            if self.__props.get("lineWidth")    : self.__hist.SetLineWidth(self.__props["lineWidth"])
+            if self.__props.get("markerStyle")  : self.__hist.SetMarkerStyle(self.__props["markerStyle"])
+            if self.__props.get("markerSize")   : self.__hist.SetMarkerSize(self.__props["markerSize"])
+            if self.__props.get("markerColour") : self.__hist.SetMarkerColor(self.__props["markerColour"])
 
         # Draw the histogram on the Pad!
 

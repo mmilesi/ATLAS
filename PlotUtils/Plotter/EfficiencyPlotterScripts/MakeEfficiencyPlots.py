@@ -29,8 +29,8 @@ if __name__ == "__main__":
         # EfficiencyPlotter.plotProbeElectronAssignEff_MVA()
         # EfficiencyPlotter.plotProbeElectronAssignEff_CutBased()
 
-        # EfficiencyPlotter.plotFakeElectron_NonPromptVSPhotonConv() # MC TTbar-based
-        EfficiencyPlotter.plotFakeElectron_NonPromptAndPhotonConvVSPhotonConv() # DD
+        EfficiencyPlotter.plotFakeElectron_NonPromptVSPhotonConv() # MC TTbar-based
+        # EfficiencyPlotter.plotFakeElectron_NonPromptAndPhotonConvVSPhotonConv() # DD
 
     import EfficiencyPlotter_NBJetsGt2
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
                     kwargs = {"flavour":flavour,"prodID":pid, "sample":s}
                     # TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
                     # TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
-                    TypeAndOriginPlots.plotOriginVSNBjets(normFactor=normFactor, **kwargs)
+                    # TypeAndOriginPlots.plotOriginVSNBjets(normFactor=normFactor, **kwargs)
                     TypeAndOriginPlots.plotOriginVSDistanceOtherLep(normFactor=normFactor, **kwargs)
                     # TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
                     # TypeAndOriginPlots.plotOriginVSDistanceLepClosestJet(normFactor=normFactor, **kwargs)

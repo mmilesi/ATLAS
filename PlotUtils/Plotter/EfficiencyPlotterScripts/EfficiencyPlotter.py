@@ -683,7 +683,7 @@ def plotFakeElectron_NonPromptVSPhotonConv():
                 "markerSize"  : 1,
                }
 
-    p0 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v27/OutputPlots_MMClosureRates_25ns_v27/LeptonEfficiencies.root", p0_props)
+    p0 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v27_v2/OutputPlots_MMClosureRates_25ns_v27_LepFromJets/LeptonEfficiencies.root", p0_props)
 
     plotlist.append(p0)
 
@@ -691,14 +691,15 @@ def plotFakeElectron_NonPromptVSPhotonConv():
                 "legend"      : "Tag & Probe (OF, #mu tag) - #gamma conversion",
                 "yAxisTitle"  : "#varepsilon",
                 "yAxisRange"  : (0.0,0.15),
-                "colour"      : kOrange-3,
-                "lineStyle"   : 3,
+                "colour"      : kYellow,
+                "lineStyle"   : 1,
                 "lineWidth"   : 2,
                 "markerStyle" : 20,
                 "markerSize"  : 1,
+                "markerColour" : kBlack,
                }
 
-    p1 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v27/OutputPlots_MMClosureRates_PhotonConversion_25ns_v27/LeptonEfficiencies.root", p1_props)
+    p1 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v27_v2/OutputPlots_MMClosureRates_25ns_v27_PhotonConversions/LeptonEfficiencies.root", p1_props)
 
     plotlist.append(p1)
 
@@ -714,7 +715,7 @@ def plotFakeElectron_NonPromptVSPhotonConv():
 
     multiP = MultiPlot( plots=plotlist )
 
-    outdir = "./PLOTS_25ns_v27/NonPrompt_VS_PhotonConv"
+    outdir = "./PLOTS_25ns_v27_v2/NonPrompt_VS_PhotonConv_TTBarTTGamma"
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
