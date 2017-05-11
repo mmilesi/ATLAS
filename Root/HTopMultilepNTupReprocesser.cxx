@@ -911,6 +911,40 @@ std::string HTopMultilepNTupReprocesser :: str_replace( const std::string& input
 }
 
 
+bool HTopMultilepNTupReprocesser :: isBinVisible( const int& glob_bin, const TH2D* hist ) {
+
+    std::set<std::pair<int,int> > visible_bins_coords;
+
+    int n_visible_bins_X = hist->ProjectionX()->GetSize()-2;
+    int n_visible_bins_Y = hist->ProjectionY()->GetSize()-2;
+
+    for ( int x(1); x <= n_visible_bins_X; ++x ) {
+	for ( int y(1); y <= n_visible_bins_Y; ++y ) {
+	    visible_bins_coords.insert( std::make_pair(x,y) );
+	}
+    }
+
+    // std::cout << "Visible bins:" << std::endl;
+    // for ( auto it : visible_bins_coords ) {
+    // 	std::cout << "\t(" << it.first << "," << it.second << ")" << std::endl;
+    // }
+
+    int binx(0), biny(0), binz(0);
+    hist->GetBinXYZ( glob_bin, binx, biny, binz );
+
+    std::pair<int,int> this_xy(binx,biny);
+
+    // std::cout << "" << std::endl;
+    // std::cout << "Checking this bin ==> global idx: " << glob_bin <<  " (" << this_xy.first << "," <<  this_xy.second << ")" << std::endl;
+    // std::cout << "" << std::endl;
+
+    auto it = visible_bins_coords.find(this_xy);
+
+    return ( it != visible_bins_coords.end() );
+
+}
+
+
 EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 {
 
@@ -1008,14 +1042,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 	      std::string histname = eff + "_" + lep + "_" + var + "_Efficiency_"  + process;
 
-	      if ( var.find("_VS_") == std::string::npos ) {
+	      bool isVar2D = ( var.find("_VS_") != std::string::npos );
+
+	      if ( !isVar2D ) {
 		  n_sysbins = get_object<TH1D>( *file, histname )->GetSize()-2; // Do NOT count the overflow, as the last visible bin of the efficiency hist already takes into account the overflow events.
 	      } else {
-		  TH2D* hist2D =  get_object<TH2D>( *file, histname );
-		  int n_visible_bins_X = hist2D->ProjectionX()->GetSize()-2;
-		  int n_visible_bins_Y = hist2D->ProjectionY()->GetSize()-2;
-		  int n_tot_visible_bins = n_visible_bins_X * n_visible_bins_Y;
-		  n_sysbins = n_tot_visible_bins; // Do NOT count the overflow, as the last visible bin of the efficiency hist already takes into account the overflow events.
+		  n_sysbins = get_object<TH2D>( *file, histname )->GetSize();
 	      }
 
 	      for ( const auto& sysgroup : systematic_groups ) {
@@ -1055,6 +1087,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 			  if ( isNominal && nominal_read ) { break; } // Do this only once for the nominal case
 
+			  // If variable is 2D, and this *global* bin number does not correspond to a visible (x,y) bin, just skip it
+
+			  if ( isVar2D && !isBinVisible(bin,get_object<TH2D>( *file, histname )) ) { continue; }
+
 			  std::string sys = eff + "_" + lep + "_" + var + "_" + sysgroup.first;
 			  if ( !isNominal ) { sys += "_" + std::to_string(bin); }
 
@@ -1073,7 +1109,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 			      std::cout << "\t\t\t\t  " << lep << "," << eff << "," << var << " efficiency - input TH1 name: " << histname << std::endl;
 
-			      if ( var.find("_VS_") == std::string::npos ) {
+			      if ( !isVar2D ) {
 				  hist  = get_object<TH1D>( *file,  histname );
 			      } else {
 				  hist  = get_object<TH2D>( *file,  histname );

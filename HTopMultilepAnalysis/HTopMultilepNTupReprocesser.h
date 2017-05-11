@@ -291,6 +291,8 @@ private:
 
   std::string str_replace( const std::string& input_str, const std::string& old_substr, const std::string& new_substr );
 
+  bool isBinVisible( const int& glob_bin, const TH2D* hist );
+
   EL::StatusCode tokenize      ( char separator, std::vector<std::string>& vec_tokens, const std::string& list );
   EL::StatusCode tokenize_pair ( char separator, std::vector< std::pair<std::string,std::string> >& vec_tokens, const std::string& list );
 
