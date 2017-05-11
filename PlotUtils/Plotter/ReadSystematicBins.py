@@ -819,14 +819,14 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     MC_hist.Draw("PE SAME")
     err.Draw("E2 SAME")
 
-    legend = TLegend(0.6,0.7,0.8,0.9) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+    legend = TLegend(0.55,0.7,0.75,0.9) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
     legend.SetBorderSize(0)	# no border
     legend.SetFillStyle(0)	# Legend transparent background
     legend.SetTextSize(0.03)	# Increase entry font size!
     #legend.SetTextFont(42)	# Helvetica
 
-    legend.AddEntry(new_MM_hist, "Fakes MM (t#bar{t}, t#bar{t}#gamma inputs)", "F")
-    legend.AddEntry(MC_hist, "t#bar{t}, t#bar{t}#gamma", "P")
+    legend.AddEntry(new_MM_hist,"Fakes MM (t#bar{{t}}, t#bar{{t}}#gamma inputs) ({0:.1f})".format(integrate(new_MM_hist)),"F")
+    legend.AddEntry(MC_hist, "t#bar{{t}}, t#bar{{t}}#gamma ({0:.1f})".format(integrate(MC_hist)), "P")
     legend.AddEntry(err, "Stat.+Sys. Unc.", "F")
 
     leg_ATLAS = TLatex()
@@ -1057,34 +1057,34 @@ if __name__ == '__main__':
     # var_list = []
     var_list = [
         # "Integral",
-        # "Mu0Pt",
-        # "Mu1Pt",
+        "Mu0Pt",
+        "Mu1Pt",
         # "Mu0Eta",
         # "Mu1Eta",
         # "Mu0DeltaRClosestJet",
         # "Mu1DeltaRClosestJet",
-        # "El0Pt",
-        # "El1Pt",
+        "El0Pt",
+        "El1Pt",
         # "El0Eta",
         # "El1Eta",
         # "El0DeltaRClosestJet",
         # "El1DeltaRClosestJet",
-        # "deltaRLep0Lep1",
+        "deltaRLep0Lep1",
         # "MET_FinalTrk",
-        # "Mll01_inc",
-        # # "TotLepCharge",
-        # "NBJets",
+        "Mll01_inc",
+        # "TotLepCharge",
+        "NBJets",
         # "NJets2j3j",
         # "NJets4j",
         # "Lep0Pt",
         # "Lep1Pt",
         #
-        "NN_Rebinned",
-        "RNN_Rebinned",
-        "NN_ttV",
-        "NN_top",
-        "RNN_ttV",
-        "RNN_top",
+        # "NN_Rebinned",
+        # "RNN_Rebinned",
+        # "NN_ttV",
+        # "NN_top",
+        # "RNN_ttV",
+        # "RNN_top",
         ]
 
     if args.variables:
@@ -1139,8 +1139,8 @@ if __name__ == '__main__':
             if "HIGHNJ" in args.channel and "NJets2j3j" in var_name : continue
             if "LOWNJ" in args.channel and "NJets4j" in var_name : continue
             # TEMP!!!!
-            if flav == "ElEl" and "HIGHNJ" in args.channel and "El0" in var_name: continue
-            if flav == "MuMu" and "HIGHNJ" in args.channel and "Mu0" in var_name: continue
+            # if flav == "ElEl" and "HIGHNJ" in args.channel and "El0" in var_name: continue
+            # if flav == "MuMu" and "HIGHNJ" in args.channel and "Mu0" in var_name: continue
 
     	    filename = inputpath + flav + region + "/" + flav + region + "_" + var_name + ".root"
 
@@ -1182,7 +1182,7 @@ if __name__ == '__main__':
     	    print ("\tFakes:\n")
 
     	    for sys, sysgroup in fakes_syst.iteritems():
-                debugflag = True
+                debugflag = False
                 fakes_up = myfile.Get( "fakesbkg_" + sys + "_up")
                 fakes_dn = myfile.Get( "fakesbkg_" + sys + "_dn")
                 if debugflag: print("\tsys: {0}, sysgroup: {1}\n".format(sys, sysgroup))
