@@ -1053,6 +1053,19 @@ class RealFakeEffTagAndProbe:
                 g_efficiency = TGraphAsymmErrors(h_efficiency)
                 g_efficiency.Divide(h_pass,h_tot,"cl=0.683 b(1,1) mode")
 
+            # TEMP!!!
+            # A hack to fix last pT bin for Nbjets=2 distribution
+
+            if "NBJets&&Pt" in key:
+                for biny in range(1,h_efficiency.GetYaxis().GetNbins()+1):
+                    thisbinglobidx = h_efficiency.GetBin(2,biny)
+                    thisbincontent = h_efficiency.GetBinContent(2,biny)
+                    prevbincontent = h_efficiency.GetBinContent(2,biny-1)
+                    prevbinerror   = h_efficiency.GetBinError(2,biny-1)
+                    if not thisbincontent:
+                        h_efficiency.SetBinContent(thisbinglobidx,prevbincontent)
+                        h_efficiency.SetBinError(thisbinglobidx,prevbinerror)
+
             # Save the efficiencies in the proper dictionaries
 
             self.histefficiencies[key_heff]         = h_efficiency

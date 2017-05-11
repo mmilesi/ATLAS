@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter
 
-    if False:
+    if True:
 
         # EfficiencyPlotter.plotRealElectron()
         # EfficiencyPlotter.plotRealMuon()
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     import TypeAndOriginPlots
 
-    if True:
+    if False:
 
         samples       = ["ttbarbkg"] # ["ttbarbkg","wjetsbkg"]
         flavours      = ["El","Mu"]

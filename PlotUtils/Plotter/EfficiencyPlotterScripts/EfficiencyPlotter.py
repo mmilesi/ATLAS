@@ -703,6 +703,21 @@ def plotFakeElectron_NonPromptVSPhotonConv():
 
     plotlist.append(p1)
 
+    p2_props = {
+                "legend"      : "Tag & Probe (OF, #mu tag) - Inclusive",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.0,0.15),
+                "colour"      : kBlack,
+                "lineStyle"   : 2,
+                "lineWidth"   : 2,
+                "markerStyle" : 24,
+                "markerSize"  : 1,
+               }
+
+    p2 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v27_v2/OutputPlots_MMClosureRates_25ns_v27/LeptonEfficiencies.root", p2_props)
+
+    plotlist.append(p2)
+
     # Add vertical reference lines for trigger thresholds.
     # Use the first histogram in the list to set the range
 
