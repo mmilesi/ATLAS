@@ -46,7 +46,7 @@ if __name__ == "__main__":
     if False:
 
         samples       = ["ttbarbkg"] # ["ttbarbkg","wjetsbkg"]
-        flavours      = ["El","Mu"]
+        flavours      = ["El"] # ["El","Mu"]
         # lepSelections = ["FakeCRElAntiT"]# ["FakeCRElT","FakeCRElL"]
         # lepSelections = ["FakeCRMuAntiT"] #["FakeCRMuT","FakeCRMuL"]
         #prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
@@ -63,8 +63,8 @@ if __name__ == "__main__":
                     # TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
                     # TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
                     # TypeAndOriginPlots.plotOriginVSNBjets(normFactor=normFactor, **kwargs)
-                    TypeAndOriginPlots.plotOriginVSDistanceOtherLep(normFactor=normFactor, **kwargs)
-                    # TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
+                    # TypeAndOriginPlots.plotOriginVSDistanceOtherLep(normFactor=normFactor, **kwargs)
+                    TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
                     # TypeAndOriginPlots.plotOriginVSDistanceLepClosestJet(normFactor=normFactor, **kwargs)
                     # if flavour == "Mu":
                     #    TypeAndOriginPlots.plotOriginVSEta(normFactor=normFactor, **kwargs)

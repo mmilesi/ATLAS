@@ -50,6 +50,8 @@ class Plot:
         self.name = self.__hist.GetName()
         self.is2D = isinstance(self.__hist,TH2)
 
+        self.conversion_frac_VS_Y = []
+
 	self.__props  = properties
 
         # Set special properties for 2D histograms
@@ -234,7 +236,7 @@ class Plot:
             histfakes_Unknown.SetBinContent( biny, fakes_Unknown_frac_biny )
             histfakes_Other.SetBinContent( biny, fakes_Other_frac_biny )
 
-            # self.conversion_frac_VS_Y.append((biny,fakes_PhConv_frac_biny))
+            self.conversion_frac_VS_Y.append((biny,round(fakes_PhConv_frac_biny,3)))
 
         # Add histograms w/ fake origin fractions into a stack plot
 

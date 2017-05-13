@@ -1066,6 +1066,38 @@ class RealFakeEffTagAndProbe:
                         h_efficiency.SetBinContent(thisbinglobidx,prevbincontent)
                         h_efficiency.SetBinError(thisbinglobidx,prevbinerror)
 
+            # TEMP!
+            # Rescale electron fake rate by the photon conversion fraction difference between ee and OF
+            #
+            # if key_heff == "Fake_El_Pt_Efficiency_expectedbkg":
+            #     alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
+            #     for bin in range(1,h_efficiency.GetXaxis().GetNbins()+2):
+            #         eff = h_efficiency.GetBinContent(bin)
+            #         sf = alpha[bin-1][1]
+            #         eff_scaled = eff
+            #         if sf != -1.0:
+            #             eff_scaled = eff * ( 1.0 + sf )
+            #             h_efficiency.SetBinContent(bin, eff_scaled)
+            #         print("bin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,sf,eff_scaled))
+
+            if key_heff == "Fake_El_NBJets&&Pt_Efficiency_expectedbkg":
+                # Inclusive Nbjets
+                alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
+                # Nbjet = 1
+                # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
+                # Nbjet = 2
+                # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
+                for binx in range(1,h_efficiency.GetXaxis().GetNbins()+2):
+                    for biny in range(1,h_efficiency.GetYaxis().GetNbins()+2):
+                        eff = h_efficiency.GetBinContent(binx,biny)
+                        sf = alpha[biny-1][1]
+                        eff_scaled = eff
+                        if sf != -1.0:
+                            eff_scaled = eff * ( 1.0 + sf )
+                            h_efficiency.SetBinContent(binx, biny, eff_scaled)
+                        print("bin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,sf,eff_scaled))
+
+
             # Save the efficiencies in the proper dictionaries
 
             self.histefficiencies[key_heff]         = h_efficiency

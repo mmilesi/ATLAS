@@ -233,8 +233,8 @@ exit 0
         # "MuProbeNBJets_VS_MuProbePt",
         #
         # "Integral",
-        # "NJets2j3j",
-        # "NJets4j",
+        "NJets2j3j",
+        "NJets4j",
         "El0Pt",
         "El1Pt",
         "Mu0Pt",

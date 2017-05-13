@@ -1074,8 +1074,8 @@ if __name__ == '__main__':
         "Mll01_inc",
         # "TotLepCharge",
         "NBJets",
-        # "NJets2j3j",
-        # "NJets4j",
+        "NJets2j3j",
+        "NJets4j",
         # "Lep0Pt",
         # "Lep1Pt",
         #
