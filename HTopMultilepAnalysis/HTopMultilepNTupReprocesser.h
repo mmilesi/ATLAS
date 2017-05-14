@@ -104,7 +104,6 @@ public:
   std::string m_EFF_NO_TM_dir;
   std::string m_Efficiency_Filename;
   bool m_doMMClosure;
-  bool m_useEtaParametrisation;
 
   /** Read different r/f rates depending on whether the lepton is trigger-matched or not */
 
@@ -115,6 +114,10 @@ public:
   bool m_useCutBasedLep;
 
   bool m_useTEfficiency;
+
+  /** A list of variables which define the used parametrisation  */
+
+  std::string m_parametrisation_list;
 
   /** A list of systematics affecting the efficiency measurement, whoich will be eventually propagated to the final event weight.
       By default, it includes the statistical uncertainty on the efficiencies
@@ -249,8 +252,8 @@ private:
 
   /** For each systematic, store a map with the efficiency histogram "type" to be read and the histogram pointer */
 
-  std::map< std::string, std::map< std::string, TH1* > >        m_el_hist_map; //!
-  std::map< std::string, std::map< std::string, TH1* > >        m_mu_hist_map; //!
+  std::map< std::string, std::map< std::string, TH1* > >         m_el_hist_map; //!
+  std::map< std::string, std::map< std::string, TH1* > >         m_mu_hist_map; //!
   std::map< std::string, std::map< std::string, TEfficiency* > > m_el_teff_map; //!
   std::map< std::string, std::map< std::string, TEfficiency* > > m_mu_teff_map; //!
 
@@ -258,6 +261,8 @@ private:
 
   std::map< std::string, float > m_el_reff_avg;
   std::map< std::string, float > m_el_feff_avg;
+  std::map< std::string, float > m_mu_reff_avg;
+  std::map< std::string, float > m_mu_feff_avg;
 
 public:
 
@@ -300,6 +305,15 @@ private:
 
   EL::StatusCode readRFEfficiencies ();
 
+  EL::StatusCode getMMEfficiencyAndError_1D( std::shared_ptr<NTupReprocesser::leptonObj> lep,
+					     std::vector<float>& efficiency,
+					     const std::string& type,
+					     std::string keyX,
+					     const std::pair<float,std::string>& varX,
+					     std::string keyXX = "",
+					     const std::pair<float,std::string>& varXX = std::pair<float,std::string>() ,
+					     const float& avg_eff = -1.0 );
+
   EL::StatusCode getMMEfficiencyAndError_2D ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
   					      std::vector<float>& efficiency,
 					      const std::string& type,
@@ -307,9 +321,9 @@ private:
 					      const std::pair<float,std::string>& varX,
 					      const std::pair<float,std::string>& varY );
 
-  EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
-  					   std::vector<float>& efficiency,
-					   const std::string& type );
+  /* EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep, */
+  /* 					   std::vector<float>& efficiency, */
+  /* 					   const std::string& type ); */
 
   EL::StatusCode getMMWeightAndError ( std::vector<float>& mm_weight,
   				       const std::vector<float>& r0, const std::vector<float>& r1,
@@ -329,5 +343,20 @@ private:
 
 
 };
+
+/* class Parametrisation : public HTopMultilepNTupReprocesser */
+/* { */
+
+/* public: */
+/*     Parametrisation(); */
+/*     void printSetup(); */
+
+/* private: */
+/*     std::string m_real_el_par; */
+/*     std::string m_real_mu_par; */
+/*     std::string m_fake_el_par; */
+/*     std::string m_fake_mu_par; */
+/* }; */
+
 
 #endif

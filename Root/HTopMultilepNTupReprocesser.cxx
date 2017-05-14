@@ -54,11 +54,12 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
   m_EFF_NO_TM_dir           = "";
   m_Efficiency_Filename     = "";
   m_doMMClosure             = false;
-  m_useEtaParametrisation   = false;
   m_useTrigMatchingInfo     = false;
   m_useScaledFakeEfficiency = false;
   m_useCutBasedLep          = false;
   m_useTEfficiency          = false;
+
+  m_parametrisation_list          = "Pt";
 
   m_systematics_list        = "Nominal:";
 
@@ -955,11 +956,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   if ( m_REFF_dir.back() != '/' ) { m_REFF_dir += "/"; }
   if ( m_FEFF_dir.back() != '/' ) { m_FEFF_dir += "/"; }
 
-  if ( m_useTrigMatchingInfo && m_useEtaParametrisation ) {
-      Error("readRFEfficiencies()", "As of today, the only supported parametrisation when reading trigger-dependent efficiencies is pT. Check your job configuration and retry. Aborting" );
-      return EL::StatusCode::FAILURE;
-  }
-
   TFile *file_YES_TM(nullptr), *file_NO_TM(nullptr);
 
   if ( m_useTrigMatchingInfo ) {
@@ -986,9 +982,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   std::vector<std::string> efficiencies = { "Real","Fake" };
   if ( m_useScaledFakeEfficiency ) efficiencies.push_back("ScaledFake");
   std::vector<std::string> leptons      = { "El","Mu" };
-  std::vector<std::string> variables    = { "NBJets_VS_Pt", "Pt" };
-  if ( m_useEtaParametrisation ) variables.push_back("Eta");
+  std::vector<std::string> variables;
+  ANA_CHECK( this->tokenize( ',', variables, m_parametrisation_list ) );
   std::vector<std::string> sysdirections = { "up","dn" };
+
+  if ( m_useTrigMatchingInfo && variables.size() != 1 && variables.at(0).compare("Pt") != 0 ) {
+      Error("readRFEfficiencies()", "As of today, the only supported parametrisation when reading trigger-dependent efficiencies is pT. Check your job configuration and retry. Aborting" );
+      return EL::StatusCode::FAILURE;
+  }
 
   // Parse input systematic groups, split by comma, and put into a vector
 
@@ -1029,10 +1030,10 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 	      // Do not look at variables other than pT for muons
 	      // Do not look at variables other than pT for real efficiencies
-	      // Do not look at variables other than 2D NBjets VS pT for fake electrons
+	      // Do not look at variables other than 2D NBjets VS pT for fake electrons (but only if NBjets_VS_pT is set as a parametrisation)
 	      if ( lep.compare("Mu") == 0 && var.compare("Pt") != 0 )   { continue; }
 	      if ( eff.compare("Real") == 0 && var.compare("Pt") != 0 ) { continue; }
-	      if ( eff.compare("Fake") == 0 && lep.compare("El") == 0 && var.compare("NBJets_VS_Pt") != 0 )   { continue; }
+	      if ( eff.compare("Fake") == 0 && lep.compare("El") == 0 && std::find(variables.begin(),variables.end(),"NBJets_VS_Pt") != variables.end() && var.compare("NBJets_VS_Pt") != 0 )   { continue; }
 
 	      std::string sys_append;
 
@@ -1192,37 +1193,28 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 				  }
 			      }
 
-			      // Calculate average efficiency to normalise (pT * eta) 1D efficiency (ignore this if using pT-only parametrisation).
+			      // Calculate average efficiency to normalise (x * xx) 1D efficiency (this info will be ignored if using only x parametrisation).
 			      //
-			      // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
+			      // This factor is the same for x and xx r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition )
 			      // (If using TEfficiency, can get the TH1 objects that were used for measuring efficiency directly from the TEfficiency object.
 			      // Otherwise, the average efficiency histogram must be already in the input file)
 
-			      // Store this only for electrons, as for muons there is no other dependency than on pT.
-
-			      if ( m_useEtaParametrisation && lep.compare("El") == 0 ) {
-
-				  if ( var.compare("Pt") == 0 ) {
-
-				      if ( !teff ) {
-					  if ( eff.compare("Real") == 0 ) {
-					      hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
-					      hist_avg->SetDirectory(0);
-					      m_el_reff_avg[syskey] = hist_avg->GetBinContent(1);
-					  }
-					  if ( eff.compare("Fake") == 0 ) {
-					      hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
-					      hist_avg->SetDirectory(0);
-					      m_el_feff_avg[syskey] = hist_avg->GetBinContent(1);
-					  }
-				      } else {
-					  if ( eff.compare("Real") == 0 ) {
-					      m_el_reff_avg[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-					  }
-					  if ( eff.compare("Fake") == 0 ) {
-					      m_el_feff_avg[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-					  }
-				      }
+			      if ( !isVar2D ) {
+				  float avg(-1.0);
+				  if ( !teff ) {
+				      hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
+				      hist_avg->SetDirectory(0);
+				      avg = hist_avg->GetBinContent(1);
+				  } else {
+				      avg = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
+				  }
+				  if ( eff.compare("Real") == 0 ) {
+				      if ( lep.compare("El") == 0 ) { m_el_reff_avg[syskey] = avg; }
+				      if ( lep.compare("Mu") == 0 ) { m_mu_reff_avg[syskey] = avg; }
+				  }
+				  if ( eff.compare("Fake") == 0 ) {
+				      if ( lep.compare("El") == 0 ) { m_el_feff_avg[syskey] = avg; }
+				      if ( lep.compare("Mu") == 0 ) { m_mu_feff_avg[syskey] = avg; }
 				  }
 			      }
 
@@ -1252,7 +1244,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 			  std::cout << "\t\t\t\t  " << lep << "," << eff << "," << var << " efficiency - input TH1 name: " << histname << std::endl;
 
-			  if ( var.find("_VS_") == std::string::npos ) {
+			  if ( !isVar2D ) {
 			      hist  = get_object<TH1D>( *file,  histname );
 			  } else {
 			      hist  = get_object<TH2D>( *file,  histname );
@@ -1331,37 +1323,28 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 			      }
 			  }
 
-			  // Calculate average efficiency to normalise (pT * eta) 1D efficiency (ignore this if using pT-only parametrisation).
+			  // Calculate average efficiency to normalise (x * xx) 1D efficiency (this info will be ignored if using only x parametrisation).
 			  //
-			  // This factor is the same for eta and pT r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition ): use pT
+			  // This factor is the same for x and xx r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition )
 			  // (If using TEfficiency, can get the TH1 objects that were used for measuring efficiency directly from the TEfficiency object.
 			  // Otherwise, the average efficiency histogram must be already in the input file)
 
-			  // Store this only for electrons, as for muons there is no other dependency than on pT.
-
-			  if ( m_useEtaParametrisation && lep.compare("El") == 0 ) {
-
-			      if ( var.compare("Pt") == 0 ) {
-
-				  if ( !teff ) {
-				      if ( eff.compare("Real") == 0 ) {
-					  hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
-					  hist_avg->SetDirectory(0);
-					  m_el_reff_avg[syskey] = hist_avg->GetBinContent(1);
-				      }
-				      if ( eff.compare("Fake") == 0 ) {
-					  hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
-					  hist_avg->SetDirectory(0);
-					  m_el_feff_avg[syskey] = hist_avg->GetBinContent(1);
-				      }
-				  } else {
-				      if ( eff.compare("Real") == 0 ) {
-					  m_el_reff_avg[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-				      }
-				      if ( eff.compare("Fake") == 0 ) {
-					  m_el_feff_avg[syskey] = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-				      }
-				  }
+			  if ( !isVar2D ) {
+			      float avg(-1.0);
+			      if ( !teff ) {
+				  hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
+				  hist_avg->SetDirectory(0);
+				  avg = hist_avg->GetBinContent(1);
+			      } else {
+				  avg = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
+			      }
+			      if ( eff.compare("Real") == 0 ) {
+				  if ( lep.compare("El") == 0 ) { m_el_reff_avg[syskey] = avg; }
+				  if ( lep.compare("Mu") == 0 ) { m_mu_reff_avg[syskey] = avg; }
+			      }
+			      if ( eff.compare("Fake") == 0 ) {
+				  if ( lep.compare("El") == 0 ) { m_el_feff_avg[syskey] = avg; }
+				  if ( lep.compare("Mu") == 0 ) { m_mu_feff_avg[syskey] = avg; }
 			      }
 			  }
 
@@ -1551,7 +1534,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::s
 
     }
 
-    if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()", "\t\t===> Retrieving nominal (NBjets,pT) histogram and variations from map w/ key: %s (up), %s (dn)", syskey_up.c_str(), syskey_dn.c_str() ); }
+    if ( m_verbose ) { Info("getMMEfficiencyAndError_2D()", "\t\t===> Retrieving nominal (%s,%s) histogram and variations from map w/ key: %s (up), %s (dn)", varX.second.c_str(), varY.second.c_str(), syskey_up.c_str(), syskey_dn.c_str() ); }
 
     // Now get the NOMINAL rate from the TH2 map via global bin number (x,y)
 
@@ -1600,65 +1583,68 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::s
     return EL::StatusCode::SUCCESS;
 }
 
+//////////////////////////////////////
 
-EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shared_ptr<leptonObj> lep, std::vector<float>& efficiency, const std::string& type )
+EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_1D( std::shared_ptr<leptonObj> lep,
+									  std::vector<float>& efficiency,
+									  const std::string& type,
+									  std::string keyX,
+									  const std::pair<float,std::string>& varX,
+									  std::string keyXX,
+									  const std::pair<float,std::string>& varXX,
+									  const float& avg_eff )
 {
+
+    bool useVarXX = ( !keyXX.empty() );
 
     float error_up(0.0), error_dn(0.0);
 
-    float pt  = lep.get()->pt/1e3; // Must be in GeV!
-    float eta = ( lep.get()->flavour == 13 ) ? lep.get()->eta : lep.get()->etaBE2;
+    float x  = varX.first;
+    float xx = ( useVarXX ) ? varXX.first : -999.0;
 
-    float this_low_edge_pt(-1.0), this_up_edge_pt(-1.0);
-    float this_low_edge_eta(-999.0), this_up_edge_eta(-999.0);
+    float this_low_edge_x(-1.0), this_up_edge_x(-1.0);
+    float this_low_edge_xx(-1.0), this_up_edge_xx(-1.0);
+    float this_bincenter_x(-1.0), this_bincenter_xx(-1.0);
 
-    std::map< std::string, std::map< std::string, TH1* > >         *histograms    = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
+    std::map< std::string, std::map< std::string, TH1* > > *histograms            = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
     std::map< std::string, std::map< std::string, TEfficiency* > > *tefficiencies = ( lep.get()->flavour == 13 ) ? &m_mu_teff_map : &m_el_teff_map;
 
-    std::string key_pt, key_eta, key_pt_teff, key_eta_teff;
-    std::string key_pt_NO_TM, key_pt_YES_TM;
-
-    if ( type.compare("REAL") == 0 ) {
-	key_pt        = "pt_reff_hist";
-	key_pt_teff   = "pt_reff";
-	key_eta       = "eta_reff_hist";
-	key_eta_teff  = "eta_reff";
-	key_pt_NO_TM  = "pt_reff_hist_NO_TM";
-	key_pt_YES_TM = "pt_reff_hist_YES_TM";
-    } else if ( type.compare("FAKE") == 0 ) {
-	key_pt        = "pt_feff_hist";
-	key_pt_teff   = "pt_feff";
-	key_eta       = "eta_feff_hist";
-	key_eta_teff  = "eta_feff";
-	key_pt_NO_TM  = "pt_feff_hist_NO_TM";
-	key_pt_YES_TM = "pt_feff_hist_YES_TM";
-    }
-
     if ( m_verbose ) {
-	Info("getMMEfficiencyAndError()", "\tReading %s efficiency...", type.c_str() );
-	Info("getMMEfficiencyAndError()", "\tpT = %.2f [GeV], eta = %.2f", pt, eta );
+	Info("getMMEfficiencyAndError_1D()", "\tReading %s efficiency...", type.c_str() );
+	Info("getMMEfficiencyAndError_1D()", "\t%s (x) = %.2f", varX.second.c_str(), x );
+	if ( useVarXX ) {
+	    Info("getMMEfficiencyAndError_1D()", "\t%s (xx) = %.2f", varXX.second.c_str(), xx );
+	}
     }
 
-    std::string syskey_up_pt, syskey_dn_pt, syskey_up_eta, syskey_dn_eta;
+    size_t endX  = keyX.length() - 5; // "this is the number of characters in keyX after removing _hist"
+    size_t endXX = keyXX.length() - 5;
+
+    std::string keyX_teff   = keyX.substr( 0, endX );
+    std::string keyXX_teff  = keyXX.substr( 0, endXX );
+    std::string keyX_NO_TM  = keyX + "_NO_TM";
+    std::string keyX_YES_TM = keyX + "_YES_TM";
+
+    std::string syskey_up_x, syskey_dn_x, syskey_up_xx, syskey_dn_xx;
 
     std::vector<std::string> tokens;
 
-    TH1* hist_nominal_pt  = (histograms->find("Nominal")->second).find(key_pt)->second;
-    TH1* hist_nominal_eta = (histograms->find("Nominal")->second).find(key_eta)->second;
+    TH1* hist_nominal_x  = (histograms->find("Nominal")->second).find(keyX)->second;
+    TH1* hist_nominal_xx = ( useVarXX ) ? (histograms->find("Nominal")->second).find(keyXX)->second : nullptr;
 
-    TH1* hist_nominal_pt_YES_TM(nullptr);
-    TH1* hist_nominal_pt_NO_TM(nullptr);
+    TH1* hist_nominal_x_YES_TM(nullptr);
+    TH1* hist_nominal_x_NO_TM(nullptr);
 
     if ( m_useTrigMatchingInfo ) {
 
-        hist_nominal_pt_YES_TM = (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second;
-        hist_nominal_pt_NO_TM  = (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second;
+        hist_nominal_x_YES_TM = (histograms->find("Nominal")->second).find(keyX_YES_TM)->second;
+        hist_nominal_x_NO_TM  = (histograms->find("Nominal")->second).find(keyX_NO_TM)->second;
 
     }
 
     // Get the number of bins. Use nominal
 
-    int nbins_pt = hist_nominal_pt->GetXaxis()->GetNbins(); // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
+    int nbins_x = hist_nominal_x->GetXaxis()->GetNbins(); // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
 
     bool isNominal = ( m_this_syst.first.find("Nominal") != std::string::npos );
     bool isStat    = ( m_this_syst.first.find("Stat")    != std::string::npos );
@@ -1666,23 +1652,24 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
     bool isSysCorrBins   = ( m_this_syst.second.compare("CorrBins")   == 0 );
     bool isSysUncorrBins = ( m_this_syst.second.compare("UncorrBins") == 0 );
 
-    bool isNextBinOverflowPt(false);
+    bool isNextBinOverflowX(false);
 
-    // Loop over number of pt bins
+    // Loop over number of x bins
     // Do not consider underflow, and overflow
 
-    for ( int p(1); p <= nbins_pt; ++p ) {
+    for ( int xbin(1); xbin <= nbins_x; ++xbin ) {
 
-	this_low_edge_pt = hist_nominal_pt->GetXaxis()->GetBinLowEdge(p);
-	this_up_edge_pt  = hist_nominal_pt->GetXaxis()->GetBinUpEdge(p);
+	this_low_edge_x   = hist_nominal_x->GetXaxis()->GetBinLowEdge(xbin);
+	this_up_edge_x    = hist_nominal_x->GetXaxis()->GetBinUpEdge(xbin);
+	this_bincenter_x  = hist_nominal_x->GetXaxis()->GetBinCenter(xbin);
 
-	isNextBinOverflowPt = ( hist_nominal_pt->IsBinOverflow(p+1) );
+	isNextBinOverflowX = ( hist_nominal_x->IsBinOverflow(xbin+1) );
 
-	if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
+	if ( m_verbose ) { Info("getMMEfficiencyAndError_1D()","\t\t%s bin %i : [%.1f,%.1f] (center: %.1f)", varX.second.c_str(), xbin, this_low_edge_x, this_up_edge_x, this_bincenter_x ); }
 
-	if ( ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) || ( isNextBinOverflowPt && pt >= this_up_edge_pt ) ) {
+	if ( ( x >= this_low_edge_x && x < this_up_edge_x ) || ( isNextBinOverflowX && x >= this_up_edge_x ) ) {
 
-	    float eff_pt(1.0), eff_pt_err_up(0.0), eff_pt_err_dn(0.0);
+	    float eff_x(1.0), eff_x_err_up(0.0), eff_x_err_dn(0.0);
 
 	    // The central value for the efficiency will always be read from the nominal efficinecy histogram if:
 	    //
@@ -1705,7 +1692,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 	    tokens.clear();
 	    ANA_CHECK( this->tokenize( '_', tokens, m_this_syst.first ) );
 
-            bool readNominalPt(false);
+            bool readNominalX(false);
 
 	    if ( ( isNominal ) ||
 	         ( ( lep.get()->flavour == 13 )  && ( m_this_syst.first.find("El_") != std::string::npos ) )   ||
@@ -1715,8 +1702,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		 ( m_this_syst.first.find("Pt") == std::string::npos )
 		)
 	    {
-		syskey_up_pt = syskey_dn_pt = "Nominal";
-		readNominalPt = true;
+		syskey_up_x = syskey_dn_x = "Nominal";
+		readNominalX = true;
 	    } else {
 
 		// std::cout << "\t\ttokens for this syst: " << tokens.size() << std::endl;
@@ -1735,21 +1722,21 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		for ( unsigned int idx(3); idx < endtoken; ++idx ) { addon = addon + tokens.at(idx) + "_"; }
 
 		if ( !m_correlatedMMWeights && ( isNominal || isSysUncorrBins ) ) {
-		    if ( p != std::stoi(tokens.back()) ) {
-			syskey_up_pt = syskey_dn_pt = "Nominal";
-			readNominalPt = true;
+		    if ( xbin != std::stoi(tokens.back()) ) {
+			syskey_up_x = syskey_dn_x = "Nominal";
+			readNominalX = true;
 		    } else {
-			syskey_up_pt = ( isStat ) ? "Nominal" : addon + "up_" + tokens.back();
-			syskey_dn_pt = ( isStat ) ? "Nominal" : addon + "dn_" + tokens.back();
+			syskey_up_x = ( isStat ) ? "Nominal" : addon + "up_" + tokens.back();
+			syskey_dn_x = ( isStat ) ? "Nominal" : addon + "dn_" + tokens.back();
 		    }
 		} else if ( m_correlatedMMWeights || isSysCorrBins ) {
-		    syskey_up_pt = ( isStat ) ? "Nominal" : addon + "up";
-		    syskey_dn_pt = ( isStat ) ? "Nominal" : addon + "dn";
+		    syskey_up_x = ( isStat ) ? "Nominal" : addon + "up";
+		    syskey_dn_x = ( isStat ) ? "Nominal" : addon + "dn";
 		}
 
 	    }
 
-	    if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\t===> Retrieving nominal pT histogram and variations from map w/ key: %s (up), %s (dn)", syskey_up_pt.c_str(), syskey_dn_pt.c_str() ); }
+	    if ( m_verbose ) { Info("getMMEfficiencyAndError_1D()", "\t\t===> Retrieving nominal (%s) histogram and variations from map w/ key: %s (up), %s (dn)", varX.second.c_str(), syskey_up_x.c_str(), syskey_dn_x.c_str() ); }
 
 	    // NB: "Stat" systematics need special treatment
 	    // up/dn variations for *this* systematic bin are obtained by reading the stat uncertainty of the bin itself for the *nominal* hist, rather than a different histogram.
@@ -1757,48 +1744,48 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 
 	    if ( !m_useTEfficiency ) {
 
-		eff_pt = hist_nominal_pt->GetBinContent(p);
+		eff_x = hist_nominal_x->GetBinContent(xbin);
 
 		if ( m_useTrigMatchingInfo ) {
-		  eff_pt = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinContent(p) : hist_nominal_pt_NO_TM->GetBinContent(p);
+		  eff_x = ( lep.get()->trigmatched ) ? hist_nominal_x_YES_TM->GetBinContent(xbin) : hist_nominal_x_NO_TM->GetBinContent(xbin);
 		}
 
 		if ( isStat ) {
 
-		  eff_pt_err_up = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
-		  eff_pt_err_dn = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
+		  eff_x_err_up = ( readNominalX ) ? 0 : hist_nominal_x->GetBinError(xbin);
+		  eff_x_err_dn = ( readNominalX ) ? 0 : hist_nominal_x->GetBinError(xbin);
 
 		  if ( m_useTrigMatchingInfo ) {
 
-		    if ( readNominalPt ) {
-		      eff_pt_err_up = eff_pt_err_dn = 0;
+		    if ( readNominalX ) {
+		      eff_x_err_up = eff_x_err_dn = 0;
 		    } else {
-		      eff_pt_err_up = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinError(p) : hist_nominal_pt_NO_TM->GetBinError(p);
-		      eff_pt_err_dn = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinError(p) : hist_nominal_pt_NO_TM->GetBinError(p);
+		      eff_x_err_up = ( lep.get()->trigmatched ) ? hist_nominal_x_YES_TM->GetBinError(xbin) : hist_nominal_x_NO_TM->GetBinError(xbin);
+		      eff_x_err_dn = ( lep.get()->trigmatched ) ? hist_nominal_x_YES_TM->GetBinError(xbin) : hist_nominal_x_NO_TM->GetBinError(xbin);
 		    }
 
 		  }
 
 		} else {
 
-		  eff_pt_err_up = (histograms->find(syskey_up_pt)->second).find(key_pt)->second->GetBinContent(p);
-		  eff_pt_err_dn = (histograms->find(syskey_dn_pt)->second).find(key_pt)->second->GetBinContent(p);
+		  eff_x_err_up = (histograms->find(syskey_up_x)->second).find(keyX)->second->GetBinContent(xbin);
+		  eff_x_err_dn = (histograms->find(syskey_dn_x)->second).find(keyX)->second->GetBinContent(xbin);
 
 		  if ( m_useTrigMatchingInfo ) {
-		    eff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find(syskey_up_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_up_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
-		    eff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find(syskey_dn_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_dn_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
+		    eff_x_err_up = ( lep.get()->trigmatched ) ? (histograms->find(syskey_up_x)->second).find(keyX_YES_TM)->second->GetBinContent(xbin) : (histograms->find(syskey_up_x)->second).find(keyX_NO_TM)->second->GetBinContent(xbin);
+		    eff_x_err_dn = ( lep.get()->trigmatched ) ? (histograms->find(syskey_dn_x)->second).find(keyX_YES_TM)->second->GetBinContent(xbin) : (histograms->find(syskey_dn_x)->second).find(keyX_NO_TM)->second->GetBinContent(xbin);
 		  }
 
 		}
 
 	    } else {
-		eff_pt	      = (tefficiencies->find("Nominal")->second).find(key_pt_teff)->second->GetEfficiency(p);
+		eff_x	      = (tefficiencies->find("Nominal")->second).find(keyX_teff)->second->GetEfficiency(xbin);
 		if ( isStat ) {
-		  eff_pt_err_up = ( readNominalPt ) ? 0 : (tefficiencies->find("Nominal")->second).find(key_pt_teff)->second->GetEfficiencyErrorUp(p);
-		  eff_pt_err_dn = ( readNominalPt ) ? 0 : (tefficiencies->find("Nominal")->second).find(key_pt_teff)->second->GetEfficiencyErrorLow(p);
+		  eff_x_err_up = ( readNominalX ) ? 0 : (tefficiencies->find("Nominal")->second).find(keyX_teff)->second->GetEfficiencyErrorUp(xbin);
+		  eff_x_err_dn = ( readNominalX ) ? 0 : (tefficiencies->find("Nominal")->second).find(keyX_teff)->second->GetEfficiencyErrorLow(xbin);
 		} else {
-		  eff_pt_err_up = (tefficiencies->find(syskey_up_pt)->second).find(key_pt_teff)->second->GetEfficiency(p);
-		  eff_pt_err_dn = (tefficiencies->find(syskey_dn_pt)->second).find(key_pt_teff)->second->GetEfficiency(p);
+		  eff_x_err_up = (tefficiencies->find(syskey_up_x)->second).find(keyX_teff)->second->GetEfficiency(xbin);
+		  eff_x_err_dn = (tefficiencies->find(syskey_dn_x)->second).find(keyX_teff)->second->GetEfficiency(xbin);
 		}
 	    }
 
@@ -1807,129 +1794,461 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shar
 		if ( m_useTrigMatchingInfo ) {
 		    trigmatch_str = ( lep.get()->trigmatched ) ? ", TRIGMATCHED (SLT)" : ", NOT TRIGMATCHED (SLT)";
 		}
-		Info("getMMEfficiencyAndError()", "\t\t\tLepton pT = %.3f GeV, flavour = %i%s ==> Reading %s efficiency in pT bin [%.0f,%.0f] GeV: eff_pt = %.3f", pt, lep.get()->flavour, trigmatch_str.c_str(), type.c_str(), this_low_edge_pt, this_up_edge_pt, eff_pt );
+		Info("getMMEfficiencyAndError_1D()", "\t\t\tLepton %s = %.3f, flavour = %i%s ==> Reading %s efficiency in bin [%.0f,%.0f] : eff_x = %.3f", varX.second.c_str(), x, lep.get()->flavour, trigmatch_str.c_str(), type.c_str(), this_low_edge_x, this_up_edge_x, eff_x );
 	    }
 
-	    // If looking at eta parametrisation, always take the nominal value, except when looking at "Stat".
-	    // In that case, add the statistical error for the relevant eta bin to this pt bin stat error
+	    // If looking at xx parametrisation, always take the nominal value, except when looking at "Stat".
+	    // In that case, add the statistical error for the relevant xx bin to this x bin stat error
 
-	    float eff_eta(1.0), eff_eta_err_up(0.0), eff_eta_err_dn(0.0);
+	    float eff_xx(1.0), eff_xx_err_up(0.0), eff_xx_err_dn(0.0);
 
-	    if ( m_useEtaParametrisation && lep.get()->flavour == 11 ) {
+	    if ( useVarXX ) {
 
 		// Get the number of bins. Use nominal
 
-		int nbins_eta = hist_nominal_eta->GetXaxis()->GetNbins();
+		int nbins_xx = hist_nominal_xx->GetXaxis()->GetNbins();
 
-		bool isNextBinOverflowEta(false);
+		bool isNextBinOverflowXX(false);
 
-		// Loop over number of eta bins
+		// Loop over number of xx bins
 		// Do not consider underflow, overflow
 
-		for ( int e(1); e <= nbins_eta; ++e ) {
+		for ( int xxbin(1); xxbin <= nbins_xx; ++xxbin ) {
 
-		    this_low_edge_eta = hist_nominal_eta->GetXaxis()->GetBinLowEdge(e);
-		    this_up_edge_eta  = hist_nominal_eta->GetXaxis()->GetBinUpEdge(e);
+		    this_low_edge_xx  = hist_nominal_xx->GetXaxis()->GetBinLowEdge(xxbin);
+		    this_up_edge_xx   = hist_nominal_xx->GetXaxis()->GetBinUpEdge(xxbin);
+		    this_bincenter_xx = hist_nominal_xx->GetXaxis()->GetBinCenter(xxbin);
 
-		    isNextBinOverflowEta = hist_nominal_eta->IsBinOverflow(e+1);
+		    isNextBinOverflowXX = hist_nominal_xx->IsBinOverflow(xxbin+1);
 
-		    if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
+		    if ( m_verbose ) { Info("getMMEfficiencyAndError_1D()","\t\t%s bin %i : [%.1f,%.1f] (center: %.1f)", varXX.second.c_str(), xxbin, this_low_edge_xx, this_up_edge_xx, this_bincenter_xx ); }
 
-		    if ( ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) || ( isNextBinOverflowEta && fabs(eta) >= this_up_edge_eta ) ) {
+		    if ( ( xx >= this_low_edge_xx && xx < this_up_edge_xx ) || ( isNextBinOverflowXX && xx >= this_up_edge_xx ) ) {
 
-			syskey_up_eta = syskey_dn_eta = "Nominal";
+			syskey_up_xx = syskey_dn_xx = "Nominal";
 
-                	bool readNominalEta(false);
+                	bool readNominalXX(false);
 
-	        	if ( ( !isStat ) || // Make sure to get the stat variation on eta eff only when this syst is "Stat". In all other cases, only the nominal eta eff value will be taken (error will be set to 0)
+			// WARNING!
+			// This is specifically made for Eta. Probably has to change if using another parametrisation
+
+	        	if ( ( !isStat ) || // Make sure to get the stat variation on xx eff only when this syst is "Stat". In all other cases, only the nominal xx eff value will be taken (error will be set to 0)
 	        	     ( ( lep.get()->flavour == 11 )  && ( m_this_syst.first.find("Mu_")   != std::string::npos ) ) ||
 	        	     ( ( type.compare("REAL") == 0 ) && ( m_this_syst.first.find("Fake_") != std::string::npos ) ) ||
 	        	     ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.first.find("Real_") != std::string::npos ) ) )
 	        	{
-	        	    readNominalEta = true;
+	        	    readNominalXX = true;
 	        	} else if ( isStat ) {
 			    if ( !m_correlatedMMWeights && ( isNominal || isSysUncorrBins ) ) {
-				if ( p != std::stoi(tokens.back()) ) {
-				    readNominalEta = true;
+				if ( xxbin != std::stoi(tokens.back()) ) {
+				    readNominalXX = true;
 				}
 			    } else if ( m_correlatedMMWeights || isSysCorrBins ) {
-				readNominalEta = true;
+				readNominalXX = true;
 			    }
 			}
 
-			if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\t===> Retrieving nominal eta histogram and variations from map w/ key: %s (up), %s (dn)", syskey_up_eta.c_str(), syskey_dn_eta.c_str() ); }
+			if ( m_verbose ) { Info("getMMEfficiencyAndError_1D()", "\t\t===> Retrieving nominal %s histogram and variations from map w/ key: %s (up), %s (dn)", varXX.second.c_str(), syskey_up_xx.c_str(), syskey_dn_xx.c_str() ); }
 
 	    		if ( !m_useTEfficiency ) {
-	    		    eff_eta	   = hist_nominal_eta->GetBinContent(e);
-			    eff_eta_err_up = ( readNominalEta ) ? 0 : hist_nominal_eta->GetBinError(e);
-			    eff_eta_err_dn = ( readNominalEta ) ? 0 : hist_nominal_eta->GetBinError(e);
+	    		    eff_xx	  = hist_nominal_xx->GetBinContent(xxbin);
+			    eff_xx_err_up = ( readNominalXX ) ? 0 : hist_nominal_xx->GetBinError(xxbin);
+			    eff_xx_err_dn = ( readNominalXX ) ? 0 : hist_nominal_xx->GetBinError(xxbin);
 	    		} else {
-	    		    eff_eta	   = (tefficiencies->find("Nominal")->second).find(key_eta_teff)->second->GetEfficiency(e);
-			    eff_eta_err_up = ( readNominalEta ) ? 0 : (tefficiencies->find("Nominal")->second).find(key_eta_teff)->second->GetEfficiencyErrorUp(e);
-			    eff_eta_err_dn = ( readNominalEta ) ? 0 : (tefficiencies->find("Nominal")->second).find(key_eta_teff)->second->GetEfficiencyErrorLow(e);
+	    		    eff_xx	  = (tefficiencies->find("Nominal")->second).find(keyXX_teff)->second->GetEfficiency(xxbin);
+			    eff_xx_err_up = ( readNominalXX ) ? 0 : (tefficiencies->find("Nominal")->second).find(keyXX_teff)->second->GetEfficiencyErrorUp(xxbin);
+			    eff_xx_err_dn = ( readNominalXX ) ? 0 : (tefficiencies->find("Nominal")->second).find(keyXX_teff)->second->GetEfficiencyErrorLow(xxbin);
 	                }
 
 			if ( m_verbose ) {
-			    Info("getMMEfficiencyAndError()", "\t\t\tLepton |eta| = %.3f, flavour = %i ==> Reading %s efficiency in |eta| bin [%.3f,%.3f]: eff_eta = %.3f", fabs(eta), lep.get()->flavour, type.c_str(), this_low_edge_eta, this_up_edge_eta, eff_eta );
+			    Info("getMMEfficiencyAndError_1D()", "\t\t\tLepton %s = %.3f, flavour = %i ==> Reading %s efficiency in bin [%.3f,%.3f]: eff_xx = %.3f", varXX.second.c_str(), xx, lep.get()->flavour, type.c_str(), this_low_edge_xx, this_up_edge_xx, eff_xx );
 			}
 
 			break;
 		    }
-		} // close loop on eta bins
+		} // close loop on xx bins
 	    }
 
 	    // Nominal
 
-	    efficiency.at(0) = eff_pt;
+	    efficiency.at(0) = eff_x;
 
-	    eff_pt_err_up  = ( isStat ) ? eff_pt_err_up : fabs( eff_pt - eff_pt_err_up );
-	    eff_pt_err_dn  = ( isStat ) ? eff_pt_err_dn : fabs( eff_pt - eff_pt_err_dn );
+	    eff_x_err_up  = ( isStat ) ? eff_x_err_up : fabs( eff_x - eff_x_err_up );
+	    eff_x_err_dn  = ( isStat ) ? eff_x_err_dn : fabs( eff_x - eff_x_err_dn );
 
-	    error_up	 = eff_pt_err_up;
-	    error_dn	 = eff_pt_err_dn;
+	    error_up	 = eff_x_err_up;
+	    error_dn	 = eff_x_err_dn;
 
 	    // UP syst
 
-	    efficiency.at(1) = ( eff_pt + error_up );
+	    efficiency.at(1) = ( eff_x + error_up );
 
 	    // DN syst
 
-	    if ( eff_pt - error_dn > 0 ) { efficiency.at(2) = ( eff_pt - error_dn ); }
-	    else			 { efficiency.at(2) = 0.0; }
+	    if ( eff_x - error_dn > 0 ) { efficiency.at(2) = ( eff_x - error_dn ); }
+	    else			{ efficiency.at(2) = 0.0; }
 
-	    if ( m_useEtaParametrisation && lep.get()->flavour == 11 ) {
+	    if ( useVarXX ) {
 
-		float eff_avg(1.0);
-		if      ( type.compare("REAL") == 0 ) { eff_avg = m_el_reff_avg["Nominal"]; }
-		else if ( type.compare("FAKE") == 0 ) { eff_avg = m_el_feff_avg["Nominal"]; }
+		if ( m_verbose ) { Info("getMMEfficiencyAndError_1D()", "\t\tnormalisation factor (<eff>) = %.3f", avg_eff ); }
 
-		if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tnormalisation factor (<eff>) = %.3f", eff_avg ); }
+		efficiency.at(0) = ( eff_x * eff_xx ) / avg_eff;
 
-		efficiency.at(0) = ( eff_pt * eff_eta ) / eff_avg;
-
-		// Assuming  eff_pt,eff_eta are independent, this is the error on the product
+		// Assuming  eff_x,eff_xx are independent, this is the error on the product
 		// ( the constant factor at denominator will be put back later in the def of Efficiency...)
 
-		error_up = ( isStat ) ? sqrt( (eff_eta*eff_pt_err_up)*(eff_eta*eff_pt_err_up) + (eff_pt*eff_eta_err_up)*(eff_pt*eff_eta_err_up) ) : error_up;
-		error_dn = ( isStat ) ? sqrt( (eff_eta*eff_pt_err_dn)*(eff_eta*eff_pt_err_dn) + (eff_pt*eff_eta_err_dn)*(eff_pt*eff_eta_err_dn) ) : error_dn;
+		error_up = ( isStat ) ? sqrt( (eff_xx*eff_x_err_up)*(eff_xx*eff_x_err_up) + (eff_x*eff_xx_err_up)*(eff_x*eff_xx_err_up) ) : error_up;
+		error_dn = ( isStat ) ? sqrt( (eff_xx*eff_x_err_dn)*(eff_xx*eff_x_err_dn) + (eff_x*eff_xx_err_dn)*(eff_x*eff_xx_err_dn) ) : error_dn;
 
-		efficiency.at(1) = ( (eff_pt * eff_eta) + error_up ) / eff_avg;
-		if ( (eff_pt * eff_eta) - error_dn > 0 ) { efficiency.at(2) = ( (eff_pt * eff_eta) - error_dn ) / eff_avg; }
-		else				         { efficiency.at(2) = 0.0; }
+		efficiency.at(1) = ( (eff_x * eff_xx) + error_up ) / avg_eff;
+		if ( (eff_x * eff_xx) - error_dn > 0 ) { efficiency.at(2) = ( (eff_x * eff_xx) - error_dn ) / avg_eff; }
+		else				       { efficiency.at(2) = 0.0; }
 	    }
 
 	    break;
 	}
 
-    } // close loop on pT bins
+    } // close loop on x bins
 
     if ( m_verbose ) {
-        if ( type.compare("REAL") == 0 ) { Info("getMMEfficiencyAndError()", "\t\tEffective REAL efficiency ==> r = %.3f ( r_up = %.3f , r_dn = %.3f )", efficiency.at(0), efficiency.at(1), efficiency.at(2) ); }
-        if ( type.compare("FAKE") == 0 ) { Info("getMMEfficiencyAndError()", "\t\tEffective FAKE efficiency ==> f = %.3f ( f_up = %.3f , f_dn = %.3f )", efficiency.at(0), efficiency.at(1), efficiency.at(2) ); }
+        if ( type.compare("REAL") == 0 ) { Info("getMMEfficiencyAndError_1D()", "\t\tEffective REAL efficiency ==> r = %.3f ( r_up = %.3f , r_dn = %.3f )", efficiency.at(0), efficiency.at(1), efficiency.at(2) ); }
+        if ( type.compare("FAKE") == 0 ) { Info("getMMEfficiencyAndError_1D()", "\t\tEffective FAKE efficiency ==> f = %.3f ( f_up = %.3f , f_dn = %.3f )", efficiency.at(0), efficiency.at(1), efficiency.at(2) ); }
     }
 
     return EL::StatusCode::SUCCESS;
 }
+
+////////////////////////////////////
+
+// EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError( std::shared_ptr<leptonObj> lep, std::vector<float>& efficiency, const std::string& type )
+// {
+
+//     float error_up(0.0), error_dn(0.0);
+
+//     float pt  = lep.get()->pt/1e3; // Must be in GeV!
+//     float eta = ( lep.get()->flavour == 13 ) ? lep.get()->eta : lep.get()->etaBE2;
+
+//     float this_low_edge_pt(-1.0), this_up_edge_pt(-1.0);
+//     float this_low_edge_eta(-999.0), this_up_edge_eta(-999.0);
+
+//     std::map< std::string, std::map< std::string, TH1* > >         *histograms    = ( lep.get()->flavour == 13 ) ? &m_mu_hist_map : &m_el_hist_map;
+//     std::map< std::string, std::map< std::string, TEfficiency* > > *tefficiencies = ( lep.get()->flavour == 13 ) ? &m_mu_teff_map : &m_el_teff_map;
+
+//     std::string key_pt, key_eta, key_pt_teff, key_eta_teff;
+//     std::string key_pt_NO_TM, key_pt_YES_TM;
+
+//     if ( type.compare("REAL") == 0 ) {
+// 	key_pt        = "pt_reff_hist";
+// 	key_pt_teff   = "pt_reff";
+// 	key_eta       = "eta_reff_hist";
+// 	key_eta_teff  = "eta_reff";
+// 	key_pt_NO_TM  = "pt_reff_hist_NO_TM";
+// 	key_pt_YES_TM = "pt_reff_hist_YES_TM";
+//     } else if ( type.compare("FAKE") == 0 ) {
+// 	key_pt        = "pt_feff_hist";
+// 	key_pt_teff   = "pt_feff";
+// 	key_eta       = "eta_feff_hist";
+// 	key_eta_teff  = "eta_feff";
+// 	key_pt_NO_TM  = "pt_feff_hist_NO_TM";
+// 	key_pt_YES_TM = "pt_feff_hist_YES_TM";
+//     }
+
+//     if ( m_verbose ) {
+// 	Info("getMMEfficiencyAndError()", "\tReading %s efficiency...", type.c_str() );
+// 	Info("getMMEfficiencyAndError()", "\tpT = %.2f [GeV], eta = %.2f", pt, eta );
+//     }
+
+//     std::string syskey_up_pt, syskey_dn_pt, syskey_up_eta, syskey_dn_eta;
+
+//     std::vector<std::string> tokens;
+
+//     TH1* hist_nominal_pt  = (histograms->find("Nominal")->second).find(key_pt)->second;
+//     TH1* hist_nominal_eta = (histograms->find("Nominal")->second).find(key_eta)->second;
+
+//     TH1* hist_nominal_pt_YES_TM(nullptr);
+//     TH1* hist_nominal_pt_NO_TM(nullptr);
+
+//     if ( m_useTrigMatchingInfo ) {
+
+//         hist_nominal_pt_YES_TM = (histograms->find("Nominal")->second).find(key_pt_YES_TM)->second;
+//         hist_nominal_pt_NO_TM  = (histograms->find("Nominal")->second).find(key_pt_NO_TM)->second;
+
+//     }
+
+//     // Get the number of bins. Use nominal
+
+//     int nbins_pt = hist_nominal_pt->GetXaxis()->GetNbins(); // Do NOT consider the overflow, as the last visible bin of the efficiency hist already takes the overflow events into account.
+
+//     bool isNominal = ( m_this_syst.first.find("Nominal") != std::string::npos );
+//     bool isStat    = ( m_this_syst.first.find("Stat")    != std::string::npos );
+
+//     bool isSysCorrBins   = ( m_this_syst.second.compare("CorrBins")   == 0 );
+//     bool isSysUncorrBins = ( m_this_syst.second.compare("UncorrBins") == 0 );
+
+//     bool isNextBinOverflowPt(false);
+
+//     // Loop over number of pt bins
+//     // Do not consider underflow, and overflow
+
+//     for ( int p(1); p <= nbins_pt; ++p ) {
+
+// 	this_low_edge_pt = hist_nominal_pt->GetXaxis()->GetBinLowEdge(p);
+// 	this_up_edge_pt  = hist_nominal_pt->GetXaxis()->GetBinUpEdge(p);
+
+// 	isNextBinOverflowPt = ( hist_nominal_pt->IsBinOverflow(p+1) );
+
+// 	if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\tpT bin %i : [%.0f,%.0f] GeV", p, this_low_edge_pt, this_up_edge_pt ); }
+
+// 	if ( ( pt >= this_low_edge_pt && pt < this_up_edge_pt ) || ( isNextBinOverflowPt && pt >= this_up_edge_pt ) ) {
+
+// 	    float eff_pt(1.0), eff_pt_err_up(0.0), eff_pt_err_dn(0.0);
+
+// 	    // The central value for the efficiency will always be read from the nominal efficinecy histogram if:
+// 	    //
+// 	    // -) m_this_syst contains "Nominal"
+// 	    // OR
+// 	    // -) the bin in question does NOT correspond to the bin for *this* systematic varied histogram (only when looking at fully uncorrelated syst variations)
+// 	    // OR
+// 	    // -) lepton is el and m_this_syst starts w/ "Mu",
+// 	    // OR
+// 	    // -) lepton is mu and m_this_syst starts w/ "El"
+// 	    // OR
+// 	    // -) checking r eff and m_this_syst contains "Fake"
+// 	    // OR
+// 	    // -) checking f eff and m_this_syst contains "Real"
+// 	    // OR
+// 	    // -) m_this_syst does NOT contain Pt
+// 	    //
+// 	    // , need to read "Nominal" for both up and dn  --> syskey_up_pt = syskey_dn_pt = "Nominal"
+
+// 	    tokens.clear();
+// 	    ANA_CHECK( this->tokenize( '_', tokens, m_this_syst.first ) );
+
+//             bool readNominalPt(false);
+
+// 	    if ( ( isNominal ) ||
+// 	         ( ( lep.get()->flavour == 13 )  && ( m_this_syst.first.find("El_") != std::string::npos ) )   ||
+// 		 ( ( lep.get()->flavour == 11 )  && ( m_this_syst.first.find("Mu_") != std::string::npos ) )   ||
+// 		 ( ( type.compare("REAL") == 0 ) && ( m_this_syst.first.find("Fake_") != std::string::npos ) ) ||
+// 		 ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.first.find("Real_") != std::string::npos ) ) ||
+// 		 ( m_this_syst.first.find("Pt") == std::string::npos )
+// 		)
+// 	    {
+// 		syskey_up_pt = syskey_dn_pt = "Nominal";
+// 		readNominalPt = true;
+// 	    } else {
+
+// 		// std::cout << "\t\ttokens for this syst: " << tokens.size() << std::endl;
+// 		// unsigned int idx(0);
+// 		// for ( const auto& t : tokens ) {
+// 		//     std::cout << "\t\t\tt[" << idx << "] = " << t << std::endl;
+// 		//     ++idx;
+// 		// }
+// 		// std::cout << "" << std::endl;
+
+// 		std::string addon("");
+// 		unsigned int endtoken(0);
+// 		if      ( !m_correlatedMMWeights && ( isNominal || isSysUncorrBins ) ) { endtoken = tokens.size() - 1; }
+// 		else if ( m_correlatedMMWeights || isSysCorrBins )                     { endtoken = tokens.size(); }
+
+// 		for ( unsigned int idx(3); idx < endtoken; ++idx ) { addon = addon + tokens.at(idx) + "_"; }
+
+// 		if ( !m_correlatedMMWeights && ( isNominal || isSysUncorrBins ) ) {
+// 		    if ( p != std::stoi(tokens.back()) ) {
+// 			syskey_up_pt = syskey_dn_pt = "Nominal";
+// 			readNominalPt = true;
+// 		    } else {
+// 			syskey_up_pt = ( isStat ) ? "Nominal" : addon + "up_" + tokens.back();
+// 			syskey_dn_pt = ( isStat ) ? "Nominal" : addon + "dn_" + tokens.back();
+// 		    }
+// 		} else if ( m_correlatedMMWeights || isSysCorrBins ) {
+// 		    syskey_up_pt = ( isStat ) ? "Nominal" : addon + "up";
+// 		    syskey_dn_pt = ( isStat ) ? "Nominal" : addon + "dn";
+// 		}
+
+// 	    }
+
+// 	    if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\t===> Retrieving nominal pT histogram and variations from map w/ key: %s (up), %s (dn)", syskey_up_pt.c_str(), syskey_dn_pt.c_str() ); }
+
+// 	    // NB: "Stat" systematics need special treatment
+// 	    // up/dn variations for *this* systematic bin are obtained by reading the stat uncertainty of the bin itself for the *nominal* hist, rather than a different histogram.
+// 	    // If this bin is not corresponding to *this* systematic bin, then get an error of 0
+
+// 	    if ( !m_useTEfficiency ) {
+
+// 		eff_pt = hist_nominal_pt->GetBinContent(p);
+
+// 		if ( m_useTrigMatchingInfo ) {
+// 		  eff_pt = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinContent(p) : hist_nominal_pt_NO_TM->GetBinContent(p);
+// 		}
+
+// 		if ( isStat ) {
+
+// 		  eff_pt_err_up = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
+// 		  eff_pt_err_dn = ( readNominalPt ) ? 0 : hist_nominal_pt->GetBinError(p);
+
+// 		  if ( m_useTrigMatchingInfo ) {
+
+// 		    if ( readNominalPt ) {
+// 		      eff_pt_err_up = eff_pt_err_dn = 0;
+// 		    } else {
+// 		      eff_pt_err_up = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinError(p) : hist_nominal_pt_NO_TM->GetBinError(p);
+// 		      eff_pt_err_dn = ( lep.get()->trigmatched ) ? hist_nominal_pt_YES_TM->GetBinError(p) : hist_nominal_pt_NO_TM->GetBinError(p);
+// 		    }
+
+// 		  }
+
+// 		} else {
+
+// 		  eff_pt_err_up = (histograms->find(syskey_up_pt)->second).find(key_pt)->second->GetBinContent(p);
+// 		  eff_pt_err_dn = (histograms->find(syskey_dn_pt)->second).find(key_pt)->second->GetBinContent(p);
+
+// 		  if ( m_useTrigMatchingInfo ) {
+// 		    eff_pt_err_up = ( lep.get()->trigmatched ) ? (histograms->find(syskey_up_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_up_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
+// 		    eff_pt_err_dn = ( lep.get()->trigmatched ) ? (histograms->find(syskey_dn_pt)->second).find(key_pt_YES_TM)->second->GetBinContent(p) : (histograms->find(syskey_dn_pt)->second).find(key_pt_NO_TM)->second->GetBinContent(p);
+// 		  }
+
+// 		}
+
+// 	    } else {
+// 		eff_pt	      = (tefficiencies->find("Nominal")->second).find(key_pt_teff)->second->GetEfficiency(p);
+// 		if ( isStat ) {
+// 		  eff_pt_err_up = ( readNominalPt ) ? 0 : (tefficiencies->find("Nominal")->second).find(key_pt_teff)->second->GetEfficiencyErrorUp(p);
+// 		  eff_pt_err_dn = ( readNominalPt ) ? 0 : (tefficiencies->find("Nominal")->second).find(key_pt_teff)->second->GetEfficiencyErrorLow(p);
+// 		} else {
+// 		  eff_pt_err_up = (tefficiencies->find(syskey_up_pt)->second).find(key_pt_teff)->second->GetEfficiency(p);
+// 		  eff_pt_err_dn = (tefficiencies->find(syskey_dn_pt)->second).find(key_pt_teff)->second->GetEfficiency(p);
+// 		}
+// 	    }
+
+// 	    if ( m_verbose ) {
+// 		std::string trigmatch_str("");
+// 		if ( m_useTrigMatchingInfo ) {
+// 		    trigmatch_str = ( lep.get()->trigmatched ) ? ", TRIGMATCHED (SLT)" : ", NOT TRIGMATCHED (SLT)";
+// 		}
+// 		Info("getMMEfficiencyAndError()", "\t\t\tLepton pT = %.3f GeV, flavour = %i%s ==> Reading %s efficiency in pT bin [%.0f,%.0f] GeV: eff_pt = %.3f", pt, lep.get()->flavour, trigmatch_str.c_str(), type.c_str(), this_low_edge_pt, this_up_edge_pt, eff_pt );
+// 	    }
+
+// 	    // If looking at eta parametrisation, always take the nominal value, except when looking at "Stat".
+// 	    // In that case, add the statistical error for the relevant eta bin to this pt bin stat error
+
+// 	    float eff_eta(1.0), eff_eta_err_up(0.0), eff_eta_err_dn(0.0);
+
+// 	    if ( m_useEtaParametrisation && lep.get()->flavour == 11 ) {
+
+// 		// Get the number of bins. Use nominal
+
+// 		int nbins_eta = hist_nominal_eta->GetXaxis()->GetNbins();
+
+// 		bool isNextBinOverflowEta(false);
+
+// 		// Loop over number of eta bins
+// 		// Do not consider underflow, overflow
+
+// 		for ( int e(1); e <= nbins_eta; ++e ) {
+
+// 		    this_low_edge_eta = hist_nominal_eta->GetXaxis()->GetBinLowEdge(e);
+// 		    this_up_edge_eta  = hist_nominal_eta->GetXaxis()->GetBinUpEdge(e);
+
+// 		    isNextBinOverflowEta = hist_nominal_eta->IsBinOverflow(e+1);
+
+// 		    if ( m_verbose ) { Info("getMMEfficiencyAndError()","\t\t|eta| bin %i : [%.3f,%.3f]", e, this_low_edge_eta, this_up_edge_eta ); }
+
+// 		    if ( ( fabs(eta) >= this_low_edge_eta && fabs(eta) < this_up_edge_eta ) || ( isNextBinOverflowEta && fabs(eta) >= this_up_edge_eta ) ) {
+
+// 			syskey_up_eta = syskey_dn_eta = "Nominal";
+
+//                 	bool readNominalEta(false);
+
+// 	        	if ( ( !isStat ) || // Make sure to get the stat variation on eta eff only when this syst is "Stat". In all other cases, only the nominal eta eff value will be taken (error will be set to 0)
+// 	        	     ( ( lep.get()->flavour == 11 )  && ( m_this_syst.first.find("Mu_")   != std::string::npos ) ) ||
+// 	        	     ( ( type.compare("REAL") == 0 ) && ( m_this_syst.first.find("Fake_") != std::string::npos ) ) ||
+// 	        	     ( ( type.compare("FAKE") == 0 ) && ( m_this_syst.first.find("Real_") != std::string::npos ) ) )
+// 	        	{
+// 	        	    readNominalEta = true;
+// 	        	} else if ( isStat ) {
+// 			    if ( !m_correlatedMMWeights && ( isNominal || isSysUncorrBins ) ) {
+// 				if ( p != std::stoi(tokens.back()) ) {
+// 				    readNominalEta = true;
+// 				}
+// 			    } else if ( m_correlatedMMWeights || isSysCorrBins ) {
+// 				readNominalEta = true;
+// 			    }
+// 			}
+
+// 			if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\t===> Retrieving nominal eta histogram and variations from map w/ key: %s (up), %s (dn)", syskey_up_eta.c_str(), syskey_dn_eta.c_str() ); }
+
+// 	    		if ( !m_useTEfficiency ) {
+// 	    		    eff_eta	   = hist_nominal_eta->GetBinContent(e);
+// 			    eff_eta_err_up = ( readNominalEta ) ? 0 : hist_nominal_eta->GetBinError(e);
+// 			    eff_eta_err_dn = ( readNominalEta ) ? 0 : hist_nominal_eta->GetBinError(e);
+// 	    		} else {
+// 	    		    eff_eta	   = (tefficiencies->find("Nominal")->second).find(key_eta_teff)->second->GetEfficiency(e);
+// 			    eff_eta_err_up = ( readNominalEta ) ? 0 : (tefficiencies->find("Nominal")->second).find(key_eta_teff)->second->GetEfficiencyErrorUp(e);
+// 			    eff_eta_err_dn = ( readNominalEta ) ? 0 : (tefficiencies->find("Nominal")->second).find(key_eta_teff)->second->GetEfficiencyErrorLow(e);
+// 	                }
+
+// 			if ( m_verbose ) {
+// 			    Info("getMMEfficiencyAndError()", "\t\t\tLepton |eta| = %.3f, flavour = %i ==> Reading %s efficiency in |eta| bin [%.3f,%.3f]: eff_eta = %.3f", fabs(eta), lep.get()->flavour, type.c_str(), this_low_edge_eta, this_up_edge_eta, eff_eta );
+// 			}
+
+// 			break;
+// 		    }
+// 		} // close loop on eta bins
+// 	    }
+
+// 	    // Nominal
+
+// 	    efficiency.at(0) = eff_pt;
+
+// 	    eff_pt_err_up  = ( isStat ) ? eff_pt_err_up : fabs( eff_pt - eff_pt_err_up );
+// 	    eff_pt_err_dn  = ( isStat ) ? eff_pt_err_dn : fabs( eff_pt - eff_pt_err_dn );
+
+// 	    error_up	 = eff_pt_err_up;
+// 	    error_dn	 = eff_pt_err_dn;
+
+// 	    // UP syst
+
+// 	    efficiency.at(1) = ( eff_pt + error_up );
+
+// 	    // DN syst
+
+// 	    if ( eff_pt - error_dn > 0 ) { efficiency.at(2) = ( eff_pt - error_dn ); }
+// 	    else			 { efficiency.at(2) = 0.0; }
+
+// 	    if ( m_useEtaParametrisation && lep.get()->flavour == 11 ) {
+
+// 		float eff_avg(1.0);
+// 		if      ( type.compare("REAL") == 0 ) { eff_avg = m_el_reff_avg["Nominal"]; }
+// 		else if ( type.compare("FAKE") == 0 ) { eff_avg = m_el_feff_avg["Nominal"]; }
+
+// 		if ( m_verbose ) { Info("getMMEfficiencyAndError()", "\t\tnormalisation factor (<eff>) = %.3f", eff_avg ); }
+
+// 		efficiency.at(0) = ( eff_pt * eff_eta ) / eff_avg;
+
+// 		// Assuming  eff_pt,eff_eta are independent, this is the error on the product
+// 		// ( the constant factor at denominator will be put back later in the def of Efficiency...)
+
+// 		error_up = ( isStat ) ? sqrt( (eff_eta*eff_pt_err_up)*(eff_eta*eff_pt_err_up) + (eff_pt*eff_eta_err_up)*(eff_pt*eff_eta_err_up) ) : error_up;
+// 		error_dn = ( isStat ) ? sqrt( (eff_eta*eff_pt_err_dn)*(eff_eta*eff_pt_err_dn) + (eff_pt*eff_eta_err_dn)*(eff_pt*eff_eta_err_dn) ) : error_dn;
+
+// 		efficiency.at(1) = ( (eff_pt * eff_eta) + error_up ) / eff_avg;
+// 		if ( (eff_pt * eff_eta) - error_dn > 0 ) { efficiency.at(2) = ( (eff_pt * eff_eta) - error_dn ) / eff_avg; }
+// 		else				         { efficiency.at(2) = 0.0; }
+// 	    }
+
+// 	    break;
+// 	}
+
+//     } // close loop on pT bins
+
+//     if ( m_verbose ) {
+//         if ( type.compare("REAL") == 0 ) { Info("getMMEfficiencyAndError()", "\t\tEffective REAL efficiency ==> r = %.3f ( r_up = %.3f , r_dn = %.3f )", efficiency.at(0), efficiency.at(1), efficiency.at(2) ); }
+//         if ( type.compare("FAKE") == 0 ) { Info("getMMEfficiencyAndError()", "\t\tEffective FAKE efficiency ==> f = %.3f ( f_up = %.3f , f_dn = %.3f )", efficiency.at(0), efficiency.at(1), efficiency.at(2) ); }
+//     }
+
+//     return EL::StatusCode::SUCCESS;
+// }
 
 
 EL::StatusCode HTopMultilepNTupReprocesser :: getMMWeightAndError( std::vector<float>& mm_weight,
@@ -2050,18 +2369,42 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
     // ANA_CHECK( this->getMMEfficiencyAndError( lep0, f0, "FAKE" ) );
     // ANA_CHECK( this->getMMEfficiencyAndError( lep1, f1, "FAKE" ) );
 
-    ANA_CHECK( this->getMMEfficiencyAndError( lep0, r0, "REAL" ) );
-    ANA_CHECK( this->getMMEfficiencyAndError( lep1, r1, "REAL" ) );
-    if ( lep0.get()->flavour == 11 ) {
-	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep0, f0, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep0.get()->pt/1e3,"pT") ) );
-    } else {
-	ANA_CHECK( this->getMMEfficiencyAndError( lep0, f0, "FAKE" ) );
-    }
-    if ( lep1.get()->flavour == 11 ) {
-	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep1, f1, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep1.get()->pt/1e3,"pT") ) );
-    } else {
-	ANA_CHECK( this->getMMEfficiencyAndError( lep1, f1, "FAKE" ) );
-    }
+    // pT-only
+
+    ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, r0, "REAL", "pt_reff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
+    ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, r1, "REAL", "pt_reff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
+    ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, f0, "FAKE", "pt_feff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
+    ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, f1, "FAKE", "pt_feff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
+
+    // pT * eta (1DX1D) for electron fake rate
+
+    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, r0, "REAL", "pt_reff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
+    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, r1, "REAL", "pt_reff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
+    // if ( lep0.get()->flavour == 11 ) {
+    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, f0, "FAKE", "pt_feff_hist", std::make_pair(lep0.get()->pt/1e3,"pT"), "eta_feff_hist", std::make_pair(fabs(lep0.get()->etaBE2),"eta"), m_el_feff_avg["Nominal"] ) );
+    // } else {
+    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, f0, "FAKE", "pt_feff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
+    // }
+    // if ( lep1.get()->flavour == 11 ) {
+    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, f1, "FAKE", "pt_feff_hist", std::make_pair(lep1.get()->pt/1e3,"pT"), "eta_feff_hist", std::make_pair(fabs(lep1.get()->etaBE2),"eta"), m_el_feff_avg["Nominal"] ) );
+    // } else {
+    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, f1, "FAKE", "pt_feff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
+    // }
+
+    // NBjet * pT (2D) for electron fake rate
+
+    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, r0, "REAL", "pt_reff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
+    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, r1, "REAL", "pt_reff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
+    // if ( lep0.get()->flavour == 11 ) {
+    // 	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep0, f0, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep0.get()->pt/1e3,"pT") ) );
+    // } else {
+    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, f0, "FAKE", "pt_feff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
+    // }
+    // if ( lep1.get()->flavour == 11 ) {
+    // 	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep1, f1, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep1.get()->pt/1e3,"pT") ) );
+    // } else {
+    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, f1, "FAKE", "pt_feff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
+    // }
 
     if ( m_debug ) {
         std::cout << "" << std::endl;
@@ -2097,4 +2440,40 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 
     return EL::StatusCode::SUCCESS;
 }
+
+
+// // this is needed to distribute the algorithm to the workers
+// ClassImp(Parametrisation)
+
+// Parametrisation :: Parametrisation() :
+//     m_real_el_par("Pt"),
+//     m_real_mu_par("Pt"),
+//     m_fake_el_par("Pt"),
+//     m_fake_mu_par("Pt")
+// {
+
+//   Info("Parametrisation()", "Calling constructor");
+
+//   std::vector< std::pair<std::string,std::string> > tokens;
+//   ANA_CHECK( this->tokenize_pair( ',', tokens, m_parametrisation_list ) );
+
+//   for ( const auto& tk : tokens ) {
+
+//       if ( tk.first.compare("Real_El") == 0 ) { m_real_el_par = tk.second; }
+//       if ( tk.first.compare("Real_Mu") == 0 ) { m_real_mu_par = tk.second; }
+//       if ( tk.first.compare("Fake_El") == 0 ) { m_fake_el_par = tk.second; }
+//       if ( tk.first.compare("Fake_Mu") == 0 ) { m_fake_mu_par = tk.second; }
+//   }
+
+// }
+
+// Parametrisation :: printSetup() {
+
+//   Info("printSetup()", "Using the following parametrisation for r/f efficiencies:");
+//   std::cout << "Real,El : " << m_real_el_par << std::endl;
+//   std::cout << "Real,Mu : " << m_real_mu_par << std::endl;
+//   std::cout << "Fake,El : " << m_fake_el_par << std::endl;
+//   std::cout << "Fake,Mu : " << m_fake_mu_par << std::endl;
+
+// }
 

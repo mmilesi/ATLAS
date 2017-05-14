@@ -27,25 +27,25 @@ base_dir = "/imports/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysis
 #base_dir = "/afs/cern.ch/user/m/mmilesi/ttH/RUN2/HTopMultilepAnalysisCode/trunk"
 
 HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultilepNTupReprocesser",
-                                    "m_debug"                      : False,
-                                    "m_verbose"                    : False,
+                                    "m_debug"                      : True,
+                                    "m_verbose"                    : True,
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
                                     # "m_weightToCalc"               : "QMisID,MM",
-                                    # "m_weightToCalc"               : "MM",
-                                    "m_weightToCalc"               : "QMisID",
+                                    "m_weightToCalc"               : "MM",
+                                    # "m_weightToCalc"               : "QMisID",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
                                     # "m_QMisIDRates_Filename_T"     : "Rates_v27.root",
                                     # "m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
-                                    # "m_QMisIDRates_Filename_T"     : "Rates_v27_For3l.root",
-                                    # "m_QMisIDRates_Filename_AntiT" : "Rates_v27_For3l_AntiT.root",
-                                    "m_QMisIDRates_Filename_T"     : "Rates_Data_3l_2D_tight.root",
-                                    "m_QMisIDRates_Filename_AntiT" : "Rates_Data_3l_2D_Loose.root",
-                                    # "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
-                                    # "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPtLoose",
-                                    "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPt",
-                                    "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPt",
-                                    "m_useTAntiTRates"             : True, # --> set this option to True if QMisID rates have NOT been measured independently for T and AntiT electrons - Set True for v19
+                                    "m_QMisIDRates_Filename_T"     : "Rates_v27_For3l.root",
+                                    "m_QMisIDRates_Filename_AntiT" : "Rates_v27_For3l_AntiT.root",
+                                    # "m_QMisIDRates_Filename_T"     : "Rates_Data_3l_2D_tight.root",
+                                    # "m_QMisIDRates_Filename_AntiT" : "Rates_Data_3l_2D_Loose.root",
+                                    "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
+                                    "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPtLoose",
+                                    # "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPt",
+                                    # "m_QMisIDRates_Histname_AntiT" : "LikelihoodEtaPt",
+                                    "m_useTAntiTRates"             : False, # --> set this option to True if QMisID rates have NOT been measured independently for T and AntiT electrons - Set True for v19
                                     #
                                     # ------------------------------------------------------------
                                     #
@@ -79,6 +79,10 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
                                     # ------------------------------------------------------------
                                     #
+                                    "m_parametrisation_list"             : "Pt",
+                                    # "m_parametrisation_list"             : "Pt,NBJets_VS_Pt",
+                                    # "m_parametrisation_list"             : "Pt,Eta",
+                                    # "m_parametrisation_list"             : "Pt,Eta,NBJets_VS_Pt",
 				    # "m_systematics_list"           : "Nominal:,Stat:UncorrBins,ND_TTV:CorrBins,ND_VV:CorrBins,ND_OtherPromptSS:CorrBins,ND_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
 				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins",
                                     "m_correlatedMMWeights"        : False,
@@ -86,9 +90,9 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    "m_useTrigMatchingInfo"        : False,
 				    #
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
+				    # "m_Efficiency_Filename"        : "LeptonEfficiencies_FakeElPtRescaledPhConv.root",
 				    #
-                                    "m_doMMClosure"                : False,
-                                    "m_useEtaParametrisation"      : False,
+                                    "m_doMMClosure"                : True,
 				    "m_useTEfficiency"             : False,
                                   }
 
