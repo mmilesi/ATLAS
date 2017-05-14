@@ -74,6 +74,85 @@ namespace NTupReprocesser {
     char trigmatched;
   };
 
+  class Parametrisation {
+
+  public:
+      Parametrisation( const std::vector< std::pair<std::string,std::string> >& tokens ) :
+        m_real_el_par("Pt"),
+        m_real_mu_par("Pt"),
+        m_fake_el_par("Pt"),
+        m_fake_mu_par("Pt")
+      {
+	  Info("Parametrisation()", "Calling constructor");
+
+	  for ( const auto& tk : tokens ) {
+
+	      if ( tk.first.compare("Real_El") == 0 ) { m_real_el_par = tk.second; }
+	      if ( tk.first.compare("Real_Mu") == 0 ) { m_real_mu_par = tk.second; }
+	      if ( tk.first.compare("Fake_El") == 0 ) { m_fake_el_par = tk.second; }
+	      if ( tk.first.compare("Fake_Mu") == 0 ) { m_fake_mu_par = tk.second; }
+
+	      std::string TK1(""), TK2("");
+	      size_t posx = tk.second.find("x");
+
+	      if ( posx == std::string::npos ) {
+		  TK1 = tk.second;
+	      } else {
+		  TK1 = tk.second.substr(0,posx);
+		  TK2 = tk.second.substr(posx+1,tk.second.length());
+	      }
+
+	      auto it = std::find( m_variables.begin(), m_variables.end(), TK1 );
+	      if ( it == m_variables.end() ) { m_variables.push_back(TK1); }
+	      if ( !TK2.empty() ) {
+		  it = std::find( m_variables.begin(), m_variables.end(), TK2 );
+		  if ( it == m_variables.end() ) { m_variables.push_back(TK2); }
+	      }
+
+	  }
+
+      };
+
+      void printSetup() {
+	  Info("printSetup()", "Using the following parametrisation for r/f efficiencies:");
+	  std::cout << "Real,El : " << m_real_el_par << std::endl;
+	  std::cout << "Real,Mu : " << m_real_mu_par << std::endl;
+	  std::cout << "Fake,El : " << m_fake_el_par << std::endl;
+	  std::cout << "Fake,Mu : " << m_fake_mu_par << std::endl;
+      };
+
+      const std::vector<std::string> getVariables() {
+	  return m_variables;
+      };
+
+      const std::string getVariable( const std::string& identifier ) {
+
+	      if ( identifier.compare("Real_El") == 0 ) { return m_real_el_par; }
+	      if ( identifier.compare("Real_Mu") == 0 ) { return m_real_mu_par; }
+	      if ( identifier.compare("Fake_El") == 0 ) { return m_fake_el_par; }
+	      if ( identifier.compare("Fake_Mu") == 0 ) { return m_fake_mu_par; }
+
+	      Warning("getVariable()", "Returning dummy variable...");
+	      return "dummy_var";
+      }
+
+      bool has2DPar() {
+	  for ( const auto& v : m_variables ) {
+	      if ( v.find("_VS_") != std::string::npos ) { return true; }
+	  }
+	  return false;
+      };
+
+  private:
+
+      std::vector<std::string> m_variables;
+
+      std::string m_real_el_par;
+      std::string m_real_mu_par;
+      std::string m_fake_el_par;
+      std::string m_fake_mu_par;
+  };
+
 }
 
 class HTopMultilepNTupReprocesser : public xAH::Algorithm
@@ -115,7 +194,7 @@ public:
 
   bool m_useTEfficiency;
 
-  /** A list of variables which define the used parametrisation  */
+  /** This configurable string defines the parametrisation to be used  */
 
   std::string m_parametrisation_list;
 
@@ -241,6 +320,10 @@ private:
   int          m_numEntry;   //!
   unsigned int m_count_inf;  //!
 
+  /** An object which encapsulates all the parametrisation configuration */
+
+  NTupReprocesser::Parametrisation* m_parametrisation = nullptr; //!
+
   /** This will be updated when looping over the input systematics for a given event, so all the methods know about it */
 
   std::pair<std::string,std::string> m_this_syst;   //!
@@ -343,20 +426,5 @@ private:
 
 
 };
-
-/* class Parametrisation : public HTopMultilepNTupReprocesser */
-/* { */
-
-/* public: */
-/*     Parametrisation(); */
-/*     void printSetup(); */
-
-/* private: */
-/*     std::string m_real_el_par; */
-/*     std::string m_real_mu_par; */
-/*     std::string m_fake_el_par; */
-/*     std::string m_fake_mu_par; */
-/* }; */
-
 
 #endif

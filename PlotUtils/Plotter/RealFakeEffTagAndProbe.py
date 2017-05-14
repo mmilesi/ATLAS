@@ -1055,8 +1055,9 @@ class RealFakeEffTagAndProbe:
 
             # TEMP!!!
             # A hack to fix last pT bin for Nbjets=2 distribution
+            # Only for closure test on tt+ttgamma
 
-            if "NBJets&&Pt" in key:
+            if self.closure and "NBJets&&Pt" in key:
                 for biny in range(1,h_efficiency.GetYaxis().GetNbins()+1):
                     thisbinglobidx = h_efficiency.GetBin(2,biny)
                     thisbincontent = h_efficiency.GetBinContent(2,biny)
