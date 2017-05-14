@@ -35,6 +35,10 @@ if __name__ == '__main__':
 
     knownDSID = False
 
+    # Clear cache (Sean's suggestion)
+
+    subprocess.call(['ls','-l','/coepp/cephfs/mel/mmilesi/'])
+
     for s in sampledict:
 
         if args.DSID == s["ID"] or ( str(args.DSID[0:2]) == "00" and not s["ID"] ):

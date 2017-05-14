@@ -21,6 +21,7 @@
 // ROOT include(s):
 #include "TTree.h"
 #include "TFile.h"
+#include "TH1.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TEfficiency.h"
@@ -34,7 +35,8 @@ namespace NTupReprocesser {
     	  isMC(0),
     	  isSS01(0),
 	  dilep_type(0),trilep_type(0),
-  	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0)
+	  TT(0),TAntiT(0),AntiTT(0),AntiTAntiT(0),
+	  njets_T(-1),nbjets_T(-1)
     { };
 
     char isMC;
@@ -45,7 +47,8 @@ namespace NTupReprocesser {
     char TAntiT;
     char AntiTT;
     char AntiTAntiT;
-
+    int  njets_T;
+    int  nbjets_T;
   };
 
   class leptonObj {
@@ -69,6 +72,85 @@ namespace NTupReprocesser {
     float charge;
     char tightselected;
     char trigmatched;
+  };
+
+  class Parametrisation {
+
+  public:
+      Parametrisation( const std::vector< std::pair<std::string,std::string> >& tokens ) :
+        m_real_el_par("Pt"),
+        m_real_mu_par("Pt"),
+        m_fake_el_par("Pt"),
+        m_fake_mu_par("Pt")
+      {
+	  Info("Parametrisation()", "Calling constructor");
+
+	  for ( const auto& tk : tokens ) {
+
+	      if ( tk.first.compare("Real_El") == 0 ) { m_real_el_par = tk.second; }
+	      if ( tk.first.compare("Real_Mu") == 0 ) { m_real_mu_par = tk.second; }
+	      if ( tk.first.compare("Fake_El") == 0 ) { m_fake_el_par = tk.second; }
+	      if ( tk.first.compare("Fake_Mu") == 0 ) { m_fake_mu_par = tk.second; }
+
+	      std::string TK1(""), TK2("");
+	      size_t posx = tk.second.find("x");
+
+	      if ( posx == std::string::npos ) {
+		  TK1 = tk.second;
+	      } else {
+		  TK1 = tk.second.substr(0,posx);
+		  TK2 = tk.second.substr(posx+1,tk.second.length());
+	      }
+
+	      auto it = std::find( m_variables.begin(), m_variables.end(), TK1 );
+	      if ( it == m_variables.end() ) { m_variables.push_back(TK1); }
+	      if ( !TK2.empty() ) {
+		  it = std::find( m_variables.begin(), m_variables.end(), TK2 );
+		  if ( it == m_variables.end() ) { m_variables.push_back(TK2); }
+	      }
+
+	  }
+
+      };
+
+      void printSetup() {
+	  Info("printSetup()", "Using the following parametrisation for r/f efficiencies:");
+	  std::cout << "Real,El : " << m_real_el_par << std::endl;
+	  std::cout << "Real,Mu : " << m_real_mu_par << std::endl;
+	  std::cout << "Fake,El : " << m_fake_el_par << std::endl;
+	  std::cout << "Fake,Mu : " << m_fake_mu_par << std::endl;
+      };
+
+      const std::vector<std::string> getVariables() {
+	  return m_variables;
+      };
+
+      const std::string getVariable( const std::string& identifier ) {
+
+	      if ( identifier.compare("Real_El") == 0 ) { return m_real_el_par; }
+	      if ( identifier.compare("Real_Mu") == 0 ) { return m_real_mu_par; }
+	      if ( identifier.compare("Fake_El") == 0 ) { return m_fake_el_par; }
+	      if ( identifier.compare("Fake_Mu") == 0 ) { return m_fake_mu_par; }
+
+	      Warning("getVariable()", "Returning dummy variable...");
+	      return "dummy_var";
+      }
+
+      bool has2DPar() {
+	  for ( const auto& v : m_variables ) {
+	      if ( v.find("_VS_") != std::string::npos ) { return true; }
+	  }
+	  return false;
+      };
+
+  private:
+
+      std::vector<std::string> m_variables;
+
+      std::string m_real_el_par;
+      std::string m_real_mu_par;
+      std::string m_fake_el_par;
+      std::string m_fake_mu_par;
   };
 
 }
@@ -101,7 +183,6 @@ public:
   std::string m_EFF_NO_TM_dir;
   std::string m_Efficiency_Filename;
   bool m_doMMClosure;
-  bool m_useEtaParametrisation;
 
   /** Read different r/f rates depending on whether the lepton is trigger-matched or not */
 
@@ -113,12 +194,16 @@ public:
 
   bool m_useTEfficiency;
 
+  /** This configurable string defines the parametrisation to be used  */
+
+  std::string m_parametrisation_list;
+
   /** A list of systematics affecting the efficiency measurement, whoich will be eventually propagated to the final event weight.
       By default, it includes the statistical uncertainty on the efficiencies
   */
 
-  std::string              m_systematics_list;
-  std::vector<std::string> m_systematics;
+  std::string                                       m_systematics_list;
+  std::vector< std::pair<std::string,std::string> > m_systematics;
 
   /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
 
@@ -165,6 +250,9 @@ private:
   Char_t     m_is_TMVA_AntiTMVA;
   Char_t     m_is_AntiTMVA_TMVA;
   Char_t     m_is_AntiTMVA_AntiTMVA;
+
+  Int_t      m_nJets_OR_T;
+  Int_t      m_nJets_OR_T_MV2c10_70;
 
   Float_t    m_lep_ID_0;
   Float_t    m_lep_Pt_0;
@@ -232,9 +320,13 @@ private:
   int          m_numEntry;   //!
   unsigned int m_count_inf;  //!
 
+  /** An object which encapsulates all the parametrisation configuration */
+
+  NTupReprocesser::Parametrisation* m_parametrisation = nullptr; //!
+
   /** This will be updated when looping over the input systematics for a given event, so all the methods know about it */
 
-  std::string m_this_syst;   //!
+  std::pair<std::string,std::string> m_this_syst;   //!
 
   std::shared_ptr<NTupReprocesser::eventObj>                 m_event;   //!
   std::vector< std::shared_ptr<NTupReprocesser::leptonObj> > m_leptons; //!
@@ -243,8 +335,8 @@ private:
 
   /** For each systematic, store a map with the efficiency histogram "type" to be read and the histogram pointer */
 
-  std::map< std::string, std::map< std::string, TH1D* > >        m_el_hist_map; //!
-  std::map< std::string, std::map< std::string, TH1D* > >        m_mu_hist_map; //!
+  std::map< std::string, std::map< std::string, TH1* > >         m_el_hist_map; //!
+  std::map< std::string, std::map< std::string, TH1* > >         m_mu_hist_map; //!
   std::map< std::string, std::map< std::string, TEfficiency* > > m_el_teff_map; //!
   std::map< std::string, std::map< std::string, TEfficiency* > > m_mu_teff_map; //!
 
@@ -252,6 +344,8 @@ private:
 
   std::map< std::string, float > m_el_reff_avg;
   std::map< std::string, float > m_el_feff_avg;
+  std::map< std::string, float > m_mu_reff_avg;
+  std::map< std::string, float > m_mu_feff_avg;
 
 public:
 
@@ -285,14 +379,35 @@ private:
 
   std::string str_replace( const std::string& input_str, const std::string& old_substr, const std::string& new_substr );
 
-  EL::StatusCode tokenize ( char separator, std::vector<std::string>& vec_tokens, const std::string& list );
+  bool isBinVisible( const int& glob_bin, const TH2D* hist );
+
+  EL::StatusCode tokenize      ( char separator, std::vector<std::string>& vec_tokens, const std::string& list );
+  EL::StatusCode tokenize_pair ( char separator, std::vector< std::pair<std::string,std::string> >& vec_tokens, const std::string& list );
 
   void printWeights( const std::string& in_out );
 
   EL::StatusCode readRFEfficiencies ();
-  EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
-  					   std::vector<float>& efficiency,
-					   const std::string& type );
+
+  EL::StatusCode getMMEfficiencyAndError_1D( std::shared_ptr<NTupReprocesser::leptonObj> lep,
+					     std::vector<float>& efficiency,
+					     const std::string& type,
+					     std::string keyX,
+					     const std::pair<float,std::string>& varX,
+					     std::string keyXX = "",
+					     const std::pair<float,std::string>& varXX = std::pair<float,std::string>() ,
+					     const float& avg_eff = -1.0 );
+
+  EL::StatusCode getMMEfficiencyAndError_2D ( std::shared_ptr<NTupReprocesser::leptonObj> lep,
+  					      std::vector<float>& efficiency,
+					      const std::string& type,
+					      std::string key,
+					      const std::pair<float,std::string>& varX,
+					      const std::pair<float,std::string>& varY );
+
+  /* EL::StatusCode getMMEfficiencyAndError ( std::shared_ptr<NTupReprocesser::leptonObj> lep, */
+  /* 					   std::vector<float>& efficiency, */
+  /* 					   const std::string& type ); */
+
   EL::StatusCode getMMWeightAndError ( std::vector<float>& mm_weight,
   				       const std::vector<float>& r0, const std::vector<float>& r1,
 				       const std::vector<float>& f0, const std::vector<float>& f1 );

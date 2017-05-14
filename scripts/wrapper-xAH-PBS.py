@@ -32,6 +32,7 @@ if __name__ == '__main__':
         append = "Data"
     else:
         append = "Nominal"
+        #append = "ttbar_ttgamma/Nominal"
 
     infile    =  args.inputpath + "/" + append + "/" + sample + "/" + sample + ".root"
     submitdir = sample
@@ -43,9 +44,17 @@ if __name__ == '__main__':
     treename = args.treename
     nevents  = args.nevents
 
+    # Clear cache (Sean's suggestion)
+
+    subprocess.call(['ls','-l','/coepp/cephfs/mel/mmilesi/'])
+
     # OK, execute xAH_run.py for this sample!
 
     subprocess.call( ['python',xAH,'-vv','--files',infile,'--config',config,'--submitDir',submitdir,'--treeName',treename,'--nevents',nevents,'--force','direct'] )
+
+    # Clear cache (Sean's suggestion)
+
+    subprocess.call(['ls','-l','/coepp/cephfs/mel/mmilesi/'])
 
     # Now apply weight to output tree
 

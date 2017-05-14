@@ -112,6 +112,9 @@ def miniNTuplise(sample):
 if __name__ == '__main__':
 
     sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_" + args.version + "/Nominal"
+    #sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_" + args.version + "/ttbar_ttgamma/Nominal"
+
+    #sample_path =  "/afs/cern.ch/user/m/mmilesi/work/public/ttH/GroupNTup/25ns_" + args.version + "/Nominal"
 
     infilelist = [
 #"HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",

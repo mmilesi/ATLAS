@@ -6,14 +6,14 @@ __maintainer__ = "Marco Milesi"
 
 import sys, glob, os, array, inspect, math
 
-from ROOT import TFile, TH1, TH1D, TH1I, TH2D, TH2F, TH2I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
+from ROOT import TFile, TH1, TH1D, TH1F, TH1I, TH2, TH2D, TH2F, TH2I, TObjString, TTree, TChain, TObjArray, TDirectoryFile, TNamed, TObject
 from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kBlack, kWhite, kRed, kGray, kBlue, TMath, TGraphAsymmErrors, TLatex, gStyle
 
 sys.path.append(os.path.abspath(os.path.curdir))
 from Core import NTupleTools, DatasetManager, listifyInputFiles
 
-gROOT.Reset()
-gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
+gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
+# gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
@@ -24,8 +24,16 @@ class Inputs:
         self.alltrees = {}
         self.sampleids = {}
         self.nomtree = 'physics'
+        self.friendtrees = []
+        self.friendfile_extension = None
         self.systrees = []
         self.sysweights = []
+
+    def setFriendTree(self, friendtrees=[], friendfile_extension=None):
+
+        self.friendtrees = friendtrees
+        self.friendfile_extension = friendfile_extension
+
 
     def registerTree(self, filegroup, nomtree = 'physics', systrees=[], ismc=True, isembedding=False, isdata=False, sample={}, resetTreeWeight=False):
 
@@ -93,6 +101,11 @@ class Inputs:
                     processes[group][subgroup] = TChain(treename)
                     processes[group][subgroup].SetTitle(prefix+treename+group+subgroup)
                 processes[group][subgroup].Add(filepath)
+                # Add friend trees to *this* tree (if any)
+                if self.friendtrees:
+                    for friendname in self.friendtrees:
+                        friendfilepath = filepath + self.friendfile_extension
+                        processes[group][subgroup].AddFriend(friendname,friendfilepath)
                 if sampleid:
                     processes[group][subgroup].SetTitle(processes[group][subgroup].GetTitle()+'_'+sampleid)
                     if not treename in self.sampleids:
@@ -121,11 +134,11 @@ class Inputs:
 	#print("\nTree: {0} - Xsec weight = {1}".format(tree.GetName(),tree.GetWeight()))
         return tree
 
-    # Group list is a list of tuple with two elements (strings),
-    # e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards.
-    # The entire list of trees is returned, one tree for each tuple.
-
     def getTrees(self, treename='physics', grouplist=[]):
+
+        # Group list is a list of tuple with two elements (strings),
+        # e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards.
+        # The entire list of trees is returned, one tree for each tuple.
 
 	newGroupList = []
         for group, subgroup in grouplist:
@@ -202,9 +215,10 @@ class Variable:
         self.minvalY            = kw.get('minvalY',	self.minval)
         self.maxvalY            = kw.get('maxvalY',	self.maxval)
         self.typeval            = kw.get('typeval',     TH1D)
-        self.manualbins         = kw.get('manualbins',   None)
-        self.manualbinsX        = kw.get('manualbinsX',  None)
-        self.manualbinsY        = kw.get('manualbinsY',  None)
+        self.manualbins         = kw.get('manualbins',  None)
+        self.manualbinsX        = kw.get('manualbinsX', None)
+        self.manualbinsY        = kw.get('manualbinsY', None)
+        self.binlabelsX         = kw.get('binlabelsX',  {})
         self.logaxis            = kw.get('logaxis',     False)
         self.logaxisX           = kw.get('logaxisX',    False)
         self.basecut            = kw.get('basecut',     None)
@@ -280,14 +294,17 @@ class Variable:
             	h = self.typeval(name, title, self.bins, self.minval, self.maxval)
             h.SetXTitle(self.latexname)
             h.SetYTitle(self.ytitle(manualbins=manualbins))
-
+            if self.binlabelsX:
+                for idx,label in self.binlabelsX.iteritems():
+                    h.GetXaxis().SetBinLabel(idx,label)
+                    h.GetYaxis().SetLabelSize(h.GetXaxis().GetLabelSize())
         h.Sumw2()
         return h
 
 class Cut:
 
-    # A Cut is defined by a name and a set of rules defined in cut string,
-    # but can be also the composition of a series of cuts specified in the cut list.
+    # A Cut is defined by a name and a set of rules defined in the cut string,
+    # but can be also the composition of several cuts specified in the cut list parameter.
 
     def __init__(self, cutname, cutstr, cutlist=None):
         self.cutname    = cutname
@@ -297,7 +314,7 @@ class Cut:
         self.cutlist     = cutlist
         self.cutnamelist = [c.cutname for c in cutlist]
 
-    # Removes a cut, provided it's in the list of cuts
+    # Removes a cut, provided it's found in the list of cuts
 
     def removeCut(self, cut):
         newlistnames = []
@@ -309,7 +326,7 @@ class Cut:
             newliststr.append(c.cutstr)
             newlist.append(c)
         newname = ' AND '.join(newlistnames)
-        newstr = ' && '.join(newliststr)
+        newstr  = ' && '.join(newliststr)
         return Cut(newname, newstr, newlist)
 
     # Substitute a cut w/ another cut
@@ -333,7 +350,8 @@ class Cut:
             for c in sorted(self.cutlist + othercut.cutlist, key=lambda x: x.cutname):
                 if c.cutname in newlistnames: continue # Don't use the same cut more than once!
                 newlistnames.append(c.cutname)
-                newliststr.append(c.cutstr)
+                if not any( s == c.cutstr for s in ['( 1 )','1'] ): # Add only non-dummy cuts to the TTreeFormula
+                    newliststr.append(c.cutstr)
                 newlist.append(c)
             newname = ' AND '.join(newlistnames)
             newstr  = ' && '.join(newliststr)
@@ -490,6 +508,7 @@ class SubProcess:
         return sp
 
     def numberstats(self, cut=None, weight=None, eventweight=None, category=None):
+
         if weight is None:
             weight = 1.0
 
@@ -795,6 +814,7 @@ class Background:
         self.procmap     = {}
         self.debugprocs  = []
         self.colourcache = self.colours()
+        self.var         = Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0)
 
         for key in dir(self):
             attr = getattr(self, key)
@@ -985,7 +1005,7 @@ class Background:
 
         # Sort histlist, from smallest yield to largest
 
-        histlist.sort( key=lambda x: x[0].Integral())
+        histlist.sort( key=lambda x: x[0].Integral() )
 
         return tSum, histlist
 
@@ -997,6 +1017,8 @@ class Background:
         if type(var) is str:
             var = self.vardb.getVar(var)
 
+        self.var = var
+
         if not var.typeval in [TH2I,TH2F,TH2D]:
             c = TCanvas("c1","Temp",50,50,600,600)
 	else:
@@ -1007,19 +1029,18 @@ class Background:
         obs, obslist = self.sumhist(var, processes=self.observed, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins)
 
 	if obs:
-	    if not var.typeval in [TH2I,TH2F,TH2D]:
-            	process = obslist[0][1]
-            	datagr = None
-	    	if not ( "$ISDATA$" in obslist[0][0].GetName() ):
-	    	    datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
-		    datagr.SetLineStyle(2)
-	    	else :
-	    	    datagr = makePoissonErrors(obs)
-            	#datagr.SetMarkerSize(1.2)
-            	datagr.SetMarkerSize(0.8)
+            process = obslist[0][1]
+            datagr = None
+            if not ( "$ISDATA$" in obslist[0][0].GetName() ):
+                datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
+                datagr.SetLineStyle(2)
+            else :
+                datagr = makePoissonErrors(obs)
+            	datagr.SetMarkerSize(0.8) # (1.2)
             	datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
+            	datagr.SetLineWidth(self.style.get('ObservedLineWidth', 2))
             	datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
-            	legs.append([datagr, process.latexname, "p"])
+            legs.append([datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "p"])
 
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
 
@@ -1041,14 +1062,14 @@ class Background:
 	    stack = THStack('Stack'+tSum.GetName(), self.__class__.__name__+';'+tSum.GetXaxis().GetTitle()+';'+tSum.GetYaxis().GetTitle())
 	    for h, process in reversed(bkglist):
 	    	h.Draw()
-	    	h.SetLineWidth(self.style.get('BackgroundLineWidth', 3))
+	    	h.SetLineWidth(self.style.get('BackgroundLineWidth', 2))
 	    	h.SetLineStyle(self.style.get('BackgroundLineStyle', 1))
 	    	pname = process.__class__.__name__
 	    	h.SetLineColor(self.style.get(pname+'LineColour', self.style.get('BackgroundLineColour', 1)))
 	    	h.SetFillColor(self.style.get(pname+'FillColour', process.colour))
 	    	h.SetFillStyle(self.style.get(pname+'FillStyle', 1001))
 	    	stack.Add(h)
-	    	legs.append([h, process.latexname, 'f'])
+	    	legs.append([h, process.latexname + " ({0:.1f})".format(integrate(h)), 'f'])
 	    	bkg[pname] = h
 	else:
 	    stack = None
@@ -1070,26 +1091,24 @@ class Background:
             process = siglist[0][1]
             sig.SetFillColor(self.style.get('SignalFillColour', 10))
             sig.SetFillStyle(self.style.get('SignalFillStyle', 1001))
-            sig.SetLineWidth(self.style.get('SignalLineWidth', 3))
+            sig.SetLineWidth(self.style.get('SignalLineWidth', 2))
             sig.SetLineColor(self.style.get('SignalLineColour', 2))
             sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
             stack.Add(sig)
             h_name = process.latexname+signal
             if signalfactor != 1.:
                h_name += " [#times"+str(int(signalfactor))+']'
-            legs.append([sig, h_name, 'f'])
-
+            legs.append([sig, h_name + " ({0:.1f})".format(integrate(sig)), 'f'])
 
         if showratio and obs and bkg and not var.typeval in [TH2I,TH2F,TH2D]:
             pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
             pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
             pad1.SetBottomMargin(0.02)
-            #pad2.SetTopMargin(0)
             pad2.SetBottomMargin(0.4)
-            #pad2.SetGridy(1)
+            #pad2.SetTopMargin(0)
+            pad2.SetGridy(1)
             if log or var.logaxis:
                 pad1.SetLogy()
-                pad2.SetLogy()
                 stack.SetMinimum(0.1)
             if logx or var.logaxisX:
                 pad1.SetLogx()
@@ -1104,7 +1123,7 @@ class Background:
                 gPad.SetLogx()
 
         if showratio and obs and bkg and not var.typeval in [TH2I,TH2F,TH2D]:
-            if var.typeval is TH1D:
+            if var.typeval in [TH1D,TH1F]:
                 ratiomc = tSum.Clone("RatioMC")
                 ratiodata = obs.Clone("RatioData")
             elif var.typeval is TH1I:
@@ -1112,8 +1131,8 @@ class Background:
                 ratiomc.GetXaxis().SetNdivisions(tSum.GetNbinsX())
                 ratiomc.GetXaxis().CenterLabels(True)
                 ratiodata = TH1D("RatioData", "RatioData", tSum.GetNbinsX(), tSum.GetBinLowEdge(1), tSum.GetBinLowEdge(tSum.GetNbinsX()+1))
+                ratiodata.SetLineWidth(2)
                 for i in range(1, tSum.GetNbinsX()+1):
-                    #ratiomc.GetXaxis().SetBinLabel(i, str(int(tSum.GetBinLowEdge(i))))
                     ratiomc.SetBinContent(i, tSum.GetBinContent(i))
                     ratiodata.SetBinContent(i, obs.GetBinContent(i))
 
@@ -1121,7 +1140,7 @@ class Background:
 	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
                 ratiomc.SetYTitle("")
 	    else:
-                ratiomc.SetYTitle("Data/Bkg")
+                ratiomc.SetYTitle("Data/Exp.")
             ratiomc.GetXaxis().SetTitleSize(0.15)
             ratiomc.GetYaxis().SetTitleSize(0.15)
             ratiomc.GetXaxis().SetTitleOffset(0.90)
@@ -1133,15 +1152,22 @@ class Background:
             ratiomc.SetLineColor(10)
             ratiomc.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
             ratiomc.SetMarkerSize(0)
-
             ratiomc.Divide(tSum)
 
-            #ratiodata.SetMarkerSize(0.3)
-            ratiodata.SetMarkerSize(0.8)
+            ratiodata.SetMarkerSize(0.8) # (0.3)
 	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
 	         ratiodata.SetLineStyle(2)
             ratiodata.SetLineWidth(1)
             ratiodata.Divide(tSum)
+
+            soverb = None
+            if showratio and sig and bkg and not  var.typeval in [TH2I,TH2F,TH2D]:
+                soverb = sig.Clone("SoverB")
+                soverb.SetLineStyle(1)
+                if signalfactor != 1.0:
+                    soverb.Scale(1.0/signalfactor)
+                soverb.Add(tSum)
+                soverb.Divide(tSum)
 
             valYmin =  99.
             valYmax = -99.
@@ -1168,29 +1194,45 @@ class Background:
                 if (ratiomc.GetBinContent(i) + ratiomc.GetBinError(i)) != 0. and ratiomc.GetBinContent(i) > valYmax:
                     valYmax = ratiomc.GetBinContent(i) + ratiomc.GetBinError(i)
 
-            # ratiomc.SetMinimum(0.7*valYmin)
-            # ratiomc.SetMaximum(1.3*valYmax)
-            ratiomc.SetMinimum(0.75)
-            ratiomc.SetMaximum(1.25)
+            if abs(1-valYmin) > abs(valYmax-1):
+                val = abs(1-valYmin)
+            else:
+                val = abs(valYmax-1)
+
+            # ratiomc.SetMinimum((1-val)-0.1)
+            # ratiomc.SetMaximum((1+val)+0.1)
+            ratiomc.SetMinimum(0.25)
+            ratiomc.SetMaximum(1.75)
 
             if type(showratio) is tuple:
                 if showratio[0] == "MIN" and type(showratio[1]) is float:
-                    ratiomc.SetMinimum(0.7*valYmin)
+                    ratiomc.SetMinimum(valYmin - 0.1)
                     ratiomc.SetMaximum(showratio[1])
                 elif showratio[1] == "MAX" and type(showratio[0]) is float:
                     ratiomc.SetMinimum(showratio[0])
-                    ratiomc.SetMaximum(1.3*valYmax)
+                    ratiomc.SetMaximum(valYmax + 0.1)
                 else:
                     ratiomc.SetMinimum(showratio[0])
                     ratiomc.SetMaximum(showratio[1])
 
             pad2.cd()
             ratiomc.Draw("E2")
+            if soverb:
+                # gStyle.SetPaintTextFormat(".2f S/B")
+                # soverb.SetMarkerSize(3.8)
+                # soverb.SetMarkerColor(self.style.get('SignalMarkerColour', 2))
+                # soverb.Draw("HIST SAME TEXT0")
+                soverb.SetFillStyle(0)
+                soverb.Draw("HIST SAME")
+                reflsoverb = TLine(soverb.GetBinLowEdge(1), 1.15, soverb.GetBinLowEdge(soverb.GetNbinsX()+1), 1.15)
+                reflsoverb.SetLineStyle(2)
+                reflsoverb.SetLineColor(kRed)
+                reflsoverb.Draw("SAME")
             refl = TLine(ratiomc.GetBinLowEdge(1), 1., ratiomc.GetBinLowEdge(ratiomc.GetNbinsX()+1), 1.)
-            refl.SetLineColor(kRed)
             refl.SetLineStyle(2)
+            refl.SetLineColor(kBlack)
             refl.Draw("SAME")
-            ratiodata.Draw("SAME")
+            ratiodata.Draw("PE1 SAME")
             pad1.cd()
 
         legs.reverse()
@@ -1214,15 +1256,7 @@ class Background:
 	          stack.SetMaximum(stack.GetMaximum() * 3*10**(2))
 
 	      stack.Draw('HIST')
-	      #if ymax:
-	      #    dummy = stack.GetHists().At(0)
-	      #    dummy.GetYaxis().SetRangeUser(ymin, ymax)
-	      #    dummy.GetXaxis().SetTitle(xTitle)
-	      #    dummy.GetYaxis().SetTitle(yTitle)
-	      #    dummy.GetYaxis().SetTitleOffset(1.7)
-	      #    dummy.Draw()
-	      #    stack.Draw("HIST,same")
-	      #stack.GetHistogram().GetXaxis().SetNdivisions(8)
+
 	      if showratio and obs and bkg:
 	          stack.GetHistogram().GetXaxis().SetLabelOffset(999)
 	          stack.GetHistogram().GetXaxis().SetLabelSize(0)
@@ -1256,8 +1290,7 @@ class Background:
         if obs:
 	   if not var.typeval in [TH2I,TH2F,TH2D]:
               if stack:
-                 datagr.Draw("PE SAME")
-                 #obs.Draw("SAME")
+                 datagr.Draw("P SAME")
               else:
 	         if logx or var.logaxisX:
 	             gPad.SetLogx()
@@ -1265,9 +1298,13 @@ class Background:
 	             gPad.SetLogy()
                  datagr.GetXaxis().SetTitle(var.latexname)
 	         binwidth = (var.maxval - var.minval) / var.bins
-	         ytitle = 'Events / %.2g GeV' % (binwidth)
+                 ytitle = 'Events / %.2g %s' % (binwidth, var.unit)
 	         datagr.GetYaxis().SetTitle(ytitle)
                  datagr.Draw('AP')
+	   else:
+	      set_fancy_2D_style()
+              gPad.SetRightMargin(0.2)
+	      datagr.Draw(var.drawOpt2D)
 
         lower, labels = self.labels(legs, showratio and obs and bkg)
         #gPad.RedrawAxis()
@@ -1286,7 +1323,8 @@ class Background:
 
 	if not wait:
             gROOT.SetBatch(True)
-        cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
+
+            cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
         if type(var) is str:
             var = self.vardb.getVar(var)
 
@@ -1296,10 +1334,16 @@ class Background:
         obs, obslist    = self.sumhist(var, processes=self.observed,      cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
 	sig, siglist    = self.sumhist(var, processes=self.signals,       cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
 
+        nom_stat_err = nom.Clone("nom_stat_err")
+        nom_stat_err.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
+        nom_stat_err.SetLineColor(self.style.get('SumErrorLineColour', 10))
+        nom_stat_err.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
+        nom_stat_err.SetMarkerSize(0)
+
         legs = [
-            [nom, 'Nominal', "F"],
-            [up, systematics.name + ' + 1#sigma', "F"],
-            [down, systematics.name + ' - 1#sigma', "F"],
+            [nom, 'Nominal' + " ({0:.1f})".format(integrate(nom)), "F"],
+            [up, systematics.name + ' + 1#sigma' + " ({0:.1f})".format(integrate(up)), "F"],
+            [down, systematics.name + ' - 1#sigma' + " ({0:.1f})".format(integrate(down)), "F"],
         ]
 
         bkguplist = {}
@@ -1330,12 +1374,9 @@ class Background:
 	        datagr = makePoissonErrors(obs)
             datagr.SetMarkerSize(1.2)
             datagr.SetMarkerStyle(20)
-            datagr.SetLineColor(1)
-            datagr.SetMarkerStyle(20)
-            datagr.SetMarkerSize(1.2)
             datagr.SetMarkerColor(1)
-            legs.insert(0, (datagr, process.latexname,"P"))
-
+            datagr.SetLineColor(1)
+            legs.insert(0, (datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "P"))
 
         c = TCanvas("c1","Temp",50,50,600,600)
         color_up = 46
@@ -1345,11 +1386,21 @@ class Background:
             pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
             pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
             pad1.SetBottomMargin(0.02)
-            #pad2.SetTopMargin(0)
             pad2.SetBottomMargin(0.4)
+            #pad2.SetTopMargin(0)
             pad2.SetGridy(1)
+            if log or var.logaxis:
+                pad1.SetLogy()
+            if logx or var.logaxisX:
+                pad1.SetLogx()
+                pad2.SetLogx()
             pad1.Draw()
             pad2.Draw()
+	if not showratio:
+            if log or var.logaxis:
+                gPad.SetLogy()
+            if logx or var.logaxisX:
+                gPad.SetLogx()
 
         for h in nom, down, up:
             h.SetLineStyle(1)
@@ -1405,6 +1456,12 @@ class Background:
                 ratioobs.SetLineWidth(1)
                 ratioobs.Divide(nom)
 
+            # Histogram for statistical error bars
+
+	    nom_stat_err_ratio = nom_stat_err.Clone("nom_stat_err_ratio")
+	    nom_stat_err_ratio.Divide(nom_stat_err)
+            legs.insert(len(legs), (nom_stat_err,"Stat. Unc.","F"))
+
             valYmin =  99.
             valYmax = -99.
             for i in range(1, nom.GetNbinsX()+1):
@@ -1422,6 +1479,13 @@ class Background:
                 if (ratiodown.GetBinContent(i) + ratiodown.GetBinError(i)) != 0. and ratiodown.GetBinContent(i) > valYmax:
                     valYmax = ratiodown.GetBinContent(i) + ratiodown.GetBinError(i)
 
+                if (nom_stat_err_ratio.GetBinContent(i) - nom_stat_err_ratio.GetBinError(i)) != 0. and nom_stat_err_ratio.GetBinContent(i) < valYmin:
+                    valYmin = nom_stat_err_ratio.GetBinContent(i) - nom_stat_err_ratio.GetBinError(i)
+                    if valYmin < 0.:
+                        valYmin = 0.
+                if (nom_stat_err_ratio.GetBinContent(i) + nom_stat_err_ratio.GetBinError(i)) != 0. and nom_stat_err_ratio.GetBinContent(i) > valYmax:
+                    valYmax = nom_stat_err_ratio.GetBinContent(i) + nom_stat_err_ratio.GetBinError(i)
+
                 if obs:
                     if (ratioobs.GetBinContent(i) - ratioobs.GetBinError(i)) != 0. and ratioobs.GetBinContent(i) < valYmin:
                         valYmin = ratioobs.GetBinContent(i) - ratioobs.GetBinError(i)
@@ -1430,26 +1494,37 @@ class Background:
                     if (ratioobs.GetBinContent(i) + ratioobs.GetBinError(i)) != 0. and ratioobs.GetBinContent(i) > valYmax:
                         valYmax = ratioobs.GetBinContent(i) + ratioobs.GetBinError(i)
 
-            #ratioup.GetYaxis().SetRangeUser(0.9*valYmin, 1.1*valYmax)
-            if type(showratio) is tuple:
-                ratioup.GetYaxis().SetRangeUser(showratio[0], showratio[1])
+            if abs(1-valYmin) > abs(valYmax-1):
+                val = abs(1-valYmin)
             else:
-                ratioup.GetYaxis().SetRangeUser(0.5, 1.5)
-            #ratioup.GetYaxis().SetRangeUser((0.5)**1, 2.**1)
+                val = abs(valYmax-1)
+
+            #ratioup.SetMinimum((1-val)-0.1)
+            #ratioup.SetMaximum((1+val)+0.1)
+            ratioup.SetMinimum(0.0)
+            ratioup.SetMaximum(2.0)
+
+            if type(showratio) is tuple:
+                if showratio[0] == "MIN" and type(showratio[1]) is float:
+                    ratioup.SetMinimum(valYmin - 0.1)
+                    ratioup.SetMaximum(showratio[1])
+                elif showratio[1] == "MAX" and type(showratio[0]) is float:
+                    ratioup.SetMinimum(showratio[0])
+                    ratioup.SetMaximum(valYmax + 0.1)
+                else:
+                    ratioup.SetMinimum(showratio[0])
+                    ratioup.SetMaximum(showratio[1])
+
             pad2.cd()
-            #pad2.SetLogy(2)
-            #ratioup.Draw()
-            #ratiodown.Draw("SAME")
             ratioup.Draw("HIST")        # Do not draw error bars
             ratiodown.Draw("HIST SAME")	# Do not draw error bars
-            #ratioobs.Draw("SAME")
+	    nom_stat_err_ratio.Draw("E2 SAME")
+            # ratioobs.Draw("SAME")
             refl = TLine(ratioup.GetBinLowEdge(1), 1., ratioup.GetBinLowEdge(ratioup.GetNbinsX()+1), 1.)
-            #refl.SetLineColor(kRed)
             refl.SetLineStyle(2)
-            refl.SetLineWidth(3)
+            refl.SetLineColor(kRed)
             refl.Draw("SAME")
             pad1.cd()
-
 
         lower, labels = self.labels(legs, showratio)
 
@@ -1482,27 +1557,6 @@ class Background:
             if var.typeval is TH1I:
                 up.GetXaxis().SetNdivisions(up.GetNbinsX())
                 up.GetXaxis().CenterLabels(True)
-
-        # A trick to draw statistical error bars
-
-	nom_stat_err = nom.Clone("nom_stat_err")
-	nom_stat_err.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
-        nom_stat_err.SetLineColor(self.style.get('SumErrorLineColour', 10))
-        nom_stat_err.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
-        nom_stat_err.SetMarkerSize(0)
-	nom_stat_err_ratio = nom_stat_err.Clone("nom_stat_err_ratio")
-	nom_stat_err_ratio.Divide(nom_stat_err)
-        legs.insert(len(legs), (nom_stat_err,"Stat. Unc.","F"))
-
-        if log or var.logaxis:
-            gPad.SetLogy()
-        if logx or var.logaxisX:
-            gPad.SetLogx()
-
-	if showratio:
-            pad2.cd()
-	    nom_stat_err_ratio.Draw("E2 SAME")
-            pad1.cd()
 
         up.Draw("HIST")
         down.Draw("HIST SAME")
@@ -1576,10 +1630,17 @@ def makeMCErrors(hist):
 
     return graph
 
+# Get effective integral of input histogram, taking u/oflow into account
+
+def integrate(hist):
+    if isinstance(hist,TH2):
+        return hist.Integral(0,hist.GetXaxis().GetNbins()+1,0,hist.GetYaxis().GetNbins()+1)
+    return hist.Integral(0,hist.GetNbinsX()+1)
+
 
 # This function loads the samples metadata from the .csv file info
 
-def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', systrees=[]):
+def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', friendtrees=[], friendfile_extension=None, systrees=[]):
 
     # The datasat manager takes care of parsing the sample.csv files.
 
@@ -1591,6 +1652,9 @@ def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', sys
     samples = datasets.getListSamples(samplesfile=samplescsv)
 
     inputs = Inputs()
+
+    if friendtrees:
+        inputs.setFriendTree(friendtrees,friendfile_extension)
 
     for s in samples:
 

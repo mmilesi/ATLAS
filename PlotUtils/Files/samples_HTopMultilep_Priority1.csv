@@ -1,4 +1,4 @@
-1ID,category,xsection,kfactor,efficiency,name,group,subgroup
+ID,category,xsection,kfactor,efficiency,name,group,subgroup
 ,Data,,,,physics_Main,Data,physics_Main
 343365,Signal,0.05343,1.0,1.0,aMcAtNloPythia8EvtGen_A14_NNPDF23_NNPDF30ME_ttH125_dilep,ttH,ttH_dil_Pythia8
 343366,Signal,0.22276,1.0,1.0,aMcAtNloPythia8EvtGen_A14_NNPDF23_NNPDF30ME_ttH125_semilep,ttH,ttH_semilep_Pythia8
