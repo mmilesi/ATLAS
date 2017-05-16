@@ -166,6 +166,9 @@ echo ""
 
 # The following script wraps around the xAH_run.py script, picking the sample for the PBS subjob from the input sample list via the env variable os.getenv('PBS_ARRAYID'). It also executes the script to reweight the final trees.
 
+# Clear the cache first
+ls -l /coepp/cephfs/mel/mmilesi/ttH/
+
 python $PWD/HTopMultilepAnalysis/scripts/wrapper-xAH-PBS.py --inputpath {inputpath} --outputpath {outputpath} --samplelist {samples} --config {configpath} --treename {treename} --nevents {nevents}
 
 echo "Removing temporary directory..."
@@ -399,7 +402,7 @@ exit 0
 # "343365",
 # "343366",
 # "343367",
-# "304014",
+# "304014", # FastSim!
 # "341998",
 # "342001",
 # "342004",
@@ -503,7 +506,7 @@ exit 0
 # "364179",
 # "364180",
 # "364181",
-# "364182",
+"364182",
 # "364183",
 # "364184",
 # "364185",
@@ -537,7 +540,7 @@ exit 0
 # "364213",
 # "364214",
 # "364215",
-# "410000",
+"410000",
 # "410011",
 # "410012",
 # "410013",
@@ -547,7 +550,7 @@ exit 0
 # "410050",
 # "410080",
 # "410081",
-"410082",
+# "410082",
 # "410155",
 # "410156",
 # "410157",
@@ -555,33 +558,9 @@ exit 0
 # "410218",
 # "410219",
 # "410220",
-"410501",
-# "410502",
+# "410501",
+"410502",
 # "410503",
-##
-## tt-ttgamma overlap removed
-##
-# "343637",
-# "410002",
-# "410000",
-# "410001",
-# "410003",
-# "410004",
-# "410007",
-# "410120",
-# "410187",
-# "410159",
-# "410121",
-# "410082",
-# "410500",
-# "410250",
-# "410252",
-# "410251",
-# "410189",
-# "410188",
-# "410502",
-# "410503",
-# "410501"
     ]
 
     if args.showsamples:

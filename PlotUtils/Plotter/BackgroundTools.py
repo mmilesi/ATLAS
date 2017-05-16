@@ -979,8 +979,8 @@ class Background:
 
             h = process.hist(var, cut=cut, category=category)
 
-            if overflowbins:
-                lastbin = h.GetNbinsX()
+            if overflowbins and not isinstance(h,TH2):
+                lastbin = h.GetSize()-2
                 over, overerror = h.GetBinContent(lastbin+1), h.GetBinError(lastbin+1)
                 under, undererror = h.GetBinContent(0), h.GetBinError(0)
                 if '_ext' in var.shortname: # Convention for "extended" histograms: plot overflow, but not underflow
@@ -1019,7 +1019,9 @@ class Background:
 
         self.var = var
 
-        if not var.typeval in [TH2I,TH2F,TH2D]:
+        isvar2D = ( var.typeval in [TH2,TH2I,TH2F,TH2D] )
+
+        if not isvar2D:
             c = TCanvas("c1","Temp",50,50,600,600)
 	else:
 	    c = TCanvas("c1","Temp",50,50,800,600)
@@ -1032,24 +1034,30 @@ class Background:
             process = obslist[0][1]
             datagr = None
             if not ( "$ISDATA$" in obslist[0][0].GetName() ):
-                datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
-                datagr.SetLineStyle(2)
+                if not isvar2D:
+                    datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
+                    datagr.SetLineStyle(2)
+                else:
+                    datagr = TH2D(obs)
             else :
-                datagr = makePoissonErrors(obs)
-            	datagr.SetMarkerSize(0.8) # (1.2)
-            	datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
-            	datagr.SetLineWidth(self.style.get('ObservedLineWidth', 2))
-            	datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
+                if not isvar2D:
+                    datagr = makePoissonErrors(obs)
+                    datagr.SetMarkerSize(0.8) # (1.2)
+                    datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
+                    datagr.SetLineWidth(self.style.get('ObservedLineWidth', 2))
+                    datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
+                else:
+                    datagr = TH2D(obs)
             legs.append([datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "p"])
 
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
 
         if obs and bkglist and normalise:
-            if not var.typeval in [TH2I,TH2F,TH2D]:
+            if not isvar2D:
 	    	num_data = obs.GetEntries()
             	num_mc = 0.0
             	for b, bname in bkglist:
-            	    for i in range(b.GetNbinsX()+2):
+            	    for i in range(b.GetSize()):
             		num_mc += b.GetBinContent(i)
             	if num_mc:
             	    normratio = num_data / num_mc
@@ -1100,9 +1108,14 @@ class Background:
                h_name += " [#times"+str(int(signalfactor))+']'
             legs.append([sig, h_name + " ({0:.1f})".format(integrate(sig)), 'f'])
 
-        if showratio and obs and bkg and not var.typeval in [TH2I,TH2F,TH2D]:
+        # Never show ratio if variable is 2D
+
+        if isvar2D:
+            showratio = False
+
+        if showratio and obs and bkg:
             pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
-            pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
+            pad2 = TPad("pad2", "", 0, 0, 1, 0.25)
             pad1.SetBottomMargin(0.02)
             pad2.SetBottomMargin(0.4)
             #pad2.SetTopMargin(0)
@@ -1122,7 +1135,7 @@ class Background:
             if logx or var.logaxisX:
                 gPad.SetLogx()
 
-        if showratio and obs and bkg and not var.typeval in [TH2I,TH2F,TH2D]:
+        if showratio and obs and bkg:
             if var.typeval in [TH1D,TH1F]:
                 ratiomc = tSum.Clone("RatioMC")
                 ratiodata = obs.Clone("RatioData")
@@ -1161,7 +1174,7 @@ class Background:
             ratiodata.Divide(tSum)
 
             soverb = None
-            if showratio and sig and bkg and not  var.typeval in [TH2I,TH2F,TH2D]:
+            if showratio and sig and bkg and not  isvar2D:
                 soverb = sig.Clone("SoverB")
                 soverb.SetLineStyle(1)
                 if signalfactor != 1.0:
@@ -1171,7 +1184,7 @@ class Background:
 
             valYmin =  99.
             valYmax = -99.
-            for i in range(1, tSum.GetNbinsX()+1):
+            for i in range(1, tSum.GetXaxis().GetNbins()+1):
                 if tSum.GetBinContent(i):
                     ratiomc.SetBinError(i, tSum.GetBinError(i) / tSum.GetBinContent(i))
                     ratiodata.SetBinError(i, obs.GetBinError(i) / tSum.GetBinContent(i))
@@ -1241,7 +1254,7 @@ class Background:
         # Trick to rescale:
 
 	if stack:
-	   if not var.typeval in [TH2I,TH2F,TH2D]:
+	   if not isvar2D:
 	      ymax_new = stack.GetMaximum()
 	      if obs and obs.GetMaximum() > ymax_new:
 	          ymax_new = obs.GetMaximum()
@@ -1275,7 +1288,6 @@ class Background:
 	      set_fancy_2D_style()
               gPad.SetRightMargin(0.2)
 	      stack.Draw(var.drawOpt2D)
-
               if var.binsX == var.binsY and not var.binsX == var.bins:
                   diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
                   diagonal.SetLineStyle(2)
@@ -1283,28 +1295,27 @@ class Background:
                   diagonal.SetLineWidth(2)
                   diagonal.Draw("SAME")
 
-        if bkg:
-            if not var.typeval in [TH2I,TH2F,TH2D]:
-                tSum.Draw("E2 SAME")
+        if bkg and not isvar2D:
+            tSum.Draw("E2 SAME")
 
         if obs:
-	   if not var.typeval in [TH2I,TH2F,TH2D]:
-              if stack:
-                 datagr.Draw("P SAME")
-              else:
-	         if logx or var.logaxisX:
-	             gPad.SetLogx()
-	         if log or var.logaxis:
-	             gPad.SetLogy()
-                 datagr.GetXaxis().SetTitle(var.latexname)
-	         binwidth = (var.maxval - var.minval) / var.bins
-                 ytitle = 'Events / %.2g %s' % (binwidth, var.unit)
-	         datagr.GetYaxis().SetTitle(ytitle)
-                 datagr.Draw('AP')
-	   else:
-	      set_fancy_2D_style()
-              gPad.SetRightMargin(0.2)
-	      datagr.Draw(var.drawOpt2D)
+            if not isvar2D:
+                if stack:
+                    datagr.Draw("P SAME")
+                else:
+                    if logx or var.logaxisX:
+                        gPad.SetLogx()
+                    if log or var.logaxis:
+                        gPad.SetLogy()
+                    datagr.GetXaxis().SetTitle(var.latexname)
+                    binwidth = (var.maxval - var.minval) / var.bins
+                    ytitle = 'Events / %.2g %s' % (binwidth, var.unit)
+                    datagr.GetYaxis().SetTitle(ytitle)
+                    datagr.Draw('AP')
+            else:
+                set_fancy_2D_style()
+                gPad.SetRightMargin(0.2)
+                datagr.Draw(var.drawOpt2D)
 
         lower, labels = self.labels(legs, showratio and obs and bkg)
         #gPad.RedrawAxis()
@@ -1317,6 +1328,7 @@ class Background:
             c.SaveAs(filepath)
         if not wait:
             gROOT.SetBatch(False)
+
         return bkg, tSum, obs, sig, stack
 
     def plotSystematics(self, systematics, var = 'MMC', cut = None, eventweight=None, category = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps'], log=False, logx=False):
@@ -1324,9 +1336,12 @@ class Background:
 	if not wait:
             gROOT.SetBatch(True)
 
-            cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
+        cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
+
         if type(var) is str:
             var = self.vardb.getVar(var)
+
+        isvar2D = ( var.typeval in [TH2,TH2I,TH2F,TH2D] )
 
         nom, nomlist    = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
         up, uplist      = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection='UP', overflowbins=overflowbins)
@@ -1368,19 +1383,28 @@ class Background:
         if obs:
             process = obslist[0][1]
 	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
-		datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
-		datagr.SetLineStyle(2)
+                if not isvar2D:
+                    datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
+                    datagr.SetLineStyle(2)
+                else:
+                    datagr = TH2D(obs)
 	    else :
-	        datagr = makePoissonErrors(obs)
-            datagr.SetMarkerSize(1.2)
-            datagr.SetMarkerStyle(20)
-            datagr.SetMarkerColor(1)
-            datagr.SetLineColor(1)
+                if not isvar2D:
+                    datagr = makePoissonErrors(obs)
+                    datagr.SetMarkerSize(1.2)
+                    datagr.SetMarkerStyle(20)
+                    datagr.SetMarkerColor(1)
+                    datagr.SetLineColor(1)
+                else:
+                    datagr = TH2D(obs)
             legs.insert(0, (datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "P"))
 
         c = TCanvas("c1","Temp",50,50,600,600)
         color_up = 46
         color_down = 36
+
+        if isvar2D:
+            showratio = False
 
         if showratio:
             pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
@@ -1406,6 +1430,7 @@ class Background:
             h.SetLineStyle(1)
             h.SetFillStyle(0)
             h.SetLineWidth(2)
+
         down.SetLineColor(color_down)
         up.SetLineColor(color_up)
         nom.SetLineColor(1)
@@ -1464,7 +1489,7 @@ class Background:
 
             valYmin =  99.
             valYmax = -99.
-            for i in range(1, nom.GetNbinsX()+1):
+            for i in range(1, nom.GetXaxis().GetNbins()+1):
                 if (ratioup.GetBinContent(i) - ratioup.GetBinError(i)) != 0. and ratioup.GetBinContent(i) < valYmin:
                     valYmin = ratioup.GetBinContent(i) - ratioup.GetBinError(i)
                     if valYmin < 0.:
@@ -1574,6 +1599,7 @@ class Background:
             c.SaveAs(filepath)
         if not wait:
             gROOT.SetBatch(False)
+
         return obs, nom, up, down, bkguplist, bkgdownlist
 
 
