@@ -205,9 +205,9 @@ public:
   std::string                                       m_systematics_list;
   std::vector< std::pair<std::string,std::string> > m_systematics;
 
-  /** Use the QMisID-eff-scaled-real-efficiency as fake efficiency for electrons when running MM on DATA */
+  /** For ee events, use the electron fake efficiency rescaled by the relative ee/OF ratio of photon conversions */
 
-  bool m_useScaledFakeEfficiency;
+  bool m_useScaledFakeElEfficiency_ElEl;
 
   /** Use pT correlated variations of efficiency for each systematic */
 

@@ -50,6 +50,8 @@ parser.add_argument('--efficiency', dest='efficiency', action='store', default=[
                   help='The efficiency type to be measured. Can pass multiple space-separated arguments to this command-line option (picking among the above list). If this option is not specified, default will be \'{0}\''.format(g_efficiencies[0]))
 parser.add_argument("--do3L", dest="do3L", action="store_true",default=False,
                   help="Save efficiencies to be used in 3L SR.")
+parser.add_argument("--doRescalingFakeEl", dest="doRescalingFakeEl", action="store_true",default=False,
+                  help="Rescale the electron fake rate by the relative ee/OF fraction of photon conversions, and store it alongside the standard fake rate.")
 parser.add_argument("--channel", metavar="channel", default="", type=str,
                   help="Flavour composition of the two leptons in CR to be considered (\"ElEl\", \"MuMu\", \"OF\"). If unspecified, will consider all combinations.")
 parser.add_argument('--lepton', dest='lepton', action='store', default=[g_leptons[0]], type=str, nargs='+', choices=g_leptons,
@@ -1087,6 +1089,54 @@ class RealFakeEffTagAndProbe:
             # TEMP!
             # Rescale electron fake rate by the photon conversion fraction difference between ee and OF
             #
+            doScaledEff  = False
+
+            if args.doRescalingFakeEl:
+
+                doScaledEff = True
+
+                if "Fake_El_" in key_heff :
+
+                    print("\n\tRescaling efficiency w/ key: {0} by the relative ee/OF photon conversion fraction\n".format(key_heff))
+
+                    key_heff_scaled = "RESCALED_" + key_heff
+                    h_efficiency_scaled = h_efficiency.Clone("RESCALED_"+h_efficiency.GetName())
+                    h_efficiency_scaled_AVG = h_efficiency_AVG.Clone("RESCALED_"+h_efficiency_AVG.GetName())
+
+                    if isinstance(h_efficiency_scaled,TH1D):
+
+                        alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
+                        for bin in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
+                            eff = h_efficiency_scaled.GetBinContent(bin)
+                            sf = alpha[bin-1][1]
+                            eff_scaled = eff
+                            if sf != -1.0:
+                                eff_scaled = eff * ( 1.0 + sf )
+                                h_efficiency_scaled.SetBinContent(bin, eff_scaled)
+                                print("\t\tbin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,sf,eff_scaled))
+
+                    elif isinstance(h_efficiency_scaled,TH2D):
+
+                        # Inclusive Nbjets
+                        alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
+                        # Nbjet = 1
+                        # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
+                        # Nbjet = 2
+                        # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
+                        for binx in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
+                            for biny in range(1,h_efficiency_scaled.GetYaxis().GetNbins()+2):
+                                eff = h_efficiency_scaled.GetBinContent(binx,biny)
+                                sf = alpha[biny-1][1]
+                                eff_scaled = eff
+                                if sf != -1.0:
+                                    eff_scaled = eff * ( 1.0 + sf )
+                                    h_efficiency_scaled.SetBinContent(binx, biny, eff_scaled)
+                                    print("\t\tbin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,sf,eff_scaled))
+
+                    self.histefficiencies[key_heff_scaled] = h_efficiency_scaled
+                    self.histefficiencies[key_heff_scaled+"_AVG"] = h_efficiency_scaled_AVG # TEMP: should scale also this one properly...
+
+
             # if key_heff == "Fake_El_Pt_Efficiency_expectedbkg":
             #     alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
             #     for bin in range(1,h_efficiency.GetXaxis().GetNbins()+2):
@@ -1124,7 +1174,10 @@ class RealFakeEffTagAndProbe:
        	    self.tefficiencies[key_teff]            = t_efficiency
 
             print ("\tkey for efficiency: {0}".format(key_heff))
+            if doScaledEff:
+                print ("\tkey for efficiency (scaled): {0}".format(key_heff))
             print ("\tkey for efficiency (AVG): {0}".format(key_heff+"_AVG"))
+
 
     def computeFactors( self, variation ):
 

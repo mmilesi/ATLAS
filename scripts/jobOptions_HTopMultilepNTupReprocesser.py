@@ -32,8 +32,8 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
                                     # "m_weightToCalc"               : "QMisID,MM",
-                                    # "m_weightToCalc"               : "MM",
-                                    "m_weightToCalc"               : "QMisID",
+                                    "m_weightToCalc"               : "MM",
+                                    # "m_weightToCalc"               : "QMisID",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
                                     "m_QMisIDRates_Filename_T"     : "Rates_v27.root",
                                     "m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
@@ -67,22 +67,25 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
                                     # "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMRates_25ns_v27",
                                     # "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27/OutputPlots_MMRates_TTWx2_25ns_v27",
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27_v2/OutputPlots_MMClosureRates_25ns_v27", # Closure
+                                    # "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v27_v2/OutputPlots_MMClosureRates_25ns_v27", # Closure
                                     #
                                     # ------------------------------------------------------------
                                     #
                                     # v28
                                     #
-                                    # "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v28/",
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v28/OutputPlots_MMRates_25ns_v28",
                                     # "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v28/", # Closure
                                     #
                                     # ------------------------------------------------------------
                                     #
-                                    #"m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:Pt,Fake_Mu:Pt",
-                                    #"m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:PtxEta,Fake_Mu:Pt",
-                                    "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:NBJets_VS_Pt,Fake_Mu:Pt",
-				    # "m_systematics_list"         : "Nominal:,Stat:UncorrBins,ND_TTV:CorrBins,ND_VV:CorrBins,ND_OtherPromptSS:CorrBins,ND_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
-				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins",
+                                    "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:Pt,Fake_Mu:Pt",
+                                    # "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:PtxEta,Fake_Mu:Pt",
+                                    # "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:NBJets_VS_Pt,Fake_Mu:Pt",
+                                    # "m_useScaledFakeElEfficiency_ElEl" : True,
+                                    #
+                                    #"m_systematics_list"           : "Nominal:",
+				    # "m_systematics_list"           : "Nominal:,Stat:UncorrBins",
+				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins,ND_TTV:CorrBins,ND_VV:CorrBins,ND_OtherPromptSS:CorrBins,ND_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
                                     "m_correlatedMMWeights"        : False,
                                     #
 				    "m_useTrigMatchingInfo"        : False,

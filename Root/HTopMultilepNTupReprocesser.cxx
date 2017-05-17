@@ -55,7 +55,7 @@ HTopMultilepNTupReprocesser :: HTopMultilepNTupReprocesser(std::string className
   m_Efficiency_Filename     = "";
   m_doMMClosure             = false;
   m_useTrigMatchingInfo     = false;
-  m_useScaledFakeEfficiency = false;
+  m_useScaledFakeElEfficiency_ElEl = false;
   m_useCutBasedLep          = false;
   m_useTEfficiency          = false;
 
@@ -540,6 +540,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 	      ANA_CHECK( this->calculateMMWeights () );
 	  }
 
+	  // TEMP: debug ee event
+	  // if ( m_event.get()->dilep_type == 3 && m_event.get()->nbjets_T == 0 ) { return EL::StatusCode::FAILURE; }
+
       }
 
   }
@@ -979,8 +982,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
   }
 
+  std::vector<std::string> selections   = { "2L" };
+  if ( m_useScaledFakeElEfficiency_ElEl ) {
+      selections.push_back("2L_ELEL_RESCALED");
+  }
   std::vector<std::string> efficiencies = { "Real","Fake" };
-  if ( m_useScaledFakeEfficiency ) efficiencies.push_back("ScaledFake");
   std::vector<std::string> leptons      = { "El","Mu" };
 
   // Parse the parametrisation info
@@ -1005,109 +1011,255 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
   int n_sysbins;
 
-  for ( const auto& eff : efficiencies ) {
+  for ( const auto& sel : selections ) {
 
-      std::string path;
+      for ( const auto& eff : efficiencies ) {
 
-      if ( eff.compare("Real") == 0 ) {
+	  std::string path;
 
-	  Info("readRFEfficiencies()", "REAL efficiency from directory: %s ", m_REFF_dir.c_str() );
+	  if ( eff.compare("Real") == 0 ) {
 
-	  path = m_REFF_dir + m_Efficiency_Filename;
+	      Info("readRFEfficiencies()", "REAL efficiency from directory: %s ", m_REFF_dir.c_str() );
 
-      } else if ( eff.compare("Fake") == 0 ) {
-	  if ( m_FEFF_dir.compare(m_REFF_dir) != 0 ) {
-	      Warning("readRFEfficiencies()", "FAKE efficiency is going to be read from %s. Check whether it's really what you want...", m_FEFF_dir.c_str());
-	  } else {
-	      Info("readRFEfficiencies()", "FAKE efficiency from same directory as REAL" );
-	  }
-	  path = m_FEFF_dir + m_Efficiency_Filename;
-      }
+	      path = m_REFF_dir + m_Efficiency_Filename;
 
-      TFile *file = TFile::Open(path.c_str());
-
-      TH1 *hist(nullptr), *hist_avg(nullptr), *hist_YES_TM(nullptr), *hist_NO_TM(nullptr);
-      TEfficiency *teff(nullptr);
-
-      HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file->IsOpen(), "Failed to open ROOT file" );
-
-      for ( const auto& lep : leptons ) {
-
-	  for ( const auto& var : variables ) {
-
-	      bool isVar2D = ( var.find("_VS_") != std::string::npos );
-	      bool isReal  = ( eff.compare("Real") == 0 );
-	      bool isFake  = ( eff.compare("Fake") == 0 );
-	      bool isEl    = ( lep.compare("El") == 0 );
-	      bool isMu    = ( lep.compare("Mu") == 0 );
-
-	      // Read only the correct parametrisations
-
-	      if ( isReal && isEl && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_El").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_El").compare(var) != 0 ) ) ) { continue; }
-	      if ( isReal && isEl && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_El").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_El").compare(var) != 0 ) ) ) { continue; }
-	      if ( isReal && isMu && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_Mu").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_Mu").compare(var) != 0 ) ) ) { continue; }
-	      if ( isFake && isEl && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_El").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_El").compare(var) != 0 ) ) ) { continue; }
-	      if ( isFake && isMu && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_Mu").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_Mu").compare(var) != 0 ) ) ) { continue; }
-
-	      std::string sys_append;
-
-	      bool isNominal(false), isStat(false), nominal_read(false);
-
-	      bool isSysCorrBins(false), isSysUncorrBins(false);
-
-	      std::string histname = eff + "_" + lep + "_" + var + "_Efficiency_"  + process;
-
-	      if ( !isVar2D ) {
-		  n_sysbins = get_object<TH1D>( *file, histname )->GetSize()-2; // Do NOT count the overflow, as the last visible bin of the efficiency hist already takes into account the overflow events.
+	  } else if ( eff.compare("Fake") == 0 ) {
+	      if ( m_FEFF_dir.compare(m_REFF_dir) != 0 ) {
+		  Warning("readRFEfficiencies()", "FAKE efficiency is going to be read from %s. Check whether it's really what you want...", m_FEFF_dir.c_str());
 	      } else {
-		  n_sysbins = get_object<TH2D>( *file, histname )->GetSize();
+		  Info("readRFEfficiencies()", "FAKE efficiency from same directory as REAL" );
 	      }
+	      path = m_FEFF_dir + m_Efficiency_Filename;
+	  }
 
-	      for ( const auto& sysgroup : systematic_groups ) {
+	  TFile *file = TFile::Open(path.c_str());
 
-		  isNominal = ( sysgroup.first.compare("Nominal") == 0 );
-		  isStat    = ( sysgroup.first.compare("Stat")    == 0 );
+	  TH1 *hist(nullptr), *hist_avg(nullptr), *hist_YES_TM(nullptr), *hist_NO_TM(nullptr);
+	  TEfficiency *teff(nullptr);
 
-		  // Check whether this systematic source variations are correlated across bins or not
+	  HTOP_RETURN_CHECK( "HTopMultilepNTupReprocesser::readRFEfficiencies()", file->IsOpen(), "Failed to open ROOT file" );
 
-		  isSysCorrBins   = ( sysgroup.second.compare("CorrBins")   == 0 );
-		  isSysUncorrBins = ( sysgroup.second.compare("UncorrBins") == 0 );
+	  for ( const auto& lep : leptons ) {
 
-		  // For variables other than pT (or a 2D combination including pT), just consider the nominal case
+	      for ( const auto& var : variables ) {
 
-		  if ( !isNominal && var.find("Pt") == std::string::npos ) { continue; }
+		  bool isVar2D = ( var.find("_VS_") != std::string::npos );
+		  bool isReal  = ( eff.compare("Real") == 0 );
+		  bool isFake  = ( eff.compare("Fake") == 0 );
+		  bool isEl    = ( lep.compare("El") == 0 );
+		  bool isMu    = ( lep.compare("Mu") == 0 );
 
-		  // Make sure only relevant systematic sources for this efficiency,flavour are read in
+		  // Read only the correct parametrisations
 
-		  if ( isReal ) {
-		      if ( sysgroup.first.find("TTV") != std::string::npos )           { continue; }
-		      if ( sysgroup.first.find("VV") != std::string::npos )            { continue; }
-		      if ( sysgroup.first.find("OtherPromptSS") != std::string::npos ) { continue; }
-		      if ( sysgroup.first.find("QMisID") != std::string::npos )        { continue; }
+		  if ( isReal && isEl && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_El").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_El").compare(var) != 0 ) ) ) { continue; }
+		  if ( isReal && isEl && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_El").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_El").compare(var) != 0 ) ) ) { continue; }
+		  if ( isReal && isMu && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_Mu").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_Mu").compare(var) != 0 ) ) ) { continue; }
+		  if ( isFake && isEl && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_El").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_El").compare(var) != 0 ) ) ) { continue; }
+		  if ( isFake && isMu && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_Mu").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_Mu").compare(var) != 0 ) ) ) { continue; }
+		  if ( sel.compare("2L_ELEL_RESCALED") == 0 && !( isFake && isEl ) ) { continue; }
+
+		  // Special flag for electron fake rate, to be used if doing ee rescaling
+
+		  std::string prepend = ( sel.compare("2L_ELEL_RESCALED") == 0 && isFake && isEl ) ? "RESCALED_" : "";
+		  if ( !prepend.empty() ) {
+		      std::cout << "" << std::endl;
+		      Info("readRFEfficiencies()", "Will be using rescaled electron fake rate for ee events!");
+		      std::cout << "" << std::endl;
 		  }
-		  if ( isFake ) {
-		      if ( sysgroup.first.find("FakesOS") != std::string::npos ) { continue; }
-		      if ( isMu && sysgroup.first.find("QMisID") != std::string::npos )   { continue; }
+
+		  std::string sys_append;
+
+		  bool isNominal(false), isStat(false), nominal_read(false);
+
+		  bool isSysCorrBins(false), isSysUncorrBins(false);
+
+		  std::string histname = prepend + eff + "_" + lep + "_" + var + "_Efficiency_"  + process;
+
+		  if ( !isVar2D ) {
+		      n_sysbins = get_object<TH1D>( *file, histname )->GetSize()-2; // Do NOT count the overflow, as the last visible bin of the efficiency hist already takes into account the overflow events.
+		  } else {
+		      n_sysbins = get_object<TH2D>( *file, histname )->GetSize();
 		  }
 
-		  std::cout << "" << std::endl;
-		  Info("readRFEfficiencies()", "Reading inputs for systematic group: ===> %s ( Correlated across bins? %i Uncorrelated across bins? %i )", sysgroup.first.c_str(), isSysCorrBins, isSysUncorrBins );
-		  std::cout << "" << std::endl;
+		  for ( const auto& sysgroup : systematic_groups ) {
 
-		  if ( !m_correlatedMMWeights && ( isNominal || isSysUncorrBins ) ) {
+		      isNominal = ( sysgroup.first.compare("Nominal") == 0 );
+		      isStat    = ( sysgroup.first.compare("Stat")    == 0 );
 
-		      for ( int bin(1);  bin <= n_sysbins; ++bin ) {
+		      // Check whether this systematic source variations are correlated across bins or not
 
-			  if ( isNominal && nominal_read ) { break; } // Do this only once for the nominal case
+		      isSysCorrBins   = ( sysgroup.second.compare("CorrBins")   == 0 );
+		      isSysUncorrBins = ( sysgroup.second.compare("UncorrBins") == 0 );
 
-			  // If variable is 2D, and this *global* bin number does not correspond to a visible (x,y) bin, just skip it
+		      // For variables other than pT (or a 2D combination including pT), just consider the nominal case
 
-			  if ( isVar2D && !isBinVisible(bin,get_object<TH2D>( *file, histname )) ) { continue; }
+		      if ( !isNominal && var.find("Pt") == std::string::npos ) { continue; }
+
+		      // Make sure only relevant systematic sources for this efficiency,flavour are read in
+
+		      if ( isReal ) {
+			  if ( sysgroup.first.find("TTV") != std::string::npos )           { continue; }
+			  if ( sysgroup.first.find("VV") != std::string::npos )            { continue; }
+			  if ( sysgroup.first.find("OtherPromptSS") != std::string::npos ) { continue; }
+			  if ( sysgroup.first.find("QMisID") != std::string::npos )        { continue; }
+		      }
+		      if ( isFake ) {
+			  if ( sysgroup.first.find("FakesOS") != std::string::npos ) { continue; }
+			  if ( isMu && sysgroup.first.find("QMisID") != std::string::npos )   { continue; }
+		      }
+
+		      std::cout << "" << std::endl;
+		      Info("readRFEfficiencies()", "Reading inputs for systematic group: ===> %s ( Correlated across bins? %i Uncorrelated across bins? %i )", sysgroup.first.c_str(), isSysCorrBins, isSysUncorrBins );
+		      std::cout << "" << std::endl;
+
+		      if ( !m_correlatedMMWeights && ( isNominal || isSysUncorrBins ) ) {
+
+			  for ( int bin(1);  bin <= n_sysbins; ++bin ) {
+
+			      if ( isNominal && nominal_read ) { break; } // Do this only once for the nominal case
+
+			      // If variable is 2D, and this *global* bin number does not correspond to a visible (x,y) bin, just skip it
+
+			      if ( isVar2D && !isBinVisible(bin,get_object<TH2D>( *file, histname )) ) { continue; }
+
+			      std::string sys = eff + "_" + lep + "_" + var + "_" + sysgroup.first;
+			      if ( !isNominal ) { sys += "_" + std::to_string(bin); }
+
+			      m_systematics.push_back(std::make_pair(sys,sysgroup.second));
+
+			      bool stat_read(false);
+
+			      for ( const auto& dir : sysdirections ) {
+
+				  if ( isNominal && nominal_read ) { break; } // Do this only once for the nominal case
+				  if ( isStat    && stat_read    ) { break; } // Do this only once for the stat case
+
+				  sys_append = ( isNominal || isStat ) ? "" : ( "_" + sysgroup.first + "_" + dir +  "_" + std::to_string(bin) );
+
+				  histname  = prepend + eff + "_" + lep + "_" + var + "_Efficiency_"  + process + sys_append; // Name of efficiency TObject in input ROOT file
+
+				  std::cout << "\t\t\t\t  " << lep << "," << eff << "," << var << " efficiency - input TH1 name: " << histname << std::endl;
+
+				  if ( !isVar2D ) {
+				      hist  = get_object<TH1D>( *file,  histname );
+				  } else {
+				      hist  = get_object<TH2D>( *file,  histname );
+				  }
+
+				  hist->SetDirectory(0);
+
+				  if ( m_useTEfficiency ) {
+				      teff  = get_object<TEfficiency>( *file, this->str_replace( histname, "Efficiency", "TEfficiency" ).c_str() );
+				      teff->SetDirectory(0);
+				  }
+
+				  if ( m_useTrigMatchingInfo ) {
+
+				      hist_YES_TM = get_object<TH1D>( *file_YES_TM, histname );
+				      hist_NO_TM  = get_object<TH1D>( *file_NO_TM, histname );
+
+				      hist_YES_TM->SetDirectory(0);
+				      hist_NO_TM->SetDirectory(0);
+				  }
+
+				  // Fill maps for later usage
+
+				  std::string mapkey, mapkeyhist, mapkeyhist_yes_tm, mapkeyhist_no_tm;
+				  if ( var.compare("Pt") == 0 ) {
+				      if ( isReal ) {
+					  mapkey     = prepend + "pt_reff";
+					  mapkeyhist = prepend + "pt_reff_hist";
+				      } else if ( isFake ) {
+					  mapkey     = prepend + "pt_feff";
+					  mapkeyhist = prepend + "pt_feff_hist";
+				      }
+				  } else if ( var.compare("Eta") == 0 ) {
+				      if ( isReal ) {
+					  mapkey     = prepend + "eta_reff";
+					  mapkeyhist = prepend + "eta_reff_hist";
+				      } else if ( isFake ) {
+					  mapkey     = prepend + "eta_feff";
+					  mapkeyhist = prepend + "eta_feff_hist";
+				      }
+				  } else if ( var.compare("NBJets_VS_Pt") == 0 ) {
+				      if ( isReal ) {
+					  mapkey     = prepend + "nbjets_VS_pt_reff";
+					  mapkeyhist = prepend + "nbjets_VS_pt_reff_hist";
+				      } else if ( isFake ) {
+					  mapkey     = prepend + "nbjets_VS_pt_feff";
+					  mapkeyhist = prepend + "nbjets_VS_pt_feff_hist";
+				      }
+				  }
+
+				  mapkeyhist_yes_tm = mapkeyhist + "_YES_TM";
+				  mapkeyhist_no_tm  = mapkeyhist + "_NO_TM";
+
+				  std::string syskey("");
+				  if      ( isNominal ){ syskey = sysgroup.first; }
+				  else if ( isStat )   { syskey = sysgroup.first + "_" + std::to_string(bin); }
+				  else                 { syskey = sysgroup.first + "_" + dir + "_" + std::to_string(bin); }
+
+				  std::cout << "\t\t\t\t  Storing efficiency histogram in map w/ the following key: " << syskey << std::endl;
+
+				  // Save in the histogram map a clone of the denominator histogram associated to the TEfficiency object in order to access the axis binning
+				  // If we are not using TEfficiency, take the TH1 efficiency histogram itself (use the denominator "total" histogram by convention)
+				  //
+				  // NB: Calling GetCopyTotalHisto() transfer the ownership of the histogram pointer to the user. This introduces a memory leak in the code,
+				  // as we don't explicitly call delete anywhere. However, this is harmless, since this is executed only once per job.
+
+				  if ( isEl ) {
+				      m_el_teff_map[syskey][mapkey]  = teff;
+				      m_el_hist_map[syskey][mapkeyhist] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff->GetCopyTotalHisto() ) : hist;
+				      if ( m_useTrigMatchingInfo ) {
+					  m_el_hist_map[syskey][mapkeyhist_yes_tm] = hist_YES_TM;
+					  m_el_hist_map[syskey][mapkeyhist_no_tm]  = hist_NO_TM;
+				      }
+				  } else if ( isMu ) {
+				      m_mu_hist_map[syskey][mapkeyhist] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff->GetCopyTotalHisto() ) : hist;
+				      m_mu_teff_map[syskey][mapkey] = teff;
+				      if ( m_useTrigMatchingInfo ) {
+					  m_mu_hist_map[syskey][mapkeyhist_yes_tm] = hist_YES_TM;
+					  m_mu_hist_map[syskey][mapkeyhist_no_tm]  = hist_NO_TM;
+				      }
+				  }
+
+				  // Calculate average efficiency to normalise (x * xx) 1D efficiency (this info will be ignored if using only x parametrisation).
+				  //
+				  // This factor is the same for x and xx r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition )
+				  // (If using TEfficiency, can get the TH1 objects that were used for measuring efficiency directly from the TEfficiency object.
+				  // Otherwise, the average efficiency histogram must be already in the input file)
+
+				  if ( !isVar2D ) {
+				      float avg(-1.0);
+				      if ( !teff ) {
+					  hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
+					  hist_avg->SetDirectory(0);
+					  avg = hist_avg->GetBinContent(1);
+				      } else {
+					  avg = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
+				      }
+				      if ( isReal ) {
+					  if ( isEl ) { m_el_reff_avg[syskey] = avg; }
+					  if ( isMu ) { m_mu_reff_avg[syskey] = avg; }
+				      }
+				      if ( isFake ) {
+					  if ( isEl ) { m_el_feff_avg[syskey] = avg; }
+					  if ( isMu ) { m_mu_feff_avg[syskey] = avg; }
+				      }
+				  }
+
+				  if ( isNominal ) { nominal_read = true; }
+				  if ( isStat )    { stat_read = true; }
+
+			      } // loop over sys directions
+
+			  } // loop over sys bins
+
+		      } else if ( m_correlatedMMWeights || isSysCorrBins ) {
 
 			  std::string sys = eff + "_" + lep + "_" + var + "_" + sysgroup.first;
-			  if ( !isNominal ) { sys += "_" + std::to_string(bin); }
 
- 			  m_systematics.push_back(std::make_pair(sys,sysgroup.second));
+			  m_systematics.push_back(std::make_pair(sys,sysgroup.second));
 
 			  bool stat_read(false);
 
@@ -1116,9 +1268,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 			      if ( isNominal && nominal_read ) { break; } // Do this only once for the nominal case
 			      if ( isStat    && stat_read    ) { break; } // Do this only once for the stat case
 
-			      sys_append = ( isNominal || isStat ) ? "" : ( "_" + sysgroup.first + "_" + dir +  "_" + std::to_string(bin) );
+			      sys_append = ( isNominal || isStat ) ? "" : ( "_" + sysgroup.first + "_" + dir ); // Check formatting of input efficiency file (need to store a shifted efficiency for all bins simultaneously )
 
-			      histname  = eff + "_" + lep + "_" + var + "_Efficiency_"  + process + sys_append; // Name of efficiency TObject in input ROOT file
+			      histname  = prepend + eff + "_" + lep + "_" + var + "_Efficiency_"  + process + sys_append; // Name of efficiency TObject in input ROOT file
 
 			      std::cout << "\t\t\t\t  " << lep << "," << eff << "," << var << " efficiency - input TH1 name: " << histname << std::endl;
 
@@ -1127,7 +1279,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 			      } else {
 				  hist  = get_object<TH2D>( *file,  histname );
 			      }
-
 			      hist->SetDirectory(0);
 
 			      if ( m_useTEfficiency ) {
@@ -1149,37 +1300,34 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 			      std::string mapkey, mapkeyhist, mapkeyhist_yes_tm, mapkeyhist_no_tm;
 			      if ( var.compare("Pt") == 0 ) {
 				  if ( isReal ) {
-				      mapkey     = "pt_reff";
-				      mapkeyhist = "pt_reff_hist";
+				      mapkey     = prepend + "pt_reff";
+				      mapkeyhist = prepend + "pt_reff_hist";
 				  } else if ( isFake ) {
-				      mapkey     = "pt_feff";
-				      mapkeyhist = "pt_feff_hist";
+				      mapkey     = prepend + "pt_feff";
+				      mapkeyhist = prepend + "pt_feff_hist";
 				  }
 			      } else if ( var.compare("Eta") == 0 ) {
 				  if ( isReal ) {
-				      mapkey     = "eta_reff";
-				      mapkeyhist = "eta_reff_hist";
+				      mapkey     = prepend + "eta_reff";
+				      mapkeyhist = prepend + "eta_reff_hist";
 				  } else if ( isFake ) {
-				      mapkey     = "eta_feff";
-				      mapkeyhist = "eta_feff_hist";
+				      mapkey     = prepend + "eta_feff";
+				      mapkeyhist = prepend + "eta_feff_hist";
 				  }
 			      } else if ( var.compare("NBJets_VS_Pt") == 0 ) {
 				  if ( isReal ) {
-				      mapkey     = "nbjets_VS_pt_reff";
-				      mapkeyhist = "nbjets_VS_pt_reff_hist";
+				      mapkey     = prepend + "nbjets_VS_pt_reff";
+				      mapkeyhist = prepend + "nbjets_VS_pt_reff_hist";
 				  } else if ( isFake ) {
-				      mapkey     = "nbjets_VS_pt_feff";
-				      mapkeyhist = "nbjets_VS_pt_feff_hist";
+				      mapkey     = prepend + "nbjets_VS_pt_feff";
+				      mapkeyhist = prepend + "nbjets_VS_pt_feff_hist";
 				  }
 			      }
 
 			      mapkeyhist_yes_tm = mapkeyhist + "_YES_TM";
 			      mapkeyhist_no_tm  = mapkeyhist + "_NO_TM";
 
-			      std::string syskey("");
-			      if      ( isNominal ){ syskey = sysgroup.first; }
-			      else if ( isStat )   { syskey = sysgroup.first + "_" + std::to_string(bin); }
-			      else                 { syskey = sysgroup.first + "_" + dir + "_" + std::to_string(bin); }
+			      std::string syskey = ( isNominal || isStat ) ? sysgroup.first : ( sysgroup.first + "_" + dir ); // No need to append bin idx here, as we consider efficiencies w/ all bins shifted up/dn simultaneously.
 
 			      std::cout << "\t\t\t\t  Storing efficiency histogram in map w/ the following key: " << syskey << std::endl;
 
@@ -1235,148 +1383,21 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
 			  } // loop over sys directions
 
-		      } // loop over sys bins
+		      } // closes if ( m_correlatedMMWeights )
 
-		  } else if ( m_correlatedMMWeights || isSysCorrBins ) {
+		  } // loop over systematic sources
 
-		      std::string sys = eff + "_" + lep + "_" + var + "_" + sysgroup.first;
+	      } // loop over variables
 
-		      m_systematics.push_back(std::make_pair(sys,sysgroup.second));
+	  } // loop over leptons
 
-		      bool stat_read(false);
+      } // loop over efficieny types
 
-		      for ( const auto& dir : sysdirections ) {
-
-			  if ( isNominal && nominal_read ) { break; } // Do this only once for the nominal case
-			  if ( isStat    && stat_read    ) { break; } // Do this only once for the stat case
-
-			  sys_append = ( isNominal || isStat ) ? "" : ( "_" + sysgroup.first + "_" + dir ); // Check formatting of input efficiency file (need to store a shifted efficiency for all bins simultaneously )
-
-			  histname  = eff + "_" + lep + "_" + var + "_Efficiency_"  + process + sys_append; // Name of efficiency TObject in input ROOT file
-
-			  std::cout << "\t\t\t\t  " << lep << "," << eff << "," << var << " efficiency - input TH1 name: " << histname << std::endl;
-
-			  if ( !isVar2D ) {
-			      hist  = get_object<TH1D>( *file,  histname );
-			  } else {
-			      hist  = get_object<TH2D>( *file,  histname );
-			  }
-			  hist->SetDirectory(0);
-
-			  if ( m_useTEfficiency ) {
-			      teff  = get_object<TEfficiency>( *file, this->str_replace( histname, "Efficiency", "TEfficiency" ).c_str() );
-			      teff->SetDirectory(0);
-			  }
-
-			  if ( m_useTrigMatchingInfo ) {
-
-			      hist_YES_TM = get_object<TH1D>( *file_YES_TM, histname );
-			      hist_NO_TM  = get_object<TH1D>( *file_NO_TM, histname );
-
-			      hist_YES_TM->SetDirectory(0);
-			      hist_NO_TM->SetDirectory(0);
-			  }
-
-			  // Fill maps for later usage
-
-			  std::string mapkey, mapkeyhist, mapkeyhist_yes_tm, mapkeyhist_no_tm;
-			  if ( var.compare("Pt") == 0 ) {
-			      if ( isReal ) {
-				  mapkey     = "pt_reff";
-				  mapkeyhist = "pt_reff_hist";
-			      } else if ( isFake ) {
-				  mapkey     = "pt_feff";
-				  mapkeyhist = "pt_feff_hist";
-			      }
-			  } else if ( var.compare("Eta") == 0 ) {
-			      if ( isReal ) {
-				  mapkey     = "eta_reff";
-				  mapkeyhist = "eta_reff_hist";
-			      } else if ( isFake ) {
-				  mapkey     = "eta_feff";
-				  mapkeyhist = "eta_feff_hist";
-			      }
-			  } else if ( var.compare("NBJets_VS_Pt") == 0 ) {
-			      if ( isReal ) {
-				  mapkey     = "nbjets_VS_pt_reff";
-				  mapkeyhist = "nbjets_VS_pt_reff_hist";
-			      } else if ( isFake ) {
-				  mapkey     = "nbjets_VS_pt_feff";
-				  mapkeyhist = "nbjets_VS_pt_feff_hist";
-			      }
-			  }
-
-			  mapkeyhist_yes_tm = mapkeyhist + "_YES_TM";
-			  mapkeyhist_no_tm  = mapkeyhist + "_NO_TM";
-
-			  std::string syskey = ( isNominal || isStat ) ? sysgroup.first : ( sysgroup.first + "_" + dir ); // No need to append bin idx here, as we consider efficiencies w/ all bins shifted up/dn simultaneously.
-
-			  std::cout << "\t\t\t\t  Storing efficiency histogram in map w/ the following key: " << syskey << std::endl;
-
-			  // Save in the histogram map a clone of the denominator histogram associated to the TEfficiency object in order to access the axis binning
-			  // If we are not using TEfficiency, take the TH1 efficiency histogram itself (use the denominator "total" histogram by convention)
-			  //
-			  // NB: Calling GetCopyTotalHisto() transfer the ownership of the histogram pointer to the user. This introduces a memory leak in the code,
-			  // as we don't explicitly call delete anywhere. However, this is harmless, since this is executed only once per job.
-
-			  if ( isEl ) {
-			      m_el_teff_map[syskey][mapkey]  = teff;
-			      m_el_hist_map[syskey][mapkeyhist] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff->GetCopyTotalHisto() ) : hist;
-			      if ( m_useTrigMatchingInfo ) {
-				  m_el_hist_map[syskey][mapkeyhist_yes_tm] = hist_YES_TM;
-				  m_el_hist_map[syskey][mapkeyhist_no_tm]  = hist_NO_TM;
-			      }
-			  } else if ( isMu ) {
-			      m_mu_hist_map[syskey][mapkeyhist] = ( m_useTEfficiency ) ? dynamic_cast<TH1D*>( teff->GetCopyTotalHisto() ) : hist;
-			      m_mu_teff_map[syskey][mapkey] = teff;
-			      if ( m_useTrigMatchingInfo ) {
-				  m_mu_hist_map[syskey][mapkeyhist_yes_tm] = hist_YES_TM;
-				  m_mu_hist_map[syskey][mapkeyhist_no_tm]  = hist_NO_TM;
-			      }
-			  }
-
-			  // Calculate average efficiency to normalise (x * xx) 1D efficiency (this info will be ignored if using only x parametrisation).
-			  //
-			  // This factor is the same for x and xx r/f histograms (it's just Integral(N) / Integral(D) for the efficiency definition )
-			  // (If using TEfficiency, can get the TH1 objects that were used for measuring efficiency directly from the TEfficiency object.
-			  // Otherwise, the average efficiency histogram must be already in the input file)
-
-			  if ( !isVar2D ) {
-			      float avg(-1.0);
-			      if ( !teff ) {
-				  hist_avg = get_object<TH1D>( *file,  histname + "_AVG" );
-				  hist_avg->SetDirectory(0);
-				  avg = hist_avg->GetBinContent(1);
-			      } else {
-				  avg = ( teff->GetPassedHistogram()->Integral(1,teff->GetPassedHistogram()->GetNbinsX()+1) ) / ( teff->GetTotalHistogram()->Integral(1,teff->GetTotalHistogram()->GetNbinsX()+1) );
-			      }
-			      if ( isReal ) {
-				  if ( isEl ) { m_el_reff_avg[syskey] = avg; }
-				  if ( isMu ) { m_mu_reff_avg[syskey] = avg; }
-			      }
-			      if ( isFake ) {
-				  if ( isEl ) { m_el_feff_avg[syskey] = avg; }
-				  if ( isMu ) { m_mu_feff_avg[syskey] = avg; }
-			      }
-			  }
-
-			  if ( isNominal ) { nominal_read = true; }
-			  if ( isStat )    { stat_read = true; }
-
-		      } // loop over sys directions
-
-		  } // closes if ( m_correlatedMMWeights )
-
-	      } // loop over systematic sources
-
-	  } // loop over variables
-
-      } // loop over leptons
-
-  } // loop over efficieny types
+  } // loop over selections
 
   return EL::StatusCode::SUCCESS;
 }
+
 
 EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_1D( std::shared_ptr<leptonObj> lep,
 									  std::vector<float>& efficiency,
@@ -1404,14 +1425,28 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_1D( std::s
 
     if ( m_verbose ) {
 	Info("getMMEfficiencyAndError_1D()", "\tReading %s efficiency...", type.c_str() );
-	Info("getMMEfficiencyAndError_1D()", "\t%s (x) = %.2f", varX.second.c_str(), x );
+	Info("getMMEfficiencyAndError_1D()", "\t%s = %.2f", varX.second.c_str(), x );
 	if ( useVarXX ) {
-	    Info("getMMEfficiencyAndError_1D()", "\t%s (xx) = %.2f", varXX.second.c_str(), xx );
+	    Info("getMMEfficiencyAndError_1D()", "\t%s = %.2f", varXX.second.c_str(), xx );
 	}
     }
 
     size_t endX  = keyX.length() - 5; // "this is the number of characters in keyX after removing _hist"
     size_t endXX = keyXX.length() - 5;
+
+    // Read the proper input efficiency if necessary
+
+    std::string prepend = ( m_useScaledFakeElEfficiency_ElEl && m_event.get()->dilep_type == 3 && lep.get()->flavour == 11 && type.compare("FAKE") == 0 ) ? "RESCALED_" : "";
+
+    keyX  = prepend + keyX;
+    if ( useVarXX ) { keyXX = prepend + keyXX; }
+
+    if ( m_verbose ) {
+	Info("getMMEfficiencyAndError_1D()","\tfrom histogram w/ key (%s) : %s", varX.second.c_str(), keyX.c_str() );
+	if ( useVarXX ) {
+	    Info("getMMEfficiencyAndError_1D()","\tfrom histogram w/ key (%s) : %s", varXX.second.c_str(), keyXX.c_str() );
+	}
+    }
 
     std::string keyX_teff   = keyX.substr( 0, endX );
     std::string keyXX_teff  = keyXX.substr( 0, endXX );
@@ -1720,6 +1755,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::s
 									  const std::pair<float,std::string>& varY )
 {
 
+    // Read the proper input efficiency if necessary
+
+    std::string prepend = ( m_useScaledFakeElEfficiency_ElEl && m_event.get()->dilep_type == 3 && lep.get()->flavour == 11 && type.compare("FAKE") == 0 ) ? "RESCALED_" : "";
+
+    key  = prepend + key;
+
     float error_up(0.0), error_dn(0.0);
 
     float x = varX.first;
@@ -1734,6 +1775,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::s
     if ( m_verbose ) {
 	Info("getMMEfficiencyAndError_2D()", "\tReading %s efficiency...", type.c_str() );
 	Info("getMMEfficiencyAndError_2D()", "\t%s (x) = %.2f, %s (y) = %.2f", varX.second.c_str(), x, varY.second.c_str(), y );
+	Info("getMMEfficiencyAndError_2D()", "\tfrom histogram w/ key: %s", key.c_str() );
     }
 
     std::string syskey_up, syskey_dn;
