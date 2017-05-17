@@ -91,7 +91,7 @@ args = parser.parse_args()
 
 from ROOT import ROOT, gROOT, gStyle, Double, gPad, TPad, TLine, TH1, TH1D, TH2, TH2D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
 
-from Plotter.BackgroundTools import set_fancy_2D_style
+from Plotter.BackgroundTools import set_fancy_2D_style, integrate
 
 gROOT.Reset()
 gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
@@ -363,11 +363,12 @@ class RealFakeEffTagAndProbe:
 	       hist     = self.antinumerator_hists.get(proc_key)
 	       sub_hist = self.antinumerator_hists.get(proc_sub_key)
 	   if sub_hist:
-               integral_pre_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               integral_pre_sub = integrate(hist)
                hist.Add( sub_hist, -1 )
-               integral_post_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               integral_post_sub = integrate(hist)
 	       if self.verbose:
-	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),sub_hist.Integral(0,sub_hist.GetNbinsX()+1),sub_hist.GetName(),integral_post_sub))
+	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),integrate(sub_hist),sub_hist.GetName(),integral_post_sub))
+
 	   else:
                print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
 
@@ -392,7 +393,7 @@ class RealFakeEffTagAndProbe:
 
 	   if sub_hist and sub_basehist:
 
-               integral_pre_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               integral_pre_sub = integrate(hist)
                thisbin_pre_sub  = hist.GetBinContent(bin_idx)
 
                bin_sub     = hist.GetBinContent(bin_idx) - sub_hist.GetBinContent(bin_idx)
@@ -407,11 +408,11 @@ class RealFakeEffTagAndProbe:
 	       hist.SetBinContent( bin_idx, bin_sub )
 	       hist.SetBinError( bin_idx, bin_sub_err )
 
-               integral_post_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               integral_post_sub = integrate(hist)
                thisbin_post_sub  = hist.GetBinContent(bin_idx)
 
 	       if self.verbose:
-	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),sub_basehist.Integral(0,sub_basehist.GetNbinsX()+1),sub_basehist.GetName(),integral_post_sub))
+	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),integrate(sub_basehist),sub_basehist.GetName(),integral_post_sub))
 	           print("\t\tbin {0} - {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(bin_idx,thisbin_pre_sub,hist.GetName(),sub_hist.GetBinContent(bin_idx),sub_hist.GetName(),thisbin_post_sub))
 
 	   else:
@@ -789,6 +790,10 @@ class RealFakeEffTagAndProbe:
 
             if not "&&" in key or "_proj" in key: continue
 
+            # Ignore if looking at systematic key
+
+            if any( tk in key for tk in ["_up","_dn"] ): continue
+
             tokens = key.split('_')
 
             vars2D = tokens[2].split('&&')
@@ -878,6 +883,10 @@ class RealFakeEffTagAndProbe:
 
         nominal_key = None
 
+        # for key in sorted(self.histkeys):
+        #     print key
+        # os.sys.exit("Exit")
+
         # NB: here is crucial to loop over the alphabetically-sorted keys!
 
         for key in sorted(self.histkeys):
@@ -886,27 +895,35 @@ class RealFakeEffTagAndProbe:
 
             if any( sys in tokens for sys in ["TTV","VV","OtherPromptSS","FakesOS"] ) :
                 if not variation == "ND": continue
-                if tokens[-1].isdigit(): continue
+                if tokens[-1].isdigit(): continue # Ignore the bin-by-bin sys variations (consider only the global normalisation shift)
             if any( sys in tokens for sys in ["QMisID"] ):
                 if not variation in ["N","D"]: continue
 
+            # Skip all keys that do not have a minimum number of tokens
+
 	    min_tokens = True
 	    if self.closure or self.nosub:
-	        min_tokens = ( len(tokens) >= 4 )
+	        min_tokens = ( ( "_proj" not in key ) and len(tokens) >= 4 ) or ( ( "_proj" in key ) and len(tokens) >= 6 )
 	    else:
-	        min_tokens = ( len(tokens) >= 5 )
+	        min_tokens = ( ( "_proj" not in key ) and len(tokens) >= 5 ) or ( ( "_proj" in key ) and len(tokens) >= 7 )
 
             if ( not min_tokens or tokens[3] not in self.__processes ): continue
 
+            # If checking nominal, skip all the systematic keys
+
             if variation == "nominal" :
-                if ( "_proj" not in key ) and len(tokens) > 5 : continue
+                if any( tk in tokens for tk in ["up","dn"] ): continue
                 nominal_key = key
 
-            # If checking systematics, need to store the nominal key first
+            # If checking systematics, need to store the nominal key first, then move to the next key
 
-            if ( variation != "nominal" and len(tokens) == 5 ):
-                nominal_key = key
-                continue
+            if variation != "nominal":
+                if ( "_proj" not in key ) and len(tokens) == 5:
+                    nominal_key = key
+                    continue
+                if ( "_proj" in key ) and len(tokens) == 7:
+                    nominal_key = key
+                    continue
 
             # Extension for projection histograms
 
@@ -1080,23 +1097,23 @@ class RealFakeEffTagAndProbe:
             #             eff_scaled = eff * ( 1.0 + sf )
             #             h_efficiency.SetBinContent(bin, eff_scaled)
             #         print("bin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,sf,eff_scaled))
-
-            if key_heff == "Fake_El_NBJets&&Pt_Efficiency_expectedbkg":
-                # Inclusive Nbjets
-                alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
-                # Nbjet = 1
-                # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
-                # Nbjet = 2
-                # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
-                for binx in range(1,h_efficiency.GetXaxis().GetNbins()+2):
-                    for biny in range(1,h_efficiency.GetYaxis().GetNbins()+2):
-                        eff = h_efficiency.GetBinContent(binx,biny)
-                        sf = alpha[biny-1][1]
-                        eff_scaled = eff
-                        if sf != -1.0:
-                            eff_scaled = eff * ( 1.0 + sf )
-                            h_efficiency.SetBinContent(binx, biny, eff_scaled)
-                        print("bin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,sf,eff_scaled))
+            #
+            # if key_heff == "Fake_El_NBJets&&Pt_Efficiency_expectedbkg":
+            #     # Inclusive Nbjets
+            #     alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
+            #     # Nbjet = 1
+            #     # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
+            #     # Nbjet = 2
+            #     # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
+            #     for binx in range(1,h_efficiency.GetXaxis().GetNbins()+2):
+            #         for biny in range(1,h_efficiency.GetYaxis().GetNbins()+2):
+            #             eff = h_efficiency.GetBinContent(binx,biny)
+            #             sf = alpha[biny-1][1]
+            #             eff_scaled = eff
+            #             if sf != -1.0:
+            #                 eff_scaled = eff * ( 1.0 + sf )
+            #                 h_efficiency.SetBinContent(binx, biny, eff_scaled)
+            #             print("bin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,sf,eff_scaled))
 
 
             # Save the efficiencies in the proper dictionaries
