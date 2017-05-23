@@ -61,7 +61,7 @@ def copy_source(subdir = string.Template("$TMPDIR").substitute(os.environ), forc
 
     print("Making a tarball of input package and moving it to submission directory...")
     if not os.path.isfile(subdir+"/"+tarballname) or args.forcetarball:
-        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs"])
+        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs","--exclude=\'Output*\'"])
         shutil.move("./"+tarballname,subdir+"/"+tarballname)
     else:
         print("Good! Tarball of code already exists in submission directory...")
@@ -202,35 +202,39 @@ exit 0
     # List of samples to be processed (one sample will correspond to one subjob in the array)
 
     varlist = [
-        # "Integral",
+        "Integral",
         # "Integral_LOGY",
-        # "ElProbePt",
-        # "ElProbePt_LOGY",
-        # "ElProbePt_RealEffBinning",
-        # "ElProbePt_FakeEffBinning",
-        # "ElProbePt_RealEffBinning_LOGY",
-        # "ElProbePt_FakeEffBinning_LOGY",
-        # "ElProbeEta",
-        # "ElProbeDistanceClosestJet",
+        "ElProbePt",
+        "ElProbePt_LOGY",
+        "ElProbePt_RealEffBinning",
+        "ElProbePt_FakeEffBinning",
+        "ElProbePt_RealEffBinning_LOGY",
+        "ElProbePt_FakeEffBinning_LOGY",
+        "ElProbeEta",
+        "ElProbeDistanceClosestJet",
         # "ElProbeDistanceClosestBJet",
         # "ElProbeDistanceOtherLep",
         # "ElProbeNJets",
         # "ElProbeNBJets",
         "ElProbeNBJets_VS_ElProbePt",
+        "ElProbeDistanceClosestJet_VS_ElProbePt",
         # "ElProbeEta_VS_ElProbePt",
-        # "MuProbePt",
-        # "MuProbePt_LOGY",
-        # "MuProbePt_RealEffBinning",
-        # "MuProbePt_FakeEffBinning",
-        # "MuProbePt_RealEffBinning_LOGY",
-        # "MuProbePt_FakeEffBinning_LOGY",
-        # "MuProbeEta",
-        # "MuProbeDistanceClosestJet",
+        "MuProbePt",
+        "MuProbePt_LOGY",
+        "MuProbePt_RealEffBinning",
+        "MuProbePt_FakeEffBinning",
+        "MuProbePt_RealEffBinning_LOGY",
+        "MuProbePt_FakeEffBinning_LOGY",
+        "MuProbeEta",
+        "MuProbeDistanceClosestJet",
         # "MuProbeDistanceClosestBJet",
         # "MuProbeDistanceOtherLep",
         # "MuProbeNJets",
         # "MuProbeNBJets",
         "MuProbeNBJets_VS_MuProbePt",
+        "MuProbeDistanceClosestJet_VS_MuProbePt",
+        #
+        # "LepFlavours",
         #
         # "Integral",
         # "NJets2j3j",
@@ -251,9 +255,8 @@ exit 0
         # "Mll01_inc",
         # "MET_FinalTrk",
         # "deltaRLep0Lep1",
+        # "deltaPhiLep0Lep1",
         # "TotLepCharge",
-        # "Lep0Pt",
-        # "Lep1Pt",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",

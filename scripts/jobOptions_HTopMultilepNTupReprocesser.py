@@ -32,13 +32,13 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
                                     # "m_weightToCalc"               : "QMisID,MM",
-                                    "m_weightToCalc"               : "MM",
-                                    # "m_weightToCalc"               : "QMisID",
+                                    # "m_weightToCalc"               : "MM",
+                                    "m_weightToCalc"               : "QMisID",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
-                                    "m_QMisIDRates_Filename_T"     : "Rates_v27.root",
-                                    "m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
-                                    # "m_QMisIDRates_Filename_T"     : "Rates_v27_For3l.root",
-                                    # "m_QMisIDRates_Filename_AntiT" : "Rates_v27_For3l_AntiT.root",
+                                    # "m_QMisIDRates_Filename_T"     : "Rates_v27.root",
+                                    # "m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
+                                    "m_QMisIDRates_Filename_T"     : "Rates_v27_For3l.root",
+                                    "m_QMisIDRates_Filename_AntiT" : "Rates_v27_For3l_AntiT.root",
                                     # "m_QMisIDRates_Filename_T"     : "Rates_Data_3l_2D_tight.root",
                                     # "m_QMisIDRates_Filename_AntiT" : "Rates_Data_3l_2D_Loose.root",
                                     "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
@@ -78,9 +78,9 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
                                     # ------------------------------------------------------------
                                     #
-                                    "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:Pt,Fake_Mu:Pt",
+                                    # "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:Pt,Fake_Mu:Pt",
                                     # "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:PtxEta,Fake_Mu:Pt",
-                                    # "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:NBJets_VS_Pt,Fake_Mu:Pt",
+                                    "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:NBJets_VS_Pt,Fake_Mu:Pt",
                                     # "m_useScaledFakeElEfficiency_ElEl" : True,
                                     #
                                     #"m_systematics_list"           : "Nominal:",

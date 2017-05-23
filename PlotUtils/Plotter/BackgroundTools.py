@@ -12,6 +12,7 @@ from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kB
 sys.path.append(os.path.abspath(os.path.curdir))
 from Core import NTupleTools, DatasetManager, listifyInputFiles
 
+gROOT.Reset()
 gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
 # gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
@@ -419,6 +420,12 @@ class VariableDB:
     def registerSystematics(self, syst):
         self.systdb[syst.name] = syst
         self.systlist.append(syst)
+
+    def printSystematics(self):
+        print("\nRegistered systematics:\n")
+        for syst in self.systlist:
+            print("{0}".format(syst.name))
+        print("")
 
     def registerCategory(self, category):
         self.categorydb[category.name] = category

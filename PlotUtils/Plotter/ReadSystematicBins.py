@@ -16,6 +16,8 @@ luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
                  "FULL 2015+2016 DS":36.0746          # December 2016
                }
 
+parametrisations = ["Pt","NBJets_VS_Pt"]
+
 parser.add_argument('inputDir', metavar='inputDir',type=str,
                     help='Path to the directory containing input histograms')
 parser.add_argument('--channel', dest='channel', action='store', default='HIGHNJ', type=str, nargs='+',
@@ -24,6 +26,8 @@ parser.add_argument('--category', dest='category', action='store', default=categ
                     help='The category chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). If this option is not specified, default will be \'{0}\' (NB: \'Inclusive\' is not included by default, no pun intended:))'.format(categories[0]))
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
                     help='List of variables to be considered. Use a space-separated list.')
+parser.add_argument('--paramFakeEl', dest='paramFakeEl', action='store', default=parametrisations[0], const=parametrisations[0], type=str, nargs='?', choices=parametrisations,
+                    help='The parametrisation for the electron fake rate. If this option is not specified, default will be \'{0}\''.format(parametrisations[0]))
 parser.add_argument('--closure', dest='closure', action='store_true', default=False,
                     help="Check yields for MC closure test")
 parser.add_argument('--doKinematicsComparison', dest='doKinematicsComparison', action='store_true', default=False,
@@ -34,13 +38,16 @@ parser.add_argument("--mergeOverflow", dest="mergeOverflow", action="store_true"
                     help="If this option is used, the script will assume the overflow has been merged already w/ the last visible bin. Default is False.")
 parser.add_argument('--doLogScaleY', dest='doLogScaleY', action='store_true', default=False,
                     help='Use log scale on the Y axis')
+parser.add_argument('--debug', dest='debug', action='store_true', default=False,
+                    help='Run in debug mode')
 
 args = parser.parse_args()
 
 from ROOT import gROOT, gStyle, gPad, TCanvas, TPad, TH1, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange, kWhite, kViolet, kRed
 
 gROOT.Reset()
-gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
+gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
+# gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
@@ -192,7 +199,6 @@ def getYields(nominal, up=None, dn=None, sysname=None, sysgroup=None, debug=Fals
             g_sq_unc_bins_NO_STAT[bin] = sumQuadrature([x[0] for x in list_unc])
             if debug:
                 print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (excluded stat): [" + ",".join( "{0:.3f} ({1},{2})".format(x[0],x[1],x[2]) for x in list_unc ) + "]" + " - tot. uncertainty (excluded stat): {0:.3f}".format(g_sq_unc_bins_NO_STAT[bin]) )
-
         if debug:
             print("")
 
@@ -209,25 +215,45 @@ def sumQuadrature ( inlist ):
     return math.sqrt(sq)
 
 
-def getTotFakeUncertainty( nominal, stat, flav ):
+def getTotFakeUncertainty( nominal, stat, flav, debug=False ):
 
     non_closure_vals = {}
 
-    if ( "HIGHNJ" in args.channel ):
-        non_closure_vals["MuMu"] = 0.0461 # Updated on v27
-        non_closure_vals["OF"]   = 0.1316 # Updated on v27
-        non_closure_vals["ElEl"] = 0.1711 # Updated on v27
-    elif ( "LOWNJ" in args.channel ):
-        non_closure_vals["MuMu"] = 0.0281 # Updated on v27
-        non_closure_vals["OF"]   = 0.0481 # Updated on v27
-        non_closure_vals["ElEl"] = 0.0208 # Updated on v27
+    if "HIGHNJ" in args.channel:
+
+        # non_closure_vals["MuMu"] = 0.0461 # Updated on v27
+        # non_closure_vals["OF"]   = 0.1316 # Updated on v27
+        # non_closure_vals["ElEl"] = 0.1711 # Updated on v27
+
+        non_closure_vals["MuMu"] = 0.003 # Updated on v28
+        if args.paramFakeEl == "Pt":
+            non_closure_vals["OF"]   = 0.2146 # Updated on v28
+            non_closure_vals["ElEl"] = 0.3425 # Updated on v28
+        elif args.paramFakeEl == "NBJets_VS_Pt":
+            non_closure_vals["OF"]   = 0.1784 # Updated on v28
+            non_closure_vals["ElEl"] = 0.2712 # Updated on v28
+
+    elif "LOWNJ" in args.channel:
+
+        # non_closure_vals["MuMu"] = 0.0281 # Updated on v27
+        # non_closure_vals["OF"]   = 0.0481 # Updated on v27
+        # non_closure_vals["ElEl"] = 0.0208 # Updated on v27
+
+        non_closure_vals["MuMu"] = 0.0289 # Updated on v28
+        if args.paramFakeEl == "Pt":
+            non_closure_vals["OF"]   = 0.0568 # Updated on v28
+            non_closure_vals["ElEl"] = 0.2730 # Updated on v28
+        elif args.paramFakeEl == "NBJets_VS_Pt":
+            non_closure_vals["OF"]   = 0.0499 # Updated on v28
+            non_closure_vals["ElEl"] = 0.2657 # Updated on v28
+
 
     if flav == "Inclusive" :
         non_closure ={"MuMu":non_closure_vals["MuMu"] * nominal, "OF":non_closure_vals["OF"] * nominal, "ElEl":non_closure_vals["ElEl"] * nominal}
     else:
         non_closure = non_closure_vals[flav] * nominal
 
-    # If you are doing closure, do not consider closure syst!
+    # If you are doing closure test, do not consider closure syst!
 
     if args.closure:
         non_closure = 0.0
@@ -235,21 +261,21 @@ def getTotFakeUncertainty( nominal, stat, flav ):
     g_sys_dict["Non_Closure"]      = non_closure
     g_sysgroup_dict["Non_Closure"] = [non_closure]
 
-    # This prints out sorting systematics from smallest to largest
+    # This prints out all systematic uncertainties, sorting systematics from smallest to largest
 
-    print("\t\tTot. yields w/ systematics (ungrouped):\n")
-
-    print g_sys_dict
-    #print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (Sidebands Stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) and not type(g_sys_dict[key]) is dict ) )
-
-    print("")
+    if debug:
+        print("\t\tTot. yields w/ systematics (ungrouped):\n")
+        print g_sys_dict
+        # print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (Sidebands Stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) and not type(g_sys_dict[key]) is dict ) )
+        print("")
 
     # Print sum in quadrature of syst for each syst group from smallest to largest
 
     sq_list = []
     for sg, values in g_sysgroup_dict.iteritems():
-        print sg
-        print values
+        if debug:
+            print "\t", sg
+            print  "\t", values
         if any( type(t) is dict for t in values ): continue
         tup = ( sg, sumQuadrature(values), (sumQuadrature(values)/nominal)*100 )
         sq_list.append(tup)
@@ -280,34 +306,40 @@ def getTotFakeUncertainty( nominal, stat, flav ):
         print("")
         for bin, list_unc in g_unc_bins.iteritems():
             g_sq_unc_bins[bin] = sumQuadrature( [x[0] for x in list_unc] + [ non_closure_vals[flav] * g_content_bins[bin] ] )
-            print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins[bin]) )
+            if debug:
+                print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins[bin]) )
         print("")
         for bin, list_unc in g_unc_bins_NO_STAT.iteritems():
             g_sq_unc_bins_NO_STAT[bin] = sumQuadrature( [x[0] for x in list_unc] + [ non_closure_vals[flav] * g_content_bins[bin] ] )
-            print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins_NO_STAT[bin]) )
+            if debug:
+                print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins_NO_STAT[bin]) )
         print("")
     else:
-        print("")
-        print "bin[1] = ", g_content_bins[1]
-        print "bin[2] = ", g_content_bins[2]
-        print "bin[3] = ", g_content_bins[3]
+        if debug:
+            print("")
+            print "bin[1] = ", g_content_bins[1]
+            print "bin[2] = ", g_content_bins[2]
+            print "bin[3] = ", g_content_bins[3]
         g_sq_unc_bins[1] = sumQuadrature( [x[0] for x in g_unc_bins[1]] + [ non_closure_vals["MuMu"] * g_content_bins[1] ] )
         g_sq_unc_bins[2] = sumQuadrature( [x[0] for x in g_unc_bins[2]] + [ non_closure_vals["OF"]   * g_content_bins[2] ] )
         g_sq_unc_bins[3] = sumQuadrature( [x[0] for x in g_unc_bins[3]] + [ non_closure_vals["ElEl"] * g_content_bins[3] ] )
-        print("1-th bin (MuMu), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
-        print("1-th bin (OF), list of uncertainties (INCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
-        print("1-th bin (ElEl), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
-        print("")
+        if debug:
+            print("1-th bin (MuMu), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
+            print("1-th bin (OF), list of uncertainties (INCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
+            print("1-th bin (ElEl), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
+            print("")
         g_sq_unc_bins_NO_STAT[1] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[1]] + [ non_closure_vals["MuMu"] * g_content_bins[1] ] )
         g_sq_unc_bins_NO_STAT[2] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[2]] + [ non_closure_vals["OF"]   * g_content_bins[2] ] )
         g_sq_unc_bins_NO_STAT[3] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[3]] + [ non_closure_vals["ElEl"] * g_content_bins[3] ] )
-        print("1-th bin (MuMu), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
-        print("1-th bin (OF), list of uncertainties (EXCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
-        print("1-th bin (ElEl), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
+        if debug:
+            print("1-th bin (MuMu), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
+            print("1-th bin (OF), list of uncertainties (EXCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
+            print("1-th bin (ElEl), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
 
     # Print out results in LaTeX friendly format!
 
-    print("\\begin{{table}}\n\\begin{{center}}\n\\begin{{tabular}}{{ll}}\n\\toprule\n\\multicolumn{{2}}{{c}}{{MY_FLAVOUR - $2\\leq N_{{jets}} \\leq 3$ VR, SR}} \\\\ \n\\midrule\nFakes (MM) = & {0:.2f} $\\pm$ \\\\\n & {1:.2f} $[{2:.2f}\%]$ (Sidebands stat.) $\pm$ \\\\".format(nominal, stat, (stat/nominal)*100))
+    print("")
+    print("\\begin{{table}}\n\\begin{{center}}\n\\begin{{tabular}}{{ll}}\n\\toprule\n\\multicolumn{{2}}{{c}}{{MY_FLAVOUR - $2\\leq N_{{jets}} \\leq 3, N_{{b-tags}} \\geq 1$ VR, SR}} \\\\ \n\\midrule\nFakes (MM) = & {0:.2f} $\\pm$ \\\\\n & {1:.2f} $[{2:.2f}\%]$ (Sidebands stat.) $\pm$ \\\\".format(nominal, stat, (stat/nominal)*100))
     for s in sorted( sq_list, key = lambda sq : sq[2] ):
         proc = "?Unknown Process?"
         if s[0] == "Non_Closure" : proc = "Non closure"
@@ -320,6 +352,7 @@ def getTotFakeUncertainty( nominal, stat, flav ):
         if s[0] == "Stat"       : proc = "$\\varepsilon$ stat. unc."
         print(" & {0:.2f} $[{1:.2f}\%]$ ({2}) $\pm$ \\\\".format( s[1], s[2], proc ) )
     print("\\midrule\nFakes (MM) = &{0:.2f} $\pm$ \\\\\n & {1:.2f} $[{2:.2f}\%]$ (Tot. uncertainty) \\\\\n\\bottomrule\n\\end{{tabular}}\n\\end{{center}}\n\\end{{table}}".format(nominal, sq, (sq/nominal)*100))
+    print("")
 
     return sq, sq_NO_STAT
 
@@ -451,11 +484,12 @@ def saveSystHistogram( flav, var, nominalhist, tot_syst ):
     foutput.Close()
 
 
-def makeSysPlots( flav, var, observedhist, expectedhist, fakeshist ):
+def makeSysPlots( flav, var, observedhist, expectedhist, fakeshist, debug=False ):
 
     doLogY = args.doLogScaleY
 
-    print("\nmakeSysPlots()\n")
+    if debug:
+        print("\nmakeSysPlots()\n")
 
     gROOT.SetBatch(True)
 
@@ -473,13 +507,16 @@ def makeSysPlots( flav, var, observedhist, expectedhist, fakeshist ):
     new_expectedhist = expectedhist.Clone(expectedhist.GetName())
     new_expectedhist.SetDirectory(0)
 
-    print("NEW expectedhist:")
+    if debug:
+        print("NEW expectedhist:")
     for ibin in range(1,new_expectedhist.GetSize()):
         uncertlist = [ g_sq_unc_bins_NO_STAT[ibin], new_expectedhist.GetBinError(ibin) ]
         new_expectedhist.SetBinError(ibin, sumQuadrature(uncertlist) )
-        print("\t\t{0}-th bin,".format(ibin) + " tot. uncertainty (stat+syst): {0:.3f}".format( sumQuadrature(uncertlist) ) )
+        if debug:
+            print("\t\t{0}-th bin,".format(ibin) + " tot. uncertainty (stat+syst): {0:.3f}".format( sumQuadrature(uncertlist) ) )
         if new_expectedhist.Integral(ibin,ibin) > 0:
-            print("\t\tbin[{0}] = {1:.3f} +- {2:.3f} ({3:.3f} [%])".format( ibin, new_expectedhist.GetBinContent(ibin), new_expectedhist.GetBinError(ibin) , ( new_expectedhist.GetBinError(ibin) / new_expectedhist.Integral(ibin,ibin) ) * 100 ) )
+            if debug:
+                print("\t\tbin[{0}] = {1:.3f} +- {2:.3f} ({3:.3f} [%])".format( ibin, new_expectedhist.GetBinContent(ibin), new_expectedhist.GetBinError(ibin) , ( new_expectedhist.GetBinError(ibin) / new_expectedhist.Integral(ibin,ibin) ) * 100 ) )
 
     new_expectedhist.SetLineWidth(2)
     new_expectedhist.SetLineStyle(1)
@@ -492,13 +529,16 @@ def makeSysPlots( flav, var, observedhist, expectedhist, fakeshist ):
     new_fakeshist = fakeshist.Clone(fakeshist.GetName())
     new_fakeshist.SetDirectory(0)
 
-    print("NEW fakeshist:")
+    if debug:
+        print("NEW fakeshist:")
     for ibin in range(1,new_fakeshist.GetSize()):
         uncertlist = [ g_sq_unc_bins[ibin] ]
         new_fakeshist.SetBinError(ibin, sumQuadrature(uncertlist) )
-        print("\t\t{0}-th bin,".format(ibin) + " tot. uncertainty (stat+syst): {0:.3f}".format( sumQuadrature(uncertlist) ) )
+        if debug:
+            print("\t\t{0}-th bin,".format(ibin) + " tot. uncertainty (stat+syst): {0:.3f}".format( sumQuadrature(uncertlist) ) )
         if new_fakeshist.Integral(ibin,ibin) > 0:
-            print("\t\tbin[{0}] = {1:.3f} +- {2:.3f} ({3:.3f} [%])".format( ibin, new_fakeshist.GetBinContent(ibin), new_fakeshist.GetBinError(ibin) , ( new_fakeshist.GetBinError(ibin) / new_fakeshist.Integral(ibin,ibin) ) * 100 ) )
+            if debug:
+                print("\t\tbin[{0}] = {1:.3f} +- {2:.3f} ({3:.3f} [%])".format( ibin, new_fakeshist.GetBinContent(ibin), new_fakeshist.GetBinError(ibin) , ( new_fakeshist.GetBinError(ibin) / new_fakeshist.Integral(ibin,ibin) ) * 100 ) )
 
     new_fakeshist.SetLineWidth(2)
     new_fakeshist.SetLineStyle(1)
@@ -1056,28 +1096,27 @@ if __name__ == '__main__':
 
     # var_list = []
     var_list = [
-        # "Integral",
+        "Integral",
         "Mu0Pt",
         "Mu1Pt",
-        # "Mu0Eta",
-        # "Mu1Eta",
-        # "Mu0DeltaRClosestJet",
-        # "Mu1DeltaRClosestJet",
+        "Mu0Eta",
+        "Mu1Eta",
+        "Mu0DeltaRClosestJet",
+        "Mu1DeltaRClosestJet",
         "El0Pt",
         "El1Pt",
-        # "El0Eta",
-        # "El1Eta",
-        # "El0DeltaRClosestJet",
-        # "El1DeltaRClosestJet",
+        "El0Eta",
+        "El1Eta",
+        "El0DeltaRClosestJet",
+        "El1DeltaRClosestJet",
         "deltaRLep0Lep1",
-        # "MET_FinalTrk",
+        "deltaPhiLep0Lep1",
+        "MET_FinalTrk",
         "Mll01_inc",
-        # "TotLepCharge",
+        "TotLepCharge",
         "NBJets",
         "NJets2j3j",
         "NJets4j",
-        # "Lep0Pt",
-        # "Lep1Pt",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",
@@ -1096,8 +1135,8 @@ if __name__ == '__main__':
         # DATA-DRIVEN
         #------------
 
-        if ( "HIGHNJ" in args.channel ):  region = "SS_SR_DataDriven"
-        elif ( "LOWNJ" in args.channel ): region = "SS_LowNJetCR_DataDriven"
+        if   "HIGHNJ" in args.channel: region = "SS_SR_DataDriven"
+        elif "LOWNJ" in args.channel:  region = "SS_LowNJetCR_DataDriven"
 
     else:
 
@@ -1105,11 +1144,11 @@ if __name__ == '__main__':
         # TTBAR CLOSURE
         #--------------
 
-        if ( "LOWNJ" in args.channel ):
+        if "LOWNJ" in args.channel:
             region    = "SS_SR_LowJet_DataDriven_Closure"
-        elif ( "HIGHNJ" in args.channel ):
+        elif "HIGHNJ" in args.channel:
             region    = "SS_SR_HighJet_DataDriven_Closure"
-        elif ( "ALLNJ" in args.channel ):
+        elif "ALLNJ" in args.channel:
             region    = "SS_SR_AllJet_DataDriven_Closure"
 
     flavour_list = []
@@ -1131,6 +1170,7 @@ if __name__ == '__main__':
 
     	    clearDicts()
 
+            print("\n\t**********************************************************************\n")
     	    print ("\tFlavour region: {0}\n".format(flav))
 
             if flav == "ElEl" and "Mu" in var_name: continue
@@ -1138,9 +1178,8 @@ if __name__ == '__main__':
             if flav == "OF" and any ( f in var_name for f in ["El1","Mu1"] ): continue
             if "HIGHNJ" in args.channel and "NJets2j3j" in var_name : continue
             if "LOWNJ" in args.channel and "NJets4j" in var_name : continue
-            # TEMP!!!!
-            # if flav == "ElEl" and "HIGHNJ" in args.channel and "El0" in var_name: continue
-            # if flav == "MuMu" and "HIGHNJ" in args.channel and "Mu0" in var_name: continue
+
+            if flav == "Inclusive" and var_name != "LepFlavours": continue
 
     	    filename = inputpath + flav + region + "/" + flav + region + "_" + var_name + ".root"
 
@@ -1179,22 +1218,26 @@ if __name__ == '__main__':
     		if not fakes_syst.get(keyname):
     		    fakes_syst[keyname] = value
 
-    	    print ("\tFakes:\n")
+    	    print ("\n\tFakes:\n")
 
     	    for sys, sysgroup in fakes_syst.iteritems():
-                debugflag = False
                 fakes_up = myfile.Get( "fakesbkg_" + sys + "_up")
                 fakes_dn = myfile.Get( "fakesbkg_" + sys + "_dn")
-                if debugflag: print("\tsys: {0}, sysgroup: {1}\n".format(sys, sysgroup))
-                fakes, fakes_stat_err = getYields(fakes_nominal,fakes_up,fakes_dn, sys, sysgroup, debug=debugflag)
+                if args.debug:
+                    print("\tsys: {0}, sysgroup: {1}\n".format(sys, sysgroup))
+                fakes, fakes_stat_err = getYields(fakes_nominal,fakes_up,fakes_dn, sys, sysgroup, debug=args.debug)
 
-    	    fakes_tot_err, fakes_tot_err_NO_STAT = getTotFakeUncertainty( fakes, fakes_stat_err, flav )
+    	    fakes_tot_err, fakes_tot_err_NO_STAT = getTotFakeUncertainty( fakes, fakes_stat_err, flav, debug=args.debug )
 
             saveSystHistogram(flav,var_name,fakes_nominal,fakes_tot_err_NO_STAT)
 
-    	    if args.closure:
-    		ttbar_nominal = myfile.Get("ttbarbkg")
+    	    expected_nominal = myfile.Get("expectedbkg")
+    	    print ("\n\tExpected: \n")
+    	    exp, exp_err = getYields(expected_nominal)
 
+    	    if args.closure:
+
+    		ttbar_nominal = myfile.Get("ttbarbkg")
     		print ("\n\tTTbar: \n")
     		ttbar, ttbar_err = getYields(ttbar_nominal)
 
@@ -1203,14 +1246,12 @@ if __name__ == '__main__':
 
     		makeSysPlotsClosure(flav,var_name,ttbar_nominal,fakes_nominal)
 
-    		print("\n\tNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
+                print("\n\t======================================================================\n")
+                print("\tCategory : {0} - Channel : {1}\n".format(flav,args.channel[0]))
+    		print("\ttNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
+                print("\n\t======================================================================\n")
 
-    	    expected_nominal = myfile.Get("expectedbkg")
-
-    	    print ("\n\tExpected: \n")
-    	    exp, exp_err = getYields(expected_nominal)
-
-    	    if not args.closure:
+            else:
 
     		chargemisid = myfile.Get("qmisidbkg")
     		if chargemisid:
@@ -1222,15 +1263,15 @@ if __name__ == '__main__':
     		    print ("\n\tObserved: \n")
     		    obs, obs_err = getYields(observed)
 
+    		signal = myfile.Get("signal")
+    		print ("\n\tSignal: \n")
+    		sig, sig_err = getYields(signal)
+
                 # Make Data/Expected plots w/ systematic bars for fakes included, and return expected, fakesMM histograms w/ updated errors
 
-                expected_hist_syst, fakes_hist_syst = makeSysPlots(flav,var_name,observed,expected_nominal,fakes_nominal)
+                expected_hist_syst, fakes_hist_syst = makeSysPlots(flav,var_name,observed,expected_nominal,fakes_nominal, debug=args.debug)
 
                 if args.doKinematicsComparison:
                     # Compare distributions for DD fakes VS. MC fakes (scaled norm. to DD)
                     compareFakesKinematics(flav,var_name,fakes_hist_syst,filename)
 
-    		signal = myfile.Get("signal")
-
-    		print ("\n\tSignal: \n")
-    		sig, sig_err = getYields(signal)
