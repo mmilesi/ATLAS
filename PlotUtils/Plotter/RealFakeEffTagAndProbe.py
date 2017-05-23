@@ -13,20 +13,6 @@ sys.path.append(os.path.abspath(os.path.curdir))
 # -------------------------------
 # Parser for command line options
 # -------------------------------
-import argparse
-
-parser = argparse.ArgumentParser(description="Module for deriving real/fake lepton efficiencies/factors for MM/FF")
-
-#***********************************
-# positional arguments (compulsory!)
-#***********************************
-
-parser.add_argument("inputpath", metavar="inputpath",type=str,
-                  help="path to the directory containing subdirs w/ input files")
-
-#*******************
-# optional arguments
-#*******************
 
 g_avaialble_systematics = ["QMisID","TTV","VV","OtherPromptSS","FakesOS"]
 
@@ -42,16 +28,34 @@ g_efficiencies = ["ALL","Real","Fake"]
 
 g_leptons      = ["ALL","El","Mu"]
 
+import argparse
+
+from Plotter import SmartFormatter # definition in Plotter/__init__.py
+
+parser = argparse.ArgumentParser(description="Module for deriving real/fake lepton efficiencies/factors for MM/FF", formatter_class=SmartFormatter)
+
+parser.add_argument("inputpath", metavar="inputpath",type=str,
+                  help="path to the directory containing subdirs w/ input files")
 parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["FULL 2015+2016 DS"],
                   help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) + ". Default is {0}".format(g_luminosities["FULL 2015+2016 DS"] ) )
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='+', default=["Pt"],
-                  help='List of variables to be considered. Use a space-separated list. If using a 2D input distribution, pass a string of format \"varxname&&varyname\" (remember to escape the \"&\" symbol in the shell!). If unspecified, will consider \"Pt\" only.')
+                  help="R|List of variables to be considered, and to which efficiencies/flavours they do apply. Use a space-separated list of strings built in any of the following 4 ways:\n"
+                    "1) VAR                (i.e., this parametrisation will be used for any efficiency type and flavour)\n"
+                    "2) VAR,EFF_TYPE,      (i.e., this parametrisation will be used for EFF_TYPE only, regardless of flavour)\n"
+                    "3) VAR,,FLAV          (i.e., this parametrisation will be used for FLAV only, regardless of the efficiency type) \n"
+                    "3) VAR,EFF_TYPE,FLAV  (i.e., this parametrisation will be used for EFF_TYPE and FLAV only)\n"
+                    "As a rule of thumb, the number of commas in each string can be either 0 or 2\n"
+                    "If using a 2D input distribution, the first item in the group must be a string of format \"varxname&&varyname\" (remember to escape the \"&\" symbol in the shell!).\n"
+                    "If this option is unspecified, will consider \"Pt\" only, applied to any efficiency/flavour.")
 parser.add_argument('--efficiency', dest='efficiency', action='store', default=[g_efficiencies[0]], type=str, nargs='+', choices=g_efficiencies,
                   help='The efficiency type to be measured. Can pass multiple space-separated arguments to this command-line option (picking among the above list). If this option is not specified, default will be \'{0}\''.format(g_efficiencies[0]))
 parser.add_argument("--do3L", dest="do3L", action="store_true",default=False,
                   help="Save efficiencies to be used in 3L SR.")
 parser.add_argument("--doRescalingFakeEl", dest="doRescalingFakeEl", action="store_true",default=False,
-                  help="Rescale the electron fake rate by the relative ee/OF fraction of photon conversions, and store it alongside the standard fake rate.")
+                  help="R|Rescale the electron fake rate:\n"
+                        "-) For 2L, by the relative ee/OF fraction of photon conversions\n"
+                        "-) For 3L, by the relative 2LCR/3LSR fraction of photon conversions (NB: need to use the option \'--do3L\')\n"
+                        ", and store it alongside the standard fake rate.")
 parser.add_argument("--channel", metavar="channel", default="", type=str,
                   help="Flavour composition of the two leptons in CR to be considered (\"ElEl\", \"MuMu\", \"OF\"). If unspecified, will consider all combinations.")
 parser.add_argument('--lepton', dest='lepton', action='store', default=[g_leptons[0]], type=str, nargs='+', choices=g_leptons,
@@ -96,9 +100,13 @@ from ROOT import ROOT, gROOT, gStyle, Double, gPad, TPad, TLine, TH1, TH1D, TH2,
 from Plotter.BackgroundTools import set_fancy_2D_style, integrate
 
 gROOT.Reset()
-gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
+gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
+# gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
+
+from ROOT import kInfo
+ROOT.gErrorIgnoreLevel = kInfo;
 
 TH1.SetDefaultSumw2()
 
@@ -160,8 +168,18 @@ class RealFakeEffTagAndProbe:
 
         if variables:
             for var in variables:
-                if var not in self.__variables:
-                    self.__variables.append(var)
+
+                vartokens = var.split(',')
+                if len(vartokens) == 1:
+                    vartokens.extend(['',''])
+
+                print("variable tokens: {0}".format(vartokens))
+
+                if len(vartokens) != 3:
+                    os.sys.exit("ERROR: one of the input variables was not formatted correctly.")
+
+                if vartokens not in self.__variables:
+                    self.__variables.append(vartokens)
 
         if systematics:
             if "ALL" in systematics:
@@ -272,7 +290,7 @@ class RealFakeEffTagAndProbe:
         print("\n".join("{0}".format(eff) for eff in self.__efficiencies))
         print("********************************************")
         print("Variables to be considered:")
-        print("\n".join("{0}".format(var) for var in self.__variables))
+        print("\n".join("{0}".format(vartokens) for vartokens in self.__variables))
         print("********************************************")
 
         filename = None
@@ -283,7 +301,21 @@ class RealFakeEffTagAndProbe:
 
                 actual_eff = eff
 
-                for var in self.__variables:
+                for vartokens in self.__variables:
+
+                    # Format is : ["Variable","Efficiency","Flavour"]
+                    # If any of the last 2 elements in the list are empty, then proceed in any case
+
+                    var    = vartokens[0]
+                    vareff = vartokens[1]
+                    varlep = vartokens[2]
+
+                    if vareff and vareff != eff:
+                        print("{0} efficiency will not be parametrised in {1}".format(eff,var))
+                        continue
+                    if varlep and varlep != lep:
+                        print("{0} efficiency for lepton flavour {1} will not be parametrised in {2}".format(eff,lep,var))
+                        continue
 
                     for sel_key, sel_value in self.selections.iteritems():
 
@@ -314,13 +346,13 @@ class RealFakeEffTagAndProbe:
 			    for sys in self.__systematics:
 
                                 if sys == "QMisID" and not ( eff == "Fake" and lep == "El" ):
-                                    print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
+                                    # print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
                                     continue
                                 if sys in ["TTV","VV","OtherPromptSS"] and not ( eff == "Fake" ):
-                                    print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
+                                    # print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
                                     continue
                                 if sys == "FakesOS" and not ( eff == "Real" ):
-                                    print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
+                                    # print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
                                     continue
 
 			    	for sysdir in self.__systematicsdirections:
@@ -370,9 +402,8 @@ class RealFakeEffTagAndProbe:
                integral_post_sub = integrate(hist)
 	       if self.verbose:
 	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),integrate(sub_hist),sub_hist.GetName(),integral_post_sub))
-
-	   else:
-               print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
+	   # else:
+           #     print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
 
 
         # Case 2):
@@ -417,11 +448,11 @@ class RealFakeEffTagAndProbe:
 	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),integrate(sub_basehist),sub_basehist.GetName(),integral_post_sub))
 	           print("\t\tbin {0} - {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(bin_idx,thisbin_pre_sub,hist.GetName(),sub_hist.GetBinContent(bin_idx),sub_hist.GetName(),thisbin_post_sub))
 
-	   else:
-               if not sub_hist:
-                   print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
-               if not sub_basehist:
-                   print("\tCouldn't find histogram for: proc_sub_base_key = {0}".format(proc_sub_base_key))
+	   # else:
+           #     if not sub_hist:
+           #         print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
+           #     if not sub_basehist:
+           #         print("\tCouldn't find histogram for: proc_sub_base_key = {0}".format(proc_sub_base_key))
 
         return hist
 
@@ -786,28 +817,21 @@ class RealFakeEffTagAndProbe:
         return histogram
 
 
-    def __makeProjectionHists__( self, histogram, eventset ):
+    def __makeProjectionHists__( self, key, histogram, eventset ):
 
-        for key in sorted(self.histkeys):
+        tokens = key.split('_')
 
-            if not "&&" in key or "_proj" in key: continue
+        vars2D = tokens[2].split('&&')
+        varX   = vars2D[0]
+        varY   = vars2D[1]
 
-            # Ignore if looking at systematic key
+        tot_integral_proj_x = tot_integral_proj_y = 0.0
 
-            if any( tk in key for tk in ["_up","_dn"] ): continue
-
-            tokens = key.split('_')
-
-            vars2D = tokens[2].split('&&')
-            varX   = vars2D[0]
-            varY   = vars2D[1]
-
-            tot_integral_proj_x = tot_integral_proj_y = 0.0
-
-            if self.verbose:
-                print("\tkey: {0}".format(key))
-                print("\n\t\tvarX: {0} - varY: {1}\n".format(varX, varY))
-                print("\t\tprojecting TH2 onto: {0}".format(varX))
+        if self.verbose:
+            print("")
+            print("\tkey: {0} - Event set: {1}".format(key,eventset))
+            print("\n\t\tvarX: {0} - varY: {1}\n".format(varX, varY))
+            print("\t\tprojecting TH2 onto: {0}".format(varX))
 
             for i,ybin in enumerate( range(1,histogram.GetYaxis().GetNbins()+2) ):
 
@@ -853,7 +877,8 @@ class RealFakeEffTagAndProbe:
                 proj_y.SetDirectory(0)
                 self.__fillNDHistDicts__(proj_y_key, eventset, proj_y )
 
-            if self.verbose: print("\n\t\tTot. integral projX: {0:.3f} - projY: {1:.3f}".format(tot_integral_proj_x,tot_integral_proj_y))
+            if self.verbose:
+                print("\n\t\tEvent set: {0} - Tot. integral projX: {1:.3f} - projY: {2:.3f}".format(eventset,tot_integral_proj_x,tot_integral_proj_y))
 
 
     # NB: When computing an efficiency, need to make sure the errors are computed correctly!
@@ -871,13 +896,21 @@ class RealFakeEffTagAndProbe:
         # Make projetcions only for 2D histograms
 
         found_2D_key = False
+        procs_for_proj = ["observed","expected"] if self.nosub else ["observed_sub","expected"]
+
         for key in sorted(self.histkeys):
-            if variation != "nominal": continue
-            if not "&&" in key: continue
+
+            if not "&&" in key: continue # Do not make projections for non-2D histograms
+            if variation != "nominal": continue # Do not make projections for variations other than "Nominal"
+            if any( tk in key for tk in ["_up","_dn"]): continue # Do not make projections for systematic histograms
+            if not any( tk in key for tk in procs_for_proj): continue # Do not make projections for processes to be subtracted
+
             found_2D_key = True
-            self.__makeProjectionHists__( self.numerator_hists[key], "N" )
-            self.__makeProjectionHists__( self.denominator_hists[key], "D" )
-            self.__makeProjectionHists__( self.antinumerator_hists[key], "AntiN" )
+
+            self.__makeProjectionHists__( key, self.numerator_hists[key], "N" )
+            self.__makeProjectionHists__( key, self.denominator_hists[key], "D" )
+            self.__makeProjectionHists__( key, self.antinumerator_hists[key], "AntiN" )
+
         if found_2D_key:
             self.storeYields()
 
@@ -1013,12 +1046,13 @@ class RealFakeEffTagAndProbe:
 	    if self.closure or self.nosub:
                 key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3]+proj_extension,append) )
             else:
-	        key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3]+proj_extension,tokens[4],append) )
+	        key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3],tokens[4]+proj_extension,append) )
 
             if key_heff.endswith("_"):
                 key_heff = key_heff[:-1]
-            if len(tokens) > 6:
+            if len(tokens) > 6 and not "_proj" in key_heff:
                 key_heff = key_heff + "_" + "_".join( ("{0}".format(other_tokens) for other_tokens in tokens[5:]) )
+
 
             h_efficiency  = h_pass.Clone(key_heff)
             h_efficiency.Divide(h_pass,h_tot,1.0,1.0,"B")
@@ -1086,18 +1120,30 @@ class RealFakeEffTagAndProbe:
                         h_efficiency.SetBinContent(thisbinglobidx,prevbincontent)
                         h_efficiency.SetBinError(thisbinglobidx,prevbinerror)
 
-            # TEMP!
-            # Rescale electron fake rate by the photon conversion fraction difference between ee and OF
-            #
+            # Rescale electron fake rate by :
+            # -) the photon conversion fraction difference between ee and OF (for 2L)
+            # -) the photon conversion fraction difference between 3L SR and 2L CR (for 3L)
+
             doScaledEff  = False
 
             if args.doRescalingFakeEl:
 
                 doScaledEff = True
 
-                if "Fake_El_" in key_heff :
+                if "Fake_El_" in key_heff:
 
-                    print("\n\tRescaling efficiency w/ key: {0} by the relative ee/OF photon conversion fraction\n".format(key_heff))
+                    if not args.do3L:
+                        print("\n\tRescaling 2L efficiency w/ key: {0} by the relative ee/OF photon conversion fraction\n".format(key_heff))
+                        # Inclusive Nbjets
+                        alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
+                        # Nbjet = 1
+                        # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
+                        # Nbjet = 2
+                        # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
+                    else:
+                        print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3LSR/2LCR photon conversion fraction\n".format(key_heff))
+                        # From Chao
+                        alpha = [ (1,0.03398), (2, 0.07693), (3, 0.06985), (4, 0.18956), (5,0.25642), (6,0.0), (7, 0.0) ]
 
                     key_heff_scaled = "RESCALED_" + key_heff
                     h_efficiency_scaled = h_efficiency.Clone("RESCALED_"+h_efficiency.GetName())
@@ -1105,7 +1151,6 @@ class RealFakeEffTagAndProbe:
 
                     if isinstance(h_efficiency_scaled,TH1D):
 
-                        alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
                         for bin in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
                             eff = h_efficiency_scaled.GetBinContent(bin)
                             sf = alpha[bin-1][1]
@@ -1113,16 +1158,10 @@ class RealFakeEffTagAndProbe:
                             if sf != -1.0:
                                 eff_scaled = eff * ( 1.0 + sf )
                                 h_efficiency_scaled.SetBinContent(bin, eff_scaled)
-                                print("\t\tbin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,sf,eff_scaled))
+                                print("\t\tbin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,1+sf,eff_scaled))
 
                     elif isinstance(h_efficiency_scaled,TH2D):
 
-                        # Inclusive Nbjets
-                        alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
-                        # Nbjet = 1
-                        # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
-                        # Nbjet = 2
-                        # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
                         for binx in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
                             for biny in range(1,h_efficiency_scaled.GetYaxis().GetNbins()+2):
                                 eff = h_efficiency_scaled.GetBinContent(binx,biny)
@@ -1131,39 +1170,10 @@ class RealFakeEffTagAndProbe:
                                 if sf != -1.0:
                                     eff_scaled = eff * ( 1.0 + sf )
                                     h_efficiency_scaled.SetBinContent(binx, biny, eff_scaled)
-                                    print("\t\tbin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,sf,eff_scaled))
+                                    print("\t\tbin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,1+sf,eff_scaled))
 
                     self.histefficiencies[key_heff_scaled] = h_efficiency_scaled
                     self.histefficiencies[key_heff_scaled+"_AVG"] = h_efficiency_scaled_AVG # TEMP: should scale also this one properly...
-
-
-            # if key_heff == "Fake_El_Pt_Efficiency_expectedbkg":
-            #     alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
-            #     for bin in range(1,h_efficiency.GetXaxis().GetNbins()+2):
-            #         eff = h_efficiency.GetBinContent(bin)
-            #         sf = alpha[bin-1][1]
-            #         eff_scaled = eff
-            #         if sf != -1.0:
-            #             eff_scaled = eff * ( 1.0 + sf )
-            #             h_efficiency.SetBinContent(bin, eff_scaled)
-            #         print("bin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,sf,eff_scaled))
-            #
-            # if key_heff == "Fake_El_NBJets&&Pt_Efficiency_expectedbkg":
-            #     # Inclusive Nbjets
-            #     alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
-            #     # Nbjet = 1
-            #     # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
-            #     # Nbjet = 2
-            #     # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
-            #     for binx in range(1,h_efficiency.GetXaxis().GetNbins()+2):
-            #         for biny in range(1,h_efficiency.GetYaxis().GetNbins()+2):
-            #             eff = h_efficiency.GetBinContent(binx,biny)
-            #             sf = alpha[biny-1][1]
-            #             eff_scaled = eff
-            #             if sf != -1.0:
-            #                 eff_scaled = eff * ( 1.0 + sf )
-            #                 h_efficiency.SetBinContent(binx, biny, eff_scaled)
-            #             print("bin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,sf,eff_scaled))
 
 
             # Save the efficiencies in the proper dictionaries
@@ -1314,7 +1324,12 @@ class RealFakeEffTagAndProbe:
 
         if self.debug: print("\nSaving histograms:")
     	for key, h in sorted(self.histefficiencies.iteritems()):
+
     	    if not h: continue
+
+            # TEMP: do not save 2D projections histograms
+            #if "_proj" in key: continue
+
     	    if self.debug: print("\t{0}".format(key))
 
             # Make sure histogram name contains symbols that ROOT can parse ...
@@ -1426,6 +1441,7 @@ class RealFakeEffTagAndProbe:
         if "AVG" in hist2Dkey: return
 
         c = TCanvas(canvasname+"_Projections","Projections",50,50,1000,600)
+        c.Clear()
         c.SetFrameFillColor(0)
         c.SetFrameFillStyle(0)
         c.SetFrameBorderMode(0)
@@ -1465,7 +1481,11 @@ class RealFakeEffTagAndProbe:
 
             h.Scale(scalefactor)
 
-            h.SetMaximum(1.0)
+            # Set the range of the Y axis
+
+            maximum = h.GetMaximum()
+            h.SetMaximum(maximum*1.1)
+            h.SetMinimum(0.0)
 
             if self.verbose: print("\t\t==> new integral = {0:.3f}".format(h.Integral(0,h.GetSize()-1)))
 
@@ -1542,7 +1562,9 @@ class RealFakeEffTagAndProbe:
         leg_lumi.SetTextSize(0.03)
         leg_lumi.SetNDC()
 
-        for var in self.__variables:
+        for vartokens in self.__variables:
+
+            var = vartokens[0]
 
             is2DHist = ( "&&" in var )
 
@@ -1569,9 +1591,12 @@ class RealFakeEffTagAndProbe:
                         if self.closure or self.nosub:
                             key  = "_".join((eff,lep,var,"Efficiency",proc))
 
-                        print("\tplotting histogram: {0}".format(key))
+                        hist = self.histefficiencies[key] if self.histefficiencies.get(key) else None
+                        if not hist:
+                            print("\tSkipping key: {0}".format(key))
+                            continue
 
-                        hist = self.histefficiencies[key]
+                        print("\tPlotting histogram: {0}".format(key))
 
                         set_fancy_2D_style()
                         gPad.SetRightMargin(0.2)
@@ -1706,7 +1731,9 @@ class RealFakeEffTagAndProbe:
         if not os.path.exists(savepath+"/CombinedSys"):
 	    os.makedirs(savepath+"/CombinedSys")
 
-        for var in self.__variables:
+        for vartokens in self.__variables:
+
+            var = vartokens[0]
 
             is2DHist = ( "&&" in var )
             if is2DHist: continue
@@ -1719,7 +1746,10 @@ class RealFakeEffTagAndProbe:
 	            if not self.nosub:
 	                key_nominal += "_sub"
 
-	            hist_nominal = self.histefficiencies[key_nominal]
+                    hist_nominal = self.histefficiencies[key_nominal] if self.histefficiencies.get(key_nominal) else None
+                    if not hist_nominal:
+                        continue
+
           	    hist_nominal.SetLineStyle(2)
 		    hist_nominal.SetLineWidth(2)
           	    hist_nominal.SetLineColor(kBlack)
