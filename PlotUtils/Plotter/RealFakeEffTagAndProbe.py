@@ -833,52 +833,52 @@ class RealFakeEffTagAndProbe:
             print("\n\t\tvarX: {0} - varY: {1}\n".format(varX, varY))
             print("\t\tprojecting TH2 onto: {0}".format(varX))
 
-            for i,ybin in enumerate( range(1,histogram.GetYaxis().GetNbins()+2) ):
+        for i,ybin in enumerate( range(1,histogram.GetYaxis().GetNbins()+2) ):
 
-                ybin_upedge  = histogram.GetYaxis().GetBinUpEdge(ybin)
-                ybin_lowedge = histogram.GetYaxis().GetBinLowEdge(ybin)
+            ybin_upedge  = histogram.GetYaxis().GetBinUpEdge(ybin)
+            ybin_lowedge = histogram.GetYaxis().GetBinLowEdge(ybin)
 
-                if self.verbose: print("\t\t\tybin: {0} - edges: [{1},{2}]".format(ybin,ybin_lowedge,ybin_upedge))
+            if self.verbose: print("\t\t\tybin: {0} - edges: [{1},{2}]".format(ybin,ybin_lowedge,ybin_upedge))
 
-                proj_x_key = "{0}_proj{1}_{2}".format(key,varX,ybin)
+            proj_x_key = "{0}_proj{1}_{2}".format(key,varX,ybin)
 
-                proj_x = histogram.ProjectionX(proj_x_key+"_"+eventset,ybin,ybin)
-                proj_x.SetLineColor(i+1)
-                proj_x.SetMarkerColor(i+1)
+            proj_x = histogram.ProjectionX(proj_x_key+"_"+eventset,ybin,ybin)
+            proj_x.SetLineColor(i+1)
+            proj_x.SetMarkerColor(i+1)
 
-                integral = proj_x.Integral(0,proj_x.GetSize()-1)
-                tot_integral_proj_x += integral
+            integral = proj_x.Integral(0,proj_x.GetSize()-1)
+            tot_integral_proj_x += integral
 
-                if self.verbose: print("\t\t\tProjection key: {0} - Integral(): {1:.3f}".format(proj_x_key,integral))
+            if self.verbose: print("\t\t\tProjection key: {0} - Integral(): {1:.3f}".format(proj_x_key,integral))
 
-                proj_x.SetDirectory(0)
-                self.__fillNDHistDicts__(proj_x_key, eventset, proj_x )
+            proj_x.SetDirectory(0)
+            self.__fillNDHistDicts__(proj_x_key, eventset, proj_x )
 
-            if self.verbose: print("\t\tprojecting TH2 onto: {0}".format(varY))
+        if self.verbose: print("\t\tprojecting TH2 onto: {0}".format(varY))
 
-            for i,xbin in enumerate( range(1,histogram.GetXaxis().GetNbins()+2) ):
+        for i,xbin in enumerate( range(1,histogram.GetXaxis().GetNbins()+2) ):
 
-                xbin_upedge  = histogram.GetXaxis().GetBinUpEdge(xbin)
-                xbin_lowedge = histogram.GetXaxis().GetBinLowEdge(xbin)
+            xbin_upedge  = histogram.GetXaxis().GetBinUpEdge(xbin)
+            xbin_lowedge = histogram.GetXaxis().GetBinLowEdge(xbin)
 
-                if self.verbose: print("\t\t\txbin: {0} - edges: [{1},{2}]".format(xbin,xbin_lowedge,xbin_upedge))
+            if self.verbose: print("\t\t\txbin: {0} - edges: [{1},{2}]".format(xbin,xbin_lowedge,xbin_upedge))
 
-                proj_y_key = "{0}_proj{1}_{2}".format(key,varY,xbin)
+            proj_y_key = "{0}_proj{1}_{2}".format(key,varY,xbin)
 
-                proj_y = histogram.ProjectionY(proj_y_key+"_"+eventset,xbin,xbin)
-                proj_y.SetLineColor(i+1)
-                proj_y.SetMarkerColor(i+1)
+            proj_y = histogram.ProjectionY(proj_y_key+"_"+eventset,xbin,xbin)
+            proj_y.SetLineColor(i+1)
+            proj_y.SetMarkerColor(i+1)
 
-                integral = proj_y.Integral(0,proj_y.GetSize()-1)
-                tot_integral_proj_y += integral
+            integral = proj_y.Integral(0,proj_y.GetSize()-1)
+            tot_integral_proj_y += integral
 
-                if self.verbose: print("\t\t\tProjection key: {0} - Integral(): {1:.3f}".format(proj_y_key,integral))
+            if self.verbose: print("\t\t\tProjection key: {0} - Integral(): {1:.3f}".format(proj_y_key,integral))
 
-                proj_y.SetDirectory(0)
-                self.__fillNDHistDicts__(proj_y_key, eventset, proj_y )
+            proj_y.SetDirectory(0)
+            self.__fillNDHistDicts__(proj_y_key, eventset, proj_y )
 
-            if self.verbose:
-                print("\n\t\tEvent set: {0} - Tot. integral projX: {1:.3f} - projY: {2:.3f}".format(eventset,tot_integral_proj_x,tot_integral_proj_y))
+        if self.verbose:
+            print("\n\t\tEvent set: {0} - Tot. integral projX: {1:.3f} - projY: {2:.3f}".format(eventset,tot_integral_proj_x,tot_integral_proj_y))
 
 
     # NB: When computing an efficiency, need to make sure the errors are computed correctly!
@@ -1469,6 +1469,8 @@ class RealFakeEffTagAndProbe:
             if "AVG" in key: continue
             if not all( v in key for v in vars2D ): continue
             if not "proj" in key: continue
+
+            print("\t\tPlotting projection histogram: {0}".format(key))
 
             tokens = key.split("_")
 
