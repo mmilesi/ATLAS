@@ -1655,10 +1655,16 @@ class RealFakeEffTagAndProbe:
                         if self.closure or self.nosub:
                             key  = "_".join((eff,lep,var,"Efficiency",proc))
 
-                        print("\tplotting histogram: {0}".format(key))
+                        hist     = self.histefficiencies[key] if self.histefficiencies.get(key) else None
+                        hist_AVG = self.histefficiencies[key+"_AVG"] if self.histefficiencies.get(key+"_AVG") else None
+                        if not hist:
+                            print("\tSkipping key: {0}".format(key))
+                            continue
+                        if not hist_AVG:
+                            print("\tSkipping key: {0}".format(key+"_AVG"))
+                            continue
 
-                        hist     = self.histefficiencies[key]
-                        hist_AVG = self.histefficiencies[key+"_AVG"]
+                        print("\tplotting histogram: {0}".format(key))
 
                         hist.GetYaxis().SetRangeUser(0,1)
                         hist.GetYaxis().SetTitle("#varepsilon")
@@ -2228,18 +2234,17 @@ class RealFakeEffTagAndProbe:
     	    print("\n\tNUMERATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
     	    for key, value in sorted( self.numerator_yields.iteritems() ):
-    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.3f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.3f}".format(value[-1]) )
+    		print("\t{0}".format(key) + "\t[" + ",".join( "({0},{1:.3f})".format(idx, el) for idx, el in enumerate(value[:-1]) ) + "]" + "\t{0:.3f}".format(value[-1]) )
 
     	    print("\n\tDENOMINATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
     	    for key, value in sorted( self.denominator_yields.iteritems() ):
-    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.3f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.3f}".format(value[-1]) )
+    		print("\t{0}".format(key) + "\t[" + ",".join( "({0},{1:.3f})".format(idx, el) for idx, el in enumerate(value[:-1]) ) + "]" + "\t{0:.3f}".format(value[-1]) )
 
     	    print("\n\tANTI-NUMERATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
     	    for key, value in sorted( self.antinumerator_yields.iteritems() ):
-    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.3f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.3f}".format(value[-1]) )
-
+    		print("\t{0}".format(key) + "\t[" + ",".join( "({0},{1:.3f})".format(idx, el) for idx, el in enumerate(value[:-1]) ) + "]" + "\t{0:.3f}".format(value[-1]) )
 
 # --------------------------------------------------------------------------------------------------------------
 

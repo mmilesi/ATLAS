@@ -1711,7 +1711,14 @@ def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', fri
 
     return inputs
 
-def set_fancy_2D_style():
+# Function to set nice feats to 2D histograms
+# By default it defines a dark rainbow color palette.
+# User can pass an enum index to set one of the predefined ROOT palettes
+# See:
+# https://root.cern.ch/doc/master/classTColor.html#C05
+# for a list of available enums.
+
+def set_fancy_2D_style( palette_enum = -1 ):
 
     icol = 0
     gStyle.SetFrameBorderMode(icol);
@@ -1725,13 +1732,14 @@ def set_fancy_2D_style():
     gStyle.SetOptStat(0);
     gStyle.SetOptFit(0);
 
-    ncontours=999
-
-    s = array.array('d', [0.00, 0.34, 0.61, 0.84, 1.00])
-    r = array.array('d', [0.00, 0.00, 0.87, 1.00, 0.51])
-    g = array.array('d', [0.00, 0.81, 1.00, 0.20, 0.00])
-    b = array.array('d', [0.51, 1.00, 0.12, 0.00, 0.00])
-
-    npoints = len(s)
-    TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
-    gStyle.SetNumberContours(ncontours)
+    if palette_enum == -1:
+        ncontours=999
+        s = array.array('d', [0.00, 0.34, 0.61, 0.84, 1.00])
+        r = array.array('d', [0.00, 0.00, 0.87, 1.00, 0.51])
+        g = array.array('d', [0.00, 0.81, 1.00, 0.20, 0.00])
+        b = array.array('d', [0.51, 1.00, 0.12, 0.00, 0.00])
+        npoints = len(s)
+        TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
+        gStyle.SetNumberContours(ncontours)
+    else:
+        gStyle.SetPalette(palette_enum)
