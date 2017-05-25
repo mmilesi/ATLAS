@@ -202,6 +202,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_Eta_0",  			      &m_lep_Eta_0);
   m_inputNTuple->SetBranchAddress ("lep_Phi_0",   			      &m_lep_Phi_0);
   m_inputNTuple->SetBranchAddress ("lep_EtaBE2_0",   			      &m_lep_EtaBE2_0);
+  m_inputNTuple->SetBranchAddress ("lep_deltaRClosestJet_0",   		      &m_lep_deltaRClosestJet_0);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_0",   		      &m_lep_isTightSelected_0);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelectedMVA_0", 		      &m_lep_isTightSelectedMVA_0);
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_0",   		      &m_lep_isTrigMatch_0);
@@ -212,6 +213,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: changeInput (bool firstFile)
   m_inputNTuple->SetBranchAddress ("lep_Eta_1",  			      &m_lep_Eta_1);
   m_inputNTuple->SetBranchAddress ("lep_Phi_1",   			      &m_lep_Phi_1);
   m_inputNTuple->SetBranchAddress ("lep_EtaBE2_1",   			      &m_lep_EtaBE2_1);
+  m_inputNTuple->SetBranchAddress ("lep_deltaRClosestJet_1",   		      &m_lep_deltaRClosestJet_1);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelected_1",   		      &m_lep_isTightSelected_1);
   m_inputNTuple->SetBranchAddress ("lep_isTightSelectedMVA_1", 		      &m_lep_isTightSelectedMVA_1);
   m_inputNTuple->SetBranchAddress ("lep_isTrigMatch_1",   		      &m_lep_isTrigMatch_1);
@@ -475,6 +477,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   lep0.get()->ID            = m_lep_ID_0;
   lep0.get()->flavour       = abs(m_lep_ID_0);
   lep0.get()->charge        = m_lep_ID_0 / fabs(m_lep_ID_0);
+  lep0.get()->deltaRClosestJet = m_lep_deltaRClosestJet_0;
   lep0.get()->tightselected = ( m_useCutBasedLep ) ? m_lep_isTightSelected_0 : m_lep_isTightSelectedMVA_0;
   lep0.get()->trigmatched   = m_lep_isTrigMatch_0; // SLT matching
 
@@ -488,6 +491,7 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
   lep1.get()->ID            = m_lep_ID_1;
   lep1.get()->flavour       = abs(m_lep_ID_1);
   lep1.get()->charge        = m_lep_ID_1 / fabs(m_lep_ID_1);
+  lep1.get()->deltaRClosestJet = m_lep_deltaRClosestJet_1;
   lep1.get()->tightselected = ( m_useCutBasedLep ) ? m_lep_isTightSelected_1 : m_lep_isTightSelectedMVA_1;
   lep1.get()->trigmatched   = m_lep_isTrigMatch_1; // SLT matching
 
@@ -525,8 +529,8 @@ EL::StatusCode HTopMultilepNTupReprocesser :: execute ()
 
 	  if ( m_debug ) {
 	      Info("execute()","Main properties of event:");
-	      Info("execute()","lep[0]: pT = %.2f [GeV]\t etaBE2 = %.2f\t eta = %.2f\t flavour = %i\t tight? %i\t trigmatched (SLT)? %i", lep0.get()->pt/1e3, lep0.get()->etaBE2, lep0.get()->eta, lep0.get()->flavour, lep0.get()->tightselected, lep0.get()->trigmatched );
-	      Info("execute()","lep[1]: pT = %.2f [GeV]\t etaBE2 = %.2f\t eta = %.2f\t flavour = %i\t tight? %i\t trigmatched (SLT)? %i", lep1.get()->pt/1e3, lep1.get()->etaBE2, lep1.get()->eta, lep1.get()->flavour, lep1.get()->tightselected, lep1.get()->trigmatched );
+	      Info("execute()","lep[0]: pT = %.2f [GeV]\t etaBE2 = %.2f\t eta = %.2f\t deltaRClosestJet = %.3f\t flavour = %i\t tight? %i\t trigmatched (SLT)? %i", lep0.get()->pt/1e3, lep0.get()->etaBE2, lep0.get()->eta, lep0.get()->deltaRClosestJet, lep0.get()->flavour, lep0.get()->tightselected, lep0.get()->trigmatched );
+	      Info("execute()","lep[1]: pT = %.2f [GeV]\t etaBE2 = %.2f\t eta = %.2f\t deltaRClosestJet = %.3f\t flavour = %i\t tight? %i\t trigmatched (SLT)? %i", lep1.get()->pt/1e3, lep1.get()->etaBE2, lep1.get()->eta, lep1.get()->deltaRClosestJet, lep1.get()->flavour, lep1.get()->tightselected, lep1.get()->trigmatched );
 	      Info("execute()","dilep_type = %i, TT ? %i, TAntiT ? %i, AntiTT ? %i, AntiTAntiT ? %i", m_event.get()->dilep_type, m_event.get()->TT, m_event.get()->TAntiT, m_event.get()->AntiTT, m_event.get()->AntiTAntiT );
 	      Info("execute()","NBjets = %i\n", m_event.get()->nbjets_T );
 	  }
@@ -1189,6 +1193,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 					  mapkey     = prepend + "nbjets_VS_pt_feff";
 					  mapkeyhist = prepend + "nbjets_VS_pt_feff_hist";
 				      }
+				  } else if ( var.compare("DistanceClosestJet_VS_Pt") == 0 ) {
+				      if ( isReal ) {
+					  mapkey     = prepend + "distanceclosestjet_VS_pt_reff";
+					  mapkeyhist = prepend + "distanceclosestjet_VS_pt_reff_hist";
+				      } else if ( isFake ) {
+					  mapkey     = prepend + "distanceclosestjet_VS_pt_feff";
+					  mapkeyhist = prepend + "distanceclosestjet_VS_pt_feff_hist";
+				      }
 				  }
 
 				  mapkeyhist_yes_tm = mapkeyhist + "_YES_TM";
@@ -1321,6 +1333,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 				  } else if ( isFake ) {
 				      mapkey     = prepend + "nbjets_VS_pt_feff";
 				      mapkeyhist = prepend + "nbjets_VS_pt_feff_hist";
+				  }
+			      } else if ( var.compare("DistanceClosestJet_VS_Pt") == 0 ) {
+				  if ( isReal ) {
+				      mapkey     = prepend + "distanceclosestjet_VS_pt_reff";
+				      mapkeyhist = prepend + "distanceclosestjet_VS_pt_reff_hist";
+				  } else if ( isFake ) {
+				      mapkey     = prepend + "distanceclosestjet_VS_pt_feff";
+				      mapkeyhist = prepend + "distanceclosestjet_VS_pt_feff_hist";
 				  }
 			      }
 
@@ -2084,11 +2104,6 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
     std::vector<float> f0 = { 1.0, 1.0, 1.0 };
     std::vector<float> f1 = { 1.0, 1.0, 1.0 };
 
-    // ANA_CHECK( this->getMMEfficiencyAndError( lep0, r0, "REAL" ) );
-    // ANA_CHECK( this->getMMEfficiencyAndError( lep1, r1, "REAL" ) );
-    // ANA_CHECK( this->getMMEfficiencyAndError( lep0, f0, "FAKE" ) );
-    // ANA_CHECK( this->getMMEfficiencyAndError( lep1, f1, "FAKE" ) );
-
     if ( lep0.get()->flavour == 11 ) { // Lep0 - electron
 	// Real
 	if ( m_parametrisation->getVariable("Real_El").compare("Pt") == 0 ) {
@@ -2121,6 +2136,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 	if ( m_parametrisation->getVariable("Real_Mu").compare("NBJets_VS_Pt") == 0 ) {
 	    ANA_CHECK( this->getMMEfficiencyAndError_2D( lep0, r0, "REAL", "nbjets_VS_pt_reff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep0.get()->pt/1e3,"pT") ) );
 	}
+	//
+	// if ( m_parametrisation->getVariable("Real_Mu").compare("DistanceClosestJet_VS_Pt") == 0 ) {
+	//     ANA_CHECK( this->getMMEfficiencyAndError_2D( lep0, r0, "REAL", "distanceclosestjet_VS_pt_reff_hist", std::make_pair(lep0.get()->deltaRClosestJet,"DistanceClosestJet"), std::make_pair(lep0.get()->pt/1e3,"pT") ) );
+	// }
+	//
 	// Fake
 	if ( m_parametrisation->getVariable("Fake_Mu").compare("Pt") == 0 ) {
 	    ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, f0, "FAKE", "pt_feff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
@@ -2131,6 +2151,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 	if ( m_parametrisation->getVariable("Fake_Mu").compare("NBJets_VS_Pt") == 0 ) {
 	    ANA_CHECK( this->getMMEfficiencyAndError_2D( lep0, f0, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep0.get()->pt/1e3,"pT") ) );
 	}
+	//
+	if ( m_parametrisation->getVariable("Fake_Mu").compare("DistanceClosestJet_VS_Pt") == 0 ) {
+	    ANA_CHECK( this->getMMEfficiencyAndError_2D( lep0, f0, "FAKE", "distanceclosestjet_VS_pt_feff_hist", std::make_pair(lep0.get()->deltaRClosestJet,"DistanceClosestJet"), std::make_pair(lep0.get()->pt/1e3,"pT") ) );
+	}
+	//
     }
 
     if ( lep1.get()->flavour == 11 ) { // Lep1 - electron
@@ -2165,6 +2190,11 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 	if ( m_parametrisation->getVariable("Real_Mu").compare("NBJets_VS_Pt") == 0 ) {
 	    ANA_CHECK( this->getMMEfficiencyAndError_2D( lep1, r1, "REAL", "nbjets_VS_pt_reff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep1.get()->pt/1e3,"pT") ) );
 	}
+	//
+	// if ( m_parametrisation->getVariable("Real_Mu").compare("DistanceClosestJet_VS_Pt") == 0 ) {
+	//     ANA_CHECK( this->getMMEfficiencyAndError_2D( lep1, r1, "REAL", "distanceclosestjet_VS_pt_reff_hist", std::make_pair(lep1.get()->deltaRClosestJet,"DistanceClosestJet"), std::make_pair(lep1.get()->pt/1e3,"pT") ) );
+	// }
+	//
 	// Fake
 	if ( m_parametrisation->getVariable("Fake_Mu").compare("Pt") == 0 ) {
 	    ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, f1, "FAKE", "pt_feff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
@@ -2175,44 +2205,12 @@ EL::StatusCode HTopMultilepNTupReprocesser :: calculateMMWeights()
 	if ( m_parametrisation->getVariable("Fake_Mu").compare("NBJets_VS_Pt") == 0 ) {
 	    ANA_CHECK( this->getMMEfficiencyAndError_2D( lep1, f1, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep1.get()->pt/1e3,"pT") ) );
 	}
+	//
+	if ( m_parametrisation->getVariable("Fake_Mu").compare("DistanceClosestJet_VS_Pt") == 0 ) {
+	    ANA_CHECK( this->getMMEfficiencyAndError_2D( lep1, f1, "FAKE", "distanceclosestjet_VS_pt_feff_hist", std::make_pair(lep1.get()->deltaRClosestJet,"DistanceClosestJet"), std::make_pair(lep1.get()->pt/1e3,"pT") ) );
+	}
+	//
     }
-
-    // pT-only
-
-    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, r0, "REAL", "pt_reff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
-    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, r1, "REAL", "pt_reff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
-    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, f0, "FAKE", "pt_feff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
-    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, f1, "FAKE", "pt_feff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
-
-    // pT * eta (1DX1D) for electron fake rate
-
-    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, r0, "REAL", "pt_reff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
-    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, r1, "REAL", "pt_reff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
-    // if ( lep0.get()->flavour == 11 ) {
-    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, f0, "FAKE", "pt_feff_hist", std::make_pair(lep0.get()->pt/1e3,"pT"), "eta_feff_hist", std::make_pair(fabs(lep0.get()->etaBE2),"eta"), m_el_feff_avg["Nominal"] ) );
-    // } else {
-    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, f0, "FAKE", "pt_feff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
-    // }
-    // if ( lep1.get()->flavour == 11 ) {
-    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, f1, "FAKE", "pt_feff_hist", std::make_pair(lep1.get()->pt/1e3,"pT"), "eta_feff_hist", std::make_pair(fabs(lep1.get()->etaBE2),"eta"), m_el_feff_avg["Nominal"] ) );
-    // } else {
-    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, f1, "FAKE", "pt_feff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
-    // }
-
-    // NBjet * pT (2D) for electron fake rate
-
-    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, r0, "REAL", "pt_reff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
-    // ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, r1, "REAL", "pt_reff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
-    // if ( lep0.get()->flavour == 11 ) {
-    // 	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep0, f0, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep0.get()->pt/1e3,"pT") ) );
-    // } else {
-    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep0, f0, "FAKE", "pt_feff_hist", std::make_pair(lep0.get()->pt/1e3,"pT") ) );
-    // }
-    // if ( lep1.get()->flavour == 11 ) {
-    // 	ANA_CHECK( this->getMMEfficiencyAndError_2D( lep1, f1, "FAKE", "nbjets_VS_pt_feff_hist", std::make_pair(static_cast<float>(m_event.get()->nbjets_T),"NBJets"), std::make_pair(lep1.get()->pt/1e3,"pT") ) );
-    // } else {
-    // 	ANA_CHECK( this->getMMEfficiencyAndError_1D( lep1, f1, "FAKE", "pt_feff_hist", std::make_pair(lep1.get()->pt/1e3,"pT") ) );
-    // }
 
     if ( m_debug ) {
         std::cout << "" << std::endl;

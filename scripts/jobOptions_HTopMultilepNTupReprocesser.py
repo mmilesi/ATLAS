@@ -12,8 +12,8 @@ event_branches = ["EventNumber","RunNumber","mc_channel_number","isSS01","dilep_
                   "nJets_OR_T","nJets_OR_T_MV2c10_70",
                   ]
 
-lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_isTightSelected_0","lep_isTightSelectedMVA_0","lep_isTrigMatch_0",
-                  "lep_ID_1","lep_Pt_1","lep_Eta_1","lep_Phi_1","lep_EtaBE2_1","lep_isTightSelected_1","lep_isTightSelectedMVA_1","lep_isTrigMatch_1"]
+lep_branches   = ["lep_ID_0","lep_Pt_0","lep_Eta_0","lep_Phi_0","lep_EtaBE2_0","lep_deltaRClosestJet_0","lep_isTightSelected_0","lep_isTightSelectedMVA_0","lep_isTrigMatch_0",
+                  "lep_ID_1","lep_Pt_1","lep_Eta_1","lep_Phi_1","lep_EtaBE2_1","lep_deltaRClosestJet_1","lep_isTightSelected_1","lep_isTightSelectedMVA_1","lep_isTrigMatch_1"]
 
 branches_to_activate = event_branches + lep_branches
 
@@ -32,13 +32,13 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    "m_outputNTupStreamName"       : "output",
                                     "m_inputBranches"              : branches_to_activate_str,
                                     # "m_weightToCalc"               : "QMisID,MM",
-                                    # "m_weightToCalc"               : "MM",
-                                    "m_weightToCalc"               : "QMisID",
+                                    "m_weightToCalc"               : "MM",
+                                    # "m_weightToCalc"               : "QMisID",
                                     "m_QMisIDRates_dir"            : "$ROOTCOREBIN/data/HTopMultilepAnalysis/External/",
-                                    # "m_QMisIDRates_Filename_T"     : "Rates_v27.root",
-                                    # "m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
-                                    "m_QMisIDRates_Filename_T"     : "Rates_v27_For3l.root",
-                                    "m_QMisIDRates_Filename_AntiT" : "Rates_v27_For3l_AntiT.root",
+                                    "m_QMisIDRates_Filename_T"     : "Rates_v27.root",
+                                    "m_QMisIDRates_Filename_AntiT" : "Rates_v27_AntiT.root",
+                                    # "m_QMisIDRates_Filename_T"     : "Rates_v27_For3l.root",
+                                    # "m_QMisIDRates_Filename_AntiT" : "Rates_v27_For3l_AntiT.root",
                                     # "m_QMisIDRates_Filename_T"     : "Rates_Data_3l_2D_tight.root",
                                     # "m_QMisIDRates_Filename_AntiT" : "Rates_Data_3l_2D_Loose.root",
                                     "m_QMisIDRates_Histname_T"     : "LikelihoodEtaPtTight",
@@ -73,17 +73,21 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
                                     #
                                     # v28
                                     #
-                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v28/OutputPlots_MMRates_25ns_v28",
-                                    # "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v28/", # Closure
+                                    # "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v28/OutputPlots_MMRates_25ns_v28",
+                                    # "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v28/OutputPlots_MMRates_25ns_v28_NewBinning",
+                                    "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v28/OutputPlots_MMRates_25ns_v28_FINAL_BINNING",
+                                    # "m_REFF_dir" 		   : base_dir + "HTopMultilepAnalysis/PlotUtils/PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_NewBinning", # Closure
                                     #
                                     # ------------------------------------------------------------
                                     #
                                     # "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:Pt,Fake_Mu:Pt",
                                     # "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:PtxEta,Fake_Mu:Pt",
-                                    "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:NBJets_VS_Pt,Fake_Mu:Pt",
+                                    # "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:NBJets_VS_Pt,Fake_Mu:Pt",
+                                    # "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:DistanceClosestJet_VS_Pt,Fake_El:NBJets_VS_Pt,Fake_Mu:Pt",
+                                    "m_parametrisation_list"       : "Real_El:Pt,Real_Mu:Pt,Fake_El:NBJets_VS_Pt,Fake_Mu:DistanceClosestJet_VS_Pt",
                                     # "m_useScaledFakeElEfficiency_ElEl" : True,
                                     #
-                                    #"m_systematics_list"           : "Nominal:",
+                                    # "m_systematics_list"           : "Nominal:",
 				    # "m_systematics_list"           : "Nominal:,Stat:UncorrBins",
 				    "m_systematics_list"           : "Nominal:,Stat:UncorrBins,ND_TTV:CorrBins,ND_VV:CorrBins,ND_OtherPromptSS:CorrBins,ND_FakesOS:CorrBins,N_QMisID:UncorrBins,D_QMisID:UncorrBins",
                                     "m_correlatedMMWeights"        : False,
@@ -92,6 +96,7 @@ HTopMultilepNTupReprocesserDict = { "m_name"                       : "HTopMultil
 				    #
 				    "m_Efficiency_Filename"        : "LeptonEfficiencies.root",
 				    # "m_Efficiency_Filename"        : "LeptonEfficiencies_FakeElPtRescaledPhConv.root",
+				    # "m_Efficiency_Filename"        : "LeptonEfficiencies_RealMuDistanceClosestJetVSPt.root",
 				    #
                                     "m_doMMClosure"                : False,
 				    "m_useTEfficiency"             : False,

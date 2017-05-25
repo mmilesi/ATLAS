@@ -60,6 +60,7 @@ namespace NTupReprocesser {
   	  etaBE2(-999.0),
   	  ID(0),flavour(0),
   	  charge(-999.0),
+	  deltaRClosestJet(-1.0),
   	  tightselected(0),
 	  trigmatched(0)
     { };
@@ -70,6 +71,7 @@ namespace NTupReprocesser {
     int ID;
     int flavour;
     float charge;
+    float deltaRClosestJet;
     char tightselected;
     char trigmatched;
   };
@@ -260,6 +262,7 @@ private:
   Float_t    m_lep_Eta_0;
   Float_t    m_lep_Phi_0;
   Float_t    m_lep_EtaBE2_0;
+  Float_t    m_lep_deltaRClosestJet_0;
   Char_t     m_lep_isTightSelected_0;
   Char_t     m_lep_isTightSelectedMVA_0;
   Char_t     m_lep_isTrigMatch_0;
@@ -270,6 +273,7 @@ private:
   Float_t    m_lep_Eta_1;
   Float_t    m_lep_Phi_1;
   Float_t    m_lep_EtaBE2_1;
+  Float_t    m_lep_deltaRClosestJet_1;
   Char_t     m_lep_isTightSelected_1;
   Char_t     m_lep_isTightSelectedMVA_1;
   Char_t     m_lep_isTrigMatch_1;
