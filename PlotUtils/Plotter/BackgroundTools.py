@@ -1221,8 +1221,8 @@ class Background:
 
             # ratiomc.SetMinimum((1-val)-0.1)
             # ratiomc.SetMaximum((1+val)+0.1)
-            ratiomc.SetMinimum(0.25)
-            ratiomc.SetMaximum(1.75)
+            ratiomc.SetMinimum(0.0)
+            ratiomc.SetMaximum(2.0)
 
             if type(showratio) is tuple:
                 if showratio[0] == "MIN" and type(showratio[1]) is float:

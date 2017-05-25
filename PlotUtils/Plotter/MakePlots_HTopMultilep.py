@@ -856,7 +856,7 @@ if __name__ == "__main__":
             # database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = True) )
             # database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, logaxis = True, sysvar = True) )
-            database.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{#mu_{0}} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
+            # database.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{#mu_{0}} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{#mu_{1}} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{e_{0}}", ntuplename = "electron_EtaBE2[0]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{e_{1}}", ntuplename = "electron_EtaBE2[1]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], logaxis = True, sysvar = True) )
@@ -865,7 +865,7 @@ if __name__ == "__main__":
             # database.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "min #DeltaR(e_{0},j)", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "min #DeltaR(e_{1},j)", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
             database.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "min #DeltaR(#mu_{0},j)", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
-            # database.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "min #DeltaR(#mu_{1},j)", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
+            database.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "min #DeltaR(#mu_{1},j)", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 5, minval = -0.5, maxval = 4.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight", sysvar = True) )
             # database.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0, sysvar = True) )
             # database.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 20, minval = 0.0, maxval = 200.0, logaxis = True, sysvar = True) )
@@ -1018,7 +1018,7 @@ if __name__ == "__main__":
 
             flavours     = ["El","Mu"]
             efficiencies = ["Real","Fake"]
-            variables    = ["Pt","NBJets_VS_Pt"]
+            variables    = ["Pt","NBJets_VS_Pt","DistanceClosestJet_VS_Pt"]
 
             sampleID = ""
             sys_sources = []
@@ -1040,9 +1040,12 @@ if __name__ == "__main__":
                             for v in variables:
                                 if args.usePtOnlyParam: # Look at pT only if requested
                                     if v == "NBJets_VS_Pt": continue
+                                    if v == "DistanceClosestJet_VS_Pt": continue
                                 else:
                                     if ( f == "El" and e == "Fake" ) and v != "NBJets_VS_Pt": continue # Special treatment for electron fake efficiency: read the 2D parametrisation only
-                                    if ( e == "Real" or f == "Mu" ) and v == "NBJets_VS_Pt" : continue # For all other cases, read the pT parametrisation only
+                                    if ( f == "Mu" and e == "Fake" ) and v != "DistanceClosestJet_VS_Pt": continue # Special treatment for muon fake efficiency: read the 2D parametrisation only
+                                    if ( e == "Real" ) and v != "Pt": continue
+                                    # if ( e == "Real" or f == "Mu" ) and v == "NBJets_VS_Pt" : continue # For all other cases, read the pT parametrisation only
                                 thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys[0]
                                 thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] + "_"
                                 database.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
@@ -1057,9 +1060,12 @@ if __name__ == "__main__":
                             for v in variables:
                                 if args.usePtOnlyParam: # Look at pT only if requested
                                     if v == "NBJets_VS_Pt": continue
+                                    if v == "DistanceClosestJet_VS_Pt": continue
                                 else:
                                     if ( f == "El" and e == "Fake" ) and v != "NBJets_VS_Pt": continue # Special treatment for electron fake efficiency: read the 2D parametrisation only
-                                    if ( e == "Real" or f == "Mu" ) and v == "NBJets_VS_Pt" : continue # For all other cases, read the pT parametrisation only
+                                    if ( f == "Mu" and e == "Fake" ) and v != "DistanceClosestJet_VS_Pt": continue # Special treatment for muon fake efficiency: read the 2D parametrisation only
+                                    if ( e == "Real" ) and v != "Pt": continue
+                                    # if ( e == "Real" or f == "Mu" ) and v == "NBJets_VS_Pt" : continue # For all other cases, read the pT parametrisation only
                                 if sys[1] == "CorrBins":
                                     thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys[0]
                                     thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] + "_"
@@ -1081,6 +1087,7 @@ if __name__ == "__main__":
         # Print out the list of scheduled systematics
 
         database.printSystematics()
+        # os.sys.exit()
 
     # -------------------------------------------------------------------
     # Definition of the categories for which one wants produce histograms
@@ -1500,12 +1507,14 @@ if __name__ == "__main__":
             #
             # Use a coarser pT binning
             #
-            database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = [10,15,35,60,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = [10,15,35,60,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = [10,15,35,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             #
             # database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = [0,0.3,0.6,1,5], manualbinsY = [10,15,20,26,30,40,60,90,140,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             #
             # --> Use pT biining of electron fake rate, and a coarser binning for DR
-            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = [0,1,5], manualbinsY = [10,15,35,60,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = [0,1,5], manualbinsY = [10,15,35,60,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = [0,1,5], manualbinsY = [10,15,35,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             #
             # database.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,0.5,0.8,1.37,1.52,2.0,2.6], manualbinsY = [10,15,20,26,35,60,210], typeval = TH2D, drawOpt2D = "COLZ1 text") )
 

@@ -295,6 +295,10 @@ class RealFakeEffTagAndProbe:
 
         filename = None
 
+        # OutputPlots_MMRates_25ns_v28_NewBinning/FakeCRElL_1BJet/FakeCRElL_1BJet_ElProbePt.root
+        # myappend = "_2BJet"
+        myappend = ""
+
         for lep in self.__leptons:
 
             for eff in self.__efficiencies:
@@ -320,20 +324,22 @@ class RealFakeEffTagAndProbe:
                     for sel_key, sel_value in self.selections.iteritems():
 
                         if not "&&" in var:
-                            filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel_value + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel_value + "_" + lep + self.tp_lep + var + ".root" )
+                            filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel_value + myappend + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel_value + myappend + "_" + lep + self.tp_lep + var + ".root" )
                         else:
                             vars2D = var.split('&&')
                             varX   = vars2D[0]
                             varY   = vars2D[1]
-                            filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel_value + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel_value + "_" + lep + self.tp_lep + varX + "_VS_" + lep + self.tp_lep + varY + ".root" )
+                            filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel_value + myappend + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel_value + myappend + "_" + lep + self.tp_lep + varX + "_VS_" + lep + self.tp_lep + varY + ".root" )
 
                         thisfile = TFile(filename)
                         if not thisfile:
-                            sys.exit("ERROR: file:\n{0}\ndoes not exist!".format(filename))
+                            os.sys.exit("ERROR: file:\n{0}\ndoes not exist!".format(filename))
 
                         for proc in self.__processes:
 
 			    thishist = thisfile.Get(proc)
+                            if not thishist:
+                                os.sys.exit("ERROR: histogram:\n{0}\ndoes not exist in file:\n{1}\n!".format(proc,filename))
 
                             key = "_".join( (actual_eff,lep,var,proc) )
 
@@ -1440,7 +1446,7 @@ class RealFakeEffTagAndProbe:
 
         if "AVG" in hist2Dkey: return
 
-        c = TCanvas(canvasname+"_Projections","Projections",50,50,1000,600)
+        c = TCanvas(canvasname+"_Projections","Projections",50,50,1200,800)
         c.Clear()
         c.SetFrameFillColor(0)
         c.SetFrameFillStyle(0)
@@ -1467,8 +1473,8 @@ class RealFakeEffTagAndProbe:
             vars2D = var.split("_VS_")
 
             if "AVG" in key: continue
-            if not all( v in key for v in vars2D ): continue
-            if not "proj" in key: continue
+            if not "proj" in key: continue # Must consider only projection histograms
+            if not all( v in key for v in vars2D ): continue # This projection histogram must come from this input 2D hist
 
             print("\t\tPlotting projection histogram: {0}".format(key))
 
@@ -1498,10 +1504,12 @@ class RealFakeEffTagAndProbe:
 
                 c.cd(1)
 
-                slice_lowedge =  self.histefficiencies[hist2Dkey].GetYaxis().GetBinLowEdge(int(tokens[-1]))
-                slice_upedge =  self.histefficiencies[hist2Dkey].GetYaxis().GetBinUpEdge(int(tokens[-1]))
+                slice_lowedge = self.histefficiencies[hist2Dkey].GetYaxis().GetBinLowEdge(int(tokens[-1]))
+                slice_upedge  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinUpEdge(int(tokens[-1]))
+                slice_centre  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinCenter(int(tokens[-1]))
 
-                legendx.AddEntry(h,"{0} - [{1},{2}]".format(vars2D[1],slice_lowedge,slice_upedge), "P")
+                legend_text = "{0} - [{1},{2}]".format(vars2D[1],slice_lowedge,slice_upedge) if vars2D[1] != "NBJets" else "{0} - [{1}]".format(vars2D[1],int(slice_centre))
+                legendx.AddEntry(h,legend_text, "P")
 
                 if not gPad.GetListOfPrimitives().GetSize():
                     h.Draw("E0")
@@ -1515,10 +1523,12 @@ class RealFakeEffTagAndProbe:
 
                 c.cd(2)
 
-                slice_lowedge =  self.histefficiencies[hist2Dkey].GetXaxis().GetBinLowEdge(int(tokens[-1]))
-                slice_upedge =  self.histefficiencies[hist2Dkey].GetXaxis().GetBinUpEdge(int(tokens[-1]))
+                slice_lowedge = self.histefficiencies[hist2Dkey].GetXaxis().GetBinLowEdge(int(tokens[-1]))
+                slice_upedge  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinUpEdge(int(tokens[-1]))
+                slice_centre  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinCenter(int(tokens[-1]))
 
-                legendy.AddEntry(h,"{0} - [{1},{2}]".format(vars2D[0],slice_lowedge,slice_upedge), "P")
+                legend_text = "{0} - [{1},{2}]".format(vars2D[0],slice_lowedge,slice_upedge) if vars2D[0] != "NBJets" else "{0} - [{1}]".format(vars2D[0],int(slice_centre))
+                legendy.AddEntry(h,legend_text, "P")
 
                 if not gPad.GetListOfPrimitives().GetSize():
                     h.Draw("E0")

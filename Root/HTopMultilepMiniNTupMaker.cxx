@@ -1043,7 +1043,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: findClosestJetLep( const std::string
 
 	int idx_closest_j(-1);
 
-	float jet_pt(-.0),  jet_eta(-999.0), jet_phi(-999.0);
+	float jet_pt(-1.0),  jet_eta(-999.0), jet_phi(-999.0);
 	float jet_m = ( useBJets ) ? 418.0 : 0.0; // use mass of b quark [MeV]
 
         float dist_to_closest_j(9e9), this_dist(-1.0);

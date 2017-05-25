@@ -16,7 +16,8 @@ luminosities = { "Moriond 2016 GRL":3.209,            # March 2016
                  "FULL 2015+2016 DS":36.0746          # December 2016
                }
 
-parametrisations = ["Pt","NBJets_VS_Pt"]
+parametrisations_fake_el = ["Pt","NBJets_VS_Pt"]
+parametrisations_fake_mu = ["Pt","DistanceClosestJet_VS_Pt"]
 
 parser.add_argument('inputDir', metavar='inputDir',type=str,
                     help='Path to the directory containing input histograms')
@@ -26,8 +27,10 @@ parser.add_argument('--category', dest='category', action='store', default=categ
                     help='The category chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). If this option is not specified, default will be \'{0}\' (NB: \'Inclusive\' is not included by default, no pun intended:))'.format(categories[0]))
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='*',
                     help='List of variables to be considered. Use a space-separated list.')
-parser.add_argument('--paramFakeEl', dest='paramFakeEl', action='store', default=parametrisations[0], const=parametrisations[0], type=str, nargs='?', choices=parametrisations,
-                    help='The parametrisation for the electron fake rate. If this option is not specified, default will be \'{0}\''.format(parametrisations[0]))
+parser.add_argument('--paramFakeEl', dest='paramFakeEl', action='store', default=parametrisations_fake_el[1], const=parametrisations_fake_el[1], type=str, nargs='?', choices=parametrisations_fake_el,
+                    help='The parametrisation for the electron fake rate. Option is needed to make sure the correct non-closure uncertainty is used. If this option is not specified, default will be \'{0}\''.format(parametrisations_fake_el[1]))
+parser.add_argument('--paramFakeMu', dest='paramFakeMu', action='store', default=parametrisations_fake_mu[1], const=parametrisations_fake_mu[1], type=str, nargs='?', choices=parametrisations_fake_mu,
+                    help='The parametrisation for the muon fake rate. Option is needed to make sure the correct non-closure uncertainty is used. If this option is not specified, default will be \'{0}\''.format(parametrisations_fake_mu[1]))
 parser.add_argument('--closure', dest='closure', action='store_true', default=False,
                     help="Check yields for MC closure test")
 parser.add_argument('--doKinematicsComparison', dest='doKinematicsComparison', action='store_true', default=False,
@@ -1184,6 +1187,8 @@ if __name__ == '__main__':
     	    filename = inputpath + flav + region + "/" + flav + region + "_" + var_name + ".root"
 
     	    myfile = TFile(filename)
+            if not myfile:
+                os.sys.exit("ERROR! file:\n{0}\ndoes not exist!".format(filename))
 
     	    print("\tLooking at file: {0}".format(filename))
 
