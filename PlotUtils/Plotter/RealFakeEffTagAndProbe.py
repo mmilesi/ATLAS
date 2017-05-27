@@ -1113,7 +1113,7 @@ class RealFakeEffTagAndProbe:
                 g_efficiency.Divide(h_pass,h_tot,"cl=0.683 b(1,1) mode")
 
             # TEMP!!!
-            # A hack to fix last pT bin for Nbjets=2 distribution
+            # A hack to fix last pT bin for Nbjets=2 distribution (only if bin is empty)
             # Only for closure test on tt+ttgamma
 
             if self.closure and "NBJets&&Pt" in key:
