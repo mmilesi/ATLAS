@@ -1503,18 +1503,24 @@ if __name__ == "__main__":
             # database.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
             # database.registerVar( Variable(shortname = "ElProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 2, minval = 0.5, maxval = 2.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
             # # 2D parametrisations
+            #
+            database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, binsY = 200, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            #
             # database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = [10,15,20,26,35,60,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             #
             # Use a coarser pT binning
             #
             # database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = [10,15,35,60,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = [10,15,35,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # USE THIS!
+            ## database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = [10,15,35,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             #
-            # database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = [0,0.3,0.6,1,5], manualbinsY = [10,15,20,26,30,40,60,90,140,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 200, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             #
             # --> Use pT biining of electron fake rate, and a coarser binning for DR
+            #
             # database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = [0,1,5], manualbinsY = [10,15,35,60,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = [0,1,5], manualbinsY = [10,15,35,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # USE THIS
+            # database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = [0,1,5], manualbinsY = [10,15,35,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             #
             # database.registerVar( Variable(shortname = 'ElProbeEta_VS_ElProbePt', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = [0.0,0.5,0.8,1.37,1.52,2.0,2.6], manualbinsY = [10,15,20,26,35,60,210], typeval = TH2D, drawOpt2D = "COLZ1 text") )
 
@@ -1532,11 +1538,12 @@ if __name__ == "__main__":
             # database.registerVar( Variable(shortname = "MuProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 2, minval = 0.5, maxval = 2.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight") )
             # # 2D parametrisations
             # database.registerVar( Variable(shortname = 'MuProbeNBJets_VS_MuProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = [10,15,20,26,35,50,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            # database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePt', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", manualbinsX = [0,0.2,0.4,0.6,1,5], manualbinsY = [10,15,20,26,30,40,50,90,140,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePt', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 200, minvalY = 10.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             #
             # --> Use pT biining of muon fake rate, and a coarser binning for DR
             #
-            database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePt', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", manualbinsX = [0,1,5], manualbinsY = [10,15,20,26,35,50,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # USE THIS
+            ## database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePt', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", manualbinsX = [0,1,5], manualbinsY = [10,15,20,26,35,50,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             # database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePtBinning0', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", manualbinsX = [0,0.6,1,5], manualbinsY = [10,15,20,26,35,50,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             # database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePtBinning1', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", manualbinsX = [0,0.6,1,5], manualbinsY = [10,15,20,26,35,210], typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
 

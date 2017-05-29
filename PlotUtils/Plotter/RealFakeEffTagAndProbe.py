@@ -72,8 +72,13 @@ parser.add_argument('--systematics', dest='systematics', action='store', default
                   help='Option to pass a list of systematic variations to be considered. Use a space-separated list. Currently available systematics: {0}. If using option=\'ALL\', every sytematic in the list will be considered.'.format(g_avaialble_systematics))
 parser.add_argument("--log", dest="log", action="store_true",default=False,
                   help="Read plots with logarithmic Y scale.")
-parser.add_argument('--rebin', dest='rebin', action='store', type=str, nargs='+',
-                  help='Option to pass a bin range for rebinning. Use space-separated sets of options and numbers (comma-separated) to define new bins, specifying whether it should apply to real/fake muons/electrons for a given variable in the following way (eg.):\n --rebin Real,El,Pt,10,20,200 Fake,Mu,Eta,0.0,1.3,2.5')
+parser.add_argument("--rebin", dest="rebin", action="store", type=str, nargs="+",
+                    help="R|Option to pass a bin range for rebinning. Use space-separated sets of options and numbers (comma-separated) to define new bins, specifying whether it should apply to real/fake muons/electrons for a given variable in the following way (eg.):\n"
+                    "For 1D histograms: --rebin Real,El,Pt,10,20,200 Fake,Mu,Eta,0.0,1.3,2.5\n"
+                    "For 2D histograms: --rebin Fake,El,NBJets\&\&Pt,:,10.0,50.0,100.0 (this will rebin only the Y axis variable, i.e. Pt)\n"
+                    "                   --rebin Fake,El,Pt\&\&NBJets,10.0,50.0,100.0,: (this will rebin only the X axis variable, i.e. Pt)\n"
+                    "                   --rebin Fake,El,DistanceClosestJet\&\&Pt,0,1,5,:,10.0,50.0,100.0 (this will rebin both X and Y axis variables)\n"
+                    "NB: the colon - which separates X and Y variables - must be always enclosed in commas, except when it's at the end of the string (see example 2)")
 parser.add_argument('--averagehist', dest='averagehist', action='store', type=str, nargs='+',
                   help='Option to get average histograms (i.e., 1 single bin over the full range). Use space-separated sets of options (comma-separated) to tell which histograms should be averaged out, e.g.:\n --averagehist Real,El,Pt Fake,Mu,Eta.\nIf option ALL is specified, all histograms get averaged out.')
 parser.add_argument("--factors", dest="factors", action="store_true",default=False,
@@ -566,6 +571,68 @@ class RealFakeEffTagAndProbe:
             	print("**********************************************************\n")
 
 
+    def __rebin2D__( self, hist, xbins, ybins ):
+
+        # Create 2D rebinned histogram w/ variable bin size on X,Y axes
+        #
+        # Logic stolen from https://github.com/rootpy/rootpy/blob/master/rootpy/plotting/hist.py#L1407
+
+        # Get a few properties of input histogram
+
+        xaxis = hist.GetXaxis()
+        yaxis = hist.GetYaxis()
+        nbinsx = xaxis.GetNbins()+2
+        nbinsy = yaxis.GetNbins()+2
+        xlow = xaxis.GetBinLowEdge(1)
+        xup  = xaxis.GetBinUpEdge(nbinsx-2)
+        ylow = yaxis.GetBinLowEdge(1)
+        yup  = yaxis.GetBinUpEdge(nbinsy-2)
+        sumw2 = hist.GetSumw2()
+
+        # Transform input lists into C++ arrays
+
+        nbinsx_new = len(xbins)-1
+        nbinsy_new = len(ybins)-1
+
+        arr_xbins = array.array("d", xbins)
+        arr_ybins = array.array("d", ybins)
+
+        # Create a new TH2 w/ variable bin size axes. Will be filled later on...
+
+        hrebinned = None
+        if xbins and ybins:
+            hrebinned = TH2D(hist.GetName(),hist.GetTitle(), nbinsx_new, arr_xbins, nbinsy_new, arr_ybins)
+        elif xbins and not ybins:
+            hrebinned = TH2D(hist.GetName(),hist.GetTitle(), nbinsx_new, arr_xbins, nbinsy-2, ylow, yup)
+        elif not xbins and ybins:
+            hrebinned = TH2D(hist.GetName(),hist.GetTitle(), nbinsx-2, xlow, xup, nbinsy_new, arr_ybins )
+        else:
+            os.sys.exit("Failed to read input bin lists for 2D rebinning")
+
+        hrebinned.GetXaxis().SetTitle(xaxis.GetTitle())
+        hrebinned.GetYaxis().SetTitle(yaxis.GetTitle())
+
+        hrebinned.SetDirectory(0)
+        sumw2_rebinned = hrebinned.GetSumw2()
+
+        # OK, now fill!
+
+        idx = -1
+        idx_rebinned = -1
+        for ibiny in range(0,nbinsy):
+            for ibinx in range(0,nbinsx):
+                # Get the global bin number of the *input* histogram's cell we are currently in
+                idx = hist.GetBin( ibinx, ibiny )
+                # Get the global bin index of the *rebinned* histograms's cell which contains the input histogram's cell we are currently in
+                idx_rebinned = hrebinned.FindBin( xaxis.GetBinCenter(ibinx), yaxis.GetBinCenter(ibiny) )
+                # Recursively add the content of the input cells that are being merged into the rebinned histogram cell
+                hrebinned.SetBinContent( idx_rebinned, hrebinned.GetBinContent(idx_rebinned) + hist.GetBinContent(idx) )
+                # Recursively add the sum of weights squared of the input cells that are being merged into the rebinned histogram cell
+                sumw2_rebinned.SetAt( sumw2_rebinned.At(idx_rebinned) + sumw2.At(idx), idx_rebinned )
+
+        return hrebinned
+
+
     def rebinHistograms ( self, rebinlist=None, averagehistlist=None ):
 
         if not rebinlist and not averagehistlist:
@@ -584,6 +651,7 @@ class RealFakeEffTagAndProbe:
             print("   Therefore, make sure the new binning is compatible w/ the binning of the input histogram!\n")
 
         if rebinlist:
+
             for key in self.histkeys:
 
 	        # By construction, the following will be a list w/ N items, where:
@@ -596,12 +664,7 @@ class RealFakeEffTagAndProbe:
 	        tokens = key.split("_")
 
                 if self.verbose:
-	            print("Current tokens:")
-	            print tokens
-
-                if "&&" in tokens[2]:
-                    print("Variable: {0}. Cannot rebin w/ variable bin size a TH2. Consider passing an input TH2 already made w/ appropriate binning...".format(tokens[2]))
-                    continue
+	            print("\tCurrent tokens: {0}".format(tokens))
 
                 for rebinitem in rebinlist:
 
@@ -609,18 +672,48 @@ class RealFakeEffTagAndProbe:
 
 	            if ( tokens[0] in rebinitem ) and ( tokens[1] in rebinitem ) and ( tokens[2] in rebinitem ):
 
-                        nbins = len(rebinitem[3:])-1
+                        if not "&&" in tokens[2]:
 
-                        if self.debug:
-                            print("\t===> Rebinning matching histograms with the following values:")
-                            print "\tbin edges: ", rebinitem[3:], ", number of bins = ", nbins
+                            # Rebinning for 1D histograms
 
-                        bins = [ float(binedge) for binedge in rebinitem[3:] ]
-	                arr_bins = array.array("d", bins)
+                            nbins = len(rebinitem[3:])-1
 
-                        self.numerator_hists[key]     = self.numerator_hists[key].Rebin( nbins, key, arr_bins )
-                        self.denominator_hists[key]   = self.denominator_hists[key].Rebin( nbins, key, arr_bins )
-                        self.antinumerator_hists[key] = self.antinumerator_hists[key].Rebin( nbins, key, arr_bins )
+                            if self.debug:
+                                print("\t===> Rebinning 1D histogram: {0} w/ variable bin size:".format(key))
+                                print "\tbin edges: ", rebinitem[3:], ", number of bins = ", nbins
+
+                            bins = [ float(binedge) for binedge in rebinitem[3:] ]
+                            arr_bins = array.array("d", bins)
+
+                            self.numerator_hists[key]     = self.numerator_hists[key].Rebin( nbins, key, arr_bins )
+                            self.denominator_hists[key]   = self.denominator_hists[key].Rebin( nbins, key, arr_bins )
+                            self.antinumerator_hists[key] = self.antinumerator_hists[key].Rebin( nbins, key, arr_bins )
+
+                        else:
+
+                            # Rebinning for 2D histograms
+
+                            try:
+                                idx_colon = rebinitem.index(':')
+                            except ValueError:
+                                print("ERROR: wrong formatting of option --rebin...\nDid you forget to put a colon\':\'?\nDid you forget to enclose the colon within commas?")
+
+                            xbins  = [ float(binedge) for binedge in rebinitem[3:idx_colon] ]
+                            ybins  = [ float(binedge) for binedge in rebinitem[idx_colon+1:] ]
+                            nxbins = len(xbins)-1
+                            nybins = len(ybins)-1
+
+                            if self.debug:
+                                print("\t===> Rebinning 2D histogram: {0} w/ variable bin size:".format(key))
+                                if xbins:
+                                    print("\tbin edges (X): {0}, number of bins (X) = {1}".format(xbins,nxbins))
+                                if ybins:
+                                    print("\tbin edges (Y): {0}, number of bins (Y) = {1}".format(ybins,nybins))
+
+                            self.numerator_hists[key]     = self.__rebin2D__( self.numerator_hists[key], xbins, ybins )
+                            self.denominator_hists[key]   = self.__rebin2D__( self.denominator_hists[key], xbins, ybins )
+                            self.antinumerator_hists[key] = self.__rebin2D__( self.antinumerator_hists[key], xbins, ybins )
+
 
         if averagehistlist:
 
@@ -751,7 +844,7 @@ class RealFakeEffTagAndProbe:
 
     def __manageBoundaries__( self, histogram ):
 
-        if isinstance(histogram,TH1) and not isinstance(histogram,TH2):
+        if not isinstance(histogram,TH2):
 
             # 1. Merge OFlow bin in last visible bin
 
@@ -1446,13 +1539,21 @@ class RealFakeEffTagAndProbe:
 
         if "AVG" in hist2Dkey: return
 
-        c = TCanvas(canvasname+"_Projections","Projections",50,50,1200,800)
-        c.Clear()
-        c.SetFrameFillColor(0)
-        c.SetFrameFillStyle(0)
-        c.SetFrameBorderMode(0)
+        # c = TCanvas(canvasname+"_Projections","Projections",50,50,1000,1400)
+        # c.Clear()
+        # c.SetFrameFillColor(0)
+        # c.SetFrameFillStyle(0)
+        # c.SetFrameBorderMode(0)
+        # c.Divide(1,2)
 
-        c.Divide(2,1)
+        cx = TCanvas(canvasname+"_ProjectionsX","ProjectionsX",50,50,800,600)
+        cx.SetFrameFillColor(0)
+        cx.SetFrameFillStyle(0)
+        cx.SetFrameBorderMode(0)
+        cy = TCanvas(canvasname+"_ProjectionsY","ProjectionsY",50,50,800,600)
+        cy.SetFrameFillColor(0)
+        cy.SetFrameFillStyle(0)
+        cy.SetFrameBorderMode(0)
 
         legendx = TLegend(0.45,0.25,0.925,0.55) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
         legendx.SetBorderSize(0)     # no border
@@ -1487,12 +1588,12 @@ class RealFakeEffTagAndProbe:
 
             if self.verbose: print("\tkey: {0} - <TOT eff> = {1:.3f}, <SLICE eff> = {2:.3f}, scale factor = {3:.3f}".format(key,normfactor,slicefactor,scalefactor))
 
-            h.Scale(scalefactor)
+            # h.Scale(scalefactor) # Uncomment this if you want to check correlation between slices
 
             # Set the range of the Y axis
 
             maximum = h.GetMaximum()
-            h.SetMaximum(maximum*1.1)
+            h.SetMaximum(3.0*maximum)
             h.SetMinimum(0.0)
 
             if self.verbose: print("\t\t==> new integral = {0:.3f}".format(h.Integral(0,h.GetSize()-1)))
@@ -1502,7 +1603,13 @@ class RealFakeEffTagAndProbe:
 
             if varX in key:
 
-                c.cd(1)
+                # c.cd(1)
+                cx.cd()
+
+                # Do not plot projetcion for overflow bin
+
+                if int(tokens[-1]) == self.histefficiencies[hist2Dkey].GetYaxis().GetNbins()+1:
+                    continue
 
                 slice_lowedge = self.histefficiencies[hist2Dkey].GetYaxis().GetBinLowEdge(int(tokens[-1]))
                 slice_upedge  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinUpEdge(int(tokens[-1]))
@@ -1521,7 +1628,13 @@ class RealFakeEffTagAndProbe:
 
             if varY in key:
 
-                c.cd(2)
+                # c.cd(2)
+                cy.cd()
+
+                # Do not plot projetcion for overflow bin
+
+                if int(tokens[-1]) == self.histefficiencies[hist2Dkey].GetXaxis().GetNbins()+1:
+                    continue
 
                 slice_lowedge = self.histefficiencies[hist2Dkey].GetXaxis().GetBinLowEdge(int(tokens[-1]))
                 slice_upedge  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinUpEdge(int(tokens[-1]))
@@ -1538,7 +1651,9 @@ class RealFakeEffTagAndProbe:
                 legendy.Draw()
 
         for extension in self.extensionlist:
-            c.SaveAs(savepath+"/BasicPlots/"+canvasname+"_Projections."+extension)
+            # c.SaveAs(savepath+"/BasicPlots/"+canvasname+"_Projections."+extension)
+            cx.SaveAs(savepath+"/BasicPlots/"+canvasname+"_Projections"+vars2D[1]+"."+extension)
+            cy.SaveAs(savepath+"/BasicPlots/"+canvasname+"_Projections"+vars2D[0]+"."+extension)
 
 
     def plotMaker( self ):
