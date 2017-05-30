@@ -236,11 +236,26 @@ exit 0
         #
         # "LepFlavours",
         #
-        "BDTGScore",
-        #
         "Integral",
         "NJets2j3j",
         "NJets4j",
+        "NBJets",
+        "Mll01_inc",
+        "MET_FinalTrk",
+        "deltaRLep0Lep1",
+        "deltaPhiLep0Lep1",
+        # "TotLepCharge",
+        #
+        "BDTGScore",
+        "Lep0Pt",
+        "Lep1Pt",
+        "Lep0Eta",
+        "Lep1Eta",
+        "Lep0EtaBE2",
+        "Lep1EtaBE2",
+        "Lep0DeltaRClosestJet",
+        "Lep1DeltaRClosestJet",
+        #
         # "El0Pt",
         # "El1Pt",
         # "Mu0Pt",
@@ -253,12 +268,6 @@ exit 0
         # "El1DeltaRClosestJet",
         # "Mu0DeltaRClosestJet",
         # "Mu1DeltaRClosestJet",
-        # "NBJets",
-        # "Mll01_inc",
-        # "MET_FinalTrk",
-        # "deltaRLep0Lep1",
-        # "deltaPhiLep0Lep1",
-        # "TotLepCharge",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",

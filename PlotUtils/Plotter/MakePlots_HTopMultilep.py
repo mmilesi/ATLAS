@@ -901,33 +901,42 @@ if __name__ == "__main__":
 
     if doMMClosureTest:
         print ''
-        database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
-        database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )
-        if args.readGFW2:
-            database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttV+MVA2lSSMarseille_weight_ttbar)/2.0", manualbins = [-1.0,-0.35,-0.15,0.05,0.025,0.45,1.0], sysvar = True ) )
         database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = True ) )
-        database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
-        database.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )
-        database.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{#mu_{0}} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
-        database.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{#mu_{1}} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )
-        database.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{e_{0}}", ntuplename = "electron_EtaBE2[0]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
-        database.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{e_{1}}", ntuplename = "electron_EtaBE2[1]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
-        database.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{#mu_{0}}", ntuplename = "muon_Eta[0]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], sysvar = True ) )
-        database.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{#mu_{1}}", ntuplename = "muon_Eta[1]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], sysvar = True ) )
-        database.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "#DeltaR{e_{0}, closest j}", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
-        database.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "#DeltaR{e_{1}, closest j}", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
-        database.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "#DeltaR{#mu_{0}, closest j}", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
-        database.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "#DeltaR{#mu_{1}, closest j}", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
         database.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 5, minval = -0.5, maxval = 4.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight", sysvar = True) )
         database.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0, sysvar = True ) )
         database.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 40, minval = 0.0, maxval = 200.0, sysvar = True ) )
         database.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(l_{0},l_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0, sysvar = True ) )
+        database.registerVar( Variable(shortname = "deltaPhiLep0Lep1", latexname = "#Delta#phi(l_{0},l_{1})", ntuplename = delta_Phi_lep0lep1, bins = 10, minval = -3.14, maxval = 3.14, sysvar = True) )
+        database.registerVar( Variable(shortname = "TotLepCharge", latexname = "Tot. lep. charge", ntuplename = "total_charge", bins = 7, minval = -3.5, maxval = 3.5, sysvar = True) )
         if "ALLNJ" in args.channel:
             database.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
         elif "HIGHNJ" in args.channel:
             database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = 'JVT_EventWeight', sysvar = True) )
         elif "LOWNJ" in args.channel:
             database.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = 'JVT_EventWeight', sysvar = True) )
+        if args.readGFW2:
+            database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep0Eta", latexname = "#eta^{l_{0}}", ntuplename = "lep_Eta_0", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep1Eta", latexname = "#eta^{l_{1}}", ntuplename = "lep_Eta_1", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep0EtaBE2",latexname = "#eta^{l_{0}}", ntuplename = "lep_EtaBE2_0", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep1EtaBE2",latexname = "#eta^{l_{1}}", ntuplename = "lep_EtaBE2_1", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep0DeltaRClosestJet",latexname = "#DeltaR{l_{0}, closest j}", ntuplename = "minDeltaR_LJ_0", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep1DeltaRClosestJet",latexname = "#DeltaR{l_{1}, closest j}", ntuplename = "minDeltaR_LJ_1", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
+            database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttV+MVA2lSSMarseille_weight_ttbar)/2.0", manualbins = [-1.0,-0.35,-0.15,0.05,0.25,0.45,1.0], sysvar = True ) )
+        else:
+            database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
+            database.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )
+            database.registerVar( Variable(shortname = "Mu0Pt", latexname = "p_{T}^{#mu_{0}} [GeV]", ntuplename = "muon_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
+            database.registerVar( Variable(shortname = "Mu1Pt", latexname = "p_{T}^{#mu_{1}} [GeV]", ntuplename = "muon_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )
+            database.registerVar( Variable(shortname = "El0Eta",latexname = "#eta^{e_{0}}", ntuplename = "electron_EtaBE2[0]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
+            database.registerVar( Variable(shortname = "El1Eta",latexname = "#eta^{e_{1}}", ntuplename = "electron_EtaBE2[1]", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Mu0Eta",latexname = "#eta^{#mu_{0}}", ntuplename = "muon_Eta[0]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{#mu_{1}}", ntuplename = "muon_Eta[1]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], sysvar = True ) )
+            database.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "#DeltaR{e_{0}, closest j}", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
+            database.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "#DeltaR{e_{1}, closest j}", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "#DeltaR{#mu_{0}, closest j}", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "#DeltaR{#mu_{1}, closest j}", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
 
     if doZOSpeakCR or doZSSpeakCR:
         print ''
