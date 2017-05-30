@@ -111,6 +111,10 @@ parser.add_argument('--debug', dest='debug', action='store_true', default=False,
                     help='Run in debug mode')
 parser.add_argument('--submitPBSVar', dest='submitPBSVar',action='store',const='Integral',default=None,type=str,nargs='?',
                     help='IF used, will make sure only the variable passed as command-line argument to this option is processed at a time. The default variable - if unspecified - is \'Integral\'')
+parser.add_argument('--useFriendTrees', dest='useFriendTrees', action='store_true', default=False,
+                    help='Include also friend trees in the inputs.')
+parser.add_argument('--readGFW2', dest='readGFW2', action='store_true', default=False,
+                    help='Take GFW2 ntuples as inputs.')
 
 args = parser.parse_args()
 
@@ -268,7 +272,7 @@ if __name__ == "__main__":
 
     triggers_MMRates = ["SLT"]
     if ( doMMRates and not "LH" in args.channel ) and args.trigger[0] not in triggers_MMRates:
-        sys.exit("ERROR: the chosen trigger selection: {0}\nis not allowed for r/f efficiency measurement. Please choose one of {1}".format(args.trigger[0],triggers_MMRates))
+        os.sys.exit("ERROR: the chosen trigger selection: {0}\nis not allowed for r/f efficiency measurement. Please choose one of {1}".format(args.trigger[0],triggers_MMRates))
 
     # -----------------------------------------
     # A comprehensive flag for all possible SRs
@@ -311,27 +315,26 @@ if __name__ == "__main__":
     # --------------------------
 
     inputs = loadSamples(
-        # path of the data to be processed
-        inputdir    = args.inputpath,
-        samplescsv  = args.samplesCSV,
-        nomtree     = "physics",
-        # friendtrees = ["NN_physics"],
-        # friendfile_extension = ".reduced.friend",
-        # Name of the trees that contains values for shifted systematics
-        systrees =  [
-            ##'METSys',
-            #'ElEnResSys',
-            #'ElES_LowPt',
-            #'ElES_Zee',
-            #'ElES_R12',
-            #'ElES_PS',
-            ##'EESSys',
-            #'MuSys',
-            ##'METResSys',
-            ##'METScaleSys',
-            #'JES_Total',
-            #'JER',
+        inputdir             = args.inputpath, # Path of the samples to be processed
+        samplescsv           = args.samplesCSV,
+        nomtree              = "physics" if not args.readGFW2 else "nominal",
+        friendtrees          = ["NN_physics"] if args.useFriendTrees else None,
+        friendfile_extension = ".reduced.friend" if args.useFriendTrees else None,
+        systrees =  [ # Name of the trees that contains values for shifted systematics
+            # 'METSys',
+            # 'ElEnResSys',
+            # 'ElES_LowPt',
+            # 'ElES_Zee',
+            # 'ElES_R12',
+            # 'ElES_PS',
+            # 'EESSys',
+            # 'MuSys',
+            # 'METResSys',
+            # 'METScaleSys',
+            # 'JES_Total',
+            # 'JER',
             ],
+        readGFW2 = args.readGFW2,
         )
 
     # ------------------------------------------------------
@@ -399,6 +402,9 @@ if __name__ == "__main__":
 
         database.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT + " )" + " )" ) )
 
+    if args.readGFW2:
+        database.getCut("TrigDec").cutstr = "( 1 )"
+
     database.registerCut( Cut('LargeNBJet',      '( nJets_OR_T_MV2c10_70 > 1 )') )
     database.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_T_MV2c10_70 < 4 )') )
     database.registerCut( Cut('BJetVeto',        '( nJets_OR_T_MV2c10_70 == 0 )') )
@@ -440,7 +446,6 @@ if __name__ == "__main__":
     database.registerCut( Cut('2Lep_OS',		  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
     database.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
     database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_0 > 15e3 && lep_Pt_1 > 15e3 )') )
-    # database.registerCut( Cut('2Lep_pT',		  '( 1 )') )
     if args.ICHEPSelection:
         database.getCut('2Lep_pT').cutstr =  '( lep_Pt_0 > 25e3 && lep_Pt_1 > 25e3 )' # 2LSS SR cut - ICHEP 2016
     database.registerCut( Cut('2Lep_pT_MMRates',	  '( lep_Pt_0 > 10e3 && lep_Pt_1 > 10e3 )') )
@@ -479,8 +484,8 @@ if __name__ == "__main__":
         database.registerCut( Cut('2Lep_TagAndProbe_GoodEvent',    '( event_isBadTP_' + trig_tag + ' == 0 )') )
         database.registerCut( Cut('2Lep_ElTagEtaCut',              '( ( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 13 ) || ( TMath::Abs( lep_Tag_' + trig_tag + '_ID ) == 11 && TMath::Abs( lep_Tag_' + trig_tag + '_EtaBE2 ) < 1.37 ) )') )
         database.registerCut( Cut('2Lep_TagVeryTightSelected',     '( lep_Tag_' + trig_tag + '_ptVarcone30/lep_Tag_' + trig_tag + '_Pt < 0.01 )' ) ) # Tighten the track iso of the tag to increase fake purity for the probe (was used in v24)
-        gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/allElectronsQMisIDBDTLoose.cxx+")
-        from ROOT import allElectronsQMisIDBDTLoose
+        # gROOT.LoadMacro("$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/ROOT_TTreeFormulas/allElectronsQMisIDBDTLoose.cxx+")
+        # from ROOT import allElectronsQMisIDBDTLoose
         # database.registerCut( Cut('2Lep_ElQMisIDBDT',              '( allElectronsQMisIDBDTLoose( dilep_type, lep_ID_0, lep_ID_1, lep_chargeIDBDTLoose_0, lep_chargeIDBDTLoose_1, 0.10083 ) )') )
         database.registerCut( Cut('2Lep_ElQMisIDBDT',              '( 1 )') )
 
@@ -530,23 +535,6 @@ if __name__ == "__main__":
     #
     # -------------------------------------------------------------------------------
 
-    # # Prompt leptons
-    # lep0_prompt      = "( lep_isPrompt_0 )"
-    # lep1_prompt      = "( lep_isPrompt_1 )"
-    # lep0_bremsprompt = "( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 && lep_truthParentType_0 == 2 && lep_truthParentOrigin_0 == 10 && lep_ID_0/lep_truthParentPdgId_0 == 1.0 )"
-    # lep1_bremsprompt = "( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 && lep_truthParentType_1 == 2 && lep_truthParentOrigin_1 == 10 && lep_ID_1/lep_truthParentPdgId_1 == 1.0 )"
-    # # QMisID leptons
-    # lep0_qmisid      = "( lep_ID_0/lep_truthParentPdgId_0 == -1.0 )"
-    # lep1_qmisid      = "( lep_ID_1/lep_truthParentPdgId_1 == -1.0 )"
-    # # Photon conversion leptons
-    # lep0_photonconv  = "( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 && !( lep_truthParentType_0 == 2 && lep_truthParentOrigin_0 == 10 ) && !{0} )".format(lep0_qmisid)
-    # lep1_photonconv  = "( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 && !( lep_truthParentType_1 == 2 && lep_truthParentOrigin_1 == 10 ) && !{0} )".format(lep1_qmisid)
-    # # Non-prompt leptons (ie, HF leptons, photon conversions, other fakes...). Exclude QMisID leptons from this definition
-    # lep0_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep0_prompt,lep0_bremsprompt,lep0_qmisid)
-    # lep1_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep1_prompt,lep1_bremsprompt,lep1_qmisid)
-    # # QMisID event
-    # isqmisidevent    = "( {0} || {1} )".format(lep0_qmisid,lep1_qmisid)
-
     # Prompt leptons
     lep0_prompt      = "lep_isPrompt_v2_0"
     lep1_prompt      = "lep_isPrompt_v2_1"
@@ -563,6 +551,24 @@ if __name__ == "__main__":
     lep1_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep1_prompt,lep1_bremsprompt,lep1_qmisid)
     # QMisID event
     isqmisidevent    = "( {0} || {1} )".format(lep0_qmisid,lep1_qmisid)
+
+    if args.readGFW2:
+        # Prompt leptons
+        lep0_prompt      = "( lep_isPrompt_0 )"
+        lep1_prompt      = "( lep_isPrompt_1 )"
+        lep0_bremsprompt = "( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 && lep_truthParentType_0 == 2 && lep_truthParentOrigin_0 == 10 && lep_ID_0/lep_truthParentPdgId_0 == 1.0 )"
+        lep1_bremsprompt = "( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 && lep_truthParentType_1 == 2 && lep_truthParentOrigin_1 == 10 && lep_ID_1/lep_truthParentPdgId_1 == 1.0 )"
+        # QMisID leptons
+        lep0_qmisid      = "( lep_ID_0/lep_truthParentPdgId_0 == -1.0 )"
+        lep1_qmisid      = "( lep_ID_1/lep_truthParentPdgId_1 == -1.0 )"
+        # Photon conversion leptons
+        lep0_photonconv  = "( lep_truthType_0 == 4 && lep_truthOrigin_0 == 5 && !( lep_truthParentType_0 == 2 && lep_truthParentOrigin_0 == 10 ) && !{0} )".format(lep0_qmisid)
+        lep1_photonconv  = "( lep_truthType_1 == 4 && lep_truthOrigin_1 == 5 && !( lep_truthParentType_1 == 2 && lep_truthParentOrigin_1 == 10 ) && !{0} )".format(lep1_qmisid)
+        # Non-prompt leptons (ie, HF leptons, photon conversions, other fakes...). Exclude QMisID leptons from this definition
+        lep0_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep0_prompt,lep0_bremsprompt,lep0_qmisid)
+        lep1_nonprompt   = "( !{0} && !{1} && !{2} )".format(lep1_prompt,lep1_bremsprompt,lep1_qmisid)
+        # QMisID event
+        isqmisidevent    = "( {0} || {1} )".format(lep0_qmisid,lep1_qmisid)
 
     # 1.
     #
@@ -740,8 +746,6 @@ if __name__ == "__main__":
     # For 3L, use lep1,lep2
     # -----------------------------
 
-    # database.registerCut( Cut('TT', '( ( dilep_type > 0 && lep_isTightSelectedMVA_0 && lep_isTightSelectedMVA_1 ) || ( trilep_type > 0 && lep_isTightSelectedMVA_1 && lep_isTightSelectedMVA_2 ) )') ) # NB: using this and not 'is_TMVA_TMVA' to make sure there is not QMisID BDT cut on loose electrons applied on top of the tight (in principle it shouldn't matter, but...)
-    # database.registerCut( Cut('TT', '( ((TMath::Abs(lep_ID_0)==13 && lep_isolationLoose_0) || (TMath::Abs(lep_ID_0)==11 && lep_isolationLoose_0 && lep_isTightLH_0 && lep_chargeIDBDTTight_0>0.0670415)) && ((TMath::Abs(lep_ID_1)==13 && lep_isolationLoose_1) || (TMath::Abs(lep_ID_1)==11 && lep_isolationLoose_1 && lep_isTightLH_1 && lep_chargeIDBDTTight_1>0.0670415)) && lep_promptLeptonIso_TagWeight_0<-0.5 && lep_promptLeptonIso_TagWeight_1<-0.5 )') )
     database.registerCut( Cut('TT', '( is_TMVA_TMVA )') )
     database.registerCut( Cut('TL', '( is_TMVA_AntiTMVA )') )
     database.registerCut( Cut('LT', '( is_AntiTMVA_TMVA )') )
@@ -777,6 +781,18 @@ if __name__ == "__main__":
         database.getCut('FakesSideband_LelTmu').cutstr =  '( is_AntiTel_Tmu )'
         database.getCut('FakesSideband_TmuLel').cutstr =  '( is_Tmu_AntiTel )'
         database.getCut('FakesSideband_LmuTel').cutstr =  '( is_AntiTmu_Tel )'
+
+    if args.readGFW2:
+        cut_TT = '( ( (TMath::Abs(lep_ID_0)==13 && lep_isolationLoose_0 ) || ( TMath::Abs(lep_ID_0)==11 && lep_isolationLoose_0 && lep_isTightLH_0 && lep_chargeIDBDTTight_0>0.0670415 ) ) && ( ( TMath::Abs(lep_ID_1)==13 && lep_isolationLoose_1 ) || ( TMath::Abs(lep_ID_1)==11 && lep_isolationLoose_1 && lep_isTightLH_1 && lep_chargeIDBDTTight_1>0.0670415 ) ) && lep_promptLeptonIso_TagWeight_0<-0.5 && lep_promptLeptonIso_TagWeight_1<-0.5 )'
+        database.getCut('TT').cutstr = cut_TT
+        database.getCut('TL').cutstr = '( 1 )'
+        database.getCut('LT').cutstr = '( 1 )'
+        database.getCut('LL').cutstr = '( 1 )'
+
+        database.getCut('FakesSideband_TT').cutstr = '( isMMSideband_TT )'
+        database.getCut('FakesSideband_TL').cutstr = '( isMMSideband_TAntiT )'
+        database.getCut('FakesSideband_LT').cutstr = '( isMMSideband_AntiTT )'
+        database.getCut('FakesSideband_LL').cutstr = '( isMMSideband_AntiTAntiT )'
 
     # ---------------------
     # 2Lep SS + 1 tau cuts
@@ -832,27 +848,26 @@ if __name__ == "__main__":
                 print ""
                 database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = True) )
                 #
-                database.registerVar( Variable(shortname = "NN_Rebinned", latexname = "NN", ntuplename = "output_bin", bins = 8, minval = -0.5, maxval = 7.5, sysvar = True ) )
-                database.registerVar( Variable(shortname = "RNN_Rebinned", latexname = "NN", ntuplename = "RNN_output_bin", bins = 8, minval = -0.5, maxval = 7.5, sysvar = True ) )
-                database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
-                database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
-                database.registerVar( Variable(shortname = "RNN_ttV", latexname = "NN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
-                database.registerVar( Variable(shortname = "RNN_top", latexname = "NN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
-                #
-                # database.registerVar( Variable(shortname = 'NN_ttV_VS_NN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'output_top:output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F ) )
-                # database.registerVar( Variable(shortname = 'RNN_ttV_VS_RNN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'RNN_output_top:RNN_output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F ) )
-                #
-                # database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( output_ttV < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( output_top < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = "RNN_ttV", latexname = "NN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( RNN_output_ttV < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = "RNN_top", latexname = "NN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( RNN_output_top < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = 'NN_ttV_VS_NN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'output_top:output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( output_ttV < 0.5 && output_top < 0.5 )") ) )
-                # database.registerVar( Variable(shortname = 'RNN_ttV_VS_RNN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'RNN_output_top:RNN_output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( RNN_output_ttV < 0.5 && RNN_output_top < 0.5 )") ) )
-
+                if args.useFriendTrees:
+                    database.registerVar( Variable(shortname = "NN_Rebinned", latexname = "NN", ntuplename = "output_bin", bins = 8, minval = -0.5, maxval = 7.5, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "RNN_Rebinned", latexname = "NN", ntuplename = "RNN_output_bin", bins = 8, minval = -0.5, maxval = 7.5, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "RNN_ttV", latexname = "NN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "RNN_top", latexname = "NN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                    #
+                    # database.registerVar( Variable(shortname = 'NN_ttV_VS_NN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'output_top:output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F ) )
+                    # database.registerVar( Variable(shortname = 'RNN_ttV_VS_RNN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'RNN_output_top:RNN_output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F ) )
+                    #
+                    # database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( output_ttV < 0.5 )") ) )
+                    # database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( output_top < 0.5 )") ) )
+                    # database.registerVar( Variable(shortname = "RNN_ttV", latexname = "NN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( RNN_output_ttV < 0.5 )") ) )
+                    # database.registerVar( Variable(shortname = "RNN_top", latexname = "NN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = False, basecut=Cut("NN_Cut","( RNN_output_top < 0.5 )") ) )
+                    # database.registerVar( Variable(shortname = 'NN_ttV_VS_NN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'output_top:output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( output_ttV < 0.5 && output_top < 0.5 )") ) )
+                    # database.registerVar( Variable(shortname = 'RNN_ttV_VS_RNN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'RNN_output_top:RNN_output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( RNN_output_ttV < 0.5 && RNN_output_top < 0.5 )") ) )
             elif do2LSS_LOWNJ_VR:
                 print ""
-                # database.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = "JVT_EventWeight", sysvar = True) )
-
+                database.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = "JVT_EventWeight", sysvar = True) )
             # database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = True) )
             # database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, logaxis = True, sysvar = True) )
@@ -864,8 +879,8 @@ if __name__ == "__main__":
             # database.registerVar( Variable(shortname = "Mu1Eta",latexname = "#eta^{#mu_{1}}", ntuplename = "muon_Eta[1]", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "El0DeltaRClosestJet",latexname = "min #DeltaR(e_{0},j)", ntuplename = "electron_deltaRClosestJet[0]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "El1DeltaRClosestJet",latexname = "min #DeltaR(e_{1},j)", ntuplename = "electron_deltaRClosestJet[1]", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
-            database.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "min #DeltaR(#mu_{0},j)", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
-            database.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "min #DeltaR(#mu_{1},j)", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
+            # database.registerVar( Variable(shortname = "Mu0DeltaRClosestJet",latexname = "min #DeltaR(#mu_{0},j)", ntuplename = "muon_deltaRClosestJet[0]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
+            # database.registerVar( Variable(shortname = "Mu1DeltaRClosestJet",latexname = "min #DeltaR(#mu_{1},j)", ntuplename = "muon_deltaRClosestJet[1]", manualbins = [0,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], logaxis = True, sysvar = True) )
             # database.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 5, minval = -0.5, maxval = 4.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight", sysvar = True) )
             # database.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0, sysvar = True) )
             # database.registerVar( Variable(shortname = "MET_FinalTrk", latexname = "E_{T}^{miss} [GeV]", ntuplename = "MET_RefFinal_et/1e3", bins = 20, minval = 0.0, maxval = 200.0, logaxis = True, sysvar = True) )
@@ -886,8 +901,10 @@ if __name__ == "__main__":
 
     if doMMClosureTest:
         print ''
-        # database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True) )
-        # database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True) )
+        database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
+        database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )
+        if args.readGFW2:
+            database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttV+MVA2lSSMarseille_weight_ttbar)/2.0", manualbins = [-1.0,-0.35,-0.15,0.05,0.025,0.45,1.0], sysvar = True ) )
         database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = True ) )
         database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
         database.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )
@@ -1016,6 +1033,8 @@ if __name__ == "__main__":
 
         if doMM:
 
+            weight_prefix = "MMWeight" if not args.readGFW2 else "MM_EventWeight"
+
             flavours     = ["El","Mu"]
             efficiencies = ["Real","Fake"]
             variables    = ["Pt","NBJets_VS_Pt","DistanceClosestJet_VS_Pt"]
@@ -1028,7 +1047,7 @@ if __name__ == "__main__":
             else:
                 sys_process = "FakesClosureMM"
                 sys_sources.extend([("Stat","UncorrBins","RF")])
-                sampleID = "410501" # "410000"
+                sampleID = "410501"
 
             if args.doSyst == "CORRELATED_BINS":
 
@@ -1047,7 +1066,7 @@ if __name__ == "__main__":
                                     if ( e == "Real" ) and v != "Pt": continue
                                     # if ( e == "Real" or f == "Mu" ) and v == "NBJets_VS_Pt" : continue # For all other cases, read the pT parametrisation only
                                 thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys[0]
-                                thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] + "_"
+                                thisweight = weight_prefix + "_" + e + "_" + f + "_" + v + "_" + sys[0] + "_"
                                 database.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
 
             elif args.doSyst == "UNCORRELATED_BINS":
@@ -1068,17 +1087,18 @@ if __name__ == "__main__":
                                     # if ( e == "Real" or f == "Mu" ) and v == "NBJets_VS_Pt" : continue # For all other cases, read the pT parametrisation only
                                 if sys[1] == "CorrBins":
                                     thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys[0]
-                                    thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] + "_"
+                                    thisweight = weight_prefix + "_" + e + "_" + f + "_" + v + "_" + sys[0] + "_"
                                     database.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
                                 elif sys[1] == "UncorrBins":
                                     # Get the number of systematics shifts for the MMWeight systematics (aka, the number of bins of the r/f efficiency)
                                     # from the reweighted tree.
                                     # Use the Data sample. For MM closure test, use ttbar_nonallhad
-                                    bins = inputs.getSysIndexes( sampleID=sampleID, branchID="MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] )
+                                    branchID = weight_prefix + "_" + e + "_" + f + "_" + v + "_" + sys[0]
+                                    bins = inputs.getSysIndexes( sampleID=sampleID, branchID=branchID )
                                     print("{0},{1},{2},{3} - Bins: {4}".format(sys,e,f,v,bins))
                                     for ibin in bins:
                                         thiscat    = "MMsys_" + e + "_" + f + "_" + v + "_" + sys[0] + "_" + str(ibin)
-                                        thisweight = "MMWeight_" + e + "_" + f + "_" + v + "_" + sys[0] + "_" + str(ibin) + "_"
+                                        thisweight = weight_prefix + "_" + e + "_" + f + "_" + v + "_" + sys[0] + "_" + str(ibin) + "_"
                                         database.registerSystematics(Systematics(name=thiscat, eventweight=thisweight, process=[sys_process]))
         if doFF:
             database.registerSystematics( Systematics(name="FFsys", eventweight="FFWeight_", process=["FakesFF"]) )
@@ -1143,9 +1163,6 @@ if __name__ == "__main__":
     # -------------
 
     if do2LSS_LOWNJ_VR :
-
-        # TEMP
-        # dRmu0jet = Cut("dRmu0jet","muon_deltaRClosestJet[0] < 0.5")
 
         append_2Lep += "_LowNJetCR"
 
@@ -1373,15 +1390,15 @@ if __name__ == "__main__":
             # NB: here order of cuts is important b/c they will be applied on top of each other
 
             cutlistnames_CFC_2Lep = [
-                                 ["TrigDec",weight_CFC],
-                                 ["2Lep_NLep",weight_CFC],
-                                 ["2Lep_SS",weight_CFC],
-                                 ["2Lep_TrigMatch",weight_CFC],
-                                 ["TT",weight_CFC],
-                                 [("2Lep_NJet_CR","2Lep_NJet_SR")[ "2LSS_SR" in args.channel ],weight_CFC],
-                                 ["2Lep_NBJet_SR",weight_CFC],
-                                 ["TauVeto",weight_CFC],
-                                    ]
+                ["TrigDec",weight_CFC],
+                ["2Lep_NLep",weight_CFC],
+                ["2Lep_SS",weight_CFC],
+                ["2Lep_TrigMatch",weight_CFC],
+                ["TT",weight_CFC],
+                [("2Lep_NJet_CR","2Lep_NJet_SR")[ "2LSS_SR" in args.channel ],weight_CFC],
+                ["2Lep_NBJet_SR",weight_CFC],
+                ["TauVeto",weight_CFC],
+            ]
 
             tot_idx = 0
             for idx, cut in enumerate(cutlistnames_CFC_2Lep):
@@ -2021,7 +2038,7 @@ if __name__ == "__main__":
             if "LOWNJ" in args.channel:
                 database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_OF_Event']), weight = weight_SR_CR ) )
             else:
-                sys.exit("ERROR: closure test for THETA method makes sense only for LOWNJ option (You are currently using {0})".format(args.channel))
+                os.sys.exit("ERROR: closure test for THETA method makes sense only for LOWNJ option (You are currently using {0})".format(args.channel))
 
 
     # ---------------------------------------------
@@ -2078,15 +2095,17 @@ if __name__ == "__main__":
 
     ttH = TTHBackgrounds(inputs, database)
 
+    ttH.readGFW2 = args.readGFW2
+
     # ------------------------------------
     # Set the integrated luminosity (fb-1)
     # ------------------------------------
 
-    ttH.luminosity = args.lumi
+    ttH.luminosity = args.lumi if not args.readGFW2 else args.lumi*1e3
 
     ttH.lumi_units = 'fb-1'
 
-    print ("\nNormalising MC to lumi : {0} [{1}]\n".format( args.lumi, ttH.lumi_units ) )
+    print ("Normalising MC to lumi : {0} [{1}]\n".format( args.lumi, ttH.lumi_units ) )
 
     # ----------------------------------
     # Set the global event weight for MC
@@ -2095,6 +2114,8 @@ if __name__ == "__main__":
     ttH.eventweight = "mcWeightOrg * pileupEventWeight_090"
     if args.noCorrections:
         ttH.eventweight = "mcWeightOrg"
+    if args.readGFW2:
+        ttH.eventweight = ttH.eventweight.replace("mcWeightOrg","scale_nom")
 
     # This will reset the global event weight, and will reset the Xsec and lumi weight to be 1
     # (Needed when looking at RAW cutflow)
@@ -2451,7 +2472,7 @@ if __name__ == "__main__":
 
     if args.submitPBSVar:
         if not args.submitPBSVar in database.vardb.iterkeys():
-            sys.exit("ERROR: the input variable for the PBS job: {0} couldn't be found in the VariableDB!".format(args.submitPBSVar))
+            os.sys.exit("ERROR: the input variable for the PBS job: {0} couldn't be found in the VariableDB!".format(args.submitPBSVar))
 
     for category in sorted(database.categorylist, key=(lambda category: category.name) ):
 

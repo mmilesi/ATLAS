@@ -29,6 +29,7 @@ class Inputs:
         self.friendfile_extension = None
         self.systrees = []
         self.sysweights = []
+        self.readGFW2 = False
 
     def setFriendTree(self, friendtrees=[], friendfile_extension=None):
 
@@ -70,24 +71,25 @@ class Inputs:
 
         # If not already done, set the Xsec weight to each (MC) TTree
 
-        for filepath in filelist:
-	    f = TFile.Open(filepath,"UPDATE")
-	    for treename in treelist:
-	       t = f.Get(treename)
-               if not t:
-                  print ("WARNING: tree {0} in file {1} cannot be found during tree registration".format(treename,filepath))
-                  return False
-	       if ismc and ( t.GetWeight() == 1.0 or resetTreeWeight ):
-		  print("Weighting tree w/ Xsec weight...")
-		  weight = float(sample['xsection']) * float(sample['efficiency']) * float(sample['kfactor']) * 1e3 # To get the weight in fb (assuming the Xsec is in pb)
-		  h = f.Get("TotalEventsW")
-		  if not h:
-		     print ("WARNING: histogram named TotalEventsW in file {1} couldn't be found!".format(filepath))
-		     return False
-		  weight /= h.GetBinContent(2)
-		  t.SetWeight(weight)
-		  t.Write(t.GetName(),t.kOverwrite)
-	    f.Close()
+        if not self.readGFW2:
+            for filepath in filelist:
+                f = TFile.Open(filepath,"UPDATE")
+                for treename in treelist:
+                    t = f.Get(treename)
+                    if not t:
+                        print ("WARNING: tree {0} in file {1} cannot be found during tree registration".format(treename,filepath))
+                        return False
+                    if ismc and ( t.GetWeight() == 1.0 or resetTreeWeight ):
+                        print("Weighting tree w/ Xsec weight...")
+                        weight = float(sample['xsection']) * float(sample['efficiency']) * float(sample['kfactor']) * 1e3 # To get the weight in fb (assuming the Xsec is in pb)
+                        h = f.Get("TotalEventsW")
+                        if not h:
+                            print ("WARNING: histogram named TotalEventsW in file {1} couldn't be found!".format(filepath))
+                            return False
+                    weight /= h.GetBinContent(2)
+                    t.SetWeight(weight)
+                    t.Write(t.GetName(),t.kOverwrite)
+                f.Close()
 
         # Add the TTrees into a TChain
 
@@ -119,6 +121,9 @@ class Inputs:
 
     def getTree(self, treename='physics', group='', subgroup='', sampleid=None):
 
+        if self.readGFW2:
+            treename = 'nominal'
+
 	if sampleid:
             group, subgroup = self.sampleids[self.nomtree][sampleid]
 
@@ -140,6 +145,9 @@ class Inputs:
         # Group list is a list of tuple with two elements (strings),
         # e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards.
         # The entire list of trees is returned, one tree for each tuple.
+
+        if self.readGFW2:
+            treename = 'nominal'
 
 	newGroupList = []
         for group, subgroup in grouplist:
@@ -182,10 +190,11 @@ class Inputs:
             sampletree = self.getTree(group='Data',subgroup='physics_Main')
 
         branches_array = sampletree.GetListOfBranches()
+
         idxlist = []
         for b in range(0,branches_array.GetEntries()):
             branchname = branches_array.At(b).GetName()
-            if not all( s in branchname for s in [branchID,"_up"] ): continue
+            if not branchID in branchname or "Grouped" in branchname: continue
             tokens = branchname.split("_")
             # The bin index is supposed to be the second to last token in the branch name
             idx = tokens[-2]
@@ -194,7 +203,8 @@ class Inputs:
             except ValueError:
                 print("\nERROR! String token: {0} cannot be converted to an integer\n".format(idx))
                 raise
-            idxlist.append(idx)
+            if not idx in idxlist:
+                idxlist.append(idx)
         return idxlist
 
 class Variable:
@@ -814,6 +824,7 @@ class Background:
     eventweight = '1.0'
     rescaleXsecAndLumi = False
     style = {}
+    readGFW2 = False
 
     def __init__(self, inputs, vardb):
         self.inputs      = inputs
@@ -884,12 +895,12 @@ class Background:
                 if systematics.eventweight and name in systematics.process:
 		    if systematicsdirection == 'UP':
                         if type(systematics.eventweight) is str:
-                            eventweight = systematics.eventweight + 'up'
+                            eventweight = ( systematics.eventweight + 'up' ) if not self.readGFW2 else ( systematics.eventweight + 'Up' )
                         else:
                             eventweight = 1.0 + systematics.eventweight
                     elif systematicsdirection == 'DOWN':
                         if type(systematics.eventweight) is str:
-                            eventweight = systematics.eventweight + 'dn'
+                            eventweight = ( systematics.eventweight + 'dn' ) if not self.readGFW2 else ( systematics.eventweight + 'Dn' )
                         else:
                             eventweight = 1.0 - systematics.eventweight
 
@@ -1673,7 +1684,7 @@ def integrate(hist):
 
 # This function loads the samples metadata from the .csv file info
 
-def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', friendtrees=[], friendfile_extension=None, systrees=[]):
+def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', friendtrees=[], friendfile_extension=None, systrees=[], readGFW2=False):
 
     # The datasat manager takes care of parsing the sample.csv files.
 
@@ -1688,6 +1699,8 @@ def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', fri
 
     if friendtrees:
         inputs.setFriendTree(friendtrees,friendfile_extension)
+
+    inputs.readGFW2 = readGFW2
 
     for s in samples:
 
