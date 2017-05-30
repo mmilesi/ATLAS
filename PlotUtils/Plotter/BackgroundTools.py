@@ -86,9 +86,9 @@ class Inputs:
                         if not h:
                             print ("WARNING: histogram named TotalEventsW in file {1} couldn't be found!".format(filepath))
                             return False
-                    weight /= h.GetBinContent(2)
-                    t.SetWeight(weight)
-                    t.Write(t.GetName(),t.kOverwrite)
+                        weight /= h.GetBinContent(2)
+                        t.SetWeight(weight)
+                        t.Write(t.GetName(),t.kOverwrite)
                 f.Close()
 
         # Add the TTrees into a TChain

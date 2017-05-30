@@ -1099,9 +1099,24 @@ if __name__ == '__main__':
 
     # var_list = []
     var_list = [
-        "BDTGScore",
-        #
         "Integral",
+        "deltaRLep0Lep1",
+        "deltaPhiLep0Lep1",
+        "MET_FinalTrk",
+        "Mll01_inc",
+        # "TotLepCharge",
+        "NBJets",
+        "NJets2j3j",
+        "NJets4j",
+        #
+        "BDTGScore",
+        "Lep0Pt",
+        "Lep1Pt",
+        "Lep0Eta",
+        "Lep1Eta",
+        "Lep0EtaBE2",
+        "Lep1EtaBE2",
+        #
         # "Mu0Pt",
         # "Mu1Pt",
         # "Mu0Eta",
@@ -1114,14 +1129,6 @@ if __name__ == '__main__':
         # "El1Eta",
         # "El0DeltaRClosestJet",
         # "El1DeltaRClosestJet",
-        # "deltaRLep0Lep1",
-        # "deltaPhiLep0Lep1",
-        # "MET_FinalTrk",
-        # "Mll01_inc",
-        # "TotLepCharge",
-        # "NBJets",
-        "NJets2j3j",
-        "NJets4j",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",

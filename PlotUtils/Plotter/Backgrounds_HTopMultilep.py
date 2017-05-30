@@ -170,7 +170,10 @@ class TTHBackgrounds(Background):
         # for O(fb-1) luminosity
 
         if self.lumi_units == 'fb-1':
-            lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(self.luminosity), x=.2, y=.87, size=0.03 * scale)
+            if self.readGFW2:
+                lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(self.luminosity/1e3), x=.2, y=.87, size=0.03 * scale)
+            else:
+                lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(self.luminosity), x=.2, y=.87, size=0.03 * scale)
 
         # for O(pb-1) luminosity
 
