@@ -1,11 +1,15 @@
 import os, glob, subprocess, shutil
 
 currentpath = os.path.abspath(os.path.curdir)
-inputpath = "./GFW2MiniNTup/25ns_v28/25ns_v28/01/gfw2/ForPlotting"
-# inputpath = "./temp"
+inputpath = "./GFW2MiniNTup/25ns_v28/25ns_v28/01/gfw2/ForPlotting2"
+#inputpath = "./GFW2MiniNTup/25ns_v28/25ns_v28/01/gfw2/Nominal"
 
 os.chdir(inputpath)
-filelist = [ f for f in glob.glob("*.root*") if not "friend.root" in f ]
+# filelist = [ f for f in glob.glob("*.root*") if not "friend.root" in f ]
+filelist = [ f for f in glob.glob("*.root*") ]
+
+# Copy only friend trees
+# filelist = [ f for f in glob.glob("*.root*") if "friend" in f ]
 
 os.chdir(currentpath)
 

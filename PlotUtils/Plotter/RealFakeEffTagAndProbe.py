@@ -14,7 +14,7 @@ sys.path.append(os.path.abspath(os.path.curdir))
 # Parser for command line options
 # -------------------------------
 
-g_avaialble_systematics = ["QMisID","TTV","VV","OtherPromptSS","FakesOS"]
+g_available_systematics = ["QMisID","TTV","VV","OtherPromptSS","FakesOS"]
 
 g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
                    "ICHEP 2015+2016 DS":13.20768,       # August 2016
@@ -69,7 +69,7 @@ parser.add_argument("--verbose", dest="verbose", action="store_true",default=Fal
 parser.add_argument("--nosub", dest="nosub", action="store_true",default=False,
                   help="Do not subtract backgrounds to data (NB: subtraction is disabled by default when running w/ option --closure)")
 parser.add_argument('--systematics', dest='systematics', action='store', default="", type=str, nargs='*',
-                  help='Option to pass a list of systematic variations to be considered. Use a space-separated list. Currently available systematics: {0}. If using option=\'ALL\', every sytematic in the list will be considered.'.format(g_avaialble_systematics))
+                  help='Option to pass a list of systematic variations to be considered. Use a space-separated list. Currently available systematics: {0}. If using option=\'ALL\', every sytematic in the list will be considered.'.format(g_available_systematics))
 parser.add_argument("--log", dest="log", action="store_true",default=False,
                   help="Read plots with logarithmic Y scale.")
 parser.add_argument("--rebin", dest="rebin", action="store", type=str, nargs="+",
@@ -188,7 +188,7 @@ class RealFakeEffTagAndProbe:
 
         if systematics:
             if "ALL" in systematics:
-                 self.__systematics.extend(g_avaialble_systematics)
+                 self.__systematics.extend(g_available_systematics)
             else:
                 self.__systematics.extend(systematics)
 
@@ -1403,6 +1403,11 @@ class RealFakeEffTagAndProbe:
 
 	self.__outputpath = outputpath
 
+        # Create output directory if it doesn't exist yet
+
+        if not os.path.exists(self.__outputpath):
+            os.makedirs(self.__outputpath)
+
         if self.__averagehists:
 	    filename += "Avg"
 
@@ -1436,10 +1441,17 @@ class RealFakeEffTagAndProbe:
             hname = h.GetName()
             if "&&" in hname:
                 hname = hname.replace("&&","_VS_")
-                h.SetName(hname)
+            if "RAW" in hname:
+                hname = hname.replace("RAW","")
+            h.SetName(hname)
             if args.do3L:
                 h.SetName("3L_"+hname)
+
     	    h.Write()
+
+            if "_El_" in hname:
+                h3L = h.Clone("3L_"+hname)
+                h3L.Write()
 
     	    eff=[]
             is2DHist = ( isinstance(h,TH2) )
@@ -1596,6 +1608,8 @@ class RealFakeEffTagAndProbe:
             h.SetMaximum(3.0*maximum)
             h.SetMinimum(0.0)
 
+            h.SetLineStyle(2)
+
             if self.verbose: print("\t\t==> new integral = {0:.3f}".format(h.Integral(0,h.GetSize()-1)))
 
             varX = "proj" + vars2D[0]
@@ -1615,7 +1629,8 @@ class RealFakeEffTagAndProbe:
                 slice_upedge  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinUpEdge(int(tokens[-1]))
                 slice_centre  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinCenter(int(tokens[-1]))
 
-                legend_text = "{0} - [{1},{2}]".format(vars2D[1],slice_lowedge,slice_upedge) if vars2D[1] != "NBJets" else "{0} - [{1}]".format(vars2D[1],int(slice_centre))
+                varlegend = vars2D[1] if not "RAW" in vars2D[1] else vars2D[1][:-3]
+                legend_text = "{0} - [{1},{2}]".format(varlegend,slice_lowedge,slice_upedge) if varlegend != "NBJets" else "{0} - [{1}]".format(varlegend,int(slice_centre))
                 legendx.AddEntry(h,legend_text, "P")
 
                 if not gPad.GetListOfPrimitives().GetSize():
@@ -1640,7 +1655,8 @@ class RealFakeEffTagAndProbe:
                 slice_upedge  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinUpEdge(int(tokens[-1]))
                 slice_centre  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinCenter(int(tokens[-1]))
 
-                legend_text = "{0} - [{1},{2}]".format(vars2D[0],slice_lowedge,slice_upedge) if vars2D[0] != "NBJets" else "{0} - [{1}]".format(vars2D[0],int(slice_centre))
+                varlegend = vars2D[0] if not "RAW" in vars2D[0] else vars2D[0][:-3]
+                legend_text = "{0} - [{1},{2}]".format(varlegend,slice_lowedge,slice_upedge) if varlegend != "NBJets" else "{0} - [{1}]".format(varlegend,int(slice_centre))
                 legendy.AddEntry(h,legend_text, "P")
 
                 if not gPad.GetListOfPrimitives().GetSize():
@@ -2380,7 +2396,7 @@ if __name__ == "__main__":
     print args
 
     for sys in args.systematics:
-        if not sys in g_avaialble_systematics:
+        if not sys in g_available_systematics and not sys == "ALL":
 	    print("\nWARNING!\nSystematic {0} is not supported!!".format(sys))
 
     eff = RealFakeEffTagAndProbe( closure=args.closure, factors=args.factors, variables=args.variables, efficiencies=args.efficiency, leptons=args.lepton, systematics=args.systematics, nosub=args.nosub )

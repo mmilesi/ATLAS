@@ -314,11 +314,13 @@ if __name__ == "__main__":
     # Retrieve the input samples
     # --------------------------
 
+    friendtrees = ["NN_physics"] if not args.readGFW2 else ["NN_nominal"]
+
     inputs = loadSamples(
         inputdir             = args.inputpath, # Path of the samples to be processed
         samplescsv           = args.samplesCSV,
         nomtree              = "physics" if not args.readGFW2 else "nominal",
-        friendtrees          = ["NN_physics"] if args.useFriendTrees else None,
+        friendtrees          = friendtrees if args.useFriendTrees else None,
         friendfile_extension = ".reduced.friend" if args.useFriendTrees else None,
         systrees =  [ # Name of the trees that contains values for shifted systematics
             # 'METSys',
@@ -835,26 +837,41 @@ if __name__ == "__main__":
     from ROOT import deltaPhi
     delta_Phi_lep0lep1 = "deltaPhi( lep_Phi_0, lep_Phi_1 )"
 
+    dist_NN  = "TMath::Sqrt(2.0) - TMath::Sqrt( (1.0-output_top)*(1.0-output_top) + (1.0-output_ttV)*(1.0-output_ttV) )"
+    dist_RNN = "TMath::Sqrt(2.0) - TMath::Sqrt( (1.0-RNN_output_top)*(1.0-RNN_output_top) + (1.0-RNN_output_ttV)*(1.0-RNN_output_ttV) )"
+
     if doSR or do2LSS_LOWNJ_VR or do2LSS_HIGHNJ_BVETO_VR:
         print ""
         if "INCL_FLAV" in args.channel:
+            print("Scheduling variables for {0}".format(args.channel))
             database.registerVar( Variable(shortname = "LepFlavours", latexname = "Lepton flavour (2lSS0#tau)", ntuplename = "dilep_type", bins = 3, minval = 0.5, maxval = 3.5, binlabelsX = {1:"#mu#mu",2:"e#mu",3:"ee"}, sysvar = True) )
+            if args.useFriendTrees:
+                database.registerVar( Variable(shortname = "NN_Rebinned", latexname = "NN", ntuplename = "output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
+                database.registerVar( Variable(shortname = "RNN_Rebinned", latexname = "RNN", ntuplename = "RNN_output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
+                database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                database.registerVar( Variable(shortname = "RNN_ttV", latexname = "RNN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                database.registerVar( Variable(shortname = "RNN_top", latexname = "RNN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                database.registerVar( Variable(shortname = "NNComb", latexname = "NN Comb", ntuplename = dist_NN, bins = 18, minval = 0.10, maxval = 1.45, sysvar = True ) )
+                database.registerVar( Variable(shortname = "RNNComb", latexname = "RNN Comb", ntuplename = dist_RNN, bins = 18, minval = 0.10, maxval = 1.45, sysvar = True ) )
         else:
             # database.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
             # database.registerVar( Variable(shortname = 'NJetsPlus10NBJets', latexname = 'N_{Jets}+10*N_{BJets}', ntuplename = 'nJets_OR_T+10.0*nJets_OR_T_MV2c10_70', bins = 40, minval = 0, maxval = 40, basecut = database.getCut('VetoLargeNBJet'), weight = 'JVT_EventWeight * MV2c10_70_EventWeight') )
             # database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 10.0, maxval = 210.0) )
             # database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 14, minval = 10.0, maxval = 150.0) )
             if doSR or do2LSS_HIGHNJ_BVETO_VR:
-                print ""
+                print("Scheduling variables for {0}".format(args.channel))
                 database.registerVar( Variable(shortname = 'NJets4j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 6, minval = 3.5, maxval = 9.5, weight = "JVT_EventWeight", sysvar = True) )
                 #
                 if args.useFriendTrees:
-                    database.registerVar( Variable(shortname = "NN_Rebinned", latexname = "NN", ntuplename = "output_bin", bins = 8, minval = -0.5, maxval = 7.5, sysvar = True ) )
-                    database.registerVar( Variable(shortname = "RNN_Rebinned", latexname = "NN", ntuplename = "RNN_output_bin", bins = 8, minval = -0.5, maxval = 7.5, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "NN_Rebinned", latexname = "NN", ntuplename = "output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "RNN_Rebinned", latexname = "RNN", ntuplename = "RNN_output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
                     database.registerVar( Variable(shortname = "NN_ttV", latexname = "NN_{ttV}", ntuplename = "output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
                     database.registerVar( Variable(shortname = "NN_top", latexname = "NN_{top}", ntuplename = "output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
-                    database.registerVar( Variable(shortname = "RNN_ttV", latexname = "NN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
-                    database.registerVar( Variable(shortname = "RNN_top", latexname = "NN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "RNN_ttV", latexname = "RNN_{ttV}", ntuplename = "RNN_output_ttV", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "RNN_top", latexname = "RNN_{top}", ntuplename = "RNN_output_top", bins = 10, minval = 0.0, maxval = 1.0, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "NNComb", latexname = "NN Comb", ntuplename = dist_NN, bins = 18, minval = 0.10, maxval = 1.45, sysvar = True ) )
+                    database.registerVar( Variable(shortname = "RNNComb", latexname = "RNN Comb", ntuplename = dist_RNN, bins = 18, minval = 0.10, maxval = 1.45, sysvar = True ) )
                     #
                     # database.registerVar( Variable(shortname = 'NN_ttV_VS_NN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'output_top:output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F ) )
                     # database.registerVar( Variable(shortname = 'RNN_ttV_VS_RNN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'RNN_output_top:RNN_output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F ) )
@@ -866,7 +883,7 @@ if __name__ == "__main__":
                     # database.registerVar( Variable(shortname = 'NN_ttV_VS_NN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'output_top:output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( output_ttV < 0.5 && output_top < 0.5 )") ) )
                     # database.registerVar( Variable(shortname = 'RNN_ttV_VS_RNN_top', latexnameX = 'NN_{ttV}', latexnameY = 'NN_{top}', ntuplename = 'RNN_output_top:RNN_output_ttV', bins = 10, minval = 0.0, maxval = 1.0, typeval = TH2F, basecut=Cut("NN_Cut","( RNN_output_ttV < 0.5 && RNN_output_top < 0.5 )") ) )
             elif do2LSS_LOWNJ_VR:
-                print ""
+                print("Scheduling variables for {0}".format(args.channel))
                 database.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = "JVT_EventWeight", sysvar = True) )
             # database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = True) )
             # database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, logaxis = True, sysvar = True) )
@@ -900,7 +917,7 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = 'NJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 8, minval = 1.5, maxval = 9.5, weight = 'JVT_EventWeight') )
 
     if doMMClosureTest:
-        print ''
+        print("Scheduling variables for {0}".format(args.channel))
         database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = True ) )
         database.registerVar( Variable(shortname = "NBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 5, minval = -0.5, maxval = 4.5, weight = "JVT_EventWeight * MV2c10_70_EventWeight", sysvar = True) )
         database.registerVar( Variable(shortname = "Mll01_inc", latexname = "m(l_{0}l_{1}) [GeV]", ntuplename = "Mll01/1e3", bins = 13, minval = 0.0, maxval = 260.0, sysvar = True ) )
@@ -1522,7 +1539,8 @@ if __name__ == "__main__":
             manualbins_mu_eta = [0.0,0.1,0.7,1.3,1.9,2.5]
 
             manualbins_el_real_pt = [10,15,20,26,30,40,60,90,140,210]
-            manualbins_el_fake_pt = [10,15,35,210] # This binnng comes from fit optimisation
+            manualbins_el_fake_pt = [10,15,210] # This binnng comes from fit optimisation
+            # manualbins_el_fake_pt = [10,15,35,210] # This binnng comes from fit optimisation
             # manualbins_el_fake_pt = [10,15,20,26,35,60,210] # This is the old binning
             manualbins_el_fake_deltaRej = [0,1,5]
             manualbins_el_eta = [0.0,0.5,0.8,1.37,1.52,2.0,2.6]

@@ -1674,12 +1674,44 @@ def makeMCErrors(hist):
 
     return graph
 
-# Get effective integral of input histogram, taking u/oflow into account
-
 def integrate(hist):
+
+    # Get effective integral of input histogram, taking u/oflow into account
+
     if isinstance(hist,TH2):
         return hist.Integral(0,hist.GetXaxis().GetNbins()+1,0,hist.GetYaxis().GetNbins()+1)
     return hist.Integral(0,hist.GetNbinsX()+1)
+
+
+def SelfDivide( h_self, name = "Ratio", h_props = None ):
+
+    # Divide an histogram by itself, and set the errors correctly
+
+    h = h_self.Clone(name)
+    h.Divide(h_self)
+    for ibin in range(0,h.GetSize()):
+        if h_self.GetBinContent(ibin) > 0:
+            h.SetBinError(ibin, h_self.GetBinError(ibin)/h_self.GetBinContent(ibin))
+
+    if h_props.get("TitleX"): h.SetXTitle(h_props["TitleX"])
+    if h_props.get("TitleY"): h.SetYTitle(h_props["TitleY"])
+    if h_props.get("TitleSizeX"): h.GetXaxis().SetTitleSize(h_props["TitleSizeX"])
+    if h_props.get("TitleSizeY"): h.GetYaxis().SetTitleSize(h_props["TitleSizeY"])
+    if h_props.get("TitleOffsetX"): h.GetXaxis().SetTitleOffset(h_props["TitleOffsetX"])
+    if h_props.get("TitleOffsetY"): h.GetYaxis().SetTitleOffset(h_props["TitleOffsetY"])
+    if h_props.get("LabelSizeX"): h.GetXaxis().SetLabelSize(h_props["LabelSizeX"])
+    if h_props.get("LabelSizeY"): h.GetYaxis().SetLabelSize(h_props["LabelSizeY"])
+    if h_props.get("NdivisionsY"): h.GetYaxis().SetNdivisions(h_props["NdivisionsY"])
+    if h_props.get("FillColor"): h.SetFillColor(h_props["FillColor"])
+    if h_props.get("FillStyle"): h.SetFillStyle(h_props["FillStyle"])
+    if h_props.get("LineStyle"): h.SetLineStyle(h_props["LineStyle"])
+    if h_props.get("LineColor"): h.SetLineColor(h_props["LineColor"])
+    if h_props.get("LineWidth"): h.SetLineWidth(h_props["LineWidth"])
+    if h_props.get("MarkerSize"): h.SetMarkerSize(h_props["MarkerSize"])
+    if h_props.get("MarkerColor"): h.SetMarkerColor(h_props["MarkerColor"])
+    if h_props.get("MarkerStyle"): h.SetMarkerStyle(h_props["MarkerStyle"])
+
+    return h
 
 
 # This function loads the samples metadata from the .csv file info

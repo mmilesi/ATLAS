@@ -54,7 +54,7 @@ gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
-from Plotter.BackgroundTools import makePoissonErrors, integrate
+from Plotter.BackgroundTools import makePoissonErrors, integrate, SelfDivide
 
 # Store sys integral for each systematic name
 
@@ -598,34 +598,52 @@ def makeSysPlots( flav, var, observedhist, expectedhist, fakeshist, debug=False 
 
     # Stat + sys error on expected (ratio)
 
-    ratio_err = new_expectedhist.Clone("RatioErr")
-    ratio_err.SetXTitle(new_expectedhist.GetXaxis().GetTitle())
-    ratio_err.SetYTitle("Data/Exp.")
-    ratio_err.GetXaxis().SetTitleSize(0.15)
-    ratio_err.GetYaxis().SetTitleSize(0.15)
-    ratio_err.GetXaxis().SetTitleOffset(0.90)
-    ratio_err.GetYaxis().SetTitleOffset(0.35)
-    ratio_err.GetXaxis().SetLabelSize(0.15)
-    ratio_err.GetYaxis().SetLabelSize(0.12)
-    ratio_err.GetYaxis().SetNdivisions(505) #(5)
-    ratio_err.SetFillColor(kOrange)
-    ratio_err.SetLineColor(kOrange)#(10)
-    ratio_err.SetFillStyle(3356)
-    gStyle.SetHatchesLineWidth(2)
-    gStyle.SetHatchesSpacing(0.8)
-    ratio_err.SetMarkerSize(0)
+    # ratio_err = new_expectedhist.Clone("RatioErr")
+    # ratio_err.SetXTitle(new_expectedhist.GetXaxis().GetTitle())
+    # ratio_err.SetYTitle("Data/Exp.")
+    # ratio_err.GetXaxis().SetTitleSize(0.15)
+    # ratio_err.GetYaxis().SetTitleSize(0.15)
+    # ratio_err.GetXaxis().SetTitleOffset(0.90)
+    # ratio_err.GetYaxis().SetTitleOffset(0.35)
+    # ratio_err.GetXaxis().SetLabelSize(0.15)
+    # ratio_err.GetYaxis().SetLabelSize(0.12)
+    # ratio_err.GetYaxis().SetNdivisions(505) #(5)
+    # ratio_err.SetFillColor(kOrange)
+    # ratio_err.SetLineColor(kOrange)#(10)
+    # ratio_err.SetFillStyle(3356)
+    # gStyle.SetHatchesLineWidth(2)
+    # gStyle.SetHatchesSpacing(0.8)
+    # ratio_err.SetMarkerSize(0)
 
-    # print("")
+    # # print("")
+    # # for ibin in range(1,ratio_err.GetSize()):
+    # #     print("\t\tratio_err[{0}]  = {1:.3f} +- {2:.4f}".format( ibin, ratio_err.GetBinContent(ibin), ratio_err.GetBinError(ibin) ))
+
+    # ratio_err.Divide(new_expectedhist)
     # for ibin in range(1,ratio_err.GetSize()):
-    #     print("\t\tratio_err[{0}]  = {1:.3f} +- {2:.4f}".format( ibin, ratio_err.GetBinContent(ibin), ratio_err.GetBinError(ibin) ))
+    #     if new_expectedhist.GetBinContent(ibin) > 0:
+    #         ratio_err.SetBinError(ibin, new_expectedhist.GetBinError(ibin)/new_expectedhist.GetBinContent(ibin))
 
-    ratio_err.Divide(new_expectedhist)
-    for ibin in range(1,ratio_err.GetSize()):
-        if new_expectedhist.GetBinContent(ibin) > 0:
-            ratio_err.SetBinError(ibin, new_expectedhist.GetBinError(ibin)/new_expectedhist.GetBinContent(ibin))
+    # # for ibin in range(1,ratio_err.GetSize()):
+    # #     print("\t\tratio_err[{0}]  = {1:.3f} +- {2:.4f}".format( ibin, ratio_err.GetBinContent(ibin), ratio_err.GetBinError(ibin) ))
 
-    # for ibin in range(1,ratio_err.GetSize()):
-    #     print("\t\tratio_err[{0}]  = {1:.3f} +- {2:.4f}".format( ibin, ratio_err.GetBinContent(ibin), ratio_err.GetBinError(ibin) ))
+    ratio_err_props = {
+        "TitleX":new_expectedhist.GetXaxis().GetTitle(),
+        "TitleY":"Data/Exp.",
+        "TitleSizeX":0.15,
+        "TitleSizeY":0.15,
+        "TitleOffsetX":0.90,
+        "TitleOffsetY":0.35,
+        "LabelSizeX":0.15,
+        "LabelSizeY": 0.12,
+        "NdivisionsY":505,
+        "FillColor":kOrange,
+        "FillStyle":3356,
+        "LineColor":kOrange,
+        "MarkerSize":0,
+    }
+
+    ratio_err = SelfDivide( new_expectedhist, "RatioErr", ratio_err_props )
 
     # obs / exp
 
@@ -743,11 +761,8 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     MC_hist.SetLineWidth(3)
     MC_hist.SetLineColor(kViolet-4)
     MC_hist.SetMarkerSize(0.8)
-    MC_hist.SetMarkerColor(1)
+    MC_hist.SetMarkerColor(kViolet-4) # (1)
     MC_hist.SetMarkerStyle(20)
-    # MC_hist.SetMarkerSize(0.8)
-    # MC_hist.SetMarkerColor(kViolet-4)
-    # MC_hist.SetMarkerStyle(24)
 
     new_MM_hist.SetLineWidth(2)
     new_MM_hist.SetLineStyle(1)
@@ -755,15 +770,16 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     new_MM_hist.SetFillColor(kWhite)
     new_MM_hist.SetFillStyle(1001)
 
-    err = new_MM_hist.Clone("tot_uncertainty")
-    err.SetFillColor(kGray+1)
-    err.SetLineColor(kGray+1)
-    err.SetFillStyle(3356)
-    gStyle.SetHatchesLineWidth(1)
+    gStyle.SetHatchesLineWidth(2)
     gStyle.SetHatchesSpacing(0.8)
+
+    err = new_MM_hist.Clone("tot_uncertainty")
+    err.SetFillColor(kGray)
+    err.SetLineColor(kGray)
+    err.SetFillStyle(3356)
     err.SetMarkerSize(0)
 
-    # Trick to rescale:
+    # Trick to rescale histograms in first pad
 
     ymax      = new_MM_hist.GetMaximum()
     binmax    = new_MM_hist.GetMaximumBin()
@@ -778,89 +794,100 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
     #print("FLAV: {0} - max = {1:.2f} - binmax = {2} - binmaxerr = {3:.2f}".format(flav,ymax,binmax,binmaxerr))
 
-    new_MM_hist.SetMaximum( (ymax + binmaxerr) *1.3 )
-    new_MM_hist.SetMinimum(0)
+    # Set this to the first histogram that will be plotted in the pad
+
+    err.SetMaximum( (ymax + binmaxerr) *1.3 )
+    err.SetMinimum(0)
 
     # --------------------------
 
-    # Stat +sys error on MM (ratio)
+    # Make the actual non closure plot
 
-    ratio_err = err.Clone("RatioErr")
-    ratio_err.SetXTitle(MC_hist.GetXaxis().GetTitle())
-    ratio_err.SetYTitle("")
-    ratio_err.GetXaxis().SetTitleSize(0.15)
-    ratio_err.GetYaxis().SetTitleSize(0.15)
-    ratio_err.GetXaxis().SetTitleOffset(0.90)
-    ratio_err.GetYaxis().SetTitleOffset(0.35)
-    ratio_err.GetXaxis().SetLabelSize(0.15)
-    ratio_err.GetYaxis().SetLabelSize(0.12)
-    ratio_err.GetYaxis().SetNdivisions(505) #(5)
-    ratio_err.SetFillColor(kGray+1)
-    ratio_err.SetLineColor(kGray+1)
-    ratio_err.SetFillStyle(3356)
-    gStyle.SetHatchesLineWidth(1)
-    gStyle.SetHatchesSpacing(0.8)
-    ratio_err.SetMarkerSize(0)
-
-    ratio_err.Divide(err)
-    for ibin in range(1,ratio_err.GetSize()):
-        if new_MM_hist.GetBinContent(ibin) > 0:
-            ratio_err.SetBinError(ibin, new_MM_hist.GetBinError(ibin)/new_MM_hist.GetBinContent(ibin))
-
-    # MC ttbar / MM ttbar
-
-    ratio_MC_MM = MC_hist.Clone("RatioMCMM")
-    ratio_MC_MM.SetYTitle("")
-    ratio_MC_MM.SetLineStyle(2)
-    ratio_MC_MM.SetLineWidth(3)
-    ratio_MC_MM.SetLineColor(kViolet-4)
+    ratio_MC_MM = new_MM_hist.Clone("RatioMCMM")
+    ratio_MC_MM = ratio_MC_MM - MC_hist
+    ratio_MC_MM.Divide(MC_hist) # Do not care about the errors: this histogram will be drawn w/o error bars
+    ratio_MC_MM.SetYTitle("Non-closure")
+    ratio_MC_MM.SetLineStyle(1)
+    ratio_MC_MM.SetLineWidth(2)
+    ratio_MC_MM.SetLineColor(kRed)
     ratio_MC_MM.SetMarkerSize(0.8)
     ratio_MC_MM.SetMarkerColor(1)
-    ratio_MC_MM.SetMarkerStyle(20)
-    # ratio_MC_MM.SetMarkerSize(0.8)
-    # ratio_MC_MM.SetMarkerColor(kViolet-4)
-    # ratio_MC_MM.SetMarkerStyle(22)
-    ratio_MC_MM.Divide(new_MM_hist)
+    ratio_MC_MM.SetMarkerStyle(20) # (22)
 
-    # Trick to rescale
+    ratio_MC_MM_err = ratio_MC_MM.Clone("RatioErr")
 
-    ymax_ratio = ratio_MC_MM.GetMaximum()
-    ymin_ratio = ratio_MC_MM.GetMinimum()
+    # Calculate the error on the non-closure using the standard error propagation bin by bin
+    # On the MM estimate, the error is mostly from the Fake CR size, which is orthogonal to all the MM sidebands.
+    # Therefore we neglect correlations in the errror computation, which should be accounted for b/c the MM prediction
+    # in the closure test actually contains the events of the pure MC prediction.
 
-    #print("FLAV: {0} - MC/MM max = {1:.2f} - MC/MM min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
+    for ibin in range(1,ratio_MC_MM_err.GetSize()):
 
-    # For ratio error, get the bin with maximum uncertainty and the uncertainty value
+        iMM    = new_MM_hist.GetBinContent(ibin)
+        iMMerr = new_MM_hist.GetBinError(ibin)
+        iMC    = MC_hist.GetBinContent(ibin)
+        iMCerr = MC_hist.GetBinError(ibin)
 
-    max_unc = 0
-    for ibin in range(1, ratio_err.GetNbinsX()+1):
-        this_unc = ratio_err.GetBinError(ibin)
-      	if this_unc > max_unc:
-	    max_unc     = this_unc
+        # print("\nbin: {0}\niMM = {1} - iMMerr = {2}\niMC = {3} - iMCerr = {4}".format(ibin,iMM,iMMerr,iMC,iMCerr))
+        iclosure_err = 0.0
+        if iMC and iMCerr:
+            iclosure_err = math.sqrt( (iMMerr*iMMerr) / (iMC*iMC) + (iMM*iMM) * (iMCerr*iMCerr) / (iMC*iMC*iMC*iMC) )
 
-    #print("FLAV: {0} - max unc./2 ratio = {1:.2f}".format(flav,max_unc/2.0))
+        ratio_MC_MM_err.SetBinError(ibin, iclosure_err)
+        # print("NON CLOSURE: {0:.2f} +- {1:.2f} [%]".format(ratio_MC_MM_err.GetBinContent(ibin)*1e2,iclosure_err*1e2))
 
-    if ( 1 + max_unc/2.0 ) > ymax_ratio:
-    	ymax_ratio = 1 + max_unc/2.0
-    if ( 1 - max_unc/2.0 ) < ymin_ratio:
-    	ymin_ratio = 1 - max_unc/2.0
+    ratio_MC_MM_err.SetYTitle("#frac{MM-t#bar{t}}{t#bar{t}}")
+    ratio_MC_MM_err.GetXaxis().SetTitleSize(0.15)
+    ratio_MC_MM_err.GetYaxis().SetTitleSize(0.12)
+    ratio_MC_MM_err.GetXaxis().SetTitleOffset(0.90)
+    ratio_MC_MM_err.GetYaxis().SetTitleOffset(0.45)
+    ratio_MC_MM_err.GetXaxis().SetLabelSize(0.15)
+    ratio_MC_MM_err.GetYaxis().SetLabelSize(0.12)
+    ratio_MC_MM_err.GetYaxis().SetNdivisions(505) #(5)
+    ratio_MC_MM_err.SetFillColor(kOrange)
+    ratio_MC_MM_err.SetLineColor(kOrange)
+    ratio_MC_MM_err.SetFillStyle(3356)
+    ratio_MC_MM_err.SetMarkerSize(0)
 
-    if ymin_ratio < 0: ymin_ratio = 0
+    # # Trick to rescale ratio pad
 
-    #print("FLAV: {0} - actual max = {1:.2f} - actual min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
+    # ymax_ratio = ratio_MC_MM.GetMaximum()
+    # ymin_ratio = ratio_MC_MM.GetMinimum()
 
-    ratio_err.SetMaximum( ymax_ratio * 1.2 )
-    ratio_err.SetMinimum( ymin_ratio * 0.8 )
+    # #print("FLAV: {0} - MC/MM max = {1:.2f} - MC/MM min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
+
+    # # For ratio error, get the bin with maximum uncertainty and the uncertainty value
+
+    # max_unc = 0
+    # for ibin in range(1, ratio_err.GetNbinsX()+1):
+    #     this_unc = ratio_err.GetBinError(ibin)
+    #   	if this_unc > max_unc:
+    #         max_unc = this_unc
+
+    # #print("FLAV: {0} - max unc./2 ratio = {1:.2f}".format(flav,max_unc/2.0))
+
+    # if ( 1 + max_unc/2.0 ) > ymax_ratio:
+    # 	ymax_ratio = 1 + max_unc/2.0
+    # if ( 1 - max_unc/2.0 ) < ymin_ratio:
+    # 	ymin_ratio = 1 - max_unc/2.0
+
+    # if ymin_ratio < 0: ymin_ratio = 0
+
+    # #print("FLAV: {0} - actual max = {1:.2f} - actual min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
+
+    # ratio_err.SetMaximum( ymax_ratio * 1.2 )
+    # ratio_err.SetMinimum( ymin_ratio * 0.8 )
 
     # --------------------------
 
     pad1.cd()
 
-    new_MM_hist.GetXaxis().SetLabelSize(0)
-    new_MM_hist.GetXaxis().SetLabelOffset(999)
+    err.GetXaxis().SetLabelSize(0)
+    err.GetXaxis().SetLabelOffset(999)
 
-    new_MM_hist.Draw("HIST")
+    err.Draw("E2")
+    new_MM_hist.Draw("HIST SAME")
     MC_hist.Draw("PE SAME")
-    err.Draw("E2 SAME")
 
     legend = TLegend(0.55,0.7,0.75,0.9) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
     legend.SetBorderSize(0)	# no border
@@ -884,13 +911,23 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     leg_lumi.DrawLatex(0.19,0.75,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
 
     pad2.cd()
-    ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
-    ratio_err.Draw("E2")
-    ratio_MC_MM.Draw("PE SAME")
 
-    refl = TLine(ratio_err.GetBinLowEdge(1), 1.0, ratio_err.GetBinLowEdge(ratio_err.GetNbinsX()+1), 1.0)
+    ratio_MC_MM_err.GetYaxis().SetRangeUser(-1.0, 1.0)
+    ratio_MC_MM_err.Draw("E2")
+
+    # Write the actual non-closure per bin on the histogram in selected cases
+
+    if any( v == var for v in ["Integral","BDTGScore","NJets2j3j","NJets4j","NBJets"] ):
+        gStyle.SetPaintTextFormat(".2f")
+        ratio_MC_MM.SetMarkerSize(4.1)
+        ratio_MC_MM.SetMarkerColor(kBlack)
+        ratio_MC_MM.Draw("HIST SAME TEXT0")
+    else:
+        ratio_MC_MM.Draw("HIST SAME")
+
+    refl = TLine(ratio_MC_MM.GetBinLowEdge(1), 0.0, ratio_MC_MM.GetBinLowEdge(ratio_MC_MM.GetNbinsX()+1), 0.0)
     refl.SetLineStyle(2)
-    refl.SetLineColor(kRed)
+    refl.SetLineColor(kBlack)
     refl.SetLineWidth(2)
     refl.Draw("SAME")
 
@@ -1136,6 +1173,8 @@ if __name__ == '__main__':
         # "NN_top",
         # "RNN_ttV",
         # "RNN_top",
+        # "NNComb",
+        # "RNNComb",
         ]
 
     if args.variables:
@@ -1191,7 +1230,8 @@ if __name__ == '__main__':
             if "HIGHNJ" in args.channel and "NJets2j3j" in var_name : continue
             if "LOWNJ" in args.channel and "NJets4j" in var_name : continue
 
-            if flav == "Inclusive" and var_name != "LepFlavours": continue
+            # if flav == "Inclusive" and var_name != "LepFlavours": continue
+            if var_name == "LepFlavours" and flav != "Inclusive": continue
 
     	    filename = inputpath + flav + region + "/" + flav + region + "_" + var_name + ".root"
 
