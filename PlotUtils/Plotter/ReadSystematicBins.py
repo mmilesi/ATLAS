@@ -752,10 +752,16 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
     new_MM_hist = MM_hist.Clone(MM_hist.GetName())
 
-    # For MM hist, set the bin error as the sum in quadrature of stat+syst
+    # For MM closure hist, set the bin error as the sum in quadrature of stat+syst
+    # If looking at the SR, take only the part of error which is not correlated to the MC stats error
+    # That is, take only the syst error from the Fake CR size
 
     for ibin in range(1,new_MM_hist.GetNbinsX()+1):
-        new_MM_hist.SetBinError(ibin, g_sq_unc_bins[ibin] )
+        if "HIGHNJ" in args.channel:
+            print("\nbin: {0}\tstat error: {1:.2f} - sys error: {2:.2f} - stat+sys error: {3:.2f}".format(ibin,new_MM_hist.GetBinError(ibin),g_sq_unc_bins_NO_STAT[ibin],g_sq_unc_bins[ibin]))
+            new_MM_hist.SetBinError(ibin, g_sq_unc_bins_NO_STAT[ibin] )
+        else:
+            new_MM_hist.SetBinError(ibin, g_sq_unc_bins[ibin] )
 
     MC_hist.SetLineStyle(2)
     MC_hist.SetLineWidth(3)
@@ -821,6 +827,11 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     # Therefore we neglect correlations in the errror computation, which should be accounted for b/c the MM prediction
     # in the closure test actually contains the events of the pure MC prediction.
 
+    # Dummy histogram to show the non-closure
+    effective_NC = ratio_MC_MM.Clone("Effective")
+    effective_NC.SetLineColor(kBlack)
+    # effective_NC.SetLineStyle(2)
+
     for ibin in range(1,ratio_MC_MM_err.GetSize()):
 
         iMM    = new_MM_hist.GetBinContent(ibin)
@@ -828,13 +839,20 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
         iMC    = MC_hist.GetBinContent(ibin)
         iMCerr = MC_hist.GetBinError(ibin)
 
-        # print("\nbin: {0}\niMM = {1} - iMMerr = {2}\niMC = {3} - iMCerr = {4}".format(ibin,iMM,iMMerr,iMC,iMCerr))
+        print("\nbin: {0}\tiMM = {1:.2f} - iMMerr = {2:.2f}\tiMC = {3:.2f} - iMCerr = {4:.2f}".format(ibin,iMM,iMMerr,iMC,iMCerr))
         iclosure_err = 0.0
         if iMC and iMCerr:
             iclosure_err = math.sqrt( (iMMerr*iMMerr) / (iMC*iMC) + (iMM*iMM) * (iMCerr*iMCerr) / (iMC*iMC*iMC*iMC) )
 
         ratio_MC_MM_err.SetBinError(ibin, iclosure_err)
-        # print("NON CLOSURE: {0:.2f} +- {1:.2f} [%]".format(ratio_MC_MM_err.GetBinContent(ibin)*1e2,iclosure_err*1e2))
+        print("NON CLOSURE: {0:.2f} +- {1:.2f} [%]".format(ratio_MC_MM_err.GetBinContent(ibin)*1e2,iclosure_err*1e2))
+
+        # Calculate the effective non-closure, and store it as errro for the dummy histogram
+
+        effectiveNC = abs(ratio_MC_MM_err.GetBinContent(ibin)) - iclosure_err
+        if effectiveNC <= 0: effectiveNC = 0
+        print("EFFECTIVE NON CLOSURE: {0:.2f} [%]".format(effectiveNC))
+        effective_NC.SetBinContent(ibin,effectiveNC)
 
     ratio_MC_MM_err.SetYTitle("#frac{MM-t#bar{t}}{t#bar{t}}")
     ratio_MC_MM_err.GetXaxis().SetTitleSize(0.15)
@@ -897,7 +915,8 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
     legend.AddEntry(new_MM_hist,"Fakes MM (t#bar{{t}}, t#bar{{t}}#gamma inputs) ({0:.1f})".format(integrate(new_MM_hist)),"F")
     legend.AddEntry(MC_hist, "t#bar{{t}}, t#bar{{t}}#gamma ({0:.1f})".format(integrate(MC_hist)), "P")
-    legend.AddEntry(err, "Stat.+Sys. Unc.", "F")
+    err_type = "Stat.+Sys. Unc." if not  "HIGHNJ" in args.channel else "Sys. Unc."
+    legend.AddEntry(err, "{0}".format(err_type), "F")
 
     leg_ATLAS = TLatex()
     leg_lumi  = TLatex()
@@ -920,8 +939,12 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     if any( v == var for v in ["Integral","BDTGScore","NJets2j3j","NJets4j","NBJets"] ):
         gStyle.SetPaintTextFormat(".2f")
         ratio_MC_MM.SetMarkerSize(4.1)
-        ratio_MC_MM.SetMarkerColor(kBlack)
+        ratio_MC_MM.SetMarkerColor(kRed)
         ratio_MC_MM.Draw("HIST SAME TEXT0")
+        if "HIGHNJ" in args.channel:
+            effective_NC.SetMarkerSize(4.1)
+            effective_NC.SetMarkerColor(kBlack)
+            effective_NC.Draw("HIST SAME TEXT0")
     else:
         ratio_MC_MM.Draw("HIST SAME")
 
@@ -1302,7 +1325,12 @@ if __name__ == '__main__':
 
                 print("\n\t======================================================================\n")
                 print("\tCategory : {0} - Channel : {1}\n".format(flav,args.channel[0]))
-    		print("\ttNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
+    		print("\tNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
+                if "HIGHNJ" in args.channel:
+                    closure_err_uncorr = math.sqrt( ( ( math.pow(fakes,2.0) / math.pow(ttbar,4.0) ) * math.pow(ttbar_err,2.0) ) + ( math.pow(fakes_tot_err_NO_STAT,2.0) / math.pow(ttbar,2.0) ) ) * 100
+                    effective_closure = abs(closure) - closure_err_uncorr
+                    if effective_closure <= 0: effective_closure = 0
+                    print("\tEFFECTIVE Non-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%]".format(effective_closure))
                 print("\n\t======================================================================\n")
 
             else:
