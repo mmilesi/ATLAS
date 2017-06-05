@@ -24,7 +24,7 @@ channels     = ["2LSS_SR (,INCL_FLAV)","3L_SR",
                 "ttWCR","ttZCR","ZOSpeakCR","ZSSpeakCR","TopCR",
                 "MMRates (,DATA,CLOSURE,TP,LH,TRUTH_TP,TRUTH_ON_PROBE,NO_TRUTH_SEL,DATAMC,CHECK_FAKEORIG,TRIGMATCH_EFF,NOT_TRIGMATCH_EFF,LOWNJ,HIGHNJ,ALLNJ,PHOTON_CONV,LEP_FROM_JET)",
                 "PhotonConvElecRates",
-                "MMClosureTest (,HIGHNJ,LOWNJ,ALLNJ)",
+                "MMClosureTest (,INCL_FLAV,HIGHNJ,LOWNJ,ALLNJ)",
                 "CutFlowChallenge (,MM,2LSS_SR,2LSS_LOWNJ_VR,2LSS1Tau,3L)","MMSidebands(,CLOSURE,NO_TRUTH_SEL,HIGHNJ,LOWNJ,ALLNJ),LeptonTruth,FakeOriginFrac"]
 
 categories   = ["ALL","ee","mm","OF"]
@@ -405,7 +405,7 @@ if __name__ == "__main__":
         database.registerCut( Cut("TrigDec", "( " + "( dilep_type == 1 && " + mm_DLT + " )" + " || " + "( dilep_type == 2 && " + of_DLT + " )" + " || " + "( dilep_type == 3 && " + ee_DLT + " )" + " )" ) )
 
     if args.readGFW2:
-        database.getCut("TrigDec").cutstr = "( 1 )"
+        database.getCut("TrigDec").cutstr = "( 1 )" # GFW2 NTuples have the trigger cut already in the skimming selection...
 
     database.registerCut( Cut('LargeNBJet',      '( nJets_OR_T_MV2c10_70 > 1 )') )
     database.registerCut( Cut('VetoLargeNBJet',  '( nJets_OR_T_MV2c10_70 < 4 )') )
@@ -940,7 +940,7 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = "Lep1EtaBE2",latexname = "#eta^{l_{1}}", ntuplename = "lep_EtaBE2_1", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
             database.registerVar( Variable(shortname = "Lep0DeltaRClosestJet",latexname = "#DeltaR{l_{0}, closest j}", ntuplename = "minDeltaR_LJ_0", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
             database.registerVar( Variable(shortname = "Lep1DeltaRClosestJet",latexname = "#DeltaR{l_{1}, closest j}", ntuplename = "minDeltaR_LJ_1", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
-            database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttV+MVA2lSSMarseille_weight_ttbar)/2.0", manualbins = [-1.0,-0.35,-0.15,0.05,0.25,0.45,1.0], sysvar = True ) )
+            database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttV+MVA2lSSMarseille_weight_ttbar)/2.0", manualbins = [-1.0,-0.3508,-0.1632,0.031,0.2424,0.4616,1.0], sysvar = True ) )
         else:
             database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
             database.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )
@@ -1045,7 +1045,7 @@ if __name__ == "__main__":
         if doMMRates and "DATA" in args.channel:
 
             if args.useMCQMisID:
-                weightQMisID = 0.20
+                weightQMisID = 0.40
                 procQMisID   = 'QMisIDMC'
             else:
                 weightQMisID = 'QMisIDWeight_'
@@ -2053,9 +2053,12 @@ if __name__ == "__main__":
 
         if ( doMM or doFF ):
 
-            if any( cat in args.category for cat in ["mm","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_MuMu_Event']), weight = weight_SR_CR ) )
-            if any( cat in args.category for cat in ["ee","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_ElEl_Event']), weight = weight_SR_CR ) )
-            if any( cat in args.category for cat in ["OF","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_OF_Event']), weight = weight_SR_CR ) )
+            if "INCL_FLAV" in args.channel:
+                database.registerCategory( MyCategory(cat_names_2Lep["INCL_FLAV"] + append_2Lep,  cut = common_cuts_MMClosure, weight = weight_SR_CR ) )
+            else:
+                if any( cat in args.category for cat in ["mm","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_MuMu_Event']), weight = weight_SR_CR ) )
+                if any( cat in args.category for cat in ["ee","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+                if any( cat in args.category for cat in ["OF","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_OF_Event']), weight = weight_SR_CR ) )
 
         elif ( doTHETA ):
 

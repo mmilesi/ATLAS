@@ -1,4 +1,4 @@
- #!/usr/bin/python
+#!/usr/bin/python
 
 import os, sys, math, argparse
 
@@ -268,17 +268,16 @@ def getTotFakeUncertainty( nominal, stat, flav, debug=False ):
 
     if debug:
         print("\t\tTot. yields w/ systematics (ungrouped):\n")
-        print g_sys_dict
-        # print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (Sidebands Stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) and not type(g_sys_dict[key]) is dict ) )
+        print ("\t\tIntegral = {0:.2f}\n\t\t+- {1:.2f} [{2:.2f} %] (Sidebands Stat)\n\t\t+-".format(nominal, stat, (stat/nominal)*100) + "\t\t+-".join( " {0:.2f} [{1:.2f} %] ({2}) \n".format( g_sys_dict[key], (g_sys_dict[key]/nominal)*100, key ) for key in sorted( g_sys_dict, key=g_sys_dict.get ) ) ) # and not type(g_sys_dict[key]) is dict ) )
         print("")
 
     # Print sum in quadrature of syst for each syst group from smallest to largest
 
     sq_list = []
     for sg, values in g_sysgroup_dict.iteritems():
-        if debug:
-            print "\t", sg
-            print  "\t", values
+        # if debug:
+        #     print "\t\t", sg
+        #     print "\t\t", values
         if any( type(t) is dict for t in values ): continue
         tup = ( sg, sumQuadrature(values), (sumQuadrature(values)/nominal)*100 )
         sq_list.append(tup)
@@ -300,44 +299,46 @@ def getTotFakeUncertainty( nominal, stat, flav, debug=False ):
     toterrlist_NO_STAT = [ e for e in toterrlist_NO_STAT if not type(e) is dict ]
     sq_NO_STAT = sumQuadrature( toterrlist_NO_STAT )
 
-    print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (TOTAL UNCERTAINTY)".format(nominal, sq, (sq/nominal)*100))
-    print ("\t\t                   +- {0:.2f} [{1:.2f} %] (TOTAL SYST. UNCERTAINTY)".format(sq_NO_STAT, (sq_NO_STAT/nominal)*100))
+    print ("\t\tIntegral = {0:.2f} +- {1:.2f} [{2:.2f} %] (STAT.) +- {3:.2f} [{4:.2f} %] (SYST.)".format(nominal, stat, (stat/nominal)*100,sq_NO_STAT, (sq_NO_STAT/nominal)*100))
+    print ("\t\t         = {0:.2f} +- {1:.2f} [{2:.2f} %] (TOTAL UNCERTAINTY)".format(nominal,sq, (sq/nominal)*100))
 
     # Add in quadrature the non-closure uncertainty to each bin's total uncertainty
 
-    if not flav == "Inclusive":
-        print("")
-        for bin, list_unc in g_unc_bins.iteritems():
-            g_sq_unc_bins[bin] = sumQuadrature( [x[0] for x in list_unc] + [ non_closure_vals[flav] * g_content_bins[bin] ] )
-            if debug:
-                print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins[bin]) )
-        print("")
-        for bin, list_unc in g_unc_bins_NO_STAT.iteritems():
-            g_sq_unc_bins_NO_STAT[bin] = sumQuadrature( [x[0] for x in list_unc] + [ non_closure_vals[flav] * g_content_bins[bin] ] )
-            if debug:
-                print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins_NO_STAT[bin]) )
-        print("")
-    else:
-        if debug:
+    if not args.closure:
+
+        if not flav == "Inclusive":
             print("")
-            print "bin[1] = ", g_content_bins[1]
-            print "bin[2] = ", g_content_bins[2]
-            print "bin[3] = ", g_content_bins[3]
-        g_sq_unc_bins[1] = sumQuadrature( [x[0] for x in g_unc_bins[1]] + [ non_closure_vals["MuMu"] * g_content_bins[1] ] )
-        g_sq_unc_bins[2] = sumQuadrature( [x[0] for x in g_unc_bins[2]] + [ non_closure_vals["OF"]   * g_content_bins[2] ] )
-        g_sq_unc_bins[3] = sumQuadrature( [x[0] for x in g_unc_bins[3]] + [ non_closure_vals["ElEl"] * g_content_bins[3] ] )
-        if debug:
-            print("1-th bin (MuMu), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
-            print("1-th bin (OF), list of uncertainties (INCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
-            print("1-th bin (ElEl), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
+            for bin, list_unc in g_unc_bins.iteritems():
+                g_sq_unc_bins[bin] = sumQuadrature( [x[0] for x in list_unc] + [ non_closure_vals[flav] * g_content_bins[bin] ] )
+                if debug:
+                    print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins[bin]) )
             print("")
-        g_sq_unc_bins_NO_STAT[1] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[1]] + [ non_closure_vals["MuMu"] * g_content_bins[1] ] )
-        g_sq_unc_bins_NO_STAT[2] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[2]] + [ non_closure_vals["OF"]   * g_content_bins[2] ] )
-        g_sq_unc_bins_NO_STAT[3] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[3]] + [ non_closure_vals["ElEl"] * g_content_bins[3] ] )
-        if debug:
-            print("1-th bin (MuMu), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
-            print("1-th bin (OF), list of uncertainties (EXCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
-            print("1-th bin (ElEl), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
+            for bin, list_unc in g_unc_bins_NO_STAT.iteritems():
+                g_sq_unc_bins_NO_STAT[bin] = sumQuadrature( [x[0] for x in list_unc] + [ non_closure_vals[flav] * g_content_bins[bin] ] )
+                if debug:
+                    print("\t\t{0}-th bin,".format(bin) + " list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in list_unc ) + ",{0:3f}]".format(non_closure_vals[flav] * g_content_bins[bin]) + " --> tot. uncertainty = {0:.3f}".format(g_sq_unc_bins_NO_STAT[bin]) )
+            print("")
+        else:
+            if debug:
+                print("")
+                print "bin[1] = ", g_content_bins[1]
+                print "bin[2] = ", g_content_bins[2]
+                print "bin[3] = ", g_content_bins[3]
+            g_sq_unc_bins[1] = sumQuadrature( [x[0] for x in g_unc_bins[1]] + [ non_closure_vals["MuMu"] * g_content_bins[1] ] )
+            g_sq_unc_bins[2] = sumQuadrature( [x[0] for x in g_unc_bins[2]] + [ non_closure_vals["OF"]   * g_content_bins[2] ] )
+            g_sq_unc_bins[3] = sumQuadrature( [x[0] for x in g_unc_bins[3]] + [ non_closure_vals["ElEl"] * g_content_bins[3] ] )
+            if debug:
+                print("1-th bin (MuMu), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
+                print("1-th bin (OF), list of uncertainties (INCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
+                print("1-th bin (ElEl), list of uncertainties (INCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
+                print("")
+            g_sq_unc_bins_NO_STAT[1] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[1]] + [ non_closure_vals["MuMu"] * g_content_bins[1] ] )
+            g_sq_unc_bins_NO_STAT[2] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[2]] + [ non_closure_vals["OF"]   * g_content_bins[2] ] )
+            g_sq_unc_bins_NO_STAT[3] = sumQuadrature( [x[0] for x in g_unc_bins_NO_STAT[3]] + [ non_closure_vals["ElEl"] * g_content_bins[3] ] )
+            if debug:
+                print("1-th bin (MuMu), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[1] ) + ",{0:3f}]".format(non_closure_vals["MuMu"] * g_content_bins[1]))
+                print("1-th bin (OF), list of uncertainties (EXCLUDING stat, including non-closure): ["   + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[2] ) + ",{0:3f}]".format(non_closure_vals["OF"]   * g_content_bins[2]))
+                print("1-th bin (ElEl), list of uncertainties (EXCLUDING stat, including non-closure): [" + ",".join( "{0:.3f}".format(x[0]) for x in g_unc_bins_NO_STAT[3] ) + ",{0:3f}]".format(non_closure_vals["ElEl"] * g_content_bins[3]))
 
     # Print out results in LaTeX friendly format!
 
@@ -756,9 +757,10 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     # If looking at the SR, take only the part of error which is not correlated to the MC stats error
     # That is, take only the syst error from the Fake CR size
 
-    for ibin in range(1,new_MM_hist.GetNbinsX()+1):
+    print("")
+    for ibin in range(1,new_MM_hist.GetSize()):
         if "HIGHNJ" in args.channel:
-            print("\nbin: {0}\tstat error: {1:.2f} - sys error: {2:.2f} - stat+sys error: {3:.2f}".format(ibin,new_MM_hist.GetBinError(ibin),g_sq_unc_bins_NO_STAT[ibin],g_sq_unc_bins[ibin]))
+            print("\tbin: {0} - X = {1:.2f} +- {2:.2f} (stat.) +- {3:.2f} (sys.) = {1:.2f} +- {4:.2f} (stat.+sys.)".format(ibin,new_MM_hist.GetBinContent(ibin),new_MM_hist.GetBinError(ibin),g_sq_unc_bins_NO_STAT[ibin],g_sq_unc_bins[ibin]))
             new_MM_hist.SetBinError(ibin, g_sq_unc_bins_NO_STAT[ibin] )
         else:
             new_MM_hist.SetBinError(ibin, g_sq_unc_bins[ibin] )
@@ -832,6 +834,7 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     effective_NC.SetLineColor(kBlack)
     # effective_NC.SetLineStyle(2)
 
+    print("")
     for ibin in range(1,ratio_MC_MM_err.GetSize()):
 
         iMM    = new_MM_hist.GetBinContent(ibin)
@@ -839,19 +842,19 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
         iMC    = MC_hist.GetBinContent(ibin)
         iMCerr = MC_hist.GetBinError(ibin)
 
-        print("\nbin: {0}\tiMM = {1:.2f} - iMMerr = {2:.2f}\tiMC = {3:.2f} - iMCerr = {4:.2f}".format(ibin,iMM,iMMerr,iMC,iMCerr))
+        print("\tbin: {0}\tMM = {1:.2f} +- {2:.2f}\tMC = {3:.2f} +- {4:.2f}".format(ibin,iMM,iMMerr,iMC,iMCerr))
         iclosure_err = 0.0
         if iMC and iMCerr:
             iclosure_err = math.sqrt( (iMMerr*iMMerr) / (iMC*iMC) + (iMM*iMM) * (iMCerr*iMCerr) / (iMC*iMC*iMC*iMC) )
 
         ratio_MC_MM_err.SetBinError(ibin, iclosure_err)
-        print("NON CLOSURE: {0:.2f} +- {1:.2f} [%]".format(ratio_MC_MM_err.GetBinContent(ibin)*1e2,iclosure_err*1e2))
+        print("\tNON CLOSURE: {0:.2f} +- {1:.2f} [%]".format(ratio_MC_MM_err.GetBinContent(ibin)*1e2,iclosure_err*1e2))
 
-        # Calculate the effective non-closure, and store it as errro for the dummy histogram
+        # Calculate the effective non-closure, and store it as error for the dummy histogram
 
-        effectiveNC = abs(ratio_MC_MM_err.GetBinContent(ibin)) - iclosure_err
-        if effectiveNC <= 0: effectiveNC = 0
-        print("EFFECTIVE NON CLOSURE: {0:.2f} [%]".format(effectiveNC))
+        effectiveNC = max( 0, abs(ratio_MC_MM_err.GetBinContent(ibin)) - iclosure_err )
+
+        print("\tEFFECTIVE NON CLOSURE: {0:.2f} [%]".format(effectiveNC*1e2))
         effective_NC.SetBinContent(ibin,effectiveNC)
 
     ratio_MC_MM_err.SetYTitle("#frac{MM-t#bar{t}}{t#bar{t}}")
@@ -945,6 +948,7 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
             effective_NC.SetMarkerSize(4.1)
             effective_NC.SetMarkerColor(kBlack)
             effective_NC.Draw("HIST SAME TEXT0")
+
     else:
         ratio_MC_MM.Draw("HIST SAME")
 
@@ -971,6 +975,12 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
             os.makedirs(finalpath)
         outname = finalpath + "/" + flav + "_" + var + "_MM_vs_MC_Sys"
         c.SaveAs( outname + ext[0] )
+
+    if "HIGHNJ" in args.channel and var == "BDTGScore":
+        filename_effective_NC = flav + "_" + var + "_" + "NC" + ".root"
+        outfile_effective_NC = TFile(outpath+"/"+filename_effective_NC,"RECREATE")
+        outfile_effective_NC.cd()
+        effective_NC.Write()
 
 # -------------------------------------------------------------------------------------------------------------------
 
@@ -1164,7 +1174,7 @@ if __name__ == '__main__':
         "deltaPhiLep0Lep1",
         "MET_FinalTrk",
         "Mll01_inc",
-        # "TotLepCharge",
+        "TotLepCharge",
         "NBJets",
         "NJets2j3j",
         "NJets4j",
@@ -1227,7 +1237,7 @@ if __name__ == '__main__':
 
     flavour_list = []
     if "ALL" in args.category:
-        flavour_list.extend(["ElEl", "MuMu", "OF"])
+        flavour_list.extend(["ElEl", "MuMu", "OF","Inclusive"])
     else:
         flavour_list.extend(args.category)
 
@@ -1253,16 +1263,16 @@ if __name__ == '__main__':
             if "HIGHNJ" in args.channel and "NJets2j3j" in var_name : continue
             if "LOWNJ" in args.channel and "NJets4j" in var_name : continue
 
-            # if flav == "Inclusive" and var_name != "LepFlavours": continue
             if var_name == "LepFlavours" and flav != "Inclusive": continue
 
     	    filename = inputpath + flav + region + "/" + flav + region + "_" + var_name + ".root"
 
-    	    myfile = TFile(filename)
-            if not myfile:
-                os.sys.exit("ERROR! file:\n{0}\ndoes not exist!".format(filename))
+    	    print("\tChecking file: {0}...".format(filename))
 
-    	    print("\tLooking at file: {0}".format(filename))
+    	    myfile = TFile(filename)
+            if myfile.IsZombie():
+                print("\tWARNING! file:\n\t{0}\n\tdoes not exist! Skipping to next...".format(filename))
+                continue
 
     	    fakes_nominal = myfile.Get("fakesbkg")
     	    fakes_syst = {}
@@ -1324,13 +1334,13 @@ if __name__ == '__main__':
     		makeSysPlotsClosure(flav,var_name,ttbar_nominal,fakes_nominal)
 
                 print("\n\t======================================================================\n")
-                print("\tCategory : {0} - Channel : {1}\n".format(flav,args.channel[0]))
-    		print("\tNon-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%] +- {1:.2f} [%]".format(closure,closure_err))
+                print("\tCategory : {0} - Channel : {1}\n".format(flav,args.channel))
+    		print("\tNon-closure ((MM fakes-ttbar)/ttbar) = {0:.2f} +- {1:.2f} [%]".format(closure,closure_err))
                 if "HIGHNJ" in args.channel:
                     closure_err_uncorr = math.sqrt( ( ( math.pow(fakes,2.0) / math.pow(ttbar,4.0) ) * math.pow(ttbar_err,2.0) ) + ( math.pow(fakes_tot_err_NO_STAT,2.0) / math.pow(ttbar,2.0) ) ) * 100
-                    effective_closure = abs(closure) - closure_err_uncorr
-                    if effective_closure <= 0: effective_closure = 0
-                    print("\tEFFECTIVE Non-closure ((fakes-ttbar)/ttbar) = {0:.2f} [%]".format(effective_closure))
+                    print("\t                                     = {0:.2f} +- {1:.2f} [%] (UNCORR. UNC.)".format(closure,closure_err_uncorr))
+                    effective_closure = max( 0, abs(closure) - closure_err_uncorr )
+                    print("\tEFFECTIVE Non-closure ((MM fakes-ttbar)/ttbar) = {0:.2f} [%]".format(effective_closure))
                 print("\n\t======================================================================\n")
 
             else:
