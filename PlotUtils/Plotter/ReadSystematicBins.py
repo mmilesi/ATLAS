@@ -228,13 +228,17 @@ def getTotFakeUncertainty( nominal, stat, flav, debug=False ):
         # non_closure_vals["OF"]   = 0.1316 # Updated on v27
         # non_closure_vals["ElEl"] = 0.1711 # Updated on v27
 
-        non_closure_vals["MuMu"] = 0.003 # Updated on v28
-        if args.paramFakeEl == "Pt":
-            non_closure_vals["OF"]   = 0.2146 # Updated on v28
-            non_closure_vals["ElEl"] = 0.3425 # Updated on v28
-        elif args.paramFakeEl == "NBJets_VS_Pt":
-            non_closure_vals["OF"]   = 0.1784 # Updated on v28
-            non_closure_vals["ElEl"] = 0.2712 # Updated on v28
+        # non_closure_vals["MuMu"] = 0.003 # Updated on v28
+        # if args.paramFakeEl == "Pt":
+        #     non_closure_vals["OF"]   = 0.2146 # Updated on v28
+        #     non_closure_vals["ElEl"] = 0.3425 # Updated on v28
+        # elif args.paramFakeEl == "NBJets_VS_Pt":
+        #     non_closure_vals["OF"]   = 0.1784 # Updated on v28
+        #     non_closure_vals["ElEl"] = 0.2712 # Updated on v28
+
+        non_closure_vals["MuMu"] = 0.0    # Updated on v28
+        non_closure_vals["OF"]   = 0.1272 # Updated on v28
+        non_closure_vals["ElEl"] = 0.2215 # Updated on v28
 
     elif "LOWNJ" in args.channel:
 
@@ -242,14 +246,17 @@ def getTotFakeUncertainty( nominal, stat, flav, debug=False ):
         # non_closure_vals["OF"]   = 0.0481 # Updated on v27
         # non_closure_vals["ElEl"] = 0.0208 # Updated on v27
 
-        non_closure_vals["MuMu"] = 0.0289 # Updated on v28
-        if args.paramFakeEl == "Pt":
-            non_closure_vals["OF"]   = 0.0568 # Updated on v28
-            non_closure_vals["ElEl"] = 0.2730 # Updated on v28
-        elif args.paramFakeEl == "NBJets_VS_Pt":
-            non_closure_vals["OF"]   = 0.0499 # Updated on v28
-            non_closure_vals["ElEl"] = 0.2657 # Updated on v28
+        # non_closure_vals["MuMu"] = 0.0289 # Updated on v28
+        # if args.paramFakeEl == "Pt":
+        #     non_closure_vals["OF"]   = 0.0568 # Updated on v28
+        #     non_closure_vals["ElEl"] = 0.2730 # Updated on v28
+        # elif args.paramFakeEl == "NBJets_VS_Pt":
+        #     non_closure_vals["OF"]   = 0.0499 # Updated on v28
+        #     non_closure_vals["ElEl"] = 0.2657 # Updated on v28
 
+        non_closure_vals["MuMu"] = 0.0492 # Updated on v28
+        non_closure_vals["OF"]   = 0.0877 # Updated on v28
+        non_closure_vals["ElEl"] = 0.2950 # Updated on v28
 
     if flav == "Inclusive" :
         non_closure ={"MuMu":non_closure_vals["MuMu"] * nominal, "OF":non_closure_vals["OF"] * nominal, "ElEl":non_closure_vals["ElEl"] * nominal}
