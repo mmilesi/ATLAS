@@ -1102,9 +1102,11 @@ class Background:
 	    print "No Stack"
 
         if bkg:
-            tSum.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
-            tSum.SetLineColor(self.style.get('SumErrorLineColour', 10))
-            tSum.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
+            gStyle.SetHatchesLineWidth(1)
+            gStyle.SetHatchesSpacing(0.4)
+            tSum.SetFillColor(self.style.get('SumErrorFillColour', kGray+1))
+            tSum.SetLineColor(self.style.get('SumErrorLineColour', kGray+1))
+            tSum.SetFillStyle(self.style.get('SumErrorFillStyle', 3356))
             tSum.SetMarkerSize(0)
             legs.insert(0, (tSum,"Stat. Unc.","F"))
         else:
@@ -1155,7 +1157,24 @@ class Background:
 
         if showratio and obs and bkg:
             if var.typeval in [TH1D,TH1F]:
-                ratiomc = tSum.Clone("RatioMC")
+                gStyle.SetHatchesLineWidth(1)
+                gStyle.SetHatchesSpacing(0.4)
+                ratiomc_props = {
+                    "TitleY": "" if not ( "$ISDATA$" in obslist[0][0].GetName() ) else "Data/Exp.",
+                    "TitleX": var.latexname,
+                    "TitleSizeX":0.15,
+                    "TitleSizeY":0.15,
+                    "TitleOffsetX":0.90,
+                    "TitleOffsetY":0.35,
+                    "LabelSizeX":0.15,
+                    "LabelSizeY": 0.12,
+                    "NdivisionsY":505,
+                    "FillColor":kGray+1,
+                    "FillStyle":self.style.get('SumErrorFillStyle', 3356),
+                    "LineColor":kGray+1,
+                    "MarkerSize":0,
+                }
+                ratiomc = SelfDivide( tSum, "RatioMC", ratiomc_props )
                 ratiodata = obs.Clone("RatioData")
             elif var.typeval is TH1I:
                 ratiomc = TH1D("RatioMC", "RatioMC", tSum.GetNbinsX(), tSum.GetBinLowEdge(1), tSum.GetBinLowEdge(tSum.GetNbinsX()+1))
@@ -1166,24 +1185,6 @@ class Background:
                 for i in range(1, tSum.GetNbinsX()+1):
                     ratiomc.SetBinContent(i, tSum.GetBinContent(i))
                     ratiodata.SetBinContent(i, obs.GetBinContent(i))
-
-            ratiomc.SetXTitle(var.latexname)
-	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
-                ratiomc.SetYTitle("")
-	    else:
-                ratiomc.SetYTitle("Data/Exp.")
-            ratiomc.GetXaxis().SetTitleSize(0.15)
-            ratiomc.GetYaxis().SetTitleSize(0.15)
-            ratiomc.GetXaxis().SetTitleOffset(0.90)
-            ratiomc.GetYaxis().SetTitleOffset(0.35)
-            ratiomc.GetXaxis().SetLabelSize(0.15)
-            ratiomc.GetYaxis().SetLabelSize(0.12)
-            ratiomc.GetYaxis().SetNdivisions(505) #(5)
-            ratiomc.SetFillColor(kGray+3)
-            ratiomc.SetLineColor(10)
-            ratiomc.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
-            ratiomc.SetMarkerSize(0)
-            ratiomc.Divide(tSum)
 
             ratiodata.SetMarkerSize(0.8) # (0.3)
 	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
@@ -1232,8 +1233,8 @@ class Background:
 
             # ratiomc.SetMinimum((1-val)-0.1)
             # ratiomc.SetMaximum((1+val)+0.1)
-            ratiomc.SetMinimum(0.0)
-            ratiomc.SetMaximum(2.0)
+            ratiomc.SetMinimum(0.5)
+            ratiomc.SetMaximum(1.5)
 
             if type(showratio) is tuple:
                 if showratio[0] == "MIN" and type(showratio[1]) is float:
