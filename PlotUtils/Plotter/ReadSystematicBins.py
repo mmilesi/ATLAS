@@ -46,7 +46,7 @@ parser.add_argument('--debug', dest='debug', action='store_true', default=False,
 
 args = parser.parse_args()
 
-from ROOT import gROOT, gStyle, gPad, TCanvas, TPad, TH1, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange, kWhite, kViolet, kRed
+from ROOT import gROOT, gStyle, gPad, TCanvas, TPad, TH1, TH1D, THStack, TFile, TLegend, TLatex, TLine, Double, kTeal, kGray, kBlack, kBlue, kOrange, kWhite, kViolet, kRed, kYellow, kCyan, kGreen, kMagenta
 
 gROOT.Reset()
 gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
@@ -709,7 +709,7 @@ def makeSysPlots( flav, var, observedhist, expectedhist, fakeshist, debug=False 
     pad2.cd()
 
     # Hardcoded axis limits
-    ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
+    ratio_err.GetYaxis().SetRangeUser(0.45,1.55)
     pad2.SetGridy(1)
 
     ratio_err.Draw("E2")
@@ -744,6 +744,278 @@ def makeSysPlots( flav, var, observedhist, expectedhist, fakeshist, debug=False 
 
     return new_expectedhist, new_fakeshist
 
+
+def makeSysPlotsSplitProcs( flav, var, allprocs={}, debug=False ):
+
+    observedhist = all_procs["observed"] if "observed" in all_procs else None
+    expectedhist = all_procs["expectedbkg"]
+    fakeshist    = all_procs["fakesbkg"]
+
+    doLogY = args.doLogScaleY
+
+    if debug:
+        print("\nmakeSysPlotsSplitProcs()\n")
+
+    gROOT.SetBatch(True)
+
+    c = TCanvas("c1","Temp",50,50,600,600)
+
+    pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
+    pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
+    pad1.SetBottomMargin(0.02)
+    pad2.SetBottomMargin(0.4)
+    pad1.Draw()
+    pad2.Draw()
+
+    legs = []
+
+    # For expected hist, set the bin error as the sum in quadrature of stat (on expected) + syst (on fakes)
+
+    new_expectedhist = expectedhist.Clone(expectedhist.GetName())
+    new_expectedhist.SetDirectory(0)
+
+    if debug:
+        print("NEW expectedhist:")
+    for ibin in range(1,new_expectedhist.GetSize()):
+        uncertlist = [ g_sq_unc_bins_NO_STAT[ibin], new_expectedhist.GetBinError(ibin) ]
+        new_expectedhist.SetBinError(ibin, sumQuadrature(uncertlist) )
+        if debug:
+            print("\t\t{0}-th bin,".format(ibin) + " tot. uncertainty (stat+syst): {0:.3f}".format( sumQuadrature(uncertlist) ) )
+        if new_expectedhist.Integral(ibin,ibin) > 0:
+            if debug:
+                print("\t\tbin[{0}] = {1:.3f} +- {2:.3f} ({3:.3f} [%])".format( ibin, new_expectedhist.GetBinContent(ibin), new_expectedhist.GetBinError(ibin) , ( new_expectedhist.GetBinError(ibin) / new_expectedhist.Integral(ibin,ibin) ) * 100 ) )
+
+    new_expectedhist.SetLineWidth(2)
+    new_expectedhist.SetLineStyle(1)
+    new_expectedhist.SetLineColor(kBlue-4)
+    new_expectedhist.SetFillColor(kWhite)
+    new_expectedhist.SetFillStyle(1001)
+
+    # THStack of all background + signal processes
+
+    stack = THStack('Stack','Stack')
+    bkglist = [ (key,h) for key, h in all_procs.iteritems() if not any( key == k for k in ["observed","expectedbkg"] ) ]
+    bkglist.sort( key=lambda x: x[1].Integral() )
+
+    for x in reversed(bkglist):
+        print("{0}, Integral: {1:.2f}".format(x[0],x[1].Integral()))
+
+    colours = {
+        'observed':kBlack,
+        'signal':kRed,
+        'ttbarwbkg':kYellow,
+        'ttbarzbkg':kCyan,
+        'dibosonbkg':kGreen-7,
+        'raretopbkg':kGray,
+        'qmisidbkg':kMagenta+3,
+        'fakesbkg':kViolet-4,
+    }
+
+    samplenames = {
+        'observed':'Data',
+        'signal':'t#bar{t}H',
+        'ttbarwbkg':'t#bar{t}W',
+        'ttbarzbkg':'t#bar{t}Z',
+        'dibosonbkg':'WW,WZ,ZZ',
+        'raretopbkg':'Others',
+        'qmisidbkg':'QMisID',
+        'fakesbkg':'Fakes MM',
+    }
+
+    for proc, h in reversed(bkglist):
+        h.SetLineWidth(2)
+        h.SetLineStyle(1)
+        h.SetLineColor(1)
+        h.SetFillColor(colours[proc])
+        h.SetFillStyle(1001)
+        if proc == "signal":
+            h.SetFillColor(10)
+            h.SetLineColor(2)
+            h.SetLineStyle(2)
+        legs.append( (h, "{0} ({1:.1f})".format(samplenames[proc],integrate(h)), "F") )
+        stack.Add(h)
+
+    # Set properties of data hist
+
+    if observedhist:
+        observedgr = makePoissonErrors(observedhist)
+        observedgr.SetMarkerSize(0.8) # (1.2)
+        observedgr.SetLineColor(1)
+        observedgr.SetLineWidth(2)
+        observedgr.SetMarkerStyle(20)
+        observedgr.SetLineStyle(1)
+
+    err = new_expectedhist.Clone("tot_uncertainty")
+    err.SetFillColor(kOrange)
+    err.SetLineColor(10)
+    err.SetFillStyle(3356)
+    gStyle.SetHatchesLineWidth(2)
+    gStyle.SetHatchesSpacing(0.8)
+    err.SetMarkerSize(0)
+
+    # Trick to rescale:
+
+    ymax      = err.GetMaximum()
+    binmax    = err.GetMaximumBin()
+    binmaxerr = err.GetBinError(binmax)
+
+    if new_expectedhist.GetMaximum() > ymax:
+        ymax      = new_expectedhist.GetMaximum()
+        binmax    = new_expectedhist.GetMaximumBin()
+        binmaxerr = new_expectedhist.GetBinError(binmax)
+
+    #print("FLAV: {0} - MM max = {1:.2f} - expected max = {2:.2f}".format(flav,new_expectedhist.GetMaximum(),observedhist.GetMaximum()))
+
+    if observedhist:
+        if observedhist.GetMaximum() > ymax:
+            ymax      = observedhist.GetMaximum()
+            binmax    = observedhist.GetMaximumBin()
+            binmaxerr = observedhist.GetBinError(binmax)
+
+    #print("FLAV: {0} - max = {1:.2f} - binmax = {2} - binmaxerr = {3:.2f}".format(flav,ymax,binmax,binmaxerr))
+
+    maxfactor = 1.65
+    minimum    = 0
+    if doLogY:
+        maxfactor = 1e2 * 1.3
+        minimum = 0.01
+    err.SetMaximum( ( ymax + binmaxerr ) * maxfactor )
+    err.SetMinimum(minimum)
+
+    ratio_err_props = {
+        "TitleX":new_expectedhist.GetXaxis().GetTitle(),
+        "TitleY":"Data/Exp.",
+        "TitleSizeX":0.15,
+        "TitleSizeY":0.15,
+        "TitleOffsetX":0.90,
+        "TitleOffsetY":0.35,
+        "LabelSizeX":0.15,
+        "LabelSizeY": 0.12,
+        "NdivisionsY":505,
+        "FillColor":kOrange,
+        "MarkerSize":0,
+        "FillStyle":3356,
+        "LineColor":kOrange,
+    }
+
+    ratio_err = SelfDivide( new_expectedhist, "RatioErr", ratio_err_props )
+
+    # obs / exp
+
+    ymax_ratio = -999
+    ymin_ratio = 999
+
+    if observedhist:
+        ratio_obs_exp = observedhist.Clone("RatioObsExp")
+        ratio_obs_exp.SetYTitle("Data/Exp.")
+        ratio_obs_exp.SetLineStyle(1)
+        ratio_obs_exp.SetMarkerSize(0.8)
+        ratio_obs_exp.SetLineColor(1)
+        ratio_obs_exp.SetMarkerStyle(20)
+        ratio_obs_exp.SetLineWidth(1)
+        ratio_obs_exp.Divide(new_expectedhist)
+
+    # --------------------------
+
+    pad1.cd()
+
+    if doLogY:
+        gPad.Update()
+        gPad.SetLogy()
+
+    err.GetXaxis().SetLabelSize(0)
+    err.GetXaxis().SetLabelOffset(999)
+    err.Draw("E2")
+    stack.Draw("HIST SAME")
+    if observedhist:
+        observedgr.Draw("P SAME")
+
+    legs.append( (new_expectedhist, "Tot. Expected ({0:.1f})".format(integrate(new_expectedhist)), "F") )
+    if observedhist:
+        legs.append( (observedhist, "Data ({0:.0f})".format(integrate(observedhist)), "P") )
+    legs.append( ( err, "Stat. + Sys. (Fakes) Unc.", "F") )
+
+    scale = 1
+    if len(legs) < 5:
+        scale *= 1.4
+        mid = len(legs)
+        high = len(legs)
+        lower = 0.92 - 0.04*high
+        leg1 = TLegend(0.60,lower,0.90,0.92)
+        leg2 = None
+    else:
+        #scale *= 1.2
+        mid = int(len(legs)/2)
+        high = math.ceil(len(legs)/2)
+        lower = 0.92 - 0.04*high
+        leg1 = TLegend(0.30,lower,0.60,0.92)
+        leg2 = TLegend(0.60,lower,0.80,0.92)
+        for leg in [leg1, leg2]:
+            if not leg: continue
+            leg.SetFillColor(0)
+            leg.SetFillStyle(0)
+            leg.SetLineColor(10)
+            leg.SetShadowColor(kWhite)
+            leg.SetTextSize(0.03 * scale)
+            leg.SetBorderSize(0)
+
+    for l in legs[:mid]:
+        leg1.AddEntry(l[0], l[1], l[2])
+    leg1.Draw()
+    if leg2:
+        for l in legs[mid:]:
+            leg2.AddEntry(l[0], l[1], l[2])
+        leg2.Draw()
+
+    leg_ATLAS = TLatex()
+    leg_lumi  = TLatex()
+    leg_ATLAS.SetTextSize(0.03)
+    leg_ATLAS.SetNDC()
+    leg_lumi.SetTextSize(0.03)
+    leg_lumi.SetNDC()
+
+    leg_ATLAS.DrawLatex(0.60,0.62,"#bf{#it{ATLAS}} Work In Progress")
+    leg_lumi.DrawLatex(0.60,0.55,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
+
+    pad2.cd()
+
+    # Hardcoded axis limits
+    ratio_err.GetYaxis().SetRangeUser(0.45,1.55)
+    pad2.SetGridy(1)
+
+    ratio_err.Draw("E2")
+    if observedhist:
+        ratio_obs_exp.Draw("PE SAME")
+
+    refl = TLine(ratio_err.GetBinLowEdge(1), 1.0, ratio_err.GetBinLowEdge(ratio_err.GetNbinsX()+1), 1.0)
+    refl.SetLineStyle(2)
+    refl.SetLineColor(kRed)
+    refl.SetLineWidth(2)
+    refl.Draw("SAME")
+
+    # --------------------------
+
+    outpath = args.inputDir
+    if outpath[-1] == '/':
+      outpath = outpath[:-1]
+
+    outpath += "/" + flav + "_DataVSExp_FakesSys_SplitProcs"
+    if not os.path.exists(outpath):
+        os.makedirs(outpath)
+
+    extensions = [(".png","PNG"),(".pdf","PDF"),(".root","ROOT")]
+    for ext in extensions:
+        finalpath = outpath+"/"+ext[1]
+        if not os.path.exists(finalpath):
+            os.makedirs(finalpath)
+        outname = finalpath + "/" + flav + "_" + var + "_DataVSExp_FakesSys_SplitProcs"
+        if doLogY:
+            outname += "_LOGY"
+        c.SaveAs( outname + ext[0] )
+
+
+
+################################
 
 def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
@@ -995,7 +1267,7 @@ def compareFakesKinematics(flav, var, MM_hist, infilename):
 
     doLogY = args.doLogScaleY
 
-    doMCScaleNorm = True
+    doMCScaleNorm = True if not var == "LepFlavours" else False
 
     c = TCanvas("c1_x","Temp_x",50,50,600,600)
 
@@ -1021,10 +1293,7 @@ def compareFakesKinematics(flav, var, MM_hist, infilename):
     MC_hist.SetLineColor(kViolet-4)
     MC_hist.SetMarkerSize(0.8)
     MC_hist.SetMarkerColor(1)
-    MC_hist.SetMarkerStyle(20)
-    # MC_hist.SetMarkerSize(0.8)
-    # MC_hist.SetMarkerColor(kViolet-4)
-    # MC_hist.SetMarkerStyle(24)
+    MC_hist.SetMarkerStyle(20) # (24)
 
     # Fix MC normalisation to the DD norm
 
@@ -1058,9 +1327,9 @@ def compareFakesKinematics(flav, var, MM_hist, infilename):
     ratio_err.GetYaxis().SetTitleOffset(0.35)
     ratio_err.GetXaxis().SetLabelSize(0.15)
     ratio_err.GetYaxis().SetLabelSize(0.12)
-    ratio_err.GetYaxis().SetNdivisions(505) #(5)
+    ratio_err.GetYaxis().SetNdivisions(505) # (5)
     ratio_err.SetFillColor(kOrange)
-    ratio_err.SetLineColor(kOrange)#(10)
+    ratio_err.SetLineColor(kOrange) # (10)
     ratio_err.SetFillStyle(3356)
     gStyle.SetHatchesLineWidth(2)
     gStyle.SetHatchesSpacing(0.8)
@@ -1078,10 +1347,7 @@ def compareFakesKinematics(flav, var, MM_hist, infilename):
     ratio_MC_MM.SetLineColor(kViolet-4)
     ratio_MC_MM.SetMarkerSize(0.8)
     ratio_MC_MM.SetMarkerColor(1)
-    ratio_MC_MM.SetMarkerStyle(20)
-    # ratio_MC_MM.SetMarkerSize(0.8)
-    # ratio_MC_MM.SetMarkerColor(kViolet-4)
-    # ratio_MC_MM.SetMarkerStyle(24)
+    ratio_MC_MM.SetMarkerStyle(20) # (24)
 
     ratio_MC_MM.Divide(MM_hist)
 
@@ -1127,7 +1393,7 @@ def compareFakesKinematics(flav, var, MM_hist, infilename):
     pad2.cd()
 
     # Hardcoded axis limits
-    ratio_err.GetYaxis().SetRangeUser(0.0, 2.0)
+    ratio_err.GetYaxis().SetRangeUser(0.45,1.55)
     pad2.SetGridy(1)
 
     ratio_err.Draw("E2")
@@ -1181,31 +1447,33 @@ if __name__ == '__main__':
         "deltaPhiLep0Lep1",
         "MET_FinalTrk",
         "Mll01_inc",
-        "TotLepCharge",
+        # "TotLepCharge",
         "NBJets",
         "NJets2j3j",
         "NJets4j",
         #
-        "BDTGScore",
-        "Lep0Pt",
-        "Lep1Pt",
-        "Lep0Eta",
-        "Lep1Eta",
-        "Lep0EtaBE2",
-        "Lep1EtaBE2",
+        "LepFlavours",
         #
-        # "Mu0Pt",
-        # "Mu1Pt",
-        # "Mu0Eta",
-        # "Mu1Eta",
-        # "Mu0DeltaRClosestJet",
-        # "Mu1DeltaRClosestJet",
-        # "El0Pt",
-        # "El1Pt",
-        # "El0Eta",
-        # "El1Eta",
-        # "El0DeltaRClosestJet",
-        # "El1DeltaRClosestJet",
+        # "BDTGScore",
+        # "Lep0Pt",
+        # "Lep1Pt",
+        # "Lep0Eta",
+        # "Lep1Eta",
+        # "Lep0EtaBE2",
+        # "Lep1EtaBE2",
+        #
+        "Mu0Pt",
+        "Mu1Pt",
+        "Mu0Eta",
+        "Mu1Eta",
+        "Mu0DeltaRClosestJet",
+        "Mu1DeltaRClosestJet",
+        "El0Pt",
+        "El1Pt",
+        "El0Eta",
+        "El1Eta",
+        "El0DeltaRClosestJet",
+        "El1DeltaRClosestJet",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",
@@ -1280,6 +1548,15 @@ if __name__ == '__main__':
             if myfile.IsZombie():
                 print("\tWARNING! file:\n\t{0}\n\tdoes not exist! Skipping to next...".format(filename))
                 continue
+
+            all_procs = {}
+    	    for key in myfile.GetListOfKeys():
+    		keyname = key.GetName()
+                if "_" in keyname: continue
+                if "allsim" in keyname: continue
+                prochist = myfile.Get(keyname)
+                prochist.SetDirectory(0)
+                all_procs[keyname] = prochist
 
     	    fakes_nominal = myfile.Get("fakesbkg")
     	    fakes_syst = {}
@@ -1369,6 +1646,10 @@ if __name__ == '__main__':
                 # Make Data/Expected plots w/ systematic bars for fakes included, and return expected, fakesMM histograms w/ updated errors
 
                 expected_hist_syst, fakes_hist_syst = makeSysPlots(flav,var_name,observed,expected_nominal,fakes_nominal, debug=args.debug)
+
+                # Make stack histograms plot w/ systematic error bands
+
+                makeSysPlotsSplitProcs( flav, var_name, all_procs, debug=False )
 
                 if args.doKinematicsComparison:
                     # Compare distributions for DD fakes VS. MC fakes (scaled norm. to DD)
