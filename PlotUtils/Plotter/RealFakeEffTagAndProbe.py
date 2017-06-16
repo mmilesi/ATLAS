@@ -932,6 +932,16 @@ class RealFakeEffTagAndProbe:
             print("\n\t\tvarX: {0} - varY: {1}\n".format(varX, varY))
             print("\t\tprojecting TH2 onto: {0}".format(varX))
 
+        # Make inclusive projection along X first, then project slices as well
+
+        proj_x_key = "{0}_proj{1}_{2}".format(key,varX,"inclusive")
+        proj_x = histogram.ProjectionX(proj_x_key+"_"+eventset)
+        proj_x.SetLineColor(15)
+        proj_x.SetLineStyle(2)
+        proj_x.SetMarkerColor(15)
+        proj_x.SetDirectory(0)
+        self.__fillNDHistDicts__(proj_x_key, eventset, proj_x )
+
         for i,ybin in enumerate( range(1,histogram.GetYaxis().GetNbins()+2) ):
 
             ybin_upedge  = histogram.GetYaxis().GetBinUpEdge(ybin)
@@ -954,6 +964,16 @@ class RealFakeEffTagAndProbe:
             self.__fillNDHistDicts__(proj_x_key, eventset, proj_x )
 
         if self.verbose: print("\t\tprojecting TH2 onto: {0}".format(varY))
+
+        # Make inclusive projection along Y first, then project slices as well
+
+        proj_y_key = "{0}_proj{1}_{2}".format(key,varY,"inclusive")
+        proj_y = histogram.ProjectionY(proj_y_key+"_"+eventset)
+        proj_y.SetLineColor(15)
+        proj_y.SetLineStyle(2)
+        proj_y.SetMarkerColor(15)
+        proj_y.SetDirectory(0)
+        self.__fillNDHistDicts__(proj_y_key, eventset, proj_y )
 
         for i,xbin in enumerate( range(1,histogram.GetXaxis().GetNbins()+2) ):
 
@@ -1223,11 +1243,9 @@ class RealFakeEffTagAndProbe:
             # -) the photon conversion fraction difference between ee and OF (for 2L)
             # -) the photon conversion fraction difference between 3L SR and 2L CR (for 3L)
 
-            doScaledEff  = False
+            doScaledEff = args.doRescalingFakeEl
 
-            if args.doRescalingFakeEl:
-
-                doScaledEff = True
+            if doScaledEff:
 
                 if "Fake_El_" in key_heff:
 
@@ -1581,6 +1599,9 @@ class RealFakeEffTagAndProbe:
 
         normfactor = self.histefficiencies[hist2Dkey+"_AVG"].GetBinContent(1,1)
 
+        minimum = 0.0
+        maximum = -999.0
+
     	for key, h in sorted(self.histefficiencies.iteritems()):
 
             vars2D = var.split("_VS_")
@@ -1604,8 +1625,10 @@ class RealFakeEffTagAndProbe:
 
             # Set the range of the Y axis
 
-            maximum = h.GetMaximum()
-            h.SetMaximum(3.0*maximum)
+            this_maximum = h.GetMaximum()
+            if this_maximum > maximum:
+                maximum = this_maximum
+                h.SetMaximum(3.0*maximum)
             h.SetMinimum(0.0)
 
             h.SetLineStyle(2)
@@ -1620,17 +1643,26 @@ class RealFakeEffTagAndProbe:
                 # c.cd(1)
                 cx.cd()
 
-                # Do not plot projetcion for overflow bin
-
-                if int(tokens[-1]) == self.histefficiencies[hist2Dkey].GetYaxis().GetNbins()+1:
-                    continue
-
-                slice_lowedge = self.histefficiencies[hist2Dkey].GetYaxis().GetBinLowEdge(int(tokens[-1]))
-                slice_upedge  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinUpEdge(int(tokens[-1]))
-                slice_centre  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinCenter(int(tokens[-1]))
-
                 varlegend = vars2D[1] if not "RAW" in vars2D[1] else vars2D[1][:-3]
-                legend_text = "{0} - [{1},{2}]".format(varlegend,slice_lowedge,slice_upedge) if varlegend != "NBJets" else "{0} - [{1}]".format(varlegend,int(slice_centre))
+
+                if varlegend == "Pt": varlegend = "p_{T}"
+                if varlegend == "NBJets": varlegend = "N_{b-tags}"
+                if varlegend == "DistanceClosestJet": varlegend = "#Delta R(#mu, closest jet)"
+
+                if tokens[-1].isdigit():
+
+                    # Do not plot projetcion for overflow bin
+
+                    if int(tokens[-1]) == self.histefficiencies[hist2Dkey].GetYaxis().GetNbins()+1:
+                        continue
+
+                    slice_lowedge = self.histefficiencies[hist2Dkey].GetYaxis().GetBinLowEdge(int(tokens[-1]))
+                    slice_upedge  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinUpEdge(int(tokens[-1]))
+                    slice_centre  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinCenter(int(tokens[-1]))
+                    legend_text = "{0} - [{1},{2}]".format(varlegend,slice_lowedge,slice_upedge) if varlegend != "N_{b-tags}" else "{0} - [{1}]".format(varlegend,int(slice_centre))
+                else:
+                    legend_text = "{0} - {1}".format(varlegend,"inclusive")
+
                 legendx.AddEntry(h,legend_text, "P")
 
                 if not gPad.GetListOfPrimitives().GetSize():
@@ -1646,17 +1678,26 @@ class RealFakeEffTagAndProbe:
                 # c.cd(2)
                 cy.cd()
 
-                # Do not plot projetcion for overflow bin
-
-                if int(tokens[-1]) == self.histefficiencies[hist2Dkey].GetXaxis().GetNbins()+1:
-                    continue
-
-                slice_lowedge = self.histefficiencies[hist2Dkey].GetXaxis().GetBinLowEdge(int(tokens[-1]))
-                slice_upedge  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinUpEdge(int(tokens[-1]))
-                slice_centre  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinCenter(int(tokens[-1]))
-
                 varlegend = vars2D[0] if not "RAW" in vars2D[0] else vars2D[0][:-3]
-                legend_text = "{0} - [{1},{2}]".format(varlegend,slice_lowedge,slice_upedge) if varlegend != "NBJets" else "{0} - [{1}]".format(varlegend,int(slice_centre))
+
+                if varlegend == "Pt": varlegend = "p_{T}"
+                if varlegend == "NBJets": varlegend = "N_{b-tags}"
+                if varlegend == "DistanceClosestJet": varlegend = "#Delta R(#mu, closest jet)"
+
+                if tokens[-1].isdigit():
+
+                    # Do not plot projetcion for overflow bin
+
+                    if int(tokens[-1]) == self.histefficiencies[hist2Dkey].GetXaxis().GetNbins()+1:
+                        continue
+
+                    slice_lowedge = self.histefficiencies[hist2Dkey].GetXaxis().GetBinLowEdge(int(tokens[-1]))
+                    slice_upedge  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinUpEdge(int(tokens[-1]))
+                    slice_centre  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinCenter(int(tokens[-1]))
+                    legend_text = "{0} - [{1},{2}]".format(varlegend,slice_lowedge,slice_upedge) if varlegend != "N_{b-tags}" else "{0} - [{1}]".format(varlegend,int(slice_centre))
+                else:
+                    legend_text = "{0} - {1}".format(varlegend,"inclusive")
+
                 legendy.AddEntry(h,legend_text, "P")
 
                 if not gPad.GetListOfPrimitives().GetSize():
