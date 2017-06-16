@@ -940,7 +940,8 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = "Lep1EtaBE2",latexname = "#eta^{l_{1}}", ntuplename = "lep_EtaBE2_1", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
             database.registerVar( Variable(shortname = "Lep0DeltaRClosestJet",latexname = "#DeltaR{l_{0}, closest j}", ntuplename = "minDeltaR_LJ_0", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
             database.registerVar( Variable(shortname = "Lep1DeltaRClosestJet",latexname = "#DeltaR{l_{1}, closest j}", ntuplename = "minDeltaR_LJ_1", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
-            database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttV+MVA2lSSMarseille_weight_ttbar)/2.0", manualbins = [-1.0,-0.3508,-0.1632,0.031,0.2424,0.4616,1.0], sysvar = True ) )
+            # database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttV+MVA2lSSMarseille_weight_ttbar)/2.0", manualbins = [-1.0,-0.3508,-0.1632,0.031,0.2424,0.4616,1.0], sysvar = True ) )
+            database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(BDTGScore_ttH_ttbarDD+BDTGScore_ttH_ttV)/2.0", manualbins = [-1,-0.1846,0.0324,0.2178,0.3892,0.558,1], sysvar = True ) )
         else:
             database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
             database.registerVar( Variable(shortname = "El1Pt", latexname = "p_{T}^{e_{1}} [GeV]", ntuplename = "electron_Pt[1]/1e3", bins = 14, minval = 10.0, maxval = 150.0, sysvar = True ) )

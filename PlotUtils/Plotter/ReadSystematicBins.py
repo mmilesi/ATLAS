@@ -1014,8 +1014,253 @@ def makeSysPlotsSplitProcs( flav, var, allprocs={}, debug=False ):
         c.SaveAs( outname + ext[0] )
 
 
+# -------------------------------------------------------------------------------------------------------------------
 
-################################
+# def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
+
+#     gROOT.SetBatch(True)
+
+#     c = TCanvas("c1","Temp",50,50,600,600)
+
+#     pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
+#     pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
+#     pad1.SetBottomMargin(0.02)
+#     pad2.SetBottomMargin(0.4)
+#     pad1.Draw()
+#     pad2.Draw()
+
+#     new_MM_hist = MM_hist.Clone(MM_hist.GetName())
+
+#     # For MM closure hist, set the bin error as the sum in quadrature of stat+syst
+#     # If looking at the SR, take only the part of error which is not correlated to the MC stats error
+#     # That is, take only the syst error from the Fake CR size
+
+#     print("")
+#     for ibin in range(1,new_MM_hist.GetSize()):
+#         if "HIGHNJ" in args.channel:
+#             print("\tbin: {0} - X = {1:.2f} +- {2:.2f} (stat.) +- {3:.2f} (sys.) = {1:.2f} +- {4:.2f} (stat.+sys.)".format(ibin,new_MM_hist.GetBinContent(ibin),new_MM_hist.GetBinError(ibin),g_sq_unc_bins_NO_STAT[ibin],g_sq_unc_bins[ibin]))
+#             new_MM_hist.SetBinError(ibin, g_sq_unc_bins_NO_STAT[ibin] )
+#         else:
+#             new_MM_hist.SetBinError(ibin, g_sq_unc_bins[ibin] )
+
+#     MC_hist.SetLineStyle(2)
+#     MC_hist.SetLineWidth(3)
+#     MC_hist.SetLineColor(kViolet-4)
+#     MC_hist.SetMarkerSize(0.8)
+#     MC_hist.SetMarkerColor(kViolet-4) # (1)
+#     MC_hist.SetMarkerStyle(20)
+
+#     new_MM_hist.SetLineWidth(2)
+#     new_MM_hist.SetLineStyle(1)
+#     new_MM_hist.SetLineColor(kViolet-4)
+#     new_MM_hist.SetFillColor(kWhite)
+#     new_MM_hist.SetFillStyle(1001)
+
+#     gStyle.SetHatchesLineWidth(2)
+#     gStyle.SetHatchesSpacing(0.8)
+
+#     err = new_MM_hist.Clone("tot_uncertainty")
+#     err.SetFillColor(kGray)
+#     err.SetLineColor(kGray)
+#     err.SetFillStyle(3356)
+#     err.SetMarkerSize(0)
+
+#     # Trick to rescale histograms in first pad
+
+#     ymax      = new_MM_hist.GetMaximum()
+#     binmax    = new_MM_hist.GetMaximumBin()
+#     binmaxerr = new_MM_hist.GetBinError(binmax)
+
+#     #print("FLAV: {0} - MM max = {1:.2f} - ttbar max = {2:.2f}".format(flav,new_MM_hist.GetMaximum(),MC_hist.GetMaximum()))
+
+#     if MC_hist.GetMaximum() > ymax:
+#         ymax      = MC_hist.GetMaximum()
+#         binmax    = MC_hist.GetMaximumBin()
+#         binmaxerr = MC_hist.GetBinError(binmax)
+
+#     #print("FLAV: {0} - max = {1:.2f} - binmax = {2} - binmaxerr = {3:.2f}".format(flav,ymax,binmax,binmaxerr))
+
+#     # Set this to the first histogram that will be plotted in the pad
+
+#     err.SetMaximum( (ymax + binmaxerr) *1.3 )
+#     err.SetMinimum(0)
+
+#     # --------------------------
+
+#     # Make the actual non closure plot
+
+#     ratio_MC_MM = new_MM_hist.Clone("RatioMCMM")
+#     ratio_MC_MM = ratio_MC_MM - MC_hist
+#     ratio_MC_MM.Divide(MC_hist) # Do not care about the errors: this histogram will be drawn w/o error bars
+#     ratio_MC_MM.SetYTitle("Non-closure")
+#     ratio_MC_MM.SetLineStyle(1)
+#     ratio_MC_MM.SetLineWidth(2)
+#     ratio_MC_MM.SetLineColor(kRed)
+#     ratio_MC_MM.SetMarkerSize(0.8)
+#     ratio_MC_MM.SetMarkerColor(1)
+#     ratio_MC_MM.SetMarkerStyle(20) # (22)
+
+#     ratio_MC_MM_err = ratio_MC_MM.Clone("RatioErr")
+
+#     # Calculate the error on the non-closure using the standard error propagation bin by bin
+#     # On the MM estimate, the error is mostly from the Fake CR size, which is orthogonal to all the MM sidebands.
+#     # Therefore we neglect correlations in the errror computation, which should be accounted for b/c the MM prediction
+#     # in the closure test actually contains the events of the pure MC prediction.
+
+#     # Dummy histogram to show the non-closure
+#     effective_NC = ratio_MC_MM.Clone("Effective")
+#     effective_NC.SetLineColor(kBlack)
+#     # effective_NC.SetLineStyle(2)
+
+#     print("")
+#     for ibin in range(1,ratio_MC_MM_err.GetSize()):
+
+#         iMM    = new_MM_hist.GetBinContent(ibin)
+#         iMMerr = new_MM_hist.GetBinError(ibin)
+#         iMC    = MC_hist.GetBinContent(ibin)
+#         iMCerr = MC_hist.GetBinError(ibin)
+
+#         print("\tbin: {0}\tMM = {1:.2f} +- {2:.2f}\tMC = {3:.2f} +- {4:.2f}".format(ibin,iMM,iMMerr,iMC,iMCerr))
+#         iclosure_err = 0.0
+#         if iMC and iMCerr:
+#             iclosure_err = math.sqrt( (iMMerr*iMMerr) / (iMC*iMC) + (iMM*iMM) * (iMCerr*iMCerr) / (iMC*iMC*iMC*iMC) )
+
+#         ratio_MC_MM_err.SetBinError(ibin, iclosure_err)
+#         print("\tNON CLOSURE: {0:.2f} +- {1:.2f} [%]".format(ratio_MC_MM_err.GetBinContent(ibin)*1e2,iclosure_err*1e2))
+
+#         # Calculate the effective non-closure, and store it as error for the dummy histogram
+
+#         effectiveNC = max( 0, abs(ratio_MC_MM_err.GetBinContent(ibin)) - iclosure_err )
+
+#         print("\tEFFECTIVE NON CLOSURE: {0:.2f} [%]".format(effectiveNC*1e2))
+#         effective_NC.SetBinContent(ibin,effectiveNC)
+
+#     ratio_MC_MM_err.SetYTitle("#frac{MM-t#bar{t}}{t#bar{t}}")
+#     ratio_MC_MM_err.GetXaxis().SetTitleSize(0.15)
+#     ratio_MC_MM_err.GetYaxis().SetTitleSize(0.12)
+#     ratio_MC_MM_err.GetXaxis().SetTitleOffset(0.90)
+#     ratio_MC_MM_err.GetYaxis().SetTitleOffset(0.45)
+#     ratio_MC_MM_err.GetXaxis().SetLabelSize(0.15)
+#     ratio_MC_MM_err.GetYaxis().SetLabelSize(0.12)
+#     ratio_MC_MM_err.GetYaxis().SetNdivisions(505) #(5)
+#     ratio_MC_MM_err.SetFillColor(kOrange)
+#     ratio_MC_MM_err.SetLineColor(kOrange)
+#     ratio_MC_MM_err.SetFillStyle(3356)
+#     ratio_MC_MM_err.SetMarkerSize(0)
+
+#     # # Trick to rescale ratio pad
+
+#     # ymax_ratio = ratio_MC_MM.GetMaximum()
+#     # ymin_ratio = ratio_MC_MM.GetMinimum()
+
+#     # #print("FLAV: {0} - MC/MM max = {1:.2f} - MC/MM min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
+
+#     # # For ratio error, get the bin with maximum uncertainty and the uncertainty value
+
+#     # max_unc = 0
+#     # for ibin in range(1, ratio_err.GetNbinsX()+1):
+#     #     this_unc = ratio_err.GetBinError(ibin)
+#     #   	if this_unc > max_unc:
+#     #         max_unc = this_unc
+
+#     # #print("FLAV: {0} - max unc./2 ratio = {1:.2f}".format(flav,max_unc/2.0))
+
+#     # if ( 1 + max_unc/2.0 ) > ymax_ratio:
+#     # 	ymax_ratio = 1 + max_unc/2.0
+#     # if ( 1 - max_unc/2.0 ) < ymin_ratio:
+#     # 	ymin_ratio = 1 - max_unc/2.0
+
+#     # if ymin_ratio < 0: ymin_ratio = 0
+
+#     # #print("FLAV: {0} - actual max = {1:.2f} - actual min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
+
+#     # ratio_err.SetMaximum( ymax_ratio * 1.2 )
+#     # ratio_err.SetMinimum( ymin_ratio * 0.8 )
+
+#     # --------------------------
+
+#     pad1.cd()
+
+#     err.GetXaxis().SetLabelSize(0)
+#     err.GetXaxis().SetLabelOffset(999)
+
+#     err.Draw("E2")
+#     new_MM_hist.Draw("HIST SAME")
+#     MC_hist.Draw("PE SAME")
+
+#     legend = TLegend(0.55,0.7,0.75,0.9) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+#     legend.SetBorderSize(0)	# no border
+#     legend.SetFillStyle(0)	# Legend transparent background
+#     legend.SetTextSize(0.03)	# Increase entry font size!
+#     #legend.SetTextFont(42)	# Helvetica
+
+#     legend.AddEntry(new_MM_hist,"Fakes MM (t#bar{{t}}, t#bar{{t}}#gamma inputs) ({0:.1f})".format(integrate(new_MM_hist)),"F")
+#     legend.AddEntry(MC_hist, "t#bar{{t}}, t#bar{{t}}#gamma ({0:.1f})".format(integrate(MC_hist)), "P")
+#     err_type = "Stat.+Sys. Unc." if not  "HIGHNJ" in args.channel else "Sys. Unc."
+#     legend.AddEntry(err, "{0}".format(err_type), "F")
+
+#     leg_ATLAS = TLatex()
+#     leg_lumi  = TLatex()
+#     leg_ATLAS.SetTextSize(0.03)
+#     leg_ATLAS.SetNDC()
+#     leg_lumi.SetTextSize(0.03)
+#     leg_lumi.SetNDC()
+
+#     legend.Draw()
+#     leg_ATLAS.DrawLatex(0.19,0.85,"#bf{#it{ATLAS}} Work In Progress")
+#     leg_lumi.DrawLatex(0.19,0.75,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
+
+#     pad2.cd()
+
+#     ratio_MC_MM_err.GetYaxis().SetRangeUser(-1.0, 1.0)
+#     ratio_MC_MM_err.Draw("E2")
+
+#     # Write the actual non-closure per bin on the histogram in selected cases
+
+#     if any( v == var for v in ["Integral","BDTGScore","NJets2j3j","NJets4j","NBJets"] ):
+#         gStyle.SetPaintTextFormat(".2f")
+#         ratio_MC_MM.SetMarkerSize(4.1)
+#         ratio_MC_MM.SetMarkerColor(kRed)
+#         ratio_MC_MM.Draw("HIST SAME TEXT0")
+#         if "HIGHNJ" in args.channel:
+#             effective_NC.SetMarkerSize(4.1)
+#             effective_NC.SetMarkerColor(kBlack)
+#             effective_NC.Draw("HIST SAME TEXT0")
+
+#     else:
+#         ratio_MC_MM.Draw("HIST SAME")
+
+#     refl = TLine(ratio_MC_MM.GetBinLowEdge(1), 0.0, ratio_MC_MM.GetBinLowEdge(ratio_MC_MM.GetNbinsX()+1), 0.0)
+#     refl.SetLineStyle(2)
+#     refl.SetLineColor(kBlack)
+#     refl.SetLineWidth(2)
+#     refl.Draw("SAME")
+
+#     # --------------------------
+
+#     outpath = args.inputDir
+#     if outpath[-1] == '/':
+#       outpath = outpath[:-1]
+
+#     outpath += "/" + flav + "_MM_vs_MC_Sys"
+#     if not os.path.exists(outpath):
+#         os.makedirs(outpath)
+
+#     extensions = [(".png","PNG"),(".pdf","PDF"),(".root","ROOT")]
+#     for ext in extensions:
+#         finalpath = outpath+"/"+ext[1]
+#         if not os.path.exists(finalpath):
+#             os.makedirs(finalpath)
+#         outname = finalpath + "/" + flav + "_" + var + "_MM_vs_MC_Sys"
+#         c.SaveAs( outname + ext[0] )
+
+#     if "HIGHNJ" in args.channel and var == "BDTGScore":
+#         filename_effective_NC = flav + "_" + var + "_" + "NC" + ".root"
+#         outfile_effective_NC = TFile(outpath+"/"+filename_effective_NC,"RECREATE")
+#         outfile_effective_NC.cd()
+#         effective_NC.Write()
+
+# -------------------------------------------------------------------------------------------------------------------
 
 def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
@@ -1088,71 +1333,85 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
     # --------------------------
 
-    # Make the actual non closure plot
+    # Get the SF = MC/MM
+    #
+    # The non-closure will be :
+    #
+    # NC = (MM-MC)/MC = 1 - SF
+    #
+    # It also holds:
+    #
+    # SF_err = NC_err
 
-    ratio_MC_MM = new_MM_hist.Clone("RatioMCMM")
-    ratio_MC_MM = ratio_MC_MM - MC_hist
-    ratio_MC_MM.Divide(MC_hist) # Do not care about the errors: this histogram will be drawn w/o error bars
-    ratio_MC_MM.SetYTitle("Non-closure")
-    ratio_MC_MM.SetLineStyle(1)
-    ratio_MC_MM.SetLineWidth(2)
-    ratio_MC_MM.SetLineColor(kRed)
-    ratio_MC_MM.SetMarkerSize(0.8)
-    ratio_MC_MM.SetMarkerColor(1)
-    ratio_MC_MM.SetMarkerStyle(20) # (22)
+    SF = MC_hist.Clone("SF")
+    SF.Divide(new_MM_hist) # Do not care about the errors: this histogram will be drawn w/o error bars
+    SF.SetYTitle("SF")
+    SF.SetLineStyle(1)
+    SF.SetLineWidth(2)
+    SF.SetLineColor(kRed)
+    SF.SetMarkerSize(0.8)
+    SF.SetMarkerColor(1)
+    SF.SetMarkerStyle(20) # (22)
 
-    ratio_MC_MM_err = ratio_MC_MM.Clone("RatioErr")
+    SF_err = SF.Clone("SFErr")
 
-    # Calculate the error on the non-closure using the standard error propagation bin by bin
+    # Calculate the error on the SF (equal to the non-closure error) using the standard error propagation bin by bin
     # On the MM estimate, the error is mostly from the Fake CR size, which is orthogonal to all the MM sidebands.
     # Therefore we neglect correlations in the errror computation, which should be accounted for b/c the MM prediction
     # in the closure test actually contains the events of the pure MC prediction.
 
-    # Dummy histogram to show the non-closure
-    effective_NC = ratio_MC_MM.Clone("Effective")
+    # Dummy histogram to show the effective non-closure
+    effective_NC = SF.Clone("EffectiveNC")
     effective_NC.SetLineColor(kBlack)
     # effective_NC.SetLineStyle(2)
 
     print("")
-    for ibin in range(1,ratio_MC_MM_err.GetSize()):
+    for ibin in range(1,SF_err.GetSize()):
 
         iMM    = new_MM_hist.GetBinContent(ibin)
         iMMerr = new_MM_hist.GetBinError(ibin)
         iMC    = MC_hist.GetBinContent(ibin)
         iMCerr = MC_hist.GetBinError(ibin)
 
-        print("\tbin: {0}\tMM = {1:.2f} +- {2:.2f}\tMC = {3:.2f} +- {4:.2f}".format(ibin,iMM,iMMerr,iMC,iMCerr))
-        iclosure_err = 0.0
-        if iMC and iMCerr:
-            iclosure_err = math.sqrt( (iMMerr*iMMerr) / (iMC*iMC) + (iMM*iMM) * (iMCerr*iMCerr) / (iMC*iMC*iMC*iMC) )
+        iSF = iMC/iMM if ( iMC and iMM ) else 0.0
 
-        ratio_MC_MM_err.SetBinError(ibin, iclosure_err)
-        print("\tNON CLOSURE: {0:.2f} +- {1:.2f} [%]".format(ratio_MC_MM_err.GetBinContent(ibin)*1e2,iclosure_err*1e2))
+        print("\n\tbin: {0}\tMM = {1:.2f} +- {2:.2f}\tMC = {3:.2f} +- {4:.2f}\n".format(ibin,iMM,iMMerr,iMC,iMCerr))
+        iSF_err = 0.0
+        if iMC and iMCerr:
+            iSF_err = math.sqrt( (iMMerr*iMMerr) * (iMC*iMC) / (iMM*iMM*iMM*iMM) + (iMCerr*iMCerr) / (iMM*iMM) )
+
+        SF_err.SetBinError(ibin, iSF_err)
+
+        print("\t\tSF (MC/MM) = {0:.2f} +- {1:.2f}".format( iSF, iSF_err ))
+
+        iNC = 1 - SF_err.GetBinContent(ibin) if SF_err.GetBinContent(ibin) else 0.0
+
+        print("\t\tNON CLOSURE (MM-MC)/MM: {0:.2f} +- {1:.2f} [%]".format( iNC*1e2, iSF_err*1e2))
 
         # Calculate the effective non-closure, and store it as error for the dummy histogram
 
-        effectiveNC = max( 0, abs(ratio_MC_MM_err.GetBinContent(ibin)) - iclosure_err )
+        effectiveNC = max( 0, abs(iNC) - iSF_err )
 
-        print("\tEFFECTIVE NON CLOSURE: {0:.2f} [%]".format(effectiveNC*1e2))
+        print("\t\tEFFECTIVE NON CLOSURE max(0,abs(NC)-NC_err): {0:.2f} [%]".format(effectiveNC*1e2))
         effective_NC.SetBinContent(ibin,effectiveNC)
 
-    ratio_MC_MM_err.SetYTitle("#frac{MM-t#bar{t}}{t#bar{t}}")
-    ratio_MC_MM_err.GetXaxis().SetTitleSize(0.15)
-    ratio_MC_MM_err.GetYaxis().SetTitleSize(0.12)
-    ratio_MC_MM_err.GetXaxis().SetTitleOffset(0.90)
-    ratio_MC_MM_err.GetYaxis().SetTitleOffset(0.45)
-    ratio_MC_MM_err.GetXaxis().SetLabelSize(0.15)
-    ratio_MC_MM_err.GetYaxis().SetLabelSize(0.12)
-    ratio_MC_MM_err.GetYaxis().SetNdivisions(505) #(5)
-    ratio_MC_MM_err.SetFillColor(kOrange)
-    ratio_MC_MM_err.SetLineColor(kOrange)
-    ratio_MC_MM_err.SetFillStyle(3356)
-    ratio_MC_MM_err.SetMarkerSize(0)
+    SF_err.SetYTitle("#frac{t#bar{t}}{MM}")
+    SF_err.GetXaxis().SetTitleSize(0.15)
+    SF_err.GetYaxis().SetTitleSize(0.12)
+    SF_err.GetXaxis().SetTitleOffset(0.90)
+    SF_err.GetYaxis().SetTitleOffset(0.45)
+    SF_err.GetXaxis().SetLabelSize(0.15)
+    SF_err.GetYaxis().SetLabelSize(0.12)
+    SF_err.GetYaxis().SetNdivisions(505) #(5)
+    SF_err.SetFillColor(kOrange)
+    SF_err.SetLineColor(kOrange)
+    SF_err.SetFillStyle(3356)
+    SF_err.SetMarkerSize(0)
 
     # # Trick to rescale ratio pad
 
-    # ymax_ratio = ratio_MC_MM.GetMaximum()
-    # ymin_ratio = ratio_MC_MM.GetMinimum()
+    # ymax_ratio = SF.GetMaximum()
+    # ymin_ratio = SF.GetMinimum()
 
     # #print("FLAV: {0} - MC/MM max = {1:.2f} - MC/MM min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
 
@@ -1213,25 +1472,27 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
     pad2.cd()
 
-    ratio_MC_MM_err.GetYaxis().SetRangeUser(-1.0, 1.0)
-    ratio_MC_MM_err.Draw("E2")
+    SF_err.GetYaxis().SetRangeUser(0.5, 2.2)
+    SF_err.Draw("E2")
 
     # Write the actual non-closure per bin on the histogram in selected cases
 
     if any( v == var for v in ["Integral","BDTGScore","NJets2j3j","NJets4j","NBJets"] ):
+        # Draw the SF in the pad
         gStyle.SetPaintTextFormat(".2f")
-        ratio_MC_MM.SetMarkerSize(4.1)
-        ratio_MC_MM.SetMarkerColor(kRed)
-        ratio_MC_MM.Draw("HIST SAME TEXT0")
-        if "HIGHNJ" in args.channel:
-            effective_NC.SetMarkerSize(4.1)
-            effective_NC.SetMarkerColor(kBlack)
-            effective_NC.Draw("HIST SAME TEXT0")
+        SF.SetMarkerSize(4.1)
+        SF.SetMarkerColor(kRed)
+        SF.Draw("HIST SAME TEXT0")
+        # if "HIGHNJ" in args.channel:
+        #     # Draw the effective NC in the pad
+        #     effective_NC.SetMarkerSize(4.1)
+        #     effective_NC.SetMarkerColor(kBlack)
+        #     effective_NC.Draw("HIST SAME TEXT0")
 
     else:
-        ratio_MC_MM.Draw("HIST SAME")
+        SF.Draw("HIST SAME")
 
-    refl = TLine(ratio_MC_MM.GetBinLowEdge(1), 0.0, ratio_MC_MM.GetBinLowEdge(ratio_MC_MM.GetNbinsX()+1), 0.0)
+    refl = TLine(SF.GetBinLowEdge(1), 1.0, SF.GetBinLowEdge(SF.GetNbinsX()+1), 1.0)
     refl.SetLineStyle(2)
     refl.SetLineColor(kBlack)
     refl.SetLineWidth(2)
@@ -1256,10 +1517,16 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
         c.SaveAs( outname + ext[0] )
 
     if "HIGHNJ" in args.channel and var == "BDTGScore":
-        filename_effective_NC = flav + "_" + var + "_" + "NC" + ".root"
-        outfile_effective_NC = TFile(outpath+"/"+filename_effective_NC,"RECREATE")
-        outfile_effective_NC.cd()
-        effective_NC.Write()
+        # Save the SF histogram
+        filename_SF = flav + "_" + var + "_" + "SF" + ".root"
+        outfile_SF = TFile(outpath+"/"+filename_SF,"RECREATE")
+        outfile_SF.cd()
+        SF_err.GetXaxis().SetLabelSize(0.05)
+        SF_err.GetYaxis().SetLabelSize(0.05)
+        SF_err.GetXaxis().SetTitleSize(0.05)
+        SF_err.GetYaxis().SetTitleSize(0.05)
+        SF_err.SetLineColor(kBlack)
+        SF_err.Write()
 
 # -------------------------------------------------------------------------------------------------------------------
 
@@ -1443,18 +1710,18 @@ if __name__ == '__main__':
     # var_list = []
     var_list = [
         "Integral",
-        "deltaRLep0Lep1",
-        "deltaPhiLep0Lep1",
-        "MET_FinalTrk",
-        "Mll01_inc",
-        # "TotLepCharge",
+        # "deltaRLep0Lep1",
+        # "deltaPhiLep0Lep1",
+        # "MET_FinalTrk",
+        # "Mll01_inc",
+        # # "TotLepCharge",
         "NBJets",
-        "NJets2j3j",
-        "NJets4j",
+        # "NJets2j3j",
+        # "NJets4j",
         #
-        "LepFlavours",
+        # "LepFlavours",
         #
-        # "BDTGScore",
+        "BDTGScore",
         # "Lep0Pt",
         # "Lep1Pt",
         # "Lep0Eta",
@@ -1462,18 +1729,18 @@ if __name__ == '__main__':
         # "Lep0EtaBE2",
         # "Lep1EtaBE2",
         #
-        "Mu0Pt",
-        "Mu1Pt",
-        "Mu0Eta",
-        "Mu1Eta",
-        "Mu0DeltaRClosestJet",
-        "Mu1DeltaRClosestJet",
-        "El0Pt",
-        "El1Pt",
-        "El0Eta",
-        "El1Eta",
-        "El0DeltaRClosestJet",
-        "El1DeltaRClosestJet",
+        # "Mu0Pt",
+        # "Mu1Pt",
+        # "Mu0Eta",
+        # "Mu1Eta",
+        # "Mu0DeltaRClosestJet",
+        # "Mu1DeltaRClosestJet",
+        # "El0Pt",
+        # "El1Pt",
+        # "El0Eta",
+        # "El1Eta",
+        # "El0DeltaRClosestJet",
+        # "El1DeltaRClosestJet",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",
@@ -1612,19 +1879,25 @@ if __name__ == '__main__':
     		print ("\n\tTTbar: \n")
     		ttbar, ttbar_err = getYields(ttbar_nominal)
 
-    		closure     = ( (fakes - ttbar) / (ttbar) ) * 100
-    		closure_err = math.sqrt( ( ( math.pow(fakes,2.0) / math.pow(ttbar,4.0) ) * math.pow(ttbar_err,2.0) ) + ( math.pow(fakes_tot_err,2.0) / math.pow(ttbar,2.0) ) ) * 100
+                SF              = ttbar / fakes
+                SF_err          = math.sqrt( ( ( math.pow(ttbar,2.0) / math.pow(fakes,4.0) ) * math.pow(fakes_tot_err,2.0) ) + ( math.pow(ttbar_err,2.0) / math.pow(fakes,2.0) ) )
+                SF_err_uncorr   = math.sqrt( ( ( math.pow(ttbar,2.0) / math.pow(fakes,4.0) ) * math.pow(fakes_tot_err_NO_STAT,2.0) ) + ( math.pow(ttbar_err,2.0) / math.pow(fakes,2.0) ) )
+                non_closure     = ( 1 - SF ) * 1e2
+                non_closure_err = SF_err * 1e2
+                non_closure_err_uncorr = SF_err_uncorr * 1e2
 
     		makeSysPlotsClosure(flav,var_name,ttbar_nominal,fakes_nominal)
 
                 print("\n\t======================================================================\n")
                 print("\tCategory : {0} - Channel : {1}\n".format(flav,args.channel))
-    		print("\tNon-closure ((MM fakes-ttbar)/ttbar) = {0:.2f} +- {1:.2f} [%]".format(closure,closure_err))
+    		print("\tSF (ttbar/MM fakes) = {0:.4f} +- {1:.4f}".format(SF,SF_err))
                 if "HIGHNJ" in args.channel:
-                    closure_err_uncorr = math.sqrt( ( ( math.pow(fakes,2.0) / math.pow(ttbar,4.0) ) * math.pow(ttbar_err,2.0) ) + ( math.pow(fakes_tot_err_NO_STAT,2.0) / math.pow(ttbar,2.0) ) ) * 100
-                    print("\t                                     = {0:.2f} +- {1:.2f} [%] (UNCORR. UNC.)".format(closure,closure_err_uncorr))
-                    effective_closure = max( 0, abs(closure) - closure_err_uncorr )
-                    print("\tEFFECTIVE Non-closure ((MM fakes-ttbar)/ttbar) = {0:.2f} [%]".format(effective_closure))
+                    print("\t                    = {0:.4f} +- {1:.4f} [%] (UNCORR. UNC.)".format(SF,SF_err_uncorr))
+    		print("\tNon-closure (1-SF) = {0:.2f} +- {1:.2f} [%]".format(non_closure,non_closure_err))
+                if "HIGHNJ" in args.channel:
+                    print("\t                   = {0:.2f} +- {1:.2f} [%] (UNCORR. UNC.)".format(non_closure,non_closure_err_uncorr))
+                    effective_closure = max( 0, abs(non_closure) - non_closure_err_uncorr )
+                    print("\tEFFECTIVE Non-closure ( max(0,|NC|-NC_err) ) = {0:.2f} [%]".format(effective_closure))
                 print("\n\t======================================================================\n")
 
             else:
