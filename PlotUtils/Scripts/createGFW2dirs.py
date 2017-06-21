@@ -1,17 +1,5 @@
 import os, glob, subprocess, shutil
 
-currentpath = os.path.abspath(os.path.curdir)
-inputpath = "./GFW2MiniNTup/25ns_v28/25ns_v28/01/gfw2/CoEPP_PlotFormat_reduced_v28"
-
-os.chdir(inputpath)
-# filelist = [ f for f in glob.glob("*.root*") if not "friend.root" in f ]
-filelist = [ f for f in glob.glob("*.root*") ]
-
-# Copy only friend trees
-# filelist = [ f for f in glob.glob("*.root*") if "friend" in f ]
-
-os.chdir(currentpath)
-
 # ID,category,xsection,kfactor,efficiency,name,group,subgroup
 samplelist = [
 ["","Data","","","","physics_Main","Data","physics_Main"],
@@ -180,20 +168,49 @@ samplelist = [
 ["410503","Background","76.93","1.1392","1.0","PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_dil","tops","ttbar_dil_Pythia8"],
 ]
 
+execpath  = os.path.abspath(os.path.curdir)
+inputpath = "/coepp/cephfs/mel/mmilesi/ttH/GFW2MiniNTup/25ns_v28/25ns_v28/01/gfw2"
+destpath  = inputpath + "/CoEPP_PlotFormat_reduced_v28"
+
+copy_friends_only = True
+
+for s in samplelist:
+    pattern = "*" if not copy_friends_only else "*friend*"
+    thisdir = inputpath
+    if s[7] == "physics_Main":
+        thisdir += "/Data/{0}".format(pattern)
+    elif s[7] == "fakes_mm":
+        thisdir += "/Fakes/{0}".format(pattern)
+    else:
+        thisdir += "/Nominal/{0}{1}".format(s[0],pattern)
+    cmd = "rsync -azP {0} {1}/".format(thisdir,destpath)
+    subprocess.call(cmd,shell=True)
+
+os.chdir(destpath)
+filelist = [ f for f in glob.glob("*.root*") ]
+if copy_friends_only:
+    filelist = [ f for f in glob.glob("*.root*") if "friend" in f ] # Copy only friend trees
+
+print filelist
+os.chdir(execpath)
+
 for f in filelist:
     this_id = f[:f.index('.')]
     for s in samplelist:
         if this_id == s[0] or this_id == s[5]:
-            sampledir = inputpath+"/"+s[6]
+            sampledir = destpath+"/"+s[6]
             if not os.path.exists(sampledir):
                 os.makedirs(sampledir)
-            i = inputpath+"/"+f
+            i = destpath+"/"+f
             if s[0]:
                 if "friend" in f:
                     o = sampledir+"/"+s[0]+"."+s[5]+".root.reduced.friend"
                 else:
                     o = sampledir+"/"+s[0]+"."+s[5]+".root"
             else:
-                o = sampledir+"/"+f
+                if "friend" in f:
+                    o = sampledir+"/"+s[5]+".root.reduced.friend"
+                else:
+                    o = sampledir+"/"+s[5]+".root"
             shutil.move(i,o)
 

@@ -256,14 +256,21 @@ class TTHBackgrounds(Background):
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
+            # logistic_NN_top  = "output_top"
+            # logistic_RNN_top = "RNN_output_top"
+            logistic_NN_top  = "1/(1+TMath::Exp(-600*(output_top-0.984176)))"
+            logistic_RNN_top = "1/(1+TMath::Exp(-100*(RNN_output_top-0.968906)))"
+            dist_NN  = "( TMath::Sqrt(2.0) - TMath::Sqrt( (1.0-{0})*(1.0-{0}) + (1.0-output_ttV)*(1.0-output_ttV) ) )/TMath::Sqrt(2.0)".format(logistic_NN_top)
+            dist_RNN = "( TMath::Sqrt(2.0) - TMath::Sqrt( (1.0-{0})*(1.0-{0}) + (1.0-RNN_output_ttV)*(1.0-RNN_output_ttV) ) )/TMath::Sqrt(2.0)".format(logistic_RNN_top)
+
             if   self.parent.var.shortname == "NN_ttV": sp = sp.subprocess(cut=Cut("NN_Cut","( output_ttV < 0.5 )"))
-            if   self.parent.var.shortname == "NN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( output_top < 0.5 )"))
+            if   self.parent.var.shortname == "NN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( {0} < 0.9 )".format(logistic_NN_top)))
             if   self.parent.var.shortname == "RNN_ttV": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_ttV < 0.5 )"))
-            if   self.parent.var.shortname == "RNN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_top < 0.5 )"))
+            if   self.parent.var.shortname == "RNN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( {0} < 0.9 )".format(logistic_RNN_top)))
             if   self.parent.var.shortname == "NN_Rebinned": sp = sp.subprocess(cut=Cut("NN_Cut","( output_bin <= 3 )"))
             if   self.parent.var.shortname == "RNN_Rebinned": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_bin <= 3 )"))
-            if   self.parent.var.shortname == "NNComb": sp = sp.subprocess(cut=Cut("NN_Cut","( TMath::Sqrt(2.0) - TMath::Sqrt( (1.0-output_top)*(1.0-output_top) + (1.0-output_ttV)*(1.0-output_ttV) ) < 1.0 )"))
-            if   self.parent.var.shortname == "RNNComb": sp = sp.subprocess(cut=Cut("NN_Cut","( TMath::Sqrt(2.0) - TMath::Sqrt( (1.0-RNN_output_top)*(1.0-RNN_output_top) + (1.0-RNN_output_ttV)*(1.0-RNN_output_ttV) ) < 1.0 )"))
+            if   self.parent.var.shortname == "NNComb": sp = sp.subprocess(cut=Cut("NN_Cut","( {0} < 0.7 )".format(dist_NN)))
+            if   self.parent.var.shortname == "RNNComb": sp = sp.subprocess(cut=Cut("NN_Cut","( {0}  < 0.7 )".format(dist_RNN)))
 
             print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
