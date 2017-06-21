@@ -823,17 +823,30 @@ def makeSysPlotsSplitProcs( flav, var, allprocs={}, debug=False ):
     }
 
     for proc, h in reversed(bkglist):
+        if proc == "signal": continue
         h.SetLineWidth(2)
         h.SetLineStyle(1)
         h.SetLineColor(1)
         h.SetFillColor(colours[proc])
         h.SetFillStyle(1001)
-        if proc == "signal":
-            h.SetFillColor(10)
-            h.SetLineColor(2)
-            h.SetLineStyle(2)
         legs.append( (h, "{0} ({1:.1f})".format(samplenames[proc],integrate(h)), "F") )
         stack.Add(h)
+
+    # Add signal on top of the stack
+
+    sig = [ h for key, h in all_procs.iteritems() if key == "signal" ][0]
+    sig.SetFillStyle(0)
+    sig.SetFillColor(10)
+    sig.SetLineColor(2)
+    sig.SetLineStyle(2)
+    legs.append( (sig, "{0} ({1:.1f})".format(samplenames["signal"],integrate(sig)), "F") )
+    stack.Add(sig)
+
+    # S/B histogram
+    soverb = sig.Clone("SoverB")
+    soverb.SetLineStyle(1)
+    soverb.Add(new_expectedhist)
+    soverb.Divide(new_expectedhist)
 
     # Set properties of data hist
 
@@ -849,8 +862,8 @@ def makeSysPlotsSplitProcs( flav, var, allprocs={}, debug=False ):
     err.SetFillColor(kOrange)
     err.SetLineColor(10)
     err.SetFillStyle(3356)
-    gStyle.SetHatchesLineWidth(2)
-    gStyle.SetHatchesSpacing(0.8)
+    gStyle.SetHatchesLineWidth(1)#(2)
+    gStyle.SetHatchesSpacing(0.4)#(0.8)
     err.SetMarkerSize(0)
 
     # Trick to rescale:
@@ -992,6 +1005,13 @@ def makeSysPlotsSplitProcs( flav, var, allprocs={}, debug=False ):
     refl.SetLineColor(kRed)
     refl.SetLineWidth(2)
     refl.Draw("SAME")
+
+    soverb.SetFillStyle(0)
+    soverb.Draw("HIST SAME")
+    reflsoverb = TLine(soverb.GetBinLowEdge(1), 1.15, soverb.GetBinLowEdge(soverb.GetNbinsX()+1), 1.15)
+    reflsoverb.SetLineStyle(2)
+    reflsoverb.SetLineColor(kRed)
+    reflsoverb.Draw("SAME")
 
     # --------------------------
 
@@ -1472,6 +1492,7 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
     pad2.cd()
 
+    # Manually set the range of pad 2 Y axis
     SF_err.GetYaxis().SetRangeUser(0.5, 2.2)
     SF_err.Draw("E2")
 
@@ -1709,19 +1730,19 @@ if __name__ == '__main__':
 
     # var_list = []
     var_list = [
-        "Integral",
+        # "Integral",
         # "deltaRLep0Lep1",
         # "deltaPhiLep0Lep1",
         # "MET_FinalTrk",
         # "Mll01_inc",
         # # "TotLepCharge",
-        "NBJets",
+        # "NBJets",
         # "NJets2j3j",
         # "NJets4j",
         #
         # "LepFlavours",
         #
-        "BDTGScore",
+        # "BDTGScore",
         # "Lep0Pt",
         # "Lep1Pt",
         # "Lep0Eta",
@@ -1744,12 +1765,12 @@ if __name__ == '__main__':
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",
-        # "NN_ttV",
-        # "NN_top",
-        # "RNN_ttV",
-        # "RNN_top",
-        # "NNComb",
-        # "RNNComb",
+        "NN_ttV",
+        "NN_top",
+        "RNN_ttV",
+        "RNN_top",
+        "NNComb",
+        "RNNComb",
         ]
 
     if args.variables:
