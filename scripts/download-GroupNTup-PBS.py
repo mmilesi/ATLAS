@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" submit-PBS-ARRAY-HTopMultilepMiniNTupMaker.py: PBS NTup skimming submission script for HTopMultilepAnalysis """
+""" download-GroupNTup-PBS.py: PBS script to download GN1 HTop NTuples from EOS """
 
 __author__     = "Marco Milesi"
 __email__      = "marco.milesi@cern.ch"
@@ -12,18 +12,12 @@ parser = argparse.ArgumentParser(description="PBS NTup skimming submission scrip
 
 parser.add_argument("--prod_ID", dest="prod_ID", action="store", default="25ns_v29/01", type=str,
                     help="The NTup production tag, e.g. 25ns_v19, 25ns_v24/02, ...  (default: prod_ID=25ns_v29/01)")
-parser.add_argument("--nevents", dest="nevents", action="store", default=0, type=int,
-                    help="The number of events to run on (default: nevents=0 [ALL])")
-parser.add_argument("--release", dest="release", action="store", default="2.4.22", type=str,
-                    help="The ASG release to be used (default: release=\"2.4.22\")")
-parser.add_argument("--treename", dest="treename", action="store", default="nominal", type=str,
-                    help="The input TTree name (default: treename=\"nominal\")")
 parser.add_argument("--queue", dest="queue", action="store", default="long", type=str,
                     help="The PBS batch queue type to be used (\"short\",\"long\", default: queue=\"long\")")
+parser.add_argument("--tag", dest="tag", action="store", default=None, type=str,
+                    help="Add a tag identifier to the submission directory (default: None)")
 parser.add_argument("-f","--forcetarball", dest="forcetarball", action="store_true", default=False,
                     help="Force recreation of package tarball")
-parser.add_argument("--tag", dest="tag", action="store", default=None, type=str,
-                    help="Add a tag identifier to the submission directory and the destination directory (default: None)")
 parser.add_argument("--showsamples", dest="showsamples", action="store", const="-1", default=None, type=str, nargs='?',
                     help="Show on screen the list of sample IDs, with their corresponding indexes in the job array, then exit. If no argument is given to the option ( or using --showsamples -1 ), will print the entire list. If the user gives one ore more comma-separated indexes as option, only the corresponding samples will be printed.)")
 
@@ -34,16 +28,16 @@ def copy_source(subdir = string.Template("$TMPDIR").substitute(os.environ), forc
     if os.path.exists(subdir) and force:
         shutil.rmtree(subdir)
 
-    print("Creating submission directory:\n{0},\nand copying source code in it...".format(subdir))
+    print("Creating submission directory:\n{0}".format(subdir))
     if not os.path.exists(subdir):
         os.makedirs(subdir)
     else:
         print("Good! Submission directory already exists...")
 
-    tarballname = "xAH.tar.gz"
-    print("Making a tarball of code and moving it to submission directory...")
+    tarballname = "download_GN1.tar.gz"
+    print("Making a tarball of download scripts and moving it to submission directory...")
     if not os.path.isfile(subdir+"/"+tarballname):
-        subprocess.call(["tar","-zcf",tarballname,"xAODAnaHelpers/","HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs"])
+        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/scripts/download-GroupNTup-PBS.py","HTopMultilepAnalysis/scripts/wrapper-download-GroupNTup-PBS.py","--exclude-vcs"])
         shutil.move("./"+tarballname,subdir+"/"+tarballname)
     else:
         print("Good! Tarball of code already exists in submission directory...")
@@ -64,7 +58,7 @@ def create_jobs(params):
 
     # Here would go an hypotethical loop over systematics...
 
-    steer_job_name = "job_xAH.pbs"
+    steer_job_name = "download_GN1.pbs"
     steer_job = open(steer_job_name, "w")
     steer_job_script = params["steer_job"]
     steer_job_script = steer_job_script.format(**params)
@@ -100,7 +94,7 @@ if __name__ == '__main__':
 #PBS -q {queue}
 
 # Job Name
-#PBS -N skim_xAH
+#PBS -N download_GN1
 
 # Set the number of subjobs in the array
 #PBS -t 0-{upperjobidx}
@@ -144,34 +138,27 @@ fi
 mkdir $TMP
 echo "Copying tarballed code and cd'ing into temp subjob directory..."
 echo ""
-rsync -arvxSH xAH.tar.gz $TMP/
+rsync -arvxSH download_GN1.tar.gz $TMP/
 cd $TMP/
 echo "Opening tarball..."
 echo ""
-tar -zxf xAH.tar.gz
-rm -rf xAH.tar.gz
+tar -zxf download_GN1.tar.gz
+rm -rf download_GN1.tar.gz
 echo ""
-echo "Setting up ATLAS software..."
-echo ""
-source $ATLAS_LOCAL_ROOT_BASE/user/atlasLocalSetup.sh
-echo ""
-echo "Setting up RootCore and ASG..."
-echo ""
-source $ATLAS_LOCAL_RCSETUP_PATH/rcSetup.sh Base,{release}
-rc find_packages
-rc compile
-echo ""
+export KRB5CCNAME=/coepp/cephfs/mel/mmilesi/Kerberos/krb5cc_1016
+kinit -R
+klist
 echo "Printing env variables:"
 echo ""
 env
 echo ""
 
-# The following script wraps around the xAH_run.py script, picking the sample for the PBS subjob from the input sample list via the env variable os.getenv('PBS_ARRAYID'). It also executes the script to reweight the final trees.
+# The following script wraps around the download-GroupNTup-PBS.py script, picking the sample for the PBS subjob from the input sample list via the env variable os.getenv('PBS_ARRAYID').
 
 # Clear the cache first
 ls -l /coepp/cephfs/mel/mmilesi/ttH/
 
-python $PWD/HTopMultilepAnalysis/scripts/wrapper-xAH-PBS.py --inputpath {inputpath} --outputpath {outputpath} --samplelist {samples} --config {configpath} --treename {treename} --nevents {nevents}
+python $PWD/HTopMultilepAnalysis/scripts/wrapper-download-GroupNTup-PBS.py --ntup_tag {ntup_tag} --downloadpath {downloadpath} --samplelist {samples}
 
 echo "Removing temporary directory..."
 rm -rf $TMP
@@ -574,30 +561,32 @@ exit 0
             if not ( len(showlist) == 1 and showlist[0] == -1 ):
                 if idx not in showlist: continue
             print("job[{0}]={1}".format(idx,s))
-        sys.exit()
+        os.sys.exit()
 
     prod_ID  = args.prod_ID.split('/')
     print "prod_ID: ", prod_ID
-    nevents  = args.nevents
-    release  = args.release
-    treename = args.treename
     queue    = args.queue
     tag      = args.tag
     tag = "_" + tag if tag else ""
 
+    # Get a Kerberos ticket if it does not exist yet
+
+    if not os.path.exists("/tmp/krb5cc_1016"):
+        username = "mmilesi"
+        print("Please get a Kerberos ticket first:")
+        krb_auth = "kinit " + username + "@CERN.CH"
+        subprocess.call(krb_auth,shell=True)
+    subprocess.call("rsync -azp /tmp/krb5cc_1016 /coepp/cephfs/mel/mmilesi/Kerberos/",shell=True)
+
     # Set the job parameters
 
     job_params = {
-	"release"     :  release,
-	"samplelist"  :  samplelist,
-	"subdir"      :  "/coepp/cephfs/mel/mmilesi/ttH/PBS/MiniNTup/" + prod_ID[0] + "_PBS" + tag,  # The path to the submission node (NB: must NOT be under /home : PBS cannot read/write into it!!)
-	"inputpath"   :  "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID,
-	"outputpath"  :  "/coepp/cephfs/mel/mmilesi/ttH/MiniNTup/" + prod_ID[0] + "/" + prod_ID[0] + "_Skim_PBS" + tag,
-	"configpath"  :  "$ROOTCOREBIN/user_scripts/HTopMultilepAnalysis/jobOptions_HTopMultilepMiniNTupMaker.py",
-	"treename"    :  treename,
-	"nevents"     :  int(nevents),
-	"steer_job"   :  steer_job_script,
-	"queue"       :  queue,
+	"samplelist"   :  samplelist,
+	"subdir"       :  "/coepp/cephfs/mel/mmilesi/ttH/PBS/Download_GroupNTup/" + prod_ID[0] + "_PBS" + tag,  # The path to the submission node (NB: must NOT be under /home : PBS cannot read/write into it!!)
+	"ntup_tag"     :  args.prod_ID,
+	"downloadpath" :  "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID,
+	"steer_job"    :  steer_job_script,
+	"queue"        :  queue,
     }
 
     # Copying source code onto the submission node, and cd in there

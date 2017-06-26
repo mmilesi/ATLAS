@@ -29,12 +29,13 @@ if __name__ == '__main__':
     print("Current job index PBS_ARRAYID={0}, sample={1}".format(pbs_array_idx,sample))
 
     if sample[0:2] == "00":
-        append = "Data"
+        sample_type = "Data"
     else:
-        append = "Nominal"
-        #append = "ttbar_ttgamma/Nominal"
+        sample_type = "Nominal_PLICFT"
+        #sample_type = "Nominal"
+        #sample_type = "ttbar_ttgamma/Nominal"
 
-    infile    =  args.inputpath + "/" + append + "/" + sample + "/" + sample + ".root"
+    infile    =  args.inputpath + "/" + sample_type + "/" + sample + "/" + sample + ".root"
     submitdir = sample
 
     rootcoredir = os.getenv('PWD') + "/RootCoreBin/bin/x86_64-slc6-gcc49-opt/"

@@ -1,7 +1,10 @@
 # Photon conversion fraction - ee vs. OF (inclusive Nbjets)
 
-frac_ee = [(1, 0.0), (2, 0.176), (3, 0.32), (4, 0.379), (5, 0.657), (6, 0.748), (7, 1.0)]
-frac_of = [(1, 0.0), (2, 0.22), (3, 0.228), (4, 0.279), (5, 0.47), (6, 0.562), (7, 0.0)]
+# frac_ee = [(1, 0.0), (2, 0.176), (3, 0.32), (4, 0.379), (5, 0.657), (6, 0.748), (7, 1.0)]
+#frac_of = [(1, 0.0), (2, 0.22), (3, 0.228), (4, 0.279), (5, 0.47), (6, 0.562), (7, 0.0)]
+
+frac_ee = [(1, 0.0), (2, 0.353), (3, 1.0)]
+frac_of = [(1, 0.0), (2, 0.281), (3, 0.0)]
 
 # Photon conversion fraction - ee vs. OF (Nbjet = 1)
 
@@ -44,7 +47,8 @@ c.SetFrameFillStyle(0)
 c.SetFrameBorderMode(0)
 
 n = len(alpha)
-binlowedges = [10,15,20,26,35,60,210]
+# binlowedges = [10,15,20,26,35,60,210]
+binlowedges = [10,15,210]
 binlowedges_arr = array.array("f", binlowedges )
 
 alpha_h = TH1F("alpha","alpha",n-1,binlowedges_arr)
@@ -55,7 +59,7 @@ alpha_h.SetMinimum(0.0)
 
 for bin in range(1,alpha_h.GetSize()-1):
     content = 1 + alpha[bin-1][1]
-    error = 0.15 * content
+    error = 0.30 * content
     print bin, content
     alpha_h.SetBinContent(bin,content)
     alpha_h.SetBinError(bin,error)
@@ -76,7 +80,7 @@ leg_alpha.SetTextSize(0.06)
 leg_alpha.SetNDC()
 leg_alpha.DrawLatex(0.7,0.3,"#alpha=#frac{f_{#gamma}^{ee}-f_{#gamma}^{OF}}{f_{#gamma}^{OF}}")
 
-outputpath = "../PLOTS_25ns_v27_v2/OutputPlots_FakeOriginFrac_TTBarTTBarGamma_25ns_v27"
+outputpath = "./PLOTS_25ns_v28/OutputPlots_FakeOriginFrac_TTBarTTBarGamma_25ns_v28"
 
 for ext in ["pdf","png"]:
     c.SaveAs(outputpath+"/alpha."+ext)

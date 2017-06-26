@@ -22,3 +22,22 @@ def parseTauIDInputArgs():
     (options, args) = parser.parse_args()
     return options
 
+# Create a class to allow inserting a newline in argparse help text:
+#
+# To use it, just import it from *this* module, and pass it as optional argument to ArgumentParser:
+#
+# parser = ArgumentParser(description='test', formatter_class=SmartFormatter)
+#
+# and specify a special intro for the options that should be handled "raw" (I use "R|rest of help"):
+#
+# Source : http://stackoverflow.com/questions/3853722/python-argparse-how-to-insert-newline-in-the-help-text
+
+import argparse
+
+class SmartFormatter(argparse.HelpFormatter):
+
+    def _split_lines(self, text, width):
+        if text.startswith('R|'):
+            return text[2:].splitlines()
+        # this is the RawTextHelpFormatter._split_lines
+        return argparse.HelpFormatter._split_lines(self, text, width)

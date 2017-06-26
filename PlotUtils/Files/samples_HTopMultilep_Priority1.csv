@@ -1,5 +1,6 @@
 ID,category,xsection,kfactor,efficiency,name,group,subgroup
 ,Data,,,,physics_Main,Data,physics_Main
+,Data,,,,fakes_mm,Data,fakes_mm
 343365,Signal,0.05343,1.0,1.0,aMcAtNloPythia8EvtGen_A14_NNPDF23_NNPDF30ME_ttH125_dilep,ttH,ttH_dil_Pythia8
 343366,Signal,0.22276,1.0,1.0,aMcAtNloPythia8EvtGen_A14_NNPDF23_NNPDF30ME_ttH125_semilep,ttH,ttH_semilep_Pythia8
 343367,Signal,0.23082,1.0,1.0,aMcAtNloPythia8EvtGen_A14_NNPDF23_NNPDF30ME_ttH125_allhad,ttH,ttH_allhad_Pythia8
@@ -151,7 +152,7 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 410050,Background,0.24013,1,1.0,MadGraphPythia_tZ_4fl_tchan_noAllHad,tops,tZ
 410080,Background,0.0091622,1.0042,1.0,MadGraphPythia8EvtGen_A14NNPDF23_4topSM,tops,4top
 410081,Background,0.0080975,1.2231,1.0,MadGraphPythia8EvtGen_A14NNPDF23_ttbarWW,tops,ttWW
-410082,Background,2.982,1.47,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttgamma_noallhad,tops,ttgamma
+410082,Background,2.982,1.9,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttgamma_noallhad,tops,ttgamma
 410155,Background,0.548300,1.10,1.0,aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttW,tops,ttW_aMcAtNlo
 410156,Background,0.154990,1.11,1.0,aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttZnunu,tops,ttZnunu_aMcAtNlo
 410157,Background,0.527710,1.11,1.0,aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttZqq,tops,ttZqq_aMcAtNlo
@@ -160,5 +161,12 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 410219,Background,0.036895,1.12,1.0,aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttmumu,tops,ttmumu_aMcAtNlo
 410220,Background,0.036599,1.12,1.0,aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_tttautau,tops,tttautau_aMcAtNlo
 410501,Background,396.49,1.1391,1.0,PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_nonallhad,tops,ttbar_nonallhad_Pythia8
-410502,Background,249.81,1.5216,1.0,PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_allhad,tops,ttbar_allhad_Pythia8
 410503,Background,76.93,1.1392,1.0,PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_dil,tops,ttbar_dil_Pythia8
+410250,Background,158.94,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonP_MEPS_NLO,tops,ttbar_SingleLeptonP_MEPS_NLO
+410251,Background,158.99,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonM_MEPS_NLO,tops,ttbar_SingleLeptonM_MEPS_NLO
+410252,Background,76.317,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_dilepton_MEPS_NLO,tops,ttbar_dilepton_MEPS_NLO
+410082,Background,2.982,1.9,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttgamma_noallhad,tops_MMClosure,ttgamma
+410501,Background,396.49,1.1391,1.0,PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_nonallhad,tops_MMClosure,ttbar_nonallhad_Pythia8
+410250,Background,158.94,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonP_MEPS_NLO,tops_MMClosure,ttbar_SingleLeptonP_MEPS_NLO
+410251,Background,158.99,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonM_MEPS_NLO,tops_MMClosure,ttbar_SingleLeptonM_MEPS_NLO
+410252,Background,76.317,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_dilepton_MEPS_NLO,tops_MMClosure,ttbar_dilepton_MEPS_NLO

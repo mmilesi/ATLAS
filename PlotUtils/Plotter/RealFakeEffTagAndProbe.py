@@ -13,22 +13,8 @@ sys.path.append(os.path.abspath(os.path.curdir))
 # -------------------------------
 # Parser for command line options
 # -------------------------------
-import argparse
 
-parser = argparse.ArgumentParser(description="Module for deriving real/fake lepton efficiencies/factors for MM/FF")
-
-#***********************************
-# positional arguments (compulsory!)
-#***********************************
-
-parser.add_argument("inputpath", metavar="inputpath",type=str,
-                  help="path to the directory containing subdirs w/ input files")
-
-#*******************
-# optional arguments
-#*******************
-
-g_avaialble_systematics = ["QMisID","TTV","VV","OtherPromptSS","FakesOS"]
+g_available_systematics = ["QMisID","TTV","VV","OtherPromptSS","FakesOS"]
 
 g_luminosities = { "GRL v73 - Moriond 2016 GRL":3.209,  # March 2016
                    "ICHEP 2015+2016 DS":13.20768,       # August 2016
@@ -42,14 +28,34 @@ g_efficiencies = ["ALL","Real","Fake"]
 
 g_leptons      = ["ALL","El","Mu"]
 
+import argparse
+
+from Plotter import SmartFormatter # definition in Plotter/__init__.py
+
+parser = argparse.ArgumentParser(description="Module for deriving real/fake lepton efficiencies/factors for MM/FF", formatter_class=SmartFormatter)
+
+parser.add_argument("inputpath", metavar="inputpath",type=str,
+                  help="path to the directory containing subdirs w/ input files")
 parser.add_argument("--lumi", dest="lumi", action="store", type=float, default=g_luminosities["FULL 2015+2016 DS"],
                   help="The luminosity of the dataset. Pick one of these values: ==> " + ",".join( "{0} ({1})".format( lumi, tag ) for tag, lumi in g_luminosities.iteritems() ) + ". Default is {0}".format(g_luminosities["FULL 2015+2016 DS"] ) )
 parser.add_argument('--variables', dest='variables', action='store', type=str, nargs='+', default=["Pt"],
-                  help='List of variables to be considered. Use a space-separated list. If using a 2D input distribution, pass a string of format \"varxname&&varyname\" (remember to escape the \"&\" symbol in the shell!). If unspecified, will consider \"Pt\" only.')
+                  help="R|List of variables to be considered, and to which efficiencies/flavours they do apply. Use a space-separated list of strings built in any of the following 4 ways:\n"
+                    "1) VAR                (i.e., this parametrisation will be used for any efficiency type and flavour)\n"
+                    "2) VAR,EFF_TYPE,      (i.e., this parametrisation will be used for EFF_TYPE only, regardless of flavour)\n"
+                    "3) VAR,,FLAV          (i.e., this parametrisation will be used for FLAV only, regardless of the efficiency type) \n"
+                    "3) VAR,EFF_TYPE,FLAV  (i.e., this parametrisation will be used for EFF_TYPE and FLAV only)\n"
+                    "As a rule of thumb, the number of commas in each string can be either 0 or 2\n"
+                    "If using a 2D input distribution, the first item in the group must be a string of format \"varxname&&varyname\" (remember to escape the \"&\" symbol in the shell!).\n"
+                    "If this option is unspecified, will consider \"Pt\" only, applied to any efficiency/flavour.")
 parser.add_argument('--efficiency', dest='efficiency', action='store', default=[g_efficiencies[0]], type=str, nargs='+', choices=g_efficiencies,
                   help='The efficiency type to be measured. Can pass multiple space-separated arguments to this command-line option (picking among the above list). If this option is not specified, default will be \'{0}\''.format(g_efficiencies[0]))
 parser.add_argument("--do3L", dest="do3L", action="store_true",default=False,
                   help="Save efficiencies to be used in 3L SR.")
+parser.add_argument("--doRescalingFakeEl", dest="doRescalingFakeEl", action="store_true",default=False,
+                  help="R|Rescale the electron fake rate:\n"
+                        "-) For 2L, by the relative ee/OF fraction of photon conversions\n"
+                        "-) For 3L, by the relative 2LCR/3LSR fraction of photon conversions (NB: need to use the option \'--do3L\')\n"
+                        ", and store it alongside the standard fake rate.")
 parser.add_argument("--channel", metavar="channel", default="", type=str,
                   help="Flavour composition of the two leptons in CR to be considered (\"ElEl\", \"MuMu\", \"OF\"). If unspecified, will consider all combinations.")
 parser.add_argument('--lepton', dest='lepton', action='store', default=[g_leptons[0]], type=str, nargs='+', choices=g_leptons,
@@ -63,11 +69,16 @@ parser.add_argument("--verbose", dest="verbose", action="store_true",default=Fal
 parser.add_argument("--nosub", dest="nosub", action="store_true",default=False,
                   help="Do not subtract backgrounds to data (NB: subtraction is disabled by default when running w/ option --closure)")
 parser.add_argument('--systematics', dest='systematics', action='store', default="", type=str, nargs='*',
-                  help='Option to pass a list of systematic variations to be considered. Use a space-separated list. Currently available systematics: {0}. If using option=\'ALL\', every sytematic in the list will be considered.'.format(g_avaialble_systematics))
+                  help='Option to pass a list of systematic variations to be considered. Use a space-separated list. Currently available systematics: {0}. If using option=\'ALL\', every sytematic in the list will be considered.'.format(g_available_systematics))
 parser.add_argument("--log", dest="log", action="store_true",default=False,
                   help="Read plots with logarithmic Y scale.")
-parser.add_argument('--rebin', dest='rebin', action='store', type=str, nargs='+',
-                  help='Option to pass a bin range for rebinning. Use space-separated sets of options and numbers (comma-separated) to define new bins, specifying whether it should apply to real/fake muons/electrons for a given variable in the following way (eg.):\n --rebin Real,El,Pt,10,20,200 Fake,Mu,Eta,0.0,1.3,2.5')
+parser.add_argument("--rebin", dest="rebin", action="store", type=str, nargs="+",
+                    help="R|Option to pass a bin range for rebinning. Use space-separated sets of options and numbers (comma-separated) to define new bins, specifying whether it should apply to real/fake muons/electrons for a given variable in the following way (eg.):\n"
+                    "For 1D histograms: --rebin Real,El,Pt,10,20,200 Fake,Mu,Eta,0.0,1.3,2.5\n"
+                    "For 2D histograms: --rebin Fake,El,NBJets\&\&Pt,:,10.0,50.0,100.0 (this will rebin only the Y axis variable, i.e. Pt)\n"
+                    "                   --rebin Fake,El,Pt\&\&NBJets,10.0,50.0,100.0,: (this will rebin only the X axis variable, i.e. Pt)\n"
+                    "                   --rebin Fake,El,DistanceClosestJet\&\&Pt,0,1,5,:,10.0,50.0,100.0 (this will rebin both X and Y axis variables)\n"
+                    "NB: the colon - which separates X and Y variables - must be always enclosed in commas, except when it's at the end of the string (see example 2)")
 parser.add_argument('--averagehist', dest='averagehist', action='store', type=str, nargs='+',
                   help='Option to get average histograms (i.e., 1 single bin over the full range). Use space-separated sets of options (comma-separated) to tell which histograms should be averaged out, e.g.:\n --averagehist Real,El,Pt Fake,Mu,Eta.\nIf option ALL is specified, all histograms get averaged out.')
 parser.add_argument("--factors", dest="factors", action="store_true",default=False,
@@ -91,12 +102,16 @@ args = parser.parse_args()
 
 from ROOT import ROOT, gROOT, gStyle, Double, gPad, TPad, TLine, TH1, TH1D, TH2, TH2D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
 
-from Plotter.BackgroundTools import set_fancy_2D_style
+from Plotter.BackgroundTools import set_fancy_2D_style, integrate
 
 gROOT.Reset()
-gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
+gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
+# gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
+
+from ROOT import kInfo
+ROOT.gErrorIgnoreLevel = kInfo;
 
 TH1.SetDefaultSumw2()
 
@@ -158,12 +173,22 @@ class RealFakeEffTagAndProbe:
 
         if variables:
             for var in variables:
-                if var not in self.__variables:
-                    self.__variables.append(var)
+
+                vartokens = var.split(',')
+                if len(vartokens) == 1:
+                    vartokens.extend(['',''])
+
+                print("variable tokens: {0}".format(vartokens))
+
+                if len(vartokens) != 3:
+                    os.sys.exit("ERROR: one of the input variables was not formatted correctly.")
+
+                if vartokens not in self.__variables:
+                    self.__variables.append(vartokens)
 
         if systematics:
             if "ALL" in systematics:
-                 self.__systematics.extend(g_avaialble_systematics)
+                 self.__systematics.extend(g_available_systematics)
             else:
                 self.__systematics.extend(systematics)
 
@@ -270,10 +295,14 @@ class RealFakeEffTagAndProbe:
         print("\n".join("{0}".format(eff) for eff in self.__efficiencies))
         print("********************************************")
         print("Variables to be considered:")
-        print("\n".join("{0}".format(var) for var in self.__variables))
+        print("\n".join("{0}".format(vartokens) for vartokens in self.__variables))
         print("********************************************")
 
         filename = None
+
+        # OutputPlots_MMRates_25ns_v28_NewBinning/FakeCRElL_1BJet/FakeCRElL_1BJet_ElProbePt.root
+        # myappend = "_2BJet"
+        myappend = ""
 
         for lep in self.__leptons:
 
@@ -281,25 +310,41 @@ class RealFakeEffTagAndProbe:
 
                 actual_eff = eff
 
-                for var in self.__variables:
+                for vartokens in self.__variables:
+
+                    # Format is : ["Variable","Efficiency","Flavour"]
+                    # If any of the last 2 elements in the list are empty, then proceed in any case
+
+                    var    = vartokens[0]
+                    vareff = vartokens[1]
+                    varlep = vartokens[2]
+
+                    if vareff and vareff != eff:
+                        print("{0} efficiency will not be parametrised in {1}".format(eff,var))
+                        continue
+                    if varlep and varlep != lep:
+                        print("{0} efficiency for lepton flavour {1} will not be parametrised in {2}".format(eff,lep,var))
+                        continue
 
                     for sel_key, sel_value in self.selections.iteritems():
 
                         if not "&&" in var:
-                            filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel_value + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel_value + "_" + lep + self.tp_lep + var + ".root" )
+                            filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel_value + myappend + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel_value + myappend + "_" + lep + self.tp_lep + var + ".root" )
                         else:
                             vars2D = var.split('&&')
                             varX   = vars2D[0]
                             varY   = vars2D[1]
-                            filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel_value + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel_value + "_" + lep + self.tp_lep + varX + "_VS_" + lep + self.tp_lep + varY + ".root" )
+                            filename = ( inputpath + "/" + channel + actual_eff + "CR" + lep + sel_value + myappend + log_suffix + "/" + channel + actual_eff + "CR" + lep + sel_value + myappend + "_" + lep + self.tp_lep + varX + "_VS_" + lep + self.tp_lep + varY + ".root" )
 
                         thisfile = TFile(filename)
                         if not thisfile:
-                            sys.exit("ERROR: file:\n{0}\ndoes not exist!".format(filename))
+                            os.sys.exit("ERROR: file:\n{0}\ndoes not exist!".format(filename))
 
                         for proc in self.__processes:
 
 			    thishist = thisfile.Get(proc)
+                            if not thishist:
+                                os.sys.exit("ERROR: histogram:\n{0}\ndoes not exist in file:\n{1}\n!".format(proc,filename))
 
                             key = "_".join( (actual_eff,lep,var,proc) )
 
@@ -312,13 +357,13 @@ class RealFakeEffTagAndProbe:
 			    for sys in self.__systematics:
 
                                 if sys == "QMisID" and not ( eff == "Fake" and lep == "El" ):
-                                    print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
+                                    # print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
                                     continue
                                 if sys in ["TTV","VV","OtherPromptSS"] and not ( eff == "Fake" ):
-                                    print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
+                                    # print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
                                     continue
                                 if sys == "FakesOS" and not ( eff == "Real" ):
-                                    print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
+                                    # print("Skipping {0} systematics for {1},{2}".format(sys,eff,lep))
                                     continue
 
 			    	for sysdir in self.__systematicsdirections:
@@ -363,13 +408,13 @@ class RealFakeEffTagAndProbe:
 	       hist     = self.antinumerator_hists.get(proc_key)
 	       sub_hist = self.antinumerator_hists.get(proc_sub_key)
 	   if sub_hist:
-               integral_pre_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               integral_pre_sub = integrate(hist)
                hist.Add( sub_hist, -1 )
-               integral_post_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               integral_post_sub = integrate(hist)
 	       if self.verbose:
-	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),sub_hist.Integral(0,sub_hist.GetNbinsX()+1),sub_hist.GetName(),integral_post_sub))
-	   else:
-               print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
+	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),integrate(sub_hist),sub_hist.GetName(),integral_post_sub))
+	   # else:
+           #     print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
 
 
         # Case 2):
@@ -392,7 +437,7 @@ class RealFakeEffTagAndProbe:
 
 	   if sub_hist and sub_basehist:
 
-               integral_pre_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               integral_pre_sub = integrate(hist)
                thisbin_pre_sub  = hist.GetBinContent(bin_idx)
 
                bin_sub     = hist.GetBinContent(bin_idx) - sub_hist.GetBinContent(bin_idx)
@@ -407,18 +452,18 @@ class RealFakeEffTagAndProbe:
 	       hist.SetBinContent( bin_idx, bin_sub )
 	       hist.SetBinError( bin_idx, bin_sub_err )
 
-               integral_post_sub = hist.Integral(0,hist.GetNbinsX()+1)
+               integral_post_sub = integrate(hist)
                thisbin_post_sub  = hist.GetBinContent(bin_idx)
 
 	       if self.verbose:
-	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),sub_basehist.Integral(0,sub_basehist.GetNbinsX()+1),sub_basehist.GetName(),integral_post_sub))
+	           print("\t{0} : {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(sel,integral_pre_sub,hist.GetName(),integrate(sub_basehist),sub_basehist.GetName(),integral_post_sub))
 	           print("\t\tbin {0} - {1:.3f} ({2} [A]) - {3:.3f} ({4} [B]) = {5:.3f}".format(bin_idx,thisbin_pre_sub,hist.GetName(),sub_hist.GetBinContent(bin_idx),sub_hist.GetName(),thisbin_post_sub))
 
-	   else:
-               if not sub_hist:
-                   print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
-               if not sub_basehist:
-                   print("\tCouldn't find histogram for: proc_sub_base_key = {0}".format(proc_sub_base_key))
+	   # else:
+           #     if not sub_hist:
+           #         print("\tCouldn't find histogram for: proc_sub_key = {0}".format(proc_sub_key))
+           #     if not sub_basehist:
+           #         print("\tCouldn't find histogram for: proc_sub_base_key = {0}".format(proc_sub_base_key))
 
         return hist
 
@@ -526,6 +571,68 @@ class RealFakeEffTagAndProbe:
             	print("**********************************************************\n")
 
 
+    def __rebin2D__( self, hist, xbins, ybins ):
+
+        # Create 2D rebinned histogram w/ variable bin size on X,Y axes
+        #
+        # Logic stolen from https://github.com/rootpy/rootpy/blob/master/rootpy/plotting/hist.py#L1407
+
+        # Get a few properties of input histogram
+
+        xaxis = hist.GetXaxis()
+        yaxis = hist.GetYaxis()
+        nbinsx = xaxis.GetNbins()+2
+        nbinsy = yaxis.GetNbins()+2
+        xlow = xaxis.GetBinLowEdge(1)
+        xup  = xaxis.GetBinUpEdge(nbinsx-2)
+        ylow = yaxis.GetBinLowEdge(1)
+        yup  = yaxis.GetBinUpEdge(nbinsy-2)
+        sumw2 = hist.GetSumw2()
+
+        # Transform input lists into C++ arrays
+
+        nbinsx_new = len(xbins)-1
+        nbinsy_new = len(ybins)-1
+
+        arr_xbins = array.array("d", xbins)
+        arr_ybins = array.array("d", ybins)
+
+        # Create a new TH2 w/ variable bin size axes. Will be filled later on...
+
+        hrebinned = None
+        if xbins and ybins:
+            hrebinned = TH2D(hist.GetName(),hist.GetTitle(), nbinsx_new, arr_xbins, nbinsy_new, arr_ybins)
+        elif xbins and not ybins:
+            hrebinned = TH2D(hist.GetName(),hist.GetTitle(), nbinsx_new, arr_xbins, nbinsy-2, ylow, yup)
+        elif not xbins and ybins:
+            hrebinned = TH2D(hist.GetName(),hist.GetTitle(), nbinsx-2, xlow, xup, nbinsy_new, arr_ybins )
+        else:
+            os.sys.exit("Failed to read input bin lists for 2D rebinning")
+
+        hrebinned.GetXaxis().SetTitle(xaxis.GetTitle())
+        hrebinned.GetYaxis().SetTitle(yaxis.GetTitle())
+
+        hrebinned.SetDirectory(0)
+        sumw2_rebinned = hrebinned.GetSumw2()
+
+        # OK, now fill!
+
+        idx = -1
+        idx_rebinned = -1
+        for ibiny in range(0,nbinsy):
+            for ibinx in range(0,nbinsx):
+                # Get the global bin number of the *input* histogram's cell we are currently in
+                idx = hist.GetBin( ibinx, ibiny )
+                # Get the global bin index of the *rebinned* histograms's cell which contains the input histogram's cell we are currently in
+                idx_rebinned = hrebinned.FindBin( xaxis.GetBinCenter(ibinx), yaxis.GetBinCenter(ibiny) )
+                # Recursively add the content of the input cells that are being merged into the rebinned histogram cell
+                hrebinned.SetBinContent( idx_rebinned, hrebinned.GetBinContent(idx_rebinned) + hist.GetBinContent(idx) )
+                # Recursively add the sum of weights squared of the input cells that are being merged into the rebinned histogram cell
+                sumw2_rebinned.SetAt( sumw2_rebinned.At(idx_rebinned) + sumw2.At(idx), idx_rebinned )
+
+        return hrebinned
+
+
     def rebinHistograms ( self, rebinlist=None, averagehistlist=None ):
 
         if not rebinlist and not averagehistlist:
@@ -544,6 +651,7 @@ class RealFakeEffTagAndProbe:
             print("   Therefore, make sure the new binning is compatible w/ the binning of the input histogram!\n")
 
         if rebinlist:
+
             for key in self.histkeys:
 
 	        # By construction, the following will be a list w/ N items, where:
@@ -556,12 +664,7 @@ class RealFakeEffTagAndProbe:
 	        tokens = key.split("_")
 
                 if self.verbose:
-	            print("Current tokens:")
-	            print tokens
-
-                if "&&" in tokens[2]:
-                    print("Variable: {0}. Cannot rebin w/ variable bin size a TH2. Consider passing an input TH2 already made w/ appropriate binning...".format(tokens[2]))
-                    continue
+	            print("\tCurrent tokens: {0}".format(tokens))
 
                 for rebinitem in rebinlist:
 
@@ -569,18 +672,48 @@ class RealFakeEffTagAndProbe:
 
 	            if ( tokens[0] in rebinitem ) and ( tokens[1] in rebinitem ) and ( tokens[2] in rebinitem ):
 
-                        nbins = len(rebinitem[3:])-1
+                        if not "&&" in tokens[2]:
 
-                        if self.debug:
-                            print("\t===> Rebinning matching histograms with the following values:")
-                            print "\tbin edges: ", rebinitem[3:], ", number of bins = ", nbins
+                            # Rebinning for 1D histograms
 
-                        bins = [ float(binedge) for binedge in rebinitem[3:] ]
-	                arr_bins = array.array("d", bins)
+                            nbins = len(rebinitem[3:])-1
 
-                        self.numerator_hists[key]     = self.numerator_hists[key].Rebin( nbins, key, arr_bins )
-                        self.denominator_hists[key]   = self.denominator_hists[key].Rebin( nbins, key, arr_bins )
-                        self.antinumerator_hists[key] = self.antinumerator_hists[key].Rebin( nbins, key, arr_bins )
+                            if self.debug:
+                                print("\t===> Rebinning 1D histogram: {0} w/ variable bin size:".format(key))
+                                print "\tbin edges: ", rebinitem[3:], ", number of bins = ", nbins
+
+                            bins = [ float(binedge) for binedge in rebinitem[3:] ]
+                            arr_bins = array.array("d", bins)
+
+                            self.numerator_hists[key]     = self.numerator_hists[key].Rebin( nbins, key, arr_bins )
+                            self.denominator_hists[key]   = self.denominator_hists[key].Rebin( nbins, key, arr_bins )
+                            self.antinumerator_hists[key] = self.antinumerator_hists[key].Rebin( nbins, key, arr_bins )
+
+                        else:
+
+                            # Rebinning for 2D histograms
+
+                            try:
+                                idx_colon = rebinitem.index(':')
+                            except ValueError:
+                                print("ERROR: wrong formatting of option --rebin...\nDid you forget to put a colon\':\'?\nDid you forget to enclose the colon within commas?")
+
+                            xbins  = [ float(binedge) for binedge in rebinitem[3:idx_colon] ]
+                            ybins  = [ float(binedge) for binedge in rebinitem[idx_colon+1:] ]
+                            nxbins = len(xbins)-1
+                            nybins = len(ybins)-1
+
+                            if self.debug:
+                                print("\t===> Rebinning 2D histogram: {0} w/ variable bin size:".format(key))
+                                if xbins:
+                                    print("\tbin edges (X): {0}, number of bins (X) = {1}".format(xbins,nxbins))
+                                if ybins:
+                                    print("\tbin edges (Y): {0}, number of bins (Y) = {1}".format(ybins,nybins))
+
+                            self.numerator_hists[key]     = self.__rebin2D__( self.numerator_hists[key], xbins, ybins )
+                            self.denominator_hists[key]   = self.__rebin2D__( self.denominator_hists[key], xbins, ybins )
+                            self.antinumerator_hists[key] = self.__rebin2D__( self.antinumerator_hists[key], xbins, ybins )
+
 
         if averagehistlist:
 
@@ -711,7 +844,7 @@ class RealFakeEffTagAndProbe:
 
     def __manageBoundaries__( self, histogram ):
 
-        if isinstance(histogram,TH1) and not isinstance(histogram,TH2):
+        if not isinstance(histogram,TH2):
 
             # 1. Merge OFlow bin in last visible bin
 
@@ -783,70 +916,88 @@ class RealFakeEffTagAndProbe:
         return histogram
 
 
-    def __makeProjectionHists__( self, histogram, eventset ):
+    def __makeProjectionHists__( self, key, histogram, eventset ):
 
-        for key in sorted(self.histkeys):
+        tokens = key.split('_')
 
-            if not "&&" in key or "_proj" in key: continue
+        vars2D = tokens[2].split('&&')
+        varX   = vars2D[0]
+        varY   = vars2D[1]
 
-            tokens = key.split('_')
+        tot_integral_proj_x = tot_integral_proj_y = 0.0
 
-            vars2D = tokens[2].split('&&')
-            varX   = vars2D[0]
-            varY   = vars2D[1]
+        if self.verbose:
+            print("")
+            print("\tkey: {0} - Event set: {1}".format(key,eventset))
+            print("\n\t\tvarX: {0} - varY: {1}\n".format(varX, varY))
+            print("\t\tprojecting TH2 onto: {0}".format(varX))
 
-            tot_integral_proj_x = tot_integral_proj_y = 0.0
+        # Make inclusive projection along X first, then project slices as well
 
-            if self.verbose:
-                print("\tkey: {0}".format(key))
-                print("\n\t\tvarX: {0} - varY: {1}\n".format(varX, varY))
-                print("\t\tprojecting TH2 onto: {0}".format(varX))
+        proj_x_key = "{0}_proj{1}_{2}".format(key,varX,"inclusive")
+        proj_x = histogram.ProjectionX(proj_x_key+"_"+eventset)
+        proj_x.SetLineColor(15)
+        proj_x.SetLineStyle(2)
+        proj_x.SetMarkerColor(15)
+        proj_x.SetDirectory(0)
+        self.__fillNDHistDicts__(proj_x_key, eventset, proj_x )
 
-            for i,ybin in enumerate( range(1,histogram.GetYaxis().GetNbins()+2) ):
+        for i,ybin in enumerate( range(1,histogram.GetYaxis().GetNbins()+2) ):
 
-                ybin_upedge  = histogram.GetYaxis().GetBinUpEdge(ybin)
-                ybin_lowedge = histogram.GetYaxis().GetBinLowEdge(ybin)
+            ybin_upedge  = histogram.GetYaxis().GetBinUpEdge(ybin)
+            ybin_lowedge = histogram.GetYaxis().GetBinLowEdge(ybin)
 
-                if self.verbose: print("\t\t\tybin: {0} - edges: [{1},{2}]".format(ybin,ybin_lowedge,ybin_upedge))
+            if self.verbose: print("\t\t\tybin: {0} - edges: [{1},{2}]".format(ybin,ybin_lowedge,ybin_upedge))
 
-                proj_x_key = "{0}_proj{1}_{2}".format(key,varX,ybin)
+            proj_x_key = "{0}_proj{1}_{2}".format(key,varX,ybin)
 
-                proj_x = histogram.ProjectionX(proj_x_key+"_"+eventset,ybin,ybin)
-                proj_x.SetLineColor(i+1)
-                proj_x.SetMarkerColor(i+1)
+            proj_x = histogram.ProjectionX(proj_x_key+"_"+eventset,ybin,ybin)
+            proj_x.SetLineColor(i+1)
+            proj_x.SetMarkerColor(i+1)
 
-                integral = proj_x.Integral(0,proj_x.GetSize()-1)
-                tot_integral_proj_x += integral
+            integral = proj_x.Integral(0,proj_x.GetSize()-1)
+            tot_integral_proj_x += integral
 
-                if self.verbose: print("\t\t\tProjection key: {0} - Integral(): {1:.3f}".format(proj_x_key,integral))
+            if self.verbose: print("\t\t\tProjection key: {0} - Integral(): {1:.3f}".format(proj_x_key,integral))
 
-                proj_x.SetDirectory(0)
-                self.__fillNDHistDicts__(proj_x_key, eventset, proj_x )
+            proj_x.SetDirectory(0)
+            self.__fillNDHistDicts__(proj_x_key, eventset, proj_x )
 
-            if self.verbose: print("\t\tprojecting TH2 onto: {0}".format(varY))
+        if self.verbose: print("\t\tprojecting TH2 onto: {0}".format(varY))
 
-            for i,xbin in enumerate( range(1,histogram.GetXaxis().GetNbins()+2) ):
+        # Make inclusive projection along Y first, then project slices as well
 
-                xbin_upedge  = histogram.GetXaxis().GetBinUpEdge(xbin)
-                xbin_lowedge = histogram.GetXaxis().GetBinLowEdge(xbin)
+        proj_y_key = "{0}_proj{1}_{2}".format(key,varY,"inclusive")
+        proj_y = histogram.ProjectionY(proj_y_key+"_"+eventset)
+        proj_y.SetLineColor(15)
+        proj_y.SetLineStyle(2)
+        proj_y.SetMarkerColor(15)
+        proj_y.SetDirectory(0)
+        self.__fillNDHistDicts__(proj_y_key, eventset, proj_y )
 
-                if self.verbose: print("\t\t\txbin: {0} - edges: [{1},{2}]".format(xbin,xbin_lowedge,xbin_upedge))
+        for i,xbin in enumerate( range(1,histogram.GetXaxis().GetNbins()+2) ):
 
-                proj_y_key = "{0}_proj{1}_{2}".format(key,varY,xbin)
+            xbin_upedge  = histogram.GetXaxis().GetBinUpEdge(xbin)
+            xbin_lowedge = histogram.GetXaxis().GetBinLowEdge(xbin)
 
-                proj_y = histogram.ProjectionY(proj_y_key+"_"+eventset,xbin,xbin)
-                proj_y.SetLineColor(i+1)
-                proj_y.SetMarkerColor(i+1)
+            if self.verbose: print("\t\t\txbin: {0} - edges: [{1},{2}]".format(xbin,xbin_lowedge,xbin_upedge))
 
-                integral = proj_y.Integral(0,proj_y.GetSize()-1)
-                tot_integral_proj_y += integral
+            proj_y_key = "{0}_proj{1}_{2}".format(key,varY,xbin)
 
-                if self.verbose: print("\t\t\tProjection key: {0} - Integral(): {1:.3f}".format(proj_y_key,integral))
+            proj_y = histogram.ProjectionY(proj_y_key+"_"+eventset,xbin,xbin)
+            proj_y.SetLineColor(i+1)
+            proj_y.SetMarkerColor(i+1)
 
-                proj_y.SetDirectory(0)
-                self.__fillNDHistDicts__(proj_y_key, eventset, proj_y )
+            integral = proj_y.Integral(0,proj_y.GetSize()-1)
+            tot_integral_proj_y += integral
 
-            if self.verbose: print("\n\t\tTot. integral projX: {0:.3f} - projY: {1:.3f}".format(tot_integral_proj_x,tot_integral_proj_y))
+            if self.verbose: print("\t\t\tProjection key: {0} - Integral(): {1:.3f}".format(proj_y_key,integral))
+
+            proj_y.SetDirectory(0)
+            self.__fillNDHistDicts__(proj_y_key, eventset, proj_y )
+
+        if self.verbose:
+            print("\n\t\tEvent set: {0} - Tot. integral projX: {1:.3f} - projY: {2:.3f}".format(eventset,tot_integral_proj_x,tot_integral_proj_y))
 
 
     # NB: When computing an efficiency, need to make sure the errors are computed correctly!
@@ -864,19 +1015,31 @@ class RealFakeEffTagAndProbe:
         # Make projetcions only for 2D histograms
 
         found_2D_key = False
+        procs_for_proj = ["observed","expected"] if self.nosub else ["observed_sub","expected"]
+
         for key in sorted(self.histkeys):
-            if variation != "nominal": continue
-            if not "&&" in key: continue
+
+            if not "&&" in key: continue # Do not make projections for non-2D histograms
+            if variation != "nominal": continue # Do not make projections for variations other than "Nominal"
+            if any( tk in key for tk in ["_up","_dn"]): continue # Do not make projections for systematic histograms
+            if not any( tk in key for tk in procs_for_proj): continue # Do not make projections for processes to be subtracted
+
             found_2D_key = True
-            self.__makeProjectionHists__( self.numerator_hists[key], "N" )
-            self.__makeProjectionHists__( self.denominator_hists[key], "D" )
-            self.__makeProjectionHists__( self.antinumerator_hists[key], "AntiN" )
+
+            self.__makeProjectionHists__( key, self.numerator_hists[key], "N" )
+            self.__makeProjectionHists__( key, self.denominator_hists[key], "D" )
+            self.__makeProjectionHists__( key, self.antinumerator_hists[key], "AntiN" )
+
         if found_2D_key:
             self.storeYields()
 
         print("\nCalculating EFFICIENCIES - {0}...".format(variation))
 
         nominal_key = None
+
+        # for key in sorted(self.histkeys):
+        #     print key
+        # os.sys.exit("Exit")
 
         # NB: here is crucial to loop over the alphabetically-sorted keys!
 
@@ -886,27 +1049,35 @@ class RealFakeEffTagAndProbe:
 
             if any( sys in tokens for sys in ["TTV","VV","OtherPromptSS","FakesOS"] ) :
                 if not variation == "ND": continue
-                if tokens[-1].isdigit(): continue
+                if tokens[-1].isdigit(): continue # Ignore the bin-by-bin sys variations (consider only the global normalisation shift)
             if any( sys in tokens for sys in ["QMisID"] ):
                 if not variation in ["N","D"]: continue
 
+            # Skip all keys that do not have a minimum number of tokens
+
 	    min_tokens = True
 	    if self.closure or self.nosub:
-	        min_tokens = ( len(tokens) >= 4 )
+	        min_tokens = ( ( "_proj" not in key ) and len(tokens) >= 4 ) or ( ( "_proj" in key ) and len(tokens) >= 6 )
 	    else:
-	        min_tokens = ( len(tokens) >= 5 )
+	        min_tokens = ( ( "_proj" not in key ) and len(tokens) >= 5 ) or ( ( "_proj" in key ) and len(tokens) >= 7 )
 
             if ( not min_tokens or tokens[3] not in self.__processes ): continue
 
+            # If checking nominal, skip all the systematic keys
+
             if variation == "nominal" :
-                if ( "_proj" not in key ) and len(tokens) > 5 : continue
+                if any( tk in tokens for tk in ["up","dn"] ): continue
                 nominal_key = key
 
-            # If checking systematics, need to store the nominal key first
+            # If checking systematics, need to store the nominal key first, then move to the next key
 
-            if ( variation != "nominal" and len(tokens) == 5 ):
-                nominal_key = key
-                continue
+            if variation != "nominal":
+                if ( "_proj" not in key ) and len(tokens) == 5:
+                    nominal_key = key
+                    continue
+                if ( "_proj" in key ) and len(tokens) == 7:
+                    nominal_key = key
+                    continue
 
             # Extension for projection histograms
 
@@ -994,12 +1165,13 @@ class RealFakeEffTagAndProbe:
 	    if self.closure or self.nosub:
                 key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3]+proj_extension,append) )
             else:
-	        key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3]+proj_extension,tokens[4],append) )
+	        key_heff = "_".join( (tokens[0],tokens[1],tokens[2],"Efficiency",tokens[3],tokens[4]+proj_extension,append) )
 
             if key_heff.endswith("_"):
                 key_heff = key_heff[:-1]
-            if len(tokens) > 6:
+            if len(tokens) > 6 and not "_proj" in key_heff:
                 key_heff = key_heff + "_" + "_".join( ("{0}".format(other_tokens) for other_tokens in tokens[5:]) )
+
 
             h_efficiency  = h_pass.Clone(key_heff)
             h_efficiency.Divide(h_pass,h_tot,1.0,1.0,"B")
@@ -1054,7 +1226,7 @@ class RealFakeEffTagAndProbe:
                 g_efficiency.Divide(h_pass,h_tot,"cl=0.683 b(1,1) mode")
 
             # TEMP!!!
-            # A hack to fix last pT bin for Nbjets=2 distribution
+            # A hack to fix last pT bin for Nbjets=2 distribution (only if bin is empty)
             # Only for closure test on tt+ttgamma
 
             if self.closure and "NBJets&&Pt" in key:
@@ -1067,36 +1239,59 @@ class RealFakeEffTagAndProbe:
                         h_efficiency.SetBinContent(thisbinglobidx,prevbincontent)
                         h_efficiency.SetBinError(thisbinglobidx,prevbinerror)
 
-            # TEMP!
-            # Rescale electron fake rate by the photon conversion fraction difference between ee and OF
-            #
-            # if key_heff == "Fake_El_Pt_Efficiency_expectedbkg":
-            #     alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
-            #     for bin in range(1,h_efficiency.GetXaxis().GetNbins()+2):
-            #         eff = h_efficiency.GetBinContent(bin)
-            #         sf = alpha[bin-1][1]
-            #         eff_scaled = eff
-            #         if sf != -1.0:
-            #             eff_scaled = eff * ( 1.0 + sf )
-            #             h_efficiency.SetBinContent(bin, eff_scaled)
-            #         print("bin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,sf,eff_scaled))
+            # Rescale electron fake rate by :
+            # -) the photon conversion fraction difference between ee and OF (for 2L)
+            # -) the photon conversion fraction difference between 3L SR and 2L CR (for 3L)
 
-            if key_heff == "Fake_El_NBJets&&Pt_Efficiency_expectedbkg":
-                # Inclusive Nbjets
-                alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
-                # Nbjet = 1
-                # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
-                # Nbjet = 2
-                # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
-                for binx in range(1,h_efficiency.GetXaxis().GetNbins()+2):
-                    for biny in range(1,h_efficiency.GetYaxis().GetNbins()+2):
-                        eff = h_efficiency.GetBinContent(binx,biny)
-                        sf = alpha[biny-1][1]
-                        eff_scaled = eff
-                        if sf != -1.0:
-                            eff_scaled = eff * ( 1.0 + sf )
-                            h_efficiency.SetBinContent(binx, biny, eff_scaled)
-                        print("bin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,sf,eff_scaled))
+            doScaledEff = args.doRescalingFakeEl
+
+            if doScaledEff:
+
+                if "Fake_El_" in key_heff:
+
+                    if not args.do3L:
+                        print("\n\tRescaling 2L efficiency w/ key: {0} by the relative ee/OF photon conversion fraction\n".format(key_heff))
+                        # Inclusive NBJets
+                        # alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
+                        alpha = [(1, 0.0), (2, 0.256), (3, 0.0)]
+                        # Nbjet = 1
+                        # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
+                        # Nbjet = 2
+                        # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
+                    else:
+                        print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3LSR/2LCR photon conversion fraction\n".format(key_heff))
+                        # From Chao
+                        alpha = [ (1,0.03398), (2, 0.07693), (3, 0.06985), (4, 0.18956), (5,0.25642), (6,0.0), (7, 0.0) ]
+
+                    key_heff_scaled = "RESCALED_" + key_heff
+                    h_efficiency_scaled = h_efficiency.Clone("RESCALED_"+h_efficiency.GetName())
+                    h_efficiency_scaled_AVG = h_efficiency_AVG.Clone("RESCALED_"+h_efficiency_AVG.GetName())
+
+                    if isinstance(h_efficiency_scaled,TH1D):
+
+                        for bin in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
+                            eff = h_efficiency_scaled.GetBinContent(bin)
+                            sf = alpha[bin-1][1]
+                            eff_scaled = eff
+                            if sf != -1.0:
+                                eff_scaled = eff * ( 1.0 + sf )
+                                h_efficiency_scaled.SetBinContent(bin, eff_scaled)
+                                print("\t\tbin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,1+sf,eff_scaled))
+
+                    elif isinstance(h_efficiency_scaled,TH2D):
+
+                        for binx in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
+                            for biny in range(1,h_efficiency_scaled.GetYaxis().GetNbins()+2):
+                                eff = h_efficiency_scaled.GetBinContent(binx,biny)
+                                sf = alpha[biny-1][1]
+                                eff_scaled = eff
+                                if sf != -1.0:
+                                    eff_scaled = eff * ( 1.0 + sf )
+                                    h_efficiency_scaled.SetBinContent(binx, biny, eff_scaled)
+                                    print("\t\tbin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,1+sf,eff_scaled))
+
+                    self.histefficiencies[key_heff_scaled] = h_efficiency_scaled
+                    self.histefficiencies[key_heff_scaled+"_AVG"] = h_efficiency_scaled_AVG # TEMP: should scale also this one properly...
 
 
             # Save the efficiencies in the proper dictionaries
@@ -1107,7 +1302,10 @@ class RealFakeEffTagAndProbe:
        	    self.tefficiencies[key_teff]            = t_efficiency
 
             print ("\tkey for efficiency: {0}".format(key_heff))
+            if doScaledEff:
+                print ("\tkey for efficiency (scaled): {0}".format(key_heff))
             print ("\tkey for efficiency (AVG): {0}".format(key_heff+"_AVG"))
+
 
     def computeFactors( self, variation ):
 
@@ -1224,6 +1422,11 @@ class RealFakeEffTagAndProbe:
 
 	self.__outputpath = outputpath
 
+        # Create output directory if it doesn't exist yet
+
+        if not os.path.exists(self.__outputpath):
+            os.makedirs(self.__outputpath)
+
         if self.__averagehists:
 	    filename += "Avg"
 
@@ -1244,7 +1447,12 @@ class RealFakeEffTagAndProbe:
 
         if self.debug: print("\nSaving histograms:")
     	for key, h in sorted(self.histefficiencies.iteritems()):
+
     	    if not h: continue
+
+            # TEMP: do not save 2D projections histograms
+            #if "_proj" in key: continue
+
     	    if self.debug: print("\t{0}".format(key))
 
             # Make sure histogram name contains symbols that ROOT can parse ...
@@ -1252,10 +1460,17 @@ class RealFakeEffTagAndProbe:
             hname = h.GetName()
             if "&&" in hname:
                 hname = hname.replace("&&","_VS_")
-                h.SetName(hname)
+            if "RAW" in hname:
+                hname = hname.replace("RAW","")
+            h.SetName(hname)
             if args.do3L:
                 h.SetName("3L_"+hname)
+
     	    h.Write()
+
+            if "_El_" in hname:
+                h3L = h.Clone("3L_"+hname)
+                h3L.Write()
 
     	    eff=[]
             is2DHist = ( isinstance(h,TH2) )
@@ -1355,12 +1570,21 @@ class RealFakeEffTagAndProbe:
 
         if "AVG" in hist2Dkey: return
 
-        c = TCanvas(canvasname+"_Projections","Projections",50,50,1000,600)
-        c.SetFrameFillColor(0)
-        c.SetFrameFillStyle(0)
-        c.SetFrameBorderMode(0)
+        # c = TCanvas(canvasname+"_Projections","Projections",50,50,1000,1400)
+        # c.Clear()
+        # c.SetFrameFillColor(0)
+        # c.SetFrameFillStyle(0)
+        # c.SetFrameBorderMode(0)
+        # c.Divide(1,2)
 
-        c.Divide(2,1)
+        cx = TCanvas(canvasname+"_ProjectionsX","ProjectionsX",50,50,800,600)
+        cx.SetFrameFillColor(0)
+        cx.SetFrameFillStyle(0)
+        cx.SetFrameBorderMode(0)
+        cy = TCanvas(canvasname+"_ProjectionsY","ProjectionsY",50,50,800,600)
+        cy.SetFrameFillColor(0)
+        cy.SetFrameFillStyle(0)
+        cy.SetFrameBorderMode(0)
 
         legendx = TLegend(0.45,0.25,0.925,0.55) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
         legendx.SetBorderSize(0)     # no border
@@ -1376,13 +1600,18 @@ class RealFakeEffTagAndProbe:
 
         normfactor = self.histefficiencies[hist2Dkey+"_AVG"].GetBinContent(1,1)
 
+        minimum = 0.0
+        maximum = -999.0
+
     	for key, h in sorted(self.histefficiencies.iteritems()):
 
             vars2D = var.split("_VS_")
 
             if "AVG" in key: continue
-            if not all( v in key for v in vars2D ): continue
-            if not "proj" in key: continue
+            if not "proj" in key: continue # Must consider only projection histograms
+            if not all( v in key for v in vars2D ): continue # This projection histogram must come from this input 2D hist
+
+            print("\t\tPlotting projection histogram: {0}".format(key))
 
             tokens = key.split("_")
 
@@ -1393,9 +1622,17 @@ class RealFakeEffTagAndProbe:
 
             if self.verbose: print("\tkey: {0} - <TOT eff> = {1:.3f}, <SLICE eff> = {2:.3f}, scale factor = {3:.3f}".format(key,normfactor,slicefactor,scalefactor))
 
-            h.Scale(scalefactor)
+            # h.Scale(scalefactor) # Uncomment this if you want to check correlation between slices
 
-            h.SetMaximum(1.0)
+            # Set the range of the Y axis
+
+            this_maximum = h.GetMaximum()
+            if this_maximum > maximum:
+                maximum = this_maximum
+                h.SetMaximum(3.0*maximum)
+            h.SetMinimum(0.0)
+
+            h.SetLineStyle(2)
 
             if self.verbose: print("\t\t==> new integral = {0:.3f}".format(h.Integral(0,h.GetSize()-1)))
 
@@ -1404,12 +1641,30 @@ class RealFakeEffTagAndProbe:
 
             if varX in key:
 
-                c.cd(1)
+                # c.cd(1)
+                cx.cd()
 
-                slice_lowedge =  self.histefficiencies[hist2Dkey].GetYaxis().GetBinLowEdge(int(tokens[-1]))
-                slice_upedge =  self.histefficiencies[hist2Dkey].GetYaxis().GetBinUpEdge(int(tokens[-1]))
+                varlegend = vars2D[1] if not "RAW" in vars2D[1] else vars2D[1][:-3]
 
-                legendx.AddEntry(h,"{0} - [{1},{2}]".format(vars2D[1],slice_lowedge,slice_upedge), "P")
+                if varlegend == "Pt": varlegend = "p_{T}"
+                if varlegend == "NBJets": varlegend = "N_{b-tags}"
+                if varlegend == "DistanceClosestJet": varlegend = "#Delta R(#mu, closest jet)"
+
+                if tokens[-1].isdigit():
+
+                    # Do not plot projetcion for overflow bin
+
+                    if int(tokens[-1]) == self.histefficiencies[hist2Dkey].GetYaxis().GetNbins()+1:
+                        continue
+
+                    slice_lowedge = self.histefficiencies[hist2Dkey].GetYaxis().GetBinLowEdge(int(tokens[-1]))
+                    slice_upedge  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinUpEdge(int(tokens[-1]))
+                    slice_centre  = self.histefficiencies[hist2Dkey].GetYaxis().GetBinCenter(int(tokens[-1]))
+                    legend_text = "{0} - [{1},{2}]".format(varlegend,slice_lowedge,slice_upedge) if varlegend != "N_{b-tags}" else "{0} - [{1}]".format(varlegend,int(slice_centre))
+                else:
+                    legend_text = "{0} - {1}".format(varlegend,"inclusive")
+
+                legendx.AddEntry(h,legend_text, "P")
 
                 if not gPad.GetListOfPrimitives().GetSize():
                     h.Draw("E0")
@@ -1421,12 +1676,30 @@ class RealFakeEffTagAndProbe:
 
             if varY in key:
 
-                c.cd(2)
+                # c.cd(2)
+                cy.cd()
 
-                slice_lowedge =  self.histefficiencies[hist2Dkey].GetXaxis().GetBinLowEdge(int(tokens[-1]))
-                slice_upedge =  self.histefficiencies[hist2Dkey].GetXaxis().GetBinUpEdge(int(tokens[-1]))
+                varlegend = vars2D[0] if not "RAW" in vars2D[0] else vars2D[0][:-3]
 
-                legendy.AddEntry(h,"{0} - [{1},{2}]".format(vars2D[0],slice_lowedge,slice_upedge), "P")
+                if varlegend == "Pt": varlegend = "p_{T}"
+                if varlegend == "NBJets": varlegend = "N_{b-tags}"
+                if varlegend == "DistanceClosestJet": varlegend = "#Delta R(#mu, closest jet)"
+
+                if tokens[-1].isdigit():
+
+                    # Do not plot projetcion for overflow bin
+
+                    if int(tokens[-1]) == self.histefficiencies[hist2Dkey].GetXaxis().GetNbins()+1:
+                        continue
+
+                    slice_lowedge = self.histefficiencies[hist2Dkey].GetXaxis().GetBinLowEdge(int(tokens[-1]))
+                    slice_upedge  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinUpEdge(int(tokens[-1]))
+                    slice_centre  = self.histefficiencies[hist2Dkey].GetXaxis().GetBinCenter(int(tokens[-1]))
+                    legend_text = "{0} - [{1},{2}]".format(varlegend,slice_lowedge,slice_upedge) if varlegend != "N_{b-tags}" else "{0} - [{1}]".format(varlegend,int(slice_centre))
+                else:
+                    legend_text = "{0} - {1}".format(varlegend,"inclusive")
+
+                legendy.AddEntry(h,legend_text, "P")
 
                 if not gPad.GetListOfPrimitives().GetSize():
                     h.Draw("E0")
@@ -1436,7 +1709,9 @@ class RealFakeEffTagAndProbe:
                 legendy.Draw()
 
         for extension in self.extensionlist:
-            c.SaveAs(savepath+"/BasicPlots/"+canvasname+"_Projections."+extension)
+            # c.SaveAs(savepath+"/BasicPlots/"+canvasname+"_Projections."+extension)
+            cx.SaveAs(savepath+"/BasicPlots/"+canvasname+"_Projections"+vars2D[1]+"."+extension)
+            cy.SaveAs(savepath+"/BasicPlots/"+canvasname+"_Projections"+vars2D[0]+"."+extension)
 
 
     def plotMaker( self ):
@@ -1472,7 +1747,9 @@ class RealFakeEffTagAndProbe:
         leg_lumi.SetTextSize(0.03)
         leg_lumi.SetNDC()
 
-        for var in self.__variables:
+        for vartokens in self.__variables:
+
+            var = vartokens[0]
 
             is2DHist = ( "&&" in var )
 
@@ -1499,9 +1776,12 @@ class RealFakeEffTagAndProbe:
                         if self.closure or self.nosub:
                             key  = "_".join((eff,lep,var,"Efficiency",proc))
 
-                        print("\tplotting histogram: {0}".format(key))
+                        hist = self.histefficiencies[key] if self.histefficiencies.get(key) else None
+                        if not hist:
+                            print("\tSkipping key: {0}".format(key))
+                            continue
 
-                        hist = self.histefficiencies[key]
+                        print("\tPlotting histogram: {0}".format(key))
 
                         set_fancy_2D_style()
                         gPad.SetRightMargin(0.2)
@@ -1560,10 +1840,16 @@ class RealFakeEffTagAndProbe:
                         if self.closure or self.nosub:
                             key  = "_".join((eff,lep,var,"Efficiency",proc))
 
-                        print("\tplotting histogram: {0}".format(key))
+                        hist     = self.histefficiencies[key] if self.histefficiencies.get(key) else None
+                        hist_AVG = self.histefficiencies[key+"_AVG"] if self.histefficiencies.get(key+"_AVG") else None
+                        if not hist:
+                            print("\tSkipping key: {0}".format(key))
+                            continue
+                        if not hist_AVG:
+                            print("\tSkipping key: {0}".format(key+"_AVG"))
+                            continue
 
-                        hist     = self.histefficiencies[key]
-                        hist_AVG = self.histefficiencies[key+"_AVG"]
+                        print("\tplotting histogram: {0}".format(key))
 
                         hist.GetYaxis().SetRangeUser(0,1)
                         hist.GetYaxis().SetTitle("#varepsilon")
@@ -1636,7 +1922,9 @@ class RealFakeEffTagAndProbe:
         if not os.path.exists(savepath+"/CombinedSys"):
 	    os.makedirs(savepath+"/CombinedSys")
 
-        for var in self.__variables:
+        for vartokens in self.__variables:
+
+            var = vartokens[0]
 
             is2DHist = ( "&&" in var )
             if is2DHist: continue
@@ -1649,7 +1937,10 @@ class RealFakeEffTagAndProbe:
 	            if not self.nosub:
 	                key_nominal += "_sub"
 
-	            hist_nominal = self.histefficiencies[key_nominal]
+                    hist_nominal = self.histefficiencies[key_nominal] if self.histefficiencies.get(key_nominal) else None
+                    if not hist_nominal:
+                        continue
+
           	    hist_nominal.SetLineStyle(2)
 		    hist_nominal.SetLineWidth(2)
           	    hist_nominal.SetLineColor(kBlack)
@@ -2128,18 +2419,17 @@ class RealFakeEffTagAndProbe:
     	    print("\n\tNUMERATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
     	    for key, value in sorted( self.numerator_yields.iteritems() ):
-    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.3f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.3f}".format(value[-1]) )
+    		print("\t{0}".format(key) + "\t[" + ",".join( "({0},{1:.3f})".format(idx, el) for idx, el in enumerate(value[:-1]) ) + "]" + "\t{0:.3f}".format(value[-1]) )
 
     	    print("\n\tDENOMINATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
     	    for key, value in sorted( self.denominator_yields.iteritems() ):
-    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.3f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.3f}".format(value[-1]) )
+    		print("\t{0}".format(key) + "\t[" + ",".join( "({0},{1:.3f})".format(idx, el) for idx, el in enumerate(value[:-1]) ) + "]" + "\t{0:.3f}".format(value[-1]) )
 
     	    print("\n\tANTI-NUMERATOR yields dictionary:\n")
     	    print("\tkey\t\tyields (per bin)\t\tintegral\n")
     	    for key, value in sorted( self.antinumerator_yields.iteritems() ):
-    		print("\t{0}".format(key) + "\t[" + ",".join( "{0:.3f}".format(i) for i in value[:-1] ) + "]" + "\t{0:.3f}".format(value[-1]) )
-
+    		print("\t{0}".format(key) + "\t[" + ",".join( "({0},{1:.3f})".format(idx, el) for idx, el in enumerate(value[:-1]) ) + "]" + "\t{0:.3f}".format(value[-1]) )
 
 # --------------------------------------------------------------------------------------------------------------
 
@@ -2148,7 +2438,7 @@ if __name__ == "__main__":
     print args
 
     for sys in args.systematics:
-        if not sys in g_avaialble_systematics:
+        if not sys in g_available_systematics and not sys == "ALL":
 	    print("\nWARNING!\nSystematic {0} is not supported!!".format(sys))
 
     eff = RealFakeEffTagAndProbe( closure=args.closure, factors=args.factors, variables=args.variables, efficiencies=args.efficiency, leptons=args.lepton, systematics=args.systematics, nosub=args.nosub )

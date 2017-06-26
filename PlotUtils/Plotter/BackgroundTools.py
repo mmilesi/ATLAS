@@ -12,6 +12,7 @@ from ROOT import gROOT, gPad, THStack, TColor, TCanvas, TPad, TLine, TLegend, kB
 sys.path.append(os.path.abspath(os.path.curdir))
 from Core import NTupleTools, DatasetManager, listifyInputFiles
 
+gROOT.Reset()
 gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
 # gROOT.LoadMacro("$HOME/RootUtils/AtlasStyle.C")
 from ROOT import SetAtlasStyle
@@ -28,6 +29,7 @@ class Inputs:
         self.friendfile_extension = None
         self.systrees = []
         self.sysweights = []
+        self.readGFW2 = False
 
     def setFriendTree(self, friendtrees=[], friendfile_extension=None):
 
@@ -69,24 +71,25 @@ class Inputs:
 
         # If not already done, set the Xsec weight to each (MC) TTree
 
-        for filepath in filelist:
-	    f = TFile.Open(filepath,"UPDATE")
-	    for treename in treelist:
-	       t = f.Get(treename)
-               if not t:
-                  print ("WARNING: tree {0} in file {1} cannot be found during tree registration".format(treename,filepath))
-                  return False
-	       if ismc and ( t.GetWeight() == 1.0 or resetTreeWeight ):
-		  print("Weighting tree w/ Xsec weight...")
-		  weight = float(sample['xsection']) * float(sample['efficiency']) * float(sample['kfactor']) * 1e3 # To get the weight in fb (assuming the Xsec is in pb)
-		  h = f.Get("TotalEventsW")
-		  if not h:
-		     print ("WARNING: histogram named TotalEventsW in file {1} couldn't be found!".format(filepath))
-		     return False
-		  weight /= h.GetBinContent(2)
-		  t.SetWeight(weight)
-		  t.Write(t.GetName(),t.kOverwrite)
-	    f.Close()
+        if not self.readGFW2:
+            for filepath in filelist:
+                f = TFile.Open(filepath,"UPDATE")
+                for treename in treelist:
+                    t = f.Get(treename)
+                    if not t:
+                        print ("WARNING: tree {0} in file {1} cannot be found during tree registration".format(treename,filepath))
+                        return False
+                    if ismc and ( t.GetWeight() == 1.0 or resetTreeWeight ):
+                        print("Weighting tree w/ Xsec weight...")
+                        weight = float(sample['xsection']) * float(sample['efficiency']) * float(sample['kfactor']) * 1e3 # To get the weight in fb (assuming the Xsec is in pb)
+                        h = f.Get("TotalEventsW")
+                        if not h:
+                            print ("WARNING: histogram named TotalEventsW in file {1} couldn't be found!".format(filepath))
+                            return False
+                        weight /= h.GetBinContent(2)
+                        t.SetWeight(weight)
+                        t.Write(t.GetName(),t.kOverwrite)
+                f.Close()
 
         # Add the TTrees into a TChain
 
@@ -118,6 +121,9 @@ class Inputs:
 
     def getTree(self, treename='physics', group='', subgroup='', sampleid=None):
 
+        if self.readGFW2:
+            treename = 'nominal'
+
 	if sampleid:
             group, subgroup = self.sampleids[self.nomtree][sampleid]
 
@@ -139,6 +145,9 @@ class Inputs:
         # Group list is a list of tuple with two elements (strings),
         # e.g. [ ('groupname1', 'subgroupname1'),('groupname2', '*'),] accepts also wildcards.
         # The entire list of trees is returned, one tree for each tuple.
+
+        if self.readGFW2:
+            treename = 'nominal'
 
 	newGroupList = []
         for group, subgroup in grouplist:
@@ -181,10 +190,11 @@ class Inputs:
             sampletree = self.getTree(group='Data',subgroup='physics_Main')
 
         branches_array = sampletree.GetListOfBranches()
+
         idxlist = []
         for b in range(0,branches_array.GetEntries()):
             branchname = branches_array.At(b).GetName()
-            if not all( s in branchname for s in [branchID,"_up"] ): continue
+            if not branchID in branchname or "Grouped" in branchname: continue
             tokens = branchname.split("_")
             # The bin index is supposed to be the second to last token in the branch name
             idx = tokens[-2]
@@ -193,7 +203,8 @@ class Inputs:
             except ValueError:
                 print("\nERROR! String token: {0} cannot be converted to an integer\n".format(idx))
                 raise
-            idxlist.append(idx)
+            if not idx in idxlist:
+                idxlist.append(idx)
         return idxlist
 
 class Variable:
@@ -419,6 +430,12 @@ class VariableDB:
     def registerSystematics(self, syst):
         self.systdb[syst.name] = syst
         self.systlist.append(syst)
+
+    def printSystematics(self):
+        print("\nRegistered systematics:\n")
+        for syst in self.systlist:
+            print("{0}".format(syst.name))
+        print("")
 
     def registerCategory(self, category):
         self.categorydb[category.name] = category
@@ -807,6 +824,7 @@ class Background:
     eventweight = '1.0'
     rescaleXsecAndLumi = False
     style = {}
+    readGFW2 = False
 
     def __init__(self, inputs, vardb):
         self.inputs      = inputs
@@ -877,12 +895,12 @@ class Background:
                 if systematics.eventweight and name in systematics.process:
 		    if systematicsdirection == 'UP':
                         if type(systematics.eventweight) is str:
-                            eventweight = systematics.eventweight + 'up'
+                            eventweight = ( systematics.eventweight + 'up' ) if not self.readGFW2 else ( systematics.eventweight + 'Up' )
                         else:
                             eventweight = 1.0 + systematics.eventweight
                     elif systematicsdirection == 'DOWN':
                         if type(systematics.eventweight) is str:
-                            eventweight = systematics.eventweight + 'dn'
+                            eventweight = ( systematics.eventweight + 'dn' ) if not self.readGFW2 else ( systematics.eventweight + 'Dn' )
                         else:
                             eventweight = 1.0 - systematics.eventweight
 
@@ -979,8 +997,8 @@ class Background:
 
             h = process.hist(var, cut=cut, category=category)
 
-            if overflowbins:
-                lastbin = h.GetNbinsX()
+            if overflowbins and not isinstance(h,TH2):
+                lastbin = h.GetSize()-2
                 over, overerror = h.GetBinContent(lastbin+1), h.GetBinError(lastbin+1)
                 under, undererror = h.GetBinContent(0), h.GetBinError(0)
                 if '_ext' in var.shortname: # Convention for "extended" histograms: plot overflow, but not underflow
@@ -1019,7 +1037,9 @@ class Background:
 
         self.var = var
 
-        if not var.typeval in [TH2I,TH2F,TH2D]:
+        isvar2D = ( var.typeval in [TH2,TH2I,TH2F,TH2D] )
+
+        if not isvar2D:
             c = TCanvas("c1","Temp",50,50,600,600)
 	else:
 	    c = TCanvas("c1","Temp",50,50,800,600)
@@ -1032,24 +1052,30 @@ class Background:
             process = obslist[0][1]
             datagr = None
             if not ( "$ISDATA$" in obslist[0][0].GetName() ):
-                datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
-                datagr.SetLineStyle(2)
+                if not isvar2D:
+                    datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
+                    datagr.SetLineStyle(2)
+                else:
+                    datagr = TH2D(obs)
             else :
-                datagr = makePoissonErrors(obs)
-            	datagr.SetMarkerSize(0.8) # (1.2)
-            	datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
-            	datagr.SetLineWidth(self.style.get('ObservedLineWidth', 2))
-            	datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
+                if not isvar2D:
+                    datagr = makePoissonErrors(obs)
+                    datagr.SetMarkerSize(0.8) # (1.2)
+                    datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
+                    datagr.SetLineWidth(self.style.get('ObservedLineWidth', 2))
+                    datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
+                else:
+                    datagr = TH2D(obs)
             legs.append([datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "p"])
 
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
 
         if obs and bkglist and normalise:
-            if not var.typeval in [TH2I,TH2F,TH2D]:
+            if not isvar2D:
 	    	num_data = obs.GetEntries()
             	num_mc = 0.0
             	for b, bname in bkglist:
-            	    for i in range(b.GetNbinsX()+2):
+            	    for i in range(b.GetSize()):
             		num_mc += b.GetBinContent(i)
             	if num_mc:
             	    normratio = num_data / num_mc
@@ -1076,9 +1102,11 @@ class Background:
 	    print "No Stack"
 
         if bkg:
-            tSum.SetFillColor(self.style.get('SumErrorFillColour', kGray+3))
-            tSum.SetLineColor(self.style.get('SumErrorLineColour', 10))
-            tSum.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
+            gStyle.SetHatchesLineWidth(1)
+            gStyle.SetHatchesSpacing(0.4)
+            tSum.SetFillColor(self.style.get('SumErrorFillColour', kGray+1))
+            tSum.SetLineColor(self.style.get('SumErrorLineColour', kGray+1))
+            tSum.SetFillStyle(self.style.get('SumErrorFillStyle', 3356))
             tSum.SetMarkerSize(0)
             legs.insert(0, (tSum,"Stat. Unc.","F"))
         else:
@@ -1100,9 +1128,14 @@ class Background:
                h_name += " [#times"+str(int(signalfactor))+']'
             legs.append([sig, h_name + " ({0:.1f})".format(integrate(sig)), 'f'])
 
-        if showratio and obs and bkg and not var.typeval in [TH2I,TH2F,TH2D]:
+        # Never show ratio if variable is 2D
+
+        if isvar2D:
+            showratio = False
+
+        if showratio and obs and bkg:
             pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
-            pad2 = TPad("pad2", "", 0, 0,   1, 0.25)
+            pad2 = TPad("pad2", "", 0, 0, 1, 0.25)
             pad1.SetBottomMargin(0.02)
             pad2.SetBottomMargin(0.4)
             #pad2.SetTopMargin(0)
@@ -1122,9 +1155,26 @@ class Background:
             if logx or var.logaxisX:
                 gPad.SetLogx()
 
-        if showratio and obs and bkg and not var.typeval in [TH2I,TH2F,TH2D]:
+        if showratio and obs and bkg:
             if var.typeval in [TH1D,TH1F]:
-                ratiomc = tSum.Clone("RatioMC")
+                gStyle.SetHatchesLineWidth(1)
+                gStyle.SetHatchesSpacing(0.4)
+                ratiomc_props = {
+                    "TitleY": "" if not ( "$ISDATA$" in obslist[0][0].GetName() ) else "Data/Exp.",
+                    "TitleX": var.latexname,
+                    "TitleSizeX":0.15,
+                    "TitleSizeY":0.15,
+                    "TitleOffsetX":0.90,
+                    "TitleOffsetY":0.35,
+                    "LabelSizeX":0.15,
+                    "LabelSizeY": 0.12,
+                    "NdivisionsY":505,
+                    "FillColor":kGray+1,
+                    "FillStyle":self.style.get('SumErrorFillStyle', 3356),
+                    "LineColor":kGray+1,
+                    "MarkerSize":0,
+                }
+                ratiomc = SelfDivide( tSum, "RatioMC", ratiomc_props )
                 ratiodata = obs.Clone("RatioData")
             elif var.typeval is TH1I:
                 ratiomc = TH1D("RatioMC", "RatioMC", tSum.GetNbinsX(), tSum.GetBinLowEdge(1), tSum.GetBinLowEdge(tSum.GetNbinsX()+1))
@@ -1136,24 +1186,6 @@ class Background:
                     ratiomc.SetBinContent(i, tSum.GetBinContent(i))
                     ratiodata.SetBinContent(i, obs.GetBinContent(i))
 
-            ratiomc.SetXTitle(var.latexname)
-	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
-                ratiomc.SetYTitle("")
-	    else:
-                ratiomc.SetYTitle("Data/Exp.")
-            ratiomc.GetXaxis().SetTitleSize(0.15)
-            ratiomc.GetYaxis().SetTitleSize(0.15)
-            ratiomc.GetXaxis().SetTitleOffset(0.90)
-            ratiomc.GetYaxis().SetTitleOffset(0.35)
-            ratiomc.GetXaxis().SetLabelSize(0.15)
-            ratiomc.GetYaxis().SetLabelSize(0.12)
-            ratiomc.GetYaxis().SetNdivisions(505) #(5)
-            ratiomc.SetFillColor(kGray+3)
-            ratiomc.SetLineColor(10)
-            ratiomc.SetFillStyle(self.style.get('SumErrorFillStyle', 3004))
-            ratiomc.SetMarkerSize(0)
-            ratiomc.Divide(tSum)
-
             ratiodata.SetMarkerSize(0.8) # (0.3)
 	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
 	         ratiodata.SetLineStyle(2)
@@ -1161,7 +1193,7 @@ class Background:
             ratiodata.Divide(tSum)
 
             soverb = None
-            if showratio and sig and bkg and not  var.typeval in [TH2I,TH2F,TH2D]:
+            if showratio and sig and bkg and not  isvar2D:
                 soverb = sig.Clone("SoverB")
                 soverb.SetLineStyle(1)
                 if signalfactor != 1.0:
@@ -1171,7 +1203,7 @@ class Background:
 
             valYmin =  99.
             valYmax = -99.
-            for i in range(1, tSum.GetNbinsX()+1):
+            for i in range(1, tSum.GetXaxis().GetNbins()+1):
                 if tSum.GetBinContent(i):
                     ratiomc.SetBinError(i, tSum.GetBinError(i) / tSum.GetBinContent(i))
                     ratiodata.SetBinError(i, obs.GetBinError(i) / tSum.GetBinContent(i))
@@ -1201,8 +1233,8 @@ class Background:
 
             # ratiomc.SetMinimum((1-val)-0.1)
             # ratiomc.SetMaximum((1+val)+0.1)
-            ratiomc.SetMinimum(0.25)
-            ratiomc.SetMaximum(1.75)
+            ratiomc.SetMinimum(0.5)
+            ratiomc.SetMaximum(1.5)
 
             if type(showratio) is tuple:
                 if showratio[0] == "MIN" and type(showratio[1]) is float:
@@ -1241,7 +1273,7 @@ class Background:
         # Trick to rescale:
 
 	if stack:
-	   if not var.typeval in [TH2I,TH2F,TH2D]:
+	   if not isvar2D:
 	      ymax_new = stack.GetMaximum()
 	      if obs and obs.GetMaximum() > ymax_new:
 	          ymax_new = obs.GetMaximum()
@@ -1275,7 +1307,6 @@ class Background:
 	      set_fancy_2D_style()
               gPad.SetRightMargin(0.2)
 	      stack.Draw(var.drawOpt2D)
-
               if var.binsX == var.binsY and not var.binsX == var.bins:
                   diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
                   diagonal.SetLineStyle(2)
@@ -1283,28 +1314,27 @@ class Background:
                   diagonal.SetLineWidth(2)
                   diagonal.Draw("SAME")
 
-        if bkg:
-            if not var.typeval in [TH2I,TH2F,TH2D]:
-                tSum.Draw("E2 SAME")
+        if bkg and not isvar2D:
+            tSum.Draw("E2 SAME")
 
         if obs:
-	   if not var.typeval in [TH2I,TH2F,TH2D]:
-              if stack:
-                 datagr.Draw("P SAME")
-              else:
-	         if logx or var.logaxisX:
-	             gPad.SetLogx()
-	         if log or var.logaxis:
-	             gPad.SetLogy()
-                 datagr.GetXaxis().SetTitle(var.latexname)
-	         binwidth = (var.maxval - var.minval) / var.bins
-                 ytitle = 'Events / %.2g %s' % (binwidth, var.unit)
-	         datagr.GetYaxis().SetTitle(ytitle)
-                 datagr.Draw('AP')
-	   else:
-	      set_fancy_2D_style()
-              gPad.SetRightMargin(0.2)
-	      datagr.Draw(var.drawOpt2D)
+            if not isvar2D:
+                if stack:
+                    datagr.Draw("P SAME")
+                else:
+                    if logx or var.logaxisX:
+                        gPad.SetLogx()
+                    if log or var.logaxis:
+                        gPad.SetLogy()
+                    datagr.GetXaxis().SetTitle(var.latexname)
+                    binwidth = (var.maxval - var.minval) / var.bins
+                    ytitle = 'Events / %.2g %s' % (binwidth, var.unit)
+                    datagr.GetYaxis().SetTitle(ytitle)
+                    datagr.Draw('AP')
+            else:
+                set_fancy_2D_style()
+                gPad.SetRightMargin(0.2)
+                datagr.Draw(var.drawOpt2D)
 
         lower, labels = self.labels(legs, showratio and obs and bkg)
         #gPad.RedrawAxis()
@@ -1317,6 +1347,7 @@ class Background:
             c.SaveAs(filepath)
         if not wait:
             gROOT.SetBatch(False)
+
         return bkg, tSum, obs, sig, stack
 
     def plotSystematics(self, systematics, var = 'MMC', cut = None, eventweight=None, category = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps'], log=False, logx=False):
@@ -1324,9 +1355,12 @@ class Background:
 	if not wait:
             gROOT.SetBatch(True)
 
-            cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
+        cut, category, systematics, overridebackground = self.parseArguments(cut, category, systematics, overridebackground)
+
         if type(var) is str:
             var = self.vardb.getVar(var)
+
+        isvar2D = ( var.typeval in [TH2,TH2I,TH2F,TH2D] )
 
         nom, nomlist    = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=None, systematicsdirection=None, overflowbins=overflowbins)
         up, uplist      = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection='UP', overflowbins=overflowbins)
@@ -1368,19 +1402,28 @@ class Background:
         if obs:
             process = obslist[0][1]
 	    if not ( "$ISDATA$" in obslist[0][0].GetName() ):
-		datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
-		datagr.SetLineStyle(2)
+                if not isvar2D:
+                    datagr = TH1D(obs) # Equivalent to: datagr = makeMCErrors(obs)
+                    datagr.SetLineStyle(2)
+                else:
+                    datagr = TH2D(obs)
 	    else :
-	        datagr = makePoissonErrors(obs)
-            datagr.SetMarkerSize(1.2)
-            datagr.SetMarkerStyle(20)
-            datagr.SetMarkerColor(1)
-            datagr.SetLineColor(1)
+                if not isvar2D:
+                    datagr = makePoissonErrors(obs)
+                    datagr.SetMarkerSize(1.2)
+                    datagr.SetMarkerStyle(20)
+                    datagr.SetMarkerColor(1)
+                    datagr.SetLineColor(1)
+                else:
+                    datagr = TH2D(obs)
             legs.insert(0, (datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "P"))
 
         c = TCanvas("c1","Temp",50,50,600,600)
         color_up = 46
         color_down = 36
+
+        if isvar2D:
+            showratio = False
 
         if showratio:
             pad1 = TPad("pad1", "", 0, 0.25, 1, 1)
@@ -1406,6 +1449,7 @@ class Background:
             h.SetLineStyle(1)
             h.SetFillStyle(0)
             h.SetLineWidth(2)
+
         down.SetLineColor(color_down)
         up.SetLineColor(color_up)
         nom.SetLineColor(1)
@@ -1464,7 +1508,7 @@ class Background:
 
             valYmin =  99.
             valYmax = -99.
-            for i in range(1, nom.GetNbinsX()+1):
+            for i in range(1, nom.GetXaxis().GetNbins()+1):
                 if (ratioup.GetBinContent(i) - ratioup.GetBinError(i)) != 0. and ratioup.GetBinContent(i) < valYmin:
                     valYmin = ratioup.GetBinContent(i) - ratioup.GetBinError(i)
                     if valYmin < 0.:
@@ -1574,6 +1618,7 @@ class Background:
             c.SaveAs(filepath)
         if not wait:
             gROOT.SetBatch(False)
+
         return obs, nom, up, down, bkguplist, bkgdownlist
 
 
@@ -1630,17 +1675,49 @@ def makeMCErrors(hist):
 
     return graph
 
-# Get effective integral of input histogram, taking u/oflow into account
-
 def integrate(hist):
+
+    # Get effective integral of input histogram, taking u/oflow into account
+
     if isinstance(hist,TH2):
         return hist.Integral(0,hist.GetXaxis().GetNbins()+1,0,hist.GetYaxis().GetNbins()+1)
     return hist.Integral(0,hist.GetNbinsX()+1)
 
 
+def SelfDivide( h_self, name = "Ratio", h_props = None ):
+
+    # Divide an histogram by itself, and set the errors correctly
+
+    h = h_self.Clone(name)
+    h.Divide(h_self)
+    for ibin in range(0,h.GetSize()):
+        if h_self.GetBinContent(ibin) > 0:
+            h.SetBinError(ibin, h_self.GetBinError(ibin)/h_self.GetBinContent(ibin))
+
+    if "TitleX" in h_props: h.SetXTitle(h_props["TitleX"])
+    if "TitleY" in h_props: h.SetYTitle(h_props["TitleY"])
+    if "TitleSizeX" in h_props: h.GetXaxis().SetTitleSize(h_props["TitleSizeX"])
+    if "TitleSizeY" in h_props: h.GetYaxis().SetTitleSize(h_props["TitleSizeY"])
+    if "TitleOffsetX" in h_props: h.GetXaxis().SetTitleOffset(h_props["TitleOffsetX"])
+    if "TitleOffsetY" in h_props: h.GetYaxis().SetTitleOffset(h_props["TitleOffsetY"])
+    if "LabelSizeX" in h_props: h.GetXaxis().SetLabelSize(h_props["LabelSizeX"])
+    if "LabelSizeY" in h_props: h.GetYaxis().SetLabelSize(h_props["LabelSizeY"])
+    if "NdivisionsY" in h_props: h.GetYaxis().SetNdivisions(h_props["NdivisionsY"])
+    if "FillColor" in h_props: h.SetFillColor(h_props["FillColor"])
+    if "FillStyle" in h_props: h.SetFillStyle(h_props["FillStyle"])
+    if "LineStyle" in h_props: h.SetLineStyle(h_props["LineStyle"])
+    if "LineColor" in h_props: h.SetLineColor(h_props["LineColor"])
+    if "LineWidth" in h_props: h.SetLineWidth(h_props["LineWidth"])
+    if "MarkerSize" in h_props: h.SetMarkerSize(h_props["MarkerSize"])
+    if "MarkerColor" in h_props: h.SetMarkerColor(h_props["MarkerColor"])
+    if "MarkerStyle" in h_props: h.SetMarkerStyle(h_props["MarkerStyle"])
+
+    return h
+
+
 # This function loads the samples metadata from the .csv file info
 
-def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', friendtrees=[], friendfile_extension=None, systrees=[]):
+def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', friendtrees=[], friendfile_extension=None, systrees=[], readGFW2=False):
 
     # The datasat manager takes care of parsing the sample.csv files.
 
@@ -1655,6 +1732,8 @@ def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', fri
 
     if friendtrees:
         inputs.setFriendTree(friendtrees,friendfile_extension)
+
+    inputs.readGFW2 = readGFW2
 
     for s in samples:
 
@@ -1678,7 +1757,14 @@ def loadSamples(inputdir, samplescsv='Files/samples.csv', nomtree='physics', fri
 
     return inputs
 
-def set_fancy_2D_style():
+# Function to set nice feats to 2D histograms
+# By default it defines a dark rainbow color palette.
+# User can pass an enum index to set one of the predefined ROOT palettes
+# See:
+# https://root.cern.ch/doc/master/classTColor.html#C05
+# for a list of available enums.
+
+def set_fancy_2D_style( palette_enum = -1 ):
 
     icol = 0
     gStyle.SetFrameBorderMode(icol);
@@ -1692,13 +1778,14 @@ def set_fancy_2D_style():
     gStyle.SetOptStat(0);
     gStyle.SetOptFit(0);
 
-    ncontours=999
-
-    s = array.array('d', [0.00, 0.34, 0.61, 0.84, 1.00])
-    r = array.array('d', [0.00, 0.00, 0.87, 1.00, 0.51])
-    g = array.array('d', [0.00, 0.81, 1.00, 0.20, 0.00])
-    b = array.array('d', [0.51, 1.00, 0.12, 0.00, 0.00])
-
-    npoints = len(s)
-    TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
-    gStyle.SetNumberContours(ncontours)
+    if palette_enum == -1:
+        ncontours=999
+        s = array.array('d', [0.00, 0.34, 0.61, 0.84, 1.00])
+        r = array.array('d', [0.00, 0.00, 0.87, 1.00, 0.51])
+        g = array.array('d', [0.00, 0.81, 1.00, 0.20, 0.00])
+        b = array.array('d', [0.51, 1.00, 0.12, 0.00, 0.00])
+        npoints = len(s)
+        TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
+        gStyle.SetNumberContours(ncontours)
+    else:
+        gStyle.SetPalette(palette_enum)

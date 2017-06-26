@@ -170,7 +170,10 @@ class TTHBackgrounds(Background):
         # for O(fb-1) luminosity
 
         if self.lumi_units == 'fb-1':
-            lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(self.luminosity), x=.2, y=.87, size=0.03 * scale)
+            if self.readGFW2:
+                lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(self.luminosity/1e3), x=.2, y=.87, size=0.03 * scale)
+            else:
+                lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(self.luminosity), x=.2, y=.87, size=0.03 * scale)
 
         # for O(pb-1) luminosity
 
@@ -197,14 +200,21 @@ class TTHBackgrounds(Background):
 
         latexname = 'Data'
 
-        # This method contains the instuction of which tree to load.
+        # This method contains the instruction of which tree to load.
 	# NB: this is not automatically executed when the instance of the class is created. In fact, it is executed via __call__
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             inputgroup = [
                     ('Data', 'physics_Main'),
                 ]
+
+            if self.parent.readGFW2:
+                del inputgroup[:]
+                inputgroup = [ ('Data', 'fakes_mm') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
 	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
@@ -223,6 +233,9 @@ class TTHBackgrounds(Background):
 
         def __call__(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             sp = self.base(treename, category, options)
 
             weight = None
@@ -236,17 +249,28 @@ class TTHBackgrounds(Background):
 	    	if ("TRUTH") in CUT.cutname:
 	    	    basecut = basecut.removeCut(CUT)
 
+            # basecut = basecut & Cut('2LSS0TauFlag','is2LSS0Tau')
+
             sp = sp.subprocess(cut=basecut,eventweight=weight)
 
             if TTcut:
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
+            # logistic_NN_top  = "output_top"
+            # logistic_RNN_top = "RNN_output_top"
+            logistic_NN_top  = "1/(1+TMath::Exp(-600*(output_top-0.984176)))"
+            logistic_RNN_top = "1/(1+TMath::Exp(-100*(RNN_output_top-0.968906)))"
+            dist_NN  = "( TMath::Sqrt(2.0) - TMath::Sqrt( (1.0-{0})*(1.0-{0}) + (1.0-output_ttV)*(1.0-output_ttV) ) )/TMath::Sqrt(2.0)".format(logistic_NN_top)
+            dist_RNN = "( TMath::Sqrt(2.0) - TMath::Sqrt( (1.0-{0})*(1.0-{0}) + (1.0-RNN_output_ttV)*(1.0-RNN_output_ttV) ) )/TMath::Sqrt(2.0)".format(logistic_RNN_top)
+
             if   self.parent.var.shortname == "NN_ttV": sp = sp.subprocess(cut=Cut("NN_Cut","( output_ttV < 0.5 )"))
-            elif self.parent.var.shortname == "NN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( output_top < 0.5 )"))
+            if   self.parent.var.shortname == "NN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( {0} < 0.9 )".format(logistic_NN_top)))
             if   self.parent.var.shortname == "RNN_ttV": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_ttV < 0.5 )"))
-            elif self.parent.var.shortname == "RNN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_top < 0.5 )"))
-            if   self.parent.var.shortname == "NN_Rebinned": sp = sp.subprocess(cut=Cut("NN_Cut","( output_bin < 5 )"))
-            elif self.parent.var.shortname == "RNN_Rebinned": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_bin < 5 )"))
+            if   self.parent.var.shortname == "RNN_top": sp = sp.subprocess(cut=Cut("NN_Cut","( {0} < 0.9 )".format(logistic_RNN_top)))
+            if   self.parent.var.shortname == "NN_Rebinned": sp = sp.subprocess(cut=Cut("NN_Cut","( output_bin <= 3 )"))
+            if   self.parent.var.shortname == "RNN_Rebinned": sp = sp.subprocess(cut=Cut("NN_Cut","( RNN_output_bin <= 3 )"))
+            if   self.parent.var.shortname == "NNComb": sp = sp.subprocess(cut=Cut("NN_Cut","( {0} < 0.7 )".format(dist_NN)))
+            if   self.parent.var.shortname == "RNNComb": sp = sp.subprocess(cut=Cut("NN_Cut","( {0}  < 0.7 )".format(dist_RNN)))
 
             print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
@@ -259,6 +283,9 @@ class TTHBackgrounds(Background):
         colour = kBlack
 
         def base(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    # hmass = 300 is the default value if hmass is not in options.
 	    # hmass can be specified in the option "signal" passed to the main plot function in the plotting script
@@ -279,6 +306,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -308,6 +338,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    # hmass = 300 is the default value if hmass is not in options.
 	    # hmass can be specified in the option "signal" passed to the main plot function in the plotting script
 
@@ -325,6 +358,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -354,6 +390,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             inputgroup = [
                 ('ttH', 'ttH_dil_Pythia8'),
                          ]
@@ -366,6 +405,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -441,6 +483,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             inputgroup = [
                 ('tWH', '*'),
                         ]
@@ -453,6 +498,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -487,6 +535,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
 		('tops', 'ttW_aMcAtNlo'),
                          ]
@@ -499,6 +550,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -534,6 +588,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                 ('tops', 'ttee_aMcAtNlo'),
                 ('tops', 'ttmumu_aMcAtNlo'),
@@ -550,6 +607,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -584,6 +644,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
 		('tops', 'ttgamma'),
                          ]
@@ -596,6 +659,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -628,6 +694,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                            ('Z+jetsLowMllBVeto', 'ee'),
                            ('Z+jetsLowMllBFilter', 'ee'),
@@ -652,6 +721,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -690,6 +762,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                            ('Z+jetsLowMllBVeto', 'mumu'),
                            ('Z+jetsLowMllBFilter', 'mumu'),
@@ -714,6 +789,10 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
             systname_opts = {}
@@ -750,6 +829,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                            ('Z+jetsLowMllBVeto', 'tautau'),
                            ('Z+jetsLowMllBFilter', 'tautau'),
@@ -774,6 +856,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -812,6 +897,9 @@ class TTHBackgrounds(Background):
 
         def __call__(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             print("\n{0}:\n".format(self.__class__.__name__))
 
             zee     = self.parent.procmap['Zeejets'](treename, category, options)
@@ -827,6 +915,9 @@ class TTHBackgrounds(Background):
         colour = kAzure + 10
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             print("\n{0}:\n".format(self.__class__.__name__))
 
@@ -879,6 +970,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                 ('W+jetsBFilter', 'enu'),
                 ('W+jetsCFilterBVeto', 'enu'),
@@ -894,6 +988,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -929,6 +1026,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                 ('W+jetsBFilter', 'munu'),
                 ('W+jetsCFilterBVeto', 'munu'),
@@ -944,6 +1044,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -979,6 +1082,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                 ('W+jetsBFilter', 'taunu'),
                 ('W+jetsCFilterBVeto', 'taunu'),
@@ -994,6 +1100,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1028,6 +1137,9 @@ class TTHBackgrounds(Background):
 
         def __call__(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             print("\n{0}:\n".format(self.__class__.__name__))
 
             wenu   = self.parent.procmap['Wenujets'](treename, category, options)
@@ -1046,6 +1158,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                 ('tops', 'tZ'),
                 ('tops', '3top'),
@@ -1062,6 +1177,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1097,6 +1215,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                 ('tops', 'singlet'),
                 ('tops', 'SingleTopSchan_noAllHad'),
@@ -1111,6 +1232,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1145,6 +1269,9 @@ class TTHBackgrounds(Background):
 
         def __call__(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             print("\n{0}:\n".format(self.__class__.__name__))
 
             rare_top = self.parent.procmap['RareTop'](treename, category, options)
@@ -1161,6 +1288,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                 ('tops', 'ttbar_nonallhad_Pythia8'),
 		('tops', 'ttgamma'),
@@ -1169,6 +1299,13 @@ class TTHBackgrounds(Background):
                 #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
                 #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
                          ]
+
+            if self.parent.readGFW2:
+                del inputgroup[:]
+                inputgroup = [
+                    ('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
+                    ('tops_MMClosure', 'ttgamma'),
+                ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
 	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
@@ -1179,6 +1316,9 @@ class TTHBackgrounds(Background):
 	    return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1197,6 +1337,7 @@ class TTHBackgrounds(Background):
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
             tt_ttgamma_OLR_cut = Cut("TTBar_TTGamma_OLR","( ( mc_channel_number == 410082 && m_MEphoton_OLtty_cat1 ) || ( mc_channel_number != 410082 && m_MEphoton_OLtty_keepEvent && !m_hasMEphoton_DRgt02_nonhad ) )")
+            # tt_ttgamma_OLR_cut = Cut("TTBar_TTGamma_OLR","( 1 )")
             sp = sp.subprocess(cut=tt_ttgamma_OLR_cut)
 
             print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
@@ -1210,6 +1351,9 @@ class TTHBackgrounds(Background):
         colour = kAzure + 8
 
         def base(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    inputgroup = [
                 ('tops', 'ttbar_nonallhad_Pythia8'),
@@ -1228,6 +1372,9 @@ class TTHBackgrounds(Background):
 	    return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
 	    systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1256,6 +1403,9 @@ class TTHBackgrounds(Background):
         colour = kAzure - 4
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             print("\n{0}:\n".format(self.__class__.__name__))
 
@@ -1309,6 +1459,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                 ('Diboson', 'llll'),
                 ('Diboson', 'lllvSFMinus'),
@@ -1335,6 +1488,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1369,6 +1525,9 @@ class TTHBackgrounds(Background):
         colour = kAzure - 9
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             print("\n{0}:\n".format(self.__class__.__name__))
 
@@ -1415,6 +1574,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                 ('Triboson', '*'),
                          ]
@@ -1427,6 +1589,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1461,6 +1626,9 @@ class TTHBackgrounds(Background):
         colour = kYellow - 9
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             print("\n{0}:\n".format(self.__class__.__name__))
 
@@ -1534,6 +1702,9 @@ class TTHBackgrounds(Background):
 
         def __call__(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             print("\n{0}:\n".format(self.__class__.__name__))
 
             # Pick the subprocesses from the DB
@@ -1602,6 +1773,9 @@ class TTHBackgrounds(Background):
 
         def __call__(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             print("\n{0}:\n".format(self.__class__.__name__))
 
             dibosoncf = self.parent.procmap['DibosonCF'](treename, category, options)
@@ -1620,9 +1794,16 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                     ('Data', 'physics_Main'),
                          ]
+
+            if self.parent.readGFW2:
+                del inputgroup[:]
+                inputgroup = [ ('Data', 'fakes_mm') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
 	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
@@ -1632,6 +1813,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1682,7 +1866,8 @@ class TTHBackgrounds(Background):
 
             if bool([ cut for cut in cut_w_el if cut in category.cut.cutname ]):
 
-                weight = 'QMisIDWeight'
+                weight = 'QMisIDWeight' if not self.parent.readGFW2 else 'QMisID_MM_EventWeight'
+
                 sp = sp.subprocess(cut=basecut,eventweight=weight)
                 print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
 
@@ -1702,7 +1887,7 @@ class TTHBackgrounds(Background):
                     cut_SF = basecut & self.vardb.getCut('2Lep_ElEl_Event')
                     cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
 
-                    weight_SF = weight_OF = 'QMisIDWeight'
+                    weight_SF = weight_OF = 'QMisIDWeight' if not self.parent.readGFW2 else 'QMisID_MM_EventWeight'
 
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
@@ -1716,7 +1901,7 @@ class TTHBackgrounds(Background):
                     cut_OF = basecut & self.vardb.getCut('2Lep_OF_Event')
 
                     weight_SF = '0.0' # mu-mu region MUST get zero QMisID weight!
-                    weight_OF = 'QMisIDWeight'
+                    weight_OF = 'QMisIDWeight' if not self.parent.readGFW2 else 'QMisID_MM_EventWeight'
 
                     sp_SF = sp.subprocess(cut=cut_SF,eventweight=weight_SF)
                     sp_OF = sp.subprocess(cut=cut_OF,eventweight=weight_OF)
@@ -1731,7 +1916,7 @@ class TTHBackgrounds(Background):
                     cut_OF   = basecut & self.vardb.getCut('2Lep_OF_Event')
 
                     weight_mumu = '0.0' # mu-mu region MUST get zero QMisID weight!
-                    weight_elel = weight_OF = 'QMisIDWeight'
+                    weight_elel = weight_OF = 'QMisIDWeight' if not self.parent.readGFW2 else 'QMisID_MM_EventWeight'
 
                     sp_elel = sp.subprocess(cut=cut_elel,eventweight=weight_elel)
                     sp_mumu = sp.subprocess(cut=cut_mumu,eventweight=weight_mumu)
@@ -1753,6 +1938,10 @@ class TTHBackgrounds(Background):
         colour = kBlue
 
         def base(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             inputgroup = [
                     ('Data', 'physics_Main'),
                          ]
@@ -1765,6 +1954,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1785,6 +1977,9 @@ class TTHBackgrounds(Background):
         colour = kCyan -9
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             print("\n{0}:\n".format(self.__class__.__name__))
 
@@ -1849,6 +2044,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                     ('Data', 'physics_Main'),
                          ]
@@ -1861,6 +2059,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             systematics = options.get('systematics', None)
             direction = options.get('systematicsdirection', 'UP')
@@ -1911,9 +2112,16 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                     ('Data', 'physics_Main'),
                          ]
+
+            if self.parent.readGFW2:
+                del inputgroup[:]
+                inputgroup = [ ('Data', 'fakes_mm') ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
 	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
@@ -1924,6 +2132,9 @@ class TTHBackgrounds(Background):
 
         def getFakesMM(self, treename='physics', category=None, options={}, sp=None, inputcut=None):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
             debugflag = any( proc in self.parent.debugprocs for proc in [self.__class__.__name__,"ALL"])
 
             TTcut  = ('','FakesSideband_TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
@@ -1931,6 +2142,9 @@ class TTHBackgrounds(Background):
             LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
             LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
             weight = (None,'MMWeight')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+
+            if weight and self.parent.readGFW2:
+                weight = "MM_EventWeight"
 
             # Clean up from any truth cut
 
@@ -1968,14 +2182,16 @@ class TTHBackgrounds(Background):
                     continue
 
 	        QMisIDcut = basecut.swapCut(self.vardb.getCut('2Lep_SS'), -self.vardb.getCut('2Lep_SS'))
-	        OSweight  = 'QMisIDWeight * MMWeight'
+
+	        OSweight  = 'QMisIDWeight * MMWeight' if not self.parent.readGFW2 else 'QMisID_MM_EventWeight * MM_EventWeight'
+                SSweight  = 'QMisIDWeight' if not self.parent.readGFW2 else 'QMisID_MM_EventWeight'
 
                 # These are the actual QMisID events in the sidebands
 
-                sp_QMisID_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight='QMisIDWeight')
-                sp_QMisID_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight='QMisIDWeight')
-                sp_QMisID_LT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LTcut), eventweight='QMisIDWeight')
-                sp_QMisID_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight='QMisIDWeight')
+                sp_QMisID_TT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TTcut), eventweight=SSweight)
+                sp_QMisID_TL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(TLcut), eventweight=SSweight)
+                sp_QMisID_LT = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LTcut), eventweight=SSweight)
+                sp_QMisID_LL = (self.parent.procmap[process].base(treename,category,options)).subprocess(cut=QMisIDcut & self.vardb.getCut(LLcut), eventweight=SSweight)
 
                 # These are the OS weighted events that need to be subtracted
 
@@ -2079,6 +2295,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                     ('Data', 'physics_Main'),
                 ]
@@ -2122,6 +2341,9 @@ class TTHBackgrounds(Background):
             return ssp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             print("\n{0}\n".format(self.__class__.__name__))
 
@@ -2436,14 +2658,24 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
-                    ('tops', 'ttbar_nonallhad_Pythia8'),
-                    ('tops', 'ttgamma'),
-                    #('tops', 'ttbar_nonallhad'),
-                    #('tops', 'ttbar_dilep'),
-                    #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
-                    #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
-                         ]
+                ('tops', 'ttbar_nonallhad_Pythia8'),
+                ('tops', 'ttgamma'),
+                #('tops', 'ttbar_nonallhad'),
+                #('tops', 'ttbar_dilep'),
+                #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
+                #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
+                ]
+
+            if self.parent.readGFW2:
+                del inputgroup[:]
+                inputgroup = [
+                    ('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
+                    ('tops_MMClosure', 'ttgamma'),
+                ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
 	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
@@ -2453,6 +2685,9 @@ class TTHBackgrounds(Background):
             return sp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             debugflag = any( proc in self.parent.debugprocs for proc in [self.__class__.__name__,"ALL"])
 
@@ -2470,7 +2705,10 @@ class TTHBackgrounds(Background):
             TLcut  = ('','FakesSideband_TL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
             LTcut  = ('','FakesSideband_LT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
             LLcut  = ('','FakesSideband_LL')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
-            weight  = (None,'MMWeight')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+            weight = (None,'MMWeight')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+
+            if weight and self.parent.readGFW2:
+                weight = "MM_EventWeight"
 
             if debugflag:
 
@@ -2516,6 +2754,9 @@ class TTHBackgrounds(Background):
 
         def base(self, treename='physics', category=None, options={}):
 
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
 	    inputgroup = [
                     ('tops', 'ttbar_nonallhad_Pythia8'),
                     #('tops', 'ttbar_nonallhad'),
@@ -2559,6 +2800,9 @@ class TTHBackgrounds(Background):
             return ssp
 
         def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
 
             print("\nFakesClosureTHETA\n")
 
