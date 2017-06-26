@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter
 
-    if True:
+    if False:
 
         # EfficiencyPlotter.plotRealElectron()
         # EfficiencyPlotter.plotRealMuon()
@@ -43,14 +43,14 @@ if __name__ == "__main__":
 
     import TypeAndOriginPlots
 
-    if False:
+    if True:
 
         samples       = ["ttbarbkg"] # ["ttbarbkg","wjetsbkg"]
         flavours      = ["El"] # ["El","Mu"]
         # lepSelections = ["FakeCRElAntiT"]# ["FakeCRElT","FakeCRElL"]
         # lepSelections = ["FakeCRMuAntiT"] #["FakeCRMuT","FakeCRMuL"]
         #prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
-        prodIDs       = ["25ns_v27"]
+        prodIDs       = ["25ns_v28"]
         normFactor    = 0 # 1.0
 
         for s in samples:

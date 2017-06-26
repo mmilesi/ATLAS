@@ -533,8 +533,6 @@ if __name__ == "__main__":
     #
     # https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/MCTruthClassifier/trunk/MCTruthClassifier/MCTruthClassifierDefs.h
     #
-    # Flags for brems and QMisID are defined in ttHML Group FW
-    #
     # -------------------------------------------------------------------------------
 
     # Prompt leptons
@@ -959,7 +957,8 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = "Lep1EtaBE2",latexname = "#eta^{l_{1}}", ntuplename = "lep_EtaBE2_1", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
             database.registerVar( Variable(shortname = "Lep0DeltaRClosestJet",latexname = "#DeltaR{l_{0}, closest j}", ntuplename = "minDeltaR_LJ_0", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
             database.registerVar( Variable(shortname = "Lep1DeltaRClosestJet",latexname = "#DeltaR{l_{1}, closest j}", ntuplename = "minDeltaR_LJ_1", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
-            # database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttV+MVA2lSSMarseille_weight_ttbar)/2.0", manualbins = [-1.0,-0.3508,-0.1632,0.031,0.2424,0.4616,1.0], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep0DeltaRClosestJet_Rebinned",latexname = "#DeltaR{l_{0}, closest j}", ntuplename = "minDeltaR_LJ_0", manualbins = [0.0,1.0,5.0], sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep1DeltaRClosestJet_Rebinned",latexname = "#DeltaR{l_{1}, closest j}", ntuplename = "minDeltaR_LJ_1", manualbins = [0.0,1.0,5.0], sysvar = True ) )
             database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(BDTGScore_ttH_ttbarDD+BDTGScore_ttH_ttV)/2.0", manualbins = [-1,-0.1846,0.0324,0.2178,0.3892,0.558,1], sysvar = True ) )
         else:
             database.registerVar( Variable(shortname = "El0Pt", latexname = "p_{T}^{e_{0}} [GeV]", ntuplename = "electron_Pt[0]/1e3", bins = 20, minval = 10.0, maxval = 210.0, sysvar = True ) )
@@ -1302,12 +1301,15 @@ if __name__ == "__main__":
 
     if doFakeOriginFrac:
 
+        # manualbins_el_fake_pt = [10,15,20,26,35,60,210]
+        manualbins_el_fake_pt = [10,15,210] # This binnng comes from fit optimisation
+
         # database.registerVar( Variable(shortname = "Lep1Type", latexname = "truthType^{lep}", ntuplename = "lep_truthType_1", bins = 21, minval = -0.5, maxval = 20.5 ) )
         # database.registerVar( Variable(shortname = "Lep1Origin", latexname = "truthOrigin^{lep}", ntuplename = "lep_truthOrigin_1", bins = 41, minval = -0.5, maxval = 40.5 ) )
         # database.registerVar( Variable(shortname = 'Lep1Type_VS_Lep1Origin', latexnameX = 'truthType^{lep}', latexnameY = 'truthOrigin^{lep}', ntuplename = "lep_truthOrigin_1:lep_truthType_1", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_NJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_NBJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{b-tags}', ntuplename = "nJets_OR_T_MV2c10_70:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 4, minvalY = -0.5, maxvalY = 3.5, typeval = TH2D) )
-        database.registerVar( Variable(shortname = 'Lep1Origin_VS_Lep1Pt', latexnameX = 'truthOrigin^{lep}', latexnameY = 'p_{T}^{lep}', ntuplename = "lep_Pt_1/1e3:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[10,15,20,26,35,60,210], typeval = TH2D) )
+        database.registerVar( Variable(shortname = 'Lep1Origin_VS_Lep1Pt', latexnameX = 'truthOrigin^{lep}', latexnameY = 'p_{T}^{lep}', ntuplename = "lep_Pt_1/1e3:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=manualbins_el_fake_pt, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_Lep1Eta', latexnameX = 'truthOrigin^{lep}', latexnameY = '#eta^{lep}', ntuplename = "TMath::Abs(lep_Eta_1):lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0.0,0.1,0.7,1.3,1.9,2.5], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_Lep1EtaBE2', latexnameX = 'truthOrigin^{lep}', latexnameY = '#eta^{lep}', ntuplename = "TMath::Abs(lep_EtaBE2_1):lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0.0,0.5,0.8,1.37,1.52,2.0,2.6], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep1Origin_VS_Lep1DistanceClosestJet', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(lep, closest jet)', ntuplename = "lep_deltaRClosestJet_1:lep_truthOrigin_1", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0,0.75,1.5,3,5], typeval = TH2D) )
@@ -1318,7 +1320,7 @@ if __name__ == "__main__":
         # database.registerVar( Variable(shortname = 'Lep2Type_VS_Lep2Origin', latexnameX = 'truthType^{lep}', latexnameY = 'truthOrigin^{lep}', ntuplename = "lep_truthOrigin_2:lep_truthType_2", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_NJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{jets}', ntuplename = "nJets_OR_T:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 10, minvalY = -0.5, maxvalY = 9.5, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_NBJets', latexnameX = 'truthOrigin^{lep}', latexnameY = 'N_{b-tags}', ntuplename = "nJets_OR_T_MV2c10_70:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, binsY = 4, minvalY = -0.5, maxvalY = 3.5, typeval = TH2D) )
-        database.registerVar( Variable(shortname = 'Lep2Origin_VS_Lep2Pt', latexnameX = 'truthOrigin^{lep}', latexnameY = 'p_{T}^{lep}', ntuplename = "lep_Pt_2/1e3:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[10,15,20,26,35,60,210], typeval = TH2D) )
+        database.registerVar( Variable(shortname = 'Lep2Origin_VS_Lep2Pt', latexnameX = 'truthOrigin^{lep}', latexnameY = 'p_{T}^{lep}', ntuplename = "lep_Pt_2/1e3:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=manualbins_el_fake_pt, typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_Lep2Eta', latexnameX = 'truthOrigin^{lep}', latexnameY = '#eta^{lep}', ntuplename = "TMath::Abs(lep_Eta_2):lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0.0,0.1,0.7,1.3,1.9,2.5], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_Lep2EtaBE2', latexnameX = 'truthOrigin^{lep}', latexnameY = '#eta^{lep}', ntuplename = "TMath::Abs(lep_EtaBE2_2):lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0.0,0.5,0.8,1.37,1.52,2.0,2.6], typeval = TH2D) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_Lep2DistanceClosestJet', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(lep, closest jet)', ntuplename = "lep_deltaRClosestJet_2:lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=[0,0.75,1.5,3,5], typeval = TH2D) )
@@ -1331,33 +1333,33 @@ if __name__ == "__main__":
         database.registerCut( Cut('2Lep_Lep1_MuFake', '( TMath::Abs( lep_ID_1 ) == 13 && !lep_isPrompt_v2_1 )') )
         database.registerCut( Cut('3Lep_Lep2_MuFake', '( TMath::Abs( lep_ID_2 ) == 13 && !lep_isPrompt_v2_2 )') )
 
-        cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_TRUTH_QMisIDVeto','TT'] # Leave Njet cut out
+        cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_TRUTH_QMisIDVeto','TT'] # Leave NJets cut out
         common_cuts_2Lep = database.getCuts(cc_2Lep_list)
 
         cc_3Lep_list = ['TrigDec','BlindingCut','3Lep_pT','3Lep_TrigMatch','3Lep_NLep','3Lep_Charge','3Lep_TT','TauVeto','3Lep_ZVeto','3Lep_MinZCut','3Lep_ZllGammaVeto','3Lep_NJets']
         common_cuts_3Lep = database.getCuts(cc_3Lep_list)
 
         basename = "FakeOriginFrac_"
-        # database.registerCategory( MyCategory("El"+basename+"2LSS_ALLNJ_VR_TT",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_MinNJet']), weight = weight_SR_CR ) )
-        # database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR']), weight = weight_SR_CR ) )
-        # database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT",        cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR']), weight = weight_SR_CR ) )
-        # database.registerCategory( MyCategory("El"+basename+"3L_SR_TT",          cut = common_cuts_3Lep & database.getCut('3Lep_Lep2_ElFake'), weight = weight_SR_CR ) )
-        # # Split the 2L category into ee, OF
-        # database.registerCategory( MyCategory("El"+basename+"2LSS_ALLNJ_VR_TT_ElEl",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_MinNJet','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
-        # database.registerCategory( MyCategory("El"+basename+"2LSS_ALLNJ_VR_TT_OF",    cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_MinNJet','2Lep_OF_Event']), weight = weight_SR_CR ) )
-        # database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT_ElEl",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
-        # database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT_OF",    cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_OF_Event']), weight = weight_SR_CR ) )
-        # database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT_ElEl",        cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
-        # database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT_OF",          cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR','2Lep_OF_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_ALLNJ_VR_TT",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_MinNJet']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT",        cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"3L_SR_TT",          cut = common_cuts_3Lep & database.getCut('3Lep_Lep2_ElFake'), weight = weight_SR_CR ) )
+        # Split the 2L category into ee, OF
+        database.registerCategory( MyCategory("El"+basename+"2LSS_ALLNJ_VR_TT_ElEl",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_MinNJet','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_ALLNJ_VR_TT_OF",    cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_MinNJet','2Lep_OF_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT_ElEl",  cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_LOWNJ_VR_TT_OF",    cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_OF_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT_ElEl",        cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+        database.registerCategory( MyCategory("El"+basename+"2LSS_SR_TT_OF",          cut = common_cuts_2Lep & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR','2Lep_OF_Event']), weight = weight_SR_CR ) )
         # Split the 2L category into ee, OF, 1bjet, >= 2 bjet
-        cc_2Lep_list_1BJET = [ cut.replace('2Lep_NBJet_SR','2Lep_1BJet') for cut in cc_2Lep_list ]
-        cc_2Lep_list_2BJET = [ cut.replace('2Lep_NBJet_SR','2Lep_2BJet') for cut in cc_2Lep_list ]
-        common_cuts_2Lep_1BJET = database.getCuts(cc_2Lep_list_1BJET)
-        common_cuts_2Lep_2BJET = database.getCuts(cc_2Lep_list_2BJET)
-        database.registerCategory( MyCategory("El"+basename+"2LSS_1BJET_LOWNJ_VR_TT_ElEl",        cut = common_cuts_2Lep_1BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
-        database.registerCategory( MyCategory("El"+basename+"2LSS_1BJET_LOWNJ_VR_TT_OF",          cut = common_cuts_2Lep_1BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_OF_Event']), weight = weight_SR_CR ) )
-        database.registerCategory( MyCategory("El"+basename+"2LSS_2BJET_LOWNJ_VR_TT_ElEl",        cut = common_cuts_2Lep_2BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
-        database.registerCategory( MyCategory("El"+basename+"2LSS_2BJET_LOWNJ_VR_TT_OF",          cut = common_cuts_2Lep_2BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_OF_Event']), weight = weight_SR_CR ) )
+        # cc_2Lep_list_1BJET = [ cut.replace('2Lep_NBJet_SR','2Lep_1BJet') for cut in cc_2Lep_list ]
+        # cc_2Lep_list_2BJET = [ cut.replace('2Lep_NBJet_SR','2Lep_2BJet') for cut in cc_2Lep_list ]
+        # common_cuts_2Lep_1BJET = database.getCuts(cc_2Lep_list_1BJET)
+        # common_cuts_2Lep_2BJET = database.getCuts(cc_2Lep_list_2BJET)
+        # database.registerCategory( MyCategory("El"+basename+"2LSS_1BJET_LOWNJ_VR_TT_ElEl",        cut = common_cuts_2Lep_1BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+        # database.registerCategory( MyCategory("El"+basename+"2LSS_1BJET_LOWNJ_VR_TT_OF",          cut = common_cuts_2Lep_1BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_OF_Event']), weight = weight_SR_CR ) )
+        # database.registerCategory( MyCategory("El"+basename+"2LSS_2BJET_LOWNJ_VR_TT_ElEl",        cut = common_cuts_2Lep_2BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
+        # database.registerCategory( MyCategory("El"+basename+"2LSS_2BJET_LOWNJ_VR_TT_OF",          cut = common_cuts_2Lep_2BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_CR','2Lep_OF_Event']), weight = weight_SR_CR ) )
         # database.registerCategory( MyCategory("El"+basename+"2LSS_1BJET_SR_TT_ElEl",              cut = common_cuts_2Lep_1BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
         # database.registerCategory( MyCategory("El"+basename+"2LSS_1BJET_SR_TT_OF",                cut = common_cuts_2Lep_1BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR','2Lep_OF_Event']), weight = weight_SR_CR ) )
         # database.registerCategory( MyCategory("El"+basename+"2LSS_2BJET_SR_TT_ElEl",              cut = common_cuts_2Lep_2BJET & database.getCuts(['2Lep_Lep1_ElFake','2Lep_NJet_SR','2Lep_ElEl_Event']), weight = weight_SR_CR ) )
