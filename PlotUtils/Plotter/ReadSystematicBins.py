@@ -218,47 +218,29 @@ def sumQuadrature ( inlist ):
     return math.sqrt(sq)
 
 
-def getTotFakeUncertainty( nominal, stat, flav, debug=False ):
+def getTotFakeUncertainty( nominal, stat, flav, var, debug=False ):
 
     non_closure_vals = {}
 
     if "HIGHNJ" in args.channel:
 
-        # non_closure_vals["MuMu"] = 0.0461 # Updated on v27
-        # non_closure_vals["OF"]   = 0.1316 # Updated on v27
-        # non_closure_vals["ElEl"] = 0.1711 # Updated on v27
-
-        # non_closure_vals["MuMu"] = 0.003 # Updated on v28
-        # if args.paramFakeEl == "Pt":
-        #     non_closure_vals["OF"]   = 0.2146 # Updated on v28
-        #     non_closure_vals["ElEl"] = 0.3425 # Updated on v28
-        # elif args.paramFakeEl == "NBJets_VS_Pt":
-        #     non_closure_vals["OF"]   = 0.1784 # Updated on v28
-        #     non_closure_vals["ElEl"] = 0.2712 # Updated on v28
-
-        non_closure_vals["MuMu"] = 0.0    # Updated on v28
-        non_closure_vals["OF"]   = 0.1272 # Updated on v28
-        non_closure_vals["ElEl"] = 0.2215 # Updated on v28
+        non_closure_vals["MuMu"]      = 0.0   # Updated on v28 (quote the uncertainty the N.C. effective bias)
+        non_closure_vals["OF"]        = 0.133 # Updated on v28 (quote the uncertainty the N.C. effective bias)
+        # non_closure_vals["ElEl"]      = 0.275 # Updated on v28 (quote the uncertainty the N.C. effective bias)
+        # non_closure_vals["Inclusive"] = 0.112 # Updated on v28 (quote the uncertainty the N.C. effective bias)
+        non_closure_vals["ElEl"]      = 0.107  # Updated on v28 - electron fake rate rescaled by ee/OF photon conv fraction (quote the uncertainty on the N.C.)
+        non_closure_vals["Inclusive"] = 0.071  # Updated on v28 - electron fake rate rescaled by ee/OF photon conv fraction (quote the uncertainty on the N.C.)
 
     elif "LOWNJ" in args.channel:
 
-        # non_closure_vals["MuMu"] = 0.0281 # Updated on v27
-        # non_closure_vals["OF"]   = 0.0481 # Updated on v27
-        # non_closure_vals["ElEl"] = 0.0208 # Updated on v27
+        non_closure_vals["MuMu"]      = 0.0  # Updated on v28 (quote the uncertainty the N.C. effective bias)
+        non_closure_vals["OF"]        = 0.02 # Updated on v28 (quote the uncertainty the N.C. effective bias)
+        # non_closure_vals["ElEl"]      = 0.28 # Updated on v28 (quote the uncertainty the N.C. effective bias)
+        # non_closure_vals["Inclusive"] = 0.08 # Updated on v28 (quote the uncertainty the N.C. effective bias)
+        non_closure_vals["ElEl"]      = 0.095 # Updated on v28 - electron fake rate rescaled by ee/OF photon conv fraction (quote the uncertainty on the N.C.)
+        non_closure_vals["Inclusive"] = 0.062 # Updated on v28 - electron fake rate rescaled by ee/OF photon conv fraction (quote the uncertainty on the N.C.)
 
-        # non_closure_vals["MuMu"] = 0.0289 # Updated on v28
-        # if args.paramFakeEl == "Pt":
-        #     non_closure_vals["OF"]   = 0.0568 # Updated on v28
-        #     non_closure_vals["ElEl"] = 0.2730 # Updated on v28
-        # elif args.paramFakeEl == "NBJets_VS_Pt":
-        #     non_closure_vals["OF"]   = 0.0499 # Updated on v28
-        #     non_closure_vals["ElEl"] = 0.2657 # Updated on v28
-
-        non_closure_vals["MuMu"] = 0.0492 # Updated on v28
-        non_closure_vals["OF"]   = 0.0877 # Updated on v28
-        non_closure_vals["ElEl"] = 0.2950 # Updated on v28
-
-    if flav == "Inclusive" :
+    if ( flav == "Inclusive" and var == "LepFlavours" ):
         non_closure ={"MuMu":non_closure_vals["MuMu"] * nominal, "OF":non_closure_vals["OF"] * nominal, "ElEl":non_closure_vals["ElEl"] * nominal}
     else:
         non_closure = non_closure_vals[flav] * nominal
@@ -313,7 +295,7 @@ def getTotFakeUncertainty( nominal, stat, flav, debug=False ):
 
     if not args.closure:
 
-        if not flav == "Inclusive":
+        if not ( flav == "Inclusive" and var == "LepFlavours" ):
             print("")
             for bin, list_unc in g_unc_bins.iteritems():
                 g_sq_unc_bins[bin] = sumQuadrature( [x[0] for x in list_unc] + [ non_closure_vals[flav] * g_content_bins[bin] ] )
@@ -387,7 +369,7 @@ def saveSystHistogram( flav, var, nominalhist, tot_syst ):
     highest_edge = nominalhist.GetXaxis().GetBinUpEdge(nominalhist.GetNbinsX())
 
     if nominalhist.GetSize() != len(g_unc_bins_NO_STAT):
-        sys.exit("ERROR: nominal hist nbins: {0}, g_unc_bins_NO_STAT size: {1}".format(nbins,len(g_unc_bins_NO_STAT)))
+        os.sys.exit("ERROR: nominal hist nbins: {0}, g_unc_bins_NO_STAT size: {1}".format(nbins,len(g_unc_bins_NO_STAT)))
 
     sysstack = THStack("fakessys_stack_"+flav+"_"+var,"AllSys;"+nominalhist.GetXaxis().GetTitle()+";Sys. [%]")
 
@@ -1428,35 +1410,6 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     SF_err.SetFillStyle(3356)
     SF_err.SetMarkerSize(0)
 
-    # # Trick to rescale ratio pad
-
-    # ymax_ratio = SF.GetMaximum()
-    # ymin_ratio = SF.GetMinimum()
-
-    # #print("FLAV: {0} - MC/MM max = {1:.2f} - MC/MM min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
-
-    # # For ratio error, get the bin with maximum uncertainty and the uncertainty value
-
-    # max_unc = 0
-    # for ibin in range(1, ratio_err.GetNbinsX()+1):
-    #     this_unc = ratio_err.GetBinError(ibin)
-    #   	if this_unc > max_unc:
-    #         max_unc = this_unc
-
-    # #print("FLAV: {0} - max unc./2 ratio = {1:.2f}".format(flav,max_unc/2.0))
-
-    # if ( 1 + max_unc/2.0 ) > ymax_ratio:
-    # 	ymax_ratio = 1 + max_unc/2.0
-    # if ( 1 - max_unc/2.0 ) < ymin_ratio:
-    # 	ymin_ratio = 1 - max_unc/2.0
-
-    # if ymin_ratio < 0: ymin_ratio = 0
-
-    # #print("FLAV: {0} - actual max = {1:.2f} - actual min = {2:.2f}".format(flav,ymax_ratio,ymin_ratio))
-
-    # ratio_err.SetMaximum( ymax_ratio * 1.2 )
-    # ratio_err.SetMinimum( ymin_ratio * 0.8 )
-
     # --------------------------
 
     pad1.cd()
@@ -1728,17 +1681,16 @@ if __name__ == '__main__':
     if not inputpath.endswith('/'):
          inputpath += '/'
 
-    # var_list = []
     var_list = [
-        # "Integral",
-        # "deltaRLep0Lep1",
-        # "deltaPhiLep0Lep1",
-        # "MET_FinalTrk",
-        # "Mll01_inc",
+        "Integral",
+        "deltaRLep0Lep1",
+        "deltaPhiLep0Lep1",
+        "MET_FinalTrk",
+        "Mll01_inc",
         # # "TotLepCharge",
-        # "NBJets",
-        # "NJets2j3j",
-        # "NJets4j",
+        "NBJets",
+        "NJets2j3j",
+        "NJets4j",
         #
         # "LepFlavours",
         #
@@ -1749,28 +1701,32 @@ if __name__ == '__main__':
         # "Lep1Eta",
         # "Lep0EtaBE2",
         # "Lep1EtaBE2",
+        # "Lep0DeltaRClosestJet",
+        # "Lep0DeltaRClosestJet_Rebinned",
+        # "Lep1DeltaRClosestJet",
+        # "Lep1DeltaRClosestJet_Rebinned",
         #
-        # "Mu0Pt",
-        # "Mu1Pt",
-        # "Mu0Eta",
-        # "Mu1Eta",
-        # "Mu0DeltaRClosestJet",
-        # "Mu1DeltaRClosestJet",
-        # "El0Pt",
-        # "El1Pt",
-        # "El0Eta",
-        # "El1Eta",
-        # "El0DeltaRClosestJet",
-        # "El1DeltaRClosestJet",
+        "Mu0Pt",
+        "Mu1Pt",
+        "Mu0Eta",
+        "Mu1Eta",
+        "Mu0DeltaRClosestJet",
+        "Mu1DeltaRClosestJet",
+        "El0Pt",
+        "El1Pt",
+        "El0Eta",
+        "El1Eta",
+        "El0DeltaRClosestJet",
+        "El1DeltaRClosestJet",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",
-        "NN_ttV",
-        "NN_top",
-        "RNN_ttV",
-        "RNN_top",
-        "NNComb",
-        "RNNComb",
+        # "NN_ttV",
+        # "NN_top",
+        # "RNN_ttV",
+        # "RNN_top",
+        # "NNComb",
+        # "RNNComb",
         ]
 
     if args.variables:
@@ -1886,7 +1842,7 @@ if __name__ == '__main__':
                     print("\tsys: {0}, sysgroup: {1}\n".format(sys, sysgroup))
                 fakes, fakes_stat_err = getYields(fakes_nominal,fakes_up,fakes_dn, sys, sysgroup, debug=args.debug)
 
-    	    fakes_tot_err, fakes_tot_err_NO_STAT = getTotFakeUncertainty( fakes, fakes_stat_err, flav, debug=args.debug )
+    	    fakes_tot_err, fakes_tot_err_NO_STAT = getTotFakeUncertainty( fakes, fakes_stat_err, flav, var_name, debug=args.debug )
 
             saveSystHistogram(flav,var_name,fakes_nominal,fakes_tot_err_NO_STAT)
 
@@ -1912,13 +1868,11 @@ if __name__ == '__main__':
                 print("\n\t======================================================================\n")
                 print("\tCategory : {0} - Channel : {1}\n".format(flav,args.channel))
     		print("\tSF (ttbar/MM fakes) = {0:.4f} +- {1:.4f}".format(SF,SF_err))
-                if "HIGHNJ" in args.channel:
-                    print("\t                    = {0:.4f} +- {1:.4f} [%] (UNCORR. UNC.)".format(SF,SF_err_uncorr))
+                print("\t                    = {0:.4f} +- {1:.4f} [%] (UNCORR. UNC.)".format(SF,SF_err_uncorr))
     		print("\tNon-closure (1-SF) = {0:.2f} +- {1:.2f} [%]".format(non_closure,non_closure_err))
-                if "HIGHNJ" in args.channel:
-                    print("\t                   = {0:.2f} +- {1:.2f} [%] (UNCORR. UNC.)".format(non_closure,non_closure_err_uncorr))
-                    effective_closure = max( 0, abs(non_closure) - non_closure_err_uncorr )
-                    print("\tEFFECTIVE Non-closure ( max(0,|NC|-NC_err) ) = {0:.2f} [%]".format(effective_closure))
+                print("\t                   = {0:.2f} +- {1:.2f} [%] (UNCORR. UNC.)".format(non_closure,non_closure_err_uncorr))
+                effective_closure = max( 0, abs(non_closure) - non_closure_err_uncorr )
+                print("\tEFFECTIVE Non-closure ( max(0,|NC|-NC_err_uncorr) ) = {0:.2f} [%]".format(effective_closure))
                 print("\n\t======================================================================\n")
 
             else:

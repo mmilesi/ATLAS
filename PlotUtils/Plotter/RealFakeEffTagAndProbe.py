@@ -1251,8 +1251,9 @@ class RealFakeEffTagAndProbe:
 
                     if not args.do3L:
                         print("\n\tRescaling 2L efficiency w/ key: {0} by the relative ee/OF photon conversion fraction\n".format(key_heff))
-                        # Inclusive Nbjets
-                        alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
+                        # Inclusive NBJets
+                        # alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
+                        alpha = [(1, 0.0), (2, 0.256), (3, 0.0)]
                         # Nbjet = 1
                         # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
                         # Nbjet = 2
