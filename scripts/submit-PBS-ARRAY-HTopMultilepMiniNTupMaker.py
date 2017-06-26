@@ -10,8 +10,8 @@ import glob, os, sys, subprocess, shutil, string, argparse
 
 parser = argparse.ArgumentParser(description="PBS NTup skimming submission script for HTopMultilepAnalysis. Will submit a single main PBS job made up of an array of subjobs, one for each sample ID.")
 
-parser.add_argument("--prod_ID", dest="prod_ID", action="store", default="25ns_v19", type=str,
-                    help="The NTup production tag, e.g. 25ns_v19, 25ns_v24/02, ...  (default: prod_ID=25ns_v19)")
+parser.add_argument("--prod_ID", dest="prod_ID", action="store", default="25ns_v29/01", type=str,
+                    help="The NTup production tag, e.g. 25ns_v19, 25ns_v24/02, ...  (default: prod_ID=25ns_v29/01)")
 parser.add_argument("--nevents", dest="nevents", action="store", default=0, type=int,
                     help="The number of events to run on (default: nevents=0 [ALL])")
 parser.add_argument("--release", dest="release", action="store", default="2.4.22", type=str,
@@ -20,6 +20,8 @@ parser.add_argument("--treename", dest="treename", action="store", default="nomi
                     help="The input TTree name (default: treename=\"nominal\")")
 parser.add_argument("--queue", dest="queue", action="store", default="long", type=str,
                     help="The PBS batch queue type to be used (\"short\",\"long\", default: queue=\"long\")")
+parser.add_argument("-f","--forcetarball", dest="forcetarball", action="store_true", default=False,
+                    help="Force recreation of package tarball")
 parser.add_argument("--tag", dest="tag", action="store", default=None, type=str,
                     help="Add a tag identifier to the submission directory and the destination directory (default: None)")
 parser.add_argument("--showsamples", dest="showsamples", action="store", const="-1", default=None, type=str, nargs='?',
@@ -540,7 +542,7 @@ exit 0
 "364213",
 "364214",
 "364215",
-# "410000",
+"410000",
 "410011",
 "410012",
 "410013",
@@ -559,8 +561,10 @@ exit 0
 "410219",
 "410220",
 "410501",
-# "410502",
 "410503",
+"410250",
+"410251",
+"410252",
     ]
 
     if args.showsamples:
@@ -579,10 +583,7 @@ exit 0
     treename = args.treename
     queue    = args.queue
     tag      = args.tag
-    if tag:
-	tag = "_" + tag
-    else:
-        tag = ""
+    tag = "_" + tag if tag else ""
 
     # Set the job parameters
 
@@ -601,7 +602,7 @@ exit 0
 
     # Copying source code onto the submission node, and cd in there
 
-    copy_source(subdir = job_params["subdir"], force = False)
+    copy_source(subdir=job_params["subdir"], force=args.forcetarball)
 
     print("cd'ing to submission directory:\n{0}".format(job_params["subdir"]))
     os.chdir(os.path.abspath(job_params["subdir"]))
