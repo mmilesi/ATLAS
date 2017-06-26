@@ -527,3 +527,4 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 410188,Background,158.82,1.0,1.1484,Sherpa_NNPDF30NNLO_ttbar_SingleLeptonM_MEPS_NLO,tops,ttbar_SingleLeptonM_MEPS_NLO
 410189,Background,76.333,1.0,1.1484,Sherpa_NNPDF30NNLO_ttbar_dilepton_MEPS_NLO,tops,ttbar_dilepton_MEPS_NLO
 410500,Background,730.28,0.543,1.139,PowhegPythia8EvtGen_A14_ttbar_hdamp172p5_nonallhad,tops,PowhegPythia8EvtGen_ttbar_nonallhad
+410502,Background,249.81,1.5216,1.0,PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_allhad,tops,ttbar_allhad_Pythia8
