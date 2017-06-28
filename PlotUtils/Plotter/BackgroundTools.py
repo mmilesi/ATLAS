@@ -185,7 +185,10 @@ class Inputs:
     def getSysIndexes(self, sampleID, branchID):
 
         if sampleID:
-            sampletree = self.getTree(sampleid=sampleID)
+            if sampleID == "fakes_mm":
+                sampletree = self.getTree(group='Data',subgroup='fakes_mm')
+            else:
+                sampletree = self.getTree(sampleid=sampleID)
         else:
             sampletree = self.getTree(group='Data',subgroup='physics_Main')
 

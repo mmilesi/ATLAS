@@ -166,6 +166,9 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 410251,Background,158.99,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonM_MEPS_NLO,tops,ttbar_SingleLeptonM_MEPS_NLO
 410252,Background,76.317,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_dilepton_MEPS_NLO,tops,ttbar_dilepton_MEPS_NLO
 410082,Background,2.982,1.9,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttgamma_noallhad,tops_MMClosure,ttgamma
+410082,Background,2.982,1.9,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttgamma_noallhad_vPP6,tops_MMClosure,ttgamma_vPP6
+410082,Background,2.982,1.9,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttgamma_noallhad_vSherpa,tops_MMClosure,ttgamma_vSherpa
+410000,Background,696.12,1.1949,0.543,PowhegPythiaEvtGen_P2012_ttbar_hdamp172p5_nonallhad,tops_MMClosure,ttbar_nonallhad
 410501,Background,396.49,1.1391,1.0,PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_nonallhad,tops_MMClosure,ttbar_nonallhad_Pythia8
 410250,Background,158.94,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonP_MEPS_NLO,tops_MMClosure,ttbar_SingleLeptonP_MEPS_NLO
 410251,Background,158.99,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonM_MEPS_NLO,tops_MMClosure,ttbar_SingleLeptonM_MEPS_NLO

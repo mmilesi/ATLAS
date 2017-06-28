@@ -222,23 +222,31 @@ def getTotFakeUncertainty( nominal, stat, flav, var, debug=False ):
 
     non_closure_vals = {}
 
-    if "HIGHNJ" in args.channel:
+    # Option A: N.C as the effective bias max(0,|N.C.|-N.C.err)
+    # Option B: N.C. as error on SF
+    # Option C: N.C. as error on SF (different value for ee than optB)
 
-        non_closure_vals["MuMu"]      = 0.0   # Updated on v28 (quote the uncertainty the N.C. effective bias)
-        non_closure_vals["OF"]        = 0.133 # Updated on v28 (quote the uncertainty the N.C. effective bias)
-        # non_closure_vals["ElEl"]      = 0.275 # Updated on v28 (quote the uncertainty the N.C. effective bias)
-        # non_closure_vals["Inclusive"] = 0.112 # Updated on v28 (quote the uncertainty the N.C. effective bias)
-        non_closure_vals["ElEl"]      = 0.107  # Updated on v28 - electron fake rate rescaled by ee/OF photon conv fraction (quote the uncertainty on the N.C.)
-        non_closure_vals["Inclusive"] = 0.071  # Updated on v28 - electron fake rate rescaled by ee/OF photon conv fraction (quote the uncertainty on the N.C.)
+    optA = False
+    optB = False
+    optC = True
 
-    elif "LOWNJ" in args.channel:
+    preMVA = "HIGHNJ" in args.channel
 
-        non_closure_vals["MuMu"]      = 0.0  # Updated on v28 (quote the uncertainty the N.C. effective bias)
-        non_closure_vals["OF"]        = 0.02 # Updated on v28 (quote the uncertainty the N.C. effective bias)
-        # non_closure_vals["ElEl"]      = 0.28 # Updated on v28 (quote the uncertainty the N.C. effective bias)
-        # non_closure_vals["Inclusive"] = 0.08 # Updated on v28 (quote the uncertainty the N.C. effective bias)
-        non_closure_vals["ElEl"]      = 0.095 # Updated on v28 - electron fake rate rescaled by ee/OF photon conv fraction (quote the uncertainty on the N.C.)
-        non_closure_vals["Inclusive"] = 0.062 # Updated on v28 - electron fake rate rescaled by ee/OF photon conv fraction (quote the uncertainty on the N.C.)
+    if optA:
+        non_closure_vals["MuMu"]      = 0.0   if preMVA else 0.0  # Updated on v28
+        non_closure_vals["OF"]        = 0.133 if preMVA else 0.02 # Updated on v28
+        non_closure_vals["ElEl"]      = 0.275 if preMVA else 0.28 # Updated on v28
+        non_closure_vals["Inclusive"] = 0.112 if preMVA else 0.08 # Updated on v28
+    if optB:
+        non_closure_vals["MuMu"]      = 0.099 if preMVA else 0.095 # Updated on v28
+        non_closure_vals["OF"]        = 0.089 if preMVA else 0.073 # Updated on v28
+        non_closure_vals["ElEl"]      = 0.153 if preMVA else 0.137 # Updated on v28
+        non_closure_vals["Inclusive"] = 0.112 if preMVA else 0.062 # Updated on v28
+    if optC:
+        non_closure_vals["MuMu"]      = 0.099 if preMVA else 0.095 # Updated on v28
+        non_closure_vals["OF"]        = 0.089 if preMVA else 0.073 # Updated on v28
+        non_closure_vals["ElEl"]      = 0.107 if preMVA else 0.096 # Updated on v28
+        non_closure_vals["Inclusive"] = 0.112 if preMVA else 0.062 # Updated on v28
 
     if ( flav == "Inclusive" and var == "LepFlavours" ):
         non_closure ={"MuMu":non_closure_vals["MuMu"] * nominal, "OF":non_closure_vals["OF"] * nominal, "ElEl":non_closure_vals["ElEl"] * nominal}
@@ -1683,18 +1691,18 @@ if __name__ == '__main__':
 
     var_list = [
         "Integral",
-        "deltaRLep0Lep1",
-        "deltaPhiLep0Lep1",
-        "MET_FinalTrk",
-        "Mll01_inc",
+        # "deltaRLep0Lep1",
+        # "deltaPhiLep0Lep1",
+        # "MET_FinalTrk",
+        # "Mll01_inc",
         # # "TotLepCharge",
         "NBJets",
-        "NJets2j3j",
-        "NJets4j",
+        # "NJets2j3j",
+        # "NJets4j",
         #
         # "LepFlavours",
         #
-        # "BDTGScore",
+        "BDTGScore",
         # "Lep0Pt",
         # "Lep1Pt",
         # "Lep0Eta",
@@ -1706,18 +1714,18 @@ if __name__ == '__main__':
         # "Lep1DeltaRClosestJet",
         # "Lep1DeltaRClosestJet_Rebinned",
         #
-        "Mu0Pt",
-        "Mu1Pt",
-        "Mu0Eta",
-        "Mu1Eta",
-        "Mu0DeltaRClosestJet",
-        "Mu1DeltaRClosestJet",
-        "El0Pt",
-        "El1Pt",
-        "El0Eta",
-        "El1Eta",
-        "El0DeltaRClosestJet",
-        "El1DeltaRClosestJet",
+        # "Mu0Pt",
+        # "Mu1Pt",
+        # "Mu0Eta",
+        # "Mu1Eta",
+        # "Mu0DeltaRClosestJet",
+        # "Mu1DeltaRClosestJet",
+        # "El0Pt",
+        # "El1Pt",
+        # "El0Eta",
+        # "El1Eta",
+        # "El0DeltaRClosestJet",
+        # "El1DeltaRClosestJet",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",

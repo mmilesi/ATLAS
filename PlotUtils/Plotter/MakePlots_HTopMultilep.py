@@ -848,6 +848,7 @@ if __name__ == "__main__":
         if "INCL_FLAV" in args.channel:
             print("Scheduling variables for {0}".format(args.channel))
             database.registerVar( Variable(shortname = "LepFlavours", latexname = "Lepton flavour (2lSS0#tau)", ntuplename = "dilep_type", bins = 3, minval = 0.5, maxval = 3.5, binlabelsX = {1:"#mu#mu",2:"e#mu",3:"ee"}, sysvar = True) )
+            database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, sysvar = True) )
             if args.useFriendTrees:
                 # database.registerVar( Variable(shortname = "NN_Rebinned", latexname = "NN", ntuplename = "output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
                 # database.registerVar( Variable(shortname = "RNN_Rebinned", latexname = "RNN", ntuplename = "RNN_output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
@@ -1084,7 +1085,7 @@ if __name__ == "__main__":
             efficiencies = ["Real","Fake"]
             variables    = ["Pt","NBJets_VS_Pt","DistanceClosestJet_VS_Pt"]
 
-            sampleID = ""
+            sampleID = "" if not args.readGFW2 else "fakes_mm"
             sys_sources = []
             if not doMMClosureTest:
                 sys_process = "FakesMM"

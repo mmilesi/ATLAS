@@ -1298,6 +1298,7 @@ class TTHBackgrounds(Background):
                 #('tops', 'ttbar_dilep'),
                 #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
                 #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
+                #('tops', 'ttbar_dilepton_MEPS_NLO'),
                          ]
 
             if self.parent.readGFW2:
@@ -1305,6 +1306,12 @@ class TTHBackgrounds(Background):
                 inputgroup = [
                     ('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
                     ('tops_MMClosure', 'ttgamma'),
+                    #('tops_MMClosure', 'ttgamma_vPP6'),
+                    #('tops_MMClosure', 'ttgamma_vSherpa'),
+                    #('tops_MMClosure', 'ttbar_nonallhad'),
+                    #('tops_MMClosure', 'ttbar_SingleLeptonP_MEPS_NLO'),
+                    #('tops_MMClosure', 'ttbar_SingleLeptonM_MEPS_NLO'),
+                    #('tops_MMClosure', 'ttbar_dilepton_MEPS_NLO'),
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
@@ -2225,6 +2232,26 @@ class TTHBackgrounds(Background):
 
             sp = sp_TT + sp_TL + sp_LT + sp_LL
 
+            # Option A: do nothing
+            # Option B: rescale fakes by the non-closure SF in each flavour category (do nothing for mm)
+            # Option C: use a different SF for ee (since there's already a rescaling in the electron fake rate)
+
+            optA = False
+            optB = False
+            optC = True
+
+            SF = 1.0
+            if not optA:
+                if "2Lep_ElEl_Event" in inputcut.cutnamelist:
+                    if optB:
+                        SF = 1.428 if ("2Lep_NJet_SR" in inputcut.cutnamelist) else 1.417
+                    elif optC:
+                        SF = 1.130 if ("2Lep_NJet_SR" in inputcut.cutnamelist) else 1.122
+                elif "2Lep_OF_Event" in inputcut.cutnamelist:
+                    SF = 1.222 if ("2Lep_NJet_SR" in inputcut.cutnamelist) else 1.093
+                print("\nApply SF: {0}\n".format(SF))
+            sp = sp * SF
+
             if debugflag:
                 print(" ")
                 print("{0} ---> Total Fakes = {1:.2f} +- {2:.2f}".format(self.__class__.__name__,sp.numberstats()[0],sp.numberstats()[1]))
@@ -2668,6 +2695,7 @@ class TTHBackgrounds(Background):
                 #('tops', 'ttbar_dilep'),
                 #('tops', 'ttbar_SingleLeptonP_MEPS_NLO'),
                 #('tops', 'ttbar_SingleLeptonM_MEPS_NLO'),
+                #('tops', 'ttbar_dilepton_MEPS_NLO'),
                 ]
 
             if self.parent.readGFW2:
@@ -2675,6 +2703,12 @@ class TTHBackgrounds(Background):
                 inputgroup = [
                     ('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
                     ('tops_MMClosure', 'ttgamma'),
+                    #('tops_MMClosure', 'ttgamma_vPP6'),
+                    #('tops_MMClosure', 'ttgamma_vSherpa'),
+                    #('tops_MMClosure', 'ttbar_nonallhad'),
+                    #('tops_MMClosure', 'ttbar_SingleLeptonP_MEPS_NLO'),
+                    #('tops_MMClosure', 'ttbar_SingleLeptonM_MEPS_NLO'),
+                    #('tops_MMClosure', 'ttbar_dilepton_MEPS_NLO'),
                 ]
 
             print("\n{0}:\n".format(self.__class__.__name__))
