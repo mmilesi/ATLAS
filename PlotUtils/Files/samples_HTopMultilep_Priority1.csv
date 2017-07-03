@@ -165,6 +165,12 @@ ID,category,xsection,kfactor,efficiency,name,group,subgroup
 410250,Background,158.94,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonP_MEPS_NLO,tops,ttbar_SingleLeptonP_MEPS_NLO
 410251,Background,158.99,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonM_MEPS_NLO,tops,ttbar_SingleLeptonM_MEPS_NLO
 410252,Background,76.317,1.1484,1.0,Sherpa_221_NNPDF30NNLO_ttbar_dilepton_MEPS_NLO,tops,ttbar_dilepton_MEPS_NLO
+410276,Background,0.0184,1.0,1.0,aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttee_mll_1_5,tops,ttee_mll
+410277,Background,0.0184,1.0,1.0,aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttmumu_mll_1_5,tops,ttmumu_mll
+410278,Background,0.00197,1.0,1.0,aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_tttautau_mll_1_5,tops,tttautau_mll
+410397,Background,0.1874,1.0,1.0,MadGraphPythia8EvtGen_ttbar_wbee_MEN30LO_A14N23LO,tops,ttbar_wbee
+410398,Background,0.1873,1.0,1.0,MadGraphPythia8EvtGen_ttbar_wbmumu_MEN30LO_A14N23LO,tops,ttbar_wbmumu
+410399,Background,0.01885,1.0,1.0,MadGraphPythia8EvtGen_ttbar_wbtautau_MEN30LO_A14N23LO,tops,ttbar_wbtautau
 410082,Background,2.982,1.9,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttgamma_noallhad,tops_MMClosure,ttgamma
 410082,Background,2.982,1.9,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttgamma_noallhad_vPP6,tops_MMClosure,ttgamma_vPP6
 410082,Background,2.982,1.9,1.0,MadGraphPythia8EvtGen_A14NNPDF23LO_ttgamma_noallhad_vSherpa,tops_MMClosure,ttgamma_vSherpa
