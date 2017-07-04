@@ -1249,50 +1249,65 @@ class RealFakeEffTagAndProbe:
 
                 if "Fake_El_" in key_heff:
 
-                    if not args.do3L:
-                        print("\n\tRescaling 2L efficiency w/ key: {0} by the relative ee/OF photon conversion fraction\n".format(key_heff))
-                        # Inclusive NBJets
-                        # alpha = [(1, 0.0), (2, -0.2), (3, 0.404), (4, 0.358), (5, 0.398), (6, 0.331), (7, 0.0)]
-                        alpha = [(1, 0.0), (2, 0.256), (3, 0.0)]
-                        # Nbjet = 1
-                        # alpha = [(1, 0.0), (2, -0.626), (3, 0.34), (4, 0.491), (5, 0.503), (6, 0.514), (7, 0.0)]
-                        # Nbjet = 2
-                        # alpha = [(1, 0.0), (2, 0.784), (3, 0.201), (4, 0.16), (5, -0.171), (6, -1.0), (7, 0.0)]
-                    else:
-                        print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3LSR/2LCR photon conversion fraction\n".format(key_heff))
-                        # From Chao
-                        alpha = [ (1,0.03398), (2, 0.07693), (3, 0.06985), (4, 0.18956), (5,0.25642), (6,0.0), (7, 0.0) ]
+                    alphas = []
 
-                    key_heff_scaled = "RESCALED_" + key_heff
-                    h_efficiency_scaled = h_efficiency.Clone("RESCALED_"+h_efficiency.GetName())
-                    h_efficiency_scaled_AVG = h_efficiency_AVG.Clone("RESCALED_"+h_efficiency_AVG.GetName())
+                    # PP8
+                    alpha_2L_ee = [(1, 0.0), (2, 0.256), (3, 0.0)]
+                    # PP6
+                    # alpha = [(1, 0.0), (2, 0.662), (3, 0.0)]
+                    # Avg PP8, PP6
+                    # alpha = [(1, 0.0), (2, 0.459), (3, 0.0)]
 
-                    if isinstance(h_efficiency_scaled,TH1D):
+                    alphas.append( ("RESCALED_2L_ee_",alpha_2L_ee) )
 
-                        for bin in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
-                            eff = h_efficiency_scaled.GetBinContent(bin)
-                            sf = alpha[bin-1][1]
-                            eff_scaled = eff
-                            if sf != -1.0:
-                                eff_scaled = eff * ( 1.0 + sf )
-                                h_efficiency_scaled.SetBinContent(bin, eff_scaled)
-                                print("\t\tbin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,1+sf,eff_scaled))
+                    # From Chao
+                    alpha_3L_ee = [(1, 0.0), (2, 0.435), (3, 0.0)]
+                    alpha_3L_OF = [(1, 0.0), (2, 0.223), (3, 0.0)]
 
-                    elif isinstance(h_efficiency_scaled,TH2D):
+                    alphas.append( ("RESCALED_3L_ee_",alpha_3L_ee) )
+                    alphas.append( ("RESCALED_3L_OF_",alpha_3L_OF) )
 
-                        for binx in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
-                            for biny in range(1,h_efficiency_scaled.GetYaxis().GetNbins()+2):
-                                eff = h_efficiency_scaled.GetBinContent(binx,biny)
-                                sf = alpha[biny-1][1]
+                    for a in alphas:
+
+                        tag = a[0]
+                        alpha = a[1]
+
+                        if "2L" in tag:
+                            print("\n\tRescaling 2L efficiency w/ key: {0} by the relative 2Lee/2LOF photon conversion fraction\n".format(key_heff))
+                        elif "3L_ee" in tag:
+                            print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3Lee/2LOF photon conversion fraction\n".format(key_heff))
+                        elif "3L_OF" in tag:
+                            print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3LOF/2LOF photon conversion fraction\n".format(key_heff))
+
+                        key_heff_scaled = tag + key_heff
+                        h_efficiency_scaled = h_efficiency.Clone(tag + h_efficiency.GetName())
+                        h_efficiency_scaled_AVG = h_efficiency_AVG.Clone(tag + h_efficiency_AVG.GetName())
+
+                        if isinstance(h_efficiency_scaled,TH1D):
+
+                            for bin in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
+                                eff = h_efficiency_scaled.GetBinContent(bin)
+                                sf = alpha[bin-1][1]
                                 eff_scaled = eff
                                 if sf != -1.0:
                                     eff_scaled = eff * ( 1.0 + sf )
-                                    h_efficiency_scaled.SetBinContent(binx, biny, eff_scaled)
-                                    print("\t\tbin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,1+sf,eff_scaled))
+                                    h_efficiency_scaled.SetBinContent(bin, eff_scaled)
+                                    print("\t\tbin: {0} - old efficiency : {1:.3f} - scale factor: {2:.3f} - scaled efficiency : {3:.3f}".format(bin,eff,1+sf,eff_scaled))
 
-                    self.histefficiencies[key_heff_scaled] = h_efficiency_scaled
-                    self.histefficiencies[key_heff_scaled+"_AVG"] = h_efficiency_scaled_AVG # TEMP: should scale also this one properly...
+                        elif isinstance(h_efficiency_scaled,TH2D):
 
+                            for binx in range(1,h_efficiency_scaled.GetXaxis().GetNbins()+2):
+                                for biny in range(1,h_efficiency_scaled.GetYaxis().GetNbins()+2):
+                                    eff = h_efficiency_scaled.GetBinContent(binx,biny)
+                                    sf = alpha[biny-1][1]
+                                    eff_scaled = eff
+                                    if sf != -1.0:
+                                        eff_scaled = eff * ( 1.0 + sf )
+                                        h_efficiency_scaled.SetBinContent(binx, biny, eff_scaled)
+                                        print("\t\tbin: ({0},{1}) - old efficiency : {2:.3f} - scale factor: {3:.3f} - scaled efficiency : {4:.3f}".format(binx,biny,eff,1+sf,eff_scaled))
+
+                        self.histefficiencies[key_heff_scaled] = h_efficiency_scaled
+                        self.histefficiencies[key_heff_scaled+"_AVG"] = h_efficiency_scaled_AVG # TEMP: should scale also this one properly...
 
             # Save the efficiencies in the proper dictionaries
 
@@ -1302,8 +1317,9 @@ class RealFakeEffTagAndProbe:
        	    self.tefficiencies[key_teff]            = t_efficiency
 
             print ("\tkey for efficiency: {0}".format(key_heff))
-            if doScaledEff:
-                print ("\tkey for efficiency (scaled): {0}".format(key_heff))
+            if doScaledEff and "Fake_El_" in key_heff:
+                for a in alphas:
+                    print ("\tkey for efficiency (scaled): {0}".format(a[0]+key_heff))
             print ("\tkey for efficiency (AVG): {0}".format(key_heff+"_AVG"))
 
 
@@ -1463,14 +1479,16 @@ class RealFakeEffTagAndProbe:
             if "RAW" in hname:
                 hname = hname.replace("RAW","")
             h.SetName(hname)
-            if args.do3L:
-                h.SetName("3L_"+hname)
+            # if args.do3L:
+            #    h.SetName("3L_"+hname)
 
     	    h.Write()
 
-            if "_El_" in hname:
-                h3L = h.Clone("3L_"+hname)
-                h3L.Write()
+            # Copy the 2L electron efficincies for 3L as well (now 3L uses CFK too)
+
+            # if "_El_" in hname:
+            #     h3L = h.Clone("3L_"+hname)
+            #     h3L.Write()
 
     	    eff=[]
             is2DHist = ( isinstance(h,TH2) )

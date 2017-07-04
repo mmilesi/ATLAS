@@ -29,6 +29,8 @@ if __name__ == '__main__':
         sample_type = "Data"
     elif sample == "304014":
         sample_type = "FastSim_PLICFT"
+    elif sample in ["410276","410277","410278","410397","410398","410399"]:
+        sample_type = "ttll/PLICFT"
     else:
         sample_type = "Nominal_PLICFT"
 

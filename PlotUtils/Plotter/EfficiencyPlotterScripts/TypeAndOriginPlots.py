@@ -306,7 +306,7 @@ def plotOriginVSPt( normFactor=0, **kwargs ):
     variable_2L = "Lep1Origin_VS_Lep1Pt"
     variable_3L = "Lep2Origin_VS_Lep2Pt"
 
-    basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "OutputPlots_FakeOriginFrac_TTBarTTBarGamma_" + kwargs["prodID"]
+    basePath = os.path.abspath(os.curdir) + "/" + "PLOTS_" + kwargs["prodID"] + "/" + "OutputPlots_FakeOriginFrac_TTBarTTBarGamma_" + kwargs["prodID"] + "_vPP6"
 
     pathlist = []
 

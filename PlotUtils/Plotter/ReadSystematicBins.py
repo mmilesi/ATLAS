@@ -1702,7 +1702,7 @@ if __name__ == '__main__':
         #
         # "LepFlavours",
         #
-        "BDTGScore",
+        # "BDTGScore",
         # "Lep0Pt",
         # "Lep1Pt",
         # "Lep0Eta",
