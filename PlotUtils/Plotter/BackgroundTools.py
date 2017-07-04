@@ -553,18 +553,19 @@ class SubProcess:
 
         h = TH1D('NUM'+cachename, 'NUM'+cachename, 1, 0., 2.)
         h.Sumw2()
-        if self.eventweight and  eventweight:
+
+        if self.eventweight and eventweight:
             self.tree.Project('NUM'+cachename, '1.0', '%s * %s * (%s)' % (self.eventweight, eventweight, cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * {4} * ( {5} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, eventweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"1\",\"{1} * {2} * {3} * ( {4} )\")\n".format(self.tree.GetName(), self.baseweight, self.eventweight, eventweight, cutstr))
         elif self.eventweight :
             self.tree.Project('NUM'+cachename, '1.0', '%s * (%s)' % (self.eventweight, cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * ( {4} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"1\",\"{1} * {2} * ( {3} )\")\n".format(self.tree.GetName(), self.baseweight, self.eventweight, cutstr))
         else:
             self.tree.Project('NUM'+cachename, '1.0', '%s' % (cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * ( {3} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"1\",\"{1} * ( {2} )\")\n".format(self.tree.GetName(), self.baseweight, cutstr))
         self.numcache[cachename] = h.GetBinContent(1), h.GetBinError(1)
         del h
 
