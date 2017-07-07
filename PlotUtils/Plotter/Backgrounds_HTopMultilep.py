@@ -10,7 +10,7 @@ sys.path.append(os.path.abspath(os.path.curdir))
 
 from Plotter.BackgroundTools import loadSamples, drawText, Category, Background, Process, VariableDB, Variable, Cut, Systematics, Category
 
-from ROOT import TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kGreen, kAzure, kTeal, kSpring, kOrange, kCyan, TLegend, TLatex, TCanvas, TH1I, TFile
+from ROOT import TColor, kBlack, kWhite, kGray, kBlue, kRed, kYellow, kGreen, kAzure, kTeal, kSpring, kOrange, kCyan, kPink, TLegend, TLatex, TCanvas, TH1I, TFile
 
 class MyCategory(Category):
 
@@ -1361,6 +1361,153 @@ class TTHBackgrounds(Background):
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
             print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+
+            return sp
+
+    class TTBarGammaStarAsymm(Process):
+
+        # Includes the following processes:
+        #
+        # -) tt+(gamma*-->ll), with m(ll) < 5 GeV (very asymmetric pT conversions, not simulated in nominal ttbar sample)
+        #    Here the virtual photon is emitted from ISR or from the tops
+
+        latexname = 't#bar{t}ll (asymm. #gamma*)'
+
+        colour = kPink + 4
+
+        def base(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
+	    inputgroup = [
+                ('tops', 'ttee_mll'),
+                ('tops', 'ttmumu_mll'),
+                ('tops', 'tttautau_mll'),
+                         ]
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
+
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
+            weight = None
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
+
+            if TTcut:
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+
+            return sp
+
+
+    class TTBarWbGammaStar(Process):
+
+        # Includes the following processes:
+        #
+        # -) ttbar+(gamma*-->ll), where the virtual photon is emitted by any of the top decay products (W,b)
+        #    Also these are not simulated by the nominal ttbar sample
+
+        latexname = 't#bar{t} (#rightarrow Wbll)'
+
+        colour = kPink + 10
+
+        def base(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
+	    inputgroup = [
+                ('tops', 'ttbar_wbee'),
+                ('tops', 'ttbar_wbmumu'),
+                ('tops', 'ttbar_wbtautau'),
+                         ]
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+	    print("\n".join("{0} - {1} : {2}".format(idx,sample[0],sample[1]) for idx, sample in enumerate(inputgroup)))
+
+            trees = self.inputs.getTrees(treename, inputgroup)
+            sp = self.subprocess(trees=trees) * self.parent.norm_factor
+            return sp
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
+	    systematics = options.get('systematics', None)
+            direction = options.get('systematicsdirection', 'UP')
+            systname_opts = {}
+            if systematics and systematics.name == 'SystName':
+                systname_opts['systematics'] = True
+                systname_opts['systematicsdirection'] = direction
+            sp = self.base(treename, category, options)
+
+            basecut = category.cut
+
+            if all( c in category.cut.cutname for c in ["2Lep_TRUTH_ProbePromptEvent","2Lep_TRUTH_QMisIDVeto"] ):
+                basecut = basecut.swapCut(self.vardb.getCut('2Lep_TRUTH_ProbePromptEvent'), self.vardb.getCut('2Lep_TRUTH_PurePromptEvent'))
+                basecut = basecut.removeCut(self.vardb.getCut("2Lep_TRUTH_QMisIDVeto"))
+
+            weight = None
+            TTcut  = ('','TT')[any( c == self.parent.channel for c in ['2LSS','3L'] )]
+
+            sp = sp.subprocess(cut=basecut,eventweight=weight)
+
+            if TTcut:
+                sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
+
+            print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+
+            return sp
+
+    class TTBarGammaStar(Process):
+
+        latexname = 't#bar{t}(#gamma*#rightarrow ll)'
+
+        colour = kPink - 4
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+
+            ttbar_asymmconv  = self.parent.procmap['TTBarGammaStarAsymm'](treename, category, options)
+            ttWbll           = self.parent.procmap['TTBarWbGammaStar'](treename, category, options)
+
+            print(" ")
+            print("{0} = {1:.1f}".format("TTBarGammaStarAsymm",(ttbar_asymmconv.numberstats(eventweight=category.weight))[0]))
+            print("{0} = {1:.1f}".format("TTBarWbGammaStar",(ttWbll.numberstats(eventweight=category.weight))[0]))
+
+            sp = ttbar_asymmconv + ttWbll
+            print(" ")
+            print("{0} = {1:.1f}".format("TTBarGammaStar",(sp.numberstats(eventweight=category.weight))[0]))
 
             return sp
 
