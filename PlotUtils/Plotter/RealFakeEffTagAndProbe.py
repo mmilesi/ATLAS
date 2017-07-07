@@ -1584,7 +1584,7 @@ class RealFakeEffTagAndProbe:
 	return scale_dn * ( ymin - shift_dn ), scale_up * ( ymax + shift_up )
 
 
-    def __save1DProjections__( self, var, hist2Dkey, canvasname, savepath ):
+    def __save1DProjections__( self, var, flav, hist2Dkey, canvasname, savepath ):
 
         if "AVG" in hist2Dkey: return
 
@@ -1628,6 +1628,10 @@ class RealFakeEffTagAndProbe:
             if "AVG" in key: continue
             if not "proj" in key: continue # Must consider only projection histograms
             if not all( v in key for v in vars2D ): continue # This projection histogram must come from this input 2D hist
+            if not flav in key: continue
+            if ("RESCALED_2L_ee" in key and not "RESCALED_2L_ee" in hist2Dkey) or (not "RESCALED_2L_ee" in key and "RESCALED_2L_ee" in hist2Dkey): continue
+            if ("RESCALED_3L_ee" in key and not "RESCALED_3L_ee" in hist2Dkey) or (not "RESCALED_3L_ee" in key and "RESCALED_3L_ee" in hist2Dkey): continue
+            if ("RESCALED_3L_OF" in key and not "RESCALED_3L_OF" in hist2Dkey) or (not "RESCALED_3L_OF" in key and "RESCALED_3L_OF" in hist2Dkey): continue
 
             print("\t\tPlotting projection histogram: {0}".format(key))
 
@@ -1666,7 +1670,8 @@ class RealFakeEffTagAndProbe:
 
                 if varlegend == "Pt": varlegend = "p_{T}"
                 if varlegend == "NBJets": varlegend = "N_{b-tags}"
-                if varlegend == "DistanceClosestJet": varlegend = "#Delta R(#mu, closest jet)"
+                greek_flav = "#mu" if flav == "Mu" else "e"
+                if varlegend == "DistanceClosestJet": varlegend = "#Delta R({0}, closest jet)".format(greek_flav)
 
                 if tokens[-1].isdigit():
 
@@ -1701,7 +1706,8 @@ class RealFakeEffTagAndProbe:
 
                 if varlegend == "Pt": varlegend = "p_{T}"
                 if varlegend == "NBJets": varlegend = "N_{b-tags}"
-                if varlegend == "DistanceClosestJet": varlegend = "#Delta R(#mu, closest jet)"
+                greek_flav = "#mu" if flav == "Mu" else "e"
+                if varlegend == "DistanceClosestJet": varlegend = "#Delta R({0}, closest jet)".format(greek_flav)
 
                 if tokens[-1].isdigit():
 
@@ -1765,166 +1771,178 @@ class RealFakeEffTagAndProbe:
         leg_lumi.SetTextSize(0.03)
         leg_lumi.SetNDC()
 
-        for vartokens in self.__variables:
+        for resc in ["","RESCALED_2L_ee","RESCALED_3L_ee","RESCALED_3L_OF"]:
 
-            var = vartokens[0]
+            for vartokens in self.__variables:
 
-            is2DHist = ( "&&" in var )
+                var = vartokens[0]
 
-            if is2DHist:
+                is2DHist = ( "&&" in var )
 
-                for lep in self.__leptons:
+                if is2DHist:
 
-                    legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
-                    legend.SetBorderSize(0)     # no border
-                    legend.SetFillStyle(0)      # Legend transparent background
-                    legend.SetTextSize(0.035)   # Increase entry font size!
-                    #legend.SetTextFont(42)      # Helvetica
+                    for lep in self.__leptons:
 
-                    legend.SetHeader(self.leptons_full[lep])
+                        legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+                        legend.SetBorderSize(0)     # no border
+                        legend.SetFillStyle(0)      # Legend transparent background
+                        legend.SetTextSize(0.035)   # Increase entry font size!
+                        #legend.SetTextFont(42)      # Helvetica
 
-                    for idx_eff, eff in enumerate(self.__efficiencies):
+                        legend.SetHeader(self.leptons_full[lep])
 
-                        c = TCanvas("c_"+lep+"_"+eff,"Efficiencies",50,50,800,600)
+                        for idx_eff, eff in enumerate(self.__efficiencies):
+
+                            c = TCanvas("c_"+lep+"_"+eff,"Efficiencies",50,50,800,600)
+                            c.SetFrameFillColor(0)
+                            c.SetFrameFillStyle(0)
+                            c.SetFrameBorderMode(0)
+
+                            key  = "_".join((eff,lep,var,"Efficiency",proc,"sub"))
+                            if self.closure or self.nosub:
+                                key  = "_".join((eff,lep,var,"Efficiency",proc))
+
+                            if resc:
+                                key = resc + "_" + key
+
+                            hist = self.histefficiencies[key] if self.histefficiencies.get(key) else None
+                            if not hist:
+                                print("\tSkipping key: {0} b/c histogram doesn't exist...".format(key))
+                                continue
+
+                            print("\tPlotting histogram: {0}".format(key))
+
+                            set_fancy_2D_style()
+                            gPad.SetRightMargin(0.2)
+                            hist.Draw("COLZ1 text")
+
+                            # legend.AddEntry(hist,eff+" - "+proc_dict[proc], "P")
+                            # legend.Draw()
+                            leg_ATLAS.DrawLatex(0.2,0.82,"#bf{#it{ATLAS}} Work In Progress");
+                            leg_lumi.DrawLatex(0.2,0.77,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
+
+                            thisvar = var
+                            thisvar = thisvar.replace("&&","_VS_")
+                            canvas_filename = "_".join((eff,lep,thisvar,"Efficiency",proc))
+                            if resc:
+                                canvas_filename = resc + "_" + canvas_filename
+
+                            c.Update()
+
+                            for extension in self.extensionlist:
+                                c.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"."+extension)
+
+                            self.__save1DProjections__(thisvar, lep, key, canvas_filename, savepath)
+
+                            c.Clear()
+                            c_avg = c.Clone(c.GetName()+"_AVG")
+                            hist_avg = self.histefficiencies[key+"_AVG"]
+
+                            set_fancy_2D_style()
+                            gPad.SetRightMargin(0.2)
+                            hist_avg.Draw("COLZ1 text")
+
+                            c_avg.Update()
+
+                            for extension in self.extensionlist:
+                                c_avg.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"_AVG."+extension)
+
+
+                else:
+
+                    for lep in self.__leptons:
+
+                        legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+                        legend.SetBorderSize(0)     # no border
+                        legend.SetFillStyle(0)      # Legend transparent background
+                        legend.SetTextSize(0.035)   # Increase entry font size!
+                        #legend.SetTextFont(42)      # Helvetica
+
+                        legend.SetHeader(self.leptons_full[lep])
+
+                        c = TCanvas("c_"+lep,"Efficiencies")
                         c.SetFrameFillColor(0)
                         c.SetFrameFillStyle(0)
                         c.SetFrameBorderMode(0)
 
-                        key  = "_".join((eff,lep,var,"Efficiency",proc,"sub"))
-                        if self.closure or self.nosub:
-                            key  = "_".join((eff,lep,var,"Efficiency",proc))
+                        for idx_eff, eff in enumerate(self.__efficiencies):
 
-                        hist = self.histefficiencies[key] if self.histefficiencies.get(key) else None
-                        if not hist:
-                            print("\tSkipping key: {0}".format(key))
-                            continue
+                            key  = "_".join((eff,lep,var,"Efficiency",proc,"sub"))
+                            if self.closure or self.nosub:
+                                key  = "_".join((eff,lep,var,"Efficiency",proc))
 
-                        print("\tPlotting histogram: {0}".format(key))
+                            if resc:
+                                key = resc + "_" + key
 
-                        set_fancy_2D_style()
-                        gPad.SetRightMargin(0.2)
-                        hist.Draw("COLZ1 text")
+                            hist     = self.histefficiencies[key] if self.histefficiencies.get(key) else None
+                            hist_AVG = self.histefficiencies[key+"_AVG"] if self.histefficiencies.get(key+"_AVG") else None
+                            if not hist:
+                                print("\tSkipping key: {0} b/c histogram doesn't exist...".format(key))
+                                continue
+                            if not hist_AVG:
+                                print("\tSkipping key: {0} b/c histogram doesn't exist...".format(key+"_AVG"))
+                                continue
 
-                        # legend.AddEntry(hist,eff+" - "+proc_dict[proc], "P")
-                        # legend.Draw()
-                        leg_ATLAS.DrawLatex(0.2,0.82,"#bf{#it{ATLAS}} Work In Progress");
-                        leg_lumi.DrawLatex(0.2,0.77,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
+                            print("\tPlotting histogram: {0}".format(key))
 
-                        thisvar = var
-                        thisvar = thisvar.replace("&&","_VS_")
-                        canvas_filename = "_".join((eff,lep,thisvar,"Efficiency",proc))
+                            hist.GetYaxis().SetRangeUser(0,1)
+                            hist.GetYaxis().SetTitle("#varepsilon")
+                            hist.GetXaxis().SetTitleOffset(1.0)
+                            hist.GetYaxis().SetTitleOffset(1.0)
+                            hist.SetLineStyle(1)
+                            hist.SetMarkerStyle(kCircle)
 
-                        c.Update()
+                            hist_AVG.SetLineStyle(2)
+
+                            if not idx_eff:
+                                hist.SetLineColor(kBlue)
+                                hist_AVG.SetLineColor(kBlue)
+                                hist.SetMarkerColor(kBlue)
+                            else:
+                                hist.SetLineColor(kOrange+7)
+                                hist_AVG.SetLineColor(kOrange+7)
+                                hist.SetMarkerColor(kOrange+7)
+
+                            if not idx_eff:
+                                hist.Draw("E0")
+                                hist_AVG.Draw("HIST SAME")
+                            else:
+                                hist.Draw("E0,SAME")
+                                hist_AVG.Draw("HIST SAME")
+
+                            legend.AddEntry(hist,eff+" - "+proc_dict[proc], "P")
+                            legend.AddEntry(hist_AVG,eff+" - <#varepsilon> - "+proc_dict[proc], "L")
+
+                            if self.triggerEff:
+                                copy_hist_name = hist.GetName()
+                                copy_hist_name = copy_hist_name.replace("Efficiency",self.triggerEff+"_TriggerEfficiency")
+                                copy_hist = hist.Clone(copy_hist_name)
+                                trigeff_file.cd()
+                                copy_hist.Write()
+
+                            if self.probeAssignEff:
+                                copy_hist_name = hist.GetName()
+                                copy_hist_name = copy_hist_name.replace("Efficiency","ProbeAssignEfficiency")
+                                copy_hist = hist.Clone(copy_hist_name)
+                                probeassigneff_file.cd()
+                                copy_hist.Write()
+
+                        legend.Draw()
+                        leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
+                        leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
+
+                        canvas_filename = "_".join(("RealFake",lep,var,"Efficiency",proc))
+                        if resc:
+                            canvas_filename = resc + "_" + canvas_filename
+
+                        if self.triggerEff:
+                            canvas_filename = canvas_filename.replace("Efficiency",self.triggerEff+"_TriggerEfficiency")
+
+                        if self.probeAssignEff:
+                            canvas_filename = canvas_filename.replace("Efficiency","ProbeAssignEfficiency")
 
                         for extension in self.extensionlist:
                             c.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"."+extension)
-
-                        self.__save1DProjections__(thisvar, key, canvas_filename, savepath)
-
-                        c.Clear()
-                        c_avg = c.Clone(c.GetName()+"_AVG")
-                        hist_avg = self.histefficiencies[key+"_AVG"]
-
-                        set_fancy_2D_style()
-                        gPad.SetRightMargin(0.2)
-                        hist_avg.Draw("COLZ1 text")
-
-                        c_avg.Update()
-
-                        for extension in self.extensionlist:
-                            c_avg.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"_AVG."+extension)
-
-
-            else:
-
-                for lep in self.__leptons:
-
-                    legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
-                    legend.SetBorderSize(0)     # no border
-                    legend.SetFillStyle(0)      # Legend transparent background
-                    legend.SetTextSize(0.035)   # Increase entry font size!
-                    #legend.SetTextFont(42)      # Helvetica
-
-                    legend.SetHeader(self.leptons_full[lep])
-
-                    c = TCanvas("c_"+lep,"Efficiencies")
-                    c.SetFrameFillColor(0)
-                    c.SetFrameFillStyle(0)
-                    c.SetFrameBorderMode(0)
-
-                    for idx_eff, eff in enumerate(self.__efficiencies):
-
-                        key  = "_".join((eff,lep,var,"Efficiency",proc,"sub"))
-                        if self.closure or self.nosub:
-                            key  = "_".join((eff,lep,var,"Efficiency",proc))
-
-                        hist     = self.histefficiencies[key] if self.histefficiencies.get(key) else None
-                        hist_AVG = self.histefficiencies[key+"_AVG"] if self.histefficiencies.get(key+"_AVG") else None
-                        if not hist:
-                            print("\tSkipping key: {0}".format(key))
-                            continue
-                        if not hist_AVG:
-                            print("\tSkipping key: {0}".format(key+"_AVG"))
-                            continue
-
-                        print("\tplotting histogram: {0}".format(key))
-
-                        hist.GetYaxis().SetRangeUser(0,1)
-                        hist.GetYaxis().SetTitle("#varepsilon")
-                        hist.GetXaxis().SetTitleOffset(1.0)
-                        hist.GetYaxis().SetTitleOffset(1.0)
-                        hist.SetLineStyle(1)
-                        hist.SetMarkerStyle(kCircle)
-
-                        hist_AVG.SetLineStyle(2)
-
-                        if not idx_eff:
-                            hist.SetLineColor(kBlue)
-                            hist_AVG.SetLineColor(kBlue)
-                            hist.SetMarkerColor(kBlue)
-                        else:
-                            hist.SetLineColor(kOrange+7)
-                            hist_AVG.SetLineColor(kOrange+7)
-                            hist.SetMarkerColor(kOrange+7)
-
-                        if not idx_eff:
-                            hist.Draw("E0")
-                            hist_AVG.Draw("HIST SAME")
-                        else:
-                            hist.Draw("E0,SAME")
-                            hist_AVG.Draw("HIST SAME")
-
-                        legend.AddEntry(hist,eff+" - "+proc_dict[proc], "P")
-                        legend.AddEntry(hist_AVG,eff+" - <#varepsilon> - "+proc_dict[proc], "L")
-
-                        if self.triggerEff:
-                            copy_hist_name = hist.GetName()
-                            copy_hist_name = copy_hist_name.replace("Efficiency",self.triggerEff+"_TriggerEfficiency")
-                            copy_hist = hist.Clone(copy_hist_name)
-                            trigeff_file.cd()
-                            copy_hist.Write()
-
-                        if self.probeAssignEff:
-                            copy_hist_name = hist.GetName()
-                            copy_hist_name = copy_hist_name.replace("Efficiency","ProbeAssignEfficiency")
-                            copy_hist = hist.Clone(copy_hist_name)
-                            probeassigneff_file.cd()
-                            copy_hist.Write()
-
-                    legend.Draw()
-                    leg_ATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress");
-                    leg_lumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.lumi));
-
-                    canvas_filename = "_".join(("RealFake",lep,var,"Efficiency",proc))
-
-                    if self.triggerEff:
-                        canvas_filename = canvas_filename.replace("Efficiency",self.triggerEff+"_TriggerEfficiency")
-
-                    if self.probeAssignEff:
-                        canvas_filename = canvas_filename.replace("Efficiency","ProbeAssignEfficiency")
-
-                    for extension in self.extensionlist:
-                        c.SaveAs(savepath+"/BasicPlots/"+canvas_filename+"."+extension)
 
 
     def plotMakerSys( self ):
