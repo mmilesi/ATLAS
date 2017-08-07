@@ -1703,11 +1703,14 @@ class TTHBackgrounds(Background):
             if self.parent.readGFW2:
                 del inputgroup[:]
                 inputgroup = [
-                    #('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
-                    #('tops_MMClosure', 'ttgamma'),
-                    ('tops_MMClosure', 'ttgamma_vPP6'),
+                    # PP8
+                    ('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
+                    ('tops_MMClosure', 'ttgamma'),
+                    # PP6
+                    #('tops_MMClosure', 'ttgamma_vPP6'),
+                    #('tops_MMClosure', 'ttbar_nonallhad'),
+                    # Sherpa
                     #('tops_MMClosure', 'ttgamma_vSherpa'),
-                    ('tops_MMClosure', 'ttbar_nonallhad'),
                     #('tops_MMClosure', 'ttbar_SingleLeptonP_MEPS_NLO'),
                     #('tops_MMClosure', 'ttbar_SingleLeptonM_MEPS_NLO'),
                     #('tops_MMClosure', 'ttbar_dilepton_MEPS_NLO'),
@@ -1747,6 +1750,9 @@ class TTHBackgrounds(Background):
             sp = sp.subprocess(cut=tt_ttgamma_OLR_cut)
 
             print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
+
+            print(" ")
+            print("{0} = {1:.1f}".format("TTBar",(sp.numberstats(eventweight=category.weight))[0]))
 
             return sp
 
@@ -2635,9 +2641,9 @@ class TTHBackgrounds(Background):
             # Option B: rescale fakes by the non-closure SF in each flavour category (do nothing for mm)
             # Option C: use a different SF for ee (since there's already a rescaling in the electron fake rate)
 
-            optA = False
+            optA = True
             optB = False
-            optC = True
+            optC = False
 
             SF = 1.0
             if not optA:
@@ -3100,11 +3106,14 @@ class TTHBackgrounds(Background):
             if self.parent.readGFW2:
                 del inputgroup[:]
                 inputgroup = [
-                    #('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
-                    #('tops_MMClosure', 'ttgamma'),
-                    ('tops_MMClosure', 'ttgamma_vPP6'),
+                    # PP8
+                    ('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
+                    ('tops_MMClosure', 'ttgamma'),
+                    # PP6
+                    #('tops_MMClosure', 'ttgamma_vPP6'),
+                    #('tops_MMClosure', 'ttbar_nonallhad'),
+                    # Sherpa
                     #('tops_MMClosure', 'ttgamma_vSherpa'),
-                    ('tops_MMClosure', 'ttbar_nonallhad'),
                     #('tops_MMClosure', 'ttbar_SingleLeptonP_MEPS_NLO'),
                     #('tops_MMClosure', 'ttbar_SingleLeptonM_MEPS_NLO'),
                     #('tops_MMClosure', 'ttbar_dilepton_MEPS_NLO'),

@@ -675,7 +675,7 @@ def plotFakeElectron_NonPromptVSPhotonConv():
     p0_props = {
                 "legend"      : "Tag & Probe (OF, #mu tag) - Non prompt",
                 "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.15),
+                "yAxisRange"  : (0.0,0.13),
                 "colour"      : kOrange+10,
                 "lineStyle"   : 1,
                 "lineWidth"   : 2,
@@ -683,30 +683,30 @@ def plotFakeElectron_NonPromptVSPhotonConv():
                 "markerSize"  : 1,
                }
 
-    p0 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v27_v2/OutputPlots_MMClosureRates_25ns_v27_LepFromJets/LeptonEfficiencies.root", p0_props)
+    p0 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_NonPrompt/LeptonEfficiencies.root", p0_props)
 
     plotlist.append(p0)
 
     p1_props = {
                 "legend"      : "Tag & Probe (OF, #mu tag) - #gamma conversion",
                 "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.15),
+                "yAxisRange"  : (0.0,0.13),
                 "colour"      : kYellow,
                 "lineStyle"   : 1,
                 "lineWidth"   : 2,
                 "markerStyle" : 20,
                 "markerSize"  : 1,
-                "markerColour" : kBlack,
+                "markerColour" : kYellow,
                }
 
-    p1 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v27_v2/OutputPlots_MMClosureRates_25ns_v27_PhotonConversions/LeptonEfficiencies.root", p1_props)
+    p1 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_PhotonConv/LeptonEfficiencies.root", p1_props)
 
     plotlist.append(p1)
 
     p2_props = {
-                "legend"      : "Tag & Probe (OF, #mu tag) - Inclusive",
+                "legend"      : "Tag & Probe (OF, #mu tag) - <#varepsilon> (OF, CR)",
                 "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.15),
+                "yAxisRange"  : (0.0,0.13),
                 "colour"      : kBlack,
                 "lineStyle"   : 2,
                 "lineWidth"   : 2,
@@ -714,14 +714,15 @@ def plotFakeElectron_NonPromptVSPhotonConv():
                 "markerSize"  : 1,
                }
 
-    p2 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v27_v2/OutputPlots_MMClosureRates_25ns_v27/LeptonEfficiencies.root", p2_props)
+    #p2 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_FINAL_BINNING_2/LeptonEfficiencies_NewRescaling_12_07_17.root", p2_props) # OPTION F
+    p2 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_FINAL_BINNING_2/LeptonEfficiencies_OPTION_C.root", p2_props) # OPTION C
 
     plotlist.append(p2)
 
     p3_props = {
-                "legend"      : "Tag & Probe (OF, #mu tag) - Inclusive * (1+#alpha)",
+                "legend"      : "Tag & Probe (OF, #mu tag) - <#varepsilon> (ee, SR)",
                 "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.15),
+                "yAxisRange"  : (0.0,0.13),
                 "colour"      : kBlue,
                 "lineStyle"   : 2,
                 "lineWidth"   : 2,
@@ -729,7 +730,8 @@ def plotFakeElectron_NonPromptVSPhotonConv():
                 "markerSize"  : 1,
                }
 
-    p3 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v27_v2/OutputPlots_MMClosureRates_25ns_v27/LeptonEfficiencies_FakeElPtRescaledPhConv.root", p3_props)
+    #p3 = Plot("RESCALED_2L_ee_Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_FINAL_BINNING_2/LeptonEfficiencies_NewRescaling_12_07_17.root", p3_props) # OPTION F
+    p3 = Plot("RESCALED_2L_ee_Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_FINAL_BINNING_2/LeptonEfficiencies_OPTION_C.root", p3_props) # OPTION C
 
     plotlist.append(p3)
 
@@ -745,7 +747,9 @@ def plotFakeElectron_NonPromptVSPhotonConv():
 
     multiP = MultiPlot( plots=plotlist )
 
-    outdir = "./PLOTS_25ns_v27_v2/NonPrompt_VS_PhotonConv_TTBarTTGamma"
+    #outdir = "./PLOTS_25ns_v28/NonPrompt_VS_PhotonConv_TTBarTTGamma_OPTION_F"
+    outdir = "./PLOTS_25ns_v28/NonPrompt_VS_PhotonConv_TTBarTTGamma_OPTION_C"
+
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 

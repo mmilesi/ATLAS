@@ -1259,11 +1259,11 @@ class Background:
                 # soverb.SetMarkerColor(self.style.get('SignalMarkerColour', 2))
                 # soverb.Draw("HIST SAME TEXT0")
                 soverb.SetFillStyle(0)
-                soverb.Draw("HIST SAME")
+                # soverb.Draw("HIST SAME")
                 reflsoverb = TLine(soverb.GetBinLowEdge(1), 1.15, soverb.GetBinLowEdge(soverb.GetNbinsX()+1), 1.15)
                 reflsoverb.SetLineStyle(2)
                 reflsoverb.SetLineColor(kRed)
-                reflsoverb.Draw("SAME")
+                # reflsoverb.Draw("SAME")
             refl = TLine(ratiomc.GetBinLowEdge(1), 1., ratiomc.GetBinLowEdge(ratiomc.GetNbinsX()+1), 1.)
             refl.SetLineStyle(2)
             refl.SetLineColor(kBlack)
@@ -1679,13 +1679,20 @@ def makeMCErrors(hist):
 
     return graph
 
-def integrate(hist):
+def integrate(hist, mergeOverflow = False):
 
     # Get effective integral of input histogram, taking u/oflow into account
 
+    integral = -1
     if isinstance(hist,TH2):
-        return hist.Integral(0,hist.GetXaxis().GetNbins()+1,0,hist.GetYaxis().GetNbins()+1)
-    return hist.Integral(0,hist.GetNbinsX()+1)
+        integral = hist.Integral(0,hist.GetXaxis().GetNbins()+1,0,hist.GetYaxis().GetNbins()+1)
+    else:
+        integral =  hist.Integral(0,hist.GetNbinsX()+1)
+
+    if mergeOverflow:
+        integral -= hist.GetBinContent( hist.GetSize() )
+
+    return integral
 
 
 def SelfDivide( h_self, name = "Ratio", h_props = None ):

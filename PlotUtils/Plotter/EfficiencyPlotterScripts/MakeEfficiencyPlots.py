@@ -46,25 +46,35 @@ if __name__ == "__main__":
     if True:
 
         samples       = ["ttbarbkg"] # ["ttbarbkg","wjetsbkg"]
-        flavours      = ["El"] # ["El","Mu"]
+        flavours      = ["El"] # ["Mu"]
         # lepSelections = ["FakeCRElAntiT"]# ["FakeCRElT","FakeCRElL"]
         # lepSelections = ["FakeCRMuAntiT"] #["FakeCRMuT","FakeCRMuL"]
         #prodIDs       = ["25ns_v24","25ns_v24_ElNoIso"]
-        prodIDs       = ["25ns_v28"]
+        prodIDs       = ["25ns_v29"] # ["25ns_v28"]
         normFactor    = 0 # 1.0
+
+        # Make separate bins for em, me in the OF category
+        splitOF = False
 
         for s in samples:
             print("\nLooking at sample: {0}".format(s))
             for pid in prodIDs:
                 print("\n\t\tprodID: {0}\n".format(pid))
+
+                kwargs = {"prodID":pid, "sample":s}
+
+                # TypeAndOriginPlots.plotFakeOriginFrac2LSplitFlavours(splitOF=splitOF,**kwargs)
+
+                TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
+                #TypeAndOriginPlots.plotOriginVSBDTG(normFactor=normFactor, **kwargs)
+
                 for flavour in flavours:
                     print("\n\t\t\tflavour: {0}\n".format(flavour))
-                    kwargs = {"flavour":flavour,"prodID":pid, "sample":s}
+                    kwargs.update({"flavour":flavour})
                     # TypeAndOriginPlots.plotFakeOriginFrac2L3L(**kwargs)
                     # TypeAndOriginPlots.plotOriginVSNjets(normFactor=normFactor, **kwargs)
                     # TypeAndOriginPlots.plotOriginVSNBjets(normFactor=normFactor, **kwargs)
                     # TypeAndOriginPlots.plotOriginVSDistanceOtherLep(normFactor=normFactor, **kwargs)
-                    TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
                     # TypeAndOriginPlots.plotOriginVSDistanceLepClosestJet(normFactor=normFactor, **kwargs)
                     # if flavour == "Mu":
                     #    TypeAndOriginPlots.plotOriginVSEta(normFactor=normFactor, **kwargs)

@@ -49,12 +49,10 @@ parser.add_argument('--variables', dest='variables', action='store', type=str, n
                     "If this option is unspecified, will consider \"Pt\" only, applied to any efficiency/flavour.")
 parser.add_argument('--efficiency', dest='efficiency', action='store', default=[g_efficiencies[0]], type=str, nargs='+', choices=g_efficiencies,
                   help='The efficiency type to be measured. Can pass multiple space-separated arguments to this command-line option (picking among the above list). If this option is not specified, default will be \'{0}\''.format(g_efficiencies[0]))
-parser.add_argument("--do3L", dest="do3L", action="store_true",default=False,
-                  help="Save efficiencies to be used in 3L SR.")
 parser.add_argument("--doRescalingFakeEl", dest="doRescalingFakeEl", action="store_true",default=False,
                   help="R|Rescale the electron fake rate:\n"
-                        "-) For 2L, by the relative ee/OF fraction of photon conversions\n"
-                        "-) For 3L, by the relative 2LCR/3LSR fraction of photon conversions (NB: need to use the option \'--do3L\')\n"
+                        "-) For 2L, by the relative ee(Pre-MVA)/OF(CR), OF(Pre-MVA)/OF(CR) fraction of photon conversions\n"
+                        "-) For 3L, by the relative 3L(Pre-MVA)/OF(CR) fraction of photon conversions\n"
                         ", and store it alongside the standard fake rate.")
 parser.add_argument("--channel", metavar="channel", default="", type=str,
                   help="Flavour composition of the two leptons in CR to be considered (\"ElEl\", \"MuMu\", \"OF\"). If unspecified, will consider all combinations.")
@@ -1240,8 +1238,8 @@ class RealFakeEffTagAndProbe:
                         h_efficiency.SetBinError(thisbinglobidx,prevbinerror)
 
             # Rescale electron fake rate by :
-            # -) the photon conversion fraction difference between ee and OF (for 2L)
-            # -) the photon conversion fraction difference between 3L SR and 2L CR (for 3L)
+            # -) the photon conversion fraction difference between 2L OF CR and the other 2L regions (excluding mm)
+            # -) the photon conversion fraction difference between 2L OF CR and the 3L SRs (for 3L)
 
             doScaledEff = args.doRescalingFakeEl
 
@@ -1251,18 +1249,102 @@ class RealFakeEffTagAndProbe:
 
                     alphas = []
 
+                    # OPTION C
                     # PP8
-                    alpha_2L_ee = [(1, 0.0), (2, 0.256), (3, 0.0)]
+                    # alpha_2L_ee = [(1, 0.0), (2, 0.256), (3, 0.0)]
                     # PP6
                     # alpha = [(1, 0.0), (2, 0.662), (3, 0.0)]
                     # Avg PP8, PP6
                     # alpha = [(1, 0.0), (2, 0.459), (3, 0.0)]
 
-                    alphas.append( ("RESCALED_2L_ee_",alpha_2L_ee) )
+                    # ---------------------------------------------------------
+                    # OPTION F (Higgs Approval, 20/07)
+                    # v28, PP8
+                    #
+                    # alpha_2L_ee = [(1, 0.0), (2, 0.54), (3, 0.0)]
+                    # alpha_2L_OF = [(1, 0.0), (2, 0.18), (3, 0.0)]
+                    # #
+                    # alpha_2L_ee_LJ = [(1, 0.0), (2, 0.28), (3, 0.0)]
+                    # alpha_2L_OF_LJ = [(1, 0.0), (2, 0.0), (3, 0.0)]
+                    # #
+                    # # From Chao
+                    # alpha_3L_ee = [(1, 0.0), (2, 0.435), (3, 0.0)]
+                    # alpha_3L_OF = [(1, 0.0), (2, 0.223), (3, 0.0)]
+                    # ---------------------------------------------------------
 
-                    # From Chao
-                    alpha_3L_ee = [(1, 0.0), (2, 0.435), (3, 0.0)]
-                    alpha_3L_OF = [(1, 0.0), (2, 0.223), (3, 0.0)]
+                    # # ---------------------------------------------------------
+                    # # For 24_07_17 production
+                    # #
+                    # # v29, PP8
+                    # #
+                    # alpha_2L_ee = [(1, 0.0), (2, 0.49), (3, 0.0)]
+                    # alpha_2L_OF = [(1, 0.0), (2, 0.05), (3, 0.0)]
+                    # #
+                    # alpha_2L_ee_LJ = [(1, 0.0), (2, 0.27), (3, 0.0)]
+                    # alpha_2L_OF_LJ = [(1, 0.0), (2, 0.0), (3, 0.0)]
+                    # #
+                    # # From Chao, Ximo
+                    # alpha_3L_ee = [(1, 0.0), (2, 0.67), (3, 0.0)]
+                    # alpha_3L_OF = [(1, 0.0), (2, 0.14), (3, 0.0)]
+                    # # ---------------------------------------------------------
+
+                    # ---------------------------------------------------------
+                    # # For 25_07_17 production
+                    # #
+                    # # v29, PP8
+                    # #
+                    # alpha_2L_ee = [(1, 0.0), (2, 0.39), (3, 0.0)]
+                    # alpha_2L_OF = [(1, 0.0), (2, -0.02), (3, 0.0)]
+                    # #
+                    # alpha_2L_ee_LJ = [(1, 0.0), (2, 0.18), (3, 0.0)]
+                    # alpha_2L_OF_LJ = [(1, 0.0), (2, 0.0), (3, 0.0)]
+                    # #
+                    # # From Chao, Ximo
+                    # alpha_3L_ee = [(1, 0.0), (2, 0.56), (3, 0.0)]
+                    # alpha_3L_OF = [(1, 0.0), (2, 0.06), (3, 0.0)]
+                    # #
+                    # # ---------------------------------------------------------
+
+                    # # ---------------------------------------------------------
+                    # # For 26_07_17 production
+                    # #
+                    # # v29, PP8
+                    # #
+                    # alpha_2L_ee = [(1, 0.0), (2, 0.39), (3,0.42), (4, 0.0)]
+                    # alpha_2L_OF = [(1, 0.0), (2, -0.02), (3,0.07), (4, 0.0)]
+                    # #
+                    # alpha_2L_ee_LJ = [(1, 0.0), (2, 0.18), (3,0.35), (4, 0.0)]
+                    # alpha_2L_OF_LJ = [(1, 0.0), (2, 0.0), (3, 0.0), (4,0.0)]
+                    # #
+                    # # From Chao, Ximo
+                    # alpha_3L_ee = [(1, 0.0), (2, 0.56), (3,0.60), (4, 0.0)]
+                    # alpha_3L_OF = [(1, 0.0), (2, 0.06), (3,0.19), (4, 0.0)]
+                    # #
+                    # # ---------------------------------------------------------
+
+                    # ---------------------------------------------------------
+                    # For 29_07_17 production
+                    #
+                    # Use alpha rescaling pT-dependent: [15,30,210+] GeV
+                    # v29, PP8
+                    #
+                    alpha_2L_ee = [(1, 0.0), (2, 0.19), (3, 0.91), (4, 0.0)]
+                    alpha_2L_OF = [(1, 0.0), (2, -0.23), (3, 0.34), (4, 0.0)]
+                    #
+                    alpha_2L_ee_LJ = [(1, 0.0), (2, -0.01), (3, 0.73), (4, 0.0)]
+                    alpha_2L_OF_LJ = [(1, 0.0), (2, 0.0), (3, 0.0), (4,0.0)]
+                    #
+                    # From Chao, Ximo
+                    alpha_3L_ee = [(1, 0.0), (2, 0.56), (3, 0.56), (4, 0.0)]
+                    alpha_3L_OF = [(1, 0.0), (2, 0.06), (3, 0.06), (4, 0.0)]
+                    #
+                    # ---------------------------------------------------------
+
+                    alphas.append( ("RESCALED_2L_ee_",alpha_2L_ee) )
+                    alphas.append( ("RESCALED_2L_OF_",alpha_2L_OF) )
+
+                    alphas.append( ("RESCALED_2L_ee_LJ_",alpha_2L_ee_LJ) )
+                    alphas.append( ("RESCALED_2L_OF_LJ_",alpha_2L_OF_LJ) )
 
                     alphas.append( ("RESCALED_3L_ee_",alpha_3L_ee) )
                     alphas.append( ("RESCALED_3L_OF_",alpha_3L_OF) )
@@ -1272,12 +1354,14 @@ class RealFakeEffTagAndProbe:
                         tag = a[0]
                         alpha = a[1]
 
-                        if "2L" in tag:
-                            print("\n\tRescaling 2L efficiency w/ key: {0} by the relative 2Lee/2LOF photon conversion fraction\n".format(key_heff))
+                        if "2L_ee" in tag:
+                            print("\n\tRescaling 2L efficiency w/ key: {0} by the relative 2Lee(Pre-MVA)/2LOF(CR) photon conversion fraction\n".format(key_heff))
+                        elif "2L_OF" in tag:
+                            print("\n\tRescaling 2L efficiency w/ key: {0} by the relative 2LOF(Pre-MVA)/2LOF(CR) photon conversion fraction\n".format(key_heff))
                         elif "3L_ee" in tag:
-                            print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3Lee/2LOF photon conversion fraction\n".format(key_heff))
+                            print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3Lee(Pre-MVA)/2LOF(CR) photon conversion fraction\n".format(key_heff))
                         elif "3L_OF" in tag:
-                            print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3LOF/2LOF photon conversion fraction\n".format(key_heff))
+                            print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3LOF(Pre-MVA)/2LOF(CR) photon conversion fraction\n".format(key_heff))
 
                         key_heff_scaled = tag + key_heff
                         h_efficiency_scaled = h_efficiency.Clone(tag + h_efficiency.GetName())
@@ -1479,16 +1563,8 @@ class RealFakeEffTagAndProbe:
             if "RAW" in hname:
                 hname = hname.replace("RAW","")
             h.SetName(hname)
-            # if args.do3L:
-            #    h.SetName("3L_"+hname)
 
     	    h.Write()
-
-            # Copy the 2L electron efficincies for 3L as well (now 3L uses CFK too)
-
-            # if "_El_" in hname:
-            #     h3L = h.Clone("3L_"+hname)
-            #     h3L.Write()
 
     	    eff=[]
             is2DHist = ( isinstance(h,TH2) )
@@ -1629,7 +1705,9 @@ class RealFakeEffTagAndProbe:
             if not "proj" in key: continue # Must consider only projection histograms
             if not all( v in key for v in vars2D ): continue # This projection histogram must come from this input 2D hist
             if not flav in key: continue
+            if not args.doRescalingFakeEl and "RESCALED" in key: continue
             if ("RESCALED_2L_ee" in key and not "RESCALED_2L_ee" in hist2Dkey) or (not "RESCALED_2L_ee" in key and "RESCALED_2L_ee" in hist2Dkey): continue
+            if ("RESCALED_2L_OF" in key and not "RESCALED_2L_OF" in hist2Dkey) or (not "RESCALED_2L_OF" in key and "RESCALED_2L_OF" in hist2Dkey): continue
             if ("RESCALED_3L_ee" in key and not "RESCALED_3L_ee" in hist2Dkey) or (not "RESCALED_3L_ee" in key and "RESCALED_3L_ee" in hist2Dkey): continue
             if ("RESCALED_3L_OF" in key and not "RESCALED_3L_OF" in hist2Dkey) or (not "RESCALED_3L_OF" in key and "RESCALED_3L_OF" in hist2Dkey): continue
 
@@ -1771,7 +1849,9 @@ class RealFakeEffTagAndProbe:
         leg_lumi.SetTextSize(0.03)
         leg_lumi.SetNDC()
 
-        for resc in ["","RESCALED_2L_ee","RESCALED_3L_ee","RESCALED_3L_OF"]:
+        for resc in ["","RESCALED_2L_ee","RESCALED_2L_OF","RESCALED_2L_ee_LJ","RESCALED_2L_OF_LJ","RESCALED_3L_ee","RESCALED_3L_OF"]:
+
+            if not args.doRescalingFakeEl and "RESCALED" in resc: continue
 
             for vartokens in self.__variables:
 

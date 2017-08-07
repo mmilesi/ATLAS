@@ -1639,7 +1639,7 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 
 	    // SS events:
 	    //
-	    // -) tag: the prompt lepton (still, must not be qmisid!)
+	    // -) tag: the prompt lepton (veto QMisID)
 	    // -) probe: the other lepton.
 	    //
 	    // If probe is (QMisID or prompt), or tag hasn't been found, flag the event as bad.
@@ -1650,8 +1650,8 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    bool found_tag(false);
 	    int tag_idx(0);
 	    for ( auto lep : m_leptons ) {
-		if ( ( lep.get()->props["isPrompt"].c == 1 || ( lep.get()->props["isBrems"].c == 1 && lep.get()->props["isQMisID"].c == 0 ) ) &&
-		     ( lep.get()->props["isQMisID"].c == 0 ) ) {
+		if ( ( lep.get()->props["isPrompt_v2"].c == 1 || lep.get()->props["isBremsPrompt_v2"].c == 1 || ( lep.get()->props["Flavour"].i == 13 && lep.get()->props["truthOrigin"].i == 0 ) ) &&
+		     ( lep.get()->props["isQMisID_v2"].c == 0 ) ) {
 		    lep.get()->props["isTagSLT"].c = 1;
 		    found_tag = true;
 		    break;
@@ -1661,9 +1661,11 @@ EL::StatusCode HTopMultilepMiniNTupMaker :: defineTagAndProbe ()
 	    int probe_idx = ( tag_idx ) ? 0 : 1; // Our lepton vector has only 2 components ;-)
 
 	    m_event.get()->isBadTPEvent_SLT = ( !found_tag ||
-						m_leptons.at(probe_idx).get()->props["isQMisID"].c == 1 ||
-						m_leptons.at(probe_idx).get()->props["isPrompt"].c == 1 ||
-						( m_leptons.at(probe_idx).get()->props["isBrems"].c == 1 && m_leptons.at(probe_idx).get()->props["isQMisID"].c == 0 ) );
+						m_leptons.at(probe_idx).get()->props["isQMisID_v2"].c == 1 ||
+						m_leptons.at(probe_idx).get()->props["isPrompt_v2"].c == 1 ||
+					        m_leptons.at(probe_idx).get()->props["isBremsPromnpt_v2"].c == 1 ||
+						( m_leptons.at(probe_idx).get()->props["Flavour"].i == 13 && m_leptons.at(probe_idx).get()->props["truthOrigin"].i == 0 )
+		);
 
 	} else {
 

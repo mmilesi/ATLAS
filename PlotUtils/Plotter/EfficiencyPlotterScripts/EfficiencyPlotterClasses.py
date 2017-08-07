@@ -259,6 +259,44 @@ class Plot:
 
         return stack, stacklegend
 
+    def makeConversionFracHist( self, histID=None ):
+
+        # Photon conversion fraction wrt. X
+        # Uncertainties from binmial distribution
+
+        legend = TLegend(0.23,0.25,0.43,0.55)
+        legend.SetBorderSize(1)
+        legend.SetFillColor(kWhite)
+        legend.SetTextSize(0.03)
+        legend.SetTextFont(42)
+
+        offset = 1 # (to account for underflow bin, which has idx=0)
+
+        basename = self.__hist.GetName()
+
+        # D: all fakes
+        hist_fakes_TOT_projY = self.__hist.ProjectionY( basename+"_py_ALL_FAKES" )
+        # N: conversion fakes
+        hist_fakes_CONV_projY = self.__hist.ProjectionY( basename+"_py_CONV_FAKES", 5+offset, 5+offset )
+
+        hist_fakes_CONV_FRAC = hist_fakes_CONV_projY.Clone("CONV_FRAC")
+        hist_fakes_CONV_FRAC.Divide(hist_fakes_CONV_projY,hist_fakes_TOT_projY,1.0,1.0,"B")
+
+        legend.AddEntry(hist_fakes_CONV_FRAC, "#gamma conversion", "F")
+
+        print("Conversion fraction VS. Y:")
+        for ibin in range(1,hist_fakes_CONV_FRAC.GetSize()-1):
+
+            ibin_lowedge = hist_fakes_CONV_FRAC.GetXaxis().GetBinLowEdge(ibin)
+            ibin_upedge  = hist_fakes_CONV_FRAC.GetXaxis().GetBinUpEdge(ibin)
+            f_gamma = hist_fakes_CONV_FRAC.GetBinContent(ibin)
+            f_gamma_err = hist_fakes_CONV_FRAC.GetBinError(ibin)
+
+            print("\tbin: {0} [{1:.3f},{2:.3f}] - f_gamma = {3:.2f} +- {4:.2f}".format(ibin,ibin_lowedge,ibin_upedge,f_gamma,f_gamma_err))
+
+        return hist_fakes_CONV_FRAC, legend
+
+
     def makePlot( self ):
 
 	if self.__props.get("xAxisTitle") : self.__hist.GetXaxis().SetTitle( self.__props["xAxisTitle"] )

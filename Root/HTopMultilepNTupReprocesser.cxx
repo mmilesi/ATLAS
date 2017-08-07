@@ -989,6 +989,9 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
   std::vector<std::string> selections   = { "2L" };
   if ( m_useScaledFakeElEfficiency_ElEl ) {
       selections.push_back("2L_ELEL_RESCALED");
+      selections.push_back("2L_ELEL_RESCALED_LJ");
+      selections.push_back("2L_OF_RESCALED");
+      selections.push_back("2L_OF_RESCALED_LJ");
   }
   std::vector<std::string> efficiencies = { "Real","Fake" };
   std::vector<std::string> leptons      = { "El","Mu" };
@@ -1015,7 +1018,14 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 
   int n_sysbins;
 
+  bool is2LElElRescaled(false), is2LElElRescaled_LJ(false), is2LOFRescaled(false), is2LOFRescaled_LJ(false);
+
   for ( const auto& sel : selections ) {
+
+      is2LElElRescaled    = ( sel.compare("2L_ELEL_RESCALED") == 0 );
+      is2LElElRescaled_LJ = ( sel.compare("2L_ELEL_RESCALED_LJ") == 0 );
+      is2LOFRescaled      = ( sel.compare("2L_OF_RESCALED") == 0 );
+      is2LOFRescaled_LJ   = ( sel.compare("2L_OF_RESCALED_LJ") == 0 );
 
       for ( const auto& eff : efficiencies ) {
 
@@ -1060,11 +1070,18 @@ EL::StatusCode HTopMultilepNTupReprocesser :: readRFEfficiencies()
 		  if ( isReal && isMu && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_Mu").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Real_Mu").compare(var) != 0 ) ) ) { continue; }
 		  if ( isFake && isEl && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_El").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_El").compare(var) != 0 ) ) ) { continue; }
 		  if ( isFake && isMu && ( ( !m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_Mu").find(var) == std::string::npos ) || ( m_parametrisation->has2DPar() && m_parametrisation->getVariable("Fake_Mu").compare(var) != 0 ) ) ) { continue; }
-		  if ( sel.compare("2L_ELEL_RESCALED") == 0 && !( isFake && isEl ) ) { continue; }
+		  if ( is2LElElRescaled && !( isFake && isEl ) ) { continue; }
+		  if ( is2LElElRescaled_LJ && !( isFake && isEl ) ) { continue; }
+		  if ( is2LOFRescaled && !( isFake && isEl ) ) { continue; }
+		  if ( is2LOFRescaled_LJ && !( isFake && isEl ) ) { continue; }
 
-		  // Special flag for electron fake rate, to be used if doing ee rescaling
+		  std::string prepend("");
 
-		  std::string prepend = ( sel.compare("2L_ELEL_RESCALED") == 0 && isFake && isEl ) ? "RESCALED_" : "";
+		  if ( is2LElElRescaled && isFake && isEl )    { prepend = "RESCALED_2L_ee_"; } // Special flag for electron fake rate, to be used if doing ee rescaling
+		  if ( is2LElElRescaled_LJ && isFake && isEl ) { prepend = "RESCALED_2L_ee_LJ_"; } // Special flag for electron fake rate, to be used if doing ee rescaling
+		  if ( is2LOFRescaled && isFake && isEl )      { prepend = "RESCALED_2L_OF_"; } // Special flag for electron fake rate, to be used if doing ee rescaling
+		  if ( is2LOFRescaled_LJ && isFake && isEl )   { prepend = "RESCALED_2L_OF_LJ_"; } // Special flag for electron fake rate, to be used if doing ee rescaling
+
 		  if ( !prepend.empty() ) {
 		      std::cout << "" << std::endl;
 		      Info("readRFEfficiencies()", "Will be using rescaled electron fake rate for ee events!");
@@ -1456,7 +1473,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_1D( std::s
 
     // Read the proper input efficiency if necessary
 
-    std::string prepend = ( m_useScaledFakeElEfficiency_ElEl && m_event.get()->dilep_type == 3 && lep.get()->flavour == 11 && type.compare("FAKE") == 0 ) ? "RESCALED_" : "";
+    std::string prepend("");
+    if ( m_useScaledFakeElEfficiency_ElEl && lep.get()->flavour == 11 && type.compare("FAKE") == 0 ) {
+
+	if ( m_event.get()->njets_T >= 4 ) {
+	    if ( m_event.get()->dilep_type == 3 ) { prepend = "RESCALED_2L_ee_"; }
+	    if ( m_event.get()->dilep_type == 2 ) { prepend = "RESCALED_2L_OF_"; }
+	} else {
+	    if ( m_event.get()->dilep_type == 3 ) { prepend = "RESCALED_2L_ee_LJ_"; }
+	    if ( m_event.get()->dilep_type == 2 ) { prepend = "RESCALED_2L_OF_LJ_"; }
+	}
+    }
 
     keyX  = prepend + keyX;
     if ( useVarXX ) { keyXX = prepend + keyXX; }
@@ -1777,7 +1804,17 @@ EL::StatusCode HTopMultilepNTupReprocesser :: getMMEfficiencyAndError_2D( std::s
 
     // Read the proper input efficiency if necessary
 
-    std::string prepend = ( m_useScaledFakeElEfficiency_ElEl && m_event.get()->dilep_type == 3 && lep.get()->flavour == 11 && type.compare("FAKE") == 0 ) ? "RESCALED_" : "";
+    std::string prepend("");
+    if ( m_useScaledFakeElEfficiency_ElEl && lep.get()->flavour == 11 && type.compare("FAKE") == 0 ) {
+
+	if ( m_event.get()->njets_T >= 4 ) {
+	    if ( m_event.get()->dilep_type == 3 ) { prepend = "RESCALED_2L_ee_"; }
+	    if ( m_event.get()->dilep_type == 2 ) { prepend = "RESCALED_2L_OF_"; }
+	} else {
+	    if ( m_event.get()->dilep_type == 3 ) { prepend = "RESCALED_2L_ee_LJ_"; }
+	    if ( m_event.get()->dilep_type == 2 ) { prepend = "RESCALED_2L_OF_LJ_"; }
+	}
+    }
 
     key  = prepend + key;
 

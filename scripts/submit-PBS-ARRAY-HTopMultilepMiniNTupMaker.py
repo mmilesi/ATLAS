@@ -135,13 +135,13 @@ NPROCS=$(wc -l < $PBS_NODEFILE)
 echo ""
 echo "This job has allocated $NPROCS nodes"
 echo ""
+echo "Creating temporary directory for this subjob"
 TMP=`mktemp -d $TMPDIR/mmilesi.$PBS_ARRAYID.XXXX`
-echo "Creating temporary directory for this subjob: $TMP"
-if [ -d "$TMP" ]; then
-    echo "Directory already found! Removing it first..."
-    rm -rf $TMP
+echo "Temporary directory is $TMP"
+if [ ! -d "$TMP" ]; then
+    echo "Directory not created! Bad! Exiting"
+    exit 1
 fi
-mkdir $TMP
 echo "Copying tarballed code and cd'ing into temp subjob directory..."
 echo ""
 rsync -arvxSH xAH.tar.gz $TMP/
@@ -560,17 +560,17 @@ exit 0
 # "410218",
 # "410219",
 # "410220",
-# "410501",
-# "410503",
+"410501",
+"410503",
 # "410250",
 # "410251",
 # "410252",
-"410276",
-"410277",
-"410278",
-"410397",
-"410398",
-"410399",
+# "410276",
+# "410277",
+# "410278",
+# "410397",
+# "410398",
+# "410399",
     ]
 
     if args.showsamples:
