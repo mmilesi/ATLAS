@@ -1338,12 +1338,12 @@ def plotFakeOriginFrac2LSplitFlavours( splitOF=False, **kwargs ):
     h_mm_SR.SetDirectory(0)
 
     h_list = []
-    h_list.extend([(h_ee_VR,"ee, CR"), (h_ee_SR,"ee, SR")])
+    h_list.extend([(h_ee_VR,"ee, CR"), (h_ee_SR,"ee, Pre-MVA")])
     if splitOF:
-        h_list.extend([(h_em_VR,"em, CR"), (h_em_SR,"em, SR")])
-        h_list.extend([(h_me_VR,"me, CR"), (h_me_SR,"me, SR")])
-    h_list.extend([(h_of_VR,"OF, CR"), (h_of_SR,"OF, SR")])
-    h_list.extend([(h_mm_VR,"mm, CR"), (h_mm_SR,"mm, SR")])
+        h_list.extend([(h_em_VR,"em, CR"), (h_em_SR,"em, Pre-MVA")])
+        h_list.extend([(h_me_VR,"me, CR"), (h_me_SR,"me, Pre-MVA")])
+    h_list.extend([(h_of_VR,"OF, CR"), (h_of_SR,"OF, Pre-MVA")])
+    h_list.extend([(h_mm_VR,"mm, CR"), (h_mm_SR,"mm, Pre-MVA")])
 
     # Fake lepton origin fraction wrt. 2LVR, 2LSR, 3LSR
 
@@ -1425,14 +1425,14 @@ def plotFakeOriginFrac2LSplitFlavours( splitOF=False, **kwargs ):
             fakes_BF_frac_h = fakes_CF_frac_h = fakes_HFRes_frac_h = fakes_LF_frac_h = fakes_PhConv_frac_h = fakes_Unknown_frac_h = fakes_Other_frac_h = 0
 
         print("bin[{0}] : {1}".format(idx,name))
-        print("\ttot fakes = {0}".format(fakes_TOT_h))
-        print("\t-) BF fakes = {0} ({1:.2f})".format(fakes_BF_h,fakes_BF_frac_h))
-        print("\t-) CF fakes = {0} ({1:.2f})".format(fakes_CF_h,fakes_CF_frac_h))
-        print("\t-) HFRes fakes = {0} ({1:.2f})".format(fakes_HFRes_h,fakes_HFRes_frac_h))
-        print("\t-) LF fakes = {0} ({1:.2f})".format(fakes_LF_h,fakes_LF_frac_h))
-        print("\t-) PhConv fakes = {0} ({1:.2f})".format(fakes_PhConv_h,fakes_PhConv_frac_h))
-        print("\t-) Unknown fakes = {0} ({1:.2f})".format(fakes_Unknown_h,fakes_Unknown_frac_h))
-        print("\t-) Other fakes = {0} ({1:.2f})".format(fakes_Other_h,fakes_Other_frac_h))
+        print("\ttot fakes = {0:.2f}".format(fakes_TOT_h))
+        print("\t-) B-Had fakes = {0:.2f} ({1:.2f}%)".format(fakes_BF_h,fakes_BF_frac_h*1e2))
+        print("\t-) C-Had fakes = {0:.2f} ({1:.2f}%)".format(fakes_CF_h,fakes_CF_frac_h*1e2))
+        print("\t-) Jpsi/Upsilon fakes = {0:.2f} ({1:.2f}%)".format(fakes_HFRes_h,fakes_HFRes_frac_h*1e2))
+        print("\t-) L-Had fakes = {0:.2f} ({1:.2f}%)".format(fakes_LF_h,fakes_LF_frac_h*1e2))
+        print("\t-) PhConv fakes = {0:.2f} ({1:.2f}%)".format(fakes_PhConv_h,fakes_PhConv_frac_h*1e2))
+        print("\t-) Other fakes = {0:.2f} ({1:.2f}%)".format(fakes_Other_h,fakes_Other_frac_h*1e2))
+        print("\t-) Unknown fakes = {0:.2f} ({1:.2f}%)".format(fakes_Unknown_h,fakes_Unknown_frac_h*1e2))
 
         histfakes_BF.SetBinContent( idx+offset, fakes_BF_frac_h )
         histfakes_CF.SetBinContent( idx+offset, fakes_CF_frac_h )

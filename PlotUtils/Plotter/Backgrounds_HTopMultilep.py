@@ -1489,7 +1489,7 @@ class TTHBackgrounds(Background):
 
         latexname = 't#bar{t}(#gamma*#rightarrow ll)'
 
-        colour = kPink - 4
+        colour = kBlue - 9
 
         def __call__(self, treename='physics', category=None, options={}):
 

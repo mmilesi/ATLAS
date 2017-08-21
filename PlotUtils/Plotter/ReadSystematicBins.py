@@ -971,7 +971,7 @@ def makeSysPlotsSplitProcs( flav, var, allprocs={}, debug=False ):
 
     #print("FLAV: {0} - max = {1:.2f} - binmax = {2} - binmaxerr = {3:.2f}".format(flav,ymax,binmax,binmaxerr))
 
-    maxfactor = 1.85
+    maxfactor = 2.10
     minimum    = 0
     if doLogY:
         maxfactor = 1e3
@@ -1106,7 +1106,7 @@ def makeSysPlotsSplitProcs( flav, var, allprocs={}, debug=False ):
     if not os.path.exists(outpath):
         os.makedirs(outpath)
 
-    extensions = [(".png","PNG"),(".pdf","PDF"),(".root","ROOT")]
+    extensions = [(".png","PNG"),(".pdf","PDF"),(".root","ROOT"),(".eps","EPS")]
     for ext in extensions:
         finalpath = outpath+"/"+ext[1]
         if not os.path.exists(finalpath):
@@ -1337,7 +1337,7 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     if not os.path.exists(outpath):
         os.makedirs(outpath)
 
-    extensions = [(".png","PNG"),(".pdf","PDF"),(".root","ROOT")]
+    extensions = [(".png","PNG"),(".pdf","PDF"),(".root","ROOT"),(".eps","EPS")]
     for ext in extensions:
         finalpath = outpath+"/"+ext[1]
         if not os.path.exists(finalpath):

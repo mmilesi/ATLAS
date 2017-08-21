@@ -63,9 +63,9 @@ if __name__ == "__main__":
 
                 kwargs = {"prodID":pid, "sample":s}
 
-                # TypeAndOriginPlots.plotFakeOriginFrac2LSplitFlavours(splitOF=splitOF,**kwargs)
+                TypeAndOriginPlots.plotFakeOriginFrac2LSplitFlavours(splitOF=splitOF,**kwargs)
 
-                TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
+                # TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
                 #TypeAndOriginPlots.plotOriginVSBDTG(normFactor=normFactor, **kwargs)
 
                 for flavour in flavours:
