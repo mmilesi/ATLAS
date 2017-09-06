@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter
 
-    if False:
+    if True:
 
         # EfficiencyPlotter.plotRealElectron()
         # EfficiencyPlotter.plotRealMuon()
@@ -32,18 +32,16 @@ if __name__ == "__main__":
         EfficiencyPlotter.plotFakeElectron_NonPromptVSPhotonConv() # MC TTbar-based
         # EfficiencyPlotter.plotFakeElectron_NonPromptAndPhotonConvVSPhotonConv() # DD
 
-    import EfficiencyPlotter_NBJetsGt2
+    import EfficiencyPlotter_QualityPlots
 
     if False:
-
-        EfficiencyPlotter_NBJetsGt2.plotRealElectron()
-        EfficiencyPlotter_NBJetsGt2.plotRealMuon()
-        EfficiencyPlotter_NBJetsGt2.plotFakeElectron()
-        EfficiencyPlotter_NBJetsGt2.plotFakeMuon()
+        EfficiencyPlotter_QualityPlots.plotRealEfficiency()
+        EfficiencyPlotter_QualityPlots.plotFakeEfficiency_El()
+        EfficiencyPlotter_QualityPlots.plotFakeEfficiency_Mu()
 
     import TypeAndOriginPlots
 
-    if True:
+    if False:
 
         samples       = ["ttbarbkg"] # ["ttbarbkg","wjetsbkg"]
         flavours      = ["El"] # ["Mu"]

@@ -17,19 +17,24 @@ from ROOT import kFullCircle, kCircle, kOpenTriangleUp, kDot
 class Plot:
 
     luminosity = 100
+    lcoords = [0.65,0.3,0.93,0.5]
 
-    legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+    legend = TLegend(lcoords[0],lcoords[1],lcoords[2],lcoords[3],"","NDC") # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
     legend.SetBorderSize(0)  # no border
     legend.SetFillStyle(0) # Legend transparent background
-    legend.SetTextSize(0.03) # Increase entry font size!
+    legend.SetTextSize(0.04) # Increase entry font size!
     # legend.SetTextFont(42)   # Helvetica
 
     legendATLAS = TLatex()
     legendLumi  = TLatex()
-    legendATLAS.SetTextSize(0.03)
+    legendATLAS.SetTextSize(0.04)
     legendATLAS.SetNDC()
     legendLumi.SetTextSize(0.03)
     legendLumi.SetNDC()
+
+    plotTitle = TLatex()
+    plotTitle.SetTextSize(0.04)
+    plotTitle.SetNDC()
 
     reflines = []
 
@@ -38,12 +43,12 @@ class Plot:
         f = TFile(sourcePath)
 
         if not f:
-	   sys.exit("ERROR: file\n{0}\ncannot be found!".format(sourcePath))
+	   os.sys.exit("ERROR: file\n{0}\ncannot be found!".format(sourcePath))
 
         self.__hist = f.Get(sourceName)
 
 	if not self.__hist:
-	   sys.exit("ERROR: histogram:\n{0}\ncannot be found in file:\n{1}".format(sourceName,sourcePath))
+	   os.sys.exit("ERROR: histogram:\n{0}\ncannot be found in file:\n{1}".format(sourceName,sourcePath))
 
 	self.__hist.SetDirectory(0)
 
@@ -122,7 +127,7 @@ class Plot:
             n = self.__hist.GetNbinsY()
 
         if n != len(labels):
-            sys.exit("ERROR: {0}-axis - n = {1}, nlabels = {2}".format(axis,n,labels))
+            os.sys.exit("ERROR: {0}-axis - n = {1}, nlabels = {2}".format(axis,n,labels))
 
         for idx in range(1,n+1):
             if axis == "X":
@@ -297,9 +302,9 @@ class Plot:
         return hist_fakes_CONV_FRAC, legend
 
 
-    def makePlot( self ):
+    def makePlot( self, legend = None ):
 
-	if self.__props.get("xAxisTitle") : self.__hist.GetXaxis().SetTitle( self.__props["xAxisTitle"] )
+ 	if self.__props.get("xAxisTitle") : self.__hist.GetXaxis().SetTitle( self.__props["xAxisTitle"] )
 	if self.__props.get("yAxisTitle") : self.__hist.GetYaxis().SetTitle( self.__props["yAxisTitle"] )
 
 	if self.__props.get("xAxisRange") : self.__hist.GetXaxis().SetRangeUser( self.__props["xAxisRange"][0], self.__props["xAxisRange"][1] )
@@ -309,7 +314,8 @@ class Plot:
             normfactor = self.__props["normFactor"]
             if normfactor: self.__hist.Scale( normfactor / self.__hist.Integral() )
 
-        if self.__props.get("legend")      : Plot.legend.AddEntry(self.__hist, self.__props["legend"], "P")
+        if self.__props.get("legend") and legend:
+            legend.AddEntry(self.__hist, self.__props["legend"], "PL")
 
         if self.__props.get("setBinVals")  :
             for tup in self.__props["setBinVals"]:
@@ -332,6 +338,19 @@ class Plot:
         # Draw the histogram on the Pad!
 
 	self.__hist.Draw( self.__props["drawOpt"] )
+        self.__hist.GetYaxis().SetTitleOffset(1.4)
+
+        # Set log axis if needed
+ 	if self.__props.get("xAxisLog") :
+            gPad.SetLogx( self.__props["xAxisLog"] )
+            if self.__props["xAxisLog"]:
+                self.__hist.GetXaxis().SetMoreLogLabels()
+                self.__hist.GetXaxis().SetNoExponent()
+ 	if self.__props.get("yaxisLog") :
+            gPad.SetLogy( self.__props["yaxisLog"] )
+            if self.__props["yaxisLog"]:
+                self.__hist.GetYaxis().SetMoreLogLabels()
+                self.__hist.GetYaxis().SetNoExponent()
 
         # Deal with alphanumeric axis labels
 
@@ -365,6 +384,42 @@ class MultiPlot:
     def __init__( self, plots=[] ):
 
 	self.__plotlist  = plots
+        self.ATLASlabel = "Internal" # "Work in progress"
+        self.canvascoords = [50,50,1300,800]
+        self.plotTitle = ""
+        self.plotTitle_x = 0.5
+        self.plotTitle_y = 0.5
+
+        # Legend
+
+        self.legend = TLegend()
+        self.luminosity = 100
+        self.buildLegend()
+
+    def buildLegend( self, header="My header", lcoords=[0.65,0.3,0.93,0.5] ):
+
+        self.legend = TLegend(lcoords[0],lcoords[1],lcoords[2],lcoords[3],header,"NDC") # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+
+        self.legend.SetBorderSize(0)  # no border
+        self.legend.SetFillStyle(0) # Legend transparent background
+        self.legend.SetTextSize(0.035) # Increase entry font size!
+        #self.legend.SetTextFont(42)   # Helvetica
+
+        self.legendATLAS = TLatex()
+        self.legendLumi  = TLatex()
+
+        self.legendATLAS.SetTextSize(0.04)
+        self.legendATLAS.SetNDC()
+        self.legendLumi.SetTextSize(0.025)
+        self.legendLumi.SetNDC()
+
+    def setCanvasCoords(self, ccoords=[]):
+        self.canvascoords = ccoords
+
+    def setPlotTitle(self, title="My title", tcoords=(0.5,0.5)):
+        self.plotTitle = title
+        self.plotTitle_x = tcoords[0]
+        self.plotTitle_y = tcoords[1]
 
     def makeMultiPlot( self, savePath, saveName ):
 
@@ -374,7 +429,7 @@ class MultiPlot:
 
         tokens = saveName.split('_')
 
-        c = TCanvas("c_"+tokens[0]+"_"+tokens[1],"Efficiency",50,50,1300,800)
+        c = TCanvas("c_"+tokens[0]+"_"+tokens[1],"Efficiency",self.canvascoords[0],self.canvascoords[1],self.canvascoords[2],self.canvascoords[3])
 
         for idx, plot in enumerate(self.__plotlist):
 
@@ -383,22 +438,35 @@ class MultiPlot:
                 continue
 
 	    if idx == 0:
-                #plot.makePlot(c)
-                plot.makePlot()
+                plot.makePlot(legend=self.legend)
 	    else:
                 plot.setProperty("drawOpt", str(plot.getProperty("drawOpt")) + " SAME" )
-                #plot.makePlot(c)
-                plot.makePlot()
+                #plot.makePlot()
+                plot.makePlot(legend=self.legend)
 
         for refl in Plot.reflines:
             refl.SetLineStyle(2)
 	    refl.Draw("SAME")
 
-        Plot.legend.Draw()
+        # Plot.legend.Draw()
 
-	Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
-        Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
+        # Plot.legendATLAS.DrawLatex(0.2,0.88,"#bf{{#it{{ATLAS}}}} {0}".format(self.ATLASlabel))
+        # Plot.legendLumi.DrawLatex(0.2,0.81,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
 
-        for ext in ["png","pdf","root"]:
+        # if self.plotTitle:
+        #     Plot.plotTitle.DrawLatex(self.plotTitle_x,self.plotTitle_y,"#it{{{0}}}".format(self.plotTitle))
+
+        self.legend.Draw()
+
+        self.legendATLAS.DrawLatex(0.2,0.88,"#bf{{#it{{ATLAS}}}} {0}".format(self.ATLASlabel))
+        self.legendLumi.DrawLatex(0.2,0.81,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.luminosity))
+
+        if self.plotTitle:
+            plotTitleObj = TLatex()
+            plotTitleObj.SetTextSize(0.04)
+            plotTitleObj.SetNDC()
+            plotTitleObj.DrawLatex(self.plotTitle_x,self.plotTitle_y,"#it{{{0}}}".format(self.plotTitle))
+
+        for ext in ["png","pdf","root","eps"]:
 	    c.SaveAs( savePath + "/" + saveName + "." + ext )
 

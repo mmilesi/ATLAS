@@ -7,7 +7,7 @@ from ROOT import TLine
 
 from EfficiencyPlotterClasses import Plot, MultiPlot
 
-Plot.luminosity = 36.4702
+luminosity = 36.1
 
 def plotFakeElectron():
 
@@ -666,103 +666,6 @@ def plotFakeElectronAssignEff():
 
     del Plot.reflines[:]
 
-def plotFakeElectron_NonPromptVSPhotonConv():
-
-    plotlist = []
-
-    Plot.legend.SetHeader("#varepsilon_{fake} - Electrons")
-
-    p0_props = {
-                "legend"      : "Tag & Probe (OF, #mu tag) - Non prompt",
-                "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.13),
-                "colour"      : kOrange+10,
-                "lineStyle"   : 1,
-                "lineWidth"   : 2,
-                "markerStyle" : 20,
-                "markerSize"  : 1,
-               }
-
-    p0 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_NonPrompt/LeptonEfficiencies.root", p0_props)
-
-    plotlist.append(p0)
-
-    p1_props = {
-                "legend"      : "Tag & Probe (OF, #mu tag) - #gamma conversion",
-                "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.13),
-                "colour"      : kYellow,
-                "lineStyle"   : 1,
-                "lineWidth"   : 2,
-                "markerStyle" : 20,
-                "markerSize"  : 1,
-                "markerColour" : kYellow,
-               }
-
-    p1 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_PhotonConv/LeptonEfficiencies.root", p1_props)
-
-    plotlist.append(p1)
-
-    p2_props = {
-                "legend"      : "Tag & Probe (OF, #mu tag) - <#varepsilon> (OF, CR)",
-                "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.13),
-                "colour"      : kBlack,
-                "lineStyle"   : 2,
-                "lineWidth"   : 2,
-                "markerStyle" : 24,
-                "markerSize"  : 1,
-               }
-
-    #p2 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_FINAL_BINNING_2/LeptonEfficiencies_NewRescaling_12_07_17.root", p2_props) # OPTION F
-    p2 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_FINAL_BINNING_2/LeptonEfficiencies_OPTION_C.root", p2_props) # OPTION C
-
-    plotlist.append(p2)
-
-    p3_props = {
-                "legend"      : "Tag & Probe (OF, #mu tag) - <#varepsilon> (ee, SR)",
-                "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.13),
-                "colour"      : kBlue,
-                "lineStyle"   : 2,
-                "lineWidth"   : 2,
-                "markerStyle" : 24,
-                "markerSize"  : 1,
-               }
-
-    #p3 = Plot("RESCALED_2L_ee_Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_FINAL_BINNING_2/LeptonEfficiencies_NewRescaling_12_07_17.root", p3_props) # OPTION F
-    p3 = Plot("RESCALED_2L_ee_Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v28/OutputPlots_MMClosureRates_25ns_v28_FINAL_BINNING_2/LeptonEfficiencies_OPTION_C.root", p3_props) # OPTION C
-
-    plotlist.append(p3)
-
-    # Add vertical reference lines for trigger thresholds.
-    # Use the first histogram in the list to set the range
-
-    refl_0 = TLine(26.0,p0_props["yAxisRange"][0],26.0,p0_props["yAxisRange"][1])
-    #Plot.reflines.append(refl_0)
-    refl_1 = TLine(60.0,p0_props["yAxisRange"][0],60.0,p0_props["yAxisRange"][1])
-    #Plot.reflines.append(refl_1)
-    #refl_2 = TLine(140.0,p0_props["yAxisRange"][0],140.0,p0_props["yAxisRange"][1])
-    #Plot.reflines.append(refl_2)
-
-    multiP = MultiPlot( plots=plotlist )
-
-    #outdir = "./PLOTS_25ns_v28/NonPrompt_VS_PhotonConv_TTBarTTGamma_OPTION_F"
-    outdir = "./PLOTS_25ns_v28/NonPrompt_VS_PhotonConv_TTBarTTGamma_OPTION_C"
-
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-
-    multiP.makeMultiPlot( outdir, "Fake_El_Compare_NonPrompt_PhotonConv" )
-
-    # Clear before returning
-
-    del plotlist[:]
-
-    Plot.legend.Clear()
-
-    del Plot.reflines[:]
-
 def plotFakeElectron_NonPromptAndPhotonConvVSPhotonConv():
 
     plotlist = []
@@ -825,3 +728,87 @@ def plotFakeElectron_NonPromptAndPhotonConvVSPhotonConv():
     Plot.legend.Clear()
 
     del Plot.reflines[:]
+
+
+def plotFakeElectron_NonPromptVSPhotonConv():
+
+    plotlist = []
+
+    p0_props = {
+                "legend"      : "Non-prompt (#mu^{#pm}e^{#pm}, CR)",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.0,0.1),
+                "colour"      : kOrange+10,
+                "lineStyle"   : 2,
+                "lineWidth"   : 2,
+                "markerStyle" : 20,
+                "markerSize"  : 1.4,
+                #"yaxisLog"    : True
+               }
+
+    p0 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29_LEP_FROM_JET/LeptonEfficiencies.root", p0_props)
+
+    plotlist.append(p0)
+
+    p1_props = {
+                "legend"      : "#gamma conv. (#mu^{#pm}e^{#pm}, CR)",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.0,0.1),
+                "colour"      : kOrange-2,
+                "lineStyle"   : 2,
+                "lineWidth"   : 2,
+                "markerStyle" : 20,
+                "markerSize"  : 1.4,
+               }
+
+    p1 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29_PHOTON_CONV/LeptonEfficiencies.root", p1_props)
+
+    plotlist.append(p1)
+
+    p2_props = {
+                "legend"      : "<#varepsilon> (#mu^{#pm}e^{#pm}, CR)",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.0,0.1),
+                "colour"      : kBlack,
+                "lineStyle"   : 2,
+                "lineWidth"   : 2,
+                "markerStyle" : 20,
+                "markerSize"  : 1.4,
+               }
+
+    p2 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies_410501_410082_FixedRescaling_25_07_17.root", p2_props)
+
+    plotlist.append(p2)
+
+    p3_props = {
+                "legend"      : "<#varepsilon> (e^{#pm}e^{#pm}, SR)",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.0,0.1),
+                "colour"      : kBlue,
+                "lineStyle"   : 1,
+                "lineWidth"   : 3,
+                "markerStyle" : 20,
+                "markerSize"  : 1.4,
+               }
+
+    p3 = Plot("RESCALED_2L_ee_Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies_410501_410082_FixedRescaling_25_07_17.root", p3_props)
+
+
+    plotlist.append(p3)
+
+    multiP = MultiPlot( plots=plotlist )
+    multiP.luminosity = luminosity
+    multiP.buildLegend( header="Simulation (#it{t#bar{t}})", lcoords=[0.5,0.7,0.93,0.91] )
+    multiP.setCanvasCoords([50,50,800,800])
+    # multiP.setPlotTitle("My title",(0.6,0.88))
+
+    outdir = "./PLOTS_25ns_v29/NonPrompt_VS_PhotonConv_TTBarTTGamma"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    multiP.makeMultiPlot( outdir, "Fake_El_Compare_NonPrompt_PhotonConv" )
+
+    # Clear before returning
+
+    del plotlist[:]
+
