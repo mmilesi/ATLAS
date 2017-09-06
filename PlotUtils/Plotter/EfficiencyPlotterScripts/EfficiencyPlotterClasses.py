@@ -40,24 +40,33 @@ class Plot:
 
     def __init__( self, sourceName, sourcePath, properties={} ):
 
-        f = TFile(sourcePath)
+        self.__file = TFile(sourcePath)
 
-        if not f:
+        if not self.__file:
 	   os.sys.exit("ERROR: file\n{0}\ncannot be found!".format(sourcePath))
 
-        self.__hist = f.Get(sourceName)
+        self.__hist = self.__file.Get(sourceName)
 
 	if not self.__hist:
 	   os.sys.exit("ERROR: histogram:\n{0}\ncannot be found in file:\n{1}".format(sourceName,sourcePath))
 
 	self.__hist.SetDirectory(0)
 
-        self.name = self.__hist.GetName()
+        self.__nbins = self.__hist.GetSize()
+
+        self.__name = self.__hist.GetName()
         self.is2D = isinstance(self.__hist,TH2)
 
         self.conversion_frac_VS_Y = []
 
 	self.__props  = properties
+
+        # Dictionary for systematic histograms
+        self.__syshists = {}
+        # List with the sum in quadrature per bin of all systematics
+        self.__syssumquad = []
+        # Histogram w/ the total syst error
+        self.__syserrhist = None
 
         # Set special properties for 2D histograms
 
@@ -79,6 +88,9 @@ class Plot:
             else:
                 self.__props["drawOpt"] = "E0"
 
+    def getName( self ):
+        return self.__name
+
     def setProperty( self, propID, propValue ):
 
         self.__props[propID] = propValue
@@ -87,6 +99,48 @@ class Plot:
 
         if self.__props.get(propID):
             return self.__props[propID]
+
+    def addSystematics( self, syslist=["ND_FakesOS"] ):
+
+        for sysname in syslist:
+
+            name = self.__name
+            name_up = name + "_" + sysname + "_up"
+            name_dn = name + "_" + sysname + "_dn"
+
+            if "_proj" in name:
+                idx = name.find("_proj")
+                slice_i_up = name[:idx] + "_" + sysname + "_up"
+                slice_i_dn = name[:idx] + "_" + sysname + "_dn"
+                slice_f = name[idx:]
+                name_up = slice_i_up + slice_f
+                name_dn = slice_i_dn + slice_f
+
+            hist_up = self.__file.Get(name_up)
+            hist_dn = self.__file.Get(name_dn)
+            if not hist_up:
+                os.sys.exit("ERROR: histogram:\n{0}\ncannot be found".format(name_up))
+            if not hist_dn:
+                os.sys.exit("ERROR: histogram:\n{0}\ncannot be found".format(name_dn))
+
+            # Store a list with the symmetrised variation for each bin
+            varlist = [ abs( hist_up.GetBinContent(ibin) - hist_dn.GetBinContent(ibin) ) / 2.0 for ibin in range(0,self.__nbins) ]
+
+            self.__syshists[sysname] = varlist
+
+        # Debug
+        for syskey, sysvarlist in self.__syshists.iteritems():
+            print("Systematic: {0} - ".format(syskey) + "variations list: [" + ",".join( "{0:.4f}".format(var) for var in sysvarlist ) + "]" )
+
+        # Store the sum in quadrature of all systematics per bin
+        for ibin in range(0,self.__nbins):
+            isumquad = 0
+            for syskey, sysvarlist in self.__syshists.iteritems():
+                isumquad += pow(sysvarlist[ibin],2)
+            self.__syssumquad.append( math.sqrt(isumquad) )
+
+        # Debug
+        print("Tot. systematic error per bin: [" + ",".join( "{0:.4f}".format(totsys) for totsys in self.__syssumquad ) + "]" )
 
     def set2DStyle( self, opt = "BasicRainBow" ):
 
@@ -337,7 +391,28 @@ class Plot:
 
         # Draw the histogram on the Pad!
 
-	self.__hist.Draw( self.__props["drawOpt"] )
+        # Create histogram with total systematic error if necessary
+
+        if self.__syshists and not self.is2D:
+            self.__syserrhist = self.__hist.Clone(self.__hist.GetName()+"_SYST")
+            self.__syserrhist.SetFillColor(kOrange)
+            self.__syserrhist.SetLineColor(10)
+            self.__syserrhist.SetLineStyle(1)
+            self.__syserrhist.SetFillStyle(3356)
+            gStyle.SetHatchesLineWidth(1)#(2)
+            gStyle.SetHatchesSpacing(0.4)#(0.8)
+            self.__syserrhist.SetMarkerSize(0)
+            for ibin in range(0,self.__nbins):
+                self.__syserrhist.SetBinError(ibin,self.__syssumquad[ibin])
+                print("bin[{0}] : {1:.4f} +- {2:.4f}".format(ibin,self.__syserrhist.GetBinContent(ibin),self.__syserrhist.GetBinError(ibin)))
+            if not gPad.GetListOfPrimitives().GetSize():
+                self.__syserrhist.Draw("E2")
+            else:
+                self.__syserrhist.Draw("E2 SAME")
+            self.__hist.Draw( self.__props["drawOpt"]+" SAME" )
+        else:
+            self.__hist.Draw( self.__props["drawOpt"] )
+
         self.__hist.GetYaxis().SetTitleOffset(1.4)
 
         # Set log axis if needed
@@ -364,6 +439,7 @@ class Plot:
             self.__hist.GetYaxis().SetTitleOffset(2.255) # increase a bit the axis title offset
             self.__hist.GetYaxis().SetLabelSize(0.03)
             self.__hist.GetYaxis().SetTitleSize(0.04)
+
 
         # For 2D histograms, this will change the size of the labels on the COLZ axis
         # NB: must be done after calling Draw()!
@@ -432,6 +508,8 @@ class MultiPlot:
         c = TCanvas("c_"+tokens[0]+"_"+tokens[1],"Efficiency",self.canvascoords[0],self.canvascoords[1],self.canvascoords[2],self.canvascoords[3])
 
         for idx, plot in enumerate(self.__plotlist):
+
+            print("Plotting: {0}".format(plot.getName()))
 
             if plot.is2D:
                 print("WARNING! Cannot plot a TH2 histogram together with other histograms. Skipping {0}".format(plot.name))

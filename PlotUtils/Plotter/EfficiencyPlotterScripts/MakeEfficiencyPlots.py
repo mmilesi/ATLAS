@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter
 
-    if True:
+    if False:
 
         # EfficiencyPlotter.plotRealElectron()
         # EfficiencyPlotter.plotRealMuon()
@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter_QualityPlots
 
-    if False:
+    if True:
         EfficiencyPlotter_QualityPlots.plotRealEfficiency()
         EfficiencyPlotter_QualityPlots.plotFakeEfficiency_El()
         EfficiencyPlotter_QualityPlots.plotFakeEfficiency_Mu()
