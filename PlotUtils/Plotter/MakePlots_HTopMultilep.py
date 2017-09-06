@@ -53,7 +53,7 @@ parser.add_argument('--samplesCSV', dest='samplesCSV',action='store',const='File
                     help='Path to the .csv file containing the processes of interest with their cross sections and other metadata. If this option is unspecified, or it is not followed by any command-line argument, default will be \'Files/samples_HTopMultilep_Priority1.csv\'')
 parser.add_argument('--lumi', dest='lumi', action='store', type=float, default=luminosities["FULL 2015+2016 DS"],choices=list(luminosities.items()),
                     help="The luminosity of the dataset. Choose a numerical value among the ones listed above. If this option is not specified, default will be (\'{0}\', {1})".format("FULL 2015+2016 DS",luminosities["FULL 2015+2016 DS"] ) )
-parser.add_argument("--trigger", dest="trigger", action="store", default=triggers[0], type=str, nargs=1, choices=triggers, # nargs=1 ensures argument will be stored in a list
+parser.add_argument("--trigger", dest="trigger", action="store", default=[triggers[0]], type=str, nargs=1, choices=triggers, # nargs=1 ensures argument will be stored in a list
                     help="The trigger strategy to be used. If this option is not specified, default will be \'{0}\'".format(triggers[0]))
 parser.add_argument('--channel', dest='channel', action='store', default=channels[0], type=str, nargs='+',
                     help='The channel chosen. Full list of available options:\n{0}. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). If this option is not specified, default will be \'{1}\''.format(channels,channels[0]))
@@ -272,7 +272,7 @@ if __name__ == "__main__":
 
     triggers_MMRates = ["SLT"]
     if ( doMMRates and not "LH" in args.channel ) and args.trigger[0] not in triggers_MMRates:
-        os.sys.exit("ERROR: the chosen trigger selection: {0}\nis not allowed for r/f efficiency measurement. Please choose one of {1}".format(args.trigger[0],triggers_MMRates))
+        os.sys.exit("ERROR: the chosen trigger selection: {0}\nis not allowed for r/f efficiency measurement. Please choose {1}".format(args.trigger[0],triggers_MMRates[0]))
 
     # -----------------------------------------
     # A comprehensive flag for all possible SRs
@@ -440,15 +440,15 @@ if __name__ == "__main__":
     database.registerCut( Cut('2Lep_1BJet',               '( nJets_OR_T_MV2c10_70 == 1 )') )
     database.registerCut( Cut('2Lep_2BJet',               '( nJets_OR_T_MV2c10_70 >= 2 )') )
     database.registerCut( Cut('2Lep_NBJet',               '( nJets_OR_T_MV2c10_70 >= 1 )') )
-    database.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 >= 1 )') )
+    database.registerCut( Cut('2Lep_NBJet_SR',		  '( nJets_OR_T_MV2c10_70 >= 1 && nJets_OR_T_MV2c10_70 <= 2 )') )
     database.registerCut( Cut('2Lep_MinNJet',		  '( nJets_OR_T >= 2 )') )
     database.registerCut( Cut('2Lep_NJet_SR',		  '( nJets_OR_T >= 4 )') )
     database.registerCut( Cut('2Lep_NJet_CR',		  '( nJets_OR_T >= 2 && nJets_OR_T <= 3 )') )
     database.registerCut( Cut('2Lep_SS',	          '( lep_ID_0 * lep_ID_1 > 0 )') )
     database.registerCut( Cut('2Lep_OS',		  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
     database.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
-    database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_1 > 15e3 )') )
-    #database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_1 > 20e3 )') )
+    #database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_1 > 15e3 )') )
+    database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_1 > 20e3 )') )
     if args.ICHEPSelection:
         database.getCut('2Lep_pT').cutstr =  '( lep_Pt_1 > 25e3 )' # 2LSS SR cut - ICHEP 2016
     database.registerCut( Cut('2Lep_pT_MMRates',	  '( lep_Pt_1 > 15e3 )') )
@@ -588,7 +588,9 @@ if __name__ == "__main__":
     # (i.e., the !prompt lepton will be ( HF lepton || photon conv || lepton from Dalitz decay || mis-reco jet...)
 
     # cutsr_2Lep_TRUTH_NonPromptEvent = "( ( mc_channel_number == 0 ) || ( ( ( lep_isPrompt_0 == 0 && !( lep_isBrems_0 == 1 && lep_isQMisID_0 == 0 ) ) || ( lep_isPrompt_1 == 0 && !( lep_isBrems_1 == 1 && lep_isQMisID_1 == 0 ) ) ) && ( isQMisIDEvent == 0 ) ) )"
-    cutsr_2Lep_TRUTH_NonPromptEvent = "( ( mc_channel_number == 0 ) || ( ( ( !{0} && !{1} ) || ( !{2} && !{3} ) ) && !{4} ) )".format(lep0_prompt,lep0_bremsprompt,lep1_prompt,lep1_bremsprompt,isqmisidevent)
+
+    ###cutsr_2Lep_TRUTH_NonPromptEvent = "( ( mc_channel_number == 0 ) || ( ( ( !{0} && !{1} ) || ( !{2} && !{3} ) ) && !{4} ) )".format(lep0_prompt,lep0_bremsprompt,lep1_prompt,lep1_bremsprompt,isqmisidevent)
+    cutsr_2Lep_TRUTH_NonPromptEvent = "( ( mc_channel_number == 0 ) || ( ( !{0} || !{1} ) && !{2} ) )".format(lep0_prompt,lep1_prompt,isqmisidevent)
     database.registerCut( Cut("2Lep_TRUTH_NonPromptEvent", cutsr_2Lep_TRUTH_NonPromptEvent) )
 
     # 3.
@@ -786,11 +788,10 @@ if __name__ == "__main__":
         database.getCut('FakesSideband_LmuTel').cutstr =  '( is_AntiTmu_Tel )'
 
     if args.readGFW2:
-        cut_TT = '( ( (TMath::Abs(lep_ID_0)==13 && lep_isolationLoose_0 ) || ( TMath::Abs(lep_ID_0)==11 && lep_isolationLoose_0 && lep_isTightLH_0 && lep_chargeIDBDTTight_0>0.0670415 ) ) && ( ( TMath::Abs(lep_ID_1)==13 && lep_isolationLoose_1 ) || ( TMath::Abs(lep_ID_1)==11 && lep_isolationLoose_1 && lep_isTightLH_1 && lep_chargeIDBDTTight_1>0.0670415 ) ) && lep_promptLeptonIso_TagWeight_0<-0.5 && lep_promptLeptonIso_TagWeight_1<-0.5 )'
-        database.getCut('TT').cutstr = cut_TT
-        database.getCut('TL').cutstr = '( 1 )'
-        database.getCut('LT').cutstr = '( 1 )'
-        database.getCut('LL').cutstr = '( 1 )'
+        database.getCut('TT').cutstr = '( lep_isTightSelected_0 && lep_isTightSelected_1 )'
+        database.getCut('TL').cutstr = '( lep_isTightSelected_0 && !lep_isTightSelected_1 )'
+        database.getCut('LT').cutstr = '( !lep_isTightSelected_0 && lep_isTightSelected_1 )'
+        database.getCut('LL').cutstr = '( !lep_isTightSelected_0 && !lep_isTightSelected_1 )'
 
         database.getCut('FakesSideband_TT').cutstr = '( isMMSideband_TT )'
         database.getCut('FakesSideband_TL').cutstr = '( isMMSideband_TAntiT )'
@@ -929,6 +930,8 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = "deltaRLep0Lep1", latexname = "#DeltaR(l_{0},l_{1})", ntuplename = delta_R_lep0lep1, bins = 10, minval = 0.0, maxval = 5.0, logaxis = True, sysvar = True) )
             database.registerVar( Variable(shortname = "deltaPhiLep0Lep1", latexname = "#Delta#phi(l_{0},l_{1})", ntuplename = delta_Phi_lep0lep1, bins = 10, minval = -3.14, maxval = 3.14, sysvar = True) )
             database.registerVar( Variable(shortname = "TotLepCharge", latexname = "Tot. lep. charge", ntuplename = "total_charge", bins = 7, minval = -3.5, maxval = 3.5, sysvar = True) )
+            database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 0.0, maxval = 200.0, sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 10, minval = 0.0, maxval = 100.0, sysvar = True ) )
 
     if doMMSidebands:
         database.registerVar( Variable(shortname = 'MMWeight', latexname = 'MM weight', ntuplename = 'MMWeight', bins = 50, minval = -0.5, maxval = 0.5) )
@@ -958,7 +961,7 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = 'NJets2j3j', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 5, minval = 0.5, maxval = 5.5, weight = 'JVT_EventWeight', sysvar = True) )
         if args.readGFW2:
             database.registerVar( Variable(shortname = "Lep0Pt", latexname = "p_{T}^{l_{0}} [GeV]", ntuplename = "lep_Pt_0/1e3", bins = 20, minval = 0.0, maxval = 200.0, sysvar = True ) )
-            database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 15, minval = 0.0, maxval = 150.0, sysvar = True ) )
+            database.registerVar( Variable(shortname = "Lep1Pt", latexname = "p_{T}^{l_{1}} [GeV]", ntuplename = "lep_Pt_1/1e3", bins = 10, minval = 0.0, maxval = 100.0, sysvar = True ) )
             database.registerVar( Variable(shortname = "Lep0Eta", latexname = "#eta^{l_{0}}", ntuplename = "lep_Eta_0", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], sysvar = True ) )
             database.registerVar( Variable(shortname = "Lep1Eta", latexname = "#eta^{l_{1}}", ntuplename = "lep_Eta_1", manualbins = [-2.5,-1.9,-1.3,-0.7,-0.1,0.0,0.1,0.7,1.3,1.9,2.5], sysvar = True ) )
             database.registerVar( Variable(shortname = "Lep0EtaBE2",latexname = "#eta^{l_{0}}", ntuplename = "lep_EtaBE2_0", manualbins = [-2.6,-2.0,-1.52,-1.37,-0.8,-0.5,0.0,0.5,0.8,1.37,1.52,2.0,2.6], sysvar = True ) )
@@ -1609,52 +1612,57 @@ if __name__ == "__main__":
 
             # ------------------------------------------
 
-            database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
-            database.registerVar( Variable(shortname = "Integral_LOGY", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, logaxis = True) )
+            # database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
+            # database.registerVar( Variable(shortname = "Integral_LOGY", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, logaxis = True) )
 
-            database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, logaxis = True) )
-            database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_real_pt) )
-            database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_fake_pt) )
-            database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_real_pt, logaxis = True) )
-            database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_fake_pt, logaxis = True) )
-            database.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", manualbins = manualbins_el_eta ) )
-            database.registerVar( Variable(shortname = "ElProbeDistanceClosestJet", latexname = '#DeltaR(e, closest jet)', ntuplename = el_probe + "deltaRClosestJet", bins = 50, minval = 0.0, maxval = 5.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 50, minval = 0.0, maxval = 5.0) )
-            database.registerVar( Variable(shortname = "ElProbeDistanceOtherLep", latexname = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1, bins = 50, minval = 0.0, maxval = 5.0) )
-            database.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
-            database.registerVar( Variable(shortname = "ElProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 2, minval = 0.5, maxval = 2.5, weight = "JVT_EventWeight * MV2c10_Continuous_EventWeight") )
-            #
-            # 2D parametrisations
-            #
-            database.registerVar( Variable(shortname = 'ElProbeNBJetsRAW_VS_ElProbePtRAW', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = manualbins_el_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJetRAW_VS_ElProbePtRAW', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = manualbins_el_fake_deltaRej, manualbinsY = manualbins_el_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'ElProbeEtaRAW_VS_ElProbePtRAW', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = manualbins_el_eta, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text") )
 
-            # ------------------------------------------
+            database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 65, minval = 15.0, maxval = 210.0, sysvar = True) )
 
-            database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, logaxis = True) )
-            database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_real_pt) )
-            database.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_fake_pt) )
-            database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_real_pt, logaxis = True) )
-            database.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_fake_pt, logaxis = True) )
-            database.registerVar( Variable(shortname = "MuProbeEta",latexname = "#eta^{#mu}", ntuplename = "TMath::Abs( " + mu_probe + "Eta )", manualbins = manualbins_mu_eta ) )
-            database.registerVar( Variable(shortname = "MuProbeDistanceClosestJet", latexname = '#DeltaR(#mu, closest jet)', ntuplename = mu_probe + "deltaRClosestJet", bins = 50, minval = 0.0, maxval = 5.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "MuProbeDistanceClosestBJet", latexname = '#DeltaR(#mu, closest b-jet)', ntuplename = mu_probe + "deltaRClosestBJet", bins = 50, minval = 0.0, maxval = 5.0) )
-            database.registerVar( Variable(shortname = "MuProbeDistanceOtherLep", latexname = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1, bins = 50, minval = 0.0, maxval = 5.0) )
-            database.registerVar( Variable(shortname = "MuProbeNJets", latexname = "N_{jets}", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
-            database.registerVar( Variable(shortname = "MuProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 2, minval = 0.5, maxval = 2.5, weight = "JVT_EventWeight * MV2c10_Continuous_EventWeight") )
-            #
-            # 2D parametrisations
-            #
-            database.registerVar( Variable(shortname = 'MuProbeNBJetsRAW_VS_MuProbePtRAW', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'MuProbeNBJets_VS_MuProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = manualbins_mu_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJetRAW_VS_MuProbePtRAW', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePt', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", manualbinsX = manualbins_mu_fake_deltaRmj, manualbinsY = manualbins_mu_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'MuProbeEtaRAW_VS_MuProbePtRAW', latexnameX = '#eta^{#mu}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":TMath::Abs( " + mu_probe + "Eta )", manualbinsX = manualbins_mu_eta, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text") )
+            #database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, logaxis = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_real_pt) )
+            # database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_fake_pt) )
+            # database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_real_pt, logaxis = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_fake_pt, logaxis = True) )
+            # database.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", manualbins = manualbins_el_eta ) )
+            # database.registerVar( Variable(shortname = "ElProbeDistanceClosestJet", latexname = '#DeltaR(e, closest jet)', ntuplename = el_probe + "deltaRClosestJet", bins = 50, minval = 0.0, maxval = 5.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 50, minval = 0.0, maxval = 5.0) )
+            # database.registerVar( Variable(shortname = "ElProbeDistanceOtherLep", latexname = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1, bins = 50, minval = 0.0, maxval = 5.0) )
+            # database.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
+            # database.registerVar( Variable(shortname = "ElProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 2, minval = 0.5, maxval = 2.5, weight = "JVT_EventWeight * MV2c10_Continuous_EventWeight") )
+            # #
+            # # 2D parametrisations
+            # #
+            # database.registerVar( Variable(shortname = 'ElProbeNBJetsRAW_VS_ElProbePtRAW', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = manualbins_el_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJetRAW_VS_ElProbePtRAW', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = manualbins_el_fake_deltaRej, manualbinsY = manualbins_el_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'ElProbeEtaRAW_VS_ElProbePtRAW', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = manualbins_el_eta, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text") )
+
+            # # ------------------------------------------
+
+            database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 65, minval = 15.0, maxval = 210.0, sysvar = True) )
+
+            # database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, logaxis = True) )
+            # database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_real_pt) )
+            # database.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_fake_pt) )
+            # database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_real_pt, logaxis = True) )
+            # database.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_fake_pt, logaxis = True) )
+            # database.registerVar( Variable(shortname = "MuProbeEta",latexname = "#eta^{#mu}", ntuplename = "TMath::Abs( " + mu_probe + "Eta )", manualbins = manualbins_mu_eta ) )
+            # database.registerVar( Variable(shortname = "MuProbeDistanceClosestJet", latexname = '#DeltaR(#mu, closest jet)', ntuplename = mu_probe + "deltaRClosestJet", bins = 50, minval = 0.0, maxval = 5.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "MuProbeDistanceClosestBJet", latexname = '#DeltaR(#mu, closest b-jet)', ntuplename = mu_probe + "deltaRClosestBJet", bins = 50, minval = 0.0, maxval = 5.0) )
+            # database.registerVar( Variable(shortname = "MuProbeDistanceOtherLep", latexname = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1, bins = 50, minval = 0.0, maxval = 5.0) )
+            # database.registerVar( Variable(shortname = "MuProbeNJets", latexname = "N_{jets}", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
+            # database.registerVar( Variable(shortname = "MuProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 2, minval = 0.5, maxval = 2.5, weight = "JVT_EventWeight * MV2c10_Continuous_EventWeight") )
+            # #
+            # # 2D parametrisations
+            # #
+            # database.registerVar( Variable(shortname = 'MuProbeNBJetsRAW_VS_MuProbePtRAW', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'MuProbeNBJets_VS_MuProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = manualbins_mu_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJetRAW_VS_MuProbePtRAW', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePt', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", manualbinsX = manualbins_mu_fake_deltaRmj, manualbinsY = manualbins_mu_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            # database.registerVar( Variable(shortname = 'MuProbeEtaRAW_VS_MuProbePtRAW', latexnameX = '#eta^{#mu}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":TMath::Abs( " + mu_probe + "Eta )", manualbinsX = manualbins_mu_eta, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text") )
 
             # -----------------------------------------------------------------------------------------------------------------
             # MC subtraction: what gets plotted will be subtracted to data:
@@ -1805,34 +1813,15 @@ if __name__ == "__main__":
                         database.registerCategory( MyCategory('FakeCRMuL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         database.registerCategory( MyCategory('FakeCRMuAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         database.registerCategory( MyCategory('FakeCRMuT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-
-                        # 1BJet slice
-                        # database.registerCategory( MyCategory('FakeCRMuL_1BJet',     cut = common_cuts_1BJet & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # database.registerCategory( MyCategory('FakeCRMuAntiT_1BJet', cut = common_cuts_1BJet & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # database.registerCategory( MyCategory('FakeCRMuT_1BJet',     cut = common_cuts_1BJet & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # # 2BJet slice
-                        # database.registerCategory( MyCategory('FakeCRMuL_2BJet',     cut = common_cuts_2BJet & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # database.registerCategory( MyCategory('FakeCRMuAntiT_2BJet', cut = common_cuts_2BJet & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # database.registerCategory( MyCategory('FakeCRMuT_2BJet',     cut = common_cuts_2BJet & database.getCuts(['2Lep_SS','2Lep_MuProbe','2Lep_MuMu_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                     if any( l in args.lepton for l in ["ALL","e"] ):
                         # database.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         # database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         # database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_OF_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-
+                        #
                         # To compare w/ Kun: look only at events where the muon is leading
                         database.registerCategory( MyCategory('FakeCRElL',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         database.registerCategory( MyCategory('FakeCRElAntiT', cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
                         database.registerCategory( MyCategory('FakeCRElT',     cut = common_cuts & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-
-                        # 1BJet slice
-                        # database.registerCategory( MyCategory('FakeCRElL_1BJet',     cut = common_cuts_1BJet & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # database.registerCategory( MyCategory('FakeCRElAntiT_1BJet', cut = common_cuts_1BJet & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # database.registerCategory( MyCategory('FakeCRElT_1BJet',     cut = common_cuts_1BJet & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # # 2BJet slice
-                        # database.registerCategory( MyCategory('FakeCRElL_2BJet',     cut = common_cuts_2BJet & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # database.registerCategory( MyCategory('FakeCRElAntiT_2BJet', cut = common_cuts_2BJet & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeAntiTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-                        # database.registerCategory( MyCategory('FakeCRElT_2BJet',     cut = common_cuts_2BJet & database.getCuts(['2Lep_SS','2Lep_MuTag','2Lep_ElProbe','2Lep_MuEl_Event','2Lep_ProbeTight']) & truth_sub_SS, weight = weight_TP_MM, ratiolims=ratiolims_fake ) )
-
 
                 if "CLOSURE" in args.channel and not any( opt in args.channel for opt in ["TRUTH_TP","TRUTH_ON_PROBE","PHOTON_CONV","LEP_FROM_JET"]):
 
@@ -2275,7 +2264,7 @@ if __name__ == "__main__":
         'TTBar':('ttbarbkg','$t\\bar{t}$'),
         'TTBarGammaStarAsymm':('ttbargammmastarasymmbkg','t\\bar{t}\\ell\\ell(asymm. \\gamma*)'),
         'TTBarWbGammaStar':('ttbarwbgammmastarbkg','t\\bar{t}(\\rightarrow Wb\\ell\\ell)'),
-        'TTBarGammaStar':('ttbargammmastarbkg','t\\bar{t}(\\gamma^{*}\\ell\\ell)'),
+        'TTBarGammaStar':('ttbargammmastarbkg','t\\bar{t}(\\gamma*\\ell\\ell)'),
         'TTBarNoTTBarGamma':('ttbarbkg','$t\\bar{t}$'),
         'TopCF':('topcfbkg','$t\\bar{t}$ (Charge mis-ID)'),
         'Diboson':('dibosonbkg','$WW$,$WZ$,$ZZ$'),
@@ -2377,6 +2366,7 @@ if __name__ == "__main__":
             # TEMP:
             # ttH.signals         = []
             # ttH.backgrounds     = ['FakesMM']
+            # ttH.debugprocs.append('FakesMM')
 
         elif doFF:
 
@@ -2406,7 +2396,7 @@ if __name__ == "__main__":
 
             # ttH.backgrounds.extend(['Prompt','FakesMC']) # This includes all the following processes: ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Triboson','THbj','WtH']
 
-            ttH.backgrounds.extend(['TTBarW','TTBarZ','Diboson','Rare','FakesMC']) # This includes all the following processes: ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Triboson','THbj','WtH']
+            ttH.backgrounds.extend(['TTBarGammaStar','TTBarW','TTBarZ','Diboson','Rare','FakesMC']) # This includes all the following processes: ['TTBar','SingleTop','RareTop','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Triboson','THbj','WtH']
 
             if args.useMCQMisID:
                 ttH.backgrounds.append('QMisIDMC')
@@ -2428,7 +2418,7 @@ if __name__ == "__main__":
         #ttH.backgrounds = ['TTBarW','OtherPrompt','TTBar','FakesMC']
 
         if args.splitProcs:
-            ttH.backgrounds = ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson'] # NB: if using this list, make sure a QMisID veto is applied in the category cut, since QMisID is added separately below
+            ttH.backgrounds = ['TTBar','SingleTop','TTBarGammaStar','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Rare'] # NB: if using this list, make sure a QMisID veto is applied in the category cut, since QMisID is added separately below
 
         ttH.debugprocs  = ['Observed','TTBar','TTBarW','TTBarGammaStar','TTBarWbGammaStar','TTBarGammaStarAsymm']
 
@@ -2732,7 +2722,10 @@ if __name__ == "__main__":
             # For some categories, make sure non-relevant processes are removed from the proc list!
 
             if "RealCR" in category.name or ( "LH" in args.channel and "OS_" in category.name ):
-                mybackgrounds = [ bkg for bkg in mybackgrounds if ( "FakesMC" not in mybackgrounds or bkg == "FakesMC" ) ]
+                if "DATAMC" in args.channel:
+                    mybackgrounds = [ bkg for bkg in mybackgrounds if bkg != "FakesMC" ]
+                else:
+                    mybackgrounds = [ bkg for bkg in mybackgrounds if ( "FakesMC" not in mybackgrounds or bkg == "FakesMC" ) ]
             if "FakeCR" in category.name or ( "LH" in args.channel and "SS_" in category.name ):
                 mybackgrounds = [ bkg for bkg in mybackgrounds if not bkg == "FakesMC" ]
                 if "LH" in args.channel:

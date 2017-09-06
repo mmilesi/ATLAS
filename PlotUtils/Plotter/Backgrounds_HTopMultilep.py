@@ -181,7 +181,8 @@ class TTHBackgrounds(Background):
             lumtext = drawText(text="  #int L dt = %.2f pb^{-1}"%(self.luminosity*1000), x=.2, y=.87, size=0.04 * scale)
 
         cmetext   = drawText(text="         #sqrt{s} = 13 TeV", x=.2, y=.82, size=0.03 * scale)
-        atlastext = drawText(text="#bf{#it{ATLAS}} Work In Progress", x=.2, y=.77, size=0.03 * scale)
+        # atlastext = drawText(text="#bf{#it{ATLAS}} Work In Progress", x=.2, y=.77, size=0.03 * scale)
+        atlastext = drawText(text="#bf{#it{ATLAS}} Internal", x=.2, y=.77, size=0.03 * scale)
 
         return lower, locals()
 
@@ -1704,8 +1705,12 @@ class TTHBackgrounds(Background):
                 del inputgroup[:]
                 inputgroup = [
                     # PP8
-                    ('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
-                    ('tops_MMClosure', 'ttgamma'),
+                    #('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
+                    #('tops_MMClosure', 'ttgamma'),
+                    #
+                    ('tops', 'ttbar_nonallhad_Pythia8'),
+                    ('tops', 'ttgamma'),
+                    #
                     # PP6
                     #('tops_MMClosure', 'ttgamma_vPP6'),
                     #('tops_MMClosure', 'ttbar_nonallhad'),
@@ -1746,7 +1751,6 @@ class TTHBackgrounds(Background):
                 sp = sp.subprocess(cut=self.vardb.getCut(TTcut))
 
             tt_ttgamma_OLR_cut = Cut("TTBar_TTGamma_OLR","( ( mc_channel_number == 410082 && m_MEphoton_OLtty_cat1 ) || ( mc_channel_number != 410082 && m_MEphoton_OLtty_keepEvent && !m_hasMEphoton_DRgt02_nonhad ) )")
-            # tt_ttgamma_OLR_cut = Cut("TTBar_TTGamma_OLR","( 1 )")
             sp = sp.subprocess(cut=tt_ttgamma_OLR_cut)
 
             print("\n{0} - cuts: {1}, process weight: {2}".format(self.__class__.__name__,sp.basecut.cutnamelist, weight))
@@ -2401,8 +2405,8 @@ class TTHBackgrounds(Background):
             rare_top  = self.parent.procmap['RareTop'](treename, category, options)
             ttbarw    = self.parent.procmap['TTBarW'](treename, category, options)
             ttbarz    = self.parent.procmap['TTBarZ'](treename, category, options)
-            # ttbargamma = self.parent.procmap['TTBarGamma'](treename, category, options)
             ttbar     = self.parent.procmap['TTBar'](treename, category, options)
+            ttbargammastar = self.parent.procmap['TTBarGammaStar'](treename, category, options)
             singletop = self.parent.procmap['SingleTop'](treename, category, options)
             zjets     = self.parent.procmap['Zjets'](treename, category, options)
             wjets     = self.parent.procmap['Wjets'](treename, category, options)
@@ -2425,28 +2429,33 @@ class TTHBackgrounds(Background):
             if TTcut:
                 updatedcut = updatedcut & self.vardb.getCut(TTcut)
 
+            # Remeber the OLR for ttbar,ttgamma
+
+            tt_ttgamma_OLR_cut = Cut("TTBar_TTGamma_OLR","( ( mc_channel_number == 410082 && m_MEphoton_OLtty_cat1 ) || ( mc_channel_number != 410082 && m_MEphoton_OLtty_keepEvent && !m_hasMEphoton_DRgt02_nonhad ) )")
+
             # Reset the cut to the subprocesses
 
-            diboson   = diboson.subprocess(cut=updatedcut, clearbasecut=True)
-            rare_top  = rare_top.subprocess(cut=updatedcut, clearbasecut=True)
-            ttbarw    = ttbarw.subprocess(cut=updatedcut, clearbasecut=True)
-            ttbarz    = ttbarz.subprocess(cut=updatedcut, clearbasecut=True)
-            ttbar     = ttbar.subprocess(cut=updatedcut, clearbasecut=True)
-            singletop = singletop.subprocess(cut=updatedcut, clearbasecut=True)
-            zjets     = zjets.subprocess(cut=updatedcut, clearbasecut=True)
-            wjets     = wjets.subprocess(cut=updatedcut, clearbasecut=True)
+            diboson        = diboson.subprocess(cut=updatedcut, clearbasecut=True)
+            rare_top       = rare_top.subprocess(cut=updatedcut, clearbasecut=True)
+            ttbarw         = ttbarw.subprocess(cut=updatedcut, clearbasecut=True)
+            ttbarz         = ttbarz.subprocess(cut=updatedcut, clearbasecut=True)
+            ttbar          = ttbar.subprocess(cut=updatedcut & tt_ttgamma_OLR_cut, clearbasecut=True)
+            ttbargammastar = ttbargammastar.subprocess(cut=updatedcut, clearbasecut=True)
+            singletop      = singletop.subprocess(cut=updatedcut, clearbasecut=True)
+            zjets          = zjets.subprocess(cut=updatedcut, clearbasecut=True)
+            wjets          = wjets.subprocess(cut=updatedcut, clearbasecut=True)
 
-            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Diboson",diboson.basecut.cutnamelist, diboson.eventweight))
-            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("RareTop",rare_top.basecut.cutnamelist, rare_top.eventweight))
-            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBarW",ttbarw.basecut.cutnamelist, ttbarw.eventweight))
-            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBarZ",ttbarz.basecut.cutnamelist, ttbarz.eventweight))
-            # print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBarGamma",ttbargamma.basecut.cutnamelist, ttbarw.eventweight))
-            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("TTBar",ttbar.basecut.cutnamelist, ttbar.eventweight))
-            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("SingleTop",singletop.basecut.cutnamelist, singletop.eventweight))
-            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Zjets",zjets.basecut.cutnamelist, zjets.eventweight))
-            print("\n{0} - UPDATED cuts: {1}, process weight: {2}".format("Wjets",wjets.basecut.cutnamelist, wjets.eventweight))
+            print("\n{0} - UPDATED cuts: {1}, yield : {2:.2f} +- {3:.2f}".format("Diboson",diboson.basecut.cutnamelist, (diboson.numberstats(eventweight=category.weight))[0], (diboson.numberstats(eventweight=category.weight))[1]) )
+            print("\n{0} - UPDATED cuts: {1}, yield : {2:.2f} +- {3:.2f}".format("RareTop",rare_top.basecut.cutnamelist, (rare_top.numberstats(eventweight=category.weight))[0], (rare_top.numberstats(eventweight=category.weight))[1]) )
+            print("\n{0} - UPDATED cuts: {1}, yield : {2:.2f} +- {3:.2f}".format("TTBarW",ttbarw.basecut.cutnamelist, (ttbarw.numberstats(eventweight=category.weight))[0], (ttbarw.numberstats(eventweight=category.weight))[1]) )
+            print("\n{0} - UPDATED cuts: {1}, yield : {2:.2f} +- {3:.2f}".format("TTBarZ",ttbarz.basecut.cutnamelist, (ttbarz.numberstats(eventweight=category.weight))[0], (ttbarz.numberstats(eventweight=category.weight))[1]) )
+            print("\n{0} - UPDATED cuts: {1}, yield : {2:.2f} +- {3:.2f}".format("TTBar",ttbar.basecut.cutnamelist, (ttbar.numberstats(eventweight=category.weight))[0], (ttbar.numberstats(eventweight=category.weight))[1]) )
+            print("\n{0} - UPDATED cuts: {1}, yield : {2:.2f} +- {3:.2f}".format("TTBarGammaStar",ttbargammastar.basecut.cutnamelist, (ttbargammastar.numberstats(eventweight=category.weight))[0], (ttbargammastar.numberstats(eventweight=category.weight))[1]) )
+            print("\n{0} - UPDATED cuts: {1}, yield : {2:.2f} +- {3:.2f}".format("SingleTop",singletop.basecut.cutnamelist, (singletop.numberstats(eventweight=category.weight))[0], (singletop.numberstats(eventweight=category.weight))[1]) )
+            print("\n{0} - UPDATED cuts: {1}, yield : {2:.2f} +- {3:.2f}".format("Zjets",zjets.basecut.cutnamelist, (zjets.numberstats(eventweight=category.weight))[0], (zjets.numberstats(eventweight=category.weight))[1]) )
+            print("\n{0} - UPDATED cuts: {1}, yield : {2:.2f} +- {3:.2f}".format("Wjets",wjets.basecut.cutnamelist, (wjets.numberstats(eventweight=category.weight))[0], (wjets.numberstats(eventweight=category.weight))[1]) )
 
-            return diboson + rare_top + ttbarw + ttbarz + ttbar + singletop + zjets + wjets # + ttbargamma
+            return diboson + rare_top + ttbarw + ttbarz + ttbar + ttbargammastar + singletop + zjets + wjets
 
 
     class FakesFF(Process):
@@ -2628,12 +2637,12 @@ class TTHBackgrounds(Background):
                 sp_LT  = sp_LT - sp_OS_LT
                 sp_LL  = sp_LL - sp_OS_LL
 
-                if debugflag:
-                    print(" ")
-                    print("{0} - TT : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0]))
-                    print("{0} - TL : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0]))
-                    print("{0} - LT : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0]))
-                    print("{0} - LL : Fakes (AFTER OS subtraction) = {1:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0]))
+            if debugflag:
+                print(" ")
+                print("{0} - TT : Fakes = {1:.2f}".format(self.__class__.__name__,(sp_TT.numberstats())[0]))
+                print("{0} - TL : Fakes = {1:.2f}".format(self.__class__.__name__,(sp_TL.numberstats())[0]))
+                print("{0} - LT : Fakes = {1:.2f}".format(self.__class__.__name__,(sp_LT.numberstats())[0]))
+                print("{0} - LL : Fakes = {1:.2f}".format(self.__class__.__name__,(sp_LL.numberstats())[0]))
 
             sp = sp_TT + sp_TL + sp_LT + sp_LL
 

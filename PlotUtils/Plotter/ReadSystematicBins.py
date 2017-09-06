@@ -262,19 +262,19 @@ def getTotFakeUncertainty( nominal, stat, flav, var, debug=False ):
 
     # Option F'
 
-    # non_closure_vals["MuMu"]      = 0.10 if preMVA else 0.10 # Updated on v29, 25_07_17
-    # non_closure_vals["OF"]        = 0.11 if preMVA else 0.07 # Updated on v29, 25_07_17
-    # non_closure_vals["ElMu"]      = 0.11 if preMVA else 0.07 # Updated on v29, 25_07_17
-    # non_closure_vals["MuEl"]      = 0.11 if preMVA else 0.07 # Updated on v29, 25_07_17
-    # non_closure_vals["ElEl"]      = 0.11 if preMVA else 0.10 # Updated on v29, 25_07_17
-    # non_closure_vals["Inclusive"] = 0.00 if preMVA else 0.00 # Updated on v29, 25_07_17
+    non_closure_vals["MuMu"]      = 0.10 if preMVA else 0.10 # Updated on v29, 25_07_17
+    non_closure_vals["OF"]        = 0.11 if preMVA else 0.07 # Updated on v29, 25_07_17
+    non_closure_vals["ElMu"]      = 0.11 if preMVA else 0.07 # Updated on v29, 25_07_17
+    non_closure_vals["MuEl"]      = 0.11 if preMVA else 0.07 # Updated on v29, 25_07_17
+    non_closure_vals["ElEl"]      = 0.11 if preMVA else 0.10 # Updated on v29, 25_07_17
+    non_closure_vals["Inclusive"] = 0.00 if preMVA else 0.00 # Updated on v29, 25_07_17
 
-    non_closure_vals["MuMu"]      = 0.10 if preMVA else 0.10 # Updated on v29, 29_07_17
-    non_closure_vals["OF"]        = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
-    non_closure_vals["ElMu"]      = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
-    non_closure_vals["MuEl"]      = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
-    non_closure_vals["ElEl"]      = 0.09 if preMVA else 0.10 # Updated on v29, 29_07_17
-    non_closure_vals["Inclusive"] = 0.00 if preMVA else 0.00 # Updated on v29, 29_07_17
+    # non_closure_vals["MuMu"]      = 0.10 if preMVA else 0.10 # Updated on v29, 29_07_17
+    # non_closure_vals["OF"]        = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
+    # non_closure_vals["ElMu"]      = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
+    # non_closure_vals["MuEl"]      = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
+    # non_closure_vals["ElEl"]      = 0.09 if preMVA else 0.10 # Updated on v29, 29_07_17
+    # non_closure_vals["Inclusive"] = 0.00 if preMVA else 0.00 # Updated on v29, 29_07_17
 
     if ( flav == "Inclusive" and var == "LepFlavours" ):
         non_closure ={"MuMu":non_closure_vals["MuMu"] * nominal, "OF":non_closure_vals["OF"] * nominal, "ElEl":non_closure_vals["ElEl"] * nominal, "ElMu":non_closure_vals["ElMu"] * nominal, "MuEl":non_closure_vals["MuEl"] * nominal}
@@ -1536,7 +1536,7 @@ if __name__ == '__main__':
          inputpath += '/'
 
     var_list = [
-        # "Integral",
+        "Integral",
         "deltaRLep0Lep1",
         "deltaPhiLep0Lep1",
         "MET_FinalTrk",

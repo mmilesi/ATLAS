@@ -61,7 +61,7 @@ def copy_source(subdir = string.Template("$TMPDIR").substitute(os.environ), forc
 
     print("Making a tarball of input package and moving it to submission directory...")
     if not os.path.isfile(subdir+"/"+tarballname) or args.forcetarball:
-        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs","--exclude=\'Output*\'"])
+        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs","--exclude=\'HTopMultilepAnalysis/PlotUtils/Output*\'"])
         shutil.move("./"+tarballname,subdir+"/"+tarballname)
     else:
         print("Good! Tarball of code already exists in submission directory...")
@@ -211,17 +211,17 @@ exit 0
         "ElProbeDistanceClosestJetRAW_VS_ElProbePtRAW",
         "ElProbeEtaRAW_VS_ElProbePtRAW",
         #
-        "MuProbePt",
-        "MuProbePt_LOGY",
-        "MuProbePt_RealEffBinning",
-        "MuProbePt_FakeEffBinning",
-        "MuProbePt_RealEffBinning_LOGY",
-        "MuProbePt_FakeEffBinning_LOGY",
-        "MuProbeNBJetsRAW_VS_MuProbePtRAW",
-        "MuProbeDistanceClosestJetRAW_VS_MuProbePtRAW",
-        "MuProbeEtaRAW_VS_MuProbePtRAW",
+        # "MuProbePt",
+        # "MuProbePt_LOGY",
+        # "MuProbePt_RealEffBinning",
+        # "MuProbePt_FakeEffBinning",
+        # "MuProbePt_RealEffBinning_LOGY",
+        # "MuProbePt_FakeEffBinning_LOGY",
+        # "MuProbeNBJetsRAW_VS_MuProbePtRAW",
+        # "MuProbeDistanceClosestJetRAW_VS_MuProbePtRAW",
+        # "MuProbeEtaRAW_VS_MuProbePtRAW",
         #
-        "ElProbeEta",
+        # "ElProbeEta",
         # "ElProbeDistanceClosestJet",
         # "ElProbeDistanceClosestBJet",
         # "ElProbeDistanceOtherLep",
@@ -229,7 +229,7 @@ exit 0
         # "ElProbeNBJets",
         # "ElProbeNBJets_VS_ElProbePt",
         # "ElProbeDistanceClosestJet_VS_ElProbePt",
-        "MuProbeEta",
+        # "MuProbeEta",
         # "MuProbeDistanceClosestJet",
         # "MuProbeDistanceClosestBJet",
         # "MuProbeDistanceOtherLep",
@@ -245,16 +245,16 @@ exit 0
         # "Mll01_inc",
         # "MET_FinalTrk",
         # "deltaRLep0Lep1",
-        # "deltaPhiLep0Lep1",
-        # "TotLepCharge",
-        #
+        # ## "deltaPhiLep0Lep1",
+        # ## "TotLepCharge",
+        # #
         # "BDTGScore",
         # "BDTGScore_ttH_ttbarDD",
         # "BDTGScore_ttH_ttV",
-        # "El0Origin_VS_BDTGScore",
-        # "Mu0Origin_VS_BDTGScore",
-        # "El1Origin_VS_BDTGScore",
-        # "Mu1Origin_VS_BDTGScore",
+        # # "El0Origin_VS_BDTGScore",
+        # # "Mu0Origin_VS_BDTGScore",
+        # # "El1Origin_VS_BDTGScore",
+        # # "Mu1Origin_VS_BDTGScore",
         # "Lep0Pt",
         # "Lep1Pt",
         # "Lep0Eta",
@@ -279,7 +279,7 @@ exit 0
         # "Mu0DeltaRClosestJet",
         # "Mu1DeltaRClosestJet",
         #
-        #"LepFlavours",
+        # "LepFlavours",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",
