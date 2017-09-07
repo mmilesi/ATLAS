@@ -274,6 +274,10 @@ def getTotFakeUncertainty( nominal, stat, flav, var, debug=False ):
     # non_closure_vals["ElMu"]      = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
     # non_closure_vals["MuEl"]      = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
     # non_closure_vals["ElEl"]      = 0.09 if preMVA else 0.10 # Updated on v29, 29_07_17
+
+
+
+
     # non_closure_vals["Inclusive"] = 0.00 if preMVA else 0.00 # Updated on v29, 29_07_17
 
     if ( flav == "Inclusive" and var == "LepFlavours" ):
@@ -296,11 +300,18 @@ def getTotFakeUncertainty( nominal, stat, flav, var, debug=False ):
     if addConversions:
         conversion_vals = {}
 
+        # conversion_vals["MuMu"]      = 0.0   # Updated on v29, 25_07_17
+        # conversion_vals["OF"]        = 0.01  # Updated on v29, 25_07_17
+        # conversion_vals["ElMu"]      = 0.01  # Updated on v29, 25_07_17
+        # conversion_vals["MuEl"]      = 0.01  # Updated on v29, 25_07_17
+        # conversion_vals["ElEl"]      = 0.16  # Updated on v29, 25_07_17
+        # conversion_vals["Inclusive"] = 0.0 # Not calculated yet
+
         conversion_vals["MuMu"]      = 0.0
-        conversion_vals["OF"]        = 0.01
-        conversion_vals["ElMu"]      = 0.01
-        conversion_vals["MuEl"]      = 0.01
-        conversion_vals["ElEl"]      = 0.16
+        conversion_vals["OF"]        = 0.03
+        conversion_vals["ElMu"]      = 0.03
+        conversion_vals["MuEl"]      = 0.03
+        conversion_vals["ElEl"]      = 0.18
         conversion_vals["Inclusive"] = 0.0 # Not calculated yet
 
         if ( flav == "Inclusive" and var == "LepFlavours" ):
@@ -1537,14 +1548,14 @@ if __name__ == '__main__':
 
     var_list = [
         "Integral",
-        "deltaRLep0Lep1",
-        "deltaPhiLep0Lep1",
-        "MET_FinalTrk",
-        "Mll01_inc",
+        # "deltaRLep0Lep1",
+        # "deltaPhiLep0Lep1",
+        # "MET_FinalTrk",
+        # "Mll01_inc",
         # # "TotLepCharge",
-        "NBJets",
-        "NJets2j3j",
-        "NJets4j",
+        # "NBJets",
+        # "NJets2j3j",
+        # "NJets4j",
         #
         # "LepFlavours",
         #
@@ -1563,18 +1574,18 @@ if __name__ == '__main__':
         # "Lep1DeltaRClosestJet",
         # "Lep1DeltaRClosestJet_Rebinned",
         #
-        "Mu0Pt",
-        "Mu1Pt",
-        "Mu0Eta",
-        "Mu1Eta",
-        "Mu0DeltaRClosestJet",
-        "Mu1DeltaRClosestJet",
-        "El0Pt",
-        "El1Pt",
-        "El0Eta",
-        "El1Eta",
-        "El0DeltaRClosestJet",
-        "El1DeltaRClosestJet",
+        # "Mu0Pt",
+        # "Mu1Pt",
+        # "Mu0Eta",
+        # "Mu1Eta",
+        # "Mu0DeltaRClosestJet",
+        # "Mu1DeltaRClosestJet",
+        # "El0Pt",
+        # "El1Pt",
+        # "El0Eta",
+        # "El1Eta",
+        # "El0DeltaRClosestJet",
+        # "El1DeltaRClosestJet",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",

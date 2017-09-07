@@ -71,7 +71,7 @@ def plotFakeEfficiency_El():
     p0_props = {
                 "legend"      : "N_{b-tags} = 1",
                 "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.15),
+                "yAxisRange"  : (0.0,0.2),
                 "xAxisTitle"  : "p_{T} [GeV]",
                 #"xAxisLog"    : True,
                 "colour"      : kBlue+2,
@@ -89,7 +89,7 @@ def plotFakeEfficiency_El():
     p1_props = {
                 "legend"      : "N_{b-tags} #geq 2",
                 "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.15),
+                "yAxisRange"  : (0.0,0.2),
                 "colour"      : kBlue-7,
                 "lineStyle"   : 1,
                 "lineWidth"   : 3,
@@ -172,4 +172,112 @@ def plotFakeEfficiency_Mu():
     # Clear before returning
 
     del plotlist[:]
+
+# ----------------------------------------------------------------
+
+def plotRealEfficiency_Closure():
+
+    plotlist = []
+
+    p0_props = {
+                "legend"      : "e",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.6,1.05),
+                "xAxisTitle"  : "p_{T} [GeV]",
+                "xAxisLog"    : True,
+                "colour"      : kBlue,
+                "lineStyle"   : 2,
+                "lineWidth"   : 3,
+                "markerStyle" : 24,
+                "markerSize"  : 1.4,
+               }
+
+    p0 = Plot("Real_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies.root", p0_props)
+
+    plotlist.append(p0)
+
+    p1_props = {
+                "legend"      : "#mu",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.6,1.1),
+                "colour"      : kRed,
+                "lineStyle"   : 1,
+                "lineWidth"   : 3,
+                "markerStyle" : 24,
+                "markerSize"  : 1.4,
+               }
+
+    p1 = Plot("Real_Mu_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies.root", p1_props)
+
+    plotlist.append(p1)
+
+    multiP = MultiPlot( plots=plotlist )
+    multiP.luminosity = luminosity
+    multiP.buildLegend( header="#it{t#bar{t}} - e^{#pm}#mu^{#mp}, #mu^{#pm}e^{#mp}" )
+    multiP.setCanvasCoords([50,50,800,800])
+    # multiP.setPlotTitle("Real efficiency",(0.6,0.88))
+
+    outdir = "./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/EfficiencyPlots/QualityPlots"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    multiP.makeMultiPlot( outdir, "RealEfficiency_ElMu" )
+
+    # Clear before returning
+
+    del plotlist[:]
+
+
+def plotFakeEfficiency_Closure():
+
+    plotlist = []
+
+    p0_props = {
+                "legend"      : "e",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.0,0.065),
+                "xAxisTitle"  : "p_{T} [GeV]",
+                #"xAxisLog"    : True,
+                "colour"      : kBlue,
+                "lineStyle"   : 2,
+                "lineWidth"   : 3,
+                "markerStyle" : 24,
+                "markerSize"  : 1.4,
+               }
+
+    p0 = Plot("RESCALED_2L_ee_Fake_El_NBJets_VS_Pt_Efficiency_expectedbkg_projPt_inclusive","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies.root", p0_props)
+
+    plotlist.append(p0)
+
+    p1_props = {
+                "legend"      : "#mu",
+                "yAxisTitle"  : "#varepsilon",
+                "yAxisRange"  : (0.0,0.065),
+                "colour"      : kRed,
+                "lineStyle"   : 1,
+                "lineWidth"   : 3,
+                "markerStyle" : 24,
+                "markerSize"  : 1.4,
+               }
+
+    p1 = Plot("Fake_Mu_DistanceClosestJet_VS_Pt_Efficiency_expectedbkg_projPt_inclusive","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies.root", p1_props)
+
+    plotlist.append(p1)
+
+    multiP = MultiPlot( plots=plotlist )
+    multiP.luminosity = luminosity
+    multiP.buildLegend( header="#it{t#bar{t}} - Fake CRs",lcoords=[0.65,0.7,0.93,0.9] )
+    multiP.setCanvasCoords([50,50,800,800])
+    # multiP.setPlotTitle("Electron fake rate",(0.2,0.7))
+
+    outdir = "./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/EfficiencyPlots/QualityPlots"
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    multiP.makeMultiPlot( outdir, "FakeRate_ElMu" )
+
+    # Clear before returning
+
+    del plotlist[:]
+
 

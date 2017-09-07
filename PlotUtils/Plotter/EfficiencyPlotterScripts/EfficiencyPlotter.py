@@ -475,7 +475,7 @@ def plotFakeElectron_NonPromptVSPhotonConv():
                 "markerSize"  : 1.4,
                }
 
-    p2 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies_410501_410082_FixedRescaling_25_07_17.root", p2_props)
+    p2 = Plot("Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies_410501_410082_FixedRescaling_26_07_17.root", p2_props)
 
     plotlist.append(p2)
 
@@ -490,8 +490,7 @@ def plotFakeElectron_NonPromptVSPhotonConv():
                 "markerSize"  : 1.4,
                }
 
-    p3 = Plot("RESCALED_2L_ee_Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies_410501_410082_FixedRescaling_25_07_17.root", p3_props)
-
+    p3 = Plot("RESCALED_2L_ee_Fake_El_Pt_Efficiency_expectedbkg","./PLOTS_25ns_v29/OutputPlots_MMClosureRates_25ns_v29/LeptonEfficiencies_410501_410082_FixedRescaling_26_07_17.root", p3_props)
 
     plotlist.append(p3)
 
