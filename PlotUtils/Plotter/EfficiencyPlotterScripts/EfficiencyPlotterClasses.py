@@ -419,13 +419,21 @@ class Plot:
  	if self.__props.get("xAxisLog") :
             gPad.SetLogx( self.__props["xAxisLog"] )
             if self.__props["xAxisLog"]:
-                self.__hist.GetXaxis().SetMoreLogLabels()
-                self.__hist.GetXaxis().SetNoExponent()
+                if self.__syshists:
+                    self.__syserrhist.GetXaxis().SetMoreLogLabels()
+                    self.__syserrhist.GetXaxis().SetNoExponent()
+                else:
+                    self.__hist.GetXaxis().SetMoreLogLabels()
+                    self.__hist.GetXaxis().SetNoExponent()
  	if self.__props.get("yaxisLog") :
             gPad.SetLogy( self.__props["yaxisLog"] )
             if self.__props["yaxisLog"]:
-                self.__hist.GetYaxis().SetMoreLogLabels()
-                self.__hist.GetYaxis().SetNoExponent()
+                if self.__syshists:
+                    self.__syserrhist.GetYaxis().SetMoreLogLabels()
+                    self.__syserrhist.GetYaxis().SetNoExponent()
+                else:
+                    self.__hist.GetYaxis().SetMoreLogLabels()
+                    self.__hist.GetYaxis().SetNoExponent()
 
         # Deal with alphanumeric axis labels
 
@@ -439,7 +447,6 @@ class Plot:
             self.__hist.GetYaxis().SetTitleOffset(2.255) # increase a bit the axis title offset
             self.__hist.GetYaxis().SetLabelSize(0.03)
             self.__hist.GetYaxis().SetTitleSize(0.04)
-
 
         # For 2D histograms, this will change the size of the labels on the COLZ axis
         # NB: must be done after calling Draw()!
