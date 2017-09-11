@@ -98,7 +98,9 @@ parser.add_argument("--update", dest="update", action="store_true", default=Fals
 
 args = parser.parse_args()
 
-from ROOT import ROOT, gROOT, gStyle, Double, gPad, TPad, TLine, TH1, TH1D, TH2, TH2D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
+import ROOT
+
+from ROOT import gROOT, gStyle, Double, gPad, TPad, TLine, TH1, TH1D, TH2, TH2D, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency, kFullCircle, kCircle, kOpenTriangleUp, kDot, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
 
 from Plotter.BackgroundTools import set_fancy_2D_style, integrate
 
@@ -108,8 +110,8 @@ gROOT.LoadMacro(os.path.abspath(os.path.curdir)+"/Plotter/AtlasStyle.C")
 from ROOT import SetAtlasStyle
 SetAtlasStyle()
 
-from ROOT import kInfo
-ROOT.gErrorIgnoreLevel = kInfo;
+from ROOT import kInfo, kWarning, kError, kFatal
+ROOT.gErrorIgnoreLevel = kError
 
 TH1.SetDefaultSumw2()
 
@@ -1415,10 +1417,10 @@ class RealFakeEffTagAndProbe:
                             elif "3L_OF" in tag:
                                 print("\n\tRescaling 3L efficiency w/ key: {0} by the relative 3LOF(Pre-MVA)/2LOF(CR) photon conversion fraction\n".format(key_heff))
 
-                        # Assign 40 % uncertainty on alpha in each bin
+                        # Assign 42 % uncertainty on alpha in each bin (see Alpha.py)
                         # https://indico.cern.ch/event/656749/contributions/2676120/attachments/1500943/2338469/3LClosure_20170731.pdf
 
-                        alpha_rel_unc = [("nominal",0),("up",0.4),("dn",-0.4)]
+                        alpha_rel_unc = [("nominal",0),("up",0.42),("dn",-0.42)]
 
                         for var in alpha_rel_unc:
 
@@ -1981,10 +1983,12 @@ class RealFakeEffTagAndProbe:
 
                             hist = self.histefficiencies[key] if self.histefficiencies.get(key) else None
                             if not hist:
-                                print("\tSkipping key: {0} b/c histogram doesn't exist...".format(key))
+                                if self.debug:
+                                    print("\tSkipping key: {0} b/c histogram doesn't exist...".format(key))
                                 continue
 
-                            print("\tPlotting histogram: {0}".format(key))
+                            if self.debug:
+                                print("\tPlotting histogram: {0}".format(key))
 
                             set_fancy_2D_style(57) #()
                             gPad.SetRightMargin(0.2)
@@ -2081,13 +2085,16 @@ class RealFakeEffTagAndProbe:
                             hist     = self.histefficiencies[key] if self.histefficiencies.get(key) else None
                             hist_AVG = self.histefficiencies[key+"_AVG"] if self.histefficiencies.get(key+"_AVG") else None
                             if not hist:
-                                print("\tSkipping key: {0} b/c histogram doesn't exist...".format(key))
+                                if self.debug:
+                                    print("\tSkipping key: {0} b/c histogram doesn't exist...".format(key))
                                 continue
                             if not hist_AVG:
-                                print("\tSkipping key: {0} b/c histogram doesn't exist...".format(key+"_AVG"))
+                                if self.debug:
+                                    print("\tSkipping key: {0} b/c histogram doesn't exist...".format(key+"_AVG"))
                                 continue
 
-                            print("\tPlotting histogram: {0}".format(key))
+                            if self.debug:
+                                print("\tPlotting histogram: {0}".format(key))
 
                             hist.GetYaxis().SetRangeUser(0,1)
                             hist.GetYaxis().SetTitle("#varepsilon")

@@ -10,9 +10,13 @@ import os, sys, array, math
 
 sys.path.append(os.path.abspath(os.path.curdir))
 
+import ROOT
+
 from ROOT import ROOT, gROOT, gStyle, gPad, Double, TPad, TLine, TH1, TH1D, TH2, THStack, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency
 from ROOT import TPaletteAxis, TColor, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
 from ROOT import kFullCircle, kCircle, kOpenTriangleUp, kDot
+from ROOT import kInfo, kWarning, kError, kFatal
+ROOT.gErrorIgnoreLevel = kError
 
 class Plot:
 
