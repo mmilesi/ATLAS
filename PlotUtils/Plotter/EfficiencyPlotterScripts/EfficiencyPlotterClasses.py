@@ -10,49 +10,67 @@ import os, sys, array, math
 
 sys.path.append(os.path.abspath(os.path.curdir))
 
+import ROOT
+
 from ROOT import ROOT, gROOT, gStyle, gPad, Double, TPad, TLine, TH1, TH1D, TH2, THStack, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency
 from ROOT import TPaletteAxis, TColor, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
 from ROOT import kFullCircle, kCircle, kOpenTriangleUp, kDot
+from ROOT import kInfo, kWarning, kError, kFatal
+ROOT.gErrorIgnoreLevel = kError
 
 class Plot:
 
     luminosity = 100
+    lcoords = [0.65,0.3,0.93,0.5]
 
-    legend = TLegend(0.45,0.5,0.925,0.8) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+    legend = TLegend(lcoords[0],lcoords[1],lcoords[2],lcoords[3],"","NDC") # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
     legend.SetBorderSize(0)  # no border
     legend.SetFillStyle(0) # Legend transparent background
-    legend.SetTextSize(0.03) # Increase entry font size!
+    legend.SetTextSize(0.04) # Increase entry font size!
     # legend.SetTextFont(42)   # Helvetica
 
     legendATLAS = TLatex()
     legendLumi  = TLatex()
-    legendATLAS.SetTextSize(0.03)
+    legendATLAS.SetTextSize(0.04)
     legendATLAS.SetNDC()
     legendLumi.SetTextSize(0.03)
     legendLumi.SetNDC()
+
+    plotTitle = TLatex()
+    plotTitle.SetTextSize(0.04)
+    plotTitle.SetNDC()
 
     reflines = []
 
     def __init__( self, sourceName, sourcePath, properties={} ):
 
-        f = TFile(sourcePath)
+        self.__file = TFile(sourcePath)
 
-        if not f:
-	   sys.exit("ERROR: file\n{0}\ncannot be found!".format(sourcePath))
+        if not self.__file:
+	   os.sys.exit("ERROR: file\n{0}\ncannot be found!".format(sourcePath))
 
-        self.__hist = f.Get(sourceName)
+        self.__hist = self.__file.Get(sourceName)
 
 	if not self.__hist:
-	   sys.exit("ERROR: histogram:\n{0}\ncannot be found in file:\n{1}".format(sourceName,sourcePath))
+	   os.sys.exit("ERROR: histogram:\n{0}\ncannot be found in file:\n{1}".format(sourceName,sourcePath))
 
 	self.__hist.SetDirectory(0)
 
-        self.name = self.__hist.GetName()
+        self.__nbins = self.__hist.GetSize()
+
+        self.__name = self.__hist.GetName()
         self.is2D = isinstance(self.__hist,TH2)
 
         self.conversion_frac_VS_Y = []
 
 	self.__props  = properties
+
+        # Dictionary for systematic histograms
+        self.__syshists = {}
+        # List with the sum in quadrature per bin of all systematics
+        self.__syssumquad = []
+        # Histogram w/ the total syst error
+        self.__syserrhist = None
 
         # Set special properties for 2D histograms
 
@@ -74,6 +92,9 @@ class Plot:
             else:
                 self.__props["drawOpt"] = "E0"
 
+    def getName( self ):
+        return self.__name
+
     def setProperty( self, propID, propValue ):
 
         self.__props[propID] = propValue
@@ -82,6 +103,48 @@ class Plot:
 
         if self.__props.get(propID):
             return self.__props[propID]
+
+    def addSystematics( self, syslist=["ND_FakesOS"] ):
+
+        for sysname in syslist:
+
+            name = self.__name
+            name_up = name + "_" + sysname + "_up"
+            name_dn = name + "_" + sysname + "_dn"
+
+            if "_proj" in name:
+                idx = name.find("_proj")
+                slice_i_up = name[:idx] + "_" + sysname + "_up"
+                slice_i_dn = name[:idx] + "_" + sysname + "_dn"
+                slice_f = name[idx:]
+                name_up = slice_i_up + slice_f
+                name_dn = slice_i_dn + slice_f
+
+            hist_up = self.__file.Get(name_up)
+            hist_dn = self.__file.Get(name_dn)
+            if not hist_up:
+                os.sys.exit("ERROR: histogram:\n{0}\ncannot be found".format(name_up))
+            if not hist_dn:
+                os.sys.exit("ERROR: histogram:\n{0}\ncannot be found".format(name_dn))
+
+            # Store a list with the symmetrised variation for each bin
+            varlist = [ abs( hist_up.GetBinContent(ibin) - hist_dn.GetBinContent(ibin) ) / 2.0 for ibin in range(0,self.__nbins) ]
+
+            self.__syshists[sysname] = varlist
+
+        # Debug
+        for syskey, sysvarlist in self.__syshists.iteritems():
+            print("Systematic: {0} - ".format(syskey) + "variations list: [" + ",".join( "{0:.4f}".format(var) for var in sysvarlist ) + "]" )
+
+        # Store the sum in quadrature of all systematics per bin
+        for ibin in range(0,self.__nbins):
+            isumquad = 0
+            for syskey, sysvarlist in self.__syshists.iteritems():
+                isumquad += pow(sysvarlist[ibin],2)
+            self.__syssumquad.append( math.sqrt(isumquad) )
+
+        # Debug
+        print("Tot. systematic error per bin: [" + ",".join( "{0:.4f}".format(totsys) for totsys in self.__syssumquad ) + "]" )
 
     def set2DStyle( self, opt = "BasicRainBow" ):
 
@@ -122,7 +185,7 @@ class Plot:
             n = self.__hist.GetNbinsY()
 
         if n != len(labels):
-            sys.exit("ERROR: {0}-axis - n = {1}, nlabels = {2}".format(axis,n,labels))
+            os.sys.exit("ERROR: {0}-axis - n = {1}, nlabels = {2}".format(axis,n,labels))
 
         for idx in range(1,n+1):
             if axis == "X":
@@ -259,9 +322,47 @@ class Plot:
 
         return stack, stacklegend
 
-    def makePlot( self ):
+    def makeConversionFracHist( self, histID=None ):
 
-	if self.__props.get("xAxisTitle") : self.__hist.GetXaxis().SetTitle( self.__props["xAxisTitle"] )
+        # Photon conversion fraction wrt. X
+        # Uncertainties from binmial distribution
+
+        legend = TLegend(0.23,0.25,0.43,0.55)
+        legend.SetBorderSize(1)
+        legend.SetFillColor(kWhite)
+        legend.SetTextSize(0.03)
+        legend.SetTextFont(42)
+
+        offset = 1 # (to account for underflow bin, which has idx=0)
+
+        basename = self.__hist.GetName()
+
+        # D: all fakes
+        hist_fakes_TOT_projY = self.__hist.ProjectionY( basename+"_py_ALL_FAKES" )
+        # N: conversion fakes
+        hist_fakes_CONV_projY = self.__hist.ProjectionY( basename+"_py_CONV_FAKES", 5+offset, 5+offset )
+
+        hist_fakes_CONV_FRAC = hist_fakes_CONV_projY.Clone("CONV_FRAC")
+        hist_fakes_CONV_FRAC.Divide(hist_fakes_CONV_projY,hist_fakes_TOT_projY,1.0,1.0,"B")
+
+        legend.AddEntry(hist_fakes_CONV_FRAC, "#gamma conversion", "F")
+
+        print("Conversion fraction VS. Y:")
+        for ibin in range(1,hist_fakes_CONV_FRAC.GetSize()-1):
+
+            ibin_lowedge = hist_fakes_CONV_FRAC.GetXaxis().GetBinLowEdge(ibin)
+            ibin_upedge  = hist_fakes_CONV_FRAC.GetXaxis().GetBinUpEdge(ibin)
+            f_gamma = hist_fakes_CONV_FRAC.GetBinContent(ibin)
+            f_gamma_err = hist_fakes_CONV_FRAC.GetBinError(ibin)
+
+            print("\tbin: {0} [{1:.3f},{2:.3f}] - f_gamma = {3:.2f} +- {4:.2f}".format(ibin,ibin_lowedge,ibin_upedge,f_gamma,f_gamma_err))
+
+        return hist_fakes_CONV_FRAC, legend
+
+
+    def makePlot( self, legend = None ):
+
+ 	if self.__props.get("xAxisTitle") : self.__hist.GetXaxis().SetTitle( self.__props["xAxisTitle"] )
 	if self.__props.get("yAxisTitle") : self.__hist.GetYaxis().SetTitle( self.__props["yAxisTitle"] )
 
 	if self.__props.get("xAxisRange") : self.__hist.GetXaxis().SetRangeUser( self.__props["xAxisRange"][0], self.__props["xAxisRange"][1] )
@@ -271,7 +372,8 @@ class Plot:
             normfactor = self.__props["normFactor"]
             if normfactor: self.__hist.Scale( normfactor / self.__hist.Integral() )
 
-        if self.__props.get("legend")      : Plot.legend.AddEntry(self.__hist, self.__props["legend"], "P")
+        if self.__props.get("legend") and legend:
+            legend.AddEntry(self.__hist, self.__props["legend"], "PL")
 
         if self.__props.get("setBinVals")  :
             for tup in self.__props["setBinVals"]:
@@ -293,7 +395,49 @@ class Plot:
 
         # Draw the histogram on the Pad!
 
-	self.__hist.Draw( self.__props["drawOpt"] )
+        # Create histogram with total systematic error if necessary
+
+        if self.__syshists and not self.is2D:
+            self.__syserrhist = self.__hist.Clone(self.__hist.GetName()+"_SYST")
+            self.__syserrhist.SetFillColor(kOrange)
+            self.__syserrhist.SetLineColor(10)
+            self.__syserrhist.SetLineStyle(1)
+            self.__syserrhist.SetFillStyle(3356)
+            gStyle.SetHatchesLineWidth(1)#(2)
+            gStyle.SetHatchesSpacing(0.4)#(0.8)
+            self.__syserrhist.SetMarkerSize(0)
+            for ibin in range(0,self.__nbins):
+                self.__syserrhist.SetBinError(ibin,self.__syssumquad[ibin])
+                print("bin[{0}] : {1:.4f} +- {2:.4f}".format(ibin,self.__syserrhist.GetBinContent(ibin),self.__syserrhist.GetBinError(ibin)))
+            if not gPad.GetListOfPrimitives().GetSize():
+                self.__syserrhist.Draw("E2")
+            else:
+                self.__syserrhist.Draw("E2 SAME")
+            self.__hist.Draw( self.__props["drawOpt"]+" SAME" )
+        else:
+            self.__hist.Draw( self.__props["drawOpt"] )
+
+        self.__hist.GetYaxis().SetTitleOffset(1.4)
+
+        # Set log axis if needed
+ 	if self.__props.get("xAxisLog") :
+            gPad.SetLogx( self.__props["xAxisLog"] )
+            if self.__props["xAxisLog"]:
+                if self.__syshists:
+                    self.__syserrhist.GetXaxis().SetMoreLogLabels()
+                    self.__syserrhist.GetXaxis().SetNoExponent()
+                else:
+                    self.__hist.GetXaxis().SetMoreLogLabels()
+                    self.__hist.GetXaxis().SetNoExponent()
+ 	if self.__props.get("yaxisLog") :
+            gPad.SetLogy( self.__props["yaxisLog"] )
+            if self.__props["yaxisLog"]:
+                if self.__syshists:
+                    self.__syserrhist.GetYaxis().SetMoreLogLabels()
+                    self.__syserrhist.GetYaxis().SetNoExponent()
+                else:
+                    self.__hist.GetYaxis().SetMoreLogLabels()
+                    self.__hist.GetYaxis().SetNoExponent()
 
         # Deal with alphanumeric axis labels
 
@@ -327,6 +471,42 @@ class MultiPlot:
     def __init__( self, plots=[] ):
 
 	self.__plotlist  = plots
+        self.ATLASlabel = "Internal" # "Work in progress"
+        self.canvascoords = [50,50,1300,800]
+        self.plotTitle = ""
+        self.plotTitle_x = 0.5
+        self.plotTitle_y = 0.5
+
+        # Legend
+
+        self.legend = TLegend()
+        self.luminosity = 100
+        self.buildLegend()
+
+    def buildLegend( self, header="My header", lcoords=[0.65,0.3,0.93,0.5] ):
+
+        self.legend = TLegend(lcoords[0],lcoords[1],lcoords[2],lcoords[3],header,"NDC") # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+
+        self.legend.SetBorderSize(0)  # no border
+        self.legend.SetFillStyle(0) # Legend transparent background
+        self.legend.SetTextSize(0.035) # Increase entry font size!
+        #self.legend.SetTextFont(42)   # Helvetica
+
+        self.legendATLAS = TLatex()
+        self.legendLumi  = TLatex()
+
+        self.legendATLAS.SetTextSize(0.04)
+        self.legendATLAS.SetNDC()
+        self.legendLumi.SetTextSize(0.025)
+        self.legendLumi.SetNDC()
+
+    def setCanvasCoords(self, ccoords=[]):
+        self.canvascoords = ccoords
+
+    def setPlotTitle(self, title="My title", tcoords=(0.5,0.5)):
+        self.plotTitle = title
+        self.plotTitle_x = tcoords[0]
+        self.plotTitle_y = tcoords[1]
 
     def makeMultiPlot( self, savePath, saveName ):
 
@@ -336,31 +516,46 @@ class MultiPlot:
 
         tokens = saveName.split('_')
 
-        c = TCanvas("c_"+tokens[0]+"_"+tokens[1],"Efficiency",50,50,1300,800)
+        c = TCanvas("c_"+tokens[0]+"_"+tokens[1],"Efficiency",self.canvascoords[0],self.canvascoords[1],self.canvascoords[2],self.canvascoords[3])
 
         for idx, plot in enumerate(self.__plotlist):
+
+            print("Plotting: {0}".format(plot.getName()))
 
             if plot.is2D:
                 print("WARNING! Cannot plot a TH2 histogram together with other histograms. Skipping {0}".format(plot.name))
                 continue
 
 	    if idx == 0:
-                #plot.makePlot(c)
-                plot.makePlot()
+                plot.makePlot(legend=self.legend)
 	    else:
                 plot.setProperty("drawOpt", str(plot.getProperty("drawOpt")) + " SAME" )
-                #plot.makePlot(c)
-                plot.makePlot()
+                #plot.makePlot()
+                plot.makePlot(legend=self.legend)
 
         for refl in Plot.reflines:
             refl.SetLineStyle(2)
 	    refl.Draw("SAME")
 
-        Plot.legend.Draw()
+        # Plot.legend.Draw()
 
-	Plot.legendATLAS.DrawLatex(0.6,0.35,"#bf{#it{ATLAS}} Work In Progress")
-        Plot.legendLumi.DrawLatex(0.6,0.27,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
+        # Plot.legendATLAS.DrawLatex(0.2,0.88,"#bf{{#it{{ATLAS}}}} {0}".format(self.ATLASlabel))
+        # Plot.legendLumi.DrawLatex(0.2,0.81,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(Plot.luminosity))
 
-        for ext in ["png","pdf","root"]:
+        # if self.plotTitle:
+        #     Plot.plotTitle.DrawLatex(self.plotTitle_x,self.plotTitle_y,"#it{{{0}}}".format(self.plotTitle))
+
+        self.legend.Draw()
+
+        self.legendATLAS.DrawLatex(0.2,0.88,"#bf{{#it{{ATLAS}}}} {0}".format(self.ATLASlabel))
+        self.legendLumi.DrawLatex(0.2,0.81,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.luminosity))
+
+        if self.plotTitle:
+            plotTitleObj = TLatex()
+            plotTitleObj.SetTextSize(0.04)
+            plotTitleObj.SetNDC()
+            plotTitleObj.DrawLatex(self.plotTitle_x,self.plotTitle_y,"#it{{{0}}}".format(self.plotTitle))
+
+        for ext in ["png","pdf","root","eps"]:
 	    c.SaveAs( savePath + "/" + saveName + "." + ext )
 

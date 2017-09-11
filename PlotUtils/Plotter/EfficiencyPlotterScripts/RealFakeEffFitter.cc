@@ -1,4 +1,3 @@
-
 /**
  * @file   RealFakeEffFitter.cc
  * @author Marco Milesi <marco.milesi@cern.ch>

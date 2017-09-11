@@ -61,7 +61,7 @@ def copy_source(subdir = string.Template("$TMPDIR").substitute(os.environ), forc
 
     print("Making a tarball of input package and moving it to submission directory...")
     if not os.path.isfile(subdir+"/"+tarballname) or args.forcetarball:
-        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs","--exclude=\'Output*\'"])
+        subprocess.call(["tar","-zcf",tarballname,"HTopMultilepAnalysis/","RootCoreBin/","--exclude-vcs","--exclude=\'HTopMultilepAnalysis/PlotUtils/Output*\'"])
         shutil.move("./"+tarballname,subdir+"/"+tarballname)
     else:
         print("Good! Tarball of code already exists in submission directory...")
@@ -153,15 +153,13 @@ NPROCS=$(wc -l < $PBS_NODEFILE)
 echo ""
 echo "This job has allocated $NPROCS nodes"
 echo ""
+echo "Creating temporary directory for this subjob"
 TMP=`mktemp -d $TMPDIR/mmilesi.$PBS_ARRAYID.XXXX`
-echo "Creating temporary directory for this subjob: $TMP"
-if [ -d "$TMP" ]; then
-    echo "Directory w/ this name already found! Removing it first, and recreate it..."
-    rm -rf $TMP
+echo "Temporary directory is $TMP"
+if [ ! -d "$TMP" ]; then
+    echo "Directory not created! Bad! Exiting"
+    exit 1
 fi
-mkdir $TMP
-echo ""
-echo "Temp dir: " $TMP
 echo ""
 echo "Copying tarballed package and cd'ing into temp subjob directory..."
 echo ""
@@ -203,23 +201,25 @@ exit 0
 
     varlist = [
         # "Integral",
-        # "Integral_LOGY",
         # "ElProbePt",
         # "ElProbePt_LOGY",
         # "ElProbePt_RealEffBinning",
         # "ElProbePt_FakeEffBinning",
         # "ElProbePt_RealEffBinning_LOGY",
         # "ElProbePt_FakeEffBinning_LOGY",
-        # "ElProbeNBJets_VS_ElProbePt",
         # "ElProbeNBJetsRAW_VS_ElProbePtRAW",
+        # "ElProbeDistanceClosestJetRAW_VS_ElProbePtRAW",
+        # "ElProbeEtaRAW_VS_ElProbePtRAW",
+        #
         # "MuProbePt",
         # "MuProbePt_LOGY",
         # "MuProbePt_RealEffBinning",
         # "MuProbePt_FakeEffBinning",
         # "MuProbePt_RealEffBinning_LOGY",
         # "MuProbePt_FakeEffBinning_LOGY",
-        # "MuProbeDistanceClosestJet_VS_MuProbePt",
+        # "MuProbeNBJetsRAW_VS_MuProbePtRAW",
         # "MuProbeDistanceClosestJetRAW_VS_MuProbePtRAW",
+        # "MuProbeEtaRAW_VS_MuProbePtRAW",
         #
         # "ElProbeEta",
         # "ElProbeDistanceClosestJet",
@@ -229,7 +229,6 @@ exit 0
         # "ElProbeNBJets",
         # "ElProbeNBJets_VS_ElProbePt",
         # "ElProbeDistanceClosestJet_VS_ElProbePt",
-        # "ElProbeEta_VS_ElProbePt",
         # "MuProbeEta",
         # "MuProbeDistanceClosestJet",
         # "MuProbeDistanceClosestBJet",
@@ -237,6 +236,7 @@ exit 0
         # "MuProbeNJets",
         # "MuProbeNBJets",
         # "MuProbeNBJets_VS_MuProbePt",
+        # "MuProbeDistanceClosestJet_VS_MuProbePt",
         #
         "Integral",
         "NJets2j3j",
@@ -245,12 +245,18 @@ exit 0
         "Mll01_inc",
         "MET_FinalTrk",
         "deltaRLep0Lep1",
-        "deltaPhiLep0Lep1",
-        # "TotLepCharge",
-        #
+        # ## "deltaPhiLep0Lep1",
+        # ## "TotLepCharge",
+        # #
         # "BDTGScore",
-        # "Lep0Pt",
-        # "Lep1Pt",
+        # "BDTGScore_ttH_ttbarDD",
+        # "BDTGScore_ttH_ttV",
+        # # "El0Origin_VS_BDTGScore",
+        # # "Mu0Origin_VS_BDTGScore",
+        # # "El1Origin_VS_BDTGScore",
+        # # "Mu1Origin_VS_BDTGScore",
+        "Lep0Pt",
+        "Lep1Pt",
         # "Lep0Eta",
         # "Lep1Eta",
         # "Lep0EtaBE2",
@@ -260,20 +266,20 @@ exit 0
         # "Lep0DeltaRClosestJet_Rebinned",
         # "Lep1DeltaRClosestJet_Rebinned",
         #
-        "El0Pt",
-        "El1Pt",
-        "Mu0Pt",
-        "Mu1Pt",
-        "El0Eta",
-        "El1Eta",
-        "Mu0Eta",
-        "Mu1Eta",
-        "El0DeltaRClosestJet",
-        "El1DeltaRClosestJet",
-        "Mu0DeltaRClosestJet",
-        "Mu1DeltaRClosestJet",
+        # "El0Pt",
+        # "El1Pt",
+        # "Mu0Pt",
+        # "Mu1Pt",
+        # "El0Eta",
+        # "El1Eta",
+        # "Mu0Eta",
+        # "Mu1Eta",
+        # "El0DeltaRClosestJet",
+        # "El1DeltaRClosestJet",
+        # "Mu0DeltaRClosestJet",
+        # "Mu1DeltaRClosestJet",
         #
-        #"LepFlavours",
+        # "LepFlavours",
         #
         # "NN_Rebinned",
         # "RNN_Rebinned",
@@ -284,11 +290,19 @@ exit 0
         # "NNComb",
         # "RNNComb",
         #
+        #
+        # "LepFakeOrigin",
+        # "LepFakeOrigin_VS_LepFakePt",
+        # "LepFakeOrigin_VS_NJets",
+        # "LepFakeOrigin_VS_NBJets",
+        #
+        # "Lep0Origin",
+        # "Lep0Origin_VS_Lep0Pt",
         # "Lep1Type",
         # "Lep1Origin",
-        # 'Lep1Type_VS_Lep1Origin',
-        # "Lep1Origin_VS_NJets",
         # "Lep1Origin_VS_Lep1Pt",
+        # "Lep1Origin_VS_NJets",
+        # 'Lep1Type_VS_Lep1Origin',
         # "Lep1Origin_VS_Lep1Eta",
         # "Lep1Origin_VS_Lep1EtaBE2",
         # "Lep1Origin_VS_Lep1DistanceClosestJet",

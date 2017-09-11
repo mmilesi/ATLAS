@@ -185,7 +185,10 @@ class Inputs:
     def getSysIndexes(self, sampleID, branchID):
 
         if sampleID:
-            sampletree = self.getTree(sampleid=sampleID)
+            if sampleID == "fakes_mm":
+                sampletree = self.getTree(group='Data',subgroup='fakes_mm')
+            else:
+                sampletree = self.getTree(sampleid=sampleID)
         else:
             sampletree = self.getTree(group='Data',subgroup='physics_Main')
 
@@ -550,18 +553,19 @@ class SubProcess:
 
         h = TH1D('NUM'+cachename, 'NUM'+cachename, 1, 0., 2.)
         h.Sumw2()
-        if self.eventweight and  eventweight:
+
+        if self.eventweight and eventweight:
             self.tree.Project('NUM'+cachename, '1.0', '%s * %s * (%s)' % (self.eventweight, eventweight, cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * {4} * ( {5} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, eventweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"1\",\"{1} * {2} * {3} * ( {4} )\")\n".format(self.tree.GetName(), self.baseweight, self.eventweight, eventweight, cutstr))
         elif self.eventweight :
             self.tree.Project('NUM'+cachename, '1.0', '%s * (%s)' % (self.eventweight, cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * {3} * ( {4} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, self.eventweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"1\",\"{1} * {2} * ( {3} )\")\n".format(self.tree.GetName(), self.baseweight, self.eventweight, cutstr))
         else:
             self.tree.Project('NUM'+cachename, '1.0', '%s' % (cutstr))
             if self.debug:
-                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"{1}\",\"{2} * ( {3} )\")\n".format(self.tree.GetName(), var.ntuplename, self.baseweight, cutstr))
+                print("\nApplying TTreeFormula string:\n\n{0}->Project(\"1\",\"{1} * ( {2} )\")\n".format(self.tree.GetName(), self.baseweight, cutstr))
         self.numcache[cachename] = h.GetBinContent(1), h.GetBinError(1)
         del h
 
@@ -1027,7 +1031,7 @@ class Background:
 
         return tSum, histlist
 
-    def plot(self, var, cut = None, eventweight=None, category = None, signal = '125', signalfactor = 1., systematics = None, systematicsdirection = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps'], options = {}, normalise = False, log=False, logx=False):
+    def plot(self, var, cut = None, eventweight=None, category = None, signal = '125', signalfactor = 1., systematics = None, systematicsdirection = None, overridebackground = None, overflowbins = False, showratio = True, wait = False, save = ['.eps'], options = {}, normalise = False, log=False, logx=False, showyields=False, nolegs=False):
 
 	if not wait:
             gROOT.SetBatch(True)
@@ -1066,7 +1070,8 @@ class Background:
                     datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
                 else:
                     datagr = TH2D(obs)
-            legs.append([datagr, process.latexname + " ({0:.1f})".format(integrate(obs)), "p"])
+            legobs = process.latexname + " ({0:.1f})".format(integrate(obs)) if showyields else process.latexname
+            legs.append([datagr, legobs, "p"])
 
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
 
@@ -1095,7 +1100,8 @@ class Background:
 	    	h.SetFillColor(self.style.get(pname+'FillColour', process.colour))
 	    	h.SetFillStyle(self.style.get(pname+'FillStyle', 1001))
 	    	stack.Add(h)
-	    	legs.append([h, process.latexname + " ({0:.1f})".format(integrate(h)), 'f'])
+                legbkg = process.latexname + " ({0:.1f})".format(integrate(h)) if showyields else process.latexname
+	    	legs.append([h, legbkg, 'f'])
 	    	bkg[pname] = h
 	else:
 	    stack = None
@@ -1122,11 +1128,14 @@ class Background:
             sig.SetLineWidth(self.style.get('SignalLineWidth', 2))
             sig.SetLineColor(self.style.get('SignalLineColour', 2))
             sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
+            if not bkglist:
+                stack = THStack('Stack'+sig.GetName(), self.__class__.__name__+';'+sig.GetXaxis().GetTitle()+';'+sig.GetYaxis().GetTitle())
             stack.Add(sig)
             h_name = process.latexname+signal
             if signalfactor != 1.:
                h_name += " [#times"+str(int(signalfactor))+']'
-            legs.append([sig, h_name + " ({0:.1f})".format(integrate(sig)), 'f'])
+            legsig = h_name + " ({0:.1f})".format(integrate(sig)) if showyields else process.latexname
+            legs.append([sig, legsig, 'f'])
 
         # Never show ratio if variable is 2D
 
@@ -1233,8 +1242,8 @@ class Background:
 
             # ratiomc.SetMinimum((1-val)-0.1)
             # ratiomc.SetMaximum((1+val)+0.1)
-            ratiomc.SetMinimum(0.5)
-            ratiomc.SetMaximum(1.5)
+            ratiomc.SetMinimum(0)
+            ratiomc.SetMaximum(2)
 
             if type(showratio) is tuple:
                 if showratio[0] == "MIN" and type(showratio[1]) is float:
@@ -1255,11 +1264,11 @@ class Background:
                 # soverb.SetMarkerColor(self.style.get('SignalMarkerColour', 2))
                 # soverb.Draw("HIST SAME TEXT0")
                 soverb.SetFillStyle(0)
-                soverb.Draw("HIST SAME")
+                # soverb.Draw("HIST SAME")
                 reflsoverb = TLine(soverb.GetBinLowEdge(1), 1.15, soverb.GetBinLowEdge(soverb.GetNbinsX()+1), 1.15)
                 reflsoverb.SetLineStyle(2)
                 reflsoverb.SetLineColor(kRed)
-                reflsoverb.Draw("SAME")
+                # reflsoverb.Draw("SAME")
             refl = TLine(ratiomc.GetBinLowEdge(1), 1., ratiomc.GetBinLowEdge(ratiomc.GetNbinsX()+1), 1.)
             refl.SetLineStyle(2)
             refl.SetLineColor(kBlack)
@@ -1268,7 +1277,8 @@ class Background:
             pad1.cd()
 
         legs.reverse()
-        lower, labels = self.labels(legs, showratio and obs and bkg)
+        if not nolegs:
+            lower, labels = self.labels(legs, showratio and obs and bkg)
 
         # Trick to rescale:
 
@@ -1304,10 +1314,10 @@ class Background:
 	              stack.GetHistogram().GetXaxis().SetNdivisions(tSum.GetNbinsX())
 	              stack.GetHistogram().GetXaxis().CenterLabels(True)
 	   else:
-	      set_fancy_2D_style()
+	      set_fancy_2D_style(57)
               gPad.SetRightMargin(0.2)
 	      stack.Draw(var.drawOpt2D)
-              if var.binsX == var.binsY and not var.binsX == var.bins:
+              if False and var.binsX == var.binsY and not var.binsX == var.bins:
                   diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
                   diagonal.SetLineStyle(2)
                   diagonal.SetLineColor(kBlack)
@@ -1336,7 +1346,8 @@ class Background:
                 gPad.SetRightMargin(0.2)
                 datagr.Draw(var.drawOpt2D)
 
-        lower, labels = self.labels(legs, showratio and obs and bkg)
+        if not nolegs:
+            lower, labels = self.labels(legs, showratio and obs and bkg)
         #gPad.RedrawAxis()
         c.Update()
 
@@ -1675,13 +1686,20 @@ def makeMCErrors(hist):
 
     return graph
 
-def integrate(hist):
+def integrate(hist, mergeOverflow = False):
 
     # Get effective integral of input histogram, taking u/oflow into account
 
+    integral = -1
     if isinstance(hist,TH2):
-        return hist.Integral(0,hist.GetXaxis().GetNbins()+1,0,hist.GetYaxis().GetNbins()+1)
-    return hist.Integral(0,hist.GetNbinsX()+1)
+        integral = hist.Integral(0,hist.GetXaxis().GetNbins()+1,0,hist.GetYaxis().GetNbins()+1)
+    else:
+        integral =  hist.Integral(0,hist.GetNbinsX()+1)
+
+    if mergeOverflow:
+        integral -= hist.GetBinContent( hist.GetSize() )
+
+    return integral
 
 
 def SelfDivide( h_self, name = "Ratio", h_props = None ):

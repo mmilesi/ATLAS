@@ -3,7 +3,7 @@ import os, glob, subprocess, shutil
 # ID,category,xsection,kfactor,efficiency,name,group,subgroup
 samplelist = [
 ["","Data","","","","physics_Main","Data","physics_Main"],
-["","Data","","","","fakes_mm","Data","fakes_mm"],
+##["","Data","","","","fakes_mm","Data","fakes_mm"],
 ["343365","Signal","0.05343","1.0","1.0","aMcAtNloPythia8EvtGen_A14_NNPDF23_NNPDF30ME_ttH125_dilep","ttH","ttH_dil_Pythia8"],
 ["343366","Signal","0.22276","1.0","1.0","aMcAtNloPythia8EvtGen_A14_NNPDF23_NNPDF30ME_ttH125_semilep","ttH","ttH_semilep_Pythia8"],
 ["343367","Signal","0.23082","1.0","1.0","aMcAtNloPythia8EvtGen_A14_NNPDF23_NNPDF30ME_ttH125_allhad","ttH","ttH_allhad_Pythia8"],
@@ -166,51 +166,91 @@ samplelist = [
 ["410501","Background","396.49","1.1391","1.0","PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_nonallhad","tops","ttbar_nonallhad_Pythia8"],
 ["410502","Background","249.81","1.5216","1.0","PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_allhad","tops","ttbar_allhad_Pythia8"],
 ["410503","Background","76.93","1.1392","1.0","PowhegPythia8EvtGen_A14_ttbar_hdamp258p75_dil","tops","ttbar_dil_Pythia8"],
+["410250","Background","158.94","1.1484","1.0","Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonP_MEPS_NLO","tops","ttbar_SingleLeptonP_MEPS_NLO"],
+["410251","Background","158.99","1.1484","1.0","Sherpa_221_NNPDF30NNLO_ttbar_SingleLeptonM_MEPS_NLO","tops","ttbar_SingleLeptonM_MEPS_NLO"],
+["410252","Background","76.317","1.1484","1.0","Sherpa_221_NNPDF30NNLO_ttbar_dilepton_MEPS_NLO","tops","ttbar_dilepton_MEPS_NLO"],
+["410276","Background","0.0184","1.0","1.0","aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttee_mll_1_5","tops","ttee_mll"],
+["410277","Background","0.0184","1.0","1.0","aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttmumu_mll_1_5","tops","ttmumu_mll"],
+["410278","Background","0.00197","1.0","1.0","aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_tttautau_mll_1_5","tops","tttautau_mll"],
+["410397","Background","0.1874","1.0","1.0","MadGraphPythia8EvtGen_ttbar_wbee_MEN30LO_A14N23LO","tops","ttbar_wbee"],
+["410398","Background","0.1873","1.0","1.0","MadGraphPythia8EvtGen_ttbar_wbmumu_MEN30LO_A14N23LO","tops","ttbar_wbmumu"],
+["410399","Background","0.01885","1.0","1.0","MadGraphPythia8EvtGen_ttbar_wbtautau_MEN30LO_A14N23LO","tops","ttbar_wbtautau"],
 ]
 
 execpath  = os.path.abspath(os.path.curdir)
-inputpath = "/coepp/cephfs/mel/mmilesi/ttH/GFW2MiniNTup/25ns_v28/25ns_v28/01/gfw2"
-destpath  = inputpath + "/CoEPP_PlotFormat_reduced_v28"
-
-copy_friends_only = True
+inputpath = "/coepp/cephfs/mel/mmilesi/ttH/GFW2MiniNTup/25ns_v29/25ns_v29/01/gfw2"
+destpath  = inputpath + "/CoEPP_PlotFormat"
 
 for s in samplelist:
-    pattern = "*" if not copy_friends_only else "*friend*"
+    pattern = "*"
     thisdir = inputpath
+
+    found = []
+
     if s[7] == "physics_Main":
+        # Skip if file already exists at destination
+        if os.path.isfile("{0}/{1}/physics_Main.root".format(destpath,s[6])):
+            print("File containing \"{0}\" already found! Skip to next sample...".format(s[7]))
+            continue
         thisdir += "/Data/{0}".format(pattern)
-    elif s[7] == "fakes_mm":
-        thisdir += "/Fakes/{0}".format(pattern)
     else:
-        thisdir += "/Nominal/{0}{1}".format(s[0],pattern)
-    cmd = "rsync -azP {0} {1}/".format(thisdir,destpath)
-    subprocess.call(cmd,shell=True)
+        # Skip if file already exists at destination
+        found = [ f for f in glob.glob("{0}/{1}/*.root*".format(destpath,s[6])) if s[0] in f ]
+        if found:
+            print("File containing \"{0}\" already found! Skip to next sample...".format(s[0]))
+            continue
+        thisdir += "/Sys_PLICFT/{0}{1}".format(s[0],pattern)
+    cmd = "rsync -azP {0} {1}/{2}/".format(thisdir,destpath,s[6])
+    print("{0}".format(cmd))
 
-os.chdir(destpath)
-filelist = [ f for f in glob.glob("*.root*") ]
-if copy_friends_only:
-    filelist = [ f for f in glob.glob("*.root*") if "friend" in f ] # Copy only friend trees
+    try:
+        subprocess.check_call(cmd,shell=True)
+    except subprocess.CalledProcessError:
+        print("Skip to next sample...")
+        continue
 
-print filelist
-os.chdir(execpath)
+    # Now change name to CoEPP format
+    if s[7] == "physics_Main":
+        # hadd if not yet there
+        if not os.path.isfile("{0}/{1}/physics_Main.root".format(destpath,s[6])):
+            print("Hadding data...")
+            hadd_cmd = "hadd {0}/{1}/physics_Main.root {0}/{1}/00*.root".format(destpath,s[6])
+            hadd_proc = subprocess.Popen(hadd_cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            hadd_out, hadd_err = hadd_proc.communicate()
+            print hadd_out, hadd_err
+            print("Removing input files...")
+            rm_cmd = "rm -rf {0}/{1}/00*.root".format(destpath,s[6])
+            subprocess.call(rm_cmd,shell=True)
+    else:
+        i = "{0}/{1}/{2}.root".format(destpath,s[6],s[0])
+        o = "{0}/{1}/{2}.{3}.root".format(destpath,s[6],s[0],s[5])
+        shutil.move(i,o)
 
-for f in filelist:
-    this_id = f[:f.index('.')]
-    for s in samplelist:
-        if this_id == s[0] or this_id == s[5]:
-            sampledir = destpath+"/"+s[6]
-            if not os.path.exists(sampledir):
-                os.makedirs(sampledir)
-            i = destpath+"/"+f
-            if s[0]:
-                if "friend" in f:
-                    o = sampledir+"/"+s[0]+"."+s[5]+".root.reduced.friend"
-                else:
-                    o = sampledir+"/"+s[0]+"."+s[5]+".root"
-            else:
-                if "friend" in f:
-                    o = sampledir+"/"+s[5]+".root.reduced.friend"
-                else:
-                    o = sampledir+"/"+s[5]+".root"
-            shutil.move(i,o)
+# os.chdir(destpath)
+# filelist = [ f for f in glob.glob("*.root*") ]
+# if copy_friends_only:
+#     filelist = [ f for f in glob.glob("*.root*") if "friend" in f ] # Copy only friend trees
+
+# print filelist
+# os.chdir(execpath)
+
+# for f in filelist:
+#     this_id = f[:f.index('.')]
+#     for s in samplelist:
+#         if this_id == s[0] or this_id == s[5]:
+#             sampledir = destpath+"/"+s[6]
+#             if not os.path.exists(sampledir):
+#                 os.makedirs(sampledir)
+#             i = destpath+"/"+f
+#             if s[0]:
+#                 if "friend" in f:
+#                     o = sampledir+"/"+s[0]+"."+s[5]+".root.reduced.friend"
+#                 else:
+#                     o = sampledir+"/"+s[0]+"."+s[5]+".root"
+#             else:
+#                 if "friend" in f:
+#                     o = sampledir+"/"+s[5]+".root.reduced.friend"
+#                 else:
+#                     o = sampledir+"/"+s[5]+".root"
+#             shutil.move(i,o)
 
