@@ -1,0 +1,74 @@
+Instructions to run the potting tools.
+
+1. In a fresh directory, clone repo and create a working branch:
+
+```
+git clone https://github.com/mmilesi/HTopMultilepAnalysis.git
+cd HTopMultilepAnalysis/
+git fetch
+git checkout --track origin/work/ttHMLPaper_2017
+cd ..
+```
+
+2. Setup an ASG release (doesn’t really matter which one):
+
+```
+rcSetup Base,2.4.30
+```
+
+3. Move to the following subdirectory:
+
+```
+cd HTopMultilepAnalysis/PlotUtils/
+```
+
+4. Download the directory with the input histograms for the efficiency measurement, and create a link to it:
+
+```
+rsync -azP lxplus:/afs/cern.ch/user/m/mmilesi/work/public/ttH/OutputPlots_MMRates_25ns_v29_TopAsymmConv /PATH/TO/DOWNLOAD/
+ln -s /PATH/TO/DOWNLOAD/OutputPlots_MMRates_25ns_v29_TopAsymmConv/ .
+```
+This directory now already contains the ROOT file `LeptonEfficiencies.root` with the efficiencies and all the systematic variations.
+In principle, you can just ignore the following section and move straight to point 5. below.
+However, if you want to reproduce the efficiency file (e.g. change the binning), you have to run the `RealFakeEffTagAndProbe.py` macro.
+
+There are quite a lot of options for this macro, which you can check just by typing:
+
+```
+python Plotter/EfficiencyPlotterScripts/RealFakeEffTagAndProbe.py —help
+```
+
+In principle, there should be no need to directly modify the code. I put here an example of how to run it:
+
+```
+python Plotter/EfficiencyPlotterScripts/RealFakeEffTagAndProbe.py  ./OutputPlots_MMRates_25ns_v29_TopAsymmConv/ --variables Pt NBJetsRAW\&\&PtRAW,Fake,El DistanceClosestJetRAW\&\&PtRAW,Fake,Mu --rebin Real,El,Pt,15,20,26,30,40,60,90,140,210 Real,Mu,Pt,15,20,26,30,40,50,90,140,210 Fake,Mu,Pt,15.0,20.0,50.0,210.0 Fake,El,Pt,15.0,210.0 Fake,El,NBJetsRAW\&\&PtRAW,:,15.0,210.0 Fake,Mu,DistanceClosestJetRAW\&\&PtRAW,0,1,5,:,15.0,20.0,50.0,210.0 --plots --doRescalingFakeEl --systematics ALL
+```
+The `--help` menu explains how to set the options for rebinning etc.
+This will override the `LeptonEfficiencies.root` file (there is an option to change the output file name still...). Hopefully the `--help` menu is self-explanatory, just ask me is something isn’t clear.
+
+5. Now let’s see how to format the efficiency plots. There’s a set of python tools in `Plotter/EfficiencyPlotterScripts/` to perform this task. The functions I am using are defined in `EfficiencyPlotter_QualityPlots.py`. They rely on methods of the class defined in `EfficiencyPlotterClasses.py`. The class structure is quite simple, I guess it will be fairly easy to get your head around it. Before running, you might need to check the content of `MakeEfficiencyPlots.py`, `EfficiencyPlotter_QualityPlots.py`, and make some small config modifications for what concerns paths etc.
+Then just do:
+
+```
+python Plotter/EfficiencyPlotterScripts/MakeEfficiencyPlots.py
+```
+
+If you make relevant modifications, additions to the plotting tools, I suggest to commit your changes locally as you go:
+
+```
+git stat
+git add YOUR_MODIFIED_FILE(S)
+git commit
+```
+A good reference is the [ATLAS Git Workflow Tutorial](https://atlassoftwaredocs.web.cern.ch/gittutorial/branch-and-change/), specifically the "Making a Local Commit" section.
+
+6. It can be very useful to push your local changes to the remote repo, so that I can look at them and possibly interact directly if needed.
+In order to do that, you need to create a GitHub account first (choose the free plan!) by going to <https://help.github.com/articles/signing-up-for-a-new-github-account/>
+Once you have done it, let me know your GitHub username, and I will add you as collaborators to the `HTopMultilepAnalysis` project.
+
+After that, you will be able to push your changes on the remote branch:
+
+```
+git push origin work/ttHMLPaper_2017
+```
+
