@@ -2294,6 +2294,7 @@ if __name__ == "__main__":
 
             ttH.backgrounds.extend(['TTBarGammaStar','TTBarW','TTBarZ','Diboson','Rare','FakesMM']) # NB: if using this list, make sure only prompt MC events are selected (and QMisID veto), to avoid double counting w/ QMisID and Fakes estimate...
             # ttH.backgrounds.extend(['Prompt','FakesMM'])
+            ttH.debugprocs.append('FakesMM')
 
             if args.useMCQMisID:
                 ttH.backgrounds.append('QMisIDMC')
