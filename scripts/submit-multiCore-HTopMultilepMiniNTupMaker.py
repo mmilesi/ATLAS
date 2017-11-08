@@ -8,8 +8,8 @@ parser = argparse.ArgumentParser(description='Run HTopMultilepMiniNTupMaker algo
 
 parser.add_argument('destination', metavar='destination', type=str,
                     help='The base directory where the output will be stored. Subdirectories for different sample groups will be created automatically by the job.')
-parser.add_argument('version', metavar='version', type=str,
-                    help='The NTuple version to be used (e.g., v17, v18 ...)')
+parser.add_argument("--prod_ID", dest="prod_ID", action="store", default="25ns_v29/01", type=str,
+                    help="The NTup production tag, e.g. 25ns_v19, 25ns_v24/02, ...  (default: prod_ID=25ns_v29/01)")
 parser.add_argument('--nparallel', dest='nparallel', action='store', default=1, type=int,
                     help='The maximum number of parallel processes to be executed. The number to choose depends on the features of the machine you are using. Default is 1 (i.e., no parallel jobs)')
 parser.add_argument('--nevents', dest='nevents', action='store', default=0, type=int,
@@ -111,13 +111,18 @@ def miniNTuplise(sample):
 
 if __name__ == '__main__':
 
-    sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_" + args.version + "/Nominal"
-    #sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/25ns_" + args.version + "/ttbar_ttgamma/Nominal"
-
-    #sample_path =  "/afs/cern.ch/user/m/mmilesi/work/public/ttH/GroupNTup/25ns_" + args.version + "/Nominal"
+    #sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID + "/Nominal"
+    #sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID + "/ttbar_ttgamma/Nominal"
+    sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID + "/Nominal_PLICFT"
+    #sample_path =  "/afs/cern.ch/user/m/mmilesi/work/public/ttH/GroupNTup/25ns_" + args.prod_ID + "/Nominal"
 
     infilelist = [
+## Modify this file to include ROOT files w/ data runs
+#
 #"HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",
+#
+## MC: just list DSIDs
+#
 #"410000",
 #"410155",
 "410501",
