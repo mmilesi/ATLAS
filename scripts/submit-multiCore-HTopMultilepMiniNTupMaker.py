@@ -36,19 +36,13 @@ def generateCmdList(samples):
     cmdlist = []
     for sample in samples:
 
-        xAH_run = None
-        infile  = None
-
-        # In case of DATA, read the list of infiles from a txt file and execute one single job
-
-        if sample[-4:] == ".txt":
-            outdir = "Data"
-	    infile = sample
-    	    xAH_run = "xAH_run.py -vv --files {0} --config {1} --inputList --treeName {2} --submitDir {3} --nevents {4} --skip {5} --force direct".format(infile,configpath,treename,outdir,nevents,skip)
-        else :
-	    outdir = sample
-	    infile = sample_path + "/" + sample + "/" + sample + ".root"
-    	    xAH_run = "xAH_run.py -vv --files {0} --config {1} --treeName {2} --submitDir {3} --nevents {4} --skip {5} --force direct".format(infile,configpath,treename,outdir,nevents,skip)
+        outdir = sample
+        infile = sample_path
+        if sample[:2] == "00":
+            infile += "Data/"
+        else:
+            infile += "Nominal_PLICFT/"
+        xAH_run = "xAH_run.py -vv --scanXRD --files {0} --inputTag={3}.root --config {1} --treeName {2} --submitDir {3} --nevents {4} --skip {5} --force direct".format(infile,configpath,treename,outdir,nevents,skip)
 
 	cmdlist.append(xAH_run)
 
@@ -76,20 +70,21 @@ def miniNTuplise(sample):
 
     for s in sampledict:
 
-     if outdir == s["ID"] or ( outdir == "Data" and not s["ID"] ):
+     if outdir == s["ID"] or ( outdir[:2] == "00" and not s["ID"] ):
 
         knownDSID = True
 	outputfilepath = outdir +"/data-output"
 
         separator = "."
         if not s["ID"]:
-          separator = ""
+          separator = outdir + "."
 
-	INTREE  = outputfilepath + "/" + outdir + ".root"
-	INHIST  = outdir + "/hist-" + outdir + ".root"
-	if ( outdir == "Data" ):
-	   INTREE  = outputfilepath + "/list-local-HTopGroupNTup.root"
-	   INHIST  = outdir + "/hist-list-local-HTopGroupNTup.root"
+	INTREE  = outputfilepath + "/" + "Nominal_PLICFT" + ".root"
+	INHIST  = outdir + "/hist-" + "Nominal_PLICFT" + ".root"
+
+	if ( outdir[:2] == "00" ):
+	   INTREE  = outputfilepath + "/Data.root"
+	   INHIST  = outdir + "/hist-Data.root"
 
 	OUTTREE = motherdir + "/" + s["group"] + "/" + s["ID"] + separator + s["name"] + ".root"
 	OUTHIST = motherdir + "/" + s["group"] + "/hist-" + s["ID"] + separator + s["name"] + ".root"
@@ -100,7 +95,7 @@ def miniNTuplise(sample):
 	shutil.move(INTREE,OUTTREE)
 	shutil.move(INHIST,OUTHIST)
 
-	normaliseTrees.applyWeight(OUTTREE,s,isdata=bool(outdir == "Data" and not s["ID"]))
+	normaliseTrees.applyWeight(OUTTREE,s,isdata=bool(outdir[:2] == "00" and not s["ID"]))
 
         break
 
@@ -113,19 +108,22 @@ if __name__ == '__main__':
 
     #sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID + "/Nominal"
     #sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID + "/ttbar_ttgamma/Nominal"
-    sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID + "/Nominal_PLICFT"
+    #sample_path = "/coepp/cephfs/mel/mmilesi/ttH/GroupNTup/" + args.prod_ID + "/Nominal_PLICFT"
     #sample_path =  "/afs/cern.ch/user/m/mmilesi/work/public/ttH/GroupNTup/25ns_" + args.prod_ID + "/Nominal"
+    sample_path = "root://eospublic.cern.ch//eos/escience/UniTexas/HSG8/multileptons_ntuple_run2/"+ args.prod_ID +"/"
 
     infilelist = [
 ## Modify this file to include ROOT files w/ data runs
 #
 #"HTopMultilepAnalysis/doc/list-local-HTopGroupNTup.txt",
+"00309375",
+"00311170",
 #
 ## MC: just list DSIDs
 #
 #"410000",
 #"410155",
-"410501",
+#"410501",
     ]
 
     # -------------------------------------------------------------------------------------------------------
