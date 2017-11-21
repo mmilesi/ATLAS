@@ -1066,7 +1066,7 @@ class Background:
                     datagr = makePoissonErrors(obs)
                     datagr.SetMarkerSize(0.8) # (1.2)
                     datagr.SetLineColor(self.style.get('ObservedLineColour', 1))
-                    datagr.SetLineWidth(self.style.get('ObservedLineWidth', 2))
+                    datagr.SetLineWidth(self.style.get('ObservedLineWidth', 1))
                     datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
                 else:
                     datagr = TH2D(obs)
@@ -1093,7 +1093,7 @@ class Background:
 	    stack = THStack('Stack'+tSum.GetName(), self.__class__.__name__+';'+tSum.GetXaxis().GetTitle()+';'+tSum.GetYaxis().GetTitle())
 	    for h, process in reversed(bkglist):
 	    	h.Draw()
-	    	h.SetLineWidth(self.style.get('BackgroundLineWidth', 2))
+	    	h.SetLineWidth(self.style.get('BackgroundLineWidth', 1))
 	    	h.SetLineStyle(self.style.get('BackgroundLineStyle', 1))
 	    	pname = process.__class__.__name__
 	    	h.SetLineColor(self.style.get(pname+'LineColour', self.style.get('BackgroundLineColour', 1)))
@@ -1109,12 +1109,12 @@ class Background:
 
         if bkg:
             gStyle.SetHatchesLineWidth(1)
-            gStyle.SetHatchesSpacing(0.4)
-            tSum.SetFillColor(self.style.get('SumErrorFillColour', kGray+1))
-            tSum.SetLineColor(self.style.get('SumErrorLineColour', kGray+1))
+            gStyle.SetHatchesSpacing(0.8)#(0.4)
+            tSum.SetFillColor(self.style.get('SumErrorFillColour', kBlue))#(self.style.get('SumErrorFillColour', kGray+1))
+            tSum.SetLineColor(self.style.get('SumErrorLineColour', kBlue))#(self.style.get('SumErrorLineColour', kGray+1))
             tSum.SetFillStyle(self.style.get('SumErrorFillStyle', 3356))
             tSum.SetMarkerSize(0)
-            legs.insert(0, (tSum,"Stat. Unc.","F"))
+            legs.insert(0, (tSum,"#bf{Stat. unc.}","F"))
         else:
             print "No background processes are plotted!"
 
@@ -1125,7 +1125,7 @@ class Background:
             process = siglist[0][1]
             sig.SetFillColor(self.style.get('SignalFillColour', 10))
             sig.SetFillStyle(self.style.get('SignalFillStyle', 1001))
-            sig.SetLineWidth(self.style.get('SignalLineWidth', 2))
+            sig.SetLineWidth(self.style.get('SignalLineWidth', 1))
             sig.SetLineColor(self.style.get('SignalLineColour', 2))
             sig.SetLineStyle(self.style.get('SignalLineStyle', 2))
             if not bkglist:
@@ -1178,9 +1178,9 @@ class Background:
                     "LabelSizeX":0.15,
                     "LabelSizeY": 0.12,
                     "NdivisionsY":505,
-                    "FillColor":kGray+1,
+                    "FillColor":kBlue,#kGray+1,
                     "FillStyle":self.style.get('SumErrorFillStyle', 3356),
-                    "LineColor":kGray+1,
+                    "LineColor":kBlue,#kGray+1,
                     "MarkerSize":0,
                 }
                 ratiomc = SelfDivide( tSum, "RatioMC", ratiomc_props )
@@ -1318,11 +1318,61 @@ class Background:
               gPad.SetRightMargin(0.2)
 	      stack.Draw(var.drawOpt2D)
               if False and var.binsX == var.binsY and not var.binsX == var.bins:
-                  diagonal = TLine( stack.GetXaxis().GetBinLowEdge(1), stack.GetYaxis().GetBinLowEdge(1), stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1), stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1) )
+                  xA = stack.GetXaxis().GetBinLowEdge(1)
+                  yA = stack.GetYaxis().GetBinLowEdge(1)
+                  xB = stack.GetXaxis().GetBinLowEdge(stack.GetXaxis().GetNbins()+1)
+                  yB = stack.GetYaxis().GetBinLowEdge(stack.GetYaxis().GetNbins()+1)
+                  diagonal = TLine( xA, yA, xB, yB )
                   diagonal.SetLineStyle(2)
                   diagonal.SetLineColor(kBlack)
                   diagonal.SetLineWidth(2)
                   diagonal.Draw("SAME")
+              # if var.shortname == "BDTGScore_ttH_ttbarDD_VS_BDTGScore_ttH_ttV":
+              #     xA_BDT_0 = -1
+              #     yA_BDT_0 = 1
+              #     xB_BDT_0 = 1
+              #     yB_BDT_0 = -1
+              #     diag_BDT_0 = TLine( xA_BDT_0, yA_BDT_0, xB_BDT_0, yB_BDT_0 )
+              #     diag_BDT_0.SetLineStyle(2)
+              #     diag_BDT_0.SetLineColor(kWhite)
+              #     diag_BDT_0.SetLineWidth(2)
+              #     diag_BDT_0.Draw("SAME")
+              #     leg_BDT_0 = TLatex()
+              #     leg_BDT_0.SetTextSize(0.037)
+              #     leg_BDT_0.SetNDC()
+              #     leg_BDT_0.SetTextColor(kWhite)
+              #     leg_BDT_0.SetTextAngle(317.33)
+              #     leg_BDT_0.DrawLatex(0.298, 0.808, "#bf{BDTG=0.0}")
+              #     xA_BDT_05 = -0.5
+              #     yA_BDT_05 = 1
+              #     xB_BDT_05 = 1
+              #     yB_BDT_05 = -0.5
+              #     diag_BDT_05 = TLine( xA_BDT_05, yA_BDT_05, xB_BDT_05, yB_BDT_05 )
+              #     diag_BDT_05.SetLineStyle(2)
+              #     diag_BDT_05.SetLineColor(kWhite)
+              #     diag_BDT_05.SetLineWidth(2)
+              #     diag_BDT_05.Draw("SAME")
+              #     leg_BDT_05 = TLatex()
+              #     leg_BDT_05.SetTextSize(0.037)
+              #     leg_BDT_05.SetNDC()
+              #     leg_BDT_05.SetTextAngle(317.33)
+              #     leg_BDT_05.SetTextColor(kWhite)
+              #     leg_BDT_05.DrawLatex(0.367, 0.916, "#bf{BDTG=0.5}")
+              #     xA_BDT_m05 = -1
+              #     yA_BDT_m05 = 0.5
+              #     xB_BDT_m05 = 0.5
+              #     yB_BDT_m05 = -1
+              #     diag_BDT_m05 = TLine( xA_BDT_m05, yA_BDT_m05, xB_BDT_m05, yB_BDT_m05 )
+              #     diag_BDT_m05.SetLineStyle(2)
+              #     diag_BDT_m05.SetLineColor(kWhite)
+              #     diag_BDT_m05.SetLineWidth(2)
+              #     diag_BDT_m05.Draw("SAME")
+              #     leg_BDT_m05 = TLatex()
+              #     leg_BDT_m05.SetTextSize(0.037)
+              #     leg_BDT_m05.SetNDC()
+              #     leg_BDT_m05.SetTextAngle(317.33)
+              #     leg_BDT_m05.SetTextColor(kWhite)
+              #     leg_BDT_m05.DrawLatex(0.228, 0.695, "#bf{BDTG=-0.5}")
 
         if bkg and not isvar2D:
             tSum.Draw("E2 SAME")
@@ -1330,7 +1380,7 @@ class Background:
         if obs:
             if not isvar2D:
                 if stack:
-                    datagr.Draw("P SAME")
+                    datagr.Draw("P SAME")#("P SAME")
                 else:
                     if logx or var.logaxisX:
                         gPad.SetLogx()
@@ -1350,6 +1400,8 @@ class Background:
             lower, labels = self.labels(legs, showratio and obs and bkg)
         #gPad.RedrawAxis()
         c.Update()
+
+        c.SaveAs("/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/InclusiveSS_SR_DataDriven_BDTGScore_ttH_ttbarDD_VS_BDTGScore_ttH_ttV.root")
 
         if wait: raw_input('Hit enter to continue...')
         if type(save) is str:
@@ -1515,7 +1567,7 @@ class Background:
 
 	    nom_stat_err_ratio = nom_stat_err.Clone("nom_stat_err_ratio")
 	    nom_stat_err_ratio.Divide(nom_stat_err)
-            legs.insert(len(legs), (nom_stat_err,"Stat. Unc.","F"))
+            legs.insert(len(legs), (nom_stat_err,"#bf{Stat. unc.}","F"))
 
             valYmin =  99.
             valYmax = -99.

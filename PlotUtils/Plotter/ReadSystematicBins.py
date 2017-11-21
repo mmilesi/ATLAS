@@ -267,16 +267,13 @@ def getTotFakeUncertainty( nominal, stat, flav, var, debug=False ):
     non_closure_vals["ElMu"]      = 0.11 if preMVA else 0.07 # Updated on v29, 25_07_17
     non_closure_vals["MuEl"]      = 0.11 if preMVA else 0.07 # Updated on v29, 25_07_17
     non_closure_vals["ElEl"]      = 0.11 if preMVA else 0.10 # Updated on v29, 25_07_17
-    non_closure_vals["Inclusive"] = 0.00 if preMVA else 0.00 # Updated on v29, 25_07_17
+    non_closure_vals["Inclusive"] = 0.072 if preMVA else 0.00 # Updated on v29, 25_07_17
 
     # non_closure_vals["MuMu"]      = 0.10 if preMVA else 0.10 # Updated on v29, 29_07_17
     # non_closure_vals["OF"]        = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
     # non_closure_vals["ElMu"]      = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
     # non_closure_vals["MuEl"]      = 0.15 if preMVA else 0.07 # Updated on v29, 29_07_17
     # non_closure_vals["ElEl"]      = 0.09 if preMVA else 0.10 # Updated on v29, 29_07_17
-
-
-
 
     # non_closure_vals["Inclusive"] = 0.00 if preMVA else 0.00 # Updated on v29, 29_07_17
 
@@ -312,7 +309,7 @@ def getTotFakeUncertainty( nominal, stat, flav, var, debug=False ):
         conversion_vals["ElMu"]      = 0.03
         conversion_vals["MuEl"]      = 0.03
         conversion_vals["ElEl"]      = 0.18
-        conversion_vals["Inclusive"] = 0.0 # Not calculated yet
+        conversion_vals["Inclusive"] = 0.06
 
         if ( flav == "Inclusive" and var == "LepFlavours" ):
             conversion ={"MuMu":conversion_vals["MuMu"] * nominal, "OF":conversion_vals["OF"] * nominal, "ElEl":conversion_vals["ElEl"] * nominal, "ElMu":conversion_vals["ElMu"] * nominal, "MuEl":conversion_vals["MuEl"] * nominal}
@@ -1169,12 +1166,12 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     new_MM_hist.SetFillColor(kWhite)
     new_MM_hist.SetFillStyle(1001)
 
-    gStyle.SetHatchesLineWidth(2)
+    gStyle.SetHatchesLineWidth(1)
     gStyle.SetHatchesSpacing(0.8)
 
     err = new_MM_hist.Clone("tot_uncertainty")
-    err.SetFillColor(kGray)
-    err.SetLineColor(kGray)
+    err.SetFillColor(kBlue)
+    err.SetLineColor(kBlue)
     err.SetFillStyle(3356)
     err.SetMarkerSize(0)
 
@@ -1195,7 +1192,7 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
 
     # Set this to the first histogram that will be plotted in the pad
 
-    err.SetMaximum( (ymax + binmaxerr) *1.3 )
+    err.SetMaximum( (ymax + binmaxerr) *1.4 )
     err.SetMinimum(0)
 
     # --------------------------
@@ -1262,7 +1259,7 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
         print("\t\tEFFECTIVE NON CLOSURE max(0,abs(NC)-NC_err): {0:.2f} [%]".format(effectiveNC*1e2))
         effective_NC.SetBinContent(ibin,effectiveNC)
 
-    SF_err.SetYTitle("#frac{t#bar{t}}{MM}")
+    SF_err.SetYTitle("#frac{MC}{MM}")
     SF_err.GetXaxis().SetTitleSize(0.15)
     SF_err.GetYaxis().SetTitleSize(0.12)
     SF_err.GetXaxis().SetTitleOffset(0.90)
@@ -1286,33 +1283,43 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
     new_MM_hist.Draw("HIST SAME")
     MC_hist.Draw("PE SAME")
 
-    legend = TLegend(0.55,0.7,0.75,0.9) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
+    legend = TLegend(0.48,0.74,0.68,0.92) # (x1,y1 (--> bottom left corner), x2, y2 (--> top right corner) )
     legend.SetBorderSize(0)	# no border
     legend.SetFillStyle(0)	# Legend transparent background
-    legend.SetTextSize(0.03)	# Increase entry font size!
+    legend.SetTextSize(0.04)	# Increase entry font size!
     #legend.SetTextFont(42)	# Helvetica
 
-    legend.AddEntry(new_MM_hist,"Fakes MM (t#bar{{t}}, t#bar{{t}}#gamma inputs) ({0:.1f})".format(integrate(new_MM_hist)),"F")
-    legend.AddEntry(MC_hist, "t#bar{{t}}, t#bar{{t}}#gamma ({0:.1f})".format(integrate(MC_hist)), "P")
-    err_type = "Stat.+Sys. Unc." if not  "HIGHNJ" in args.channel else "Sys. Unc."
+    # legend.AddEntry(new_MM_hist,"#bf{Non-prompt (MM) (t#bar{{t}}, t#bar{{t}}#gamma inputs) ({0:.1f})}".format(integrate(new_MM_hist)),"F")
+    # legend.AddEntry(MC_hist, "{t#bar{{t}}, t#bar{{t}}#gamma ({0:.1f})}".format(integrate(MC_hist)), "P")
+    legend.AddEntry(new_MM_hist,"#bf{Non-prompt (MM) (#it{t#bar{t}, t#bar{t}#gamma} inputs)}","F")
+    legend.AddEntry(MC_hist, "#bf{#it{t#bar{t}, t#bar{t}#gamma}}", "P")
+    #err_type = "#bf{Uncertainty}" if not "HIGHNJ" in args.channel else "#bf{Sys. Uncertainty}"
+    err_type = "#bf{Uncertainty}"
     legend.AddEntry(err, "{0}".format(err_type), "F")
 
     leg_ATLAS = TLatex()
     leg_lumi  = TLatex()
-    leg_ATLAS.SetTextSize(0.03)
+    leg_ATLAS.SetTextSize(0.04)
     leg_ATLAS.SetNDC()
-    leg_lumi.SetTextSize(0.03)
+    leg_lumi.SetTextSize(0.04)
     leg_lumi.SetNDC()
 
     legend.Draw()
-    leg_ATLAS.DrawLatex(0.19,0.85,"#bf{#it{ATLAS}} Work In Progress")
-    leg_lumi.DrawLatex(0.19,0.75,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(args.lumi))
+    leg_ATLAS.DrawLatex(0.20,0.88,"#bf{#it{ATLAS}} Internal")
+    leg_lumi.DrawLatex(0.20,0.82,"#sqrt{{s}} = 13 TeV, {0:.1f} fb^{{-1}}".format(args.lumi))
 
     pad2.cd()
 
     # Manually set the range of pad 2 Y axis
     #SF_err.GetYaxis().SetRangeUser(0.5, 2.2)
-    SF_err.GetYaxis().SetRangeUser(0.0, 3.0)
+    range_up = 3.0
+    range_dn = 0.0
+    if flav == "ElEl":
+        range_up = 2.5
+    if flav == "OF" or flav == "MuMu":
+        range_up = 1.5
+        range_dn = 0.5
+    SF_err.GetYaxis().SetRangeUser(range_dn, range_up)
     SF_err.Draw("E2")
 
     # Write the actual non-closure per bin on the histogram in selected cases
@@ -1328,7 +1335,9 @@ def makeSysPlotsClosure( flav, var, MC_hist, MM_hist ):
         #     effective_NC.SetMarkerSize(4.1)
         #     effective_NC.SetMarkerColor(kBlack)
         #     effective_NC.Draw("HIST SAME TEXT0")
-
+        if var == "BDTGScore":
+            SF_err.GetXaxis().SetTitle("BDTG output")
+            SF_err.GetXaxis().SetTitleOffset(1.4)
     else:
         SF.Draw("HIST SAME")
 
@@ -1559,7 +1568,7 @@ if __name__ == '__main__':
         #
         # "LepFlavours",
         #
-        # "BDTGScore",
+        "BDTGScore",
         # "BDTGScore_ttH_ttbarDD",
         # "BDTGScore_ttH_ttV",
         #

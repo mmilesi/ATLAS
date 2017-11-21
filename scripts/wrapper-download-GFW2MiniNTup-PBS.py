@@ -31,7 +31,8 @@ if __name__ == '__main__':
         sample_type = "Data"
     else:
         sample_type = "Sys_PLICFT"
-        if sample == "304014":
+        if sample in ["304014","410142","410143","410144"]:
+        # if sample in ["410155","410156","410157","410218","410219","410220"]: # temp!
             sample += "_AFII"
 
     downloadpath = args.downloadpath + "/" + sample_type + "/"

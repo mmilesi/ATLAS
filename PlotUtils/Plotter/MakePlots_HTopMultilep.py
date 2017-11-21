@@ -895,9 +895,9 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = "Lep1DeltaRClosestJet",latexname = "#DeltaR{l_{1}, closest j}", ntuplename = "minDeltaR_LJ_1", manualbins = [0.0,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.5,3.0,5.0], sysvar = True ) )
             # database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttbar_2+MVA2lSSMarseille_weight_ttV_2)/2.0", manualbins = [-1,-0.1846,0.0342,0.221,0.3868,0.5594,1], sysvar = True ) ) # <--- use this if pT(l) > 15 GeV
             database.registerVar( Variable(shortname = "BDTGScore", latexname = "BDTG", ntuplename = "(MVA2lSSMarseille_weight_ttbar_2+MVA2lSSMarseille_weight_ttV_2)/2.0", manualbins = [-1,-0.1612,0.067,0.247,0.4142,0.5752,1], sysvar = True ) ) # <--- use this if pT(l) > 20 GeV
-            database.registerVar( Variable(shortname = "BDTGScore_ttH_ttbarDD", latexname = "BDTG (t#bar{t})", ntuplename = "MVA2lSSMarseille_weight_ttbar_2", bins = 20, minval = -1.0, maxval = 1.0, sysvar = True ) )
-            database.registerVar( Variable(shortname = "BDTGScore_ttH_ttV", latexname = "BDTG (ttV)", ntuplename = "MVA2lSSMarseille_weight_ttV_2", bins = 20, minval = -1.0, maxval = 1.0, sysvar = True, ) )
-            database.registerVar( Variable(shortname = 'BDTGScore_ttH_ttbarDD_VS_BDTGScore_ttH_ttV', latexnameX = 'BDTG (t#bar{t})', latexnameY = 'BDTG (ttV)', ntuplename = "MVA2lSSMarseille_weight_ttV_2:MVA2lSSMarseille_weight_ttbar_2", binsX = 20, minvalX = -1, maxvalX = 1, binsY = 20, minvalY = -1, maxvalY = 1, typeval = TH2D, drawOpt2D = "COLZ") )
+            database.registerVar( Variable(shortname = "BDTGScore_ttH_ttbarDD", latexname = "BDTG_{#it{t#bar{t}}}", ntuplename = "MVA2lSSMarseille_weight_ttbar_2", bins = 7, minval = -1.0, maxval = 1.0, sysvar = True ) )
+            database.registerVar( Variable(shortname = "BDTGScore_ttH_ttV", latexname = "BDTG_{#it{t#bar{t}V}}", ntuplename = "MVA2lSSMarseille_weight_ttV_2", bins = 7, minval = -1.0, maxval = 0.75, sysvar = True, ) )
+            database.registerVar( Variable(shortname = 'BDTGScore_ttH_ttbarDD_VS_BDTGScore_ttH_ttV', latexnameX = 'BDTG_{#it{t#bar{t}}}', latexnameY = 'BDTG_{#it{t#bar{t}V}}', ntuplename = "MVA2lSSMarseille_weight_ttV_2:MVA2lSSMarseille_weight_ttbar_2", binsX = 20, minvalX = -1, maxvalX = 1, binsY = 20, minvalY = -1, maxvalY = 1, typeval = TH2D, drawOpt2D = "COLZ") )
         if args.useFriendTrees:
             # database.registerVar( Variable(shortname = "NN_Rebinned", latexname = "NN", ntuplename = "output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
             # database.registerVar( Variable(shortname = "RNN_Rebinned", latexname = "RNN", ntuplename = "RNN_output_bin", bins = 7, minval = -0.5, maxval = 6.5, sysvar = True ) )
@@ -1560,15 +1560,17 @@ if __name__ == "__main__":
             database.registerVar( Variable(shortname = "Integral", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0) )
             database.registerVar( Variable(shortname = "Integral_LOGY", latexname = "", ntuplename = "0.5", bins = 1, minval = 0.0, maxval = 1.0, logaxis = True) )
 
-            database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, logaxis = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, logaxis = True) )
+            database.registerVar( Variable(shortname = "ElProbePt", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 125, minval = 15.0, maxval = 140.0, sysvar = True) )
+            database.registerVar( Variable(shortname = "ElProbePt_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", bins = 125, minval = 15.0, maxval = 140.0, logaxis = True) )
             database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_real_pt) )
             database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_fake_pt) )
             database.registerVar( Variable(shortname = "ElProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_real_pt, logaxis = True) )
             database.registerVar( Variable(shortname = "ElProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{e} [GeV]", ntuplename = el_probe + "Pt/1e3", manualbins=manualbins_el_fake_pt, logaxis = True) )
             database.registerVar( Variable(shortname = "ElProbeEta",latexname = "#eta^{e}", ntuplename = "TMath::Abs( " + el_probe + "EtaBE2 )", manualbins = manualbins_el_eta ) )
-            database.registerVar( Variable(shortname = "ElProbeDistanceClosestJet", latexname = '#DeltaR(e, closest jet)', ntuplename = el_probe + "deltaRClosestJet", bins = 50, minval = 0.0, maxval = 5.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = '#DeltaR(e, closest b-jet)', ntuplename = el_probe + "deltaRClosestBJet", bins = 50, minval = 0.0, maxval = 5.0) )
+            database.registerVar( Variable(shortname = "ElProbeDistanceClosestJet", latexname = 'min( #DeltaR(e,j) )', ntuplename = el_probe + "deltaRClosestJet", bins = 50, minval = 0.0, maxval = 5.0, sysvar = True) )
+            database.registerVar( Variable(shortname = "ElProbeDistanceClosestBJet", latexname = 'min( #DeltaR(e,b-jet) )', ntuplename = el_probe + "deltaRClosestBJet", bins = 50, minval = 0.0, maxval = 5.0) )
             database.registerVar( Variable(shortname = "ElProbeDistanceOtherLep", latexname = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1, bins = 50, minval = 0.0, maxval = 5.0) )
             database.registerVar( Variable(shortname = 'ElProbeNJets', latexname = 'N_{jets}', ntuplename = 'nJets_OR_T', bins = 10, minval = -0.5, maxval = 9.5, weight = 'JVT_EventWeight') )
             database.registerVar( Variable(shortname = "ElProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 2, minval = 0.5, maxval = 2.5, weight = "JVT_EventWeight * MV2c10_Continuous_EventWeight") )
@@ -1577,21 +1579,23 @@ if __name__ == "__main__":
             #
             database.registerVar( Variable(shortname = 'ElProbeNBJetsRAW_VS_ElProbePtRAW', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             database.registerVar( Variable(shortname = 'ElProbeNBJets_VS_ElProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = manualbins_el_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJetRAW_VS_ElProbePtRAW', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = '#DeltaR(e, closest jet)', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = manualbins_el_fake_deltaRej, manualbinsY = manualbins_el_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJetRAW_VS_ElProbePtRAW', latexnameX = 'min( #DeltaR(e,j) )', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            database.registerVar( Variable(shortname = 'ElProbeDistanceClosestJet_VS_ElProbePt', latexnameX = 'min( #DeltaR(e,j) )', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":" +el_probe + "deltaRClosestJet", manualbinsX = manualbins_el_fake_deltaRej, manualbinsY = manualbins_el_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             database.registerVar( Variable(shortname = 'ElProbeEtaRAW_VS_ElProbePtRAW', latexnameX = '#eta^{e}', latexnameY = 'p_{T}^{e} [GeV]', ntuplename = el_probe + "Pt/1e3" + ":TMath::Abs( " + el_probe + "EtaBE2 )", manualbinsX = manualbins_el_eta, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text") )
 
             # # ------------------------------------------
 
-            database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, logaxis = True) )
+            # database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, sysvar = True) )
+            # database.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 195, minval = 15.0, maxval = 210.0, logaxis = True) )
+            database.registerVar( Variable(shortname = "MuProbePt", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 125, minval = 15.0, maxval = 140.0, sysvar = True) )
+            database.registerVar( Variable(shortname = "MuProbePt_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", bins = 125, minval = 15.0, maxval = 140.0, logaxis = True) )
             database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_real_pt) )
             database.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_fake_pt) )
             database.registerVar( Variable(shortname = "MuProbePt_RealEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_real_pt, logaxis = True) )
             database.registerVar( Variable(shortname = "MuProbePt_FakeEffBinning_LOGY", latexname = "p_{T}^{#mu} [GeV]", ntuplename = mu_probe + "Pt/1e3", manualbins=manualbins_mu_fake_pt, logaxis = True) )
             database.registerVar( Variable(shortname = "MuProbeEta",latexname = "#eta^{#mu}", ntuplename = "TMath::Abs( " + mu_probe + "Eta )", manualbins = manualbins_mu_eta ) )
-            database.registerVar( Variable(shortname = "MuProbeDistanceClosestJet", latexname = '#DeltaR(#mu, closest jet)', ntuplename = mu_probe + "deltaRClosestJet", bins = 50, minval = 0.0, maxval = 5.0, sysvar = True) )
-            database.registerVar( Variable(shortname = "MuProbeDistanceClosestBJet", latexname = '#DeltaR(#mu, closest b-jet)', ntuplename = mu_probe + "deltaRClosestBJet", bins = 50, minval = 0.0, maxval = 5.0) )
+            database.registerVar( Variable(shortname = "MuProbeDistanceClosestJet", latexname = 'min( #DeltaR(#mu,j) )', ntuplename = mu_probe + "deltaRClosestJet", bins = 40, minval = 0.0, maxval = 4.0, sysvar = True) )
+            database.registerVar( Variable(shortname = "MuProbeDistanceClosestBJet", latexname = 'min( #DeltaR(#mu,b-jet) )', ntuplename = mu_probe + "deltaRClosestBJet", bins = 50, minval = 0.0, maxval = 5.0) )
             database.registerVar( Variable(shortname = "MuProbeDistanceOtherLep", latexname = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1, bins = 50, minval = 0.0, maxval = 5.0) )
             database.registerVar( Variable(shortname = "MuProbeNJets", latexname = "N_{jets}", ntuplename = "nJets_OR_T", bins = 10, minval = -0.5, maxval = 9.5, weight = "JVT_EventWeight") )
             database.registerVar( Variable(shortname = "MuProbeNBJets", latexname = "N_{b-tags}", ntuplename ="nJets_OR_T_MV2c10_70", bins = 2, minval = 0.5, maxval = 2.5, weight = "JVT_EventWeight * MV2c10_Continuous_EventWeight") )
@@ -1600,8 +1604,8 @@ if __name__ == "__main__":
             #
             database.registerVar( Variable(shortname = 'MuProbeNBJetsRAW_VS_MuProbePtRAW', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             database.registerVar( Variable(shortname = 'MuProbeNBJets_VS_MuProbePt', latexnameX = 'N_{b-tags}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":nJets_OR_T_MV2c10_70", binsX = 2, minvalX = 0.5, maxvalX = 2.5, manualbinsY = manualbins_mu_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJetRAW_VS_MuProbePtRAW', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
-            database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePt', latexnameX = '#DeltaR(#mu, closest jet)', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", manualbinsX = manualbins_mu_fake_deltaRmj, manualbinsY = manualbins_mu_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJetRAW_VS_MuProbePtRAW', latexnameX = 'min( #DeltaR(#mu,j) )', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", binsX = 50, minvalX = 0.0, maxvalX = 5.0, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
+            database.registerVar( Variable(shortname = 'MuProbeDistanceClosestJet_VS_MuProbePt', latexnameX = 'min( #DeltaR(#mu,j) )', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":" +mu_probe + "deltaRClosestJet", manualbinsX = manualbins_mu_fake_deltaRmj, manualbinsY = manualbins_mu_fake_pt, typeval = TH2D, drawOpt2D = "COLZ1 text", sysvar = True) )
             database.registerVar( Variable(shortname = 'MuProbeEtaRAW_VS_MuProbePtRAW', latexnameX = '#eta^{#mu}', latexnameY = 'p_{T}^{#mu} [GeV]', ntuplename = mu_probe + "Pt/1e3" + ":TMath::Abs( " + mu_probe + "Eta )", manualbinsX = manualbins_mu_eta, binsY = 210, minvalY = 0.0, maxvalY = 210.0, typeval = TH2D, drawOpt2D = "COLZ1 text") )
 
             # -----------------------------------------------------------------------------------------------------------------
@@ -2196,6 +2200,7 @@ if __name__ == "__main__":
         'WtH':('WtHbkg','tWH'),
         'TTBarW':('ttbarwbkg','$t\\bar{t}W$'),
         'TTBarZ':('ttbarzbkg','$t\\bar{t}Z/\\gamma^{*}$'),
+        'TTBarZGammaStar':('ttbarzbkg','$t\\bar{t}Z/\\gamma^{*}$'),
         'TTBarGamma':('ttbargammabkg','$t\\bar{t}\\gamma$'),
         'SingleTop':('singletopbkg','Single $t$, $tW$'),
         'RareTop':('raretopbkg','Others'),
@@ -2244,6 +2249,7 @@ if __name__ == "__main__":
         'WtH':kPink-4,
         'TTBarW':kYellow,
         'TTBarZ':kCyan,
+        'TTBarZGammaStar':kCyan,
         'TTBarGamma':kPink-9,
         'SingleTop':kOrange+6,
         'RareTop':kOrange+7,
@@ -2345,16 +2351,17 @@ if __name__ == "__main__":
 
     if doMMRates:
 
-        ttH.signals     = []
+        ttH.signals     = ['TTBarH']
         ttH.observed    = ['Observed']
         if args.ratesMC: ttH.observed = []
         #ttH.backgrounds = ['Prompt','FakesMC','TTBar'] # 'Prompt' includes all the following processes: ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']. Truth cuts are redefined in the 'Prompt' and 'FakesMC' classes...
                                                         # 'TTBar' is also appended to the list b/c in FakeCR we have a contribution from ttbar events w/ mis-assigned probe (prompt) to be subtracted.
-        ttH.backgrounds = ['TTBarGammaStar','TTBarW','TTBarZ','Diboson','Rare','TTBar','FakesMC'] #  ['TTBarWbGammaStar','TTBarGammaStarAsymm']
+        ttH.backgrounds = ['TTBarZGammaStar','TTBarW','Diboson','Rare','TTBar','FakesMC'] #  ['TTBarWbGammaStar','TTBarGammaStarAsymm']
         #ttH.backgrounds = ['TTBarW','OtherPrompt','TTBar','FakesMC']
+        #ttH.backgrounds = ['TTBarW']
 
         if args.splitProcs:
-            ttH.backgrounds = ['TTBar','SingleTop','TTBarGammaStar','Zjets','Wjets','TTBarW','TTBarZ','Diboson','Rare'] # NB: if using this list, make sure a QMisID veto is applied in the category cut, since QMisID is added separately below
+            ttH.backgrounds = ['TTBar','SingleTop','TTBarZGammaStar','Zjets','Wjets','TTBarW','Diboson','Rare'] # NB: if using this list, make sure a QMisID veto is applied in the category cut, since QMisID is added separately below
 
         ttH.debugprocs  = ['Observed','TTBar','TTBarW','TTBarGammaStar','TTBarWbGammaStar','TTBarGammaStarAsymm']
 
@@ -2666,6 +2673,11 @@ if __name__ == "__main__":
                 mybackgrounds = [ bkg for bkg in mybackgrounds if not bkg == "FakesMC" ]
                 if "LH" in args.channel:
                     mybackgrounds = [ bkg for bkg in mybackgrounds if not bkg == "TTBar" ]
+
+            # No QMisID for fake muon CR and real CRs
+
+            if any( c in category.name for c in ["FakeCRMu","RealCR"] ):
+                mybackgrounds = [ bkg for bkg in mybackgrounds if not bkg == "QMisID" ]
 
             hists[category.name + ' ' + var.shortname] = ttH.plot( var,
                                                                    eventweight=category.weight,

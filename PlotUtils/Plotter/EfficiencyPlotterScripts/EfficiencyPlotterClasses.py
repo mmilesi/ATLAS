@@ -373,7 +373,7 @@ class Plot:
             if normfactor: self.__hist.Scale( normfactor / self.__hist.Integral() )
 
         if self.__props.get("legend") and legend:
-            legend.AddEntry(self.__hist, self.__props["legend"], "PL")
+            legend.AddEntry(self.__hist, "#bf{{{0}}}".format(self.__props["legend"]), "PL")
 
         if self.__props.get("setBinVals")  :
             for tup in self.__props["setBinVals"]:
@@ -489,15 +489,15 @@ class MultiPlot:
 
         self.legend.SetBorderSize(0)  # no border
         self.legend.SetFillStyle(0) # Legend transparent background
-        self.legend.SetTextSize(0.035) # Increase entry font size!
-        #self.legend.SetTextFont(42)   # Helvetica
+        self.legend.SetTextSize(0.04)#(0.035) # Increase entry font size!
+        self.legend.SetTextFont(42)   # Helvetica
 
         self.legendATLAS = TLatex()
         self.legendLumi  = TLatex()
 
         self.legendATLAS.SetTextSize(0.04)
         self.legendATLAS.SetNDC()
-        self.legendLumi.SetTextSize(0.025)
+        self.legendLumi.SetTextSize(0.0375)#(0.035)
         self.legendLumi.SetNDC()
 
     def setCanvasCoords(self, ccoords=[]):
@@ -548,13 +548,14 @@ class MultiPlot:
         self.legend.Draw()
 
         self.legendATLAS.DrawLatex(0.2,0.88,"#bf{{#it{{ATLAS}}}} {0}".format(self.ATLASlabel))
-        self.legendLumi.DrawLatex(0.2,0.81,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.luminosity))
+        # self.legendLumi.DrawLatex(0.2,0.81,"#sqrt{{s}} = 13 TeV, #int L dt = {0:.1f} fb^{{-1}}".format(self.luminosity))
+        self.legendLumi.DrawLatex(0.2,0.81,"#sqrt{{s}} = 13 TeV, {0:.1f} fb^{{-1}}".format(self.luminosity))
 
         if self.plotTitle:
             plotTitleObj = TLatex()
             plotTitleObj.SetTextSize(0.04)
             plotTitleObj.SetNDC()
-            plotTitleObj.DrawLatex(self.plotTitle_x,self.plotTitle_y,"#it{{{0}}}".format(self.plotTitle))
+            plotTitleObj.DrawLatex(self.plotTitle_x,self.plotTitle_y,"{{0}}".format(self.plotTitle))
 
         for ext in ["png","pdf","root","eps"]:
 	    c.SaveAs( savePath + "/" + saveName + "." + ext )

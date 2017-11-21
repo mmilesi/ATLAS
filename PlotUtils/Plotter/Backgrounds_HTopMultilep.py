@@ -145,17 +145,17 @@ class TTHBackgrounds(Background):
             mid = int(len(legs)/2)
             high = math.ceil(len(legs)/2)
             lower = 0.92 - 0.04*high
-            leg1 = TLegend(0.45,lower,0.65,0.92)
+            leg1 = TLegend(0.50,lower,0.70,0.92)
             #leg2 = TLegend(0.70,lower,0.90,0.92)
-            leg2 = TLegend(0.65,lower,0.85,0.92)
+            leg2 = TLegend(0.70,lower,0.90,0.92)
         for leg in [leg1, leg2]:
             if not leg: continue
             leg.SetFillColor(0)
             leg.SetFillStyle(0)
             leg.SetLineColor(10)
             leg.SetShadowColor(kWhite)
-            leg.SetTextSize(0.03 * scale)
-            #leg.SetTextSize(0.03)
+            # leg.SetTextSize(0.03 * scale)
+            leg.SetTextSize(0.037)
             leg.SetBorderSize(0)
             #leg.SetEntrySeparation(1.0)
 
@@ -167,22 +167,22 @@ class TTHBackgrounds(Background):
                 leg2.AddEntry(l[0], l[1], l[2])
             leg2.Draw()
 
+        # atlastext = drawText(text="#bf{#it{ATLAS}} Work In Progress", x=.2, y=.77, size=0.03 * scale)
+        # atlastext = drawText(text="#bf{#it{ATLAS}} Internal", x=.2, y=.77, size=0.03 * scale)
+        atlastext = drawText(text="#bf{#it{ATLAS}} Internal", x=.2, y=.88, size=0.037)
+        # cmetext   = drawText(text="         #sqrt{s} = 13 TeV", x=.2, y=.82, size=0.03 * scale)
+
         # for O(fb-1) luminosity
 
         if self.lumi_units == 'fb-1':
-            if self.readGFW2:
-                lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(self.luminosity/1e3), x=.2, y=.87, size=0.03 * scale)
-            else:
-                lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(self.luminosity), x=.2, y=.87, size=0.03 * scale)
+            L = self.luminosity if not self.readGFW2 else self.luminosity/1e3
+            #lumtext = drawText(text="  #int L dt = %.1f fb^{-1}"%(L), x=.2, y=.87, size=0.03 * scale)
+            lumtext = drawText(text="#sqrt{s} = 13 TeV, %.1f fb^{-1}"%(L), x=.2, y=.82, size=0.033)
 
         # for O(pb-1) luminosity
 
         elif self.lumi_units == 'pb-1':
             lumtext = drawText(text="  #int L dt = %.2f pb^{-1}"%(self.luminosity*1000), x=.2, y=.87, size=0.04 * scale)
-
-        cmetext   = drawText(text="         #sqrt{s} = 13 TeV", x=.2, y=.82, size=0.03 * scale)
-        # atlastext = drawText(text="#bf{#it{ATLAS}} Work In Progress", x=.2, y=.77, size=0.03 * scale)
-        atlastext = drawText(text="#bf{#it{ATLAS}} Internal", x=.2, y=.77, size=0.03 * scale)
 
         return lower, locals()
 
@@ -199,7 +199,7 @@ class TTHBackgrounds(Background):
 
     class Observed(Process):
 
-        latexname = 'Data'
+        latexname = '#bf{Data}'
 
         # This method contains the instruction of which tree to load.
 	# NB: this is not automatically executed when the instance of the class is created. In fact, it is executed via __call__
@@ -281,7 +281,7 @@ class TTHBackgrounds(Background):
 
     class TTBarH(Process):
 
-        latexname = 't#bar{t} H'
+        latexname = '#bf{#it{t#bar{t}H}}'
         colour = kBlack
 
         def base(self, treename='physics', category=None, options={}):
@@ -532,7 +532,7 @@ class TTHBackgrounds(Background):
 
     class TTBarW(Process):
 
-        latexname = 't#bar{t} W'
+        latexname = '#bf{#it{t#bar{t}W}}'
         colour = kRed - 4
 
         def base(self, treename='physics', category=None, options={}):
@@ -586,7 +586,8 @@ class TTHBackgrounds(Background):
 
     class TTBarZ(Process):
 
-        latexname = 't#bar{t} Z'
+        latexname = '#bf{#it{t#bar{t}Z}}'
+
         colour = kRed - 7
 
         def base(self, treename='physics', category=None, options={}):
@@ -640,6 +641,33 @@ class TTHBackgrounds(Background):
             print("{0} = {1:.1f}".format("TTBarZ",(sp.numberstats(eventweight=category.weight))[0]))
 
             return sp
+
+    class TTBarZGammaStar(Process):
+
+        latexname = '#bf{#it{t#bar{t}(Z/#gamma*)}}'
+
+        colour = kBlue - 9
+
+        def __call__(self, treename='physics', category=None, options={}):
+
+            if self.parent.readGFW2:
+                treename = 'nominal'
+
+            print("\n{0}:\n".format(self.__class__.__name__))
+
+            ttZ         = self.parent.procmap['TTBarZ'](treename, category, options)
+            ttgammastar = self.parent.procmap['TTBarGammaStar'](treename, category, options)
+
+            print(" ")
+            print("{0} = {1:.1f}".format("TTBarZ",(ttZ.numberstats(eventweight=category.weight))[0]))
+            print("{0} = {1:.1f}".format("TTBarGammaStar",(ttgammastar.numberstats(eventweight=category.weight))[0]))
+
+            sp = ttZ + ttgammastar
+            print(" ")
+            print("{0} = {1:.1f}".format("TTBarZGammaStar",(sp.numberstats(eventweight=category.weight))[0]))
+
+            return sp
+
 
     class TTBarGamma(Process):
 
@@ -896,7 +924,7 @@ class TTHBackgrounds(Background):
 
     class Zjets(Process):
 
-        latexname = 'Z/#gamma* + jets'
+        latexname = '#bf{#it{Z/#gamma*}+jets}'
         colour = kGreen
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -1136,7 +1164,7 @@ class TTHBackgrounds(Background):
 
     class Wjets(Process):
 
-        latexname = 'W+jets'
+        latexname = '#bf{#it{W}+jets}'
         colour = kYellow
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -1574,7 +1602,7 @@ class TTHBackgrounds(Background):
 
     class SingleTop(Process):
 
-        latexname = 'single t, tW'
+        latexname = '#bf{single #it{t, tW}}'
         colour = kAzure + 1
 
         def base(self, treename='physics', category=None, options={}):
@@ -1628,7 +1656,7 @@ class TTHBackgrounds(Background):
 
     class Rare(Process):
 
-        latexname = 'Others'
+        latexname = '#bf{Others}'
         colour = kGray
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -1683,7 +1711,7 @@ class TTHBackgrounds(Background):
 
     class TTBar(Process):
 
-        latexname = 't#bar{t}, t#bar{t}#gamma'
+        latexname = '#bf{#it{t#bar{t}, t#bar{t}#gamma}}'
         colour = kAzure + 8
 
         def base(self, treename='physics', category=None, options={}):
@@ -1870,7 +1898,7 @@ class TTHBackgrounds(Background):
 
     class Diboson(Process):
 
-        latexname = 'WZ, ZZ, WW'
+        latexname = '#bf{Diboson}'
         colour = kYellow - 9
 
         def base(self, treename='physics', category=None, options={}):
@@ -1937,7 +1965,7 @@ class TTHBackgrounds(Background):
 
     class DibosonCF(Process):
 
-        latexname = 'WZ, ZZ, WW (QMisID only)'
+        latexname = 'Diboson (QMisID only)'
         colour = kAzure - 9
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -2184,7 +2212,7 @@ class TTHBackgrounds(Background):
 
     class QMisIDMC(Process):
 
-        latexname = 'QMisID (MC)'
+        latexname = '#it{q} mis-id (MC)'
         colour = kAzure - 4
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -2205,7 +2233,7 @@ class TTHBackgrounds(Background):
 
     class QMisID(Process):
 
-        latexname = 'QMisID'
+        latexname = '#bf{#it{q} mis-id}'
         colour = kAzure - 4
 
         def base(self, treename='physics', category=None, options={}):
@@ -2389,7 +2417,7 @@ class TTHBackgrounds(Background):
 
     class FakesMC(Process):
 
-        latexname = 'Fakes (MC)'
+        latexname = '#bf{Fakes (MC)}'
         colour = kCyan -9
 
         def __call__(self, treename='physics', category=None, options={}):
@@ -2528,7 +2556,7 @@ class TTHBackgrounds(Background):
 
     class FakesMM(Process):
 
-        latexname = 'Fakes MM'
+        latexname = '#bf{Non-prompt (MM)}'
         colour = kTeal - 9
 
         def base(self, treename='physics', category=None, options={}):
@@ -3092,7 +3120,7 @@ class TTHBackgrounds(Background):
 
     class FakesClosureMM(Process):
 
-        latexname = 'Fakes MM - t#bar{t},t#bar{t}#gamma'
+        latexname = '#bf{Non-prompt (MM) - #it{t#bar{t},t#bar{t}#gamma}}'
         colour = kTeal -9
 
         name = 'FakesClosureMM'
