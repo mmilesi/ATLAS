@@ -35,11 +35,11 @@ if __name__ == "__main__":
     import EfficiencyPlotter_QualityPlots
 
     if True:
-        # EfficiencyPlotter_QualityPlots.plotRealEfficiency()
-        # EfficiencyPlotter_QualityPlots.plotFakeEfficiency_El()
-        # EfficiencyPlotter_QualityPlots.plotFakeEfficiency_Mu()
-        EfficiencyPlotter_QualityPlots.plotRealEfficiency_Closure()
-        EfficiencyPlotter_QualityPlots.plotFakeEfficiency_Closure()
+        EfficiencyPlotter_QualityPlots.plotRealEfficiency()
+        EfficiencyPlotter_QualityPlots.plotFakeEfficiency_El()
+        EfficiencyPlotter_QualityPlots.plotFakeEfficiency_Mu()
+        # EfficiencyPlotter_QualityPlots.plotRealEfficiency_Closure()
+        # EfficiencyPlotter_QualityPlots.plotFakeEfficiency_Closure()
 
     import TypeAndOriginPlots
 

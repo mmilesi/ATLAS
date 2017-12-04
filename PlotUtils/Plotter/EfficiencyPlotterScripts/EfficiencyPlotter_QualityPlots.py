@@ -39,12 +39,14 @@ def plotRealEfficiency():
     p0 = Plot("Real_El_Pt_Efficiency_observed_sub",eff_filepath, p0_props)
     p0.addSystematics(syslist=["ND_FakesOS"])
 
-    plotlist.append(p0)
-
     p1_props = {
                 "legend"      : "#bf{#mu}",
                 "yAxisTitle"  : "#varepsilon",
                 "yAxisRange"  : (0.45,1.1),
+                "xAxisTitle"  : "p_{T} [GeV]",
+                "xAxisLog"    : True,
+                #"xAxisNdivisions" : 505,
+                "xAxisLabelOffset": 0.02,
                 "colour"      : kRed,
                 "lineStyle"   : 1,
                 "lineWidth"   : 3,
@@ -56,6 +58,7 @@ def plotRealEfficiency():
     p1.addSystematics(syslist=["ND_FakesOS"])
 
     plotlist.append(p1)
+    plotlist.append(p0)
 
     multiP = MultiPlot( plots=plotlist )
     multiP.luminosity = luminosity
@@ -81,11 +84,12 @@ def plotFakeEfficiency_El():
     plotlist = []
 
     p0_props = {
-                "legend"      : "#bf{N_{b-tags} = 1}",
+                "legend"      : "#bf{N_{#it{b}-tags} = 1}",
                 "yAxisTitle"  : "#varepsilon",
                 "yAxisRange"  : (0.0,0.15),
                 "xAxisTitle"  : "p_{T} [GeV]",
                 #"xAxisLog"    : True,
+                #"xAxisNdivisions" : 1,
                 "colour"      : kBlue+2,
                 "lineStyle"   : 2,
                 "lineWidth"   : 3,
@@ -96,12 +100,14 @@ def plotFakeEfficiency_El():
     p0 = Plot("RESCALED_2L_ee_Fake_El_NBJets_VS_Pt_Efficiency_observed_sub_projPt_1",eff_filepath, p0_props)
     p0.addSystematics(syslist=["ND_VV","ND_TTV","ND_OtherPromptSS","N_QMisID","D_QMisID","ND_ALPHA"])
 
-    plotlist.append(p0)
-
     p1_props = {
-                "legend"      : "#bf{N_{b-tags} #geq 2}",
+                "legend"      : "#bf{N_{#it{b}-tags} #geq 2}",
                 "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,0.2),
+                "yAxisRange"  : (0.0,0.15),
+                "xAxisTitle"  : "p_{T} [GeV]",
+                #"xAxisLog"    : True,
+                "xAxisNdivisions" : 104,
+                "xAxisLabelOffset": 0.02,
                 "colour"      : kBlue-7,
                 "lineStyle"   : 1,
                 "lineWidth"   : 3,
@@ -113,6 +119,7 @@ def plotFakeEfficiency_El():
     p1.addSystematics(syslist=["ND_VV","ND_TTV","ND_OtherPromptSS","N_QMisID","D_QMisID","ND_ALPHA"])
 
     plotlist.append(p1)
+    plotlist.append(p0)
 
     multiP = MultiPlot( plots=plotlist )
     multiP.luminosity = luminosity
@@ -154,12 +161,15 @@ def plotFakeEfficiency_Mu():
     p0 = Plot("Fake_Mu_DistanceClosestJet_VS_Pt_Efficiency_observed_sub_projPt_1",eff_filepath, p0_props)
     p0.addSystematics(syslist=["ND_VV","ND_TTV","ND_OtherPromptSS"])
 
-    plotlist.append(p0)
-
     p1_props = {
                 "legend"      : "#bf{1 < min(#Delta R_{#mu,j}) #leq 5}",
                 "yAxisTitle"  : "#varepsilon",
-                "yAxisRange"  : (0.0,1.0),
+                "yAxisRange"  : (0.0,1.1),
+                "xAxisTitle"  : "p_{T} [GeV]",
+                #"xAxisLog"    : True,
+                "xAxisRange"  : (15,210),
+                "xAxisNdivisions" : 108,
+                "xAxisLabelOffset": 0.02,
                 "colour"      : kRed-9,
                 "lineStyle"   : 1,
                 "lineWidth"   : 3,
@@ -171,6 +181,7 @@ def plotFakeEfficiency_Mu():
     p1.addSystematics(syslist=["ND_VV","ND_TTV","ND_OtherPromptSS"])
 
     plotlist.append(p1)
+    plotlist.append(p0)
 
     multiP = MultiPlot( plots=plotlist )
     multiP.luminosity = luminosity

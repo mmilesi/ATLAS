@@ -14,7 +14,7 @@ import ROOT
 
 from ROOT import ROOT, gROOT, gStyle, gPad, Double, TPad, TLine, TH1, TH1D, TH2, THStack, TFile, TCanvas, TLegend, TLatex, TGraphAsymmErrors, TEfficiency
 from ROOT import TPaletteAxis, TColor, kBlue, kOrange, kPink, kGreen, kRed, kYellow, kTeal, kMagenta, kViolet, kAzure, kCyan, kSpring, kGray, kBlack, kWhite
-from ROOT import kFullCircle, kCircle, kOpenTriangleUp, kDot
+from ROOT import kFullCircle, kCircle, kOpenTriangleUp, kDot, kTRUE, kFALSE
 from ROOT import kInfo, kWarning, kError, kFatal
 ROOT.gErrorIgnoreLevel = kError
 
@@ -94,6 +94,9 @@ class Plot:
 
     def getName( self ):
         return self.__name
+
+    def getHist( self ):
+        return self.__hist
 
     def setProperty( self, propID, propValue ):
 
@@ -420,6 +423,7 @@ class Plot:
         self.__hist.GetYaxis().SetTitleOffset(1.4)
 
         # Set log axis if needed
+
  	if self.__props.get("xAxisLog") :
             gPad.SetLogx( self.__props["xAxisLog"] )
             if self.__props["xAxisLog"]:
@@ -439,6 +443,15 @@ class Plot:
                     self.__hist.GetYaxis().SetMoreLogLabels()
                     self.__hist.GetYaxis().SetNoExponent()
 
+        # Deal with axis divisions
+
+        if self.__props.get("xAxisNdivisions"):
+            ndivx =  self.__props.get("xAxisNdivisions")
+            if self.__syshists:
+                self.__syserrhist.GetXaxis().SetNdivisions(ndivx)
+            else:
+                self.__hist.GetXaxis().SetNdivisions(ndivx)
+
         # Deal with alphanumeric axis labels
 
         if self.__props.get("xAxisLabels"):
@@ -446,6 +459,11 @@ class Plot:
             self.__hist.GetXaxis().SetTitleOffset(2.1) # increase a bit the axis title offset
             self.__hist.GetXaxis().SetLabelSize(0.03)
             self.__hist.GetXaxis().SetTitleSize(0.04)
+        if self.__props.get("xAxisLabelOffset"):
+            if self.__syshists:
+                self.__syserrhist.GetXaxis().SetLabelOffset(self.__props.get("xAxisLabelOffset"))
+            else:
+                self.__hist.GetXaxis().SetLabelOffset(self.__props.get("xAxisLabelOffset"))
         if self.__props.get("yAxisLabels"):
             self.setAlphanumLabels( axis="Y", labels=self.__props["yAxisLabels"], labelsopt="h" )
             self.__hist.GetYaxis().SetTitleOffset(2.255) # increase a bit the axis title offset
@@ -536,6 +554,10 @@ class MultiPlot:
         for refl in Plot.reflines:
             refl.SetLineStyle(2)
 	    refl.Draw("SAME")
+
+        # for idx, p in enumerate(self.__plotlist):
+        #     ndiv = p.getHist().GetXaxis().GetNdivisions()
+        #     print("plot[{0}]- ndiv: {1}".format(idx,ndiv))
 
         # Plot.legend.Draw()
 
