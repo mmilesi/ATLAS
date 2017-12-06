@@ -1070,7 +1070,7 @@ class Background:
                     datagr.SetMarkerStyle(self.style.get('ObservedMarkerStyle', 20))
                 else:
                     datagr = TH2D(obs)
-            legobs = process.latexname + " ({0:.1f})".format(integrate(obs)) if showyields else process.latexname
+            legobs = process.latexname + " ({0:.1f})".format(integrate(obs,overflowbins)) if showyields else process.latexname
             legs.append([datagr, legobs, "p"])
 
         tSum, bkglist = self.sumhist(var, processes=overridebackground, cut=cut, eventweight=eventweight, category=category, systematics=systematics, systematicsdirection=systematicsdirection, overflowbins=overflowbins, options=options)
@@ -1100,7 +1100,7 @@ class Background:
 	    	h.SetFillColor(self.style.get(pname+'FillColour', process.colour))
 	    	h.SetFillStyle(self.style.get(pname+'FillStyle', 1001))
 	    	stack.Add(h)
-                legbkg = process.latexname + " ({0:.1f})".format(integrate(h)) if showyields else process.latexname
+                legbkg = process.latexname + " ({0:.1f})".format(integrate(h,overflowbins)) if showyields else process.latexname
 	    	legs.append([h, legbkg, 'f'])
 	    	bkg[pname] = h
 	else:
@@ -1134,7 +1134,7 @@ class Background:
             h_name = process.latexname+signal
             if signalfactor != 1.:
                h_name += " [#times"+str(int(signalfactor))+']'
-            legsig = h_name + " ({0:.1f})".format(integrate(sig)) if showyields else process.latexname
+            legsig = h_name + " ({0:.1f})".format(integrate(sig,overflowbins)) if showyields else process.latexname
             legs.append([sig, legsig, 'f'])
 
         # Never show ratio if variable is 2D
@@ -1327,6 +1327,7 @@ class Background:
                   diagonal.SetLineColor(kBlack)
                   diagonal.SetLineWidth(2)
                   diagonal.Draw("SAME")
+
               # if var.shortname == "BDTGScore_ttH_ttbarDD_VS_BDTGScore_ttH_ttV":
               #     xA_BDT_0 = -1
               #     yA_BDT_0 = 1
@@ -1374,6 +1375,12 @@ class Background:
               #     leg_BDT_m05.SetTextColor(kWhite)
               #     leg_BDT_m05.DrawLatex(0.228, 0.695, "#bf{BDTG=-0.5}")
 
+              #     # from ROOT import TPaletteAxis
+              #     # gPad.Update()
+              #     # pal = stack.GetHistogram().GetListOfFunctions().FindObject("palette")
+              #     # print type(pal)
+              #     # pal.GetAxis().SetLabelSize(0.02)
+
         if bkg and not isvar2D:
             tSum.Draw("E2 SAME")
 
@@ -1400,8 +1407,6 @@ class Background:
             lower, labels = self.labels(legs, showratio and obs and bkg)
         #gPad.RedrawAxis()
         c.Update()
-
-        c.SaveAs("/home/mmilesi/PhD/ttH_MultiLeptons/RUN2/HTopMultilepAnalysisCode/trunk/HTopMultilepAnalysis/PlotUtils/InclusiveSS_SR_DataDriven_BDTGScore_ttH_ttbarDD_VS_BDTGScore_ttH_ttV.root")
 
         if wait: raw_input('Hit enter to continue...')
         if type(save) is str:
