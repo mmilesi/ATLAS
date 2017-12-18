@@ -201,24 +201,24 @@ exit 0
 
     varlist = [
         # "Integral",
-        # "ElProbePt",
+        "ElProbePt",
         # "ElProbePt_LOGY",
         # "ElProbePt_RealEffBinning",
         # "ElProbePt_FakeEffBinning",
         # "ElProbePt_RealEffBinning_LOGY",
         # "ElProbePt_FakeEffBinning_LOGY",
-        # "ElProbeNBJetsRAW_VS_ElProbePtRAW",
+        "ElProbeNBJetsRAW_VS_ElProbePtRAW",
         # "ElProbeDistanceClosestJetRAW_VS_ElProbePtRAW",
         # "ElProbeEtaRAW_VS_ElProbePtRAW",
         #
-        # "MuProbePt",
+        "MuProbePt",
         # "MuProbePt_LOGY",
         # "MuProbePt_RealEffBinning",
         # "MuProbePt_FakeEffBinning",
         # "MuProbePt_RealEffBinning_LOGY",
         # "MuProbePt_FakeEffBinning_LOGY",
         # "MuProbeNBJetsRAW_VS_MuProbePtRAW",
-        # "MuProbeDistanceClosestJetRAW_VS_MuProbePtRAW",
+        "MuProbeDistanceClosestJetRAW_VS_MuProbePtRAW",
         # "MuProbeEtaRAW_VS_MuProbePtRAW",
         #
         # "ElProbeEta",
@@ -238,7 +238,7 @@ exit 0
         # "MuProbeNBJets_VS_MuProbePt",
         # "MuProbeDistanceClosestJet_VS_MuProbePt",
         #
-        "Integral",
+        # "Integral",
         # "NJets2j3j",
         # "NJets4j",
         # "NBJets",
