@@ -2354,7 +2354,7 @@ if __name__ == "__main__":
         #ttH.backgrounds = ['Prompt','FakesMC','TTBar'] # 'Prompt' includes all the following processes: ['TTBar','SingleTop','Rare','Zjets','Wjets','TTBarW','TTBarZ','Diboson']. Truth cuts are redefined in the 'Prompt' and 'FakesMC' classes...
                                                         # 'TTBar' is also appended to the list b/c in FakeCR we have a contribution from ttbar events w/ mis-assigned probe (prompt) to be subtracted.
         # ttH.backgrounds = ['TTBarZGammaStar','TTBarW','Diboson','Rare','TTBar','FakesMC'] #  ['TTBarWbGammaStar','TTBarGammaStarAsymm']
-        ttH.backgrounds = ['TTBarGammaStar','TTBarW','TTBarZ','Diboson','Rare','TTBar','FakesMC'] #  ['TTBarWbGammaStar','TTBarGammaStarAsymm']
+        ttH.backgrounds = ['TTBarW','TTBarZ','Diboson','Rare','TTBar','FakesMC'] #  ['TTBarWbGammaStar','TTBarGammaStarAsymm']
 
         #ttH.backgrounds = ['TTBarW','OtherPrompt','TTBar','FakesMC']
         #ttH.backgrounds = ['TTBarW']
