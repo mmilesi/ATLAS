@@ -1336,45 +1336,45 @@ class RealFakeEffTagAndProbe:
                     # # ---------------------------------------------------------
 
                     # ---------------------------------------------------------
-                    # # For 25_07_17 production (pT>15 GeV) --> final setup for 3L and closure test
-                    # #
-                    # # Size must be equal to the number of pT bins, excluding underflow, including overflow
-                    # #
-                    # # binning:  1:(10-15), 2:(15-210), 3:(210,+)
-                    # #
-                    # # v29, PP8
-                    # #
-                    # alpha_2L_ee = [(1, 0.0), (2, 0.39), (3, 0.0)]
-                    # alpha_2L_OF = [(1, 0.0), (2, -0.02), (3, 0.0)]
-                    # #
-                    # alpha_2L_ee_LJ = [(1, 0.0), (2, 0.18), (3, 0.0)]
-                    # alpha_2L_OF_LJ = [(1, 0.0), (2, 0.0), (3, 0.0)]
-                    # #
-                    # # From Chao, Ximo
-                    # alpha_3L_ee = [(1, 0.0), (2, 0.56), (3, 0.0)]
-                    # alpha_3L_OF = [(1, 0.0), (2, 0.06), (3, 0.0)]
+                    # For 25_07_17 production (pT>15 GeV) --> final setup for 3L and closure test
+                    #
+                    # Size must be equal to the number of pT bins, excluding underflow, including overflow
+                    #
+                    # binning:  1:(10-15), 2:(15-210), 3:(210,+)
+                    #
+                    # v29, PP8
+                    #
+                    alpha_2L_ee = [(1, 0.0), (2, 0.39), (3, 0.0)]
+                    alpha_2L_OF = [(1, 0.0), (2, -0.02), (3, 0.0)]
+                    #
+                    alpha_2L_ee_LJ = [(1, 0.0), (2, 0.18), (3, 0.0)]
+                    alpha_2L_OF_LJ = [(1, 0.0), (2, 0.0), (3, 0.0)]
+                    #
+                    # From Chao, Ximo
+                    alpha_3L_ee = [(1, 0.0), (2, 0.56), (3, 0.0)]
+                    alpha_3L_OF = [(1, 0.0), (2, 0.06), (3, 0.0)]
                     #
                     # ---------------------------------------------------------
 
                     # # ---------------------------------------------------------
-                    # For 26_07_17 production (pT>20 GeV) --> final setup for 2L
-                    #
-                    # Size must be equal to the number of pT bins, excluding underflow, including overflow
-                    #
-                    # binning:  1:(10-15), 2:(15-20), 3:(20-210), 4:(210,+)
-                    #
-                    # v29, PP8
-                    #
-                    alpha_2L_ee = [(1, 0.0), (2, 0.39), (3,0.42), (4, 0.0)]
-                    alpha_2L_OF = [(1, 0.0), (2, -0.02), (3,0.07), (4, 0.0)]
-                    #
-                    alpha_2L_ee_LJ = [(1, 0.0), (2, 0.18), (3,0.35), (4, 0.0)]
-                    alpha_2L_OF_LJ = [(1, 0.0), (2, 0.0), (3, 0.0), (4,0.0)]
-                    #
-                    # From Chao, Ximo
-                    alpha_3L_ee = [(1, 0.0), (2, 0.56), (3,0.60), (4, 0.0)]
-                    alpha_3L_OF = [(1, 0.0), (2, 0.06), (3,0.19), (4, 0.0)]
-                    #
+                    # # For 26_07_17 production (pT>20 GeV) --> final setup for 2L
+                    # #
+                    # # Size must be equal to the number of pT bins, excluding underflow, including overflow
+                    # #
+                    # # binning:  1:(10-15), 2:(15-20), 3:(20-210), 4:(210,+)
+                    # #
+                    # # v29, PP8
+                    # #
+                    # alpha_2L_ee = [(1, 0.0), (2, 0.39), (3,0.42), (4, 0.0)]
+                    # alpha_2L_OF = [(1, 0.0), (2, -0.02), (3,0.07), (4, 0.0)]
+                    # #
+                    # alpha_2L_ee_LJ = [(1, 0.0), (2, 0.18), (3,0.35), (4, 0.0)]
+                    # alpha_2L_OF_LJ = [(1, 0.0), (2, 0.0), (3, 0.0), (4,0.0)]
+                    # #
+                    # # From Chao, Ximo
+                    # alpha_3L_ee = [(1, 0.0), (2, 0.56), (3,0.60), (4, 0.0)]
+                    # alpha_3L_OF = [(1, 0.0), (2, 0.06), (3,0.19), (4, 0.0)]
+                    # #
                     # # ---------------------------------------------------------
 
                     # # ---------------------------------------------------------
