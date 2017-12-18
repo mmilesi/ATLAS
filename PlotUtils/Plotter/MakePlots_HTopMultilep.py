@@ -447,8 +447,8 @@ if __name__ == "__main__":
     database.registerCut( Cut('2Lep_SS',	          '( lep_ID_0 * lep_ID_1 > 0 )') )
     database.registerCut( Cut('2Lep_OS',		  '( !( lep_ID_0 * lep_ID_1 > 0 ) )') )
     database.registerCut( Cut('2Lep_NLep', 		  '( dilep_type > 0 )') )
-    #database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_1 > 15e3 )') )
-    database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_1 > 20e3 )') )
+    database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_1 > 15e3 )') )
+    # database.registerCut( Cut('2Lep_pT',		  '( lep_Pt_1 > 20e3 )') )
     if args.ICHEPSelection:
         database.getCut('2Lep_pT').cutstr =  '( lep_Pt_1 > 25e3 )' # 2LSS SR cut - ICHEP 2016
     database.registerCut( Cut('2Lep_pT_MMRates',	  '( lep_Pt_1 > 10e3 )') )
@@ -2058,8 +2058,8 @@ if __name__ == "__main__":
                 if any( cat in args.category for cat in ["mm","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["mm"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_MuMu_Event']), weight = weight_SR_CR ) )
                 if any( cat in args.category for cat in ["ee","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["ee"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_ElEl_Event']), weight = weight_SR_CR ) )
                 if any( cat in args.category for cat in ["OF","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["OF"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_OF_Event']), weight = weight_SR_CR ) )
-                if any( cat in args.category for cat in ["em","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["em"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_ElMu_Event']), weight = weight_SR_CR ) )
-                if any( cat in args.category for cat in ["me","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["me"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_MuEl_Event']), weight = weight_SR_CR ) )
+                # if any( cat in args.category for cat in ["em","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["em"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_ElMu_Event']), weight = weight_SR_CR ) )
+                # if any( cat in args.category for cat in ["me","ALL"] ): database.registerCategory( MyCategory(cat_names_2Lep["me"] + append_2Lep,  cut = common_cuts_MMClosure & database.getCuts(['2Lep_MuEl_Event']), weight = weight_SR_CR ) )
 
         elif ( doTHETA ):
 

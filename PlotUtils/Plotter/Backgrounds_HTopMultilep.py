@@ -1733,11 +1733,11 @@ class TTHBackgrounds(Background):
                 del inputgroup[:]
                 inputgroup = [
                     # PP8
-                    #('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
-                    #('tops_MMClosure', 'ttgamma'),
+                    ('tops_MMClosure', 'ttbar_nonallhad_Pythia8'),
+                    ('tops_MMClosure', 'ttgamma'),
                     #
-                    ('tops', 'ttbar_nonallhad_Pythia8'),
-                    ('tops', 'ttgamma'),
+                    #('tops', 'ttbar_nonallhad_Pythia8'),
+                    #('tops', 'ttgamma'),
                     #
                     # PP6
                     #('tops_MMClosure', 'ttgamma_vPP6'),

@@ -1274,15 +1274,15 @@ class RealFakeEffTagAndProbe:
             # A hack to fix last pT bin for Nbjets=2 distribution (only if bin is empty)
             # Only for closure test on ttbar
 
-            if self.closure and any( k in key for k in ["NBJetsRAW&&PtRAW","DistanceClosestJetRAW&&PtRAW"] ):
-                for biny in range(1,h_efficiency.GetYaxis().GetNbins()+1):
-                    thisbinglobidx = h_efficiency.GetBin(2,biny)
-                    thisbincontent = h_efficiency.GetBinContent(2,biny)
-                    prevbincontent = h_efficiency.GetBinContent(2,biny-1)
-                    prevbinerror   = h_efficiency.GetBinError(2,biny-1)
-                    if not thisbincontent:
-                        h_efficiency.SetBinContent(thisbinglobidx,prevbincontent)
-                        h_efficiency.SetBinError(thisbinglobidx,prevbinerror)
+            # if self.closure and any( k in key for k in ["NBJetsRAW&&PtRAW","DistanceClosestJetRAW&&PtRAW"] ):
+            #     for biny in range(1,h_efficiency.GetYaxis().GetNbins()+1):
+            #         thisbinglobidx = h_efficiency.GetBin(2,biny)
+            #         thisbincontent = h_efficiency.GetBinContent(2,biny)
+            #         prevbincontent = h_efficiency.GetBinContent(2,biny-1)
+            #         prevbinerror   = h_efficiency.GetBinError(2,biny-1)
+            #         if not thisbincontent:
+            #             h_efficiency.SetBinContent(thisbinglobidx,prevbincontent)
+            #             h_efficiency.SetBinError(thisbinglobidx,prevbinerror)
 
             # Rescale electron fake rate by :
             # -) the photon conversion fraction difference between 2L OF CR and the other 2L regions (excluding mm)
