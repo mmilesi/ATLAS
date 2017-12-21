@@ -61,6 +61,8 @@ parser.add_argument('--category', dest='category', action='store', default=categ
                     help='The category chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). Use w/ option --channel={{2LSS_SR,2LSS_LOWNJ_VR,MMClosureTest,MMSidebands}}. If this option is not specified, default will be \'{0}\''.format(categories[0]))
 parser.add_argument('--lepton', dest='lepton', action='store', default=leptons[0], type=str, nargs='+', choices=leptons,
                     help='The lepton flavour chosen. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). Use w/ option --channel=MMRates. If this option is not specified, default will be \'{0}\''.format(leptons[0]))
+parser.add_argument('--variables', dest='variables', action='store', default=None, type=str, nargs='+',
+                    help='Input list of variables. Can pass multiple space-separated arguments to this command-line option. If this option is not specified, the code will run on all the variables defined in the DB')
 parser.add_argument('--efficiency', dest='efficiency', action='store', default=efficiencies[0], type=str, nargs='+', choices=efficiencies,
                     help='The efficiency type to be measured. Can pass multiple space-separated arguments to this command-line option (picking amonge the above list). Use w/ option --channel=MMRates. If this option is not specified, default will be \'{0}\''.format(efficiencies[0]))
 parser.add_argument('--cutBasedLepDef', dest='cutBasedLepDef', action='store_true', default=False,
@@ -2509,8 +2511,16 @@ if __name__ == "__main__":
 
     significance_dict = {}
 
-    if args.submitPBSVar:
-        if not args.submitPBSVar in database.vardb.iterkeys():
+    if not args.submitPBSVar:
+        print ("\n*********************************************\n")
+        print("Going to use the following variables:\n")
+        if args.variables:
+            args.variables = [ var for var in args.variables if var in database.vardb.keys() ]
+            print("{0}".format(args.variables))
+        else:
+            print("{0}".format(database.vardb.keys()))
+    else:
+        if not args.submitPBSVar in database.vardb.keys():
             os.sys.exit("ERROR: the input variable for the PBS job: {0} couldn't be found in the VariableDB!".format(args.submitPBSVar))
 
     for category in sorted(database.categorylist, key=(lambda category: category.name) ):
@@ -2545,6 +2555,11 @@ if __name__ == "__main__":
         # ------------------------------
 
         for idx,var in enumerate(database.varlist, start=0):
+
+            # If a list of variables is specified as a command-line option, make sure all others are ignored
+
+            if args.variables and not var.shortname in args.variables:
+                continue
 
             # If running on the PBS batch system, make sure only the variable for *this* job is considered
 

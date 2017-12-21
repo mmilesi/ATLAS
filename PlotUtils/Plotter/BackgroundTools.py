@@ -256,7 +256,7 @@ class Variable:
 
     def ytitle(self, manualbins=None):
         if (manualbins and type(manualbins) is list) or self.typeval is TH1I:
-            return 'Events'
+            return 'Events / bin'
 	else:
             if manualbins:
                 bins, minval, maxval = manualbins
@@ -266,7 +266,7 @@ class Variable:
             if self.unit:
                 return 'Events / %.2g %s' % (binwidth, self.unit)
             else:
-                return 'Events / %.2g' % (binwidth)
+                return 'Events / bin'
 
     def makeHist(self, name=None, title=None, category=None):
         if name is None:
@@ -1387,7 +1387,7 @@ class Background:
         if obs:
             if not isvar2D:
                 if stack:
-                    datagr.Draw("P SAME")#("P SAME")
+                    datagr.Draw("P SAME")
                 else:
                     if logx or var.logaxisX:
                         gPad.SetLogx()
@@ -1395,7 +1395,7 @@ class Background:
                         gPad.SetLogy()
                     datagr.GetXaxis().SetTitle(var.latexname)
                     binwidth = (var.maxval - var.minval) / var.bins
-                    ytitle = 'Events / %.2g %s' % (binwidth, var.unit)
+                    ytitle = 'Events / %.2g %s' % (binwidth, var.unit) if var.unit else 'Events / bin'
                     datagr.GetYaxis().SetTitle(ytitle)
                     datagr.Draw('AP')
             else:
