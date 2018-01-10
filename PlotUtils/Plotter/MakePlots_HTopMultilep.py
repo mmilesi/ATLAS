@@ -1284,13 +1284,14 @@ if __name__ == "__main__":
         # ------------------------------------------------------------------------------------------
 
         # manualbins_el_fake_pt = [15,20,26,35,60,210]
-        #manualbins_el_fake_pt = [15,210] # This binnng comes from fit optimisation
+        # manualbins_el_fake_pt = [15,210]
+        manualbins_el_fake_pt = [20,210]
 
         # manualbins_el_fake_pt = [15,20,30,210] # This binnng comes from fit optimisation
-        manualbins_el_fake_pt = [15,30,210] # This binnng comes from fit optimisation
+        # manualbins_el_fake_pt = [15,20,210] # This binnng comes from fit optimisation
 
         # database.registerVar( Variable(shortname = "LepFakeType", latexname = "truthType^{lep}", ntuplename = "lep_Probe_SLT_truthType", bins = 21, minval = -0.5, maxval = 20.5 ) )
-        # database.registerVar( Variable(shortname = "LepFakeOrigin", latexname = "truthOrigin^{lep}", ntuplename = "lep_Probe_SLT_truthOrigin", bins = 41, minval = -0.5, maxval = 40.5 ) )
+        database.registerVar( Variable(shortname = "LepFakeOrigin", latexname = "truthOrigin^{lep}", ntuplename = "lep_Probe_SLT_truthOrigin", bins = 41, minval = -0.5, maxval = 40.5 ) )
         database.registerVar( Variable(shortname = 'LepFakeOrigin_VS_LepFakePt', latexnameX = 'truthOrigin^{lep}', latexnameY = 'p_{T}^{lep}', ntuplename = "lep_Probe_SLT_Pt/1e3:lep_Probe_SLT_truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY=manualbins_el_fake_pt, typeval = TH2D) )
         #
         # database.registerVar( Variable(shortname = 'LepFakeType_VS_LepFakeOrigin', latexnameX = 'truthType^{lep}', latexnameY = 'truthOrigin^{lep}', ntuplename = "lep_Probe_SLT_truthOrigin:lep_Probe_SLT_truthType", binsX = 21, minvalX = -0.5, maxvalX = 20.5, binsY = 41, minvalY = -0.5, maxvalY = 40.5, typeval = TH2D) )
@@ -1302,7 +1303,7 @@ if __name__ == "__main__":
         # database.registerVar( Variable(shortname = 'LepFakeOrigin_VS_DistanceOtherLep', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(l_{0},l_{1})', ntuplename = delta_R_lep0lep1 + ":lep_Probe_SLT_truthOrigin", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY = [0.1,0.5,1.0,2.0,5.0], typeval = TH2D ) )
         # database.registerVar( Variable(shortname = 'Lep2Origin_VS_DistanceOtherLep', latexnameX = 'truthOrigin^{lep}', latexnameY = '#DeltaR(l_{1},l_{2})', ntuplename = delta_R_lep1lep2 + ":lep_truthOrigin_2", binsX = 41, minvalX = -0.5, maxvalX = 40.5, manualbinsY = [0.1,0.5,1.0,2.0,5.0], typeval = TH2D ) )
 
-        cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet_SR','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_TRUTH_QMisIDVeto','TT','2Lep_TagAndProbe_GoodEvent'] # Leave NJets cut out
+        cc_2Lep_list = ['TrigDec','BlindingCut','2Lep_TrigMatch','2Lep_NBJet','2Lep_NLep','2Lep_pT','2Lep_SS','TauVeto','2Lep_ElEtaCut','2Lep_TRUTH_QMisIDVeto','TT','2Lep_TagAndProbe_GoodEvent'] # Leave NJets cut out
         common_cuts_2Lep = database.getCuts(cc_2Lep_list)
 
         # Add this cut for ee events only

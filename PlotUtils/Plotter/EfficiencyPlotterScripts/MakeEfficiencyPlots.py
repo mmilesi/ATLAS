@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     import EfficiencyPlotter_QualityPlots
 
-    if True:
+    if False:
         EfficiencyPlotter_QualityPlots.plotRealEfficiency()
         EfficiencyPlotter_QualityPlots.plotFakeEfficiency_El()
         EfficiencyPlotter_QualityPlots.plotFakeEfficiency_Mu()
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     import TypeAndOriginPlots
 
-    if False:
+    if True:
 
         samples       = ["ttbarbkg"] # ["ttbarbkg","wjetsbkg"]
         flavours      = ["El"] # ["Mu"]
@@ -64,7 +64,6 @@ if __name__ == "__main__":
                 kwargs = {"prodID":pid, "sample":s}
 
                 TypeAndOriginPlots.plotFakeOriginFrac2LSplitFlavours(splitOF=splitOF,**kwargs)
-
                 # TypeAndOriginPlots.plotOriginVSPt(normFactor=normFactor, **kwargs)
                 #TypeAndOriginPlots.plotOriginVSBDTG(normFactor=normFactor, **kwargs)
 
